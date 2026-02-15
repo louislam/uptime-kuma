@@ -17,15 +17,36 @@ class Teltonika extends NotificationProvider {
         // Everything else should be stripped. Best way to validate is to use URL().
 
         try {
-            const passedUrl = new URL(notification.teltonikaUrl);
+            var passedUrl = new URL(notification.teltonikaUrl);
         } catch (error) {
             throw Error("Invalid URL: " + notification.teltonikaUrl);
         }
 
-        const passedUrl = new URL(notification.teltonikaUrl);
         const baseUrl = passedUrl.origin;
         const loginUrl = baseUrl + "/api/login";
         const smsUrl = baseUrl + "/api/messages/actions/send";
+
+        // Performing some input validation and cleanup for the other fields.
+        try {
+            var cleanUser = notification.teltonikaUsername.replace(/[^\x20-\x7F]/g, "").substring(0, 40);
+        } catch (error) {
+            throw Error("Invalid input data for username.");
+        }
+        try {
+            var cleanPass = notification.teltonikaPassword.replace(/[^\x20-\x7F]/g, "").substring(0, 40);
+        } catch (error) {
+            throw Error("Invalid input data for password.");
+        }
+        try {
+            var cleanModem = notification.teltonikaPassword.replace(/[^\x2A-\x39]/g, "").substring(0, 5);
+        } catch (error) {
+            throw Error("Invalid input data for modem.");
+        }
+        try {
+            var cleanPhoneNumber = notification.teltonikaPassword.replace(/[^\x2A-\x39]/g, "").substring(0, 30);
+        } catch (error) {
+            throw Error("Invalid input data for phone number.");
+        }
 
         // Many people who use a Teltonika router will not setup a proper
         // TLS certificate. I know that we all should and I hate that I'm
@@ -48,8 +69,8 @@ class Teltonika extends NotificationProvider {
             // We rely on the cookie, which should be passed by Axios' withCredentials=True.
 
             let data = { 
-                "username": notification.teltonikaUsername,
-                "password": notification.teltonikaPassword,
+                "username": cleanUser,
+                "password": cleanPass
             };
             console.log("Data: " + data);
 
@@ -79,14 +100,14 @@ class Teltonika extends NotificationProvider {
             // Sending the SMS.
             // API reference https://developers.teltonika-networks.com/reference/rut241/7.19.4/v1.11.1/messages
             // Teltonika SMS gateway supports a max of 160 chars.
-            // Better to limit to ASCII characters as well.s
-            let cleanMsg = msg.replace(/[^\x00-\x7F]/g, "").substring(0, 159);
+            // Better to limit to ASCII characters as well.
+            let cleanMsg = msg.replace(/[^\x20-\x7F]/g, "").substring(0, 159);
 
             let data = { 
-                "data":{
-                    "modem": notification.teltonikaModem,
-                    "number": notification.teltonikaPhoneNumber,
-                    "message": cleanMsg,
+                data:{
+                    modem: cleanModem,
+                    number: cleanPhoneNumber,
+                    message: cleanMsg,
                  }
             };
             console.log("Data: " + data);
