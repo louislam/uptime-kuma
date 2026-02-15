@@ -90,7 +90,6 @@ class Teltonika extends NotificationProvider {
             }
 
             var teltonikaToken = "Bearer " + loginResp.data.data.token;
-            console.log("Token:", teltonikaToken);
 
             // Sending the SMS.
             // API reference https://developers.teltonika-networks.com/reference/rut241/7.19.4/v1.11.1/messages
@@ -106,12 +105,6 @@ class Teltonika extends NotificationProvider {
                  }
             };
 
-            console.log("Is the token still set?:", teltonikaToken);
-            console.log("Modem raw: ", cleanModem);
-            console.log("Modem data: ", smsData.data.modem);
-            console.log("Phone raw: ", cleanPhoneNumber);
-            console.log("Phone data: ", smsData.data.number);
-
             let smsConfig = {
                 httpsAgent: unsafeAgent,
                 withCredentials: true,
@@ -123,7 +116,6 @@ class Teltonika extends NotificationProvider {
                 },
             };
             smsConfig = this.getAxiosConfigWithProxy(smsConfig);
-            console.log("Token in config: ", smsConfig.headers.Authorization);
 
             let smsResp = await axios.post(smsUrl, smsData, smsConfig);
 
