@@ -10,7 +10,7 @@ FROM louislam/uptime-kuma:builder-go AS build_healthcheck
 ############################################
 # Build in Node.js
 ############################################
-FROM louislam/uptime-kuma:base2 AS build
+FROM $BASE_IMAGE AS build
 USER node
 WORKDIR /app
 
@@ -59,7 +59,7 @@ USER node
 ############################################
 # Build an image for testing pr
 ############################################
-FROM louislam/uptime-kuma:base2 AS pr-test2
+FROM $BASE_IMAGE AS pr-test2
 WORKDIR /app
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1
 
@@ -92,7 +92,7 @@ CMD ["npm", "run", "start-pr-test"]
 ############################################
 # Upload the artifact to Github
 ############################################
-FROM louislam/uptime-kuma:base2 AS upload-artifact
+FROM $BASE_IMAGE AS upload-artifact
 WORKDIR /
 RUN apt update && \
     apt --yes install curl file
