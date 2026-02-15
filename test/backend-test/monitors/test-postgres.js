@@ -49,5 +49,203 @@ describe(
 
             await assert.rejects(postgresMonitor.check(monitor, heartbeat, {}), regex);
         });
+
+        test("check() sets status to UP when custom query returns single value", async () => {
+            // The default timeout of 30 seconds might not be enough for the container to start
+            const postgresContainer = await new PostgreSqlContainer("postgres:latest")
+                .withStartupTimeout(60000)
+                .start();
+
+            const postgresMonitor = new PostgresMonitorType();
+            const monitor = {
+                databaseConnectionString: postgresContainer.getConnectionUri(),
+                databaseQuery: "SELECT 42",
+                conditions: "[]",
+            };
+
+            const heartbeat = {
+                msg: "",
+                status: PENDING,
+            };
+
+            try {
+                await postgresMonitor.check(monitor, heartbeat, {});
+                assert.strictEqual(heartbeat.status, UP, `Expected status ${UP} but got ${heartbeat.status}`);
+            } finally {
+                await postgresContainer.stop();
+            }
+        });
+        test("check() sets status to UP when custom query result meets condition", async () => {
+            const postgresContainer = await new PostgreSqlContainer("postgres:latest")
+                .withStartupTimeout(60000)
+                .start();
+
+            const postgresMonitor = new PostgresMonitorType();
+            const monitor = {
+                databaseConnectionString: postgresContainer.getConnectionUri(),
+                databaseQuery: "SELECT 42 AS value",
+                conditions: JSON.stringify([
+                    {
+                        type: "expression",
+                        andOr: "and",
+                        variable: "result",
+                        operator: "equals",
+                        value: "42",
+                    },
+                ]),
+            };
+
+            const heartbeat = {
+                msg: "",
+                status: PENDING,
+            };
+
+            try {
+                await postgresMonitor.check(monitor, heartbeat, {});
+                assert.strictEqual(heartbeat.status, UP, `Expected status ${UP} but got ${heartbeat.status}`);
+            } finally {
+                await postgresContainer.stop();
+            }
+        });
+        test("check() rejects when custom query result does not meet condition", async () => {
+            const postgresContainer = await new PostgreSqlContainer("postgres:latest")
+                .withStartupTimeout(60000)
+                .start();
+
+            const postgresMonitor = new PostgresMonitorType();
+            const monitor = {
+                databaseConnectionString: postgresContainer.getConnectionUri(),
+                databaseQuery: "SELECT 99 AS value",
+                conditions: JSON.stringify([
+                    {
+                        type: "expression",
+                        andOr: "and",
+                        variable: "result",
+                        operator: "equals",
+                        value: "42",
+                    },
+                ]),
+            };
+
+            const heartbeat = {
+                msg: "",
+                status: PENDING,
+            };
+
+            try {
+                await assert.rejects(
+                    postgresMonitor.check(monitor, heartbeat, {}),
+                    new Error("Query result did not meet the specified conditions (99)")
+                );
+                assert.strictEqual(heartbeat.status, PENDING, `Expected status should not be ${heartbeat.status}`);
+            } finally {
+                await postgresContainer.stop();
+            }
+        });
+        test("check() rejects when query returns no results with conditions", async () => {
+            const postgresContainer = await new PostgreSqlContainer("postgres:latest")
+                .withStartupTimeout(60000)
+                .start();
+
+            const postgresMonitor = new PostgresMonitorType();
+            const monitor = {
+                databaseConnectionString: postgresContainer.getConnectionUri(),
+                databaseQuery: "SELECT 1 WHERE 1 = 0",
+                conditions: JSON.stringify([
+                    {
+                        type: "expression",
+                        andOr: "and",
+                        variable: "result",
+                        operator: "equals",
+                        value: "1",
+                    },
+                ]),
+            };
+
+            const heartbeat = {
+                msg: "",
+                status: PENDING,
+            };
+
+            try {
+                await assert.rejects(
+                    postgresMonitor.check(monitor, heartbeat, {}),
+                    new Error("Database connection/query failed: Query returned no results")
+                );
+                assert.strictEqual(heartbeat.status, PENDING, `Expected status should not be ${heartbeat.status}`);
+            } finally {
+                await postgresContainer.stop();
+            }
+        });
+        test("check() rejects when query returns multiple rows with conditions", async () => {
+            const postgresContainer = await new PostgreSqlContainer("postgres:latest")
+                .withStartupTimeout(60000)
+                .start();
+
+            const postgresMonitor = new PostgresMonitorType();
+            const monitor = {
+                databaseConnectionString: postgresContainer.getConnectionUri(),
+                databaseQuery: "SELECT 1 UNION ALL SELECT 2",
+                conditions: JSON.stringify([
+                    {
+                        type: "expression",
+                        andOr: "and",
+                        variable: "result",
+                        operator: "equals",
+                        value: "1",
+                    },
+                ]),
+            };
+
+            const heartbeat = {
+                msg: "",
+                status: PENDING,
+            };
+
+            try {
+                await assert.rejects(
+                    postgresMonitor.check(monitor, heartbeat, {}),
+                    new Error("Database connection/query failed: Multiple values were found, expected only one value")
+                );
+                assert.strictEqual(heartbeat.status, PENDING, `Expected status should not be ${heartbeat.status}`);
+            } finally {
+                await postgresContainer.stop();
+            }
+        });
+        test("check() rejects when query returns multiple columns with conditions", async () => {
+            const postgresContainer = await new PostgreSqlContainer("postgres:latest")
+                .withStartupTimeout(60000)
+                .start();
+
+            const postgresMonitor = new PostgresMonitorType();
+            const monitor = {
+                databaseConnectionString: postgresContainer.getConnectionUri(),
+                databaseQuery: "SELECT 1 AS col1, 2 AS col2",
+                conditions: JSON.stringify([
+                    {
+                        type: "expression",
+                        andOr: "and",
+                        variable: "result",
+                        operator: "equals",
+                        value: "1",
+                    },
+                ]),
+            };
+
+            const heartbeat = {
+                msg: "",
+                status: PENDING,
+            };
+
+            try {
+                await assert.rejects(
+                    postgresMonitor.check(monitor, heartbeat, {}),
+                    new Error("Database connection/query failed: Multiple columns were found, expected only one value")
+                );
+                assert.strictEqual(heartbeat.status, PENDING, `Expected status should not be ${heartbeat.status}`);
+            } finally {
+                await postgresContainer.stop();
+            }
+        });
     }
 );
