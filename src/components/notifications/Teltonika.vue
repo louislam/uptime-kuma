@@ -39,6 +39,10 @@
             class="form-control"
             required
         />
+        <div class="form-text">
+            <i18n-t keypath="teltonikaUsernameHelptext" tag="div" class="form-text">
+            </i18n-t>
+        </div>
     </div>
     <div class="mb-3">
         <label for="teltonika-password" class="form-label">{{ $t("teltonikaPassword") }}</label>
