@@ -448,6 +448,7 @@ import Datepicker from "@vuepic/vue-datepicker";
 import { timezoneList } from "../util-frontend";
 import cronstrue from "cronstrue/i18n";
 import Confirm from "../components/Confirm.vue";
+import { ROUTES } from "../routes.ts";
 
 export default {
     components: {
@@ -578,15 +579,15 @@ export default {
         },
 
         isAdd() {
-            return this.$route.path === "/add-maintenance";
+            return this.$route.path === ROUTES.MAINTENANCE_ADD;
         },
 
         isEdit() {
-            return this.$route.path.startsWith("/maintenance/edit");
+            return this.$route.path.startsWith(ROUTES.MAINTENANCE_EDIT.replace("/:id", ""));
         },
 
         isClone() {
-            return this.$route.path.startsWith("/maintenance/clone");
+            return this.$route.path.startsWith(ROUTES.MAINTENANCE_CLONE.replace("/:id", ""));
         },
 
         /**
@@ -835,7 +836,7 @@ export default {
                                 this.$root.toastRes(res);
                                 this.processing = false;
                                 this.$root.getMaintenanceList();
-                                this.$router.push("/maintenance");
+                                this.$router.push(ROUTES.MAINTENANCE);
                             });
                         });
                     } else {
@@ -851,7 +852,7 @@ export default {
                                 this.processing = false;
                                 this.$root.toastRes(res);
                                 this.init();
-                                this.$router.push("/maintenance");
+                                this.$router.push(ROUTES.MAINTENANCE);
                             });
                         });
                     } else {

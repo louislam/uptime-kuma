@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { login, restoreSqliteSnapshot, screenshot } from "../util-test";
+import { login, restoreSqliteSnapshot, screenshot, ROUTES, getStatusPageURL } from "../util-test";
 
 test.describe("Status Page", () => {
     test.beforeEach(async ({ page }) => {
@@ -36,7 +36,7 @@ test.describe("Status Page", () => {
         const groupName = "Example Group 1";
 
         // Set up a monitor that can be added to the Status Page
-        await page.goto("./add");
+        await page.goto("." + ROUTES.MONITOR_ADD);
         await login(page);
         await expect(page.getByTestId("monitor-type-select")).toBeVisible();
         await page.getByTestId("monitor-type-select").selectOption("http");
@@ -63,16 +63,16 @@ test.describe("Status Page", () => {
         await page.getByTestId("add-tags-final-button").click();
 
         await page.getByTestId("save-button").click();
-        await page.waitForURL("/dashboard/*"); // wait for the monitor to be created
+        await page.waitForURL(ROUTES.DASHBOARD + "/*"); // wait for the monitor to be created
 
         // Create a new status page
-        await page.goto("./add-status-page");
+        await page.goto("." + ROUTES.STATUS_PAGE_ADD);
         await screenshot(testInfo, page);
 
         await page.getByTestId("name-input").fill("Example");
         await page.getByTestId("slug-input").fill("example");
         await page.getByTestId("submit-button").click();
-        await page.waitForURL("/status/example?edit"); // wait for the page to be created
+        await page.waitForURL(getStatusPageURL("example") + "?edit"); // wait for the page to be created
 
         // Fill in some details
         await page.getByTestId("description-input").fill(descriptionText);
@@ -221,7 +221,7 @@ test.describe("Status Page", () => {
         const maliciousMonitorName2 = "x</title><script>alert(document.domain)</script><title>";
         const normalMonitorName = "Production API Server";
 
-        await page.goto("./add");
+        await page.goto("." + ROUTES.MONITOR_ADD);
         await login(page);
 
         // Create first monitor with script tag payload
@@ -230,30 +230,30 @@ test.describe("Status Page", () => {
         await page.getByTestId("friendly-name-input").fill(maliciousMonitorName1);
         await page.getByTestId("url-input").fill("https://malicious1.example.com");
         await page.getByTestId("save-button").click();
-        await page.waitForURL("/dashboard/*");
+        await page.waitForURL(ROUTES.DASHBOARD + "/*");
 
         // Create second monitor with title breakout payload
-        await page.goto("./add");
+        await page.goto("." + ROUTES.MONITOR_ADD);
         await page.getByTestId("monitor-type-select").selectOption("http");
         await page.getByTestId("friendly-name-input").fill(maliciousMonitorName2);
         await page.getByTestId("url-input").fill("https://malicious2.example.com");
         await page.getByTestId("save-button").click();
-        await page.waitForURL("/dashboard/*");
+        await page.waitForURL(ROUTES.DASHBOARD + "/*");
 
         // Create third monitor with normal name
-        await page.goto("./add");
+        await page.goto("." + ROUTES.MONITOR_ADD);
         await page.getByTestId("monitor-type-select").selectOption("http");
         await page.getByTestId("friendly-name-input").fill(normalMonitorName);
         await page.getByTestId("url-input").fill("https://normal.example.com");
         await page.getByTestId("save-button").click();
-        await page.waitForURL("/dashboard/*");
+        await page.waitForURL(ROUTES.DASHBOARD + "/*");
 
         // Create a status page
-        await page.goto("./add-status-page");
+        await page.goto("." + ROUTES.STATUS_PAGE_ADD);
         await page.getByTestId("name-input").fill("Security Test");
         await page.getByTestId("slug-input").fill("security-test");
         await page.getByTestId("submit-button").click();
-        await page.waitForURL("/status/security-test?edit");
+        await page.waitForURL(getStatusPageURL("security-test") + "?edit");
 
         // Add a group and all monitors
         await page.getByTestId("add-group-button").click();
@@ -271,7 +271,7 @@ test.describe("Status Page", () => {
         await expect(page.getByTestId("edit-sidebar")).toHaveCount(0);
 
         // Fetch the RSS feed
-        const rssResponse = await page.request.get("/status/security-test/rss");
+        const rssResponse = await page.request.get(getStatusPageURL("security-test") + "/rss");
         expect(rssResponse.status()).toBe(200);
         expect(rssResponse.headers()["content-type"]).toBe("application/rss+xml; charset=utf-8");
         expect(rssResponse.ok()).toBeTruthy();
@@ -309,7 +309,7 @@ test.describe("Status Page", () => {
         await expect(page.getByTestId("edit-sidebar")).toHaveCount(0);
 
         // Fetch RSS feed again - should use custom RSS title
-        const rssResponseCustom = await page.request.get("/status/security-test/rss");
+        const rssResponseCustom = await page.request.get(getStatusPageURL("security-test") + "/rss");
         expect(rssResponseCustom.status()).toBe(200);
         const rssContentCustom = await rssResponseCustom.text();
 

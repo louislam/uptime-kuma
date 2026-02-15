@@ -149,7 +149,7 @@ import Confirm from "./Confirm.vue";
 import Tag from "./Tag.vue";
 import VueMultiselect from "vue-multiselect";
 import { colorOptions } from "../util-frontend";
-import { getMonitorRelativeURL } from "../util.ts";
+import { getMonitorURL } from "../routes.ts";
 
 export default {
     components: {
@@ -422,7 +422,7 @@ export default {
          * @returns {string} Relative URL of monitor
          */
         monitorURL(id) {
-            return getMonitorRelativeURL(id);
+            return getMonitorURL(id);
         },
 
         /**

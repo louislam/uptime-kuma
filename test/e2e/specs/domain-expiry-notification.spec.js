@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { login, restoreSqliteSnapshot, screenshot } from "../util-test";
+import { login, restoreSqliteSnapshot, screenshot, ROUTES } from "../util-test";
 
 test.describe("Domain Expiry Notification", () => {
     test.beforeEach(async ({ page }) => {
@@ -7,7 +7,7 @@ test.describe("Domain Expiry Notification", () => {
     });
 
     test("supported TLD auto-enables checkbox", async ({ page }, testInfo) => {
-        await page.goto("./add");
+        await page.goto("." + ROUTES.MONITOR_ADD);
         await login(page);
 
         const monitorTypeSelect = page.getByTestId("monitor-type-select");
@@ -23,7 +23,7 @@ test.describe("Domain Expiry Notification", () => {
     });
 
     test("unsupported TLD leaves checkbox disabled", async ({ page }, testInfo) => {
-        await page.goto("./add");
+        await page.goto("." + ROUTES.MONITOR_ADD);
         await login(page);
 
         const monitorTypeSelect = page.getByTestId("monitor-type-select");
@@ -39,7 +39,7 @@ test.describe("Domain Expiry Notification", () => {
     });
 
     test("switching from supported to unsupported TLD disables checkbox", async ({ page }, testInfo) => {
-        await page.goto("./add");
+        await page.goto("." + ROUTES.MONITOR_ADD);
         await login(page);
 
         const monitorTypeSelect = page.getByTestId("monitor-type-select");
@@ -59,7 +59,7 @@ test.describe("Domain Expiry Notification", () => {
     });
 
     test("switching from unsupported to supported TLD enables checkbox", async ({ page }, testInfo) => {
-        await page.goto("./add");
+        await page.goto("." + ROUTES.MONITOR_ADD);
         await login(page);
 
         const monitorTypeSelect = page.getByTestId("monitor-type-select");
@@ -79,7 +79,7 @@ test.describe("Domain Expiry Notification", () => {
     });
 
     test("manual uncheck preserved when URL changes within same TLD", async ({ page }, testInfo) => {
-        await page.goto("./add");
+        await page.goto("." + ROUTES.MONITOR_ADD);
         await login(page);
 
         const monitorTypeSelect = page.getByTestId("monitor-type-select");

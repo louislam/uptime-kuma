@@ -430,7 +430,7 @@ import Pagination from "v-pagination-3";
 const PingChart = defineAsyncComponent(() => import("../components/PingChart.vue"));
 import Tag from "../components/Tag.vue";
 import CertificateInfo from "../components/CertificateInfo.vue";
-import { getMonitorRelativeURL } from "../util.ts";
+import { getMonitorURL, ROUTES } from "../routes.ts";
 import { URL } from "whatwg-url";
 import DOMPurify from "dompurify";
 import { marked } from "marked";
@@ -698,7 +698,7 @@ export default {
             this.$root.deleteMonitor(this.monitor.id, this.deleteChildrenMonitors, (res) => {
                 this.$root.toastRes(res);
                 if (res.ok) {
-                    this.$router.push("/dashboard");
+                    this.$router.push(ROUTES.DASHBOARD);
                 }
             });
         },
@@ -753,7 +753,7 @@ export default {
          * @returns {string} Relative URL of monitor
          */
         monitorURL(id) {
-            return getMonitorRelativeURL(id);
+            return getMonitorURL(id);
         },
 
         /**

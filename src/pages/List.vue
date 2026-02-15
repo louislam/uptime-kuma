@@ -6,6 +6,7 @@
 
 <script>
 import MonitorList from "../components/MonitorList.vue";
+import { ROUTES } from "../routes.ts";
 
 export default {
     components: {
@@ -13,14 +14,14 @@ export default {
     },
     watch: {
         "$root.isMobile"(newVal) {
-            if (!newVal && this.$route.path === "/list") {
-                this.$router.replace({ path: "/dashboard" });
+            if (!newVal && this.$route.path === ROUTES.MONITOR_LIST) {
+                this.$router.replace({ path: ROUTES.DASHBOARD });
             }
         },
     },
     mounted() {
-        if (!this.$root.isMobile && this.$route.path === "/list") {
-            this.$router.replace({ path: "/dashboard" });
+        if (!this.$root.isMobile && this.$route.path === ROUTES.MONITOR_LIST) {
+            this.$router.replace({ path: ROUTES.DASHBOARD });
         }
     },
 };

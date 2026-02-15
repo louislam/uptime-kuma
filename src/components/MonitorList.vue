@@ -102,7 +102,7 @@
         >
             <div v-if="Object.keys($root.monitorList).length === 0" class="text-center mt-3">
                 {{ $t("No Monitors, please") }}
-                <router-link to="/add">{{ $t("add one") }}</router-link>
+                <router-link :to="ROUTES.MONITOR_ADD">{{ $t("add one") }}</router-link>
             </div>
 
             <MonitorListItem
@@ -132,7 +132,7 @@
 import Confirm from "../components/Confirm.vue";
 import MonitorListItem from "../components/MonitorListItem.vue";
 import MonitorListFilter from "./MonitorListFilter.vue";
-import { getMonitorRelativeURL } from "../util.ts";
+import { getMonitorURL, ROUTES } from "../routes.ts";
 
 export default {
     components: {
@@ -148,6 +148,7 @@ export default {
     },
     data() {
         return {
+            ROUTES,
             searchText: "",
             selectMode: false,
             selectAll: false,
@@ -329,7 +330,7 @@ export default {
          * @returns {string} Relative URL of monitor
          */
         monitorURL(id) {
-            return getMonitorRelativeURL(id);
+            return getMonitorURL(id);
         },
         /**
          * Clear the search bar
@@ -382,7 +383,7 @@ export default {
                     }
 
                     // Navigate to the root parent, then increment collapseKey to force re-render
-                    this.$router.push(getMonitorRelativeURL(rootParentId)).finally(() => {
+                    this.$router.push(getMonitorURL(rootParentId)).finally(() => {
                         this.collapseKey++;
                     });
                     return;
