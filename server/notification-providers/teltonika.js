@@ -28,22 +28,52 @@ class Teltonika extends NotificationProvider {
 
         // Performing some input validation and cleanup for the other fields.
         try {
-            var cleanUser = notification.teltonikaUsername.replace(/[^\x20-\x7F]/g, "").substring(0, 40);
+            var cleanUser = notification.teltonikaUsername.replace(/[^\x20-\x7F]/g, "").substring(0, 30);
+            if (cleanUser.length >= 30) {
+                throw Error("Username is longer than 30.");
+            } else if (cleanUser.length < 1) {
+                throw Error("Username is empty.");
+            }
+
         } catch (error) {
             throw Error("Invalid input data for username.");
         }
+
         try {
             var cleanPass = notification.teltonikaPassword.replace(/[^\x20-\x7F]/g, "").substring(0, 40);
+
+            if (cleanPass.length >= 30) {
+                throw Error("Password is longer than 30.");
+            } else if (cleanPass.length < 1) {
+                throw Error("Password is empty.");
+            }
+
         } catch (error) {
             throw Error("Invalid input data for password.");
         }
+
         try {
             var cleanModem = notification.teltonikaModem.replace(/[^\x2A-\x39]/g, "").substring(0, 5);
+
+            if (cleanModem.length >= 5) {
+                throw Error("Modem identifier is too long.");
+            } else if (cleanModem.length < 1) {
+                throw Error("Modem identifier is empty.");
+            }
+
         } catch (error) {
             throw Error("Invalid input data for modem.");
         }
+
         try {
             var cleanPhoneNumber = notification.teltonikaPhoneNumber.replace(/[^\x2A-\x39]/g, "").substring(0, 30);
+
+            if (cleanPhoneNumber.length >= 30) {
+                throw Error("Phone number is too long.");
+            } else if (cleanPhoneNumber.length < 1) {
+                throw Error("Phone number is empty.");
+            }
+
         } catch (error) {
             throw Error("Invalid input data for phone number.");
         }
