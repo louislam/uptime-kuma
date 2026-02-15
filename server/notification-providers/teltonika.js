@@ -1,5 +1,6 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
+const https = require("https");
 
 class Teltonika extends NotificationProvider {
     name = "Teltonika";
@@ -26,6 +27,15 @@ class Teltonika extends NotificationProvider {
         const loginUrl = baseUrl + "/api/login";
         const smsUrl = baseUrl + "/api/messages/actions/send";
 
+        // Many people who use a Teltonika router will not setup a proper
+        // TLS certificate. I know that we all should and I hate that I'm
+        // adding the option to disable cert validation, but here we are.
+        // https://sslinsights.com/how-to-fix-axios-self-signed-certificate-errors/
+
+        const unsafeAgent = new https.Agent({  
+            rejectUnauthorized: false // ⚠️ Disables SSL verification  
+        });
+
         try {
             // Logging in, to get an access token.
             // API reference https://developers.teltonika-networks.com/reference/rut241/7.19.4/v1.11.1/authentication
@@ -38,14 +48,13 @@ class Teltonika extends NotificationProvider {
             // We rely on the cookie, which should be passed by Axios' withCredentials=True.
 
             let data = { 
-                "data":{
-                    "username": notification.teltonikaUsername,
-                    "password": notification.teltonikaPassword,
-                 }
+                "username": notification.teltonikaUsername,
+                "password": notification.teltonikaPassword,
             };
             console.log("Data: " + data);
 
             let config = {
+                httpsAgent: unsafeAgent,
                 headers: {
                     "Content-Type": "application/json",
                     "cache-control": "no-cache",
@@ -59,7 +68,7 @@ class Teltonika extends NotificationProvider {
 
             console.log("Response: " + resp.data);
             if (resp.data.success !== true) {
-                throw Error(`Login failed,${resp.data.response.status}.`);
+                throw Error("Login failed: " + resp.data.errors.error);
             }
 
         } catch (error) {
@@ -83,6 +92,7 @@ class Teltonika extends NotificationProvider {
             console.log("Data: " + data);
 
             let config = {
+                httpsAgent: unsafeAgent,
                 withCredentials: true,
                 headers: {
                     "Content-Type": "application/json",
