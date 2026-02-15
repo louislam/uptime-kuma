@@ -17,7 +17,7 @@
             </a>
         </i18n-t>
     </div>
-    
+
     <div class="mb-3">
         <div class="form-check form-switch">
             <input v-model="$parent.notification.teamsEnableTags" class="form-check-input" type="checkbox" />
