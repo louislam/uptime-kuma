@@ -275,7 +275,11 @@ class StatusPage extends BeanModel {
         let heartbeats = [];
 
         for (let groupBean of list) {
-            let monitorGroup = await groupBean.toPublicJSON(showTags, config?.showCertificateExpiry);
+            let monitorGroup = await groupBean.toPublicJSON(
+                showTags,
+                config?.showCertificateExpiry,
+                config?.showDomainExpiry
+            );
             for (const monitor of monitorGroup.monitorList) {
                 const heartbeat = await R.findOne("heartbeat", "monitor_id = ? ORDER BY time DESC", [monitor.id]);
                 if (heartbeat) {
@@ -326,7 +330,11 @@ class StatusPage extends BeanModel {
         const list = await R.find("group", " public = 1 AND status_page_id = ? ORDER BY weight ", [statusPage.id]);
 
         for (let groupBean of list) {
-            let monitorGroup = await groupBean.toPublicJSON(showTags, config?.showCertificateExpiry);
+            let monitorGroup = await groupBean.toPublicJSON(
+                showTags,
+                config?.showCertificateExpiry,
+                config?.showDomainExpiry
+            );
             publicGroupList.push(monitorGroup);
         }
 
@@ -449,6 +457,7 @@ class StatusPage extends BeanModel {
             analyticsScriptUrl: this.analytics_script_url,
             analyticsType: this.analytics_type,
             showCertificateExpiry: !!this.show_certificate_expiry,
+            showDomainExpiry: !!this.show_domain_expiry,
             showOnlyLastHeartbeat: !!this.show_only_last_heartbeat,
             rssTitle: this.rss_title,
         };
@@ -476,6 +485,7 @@ class StatusPage extends BeanModel {
             analyticsScriptUrl: this.analytics_script_url,
             analyticsType: this.analytics_type,
             showCertificateExpiry: !!this.show_certificate_expiry,
+            showDomainExpiry: !!this.show_domain_expiry,
             showOnlyLastHeartbeat: !!this.show_only_last_heartbeat,
             rssTitle: this.rss_title,
         };
