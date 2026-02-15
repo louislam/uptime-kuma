@@ -640,6 +640,8 @@
     "whatHappensAtForumPost": "Create a new forum post. This does NOT post messages in existing post. To post in existing post use \"{option}\"",
     "wayToGetDiscordThreadId": "Getting a thread / forum post id is similar to getting a channel id. Read more about how to get ids {0}",
     "wayToGetTeamsURL": "You can learn how to create a webhook URL {0}.",
+    "teamsEnableTags": "Include tags",
+    "teamsEnableTagsDescription": "If enabled, the message will include the monitor tags.",
     "wayToGetZohoCliqURL": "You can learn how to create a webhook URL {0}.",
     "needSignalAPI": "You need to have a signal client with REST API.",
     "wayToCheckSignalURL": "You can check this URL to view how to set one up:",
