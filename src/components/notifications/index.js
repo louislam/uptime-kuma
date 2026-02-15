@@ -61,6 +61,7 @@ import STMP from "./SMTP.vue";
 import Teams from "./Teams.vue";
 import TechulusPush from "./TechulusPush.vue";
 import Telegram from "./Telegram.vue";
+import Teltonika from "./Teltonika.vue";
 import Threema from "./Threema.vue";
 import Twilio from "./Twilio.vue";
 import Webhook from "./Webhook.vue";
@@ -152,6 +153,7 @@ const NotificationFormList = {
     stackfield: Stackfield,
     teams: Teams,
     telegram: Telegram,
+    Teltonika: Teltonika,
     threema: Threema,
     twilio: Twilio,
     Splunk: Splunk,
