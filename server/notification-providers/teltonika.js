@@ -16,8 +16,9 @@ class Teltonika extends NotificationProvider {
         // proto://host:port
         // Everything else should be stripped. Best way to validate is to use URL().
 
+        let passedUrl = "";
         try {
-            var passedUrl = new URL(notification.teltonikaUrl);
+            passedUrl = new URL(notification.teltonikaUrl);
         } catch (error) {
             throw Error("Invalid URL: " + notification.teltonikaUrl);
         }
@@ -27,8 +28,9 @@ class Teltonika extends NotificationProvider {
         const smsUrl = baseUrl + "/api/messages/actions/send";
 
         // Performing some input validation and cleanup for the other fields.
+        let cleanUser = "";
         try {
-            var cleanUser = notification.teltonikaUsername.replace(/[^\x20-\x7F]/g, "").substring(0, 30);
+            cleanUser = notification.teltonikaUsername.replace(/[^\x20-\x7F]/g, "").substring(0, 30);
             if (cleanUser.length >= 30) {
                 throw Error("Username is longer than 30.");
             } else if (cleanUser.length < 1) {
@@ -39,8 +41,9 @@ class Teltonika extends NotificationProvider {
             throw Error("Invalid input data for username.");
         }
 
+        let cleanPass = "";
         try {
-            var cleanPass = notification.teltonikaPassword.replace(/[^\x20-\x7F]/g, "").substring(0, 40);
+            cleanPass = notification.teltonikaPassword.replace(/[^\x20-\x7F]/g, "").substring(0, 40);
 
             if (cleanPass.length >= 30) {
                 throw Error("Password is longer than 30.");
@@ -52,8 +55,9 @@ class Teltonika extends NotificationProvider {
             throw Error("Invalid input data for password.");
         }
 
+        let cleanModem = "";
         try {
-            var cleanModem = notification.teltonikaModem.replace(/[^\x2A-\x39]/g, "").substring(0, 5);
+            cleanModem = notification.teltonikaModem.replace(/[^\x2A-\x39]/g, "").substring(0, 5);
 
             if (cleanModem.length >= 5) {
                 throw Error("Modem identifier is too long.");
@@ -65,8 +69,9 @@ class Teltonika extends NotificationProvider {
             throw Error("Invalid input data for modem.");
         }
 
+        let cleanPhoneNumber = "";
         try {
-            var cleanPhoneNumber = notification.teltonikaPhoneNumber.replace(/[^\x2A-\x39]/g, "").substring(0, 30);
+            cleanPhoneNumber = notification.teltonikaPhoneNumber.replace(/[^\x2A-\x39]/g, "").substring(0, 30);
 
             if (cleanPhoneNumber.length >= 30) {
                 throw Error("Phone number is too long.");
@@ -83,7 +88,7 @@ class Teltonika extends NotificationProvider {
         // adding the option to disable cert validation, but here we are.
         // https://sslinsights.com/how-to-fix-axios-self-signed-certificate-errors/
 
-        if (notification.teltonikaUnsafeTls == true) {
+        if (notification.teltonikaUnsafeTls === true) {
             var unsafeAgent = new https.Agent({  
                 rejectUnauthorized: false // ⚠️ Disables SSL verification  
             });
@@ -105,23 +110,16 @@ class Teltonika extends NotificationProvider {
                 "password": cleanPass
             };
 
-            if (notification.teltonikaUnsafeTls == true) {
-                var loginConfig = {
-                    httpsAgent: unsafeAgent,
-                    headers: {
-                        "Content-Type": "application/json",
-                        "cache-control": "no-cache",
-                        "Accept": "application/json",
-                    },
-                };
-            } else {
-                var loginConfig = {
-                    headers: {
-                        "Content-Type": "application/json",
-                        "cache-control": "no-cache",
-                        "Accept": "application/json",
-                    },
-                };
+            let loginConfig = {
+                headers: {
+                    "Content-Type": "application/json",
+                    "cache-control": "no-cache",
+                    "Accept": "application/json",
+                },
+            };
+
+            if (notification.teltonikaUnsafeTls === true) {
+                loginConfig.httpsAgent = unsafeAgent;
             }
 
             loginConfig = this.getAxiosConfigWithProxy(loginConfig);
@@ -132,7 +130,7 @@ class Teltonika extends NotificationProvider {
                 throw Error("Login failed: " + loginResp.data.errors.error);
             }
 
-            var teltonikaToken = "Bearer " + loginResp.data.data.token;
+            const teltonikaToken = "Bearer " + loginResp.data.data.token;
 
             // Sending the SMS.
             // API reference https://developers.teltonika-networks.com/reference/rut241/7.19.4/v1.11.1/messages
@@ -148,25 +146,17 @@ class Teltonika extends NotificationProvider {
                  }
             };
 
-            if (notification.teltonikaUnsafeTls == true) {
-                var smsConfig = {
-                    httpsAgent: unsafeAgent,
-                    headers: {
-                        "Authorization": teltonikaToken,
-                        "Content-Type": "application/json",
-                        "cache-control": "no-cache",
-                        "Accept": "application/json",
-                    },
-                };
-            } else {
-                var smsConfig = {
-                    headers: {
-                        "Authorization": teltonikaToken,
-                        "Content-Type": "application/json",
-                        "cache-control": "no-cache",
-                        "Accept": "application/json",
-                    },
-                };
+            let smsConfig = {
+                headers: {
+                    "Authorization": teltonikaToken,
+                    "Content-Type": "application/json",
+                    "cache-control": "no-cache",
+                    "Accept": "application/json",
+                },
+            };
+
+            if (notification.teltonikaUnsafeTls === true) {
+                smsConfig.httpsAgent = unsafeAgent;
             }
 
             smsConfig = this.getAxiosConfigWithProxy(smsConfig);
