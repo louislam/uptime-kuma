@@ -1,3 +1,21 @@
+self.addEventListener("install", function (event) {
+    // Force the waiting service worker to become the active service worker
+    self.skipWaiting();
+});
+
+// Clear old caches from vite-plugin-pwa
+self.addEventListener("activate", function (event) {
+    event.waitUntil(
+        (async function () {
+            const cacheNames = await caches.keys();
+            for (const cacheName of cacheNames) {
+                await caches.delete(cacheName);
+            }
+            await self.clients.claim();
+        })()
+    );
+});
+
 // Receive push notifications
 self.addEventListener("push", function (event) {
     if (self.Notification?.permission !== "granted") {
