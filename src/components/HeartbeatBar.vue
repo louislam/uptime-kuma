@@ -554,7 +554,7 @@ export default {
             ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
 
             const beatFullWidth = this.beatWidth + this.beatHoverAreaPadding * 2;
-            const centerY = this.canvasHeight / 2;
+            const fullBarHeight = this.canvasHeight;
 
             // Cache CSS colors once per redraw
             const rootStyles = getComputedStyle(document.documentElement);
@@ -573,20 +573,18 @@ export default {
                 const isHovered = index === this.hoveredBeatIndex;
 
                 let width = this.beatWidth;
-                let height = this.beatHeight;
+                let height = fullBarHeight;
                 let offsetX = x;
-                let offsetY = centerY - height / 2;
+                let offsetY = 0;
 
                 // Apply hover scale
                 if (isHovered && beat !== 0) {
                     width *= this.hoverScale;
-                    height *= this.hoverScale;
                     offsetX = x - (width - this.beatWidth) / 2;
-                    offsetY = centerY - height / 2;
                 }
 
-                // Calculate border radius based on current width (pill shape = half of width)
-                const borderRadius = width / 2;
+                // Rounded rectangle corners (not pill shape)
+                const borderRadius = Math.min(6, width / 3, height / 3);
 
                 // Get color based on beat status
                 let color = this.getBeatColor(beat, colors);
