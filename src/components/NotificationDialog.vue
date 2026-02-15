@@ -273,6 +273,7 @@ export default {
                 SMSEagle: "SMSEagle",
                 SMSPartner: "SMS Partner",
                 twilio: "Twilio",
+                Smsmtarget: "M-Target SMS",
             };
 
             // Email - Email services
