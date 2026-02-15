@@ -1456,6 +1456,8 @@
     "halopsa_setup_step5": "Configure runbook to use monitor_id for matching alerts to existing tickets",
     "teltonikaUrl": "Your Teltonika device URL",
     "teltonikaUrlHelptext": "URL should be specified as full origin, e.g. https://{0}, or http://{1}:8080.",
+    "teltonikaUnsafeTls": "Ignore certificate validation",
+    "teltonikaUnsafeTlsDescription": "Turning off TLS certificate validation opens you up to on-path (man-in-the-middle) attacks, potentially leading to data leaks and systems take-over. Do not turn off certificate validation unless you are absolutely sure of your safety. The only right way to prevent HTTPS failing on certificates, is by getting a proper trusted certificate.",
     "teltonikaUsername": "API username",
     "teltonikaPassword": "API password",
     "teltonikaPasswordHelptext": "You can define the API user's password in your Teltonika router, e.g. {0}",

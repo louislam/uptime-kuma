@@ -18,6 +18,16 @@
         </div>
     </div>
     <div class="mb-3">
+        <div class="form-check form-switch">
+            <input v-model="$parent.notification.teltonikaUnsafeTls" class="form-check-input" type="checkbox" />
+            <label class="form-check-label">{{ $t("teltonikaUnsafeTls") }}</label>
+        </div>
+    
+        <div class="form-text">
+            {{ $t("teltonikaUnsafeTlsDescription") }}
+        </div> 
+    </div>
+    <div class="mb-3">
         <label for="teltonika-username" class="form-label">{{ $t("teltonikaUsername") }}</label>
         <input
             id="teltonika-username"

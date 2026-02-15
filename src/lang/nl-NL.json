@@ -1554,6 +1554,8 @@
     "Endpoint": "Endpoint",
     "teltonikaUrl": "De URL van uw Teltonika apparaat",
     "teltonikaUrlHelptext": "De URL moet worden aangegeven als volledige origin, bijv. https://{0}, of http://{1}:8080.",
+    "teltonikaUnsafeTls": "Negeer certificaat-fouten",
+    "teltonikaUnsafeTlsDescription": "Het uitschakelen van TLS certificaat validatie vormt een groot risico en kan leiden tot on-path (man-in-the-middle) aanvallen. Deze kunnen leiden tot datalekken en systeemsovername. Schakel certificaat validatie alleen uit wanneer u volledig zeker bent van uw veiligheid. De enige correcte oplossing voor certificaat-fouten is het gebruik van een correct, vertrouwd certificaat.",
     "teltonikaUsername": "API gebruikersnaam",
     "teltonikaPassword": "API wachtwoord",
     "teltonikaPasswordHelptext": "U stelt de gebruikersnaam en wachtwoord in op uw Teltonika router, bijv. {0}",

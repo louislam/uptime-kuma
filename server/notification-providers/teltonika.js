@@ -83,9 +83,11 @@ class Teltonika extends NotificationProvider {
         // adding the option to disable cert validation, but here we are.
         // https://sslinsights.com/how-to-fix-axios-self-signed-certificate-errors/
 
-        const unsafeAgent = new https.Agent({  
-            rejectUnauthorized: false // ⚠️ Disables SSL verification  
-        });
+        if (notification.teltonikaUnsafeTls == true) {
+            var unsafeAgent = new https.Agent({  
+                rejectUnauthorized: false // ⚠️ Disables SSL verification  
+            });
+        }
 
         try {
             // Logging in, to get an access token.
@@ -103,14 +105,25 @@ class Teltonika extends NotificationProvider {
                 "password": cleanPass
             };
 
-            let loginConfig = {
-                httpsAgent: unsafeAgent,
-                headers: {
-                    "Content-Type": "application/json",
-                    "cache-control": "no-cache",
-                    "Accept": "application/json",
-                },
-            };
+            if (notification.teltonikaUnsafeTls == true) {
+                var loginConfig = {
+                    httpsAgent: unsafeAgent,
+                    headers: {
+                        "Content-Type": "application/json",
+                        "cache-control": "no-cache",
+                        "Accept": "application/json",
+                    },
+                };
+            } else {
+                var loginConfig = {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "cache-control": "no-cache",
+                        "Accept": "application/json",
+                    },
+                };
+            }
+
             loginConfig = this.getAxiosConfigWithProxy(loginConfig);
 
             let loginResp = await axios.post(loginUrl, loginData, loginConfig);
@@ -135,16 +148,27 @@ class Teltonika extends NotificationProvider {
                  }
             };
 
-            let smsConfig = {
-                httpsAgent: unsafeAgent,
-                withCredentials: true,
-                headers: {
-                    "Authorization": teltonikaToken,
-                    "Content-Type": "application/json",
-                    "cache-control": "no-cache",
-                    "Accept": "application/json",
-                },
-            };
+            if (notification.teltonikaUnsafeTls == true) {
+                var smsConfig = {
+                    httpsAgent: unsafeAgent,
+                    headers: {
+                        "Authorization": teltonikaToken,
+                        "Content-Type": "application/json",
+                        "cache-control": "no-cache",
+                        "Accept": "application/json",
+                    },
+                };
+            } else {
+                var smsConfig = {
+                    headers: {
+                        "Authorization": teltonikaToken,
+                        "Content-Type": "application/json",
+                        "cache-control": "no-cache",
+                        "Accept": "application/json",
+                    },
+                };
+            }
+
             smsConfig = this.getAxiosConfigWithProxy(smsConfig);
 
             let smsResp = await axios.post(smsUrl, smsData, smsConfig);
