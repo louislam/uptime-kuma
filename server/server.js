@@ -1028,6 +1028,8 @@ let needSetup = false;
                     throw new Error("Invalid period.");
                 }
 
+                await checkOwner(socket.userID, monitorID);
+
                 const sqlHourOffset = Database.sqlHourOffset();
 
                 let list = await R.getAll(
@@ -1234,6 +1236,12 @@ let needSetup = false;
                     });
                     return;
                 }
+
+                let monitorTags = await R.getAll("SELECT mt.monitor_id FROM monitor_tag mt WHERE mt.tag_id = ? ", [tag.id]);
+                for (let mt of monitorTags) {
+                    await checkOwner(socket.userID, mt.monitor_id);
+                }
+
                 bean.name = tag.name;
                 bean.color = tag.color;
                 await R.store(bean);
@@ -1256,6 +1264,11 @@ let needSetup = false;
             try {
                 checkLogin(socket);
 
+                let monitorTags = await R.getAll("SELECT mt.monitor_id FROM monitor_tag mt WHERE mt.tag_id = ? ", [tagID]);
+                for (let mt of monitorTags) {
+                    await checkOwner(socket.userID, mt.monitor_id);
+                }
+
                 await R.exec("DELETE FROM tag WHERE id = ? ", [tagID]);
 
                 callback({
@@ -1274,6 +1287,8 @@ let needSetup = false;
         socket.on("addMonitorTag", async (tagID, monitorID, value, callback) => {
             try {
                 checkLogin(socket);
+
+                await checkOwner(socket.userID, monitorID);
 
                 await R.exec("INSERT INTO monitor_tag (tag_id, monitor_id, value) VALUES (?, ?, ?)", [
                     tagID,
@@ -1300,6 +1315,8 @@ let needSetup = false;
             try {
                 checkLogin(socket);
 
+                await checkOwner(socket.userID, monitorID);
+
                 await R.exec("UPDATE monitor_tag SET value = ? WHERE tag_id = ? AND monitor_id = ?", [
                     value,
                     tagID,
@@ -1324,6 +1341,8 @@ let needSetup = false;
         socket.on("deleteMonitorTag", async (tagID, monitorID, value, callback) => {
             try {
                 checkLogin(socket);
+
+                await checkOwner(socket.userID, monitorID);
 
                 await R.exec("DELETE FROM monitor_tag WHERE tag_id = ? AND monitor_id = ? AND value = ?", [
                     tagID,
@@ -1354,6 +1373,7 @@ let needSetup = false;
                 if (monitorID == null) {
                     count = await R.count("heartbeat", "important = 1");
                 } else {
+                    await checkOwner(socket.userID, monitorID);
                     count = await R.count("heartbeat", "monitor_id = ? AND important = 1", [monitorID]);
                 }
 
@@ -1386,6 +1406,7 @@ let needSetup = false;
                         [count, offset]
                     );
                 } else {
+                    await checkOwner(socket.userID, monitorID);
                     list = await R.find(
                         "heartbeat",
                         `
@@ -1629,6 +1650,8 @@ let needSetup = false;
 
                 log.info("manage", `Clear Events Monitor: ${monitorID} User ID: ${socket.userID}`);
 
+                await checkOwner(socket.userID, monitorID);
+
                 await R.exec("UPDATE heartbeat SET msg = ?, important = ? WHERE monitor_id = ? ", ["", "0", monitorID]);
 
                 callback({
@@ -1647,6 +1670,8 @@ let needSetup = false;
                 checkLogin(socket);
 
                 log.info("manage", `Clear Heartbeats Monitor: ${monitorID} User ID: ${socket.userID}`);
+
+                await checkOwner(socket.userID, monitorID);
 
                 await UptimeCalculator.clearStatistics(monitorID);
 
