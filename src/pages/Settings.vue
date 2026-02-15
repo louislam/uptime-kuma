@@ -180,6 +180,10 @@ export default {
                     this.settings.tlsExpiryNotifyDays = [7, 14, 21];
                 }
 
+                if (this.settings.tlsExpiryNotifyPercent === undefined) {
+                    this.settings.tlsExpiryNotifyPercent = [];
+                }
+
                 if (this.settings.domainExpiryNotifyDays === undefined) {
                     this.settings.domainExpiryNotifyDays = [7, 14, 21];
                 }
