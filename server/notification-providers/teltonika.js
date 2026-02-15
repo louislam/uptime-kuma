@@ -88,10 +88,13 @@ class Teltonika extends NotificationProvider {
         // adding the option to disable cert validation, but here we are.
         // https://sslinsights.com/how-to-fix-axios-self-signed-certificate-errors/
 
+        let unsafeAgent = "";
         if (notification.teltonikaUnsafeTls === true) {
-            var unsafeAgent = new https.Agent({  
+            unsafeAgent = new https.Agent({  
                 rejectUnauthorized: false // ⚠️ Disables SSL verification  
             });
+        } else {
+            unsafeAgent = undefined;
         }
 
         try {
