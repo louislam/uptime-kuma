@@ -1237,7 +1237,9 @@ let needSetup = false;
                     return;
                 }
 
-                let monitorTags = await R.getAll("SELECT mt.monitor_id FROM monitor_tag mt WHERE mt.tag_id = ? ", [tag.id]);
+                let monitorTags = await R.getAll("SELECT mt.monitor_id FROM monitor_tag mt WHERE mt.tag_id = ? ", [
+                    tag.id,
+                ]);
                 for (let mt of monitorTags) {
                     await checkOwner(socket.userID, mt.monitor_id);
                 }
@@ -1264,7 +1266,9 @@ let needSetup = false;
             try {
                 checkLogin(socket);
 
-                let monitorTags = await R.getAll("SELECT mt.monitor_id FROM monitor_tag mt WHERE mt.tag_id = ? ", [tagID]);
+                let monitorTags = await R.getAll("SELECT mt.monitor_id FROM monitor_tag mt WHERE mt.tag_id = ? ", [
+                    tagID,
+                ]);
                 for (let mt of monitorTags) {
                     await checkOwner(socket.userID, mt.monitor_id);
                 }
