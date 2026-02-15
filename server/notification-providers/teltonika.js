@@ -38,12 +38,12 @@ class Teltonika extends NotificationProvider {
             throw Error("Invalid input data for password.");
         }
         try {
-            var cleanModem = notification.teltonikaPassword.replace(/[^\x2A-\x39]/g, "").substring(0, 5);
+            var cleanModem = notification.teltonikaModem.replace(/[^\x2A-\x39]/g, "").substring(0, 5);
         } catch (error) {
             throw Error("Invalid input data for modem.");
         }
         try {
-            var cleanPhoneNumber = notification.teltonikaPassword.replace(/[^\x2A-\x39]/g, "").substring(0, 30);
+            var cleanPhoneNumber = notification.teltonikaPhoneNumber.replace(/[^\x2A-\x39]/g, "").substring(0, 30);
         } catch (error) {
             throw Error("Invalid input data for phone number.");
         }
@@ -100,13 +100,18 @@ class Teltonika extends NotificationProvider {
 
             let smsData = { 
                 data:{
-                    modem: cleanModem,
-                    number: cleanPhoneNumber,
-                    message: cleanMsg,
+                    "modem": cleanModem,
+                    "number": cleanPhoneNumber,
+                    "message": cleanMsg,
                  }
             };
 
             console.log("Is the token still set?:", teltonikaToken);
+            console.log("Modem raw: ", cleanModem);
+            console.log("Modem data: ", smsData.data.modem);
+            console.log("Phone raw: ", cleanPhoneNumber);
+            console.log("Phone data: ", smsData.data.number);
+
             let smsConfig = {
                 httpsAgent: unsafeAgent,
                 withCredentials: true,
