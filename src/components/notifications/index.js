@@ -153,7 +153,7 @@ const NotificationFormList = {
     stackfield: Stackfield,
     teams: Teams,
     telegram: Telegram,
-    teltonika: Teltonika,
+    Teltonika: Teltonika,
     threema: Threema,
     twilio: Twilio,
     Splunk: Splunk,

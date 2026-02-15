@@ -272,7 +272,7 @@ export default {
                 SevenIO: "SevenIO",
                 SMSEagle: "SMSEagle",
                 SMSPartner: "SMS Partner",
-                teltonika: "Teltonika SMS Gateway",
+                Teltonika: "Teltonika SMS Gateway",
                 twilio: "Twilio",
             };
 

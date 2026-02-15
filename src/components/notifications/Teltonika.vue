@@ -6,10 +6,16 @@
             v-model="$parent.notification.teltonikaUrl"
             type="text"
             minlength="10"
-            placeholder="https://192.168.100.1"
+            placeholder="192.168.100.1"
             class="form-control"
             required
         />
+        <div class="form-text">
+            <i18n-t keypath="teltonikaUrlHelptext" tag="div" class="form-text">
+                <code>192.168.100.1</code>
+                <code>teltonika.domain.com</code>
+            </i18n-t>
+        </div>
     </div>
     <div class="mb-3">
         <label for="teltonika-username" class="form-label">{{ $t("teltonikaUsername") }}</label>

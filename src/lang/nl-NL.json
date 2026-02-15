@@ -1553,6 +1553,7 @@
     "domain_expiry_unsupported_missing_target": "Geen geldige domeinnaam of hostnaam is ingesteld voor deze monitor",
     "Endpoint": "Endpoint",
     "teltonikaUrl": "De URL van uw Teltonika apparaat",
+    "teltonikaUrlHelptext": "De URL moet worden aangegeven als volledige origin, bijv. https://{0}, of http://{1}:8080.",
     "teltonikaUsername": "API gebruikersnaam",
     "teltonikaPassword": "API wachtwoord",
     "teltonikaPasswordHelptext": "U stelt de gebruikersnaam en wachtwoord in op uw Teltonika router, bijv. {0}",
