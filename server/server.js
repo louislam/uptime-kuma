@@ -1650,7 +1650,9 @@ let needSetup = false;
 
                 await UptimeCalculator.clearStatistics(monitorID);
 
-                if (monitorID in server.monitorList) {
+                const monitor = await R.findOne("monitor", " id = ? ", [monitorID]);
+
+                if (monitor?.active && monitorID in server.monitorList) {
                     await restartMonitor(socket.userID, monitorID);
                 }
 
