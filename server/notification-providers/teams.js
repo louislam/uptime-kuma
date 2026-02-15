@@ -162,7 +162,7 @@ class Teams extends NotificationProvider {
             },
         ];
 
-        if (enableTags && monitorJSON?.tags && monitorJSON.tags.length > 0) {
+        if (enableTags && monitorJSON?.tags?.length > 0) {
             payloadBody.push({
                 type: "Container",
                 layouts: [
