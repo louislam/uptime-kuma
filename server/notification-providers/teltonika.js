@@ -10,8 +10,8 @@ class Teltonika extends NotificationProvider {
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
-        
-        // baseUrl is passed via the configuration screen. 
+
+        // baseUrl is passed via the configuration screen.
         // Must be limited to _just_ the full origin, so:
         // proto://host:port
         // Everything else should be stripped. Best way to validate is to use URL().
@@ -36,7 +36,6 @@ class Teltonika extends NotificationProvider {
             } else if (cleanUser.length < 1) {
                 throw Error("Username is empty.");
             }
-
         } catch (error) {
             throw Error("Invalid input data for username.");
         }
@@ -50,7 +49,6 @@ class Teltonika extends NotificationProvider {
             } else if (cleanPass.length < 1) {
                 throw Error("Password is empty.");
             }
-
         } catch (error) {
             throw Error("Invalid input data for password.");
         }
@@ -64,7 +62,6 @@ class Teltonika extends NotificationProvider {
             } else if (cleanModem.length < 1) {
                 throw Error("Modem identifier is empty.");
             }
-
         } catch (error) {
             throw Error("Invalid input data for modem.");
         }
@@ -78,7 +75,6 @@ class Teltonika extends NotificationProvider {
             } else if (cleanPhoneNumber.length < 1) {
                 throw Error("Phone number is empty.");
             }
-
         } catch (error) {
             throw Error("Invalid input data for phone number.");
         }
@@ -90,8 +86,8 @@ class Teltonika extends NotificationProvider {
 
         let unsafeAgent = "";
         if (notification.teltonikaUnsafeTls === true) {
-            unsafeAgent = new https.Agent({  
-                rejectUnauthorized: false // ⚠️ Disables SSL verification  
+            unsafeAgent = new https.Agent({
+                rejectUnauthorized: false, // Danger! Disables SSL verification
             });
         } else {
             unsafeAgent = undefined;
@@ -108,16 +104,16 @@ class Teltonika extends NotificationProvider {
             // JSON data object in body, with the username, expiry (299sec) and group.
             // We rely on the cookie, which should be passed by Axios' withCredentials=True.
 
-            let loginData = { 
-                "username": cleanUser,
-                "password": cleanPass
+            let loginData = {
+                username: cleanUser,
+                password: cleanPass,
             };
 
             let loginConfig = {
                 headers: {
                     "Content-Type": "application/json",
                     "cache-control": "no-cache",
-                    "Accept": "application/json",
+                    Accept: "application/json",
                 },
             };
 
@@ -141,20 +137,20 @@ class Teltonika extends NotificationProvider {
             // Better to limit to ASCII characters as well.
             let cleanMsg = msg.replace(/[^\x20-\x7F]/g, "").substring(0, 159);
 
-            let smsData = { 
-                data:{
-                    "modem": cleanModem,
-                    "number": cleanPhoneNumber,
-                    "message": cleanMsg,
-                 }
+            let smsData = {
+                data: {
+                    modem: cleanModem,
+                    number: cleanPhoneNumber,
+                    message: cleanMsg,
+                },
             };
 
             let smsConfig = {
                 headers: {
-                    "Authorization": teltonikaToken,
+                    Authorization: teltonikaToken,
                     "Content-Type": "application/json",
                     "cache-control": "no-cache",
-                    "Accept": "application/json",
+                    Accept: "application/json",
                 },
             };
 
@@ -171,11 +167,9 @@ class Teltonika extends NotificationProvider {
             }
 
             return okMsg;
-
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }
-
     }
 }
 
