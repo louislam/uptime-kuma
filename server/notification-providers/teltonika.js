@@ -72,7 +72,6 @@ class Teltonika extends NotificationProvider {
                 "username": cleanUser,
                 "password": cleanPass
             };
-            console.log("Data: " + data);
 
             let config = {
                 httpsAgent: unsafeAgent,
@@ -84,57 +83,59 @@ class Teltonika extends NotificationProvider {
             };
             config = this.getAxiosConfigWithProxy(config);
 
-            console.log("Login URL: " + loginUrl);
             let resp = await axios.post(loginUrl, data, config);
 
-            console.log("Response: " + resp.data);
             if (resp.data.success !== true) {
                 throw Error("Login failed: " + resp.data.errors.error);
             }
 
-        } catch (error) {
-            this.throwGeneralAxiosError(error);
-        }
+            var teltonikaToken = "Bearer: " + resp.data.data.token;
+            console.log("Token:", teltonikaToken);
 
-        try {
-            // Sending the SMS.
-            // API reference https://developers.teltonika-networks.com/reference/rut241/7.19.4/v1.11.1/messages
-            // Teltonika SMS gateway supports a max of 160 chars.
-            // Better to limit to ASCII characters as well.
-            let cleanMsg = msg.replace(/[^\x20-\x7F]/g, "").substring(0, 159);
+            try {
+                // Sending the SMS.
+                // API reference https://developers.teltonika-networks.com/reference/rut241/7.19.4/v1.11.1/messages
+                // Teltonika SMS gateway supports a max of 160 chars.
+                // Better to limit to ASCII characters as well.
+                let cleanMsg = msg.replace(/[^\x20-\x7F]/g, "").substring(0, 159);
+    
+                let data = { 
+                    data:{
+                        modem: cleanModem,
+                        number: cleanPhoneNumber,
+                        message: cleanMsg,
+                     }
+                };
+    
+                console.log("Is the token still set?:", teltonikaToken);
+                let config = {
+                    httpsAgent: unsafeAgent,
+                    withCredentials: true,
+                    headers: {
+                        "Authorization": teltonikaToken,
+                        "Content-Type": "application/json",
+                        "cache-control": "no-cache",
+                        "Accept": "application/json",
+                    },
+                };
+                config = this.getAxiosConfigWithProxy(config);
+    
+                let resp = await axios.post(smsUrl, data, config);
+    
+                if (resp.data.success !== true) {
+                    throw Error(`Api returned ${resp.data.response.status}.`);
+                }
+    
+                return okMsg;
 
-            let data = { 
-                data:{
-                    modem: cleanModem,
-                    number: cleanPhoneNumber,
-                    message: cleanMsg,
-                 }
-            };
-            console.log("Data: " + data);
-
-            let config = {
-                httpsAgent: unsafeAgent,
-                withCredentials: true,
-                headers: {
-                    "Content-Type": "application/json",
-                    "cache-control": "no-cache",
-                    "Accept": "application/json",
-                },
-            };
-            config = this.getAxiosConfigWithProxy(config);
-
-            console.log("SMS URL: " + smsUrl);
-            let resp = await axios.post(smsUrl, data, config);
-
-            cosole.log("Response: " + resp.data);
-            if (resp.data.success !== true) {
-                throw Error(`Api returned ${resp.data.response.status}.`);
+            } catch (error) {
+                this.throwGeneralAxiosError(error);   // Errors from sending the SMS
             }
 
-            return okMsg;
         } catch (error) {
-            this.throwGeneralAxiosError(error);
+            this.throwGeneralAxiosError(error);       // Errors from the login attempt
         }
+
     }
 }
 
