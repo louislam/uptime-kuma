@@ -1,7 +1,7 @@
 <!--
 ⚠️ NO AI SLOP!!!
 ⚠️ If you just feed the issue to a code agent, generate code + LLM description, then ping for review without checking anything
-⚠️ You will be BANNED immediately 
+⚠️ You will be BANNED immediately
 Read more: https://github.com/louislam/uptime-kuma/issues/6260#issuecomment-3796504136
 -->
 
