@@ -1238,6 +1238,9 @@ let needSetup = false;
                 bean.color = tag.color;
                 await R.store(bean);
 
+                // Tag name/color changed — reload entire cache since many monitors may use this tag
+                await Monitor.preloadTags();
+
                 callback({
                     ok: true,
                     msg: "Saved.",
@@ -1257,6 +1260,9 @@ let needSetup = false;
                 checkLogin(socket);
 
                 await R.exec("DELETE FROM tag WHERE id = ? ", [tagID]);
+
+                // Tag deleted — reload entire cache since many monitors may have used this tag
+                await Monitor.preloadTags();
 
                 callback({
                     ok: true,
@@ -1281,6 +1287,7 @@ let needSetup = false;
                     value,
                 ]);
 
+                await Monitor.invalidateTagCache(monitorID);
                 await server.sendUpdateMonitorIntoList(socket, monitorID);
 
                 callback({
@@ -1306,6 +1313,7 @@ let needSetup = false;
                     monitorID,
                 ]);
 
+                await Monitor.invalidateTagCache(monitorID);
                 await server.sendUpdateMonitorIntoList(socket, monitorID);
 
                 callback({
@@ -1331,6 +1339,7 @@ let needSetup = false;
                     value,
                 ]);
 
+                await Monitor.invalidateTagCache(monitorID);
                 await server.sendUpdateMonitorIntoList(socket, monitorID);
 
                 callback({
@@ -1736,6 +1745,11 @@ let needSetup = false;
         } else {
             log.info("server", `Listening on ${port}`);
         }
+        // Preload all monitor tags in a single query to avoid per-monitor DB queries during startup.
+        // SQLite uses a single connection, so N individual getTags() calls would serialize and
+        // compete with heartbeat DB operations, causing connection pool exhaustion.
+        await Monitor.preloadTags();
+
         await startMonitors();
 
         // Put this here. Start background jobs after the db and server is ready to prevent clear up during db migration.

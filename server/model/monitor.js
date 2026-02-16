@@ -74,6 +74,56 @@ const rootCertificates = rootCertificatesFingerprints();
  *      3 = MAINTENANCE
  */
 class Monitor extends BeanModel {
+
+    /**
+     * Cache of monitor tags, keyed by monitor ID.
+     * Populated by preloadTags() to avoid per-monitor DB queries during startup.
+     * @type {Map<number, Array>}
+     */
+    static _tagCache = new Map();
+
+    /**
+     * Load all monitor-tag mappings in a single query and cache them.
+     * Call this before starting monitors to avoid N individual getTags() queries
+     * competing for the single SQLite connection.
+     * @returns {Promise<void>}
+     */
+    static async preloadTags() {
+        const rows = await R.getAll(
+            "SELECT mt.*, tag.name, tag.color FROM monitor_tag mt JOIN tag ON mt.tag_id = tag.id ORDER BY tag.name"
+        );
+        Monitor._tagCache.clear();
+        for (const row of rows) {
+            if (!Monitor._tagCache.has(row.monitor_id)) {
+                Monitor._tagCache.set(row.monitor_id, []);
+            }
+            Monitor._tagCache.get(row.monitor_id).push(row);
+        }
+    }
+
+    /**
+     * Get cached tags for a monitor, falling back to a DB query if not cached.
+     * @param {number} monitorId Monitor ID
+     * @returns {Array} List of tags
+     */
+    static getCachedTags(monitorId) {
+        return Monitor._tagCache.get(monitorId) || [];
+    }
+
+    /**
+     * Refresh cached tags for a specific monitor from the database.
+     * Call this when tags are added/edited/removed for a monitor.
+     * @param {number} monitorId Monitor ID
+     * @returns {Promise<void>}
+     */
+    static async invalidateTagCache(monitorId) {
+        const rows = await R.getAll(
+            "SELECT mt.*, tag.name, tag.color FROM monitor_tag mt JOIN tag ON mt.tag_id = tag.id WHERE mt.monitor_id = ? ORDER BY tag.name",
+            [monitorId]
+        );
+        Monitor._tagCache.set(monitorId, rows);
+    }
+
     /**
      * Return an object that ready to parse to JSON for public Only show
      * necessary data to public
@@ -417,7 +467,7 @@ class Monitor extends BeanModel {
         this.rootCertificates = rootCertificates;
 
         try {
-            this.prometheus = new Prometheus(this, await this.getTags());
+            this.prometheus = new Prometheus(this, Monitor.getCachedTags(this.id));
         } catch (e) {
             log.error("prometheus", "Please submit an issue to our GitHub repo. Prometheus update error: ", e.message);
         }
