@@ -8,7 +8,7 @@
         <input
             id="teltonika-url"
             v-model="$parent.notification.teltonikaUrl"
-            type="text"
+            type="url"
             minlength="10"
             placeholder="192.168.100.1"
             class="form-control"
