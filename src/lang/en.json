@@ -1465,7 +1465,7 @@
     "teltonikaUnsafeTls": "Ignore certificate validation",
     "teltonikaUnsafeTlsDescription": "Turning off TLS certificate validation opens you up to on-path (man-in-the-middle) attacks, potentially leading to data leaks and systems take-over. Do not turn off certificate validation unless you accept this attack vector. We recomend using LetsEncrypt with automatic renewal.",
     "teltonikaUsername": "API username",
-    "teltonikaUsernameHelptext": "Recommendation: do not use your admin-account. Instead, create a separate account which is restricted to only sending SMS messages.",
+    "teltonikaUsernameHelptext": "Recommendation: Create a separate account which is restricted to only sending SMS messages and enter its username here",
     "teltonikaPassword": "API password",
     "teltonikaPasswordHelptext": "You can define the API user's password in your Teltonika router, e.g. {0}",
     "teltonikaModem": "Modem Id",

@@ -30,23 +30,33 @@ class Teltonika extends NotificationProvider {
         const loginUrl = baseUrl + "/api/login";
         const smsUrl = baseUrl + "/api/messages/actions/send";
 
-        // Performing some input validation and cleanup for the other fields.
-        const cleanUser = notification.teltonikaUsername.replace(/[^\x20-\x7F]/g, "").substring(0, 30);
+        // Performing input validation and cleanup for the other fields.
+
+        // According to Teltonika's UI, a valid username is:
+        //   A string of lowercase Latin letters, numbers, -, . and _ characters is accepted. 
+        //   First character must be a lowercase Latin letter. Length between 1 and 32 characters.
+        const userRegex = /^[a-z][a-zA-Z0-9-._]{0,31}$/;
+        const cleanUser = notification.teltonikaUsername.replace(/[^\x20-\x7F]/g, "");
         if (!cleanUser) {
             throw Error("Username is empty.");
         }
 
-        const cleanPass = notification.teltonikaPassword.replace(/[^\x20-\x7F]/g, "").substring(0, 40);
+        // According to Teltonika's UI, a valid username is:
+        //   Min length is 15, max is 256. Must contain digit, uppercase letter, special symbol.
+        const passRegex = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{15,256}$/;
+        const cleanPass = notification.teltonikaPassword.replace(/[^\x20-\x7F]/g, "");
         if (!cleanPass) {
             throw Error("Password is empty.");
         }
 
-        const cleanModem = notification.teltonikaModem.replace(/[^\x2D-\x39]/g, "").substring(0, 5);
+        const modemRegex = /[1-9][0-9]?-[1-9][0-9]?/;          // matches 1-1, 10-1, 10-10, etc.
+        const cleanModem = notification.teltonikaModem.replace(/[^\x2D-\x39]/g, "");
         if (!cleanModem) {
             throw Error("Modem is empty.");
         }
 
-        const cleanPhoneNumber = notification.teltonikaPhoneNumber.replace(/[^\x2A-\x39]/g, "").substring(0, 30);
+        const phoneRegex = /^\+(?:[0-9] ?){6,14}[0-9]$/;     // regex for ITU-T E.123 international phone number
+        const cleanPhoneNumber = phoneRegex.exec(notification.teltonikaPhoneNumber);
         if (!cleanPhoneNumber) {
             throw Error("Phone number is empty.");
         }
