@@ -4,13 +4,12 @@ const https = require("https");
 
 class Teltonika extends NotificationProvider {
     name = "Teltonika";
+    // This notification provider is only compatible with Teltonika RMS >= 7.14.0 devices.
+    // See: https://community.teltonika.lt/t/implementation-of-read-only-system-files-and-mobile-and-i-o-post-get-service-removal-with-rutos-7-14/12470
+    // API reference https://developers.teltonika-networks.com/reference/rut241/7.19.4/v1.11.1/messages
 
     /**
      * @inheritdoc
-     *
-     * This notification provider is only compatible with Teltonika RMS >= 7.14.0 devices.
-     * See: https://community.teltonika.lt/t/implementation-of-read-only-system-files-and-mobile-and-i-o-post-get-service-removal-with-rutos-7-14/12470
-     * API reference https://developers.teltonika-networks.com/reference/rut241/7.19.4/v1.11.1/messages
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
@@ -44,7 +43,7 @@ class Teltonika extends NotificationProvider {
 
         // According to Teltonika's UI, a valid username is:
         //   Min length is 15, max is 256. Must contain digit, uppercase letter, special symbol.
-        const passRegex = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[!@#$%^&*()_=+{}|;:,<.>?\[\]\/\\\\]).{15,256}$/;
+        const passRegex = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[!@#$%^&*()_=+{}|;:,<.>?[\]\/\\\\]).{15,256}$/;
         const cleanPass = passRegex.exec(notification.teltonikaPassword);
         if (!cleanPass) {
             throw Error("Password is empty, or does not follow Teltonika requirements.");
@@ -63,7 +62,7 @@ class Teltonika extends NotificationProvider {
         }
 
         // Teltonika SMS gateway supports a max of 160 chars for its messages.
-        const msgRegex = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[!@#$%^&*()_=+{}|;:,<.>?\[\]\/\\\\]).{1,159}$/;
+        const msgRegex = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[!@#$%^&*()_=+{}|;:,<.>?[\]\/\\\\]).{1,159}$/;
         const cleanMsg = msgRegex.exec(msg);
         if (!cleanMsg) {
             throw Error("Message is empty.");
