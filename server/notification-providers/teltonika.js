@@ -68,8 +68,6 @@ class Teltonika extends NotificationProvider {
                 throw Error("Login failed: " + loginResp.data.errors.error);
             }
 
-            const teltonikaToken = "Bearer " + loginResp.data.data.token;
-
             // Sending the SMS.
             let smsData = {
                 data: {
@@ -79,7 +77,7 @@ class Teltonika extends NotificationProvider {
                 },
             };
 
-            axiosConfig.headers.Authorization = teltonikaToken;
+            axiosConfig.headers.Authorization = "Bearer " + loginResp.data.data.token;
 
             let smsResp = await axios.post(smsUrl, smsData, axiosConfig);
 
