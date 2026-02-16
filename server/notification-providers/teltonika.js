@@ -10,6 +10,7 @@ class Teltonika extends NotificationProvider {
      *
      * This notification provider is only compatible with Teltonika RMS >= 7.14.0 devices.
      * See: https://community.teltonika.lt/t/implementation-of-read-only-system-files-and-mobile-and-i-o-post-get-service-removal-with-rutos-7-14/12470
+     * API reference https://developers.teltonika-networks.com/reference/rut241/7.19.4/v1.11.1/messages
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
@@ -36,21 +37,21 @@ class Teltonika extends NotificationProvider {
         //   A string of lowercase Latin letters, numbers, -, . and _ characters is accepted. 
         //   First character must be a lowercase Latin letter. Length between 1 and 32 characters.
         const userRegex = /^[a-z][a-zA-Z0-9-._]{0,31}$/;
-        const cleanUser = notification.teltonikaUsername.replace(/[^\x20-\x7F]/g, "");
+        const cleanUser = userRegex.exec(notification.teltonikaUsername);
         if (!cleanUser) {
             throw Error("Username is empty.");
         }
 
         // According to Teltonika's UI, a valid username is:
         //   Min length is 15, max is 256. Must contain digit, uppercase letter, special symbol.
-        const passRegex = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{15,256}$/;
-        const cleanPass = notification.teltonikaPassword.replace(/[^\x20-\x7F]/g, "");
+        const passRegex = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[!@#$%^&*()_=+{}|;:,<.>?\[\]\/\\\\]).{15,256}$/;
+        const cleanPass = passRegex.exec(notification.teltonikaPassword);
         if (!cleanPass) {
-            throw Error("Password is empty.");
+            throw Error("Password is empty, or does not follow Teltonika requirements.");
         }
 
         const modemRegex = /[1-9][0-9]?-[1-9][0-9]?/;          // matches 1-1, 10-1, 10-10, etc.
-        const cleanModem = notification.teltonikaModem.replace(/[^\x2D-\x39]/g, "");
+        const cleanModem = modemRegex.exec(notification.teltonikaModem);
         if (!cleanModem) {
             throw Error("Modem is empty.");
         }
@@ -59,6 +60,13 @@ class Teltonika extends NotificationProvider {
         const cleanPhoneNumber = phoneRegex.exec(notification.teltonikaPhoneNumber);
         if (!cleanPhoneNumber) {
             throw Error("Phone number is empty.");
+        }
+
+        // Teltonika SMS gateway supports a max of 160 chars for its messages.
+        const msgRegex = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[!@#$%^&*()_=+{}|;:,<.>?\[\]\/\\\\]).{1,159}$/;
+        const cleanMsg = msgRegex.exec(msg);
+        if (!cleanMsg) {
+            throw Error("Message is empty.");
         }
 
         // Starting communications with the API from here on out.
@@ -98,10 +106,9 @@ class Teltonika extends NotificationProvider {
             // Set-Cookie: token=<32 chars hexadecimal>
             // JSON data object in body, with the username, expiry (299sec) and group.
             // We rely on the cookie, which should be passed by Axios' withCredentials=True.
-
             let loginData = {
-                username: cleanUser,
-                password: cleanPass,
+                username: cleanUser[0],    // regex object [0] is the username
+                password: cleanPass[0],    // regex object [0] is the password
             };
 
             let loginResp = await axios.post(loginUrl, loginData, axiosConfig);
@@ -113,16 +120,11 @@ class Teltonika extends NotificationProvider {
             const teltonikaToken = "Bearer " + loginResp.data.data.token;
 
             // Sending the SMS.
-            // API reference https://developers.teltonika-networks.com/reference/rut241/7.19.4/v1.11.1/messages
-            // Teltonika SMS gateway supports a max of 160 chars.
-            // Better to limit to ASCII characters as well.
-            let cleanMsg = msg.replace(/[^\x20-\x7F]/g, "").substring(0, 159);
-
             let smsData = {
                 data: {
-                    modem: cleanModem,
-                    number: cleanPhoneNumber,
-                    message: cleanMsg,
+                    modem: cleanModem[0],           // regex object [0] is the modem
+                    number: cleanPhoneNumber[0],    // regex object [0] is the phonenum
+                    message: cleanMsg[0],           // regex object [0] is the message
                 },
             };
 
