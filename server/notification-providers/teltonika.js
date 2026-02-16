@@ -33,7 +33,7 @@ class Teltonika extends NotificationProvider {
         // Performing input validation and cleanup for the other fields.
 
         // According to Teltonika's UI, a valid username is:
-        //   A string of lowercase Latin letters, numbers, -, . and _ characters is accepted. 
+        //   A string of lowercase Latin letters, numbers, -, . and _ characters is accepted.
         //   First character must be a lowercase Latin letter. Length between 1 and 32 characters.
         const userRegex = /^[a-z][a-zA-Z0-9-._]{0,31}$/;
         const cleanUser = userRegex.exec(notification.teltonikaUsername);
@@ -49,13 +49,13 @@ class Teltonika extends NotificationProvider {
             throw Error("Password is empty, or does not follow Teltonika requirements.");
         }
 
-        const modemRegex = /[1-9][0-9]?-[1-9][0-9]?/;          // matches 1-1, 10-1, 10-10, etc.
+        const modemRegex = /[1-9][0-9]?-[1-9][0-9]?/; // matches 1-1, 10-1, 10-10, etc.
         const cleanModem = modemRegex.exec(notification.teltonikaModem);
         if (!cleanModem) {
             throw Error("Modem is empty.");
         }
 
-        const phoneRegex = /^\+(?:[0-9] ?){6,14}[0-9]$/;     // regex for ITU-T E.123 international phone number
+        const phoneRegex = /^\+(?:[0-9] ?){6,14}[0-9]$/; // regex for ITU-T E.123 international phone number
         const cleanPhoneNumber = phoneRegex.exec(notification.teltonikaPhoneNumber);
         if (!cleanPhoneNumber) {
             throw Error("Phone number is empty.");
@@ -106,8 +106,8 @@ class Teltonika extends NotificationProvider {
             // JSON data object in body, with the username, expiry (299sec) and group.
             // We rely on the cookie, which should be passed by Axios' withCredentials=True.
             let loginData = {
-                username: cleanUser[0],    // regex object [0] is the username
-                password: cleanPass[0],    // regex object [0] is the password
+                username: cleanUser[0], // regex object [0] is the username
+                password: cleanPass[0], // regex object [0] is the password
             };
 
             let loginResp = await axios.post(loginUrl, loginData, axiosConfig);
@@ -121,9 +121,9 @@ class Teltonika extends NotificationProvider {
             // Sending the SMS.
             let smsData = {
                 data: {
-                    modem: cleanModem[0],           // regex object [0] is the modem
-                    number: cleanPhoneNumber[0],    // regex object [0] is the phonenum
-                    message: cleanMsg[0],           // regex object [0] is the message
+                    modem: cleanModem[0], // regex object [0] is the modem
+                    number: cleanPhoneNumber[0], // regex object [0] is the phonenum
+                    message: cleanMsg[0], // regex object [0] is the message
                 },
             };
 
