@@ -46,15 +46,10 @@ class Teltonika extends NotificationProvider {
             // In many cases, Teltonika routers will be setup using a self-signed
             // certificate. Here we give them an option to disable certificate
             // validation. It's not desirable, but sometimes the only option.
-            let unsafeAgent = "";
-            if (notification.teltonikaUnsafeTls === true) {
-                unsafeAgent = new https.Agent({
+            if (notification.teltonikaUnsafeTls) {
+                axiosConfig.httpsAgent = new https.Agent({
                     rejectUnauthorized: false, // Danger! Disables SSL verification
                 });
-
-                axiosConfig.httpsAgent = unsafeAgent;
-            } else {
-                unsafeAgent = undefined;
             }
 
             axiosConfig = this.getAxiosConfigWithProxy(axiosConfig);
