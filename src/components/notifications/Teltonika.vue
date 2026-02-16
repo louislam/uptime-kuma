@@ -1,7 +1,6 @@
 <template>
     <div class="mb-3">
-        <i18n-t keypath="teltonikaVersionWarning" tag="div" class="form-text">
-        </i18n-t>
+        <i18n-t keypath="teltonikaVersionWarning" tag="div" class="form-text"></i18n-t>
     </div>
     <div class="mb-3">
         <label for="teltonika-url" class="form-label">{{ $t("teltonikaUrl") }}</label>
@@ -24,8 +23,7 @@
             <input v-model="$parent.notification.teltonikaUnsafeTls" class="form-check-input" type="checkbox" />
             <label class="form-check-label">{{ $t("teltonikaUnsafeTls") }}</label>
         </div>
-        <i18n-t keypath="teltonikaUnsafeTlsDescription" tag="div" class="form-text">
-        </i18n-t>
+        <i18n-t keypath="teltonikaUnsafeTlsDescription" tag="div" class="form-text"></i18n-t>
     </div>
     <div class="mb-3">
         <label for="teltonika-username" class="form-label">{{ $t("teltonikaUsername") }}</label>
@@ -39,8 +37,7 @@
             class="form-control"
             required
         />
-        <i18n-t keypath="teltonikaUsernameHelptext" tag="div" class="form-text">
-        </i18n-t>
+        <i18n-t keypath="teltonikaUsernameHelptext" tag="div" class="form-text"></i18n-t>
     </div>
     <div class="mb-3">
         <label for="teltonika-password" class="form-label">{{ $t("teltonikaPassword") }}</label>
