@@ -31,57 +31,27 @@ class Teltonika extends NotificationProvider {
         const smsUrl = baseUrl + "/api/messages/actions/send";
 
         // Performing some input validation and cleanup for the other fields.
-        let cleanUser = "";
-        try {
-            cleanUser = notification.teltonikaUsername.replace(/[^\x20-\x7F]/g, "").substring(0, 30);
-            if (cleanUser.length >= 30) {
-                throw Error("Username is longer than 30.");
-            } else if (cleanUser.length < 1) {
-                throw Error("Username is empty.");
-            }
-        } catch (error) {
-            throw Error("Invalid input data for username.");
+        const cleanUser = notification.teltonikaUsername.replace(/[^\x20-\x7F]/g, "").substring(0, 30);
+        if (!cleanUser) {
+            throw Error("Username is empty.");
         }
 
-        let cleanPass = "";
-        try {
-            cleanPass = notification.teltonikaPassword.replace(/[^\x20-\x7F]/g, "").substring(0, 40);
-
-            if (cleanPass.length >= 30) {
-                throw Error("Password is longer than 30.");
-            } else if (cleanPass.length < 1) {
-                throw Error("Password is empty.");
-            }
-        } catch (error) {
-            throw Error("Invalid input data for password.");
+        const cleanPass = notification.teltonikaPassword.replace(/[^\x20-\x7F]/g, "").substring(0, 40);
+        if (!cleanPass) {
+            throw Error("Password is empty.");
         }
 
-        let cleanModem = "";
-        try {
-            cleanModem = notification.teltonikaModem.replace(/[^\x2A-\x39]/g, "").substring(0, 5);
-
-            if (cleanModem.length >= 5) {
-                throw Error("Modem identifier is too long.");
-            } else if (cleanModem.length < 1) {
-                throw Error("Modem identifier is empty.");
-            }
-        } catch (error) {
-            throw Error("Invalid input data for modem.");
+        const cleanModem = notification.teltonikaModem.replace(/[^\x2D-\x39]/g, "").substring(0, 5);
+        if (!cleanModem) {
+            throw Error("Modem is empty.");
         }
 
-        let cleanPhoneNumber = "";
-        try {
-            cleanPhoneNumber = notification.teltonikaPhoneNumber.replace(/[^\x2A-\x39]/g, "").substring(0, 30);
-
-            if (cleanPhoneNumber.length >= 30) {
-                throw Error("Phone number is too long.");
-            } else if (cleanPhoneNumber.length < 1) {
-                throw Error("Phone number is empty.");
-            }
-        } catch (error) {
-            throw Error("Invalid input data for phone number.");
+        const cleanPhoneNumber = notification.teltonikaPhoneNumber.replace(/[^\x2A-\x39]/g, "").substring(0, 30);
+        if (!cleanPhoneNumber) {
+            throw Error("Phone number is empty.");
         }
 
+        // Starting communications with the API from here on out.
         try {
             let axiosConfig = {
                 headers: {
