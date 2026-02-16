@@ -1461,7 +1461,7 @@
     "Teltonika SMS Gateway": "Teltonika SMS Gateway",
     "teltonikaVersionWarning": "This notification provider requires that your Teltonika device runs RMS version 7.14.0, or higher.",
     "teltonikaUrl": "Your Teltonika device URL",
-    "teltonikaUrlHelptext": "URL should be specified as full origin, e.g. https://{0}, or http://{1}:8080.",
+    "teltonikaUrlHelptext": "URL should be specified as full origin, e.g. {0}, or {1}.",
     "teltonikaUnsafeTls": "Ignore certificate validation",
     "teltonikaUnsafeTlsDescription": "Turning off TLS certificate validation opens you up to on-path (man-in-the-middle) attacks, potentially leading to data leaks and systems take-over. Do not turn off certificate validation unless you accept this attack vector. We recomend using LetsEncrypt with automatic renewal.",
     "teltonikaUsername": "API username",

@@ -15,8 +15,8 @@
             required
         />
         <i18n-t keypath="teltonikaUrlHelptext" tag="div" class="form-text">
-            <code>192.168.100.1</code>
-            <code>teltonika.domain.com</code>
+            <code>https://192.168.100.1</code>
+            <code>http://teltonika.domain.com:8080</code>
         </i18n-t>
     </div>
     <div class="mb-3">
