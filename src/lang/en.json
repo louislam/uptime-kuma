@@ -1463,7 +1463,7 @@
     "teltonikaUrl": "Your Teltonika device URL",
     "teltonikaUrlHelptext": "URL should be specified as full origin, e.g. https://{0}, or http://{1}:8080.",
     "teltonikaUnsafeTls": "Ignore certificate validation",
-    "teltonikaUnsafeTlsDescription": "Turning off TLS certificate validation opens you up to on-path (man-in-the-middle) attacks, potentially leading to data leaks and systems take-over. Do not turn off certificate validation unless you are absolutely sure of your safety. The only right way to prevent HTTPS failing on certificates, is by getting a proper trusted certificate.",
+    "teltonikaUnsafeTlsDescription": "Turning off TLS certificate validation opens you up to on-path (man-in-the-middle) attacks, potentially leading to data leaks and systems take-over. Do not turn off certificate validation unless you accept this attack vector. We recomend using LetsEncrypt with automatic renewal.",
     "teltonikaUsername": "API username",
     "teltonikaUsernameHelptext": "Recommendation: do not use your admin-account. Instead, create a separate account which is restricted to only sending SMS messages.",
     "teltonikaPassword": "API password",
