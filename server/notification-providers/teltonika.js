@@ -82,21 +82,33 @@ class Teltonika extends NotificationProvider {
             throw Error("Invalid input data for phone number.");
         }
 
-        // Many people who use a Teltonika router will not setup a proper
-        // TLS certificate. I know that we all should and I hate that I'm
-        // adding the option to disable cert validation, but here we are.
-        // https://sslinsights.com/how-to-fix-axios-self-signed-certificate-errors/
-
-        let unsafeAgent = "";
-        if (notification.teltonikaUnsafeTls === true) {
-            unsafeAgent = new https.Agent({
-                rejectUnauthorized: false, // Danger! Disables SSL verification
-            });
-        } else {
-            unsafeAgent = undefined;
-        }
-
         try {
+            let axiosConfig = {
+                headers: {
+                    "Content-Type": "application/json",
+                    "cache-control": "no-cache",
+                    Accept: "application/json",
+                },
+            };
+
+            // Many people who use a Teltonika router will not setup a proper
+            // TLS certificate. I know that we all should and I hate that I'm
+            // adding the option to disable cert validation, but here we are.
+            // https://sslinsights.com/how-to-fix-axios-self-signed-certificate-errors/
+
+            let unsafeAgent = "";
+            if (notification.teltonikaUnsafeTls === true) {
+                unsafeAgent = new https.Agent({
+                    rejectUnauthorized: false, // Danger! Disables SSL verification
+                });
+
+                axiosConfig.httpsAgent = unsafeAgent;
+            } else {
+                unsafeAgent = undefined;
+            }
+
+            axiosConfig = this.getAxiosConfigWithProxy(axiosConfig);
+
             // Logging in, to get an access token.
             // API reference https://developers.teltonika-networks.com/reference/rut241/7.19.4/v1.11.1/authentication
             // Teltonika's API access tokens expire in 5 minutes.
@@ -112,21 +124,7 @@ class Teltonika extends NotificationProvider {
                 password: cleanPass,
             };
 
-            let loginConfig = {
-                headers: {
-                    "Content-Type": "application/json",
-                    "cache-control": "no-cache",
-                    Accept: "application/json",
-                },
-            };
-
-            if (notification.teltonikaUnsafeTls === true) {
-                loginConfig.httpsAgent = unsafeAgent;
-            }
-
-            loginConfig = this.getAxiosConfigWithProxy(loginConfig);
-
-            let loginResp = await axios.post(loginUrl, loginData, loginConfig);
+            let loginResp = await axios.post(loginUrl, loginData, axiosConfig);
 
             if (loginResp.data.success !== true) {
                 throw Error("Login failed: " + loginResp.data.errors.error);
@@ -148,22 +146,12 @@ class Teltonika extends NotificationProvider {
                 },
             };
 
-            let smsConfig = {
-                headers: {
-                    Authorization: teltonikaToken,
-                    "Content-Type": "application/json",
-                    "cache-control": "no-cache",
-                    Accept: "application/json",
-                },
-            };
+            //axiosConfig.headers += {
+            //        Authorization: teltonikaToken,
+            //};
+            axiosConfig.headers.Authorization = teltonikaToken;
 
-            if (notification.teltonikaUnsafeTls === true) {
-                smsConfig.httpsAgent = unsafeAgent;
-            }
-
-            smsConfig = this.getAxiosConfigWithProxy(smsConfig);
-
-            let smsResp = await axios.post(smsUrl, smsData, smsConfig);
+            let smsResp = await axios.post(smsUrl, smsData, axiosConfig);
 
             if (smsResp.data.success !== true) {
                 throw Error("Api returned: ", smsResp.data.errors.error);
