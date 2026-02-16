@@ -1,5 +1,12 @@
 <template>
     <div class="mb-3">
+        <div class="form-text">
+            <i18n-t keypath="teltonikaVersionWarning" tag="div" class="form-text">
+                <code>https://community.teltonika.lt/t/implementation-of-read-only-system-files-and-mobile-and-i-o-post-get-service-removal-with-rutos-7-14/12470</code>
+            </i18n-t>
+        </div>
+    </div>
+    <div class="mb-3">
         <label for="teltonika-url" class="form-label">{{ $t("teltonikaUrl") }}</label>
         <input
             id="teltonika-url"
