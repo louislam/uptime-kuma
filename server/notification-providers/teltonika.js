@@ -7,6 +7,9 @@ class Teltonika extends NotificationProvider {
 
     /**
      * @inheritdoc
+     *
+     * This notification provider is only compatible with Teltonika RMS >= 7.14.0 devices.
+     * See: https://community.teltonika.lt/t/implementation-of-read-only-system-files-and-mobile-and-i-o-post-get-service-removal-with-rutos-7-14/12470
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";

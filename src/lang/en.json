@@ -1458,7 +1458,7 @@
     "halopsa_field_uptime_kuma_version": "Uptime Kuma version number",
     "halopsa_id_usage_hint": "💡 Tip: Use monitor_id to reliably match alerts to tickets, and heartbeat_id to track event history",
     "halopsa_setup_step5": "Configure runbook to use monitor_id for matching alerts to existing tickets",
-    "teltonikaVersionWarning": "Using this notification provider requires that your Teltonika device runs RMS version 7.14.0, or higher. Refer to: {0}",
+    "teltonikaVersionWarning": "This notification provider requires that your Teltonika device runs RMS version 7.14.0, or higher.",
     "teltonikaUrl": "Your Teltonika device URL",
     "teltonikaUrlHelptext": "URL should be specified as full origin, e.g. https://{0}, or http://{1}:8080.",
     "teltonikaUnsafeTls": "Ignore certificate validation",
