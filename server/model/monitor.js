@@ -74,7 +74,6 @@ const rootCertificates = rootCertificatesFingerprints();
  *      3 = MAINTENANCE
  */
 class Monitor extends BeanModel {
-
     /**
      * Cache of monitor tags, keyed by monitor ID.
      * Populated by preloadTags() to avoid per-monitor DB queries during startup.
