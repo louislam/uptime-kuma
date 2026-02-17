@@ -170,6 +170,24 @@ export default {
          */
         filtersActive() {
             return this.filterState.status != null || this.filterState.active != null || this.filterState.tags != null || this.searchText !== "";
+        },
+
+        /**
+         * Compiled regex for search text filtering.
+         * @returns {RegExp|null} Compiled regex or null if searchText is empty or invalid
+         */
+        searchRegex() {
+            if (this.searchText === "") {
+                return null;
+            }
+
+            try {
+                const escapedSearchText = this.searchText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+                return new RegExp(escapedSearchText, "i");
+            } catch (e) {
+                console.error("Invalid regex pattern:", e);
+                return null;
+            }
         }
     },
     watch: {
@@ -221,6 +239,14 @@ export default {
             } else {
                 this.windowTop = 133;
             }
+        },
+        /**
+         * Safely test a string against the search regex
+         * @param {string} str String to test
+         * @returns {boolean} True if string matches the search regex
+         */
+        safeRegexTest(str) {
+            return str && this.searchRegex && this.searchRegex.test(str);
         },
         /**
          * Get URL of monitor
@@ -302,7 +328,7 @@ export default {
         resumeSelected() {
             Object.keys(this.selectedMonitors)
                 .filter(id => !this.$root.monitorList[id].active)
-                .forEach(id => this.$root.getSocket().emit("resumeMonitor", id, () => {}));
+                .forEach(id => this.$root.getSocket().emit("resumeMonitor", id, () => { }));
 
             this.cancelSelectMode();
         },
@@ -323,24 +349,13 @@ export default {
             // filter by search text
             // finds monitor name, tag name or tag value
             let searchTextMatch = true;
-            if (this.searchText !== "") {
-                try {
-                    // Escape special characters for use in the regular expression
-                    const escapedSearchText = this.searchText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-                    const regex = new RegExp(escapedSearchText, "i");
-
-                    const safeRegexTest = (str) => str && regex.test(str);
-
-                    searchTextMatch =
-                        regex.test(monitor.name) ||
-                        safeRegexTest(monitor.url) ||
-                        safeRegexTest(monitor.hostname) ||
-                        safeRegexTest(monitor.dns_resolve_server) ||
-                        monitor.tags.some(tag => regex.test(tag.name) || safeRegexTest(tag.value));
-                } catch (e) {
-                    console.error("Invalid regex pattern:", e);
-                    searchTextMatch = false;
-                }
+            if (this.searchRegex !== null) {
+                searchTextMatch =
+                    this.searchRegex.test(monitor.name) ||
+                    this.safeRegexTest(monitor.url) ||
+                    this.safeRegexTest(monitor.hostname) ||
+                    this.safeRegexTest(monitor.dns_resolve_server) ||
+                    monitor.tags.some(tag => this.searchRegex.test(tag.name) || this.safeRegexTest(tag.value));
             }
 
             // filter by status
