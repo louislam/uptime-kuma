@@ -409,7 +409,7 @@ describe("GlobalpingMonitorType", () => {
             });
         });
 
-        test("should work according to monitor contract", async () => {
+        test("should work according to monitor contract (status code validation)", async () => {
             const mockClient = createGlobalpingClientMock();
             const monitorType = new GlobalpingMonitorType(async () => {
                 return [mockClient, true];
