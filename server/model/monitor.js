@@ -1520,8 +1520,10 @@ class Monitor extends BeanModel {
             // This makes downtime information available to all notification providers
             if (bean.status === UP && monitor.id) {
                 try {
+                    // Filter by important = 1 to get the state transition heartbeat (e.g. UP→DOWN),
+                    // not the most recent DOWN heartbeat which would be the last check before recovery.
                     const lastDownHeartbeat = await R.getRow(
-                        "SELECT time FROM heartbeat WHERE monitor_id = ? AND status = ? ORDER BY time DESC LIMIT 1",
+                        "SELECT time FROM heartbeat WHERE monitor_id = ? AND status = ? AND important = 1 ORDER BY time DESC LIMIT 1",
                         [monitor.id, DOWN]
                     );
 
