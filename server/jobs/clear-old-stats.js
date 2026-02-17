@@ -1,7 +1,7 @@
 const { R } = require("redbean-node");
 const { log } = require("../../src/util");
 const dayjs = require("dayjs");
-const UptimeCalculator = require("../uptime-calculator");
+const { UptimeCalculator } = require("../uptime-calculator");
 
 /**
  * Clears old stat_minutely and stat_hourly data from the database.
