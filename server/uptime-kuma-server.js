@@ -126,7 +126,14 @@ class UptimeKumaServer {
         UptimeKumaServer.monitorTypeList["gamedig"] = new GameDigMonitorType();
         UptimeKumaServer.monitorTypeList["port"] = new TCPMonitorType();
         UptimeKumaServer.monitorTypeList["manual"] = new ManualMonitorType();
-        UptimeKumaServer.monitorTypeList["globalping"] = new GlobalpingMonitorType(this.getUserAgent());
+        UptimeKumaServer.monitorTypeList["globalping"] = new GlobalpingMonitorType(async () => {
+            const apiKey = await Settings.get("globalpingApiToken");
+
+             return [new Globalping({
+                auth: apiKey,
+                agent: this.getUserAgent(),
+            }), !!apiKey];
+        });
         UptimeKumaServer.monitorTypeList["redis"] = new RedisMonitorType();
         UptimeKumaServer.monitorTypeList["system-service"] = new SystemServiceMonitorType();
         UptimeKumaServer.monitorTypeList["sqlserver"] = new MssqlMonitorType();
@@ -582,4 +589,5 @@ const { RedisMonitorType } = require("./monitor-types/redis");
 const { SystemServiceMonitorType } = require("./monitor-types/system-service");
 const { MssqlMonitorType } = require("./monitor-types/mssql");
 const { MysqlMonitorType } = require("./monitor-types/mysql");
+const { Globalping } = require("globalping");
 const Monitor = require("./model/monitor");

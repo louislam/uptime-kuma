@@ -2,14 +2,15 @@ const { describe, test, mock } = require("node:test");
 const assert = require("node:assert");
 const { encodeBase64 } = require("../../server/util-server");
 const { UP, DOWN, PENDING } = require("../../src/util");
+const {GlobalpingMonitorType} = require("../../server/monitor-types/globalping");
 
 describe("GlobalpingMonitorType", () => {
     const { GlobalpingMonitorType } = require("../../server/monitor-types/globalping");
 
     describe("ping", () => {
         test("should handle successful ping", async () => {
-            const monitorType = new GlobalpingMonitorType("test-agent/1.0");
             const mockClient = createGlobalpingClientMock();
+            const monitorType = new GlobalpingMonitorType(async () => {return [mockClient, false]});
             const createResponse = createMockResponse({
                 id: "2g8T7V3OwXG3JV6Y10011zF2v",
             });
@@ -25,6 +26,7 @@ describe("GlobalpingMonitorType", () => {
                 ping_count: 3,
                 protocol: "ICMP",
                 ipFamily: "ipv4",
+                subtype: "ping",
             };
 
             const heartbeat = {
@@ -33,7 +35,7 @@ describe("GlobalpingMonitorType", () => {
                 ping: 0,
             };
 
-            await monitorType.ping(mockClient, monitor, heartbeat, true);
+            await monitorType.check(monitor, heartbeat, true);
 
             assert.strictEqual(mockClient.createMeasurement.mock.calls.length, 1);
             assert.deepStrictEqual(mockClient.createMeasurement.mock.calls[0].arguments[0], {
@@ -57,8 +59,8 @@ describe("GlobalpingMonitorType", () => {
         });
 
         test("should handle failed ping with status failed", async () => {
-            const monitorType = new GlobalpingMonitorType("test-agent/1.0");
             const mockClient = createGlobalpingClientMock();
+            const monitorType = new GlobalpingMonitorType(async () => {return [mockClient, true]});
             const createResponse = createMockResponse({
                 id: "2g8T7V3OwXG3JV6Y10011zF2v",
             });
@@ -75,6 +77,7 @@ describe("GlobalpingMonitorType", () => {
                 location: "Europe",
                 ping_count: 3,
                 protocol: "ICMP",
+                subtype: "ping",
             };
 
             const heartbeat = {
@@ -82,7 +85,7 @@ describe("GlobalpingMonitorType", () => {
                 msg: "",
             };
 
-            await monitorType.ping(mockClient, monitor, heartbeat, true);
+            await monitorType.check(monitor, heartbeat, true);
 
             assert.deepStrictEqual(heartbeat, {
                 status: DOWN,
@@ -91,8 +94,8 @@ describe("GlobalpingMonitorType", () => {
         });
 
         test("should handle API error on create measurement", async () => {
-            const monitorType = new GlobalpingMonitorType("test-agent/1.0");
             const mockClient = createGlobalpingClientMock();
+            const monitorType = new GlobalpingMonitorType(async () => {return [mockClient, true]});
             const createResponse = createMockResponse({
                 error: {
                     type: "validation_error",
@@ -110,6 +113,7 @@ describe("GlobalpingMonitorType", () => {
                 location: "North America",
                 ping_count: 3,
                 protocol: "ICMP",
+                subtype: "ping",
             };
 
             const heartbeat = {
@@ -117,7 +121,7 @@ describe("GlobalpingMonitorType", () => {
                 msg: "",
             };
 
-            await assert.rejects(monitorType.ping(mockClient, monitor, heartbeat, true), (error) => {
+            await assert.rejects(monitorType.check(monitor, heartbeat, true), (error) => {
                 assert.deepStrictEqual(
                     error,
                     new Error("Failed to create measurement: validation_error Invalid target.\ntarget: example.com")
@@ -127,8 +131,8 @@ describe("GlobalpingMonitorType", () => {
         });
 
         test("should handle API error on await measurement", async () => {
-            const monitorType = new GlobalpingMonitorType("test-agent/1.0");
             const mockClient = createGlobalpingClientMock();
+            const monitorType = new GlobalpingMonitorType(async () => {return [mockClient, true]});
             const createResponse = createMockResponse({
                 id: "2g8T7V3OwXG3JV6Y10011zF2v",
             });
@@ -149,6 +153,7 @@ describe("GlobalpingMonitorType", () => {
                 location: "North America",
                 ping_count: 3,
                 protocol: "ICMP",
+                subtype: "ping",
             };
 
             const heartbeat = {
@@ -156,7 +161,7 @@ describe("GlobalpingMonitorType", () => {
                 msg: "",
             };
 
-            await assert.rejects(monitorType.ping(mockClient, monitor, heartbeat, true), (error) => {
+            await assert.rejects(monitorType.check(monitor, heartbeat, true), (error) => {
                 assert.deepStrictEqual(
                     error,
                     new Error("Failed to fetch measurement (2g8T7V3OwXG3JV6Y10011zF2v): internal_error Server error.")
@@ -164,12 +169,44 @@ describe("GlobalpingMonitorType", () => {
                 return true;
             });
         });
+
+        test("should work according to monitor contract", async () => {
+            const mockClient = createGlobalpingClientMock();
+            const monitorType = new GlobalpingMonitorType(async () => {return [mockClient, true]});
+            const createResponse = createMockResponse({
+                id: "2g8T7V3OwXG3JV6Y10011zF2v",
+            });
+            const measurement = createPingMeasurement();
+            measurement.results[0].result.timings = []; // No timings - should trigger error
+            measurement.results[0].result.rawOutput = "No response";
+            const awaitResponse = createMockResponse(measurement);
+
+            mockClient.createMeasurement.mock.mockImplementation(() => createResponse);
+            mockClient.awaitMeasurement.mock.mockImplementation(() => awaitResponse);
+
+            const monitor = {
+                hostname: "example.com",
+                location: "Europe",
+                ping_count: 3,
+                protocol: "ICMP",
+                subtype: "ping"
+            };
+
+            const heartbeat = {
+                status: PENDING,
+                msg: "",
+            };
+
+            monitorType.check(monitor, heartbeat, true)
+
+            validateMonitorContract(monitorType, heartbeat)
+        });
     });
 
     describe("http", () => {
         test("should handle successful HTTP request", async () => {
-            const monitorType = new GlobalpingMonitorType("test-agent/1.0");
             const mockClient = createGlobalpingClientMock();
+            const monitorType = new GlobalpingMonitorType(async () => {return [mockClient, true]});
             const createResponse = createMockResponse({
                 id: "2g8T7V3OwXG3JV6Y10011zF2v",
             });
@@ -190,6 +227,7 @@ describe("GlobalpingMonitorType", () => {
                 auth_method: "basic",
                 basic_auth_user: "username",
                 basic_auth_pass: "password",
+                subtype: "http"
             };
 
             const heartbeat = {
@@ -198,7 +236,7 @@ describe("GlobalpingMonitorType", () => {
                 ping: 0,
             };
 
-            await monitorType.http(mockClient, monitor, heartbeat, true);
+            await monitorType.check(monitor, heartbeat, true);
 
             assert.strictEqual(mockClient.createMeasurement.mock.calls.length, 1);
             const expectedToken = encodeBase64(monitor.basic_auth_user, monitor.basic_auth_pass);
@@ -234,8 +272,8 @@ describe("GlobalpingMonitorType", () => {
         });
 
         test("should handle failed HTTP request", async () => {
-            const monitorType = new GlobalpingMonitorType("test-agent/1.0");
             const mockClient = createGlobalpingClientMock();
+            const monitorType = new GlobalpingMonitorType(async () => {return [mockClient, true]});
             const createResponse = createMockResponse({
                 id: "2g8T7V3OwXG3JV6Y10011zF2v",
             });
@@ -253,6 +291,7 @@ describe("GlobalpingMonitorType", () => {
                 method: "GET",
                 accepted_statuscodes_json: JSON.stringify(["200-299", "300-399"]),
                 headers: null,
+                subtype: "http",
             };
 
             const heartbeat = {
@@ -260,7 +299,7 @@ describe("GlobalpingMonitorType", () => {
                 msg: "",
             };
 
-            await monitorType.http(mockClient, monitor, heartbeat, true);
+            await monitorType.check(monitor, heartbeat, true);
 
             assert.deepStrictEqual(heartbeat, {
                 status: DOWN,
@@ -269,8 +308,8 @@ describe("GlobalpingMonitorType", () => {
         });
 
         test("should handle API error on create measurement", async () => {
-            const monitorType = new GlobalpingMonitorType("test-agent/1.0");
             const mockClient = createGlobalpingClientMock();
+            const monitorType = new GlobalpingMonitorType(async () => {return [mockClient, true]});
             const createResponse = createMockResponse({
                 error: {
                     type: "validation_error",
@@ -289,6 +328,7 @@ describe("GlobalpingMonitorType", () => {
                 method: "GET",
                 accepted_statuscodes_json: JSON.stringify(["200-299", "300-399"]),
                 headers: null,
+                subtype: "http",
             };
 
             const heartbeat = {
@@ -296,7 +336,7 @@ describe("GlobalpingMonitorType", () => {
                 msg: "",
             };
 
-            await assert.rejects(monitorType.http(mockClient, monitor, heartbeat, true), (error) => {
+            await assert.rejects(monitorType.check(monitor, heartbeat, true), (error) => {
                 assert.deepStrictEqual(
                     error,
                     new Error("Failed to create measurement: validation_error Invalid target.\ntarget: example.com")
@@ -306,8 +346,8 @@ describe("GlobalpingMonitorType", () => {
         });
 
         test("should handle API error on await measurement", async () => {
-            const monitorType = new GlobalpingMonitorType("test-agent/1.0");
             const mockClient = createGlobalpingClientMock();
+            const monitorType = new GlobalpingMonitorType(async () => {return [mockClient, true]});
             const createResponse = createMockResponse({
                 id: "2g8T7V3OwXG3JV6Y10011zF2v",
             });
@@ -329,6 +369,7 @@ describe("GlobalpingMonitorType", () => {
                 method: "GET",
                 accepted_statuscodes_json: JSON.stringify(["200-299", "300-399"]),
                 headers: null,
+                subtype: "http",
             };
 
             const heartbeat = {
@@ -336,7 +377,7 @@ describe("GlobalpingMonitorType", () => {
                 msg: "",
             };
 
-            await assert.rejects(monitorType.http(mockClient, monitor, heartbeat, true), (error) => {
+            await assert.rejects(monitorType.check(monitor, heartbeat, true), (error) => {
                 assert.deepStrictEqual(
                     error,
                     new Error("Failed to fetch measurement (2g8T7V3OwXG3JV6Y10011zF2v): internal_error Server error.")
@@ -345,9 +386,77 @@ describe("GlobalpingMonitorType", () => {
             });
         });
 
-        test("should handle invalid status code", async () => {
-            const monitorType = new GlobalpingMonitorType("test-agent/1.0");
+        test("should work according to monitor contract", async () => {
             const mockClient = createGlobalpingClientMock();
+            const monitorType = new GlobalpingMonitorType(async () => {return [mockClient, true]});
+            const createResponse = createMockResponse({
+                id: "2g8T7V3OwXG3JV6Y10011zF2v",
+            });
+            const measurement = createHttpMeasurement();
+            measurement.results[0].result.status = "failed";
+            measurement.results[0].result.rawOutput = "Connection timeout";
+            const awaitResponse = createMockResponse(measurement);
+
+            mockClient.createMeasurement.mock.mockImplementation(() => createResponse);
+            mockClient.awaitMeasurement.mock.mockImplementation(() => awaitResponse);
+
+            const monitor = {
+                url: "https://example.com",
+                location: "North America",
+                method: "GET",
+                accepted_statuscodes_json: JSON.stringify(["200-299"]),
+                headers: null,
+                subtype: "http",
+            };
+
+            const heartbeat = {
+                status: PENDING,
+                msg: "",
+            };
+
+            await monitorType.check(monitor, heartbeat, true);
+
+            validateMonitorContract(monitorType, heartbeat)
+        });
+
+        test("should work according to monitor contract", async () => {
+            const mockClient = createGlobalpingClientMock();
+            const monitorType = new GlobalpingMonitorType(async () => {return [mockClient, true]});
+            const createResponse = createMockResponse({
+                id: "2g8T7V3OwXG3JV6Y10011zF2v",
+            });
+            const measurement = createHttpMeasurement();
+            measurement.results[0].result.statusCode = 500;
+            measurement.results[0].result.statusCodeName = "Internal Server Error";
+            measurement.results[0].result.rawOutput = "Error response";
+            const awaitResponse = createMockResponse(measurement);
+
+            mockClient.createMeasurement.mock.mockImplementation(() => createResponse);
+            mockClient.awaitMeasurement.mock.mockImplementation(() => awaitResponse);
+
+            const monitor = {
+                url: "https://example.com",
+                location: "North America",
+                method: "GET",
+                accepted_statuscodes_json: JSON.stringify(["200-299"]),
+                headers: null,
+                subtype: "http",
+            };
+
+            const heartbeat = {
+                status: PENDING,
+                msg: "",
+                ping: 0,
+            };
+
+            await monitorType.check(monitor, heartbeat, true);
+
+            validateMonitorContract(monitorType, heartbeat)
+        });
+
+        test("should handle invalid status code", async () => {
+            const mockClient = createGlobalpingClientMock();
+            const monitorType = new GlobalpingMonitorType(async () => {return [mockClient, true]});
             const createResponse = createMockResponse({
                 id: "2g8T7V3OwXG3JV6Y10011zF2v",
             });
@@ -364,6 +473,7 @@ describe("GlobalpingMonitorType", () => {
                 method: "GET",
                 accepted_statuscodes_json: JSON.stringify(["200-299"]),
                 headers: null,
+                subtype: "http",
             };
 
             const heartbeat = {
@@ -372,7 +482,7 @@ describe("GlobalpingMonitorType", () => {
                 ping: 0,
             };
 
-            await monitorType.http(mockClient, monitor, heartbeat, true);
+            await monitorType.check(monitor, heartbeat, true);
 
             assert.deepStrictEqual(heartbeat, {
                 status: DOWN,
@@ -382,8 +492,8 @@ describe("GlobalpingMonitorType", () => {
         });
 
         test("should handle keyword check (keyword present)", async () => {
-            const monitorType = new GlobalpingMonitorType("test-agent/1.0");
             const mockClient = createGlobalpingClientMock();
+            const monitorType = new GlobalpingMonitorType(async () => {return [mockClient, true]});
             const createResponse = createMockResponse({
                 id: "2g8T7V3OwXG3JV6Y10011zF2v",
             });
@@ -401,6 +511,7 @@ describe("GlobalpingMonitorType", () => {
                 accepted_statuscodes_json: JSON.stringify(["300-399"]),
                 keyword: "KEYWORD",
                 invertKeyword: false,
+                subtype: "http",
             };
 
             const heartbeat = {
@@ -408,7 +519,7 @@ describe("GlobalpingMonitorType", () => {
                 msg: "",
             };
 
-            await monitorType.http(mockClient, monitor, heartbeat, true);
+            await monitorType.check(monitor, heartbeat, true);
 
             assert.deepStrictEqual(heartbeat, {
                 status: UP,
@@ -418,8 +529,8 @@ describe("GlobalpingMonitorType", () => {
         });
 
         test("should handle keyword check (keyword not present)", async () => {
-            const monitorType = new GlobalpingMonitorType("test-agent/1.0");
             const mockClient = createGlobalpingClientMock();
+            const monitorType = new GlobalpingMonitorType(async () => {return [mockClient, true]});
             const createResponse = createMockResponse({
                 id: "2g8T7V3OwXG3JV6Y10011zF2v",
             });
@@ -437,6 +548,7 @@ describe("GlobalpingMonitorType", () => {
                 accepted_statuscodes_json: JSON.stringify(["300-399"]),
                 keyword: "MISSING_KEYWORD",
                 invertKeyword: false,
+                subtype: "http",
             };
 
             const heartbeat = {
@@ -444,7 +556,7 @@ describe("GlobalpingMonitorType", () => {
                 msg: "",
             };
 
-            await assert.rejects(monitorType.http(mockClient, monitor, heartbeat, true), (error) => {
+            await assert.rejects(monitorType.check(monitor, heartbeat, true), (error) => {
                 assert.deepStrictEqual(
                     error,
                     new Error(
@@ -456,8 +568,8 @@ describe("GlobalpingMonitorType", () => {
         });
 
         test("should handle inverted keyword check", async () => {
-            const monitorType = new GlobalpingMonitorType("test-agent/1.0");
             const mockClient = createGlobalpingClientMock();
+            const monitorType = new GlobalpingMonitorType(async () => {return [mockClient, false]});
             const createResponse = createMockResponse({
                 id: "2g8T7V3OwXG3JV6Y10011zF2v",
             });
@@ -475,6 +587,7 @@ describe("GlobalpingMonitorType", () => {
                 accepted_statuscodes_json: JSON.stringify(["300-399"]),
                 keyword: "ERROR",
                 invertKeyword: true,
+                subtype: "http",
             };
 
             const heartbeat = {
@@ -482,7 +595,7 @@ describe("GlobalpingMonitorType", () => {
                 msg: "",
             };
 
-            await monitorType.http(mockClient, monitor, heartbeat, true);
+            await monitorType.check(monitor, heartbeat, true);
 
             assert.deepStrictEqual(heartbeat, {
                 status: UP,
@@ -492,8 +605,8 @@ describe("GlobalpingMonitorType", () => {
         });
 
         test("should handle JSON query check (valid)", async () => {
-            const monitorType = new GlobalpingMonitorType("test-agent/1.0");
             const mockClient = createGlobalpingClientMock();
+            const monitorType = new GlobalpingMonitorType(async () => {return [mockClient, true]});
             const createResponse = createMockResponse({
                 id: "2g8T7V3OwXG3JV6Y10011zF2v",
             });
@@ -515,6 +628,7 @@ describe("GlobalpingMonitorType", () => {
                 jsonPath: "$.status",
                 jsonPathOperator: "==",
                 expectedValue: "success",
+                subtype: "http",
             };
 
             const heartbeat = {
@@ -522,7 +636,7 @@ describe("GlobalpingMonitorType", () => {
                 msg: "",
             };
 
-            await monitorType.http(mockClient, monitor, heartbeat, true);
+            await monitorType.check(monitor, heartbeat, true);
 
             assert.deepStrictEqual(heartbeat, {
                 status: UP,
@@ -532,8 +646,8 @@ describe("GlobalpingMonitorType", () => {
         });
 
         test("should handle JSON query check (invalid)", async () => {
-            const monitorType = new GlobalpingMonitorType("test-agent/1.0");
             const mockClient = createGlobalpingClientMock();
+            const monitorType = new GlobalpingMonitorType(async () => {return [mockClient, true]});
             const createResponse = createMockResponse({
                 id: "2g8T7V3OwXG3JV6Y10011zF2v",
             });
@@ -555,6 +669,7 @@ describe("GlobalpingMonitorType", () => {
                 jsonPath: "$.status",
                 jsonPathOperator: "==",
                 expectedValue: "success",
+                subtype: "http",
             };
 
             const heartbeat = {
@@ -562,7 +677,7 @@ describe("GlobalpingMonitorType", () => {
                 msg: "",
             };
 
-            await assert.rejects(monitorType.http(mockClient, monitor, heartbeat, true), (error) => {
+            await assert.rejects(monitorType.check(monitor, heartbeat, true), (error) => {
                 assert.deepStrictEqual(
                     error,
                     new Error(
@@ -710,6 +825,21 @@ describe("GlobalpingMonitorType", () => {
         });
     });
 });
+
+/**
+ * Validates that a monitor type follows the contract from monitor.js
+ * After check() completes, if allowCustomStatus is false and status is not UP,
+ * the Monitor.beat() method throws this exact error.
+ *
+ * @param {MonitorType} monitorType - The monitor type instance
+ * @param {object} heartbeat - The heartbeat object after check() completes
+ * @throws {Error} When monitor sets non-UP status without throwing (contract violation)
+ */
+function validateMonitorContract(monitorType, heartbeat) {
+    if (!monitorType.allowCustomStatus && heartbeat.status !== UP) {
+        throw new Error("The monitor implementation is incorrect, non-UP error must throw error inside check()");
+    }
+}
 
 /**
  * Reusable mock factory for Globalping client

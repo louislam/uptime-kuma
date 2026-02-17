@@ -1,6 +1,5 @@
 const { MonitorType } = require("./monitor-type");
 const { Globalping, IpVersion } = require("globalping");
-const { Settings } = require("../settings");
 const { log, UP, DOWN, evaluateJsonQuery } = require("../../src/util");
 const {
     checkStatusCode,
@@ -22,34 +21,27 @@ const { R } = require("redbean-node");
 class GlobalpingMonitorType extends MonitorType {
     name = "globalping";
 
-    httpUserAgent = "";
+    clientFactory;
 
     /**
      * @inheritdoc
      */
-    constructor(httpUserAgent) {
+    constructor(clientFactory) {
         super();
-        this.httpUserAgent = httpUserAgent;
+        this.clientFactory = clientFactory
     }
 
     /**
      * @inheritdoc
      */
     async check(monitor, heartbeat, _server) {
-        const apiKey = await Settings.get("globalpingApiToken");
-        const client = new Globalping({
-            auth: apiKey,
-            agent: this.httpUserAgent,
-        });
+        const [client, hasAPIToken] = await this.clientFactory();
 
-        const hasAPIToken = !!apiKey;
         switch (monitor.subtype) {
             case "ping":
-                await this.ping(client, monitor, heartbeat, hasAPIToken);
-                break;
+                return this.#ping(client, monitor, heartbeat, hasAPIToken);
             case "http":
-                await this.http(client, monitor, heartbeat, hasAPIToken);
-                break;
+                return this.#http(client, monitor, heartbeat, hasAPIToken);
         }
     }
 
@@ -61,7 +53,7 @@ class GlobalpingMonitorType extends MonitorType {
      * @param {boolean} hasAPIToken - Whether the monitor has an API token.
      * @returns {Promise<void>} A promise that resolves when the ping monitor is handled.
      */
-    async ping(client, monitor, heartbeat, hasAPIToken) {
+    async #ping(client, monitor, heartbeat, hasAPIToken) {
         const opts = {
             type: "ping",
             target: monitor.hostname,
@@ -131,7 +123,7 @@ class GlobalpingMonitorType extends MonitorType {
      * @param {boolean} hasAPIToken - Whether the monitor has an API token.
      * @returns {Promise<void>} A promise that resolves when the HTTP monitor is handled.
      */
-    async http(client, monitor, heartbeat, hasAPIToken) {
+    async #http(client, monitor, heartbeat, hasAPIToken) {
         const url = new URL(monitor.url);
 
         let protocol = url.protocol.replace(":", "").toUpperCase();
