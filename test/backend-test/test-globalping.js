@@ -1,8 +1,7 @@
 const { describe, test, mock } = require("node:test");
 const assert = require("node:assert");
 const { encodeBase64 } = require("../../server/util-server");
-const { UP, DOWN, PENDING } = require("../../src/util");
-const {GlobalpingMonitorType} = require("../../server/monitor-types/globalping");
+const { UP, PENDING } = require("../../src/util");
 
 describe("GlobalpingMonitorType", () => {
     const { GlobalpingMonitorType } = require("../../server/monitor-types/globalping");
@@ -10,7 +9,9 @@ describe("GlobalpingMonitorType", () => {
     describe("ping", () => {
         test("should handle successful ping", async () => {
             const mockClient = createGlobalpingClientMock();
-            const monitorType = new GlobalpingMonitorType(async () => {return [mockClient, false]});
+            const monitorType = new GlobalpingMonitorType(async () => {
+                return [mockClient, false];
+            });
             const createResponse = createMockResponse({
                 id: "2g8T7V3OwXG3JV6Y10011zF2v",
             });
@@ -60,7 +61,9 @@ describe("GlobalpingMonitorType", () => {
 
         test("should handle failed ping with status failed", async () => {
             const mockClient = createGlobalpingClientMock();
-            const monitorType = new GlobalpingMonitorType(async () => {return [mockClient, true]});
+            const monitorType = new GlobalpingMonitorType(async () => {
+                return [mockClient, true];
+            });
             const createResponse = createMockResponse({
                 id: "2g8T7V3OwXG3JV6Y10011zF2v",
             });
@@ -96,7 +99,9 @@ describe("GlobalpingMonitorType", () => {
 
         test("should handle API error on create measurement", async () => {
             const mockClient = createGlobalpingClientMock();
-            const monitorType = new GlobalpingMonitorType(async () => {return [mockClient, true]});
+            const monitorType = new GlobalpingMonitorType(async () => {
+                return [mockClient, true];
+            });
             const createResponse = createMockResponse({
                 error: {
                     type: "validation_error",
@@ -133,7 +138,9 @@ describe("GlobalpingMonitorType", () => {
 
         test("should handle API error on await measurement", async () => {
             const mockClient = createGlobalpingClientMock();
-            const monitorType = new GlobalpingMonitorType(async () => {return [mockClient, true]});
+            const monitorType = new GlobalpingMonitorType(async () => {
+                return [mockClient, true];
+            });
             const createResponse = createMockResponse({
                 id: "2g8T7V3OwXG3JV6Y10011zF2v",
             });
@@ -173,7 +180,9 @@ describe("GlobalpingMonitorType", () => {
 
         test("should work according to monitor contract", async () => {
             const mockClient = createGlobalpingClientMock();
-            const monitorType = new GlobalpingMonitorType(async () => {return [mockClient, true]});
+            const monitorType = new GlobalpingMonitorType(async () => {
+                return [mockClient, true];
+            });
             const createResponse = createMockResponse({
                 id: "2g8T7V3OwXG3JV6Y10011zF2v",
             });
@@ -190,7 +199,7 @@ describe("GlobalpingMonitorType", () => {
                 location: "Europe",
                 ping_count: 3,
                 protocol: "ICMP",
-                subtype: "ping"
+                subtype: "ping",
             };
 
             const heartbeat = {
@@ -198,23 +207,22 @@ describe("GlobalpingMonitorType", () => {
                 msg: "",
             };
 
-            await assert.rejects(
-                validateMonitorContract(monitorType, monitor, heartbeat),
-                (error) => {
-                    assert.strictEqual(
-                        error.message,
-                        "Ashburn (VA), US, NA, Amazon.com (AS14618), (aws-us-east-1) : Failed: No response"
-                    );
-                    return true;
-                }
-            );
+            await assert.rejects(validateMonitorContract(monitorType, monitor, heartbeat), (error) => {
+                assert.strictEqual(
+                    error.message,
+                    "Ashburn (VA), US, NA, Amazon.com (AS14618), (aws-us-east-1) : Failed: No response"
+                );
+                return true;
+            });
         });
     });
 
     describe("http", () => {
         test("should handle successful HTTP request", async () => {
             const mockClient = createGlobalpingClientMock();
-            const monitorType = new GlobalpingMonitorType(async () => {return [mockClient, true]});
+            const monitorType = new GlobalpingMonitorType(async () => {
+                return [mockClient, true];
+            });
             const createResponse = createMockResponse({
                 id: "2g8T7V3OwXG3JV6Y10011zF2v",
             });
@@ -235,7 +243,7 @@ describe("GlobalpingMonitorType", () => {
                 auth_method: "basic",
                 basic_auth_user: "username",
                 basic_auth_pass: "password",
-                subtype: "http"
+                subtype: "http",
             };
 
             const heartbeat = {
@@ -281,7 +289,9 @@ describe("GlobalpingMonitorType", () => {
 
         test("should handle failed HTTP request", async () => {
             const mockClient = createGlobalpingClientMock();
-            const monitorType = new GlobalpingMonitorType(async () => {return [mockClient, true]});
+            const monitorType = new GlobalpingMonitorType(async () => {
+                return [mockClient, true];
+            });
             const createResponse = createMockResponse({
                 id: "2g8T7V3OwXG3JV6Y10011zF2v",
             });
@@ -318,7 +328,9 @@ describe("GlobalpingMonitorType", () => {
 
         test("should handle API error on create measurement", async () => {
             const mockClient = createGlobalpingClientMock();
-            const monitorType = new GlobalpingMonitorType(async () => {return [mockClient, true]});
+            const monitorType = new GlobalpingMonitorType(async () => {
+                return [mockClient, true];
+            });
             const createResponse = createMockResponse({
                 error: {
                     type: "validation_error",
@@ -356,7 +368,9 @@ describe("GlobalpingMonitorType", () => {
 
         test("should handle API error on await measurement", async () => {
             const mockClient = createGlobalpingClientMock();
-            const monitorType = new GlobalpingMonitorType(async () => {return [mockClient, true]});
+            const monitorType = new GlobalpingMonitorType(async () => {
+                return [mockClient, true];
+            });
             const createResponse = createMockResponse({
                 id: "2g8T7V3OwXG3JV6Y10011zF2v",
             });
@@ -397,7 +411,9 @@ describe("GlobalpingMonitorType", () => {
 
         test("should work according to monitor contract", async () => {
             const mockClient = createGlobalpingClientMock();
-            const monitorType = new GlobalpingMonitorType(async () => {return [mockClient, true]});
+            const monitorType = new GlobalpingMonitorType(async () => {
+                return [mockClient, true];
+            });
             const createResponse = createMockResponse({
                 id: "2g8T7V3OwXG3JV6Y10011zF2v",
             });
@@ -423,21 +439,20 @@ describe("GlobalpingMonitorType", () => {
                 msg: "",
             };
 
-            await assert.rejects(
-                validateMonitorContract(monitorType, monitor, heartbeat),
-                (error) => {
-                    assert.strictEqual(
-                        error.message,
-                        "New York (NY), US, NA, MASSIVEGRID (AS49683) : Failed: Connection timeout"
-                    );
-                    return true;
-                }
-            );
+            await assert.rejects(validateMonitorContract(monitorType, monitor, heartbeat), (error) => {
+                assert.strictEqual(
+                    error.message,
+                    "New York (NY), US, NA, MASSIVEGRID (AS49683) : Failed: Connection timeout"
+                );
+                return true;
+            });
         });
 
         test("should work according to monitor contract", async () => {
             const mockClient = createGlobalpingClientMock();
-            const monitorType = new GlobalpingMonitorType(async () => {return [mockClient, true]});
+            const monitorType = new GlobalpingMonitorType(async () => {
+                return [mockClient, true];
+            });
             const createResponse = createMockResponse({
                 id: "2g8T7V3OwXG3JV6Y10011zF2v",
             });
@@ -465,21 +480,20 @@ describe("GlobalpingMonitorType", () => {
                 ping: 0,
             };
 
-            await assert.rejects(
-                validateMonitorContract(monitorType, monitor, heartbeat),
-                (error) => {
-                    assert.strictEqual(
-                        error.message,
-                        "New York (NY), US, NA, MASSIVEGRID (AS49683) : Status code 500 not accepted. Output: Error response"
-                    );
-                    return true;
-                }
-            );
+            await assert.rejects(validateMonitorContract(monitorType, monitor, heartbeat), (error) => {
+                assert.strictEqual(
+                    error.message,
+                    "New York (NY), US, NA, MASSIVEGRID (AS49683) : Status code 500 not accepted. Output: Error response"
+                );
+                return true;
+            });
         });
 
         test("should handle invalid status code", async () => {
             const mockClient = createGlobalpingClientMock();
-            const monitorType = new GlobalpingMonitorType(async () => {return [mockClient, true]});
+            const monitorType = new GlobalpingMonitorType(async () => {
+                return [mockClient, true];
+            });
             const createResponse = createMockResponse({
                 id: "2g8T7V3OwXG3JV6Y10011zF2v",
             });
@@ -508,7 +522,9 @@ describe("GlobalpingMonitorType", () => {
             await assert.rejects(monitorType.check(monitor, heartbeat, true), (error) => {
                 assert.deepStrictEqual(
                     error,
-                    new Error("New York (NY), US, NA, MASSIVEGRID (AS49683) : Status code 301 not accepted. Output: RAW OUTPUT")
+                    new Error(
+                        "New York (NY), US, NA, MASSIVEGRID (AS49683) : Status code 301 not accepted. Output: RAW OUTPUT"
+                    )
                 );
                 return true;
             });
@@ -516,7 +532,9 @@ describe("GlobalpingMonitorType", () => {
 
         test("should handle keyword check (keyword present)", async () => {
             const mockClient = createGlobalpingClientMock();
-            const monitorType = new GlobalpingMonitorType(async () => {return [mockClient, true]});
+            const monitorType = new GlobalpingMonitorType(async () => {
+                return [mockClient, true];
+            });
             const createResponse = createMockResponse({
                 id: "2g8T7V3OwXG3JV6Y10011zF2v",
             });
@@ -553,7 +571,9 @@ describe("GlobalpingMonitorType", () => {
 
         test("should handle keyword check (keyword not present)", async () => {
             const mockClient = createGlobalpingClientMock();
-            const monitorType = new GlobalpingMonitorType(async () => {return [mockClient, true]});
+            const monitorType = new GlobalpingMonitorType(async () => {
+                return [mockClient, true];
+            });
             const createResponse = createMockResponse({
                 id: "2g8T7V3OwXG3JV6Y10011zF2v",
             });
@@ -592,7 +612,9 @@ describe("GlobalpingMonitorType", () => {
 
         test("should handle inverted keyword check", async () => {
             const mockClient = createGlobalpingClientMock();
-            const monitorType = new GlobalpingMonitorType(async () => {return [mockClient, false]});
+            const monitorType = new GlobalpingMonitorType(async () => {
+                return [mockClient, false];
+            });
             const createResponse = createMockResponse({
                 id: "2g8T7V3OwXG3JV6Y10011zF2v",
             });
@@ -629,7 +651,9 @@ describe("GlobalpingMonitorType", () => {
 
         test("should handle JSON query check (valid)", async () => {
             const mockClient = createGlobalpingClientMock();
-            const monitorType = new GlobalpingMonitorType(async () => {return [mockClient, true]});
+            const monitorType = new GlobalpingMonitorType(async () => {
+                return [mockClient, true];
+            });
             const createResponse = createMockResponse({
                 id: "2g8T7V3OwXG3JV6Y10011zF2v",
             });
@@ -670,7 +694,9 @@ describe("GlobalpingMonitorType", () => {
 
         test("should handle JSON query check (invalid)", async () => {
             const mockClient = createGlobalpingClientMock();
-            const monitorType = new GlobalpingMonitorType(async () => {return [mockClient, true]});
+            const monitorType = new GlobalpingMonitorType(async () => {
+                return [mockClient, true];
+            });
             const createResponse = createMockResponse({
                 id: "2g8T7V3OwXG3JV6Y10011zF2v",
             });
@@ -853,14 +879,14 @@ describe("GlobalpingMonitorType", () => {
  * Validates that a monitor type follows the contract from monitor.js
  * After check() completes, if allowCustomStatus is false and status is not UP,
  * the Monitor.beat() method throws this exact error.
- *
  * @param {MonitorType} monitorType - The monitor type instance
  * @param {Monitor} monitor - The heartbeat object after check() completes
  * @param {Heartbeat} heartbeat - The heartbeat object after check() completes
+ * @returns {Promise<void>} A promise that resolves when validation completes
  * @throws {Error} When monitor sets non-UP status without throwing (contract violation)
  */
 async function validateMonitorContract(monitorType, monitor, heartbeat) {
-    await monitorType.check(monitor, heartbeat, true)
+    await monitorType.check(monitor, heartbeat, true);
 
     if (!monitorType.allowCustomStatus && heartbeat.status !== UP) {
         throw new Error("The monitor implementation is incorrect, non-UP error must throw error inside check()");

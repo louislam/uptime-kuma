@@ -1,6 +1,6 @@
 const { MonitorType } = require("./monitor-type");
 const { Globalping, IpVersion } = require("globalping");
-const { log, UP, DOWN, evaluateJsonQuery } = require("../../src/util");
+const { log, UP, evaluateJsonQuery } = require("../../src/util");
 const {
     checkStatusCode,
     getOidcTokenClientCredentials,
