@@ -598,7 +598,7 @@
     "Event data:": "Dane o zdarzeniu:",
     "Then choose an action, for example switch the scene to where an RGB light is red.": "Następnie wybierz akcję, na przykład przełącz scenę na taką, w której światło RGB jest czerwone.",
     "Frontend Version": "Wersja frontu",
-    "Frontend Version do not match backend version!": "Wersja frontu nie pasuje do wersji backendu!",
+    "Frontend Version does not match backend version!": "Wersja frontu nie pasuje do wersji backendu!",
     "Base URL": "Bazowy adres URL",
     "goAlertInfo": "GoAlert to aplikacja open source do planowania, automatycznych eskalacji i powiadomień (jak SMS lub połączenia głosowe). Automatycznie angażuj właściwą osobę, we właściwy sposób i we właściwym czasie! {0}",
     "goAlertIntegrationKeyInfo": "Pobierz generyczny klucz integracyjny API dla usługi, którego wartość skopiowanego tokena URL jest zwykle w formacie \"aaaaaaaa-bbb-cccc-dddd-eeeeee\".",

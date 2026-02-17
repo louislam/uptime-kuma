@@ -419,7 +419,7 @@
     "Long-Lived Access Token": "Dlhodobý prístupový token",
     "Automations can optionally be triggered in Home Assistant:": "Automatizácie možno voliteľne spúšťať v aplikácii Home Assistant:",
     "Frontend Version": "Verzia frontendu",
-    "Frontend Version do not match backend version!": "Verzia frontendu sa nezhoduje s verziou backendu!",
+    "Frontend Version does not match backend version!": "Verzia frontendu sa nezhoduje s verziou backendu!",
     "backupRecommend": "Namiesto toho zálohujte zväzok alebo priečinok s údajmi (./data/) priamo.",
     "Optional": "Voliteľné",
     "sameAsServerTimezone": "Rovnaké ako časové pásmo servera",

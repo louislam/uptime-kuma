@@ -659,7 +659,7 @@
     "RadiusCallingStationId": "آیدی ایستگاه تماس (Calling Station Id)",
     "tcp": "TCP / HTTP",
     "Frontend Version": "نسخه فرانت اند",
-    "Frontend Version do not match backend version!": "نسخه فرانت اند با نسخه بک اند مطابقت ندارد!",
+    "Frontend Version does not match backend version!": "نسخه فرانت اند با نسخه بک اند مطابقت ندارد!",
     "backupOutdatedWarning": "منسوخ شده: از آنجایی که بسیاری از ویژگی ها اضافه شده اند و این ویژگی پشتیبان گیری کمی حفظ نشده است، نمی تواند یک نسخه پشتیبان کامل ایجاد یا بازیابی شود.",
     "backupRecommend": "لطفاً مستقیماً از Volume یا پوشه داده (./data/) نسخه پشتیبان تهیه کنید.",
     "No Maintenance": "بدون تعمیر و نگهداری",

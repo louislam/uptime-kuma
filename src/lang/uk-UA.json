@@ -699,7 +699,7 @@
     "RadiusSecretDescription": "Спільний секрет між клієнтом і сервером",
     "RadiusCalledStationId": "ID станції, що викликається",
     "Frontend Version": "Версія інтерфейсу",
-    "Frontend Version do not match backend version!": "Версія інтерфейсу не збігається з версією бекенду!",
+    "Frontend Version does not match backend version!": "Версія інтерфейсу не збігається з версією бекенду!",
     "Number": "Номер",
     "dataRetentionTimeError": "Період зберігання повинен бути 0 або більше",
     "infiniteRetention": "Встановіть 0 для нескінченного зберігання.",

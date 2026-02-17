@@ -649,7 +649,7 @@
     "trustProxyDescription": "Stol på ‘X-Forwarded-*’-headere. Hvis du vil få riktig klient-IP og din Uptime Kuma er bak en proxy som Nginx eller Apache, bør du aktivere dette.",
     "Automations can optionally be triggered in Home Assistant:": "Automatiseringer kan valgfritt utløses i Home Assistant:",
     "Frontend Version": "Frontend-versjon",
-    "Frontend Version do not match backend version!": "Frontend-versjonen samsvarer ikke med backend-versjonen!",
+    "Frontend Version does not match backend version!": "Frontend-versjonen samsvarer ikke med backend-versjonen!",
     "cronExpression": "Cron-uttrykk",
     "cronSchedule": "Tidsplan: ",
     "strategyManual": "Aktiv/Inaktiv manuelt",

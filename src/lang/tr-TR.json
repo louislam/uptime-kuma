@@ -564,7 +564,7 @@
     "Event data:": "Etkinlik verileri:",
     "Then choose an action, for example switch the scene to where an RGB light is red.": "Ardından bir eylem seçin, örneğin RGB ışığının kırmızı olduğu sahneyi değiştirin.",
     "Frontend Version": "Frontend Sürümü",
-    "Frontend Version do not match backend version!": "Frontend Sürümü, backend sürümüyle eşleşmiyor!",
+    "Frontend Version does not match backend version!": "Frontend Sürümü, backend sürümüyle eşleşmiyor!",
     "Base URL": "Temel URL",
     "goAlertInfo": "GoAlert, çağrı üzerine zamanlama, otomatik eskalasyonlar ve bildirimler (SMS veya sesli çağrılar gibi) için açık kaynaklı bir uygulamadır. Doğru kişiyi, doğru şekilde ve doğru zamanda otomatik olarak devreye sokun! {0}",
     "goAlertIntegrationKeyInfo": "Servis için genel API entegrasyon anahtarını, genellikle kopyalanan URL'nin belirteç parametresinin değeri olan \"aaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee\" biçiminde alın.",

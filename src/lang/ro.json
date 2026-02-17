@@ -296,7 +296,7 @@
     "Event data:": "Datele Evenimentului:",
     "Then choose an action, for example switch the scene to where an RGB light is red.": "Apoi alegeți o acțiune, de exemplu comutați scena în care o lumină RGB este roșie.",
     "Frontend Version": "Versiune Frontend",
-    "Frontend Version do not match backend version!": "Versiunea Frontend-ului nu este aceeași cu cea a backend-ului!",
+    "Frontend Version does not match backend version!": "Versiunea Frontend-ului nu este aceeași cu cea a backend-ului!",
     "backupRecommend": "Vă rugăm să faceți backup direct pentru volumul sau folderul de date (./data/).",
     "Optional": "Opțional",
     "squadcast": "Squadcast",

@@ -417,7 +417,7 @@
     "endpoint": "エンドポイント",
     "Proxy Protocol": "Proxy Protocol",
     "Google Analytics ID": "Google アナリティクス ID",
-    "Frontend Version do not match backend version!": "フロントエンドとバックエンドのバージョンが一致しません!",
+    "Frontend Version does not match backend version!": "フロントエンドとバックエンドのバージョンが一致しません!",
     "or": "または",
     "Frontend Version": "フロントエンドのバージョン",
     "promosmsPassword": "APIパスワード",

@@ -576,7 +576,7 @@
     "Event data:": "Podaci eventa:",
     "Then choose an action, for example switch the scene to where an RGB light is red.": "Potrebno je i odabrati akciju za izvođenje na Home Assistantu.",
     "Frontend Version": "Inačica sučelja",
-    "Frontend Version do not match backend version!": "Inačica sučelja ne odgovara poslužitelju!",
+    "Frontend Version does not match backend version!": "Inačica sučelja ne odgovara poslužitelju!",
     "monitorToastMessagesLabel": "Skočne obavijesti Monitora",
     "toastSuccessTimeout": "Vrijeme isteka skočnih obavijesti o uspjehu",
     "toastErrorTimeout": "Vrijeme isteka skočnih obavijesti o pogrešci",

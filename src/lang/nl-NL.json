@@ -551,7 +551,7 @@
     "Event data:": "Event data:",
     "Then choose an action, for example switch the scene to where an RGB light is red.": "Kies een actie, bijvoorbeeld het activeren van een scene.",
     "Frontend Version": "Frontend Versie",
-    "Frontend Version do not match backend version!": "Frontend versie komt niet overeen niet met de backend versie!",
+    "Frontend Version does not match backend version!": "Frontend versie komt niet overeen niet met de backend versie!",
     "backupRecommend": "In plaats daarvan, maak een backup van je Docker volume of de data map (./data/).",
     "squadcast": "Squadcast",
     "or": "of",

@@ -476,7 +476,7 @@
     "Event data:": "Datos del Evento:",
     "Then choose an action, for example switch the scene to where an RGB light is red.": "Luego elija una acción, por ejemplo, cambie la escena a donde una luz RGB es roja.",
     "Frontend Version": "Versión de Interfaz",
-    "Frontend Version do not match backend version!": "La Versión de Interfaz no coincide con la versión backend!",
+    "Frontend Version does not match backend version!": "La Versión de Interfaz no coincide con la versión backend!",
     "backupRecommend": "Por favor, haz copia de seguridad del volumen o el archivo de datos (./data/) directamente en su lugar.",
     "recurringInterval": "Intervalo",
     "Recurring": "Periódico",

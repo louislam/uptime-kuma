@@ -610,7 +610,7 @@
     "Event data:": "Data události:",
     "Then choose an action, for example switch the scene to where an RGB light is red.": "Následně vyberte akci, například přepnutí scény z RGB světla na červenou.",
     "Frontend Version": "Verze frontendu",
-    "Frontend Version do not match backend version!": "Verze frontendu neodpovídá verzi backendu!",
+    "Frontend Version does not match backend version!": "Verze frontendu neodpovídá verzi backendu!",
     "Base URL": "Primární URL adresa",
     "goAlertInfo": "GoAlert je aplikace s otevřeným zdrojovým kódem pro plánování hovorů, automatické eskalace a upozornění (jako jsou SMS nebo hlasové hovory). Automaticky zapojte správnou osobu, správným způsobem a ve správný čas! {0}",
     "goAlertIntegrationKeyInfo": "Obecný API integrační klíč pro danou službu ve formátu \"aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee\" se obvykle nachází ve zkopírované URL jako hodnota parametru token.",

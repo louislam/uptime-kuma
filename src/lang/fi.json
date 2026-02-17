@@ -361,7 +361,7 @@
     "Trigger type:": "Triggerin tyyppi:",
     "Event type:": "Tapahtumatyyppi:",
     "Frontend Version": "Käyttöliittymän versio",
-    "Frontend Version do not match backend version!": "Käyttöliittymän versio ei vastaa taustaversiota!",
+    "Frontend Version does not match backend version!": "Käyttöliittymän versio ei vastaa taustaversiota!",
     "backupRecommend": "Varmuuskopioi asema tai tietokansio (./data/) suoraan sen sijaan.",
     "Optional": "Valinnainen",
     "squadcast": "Squadcast",

@@ -576,7 +576,7 @@
     "Event data:": "Δεδομένα συμβάντος:",
     "Then choose an action, for example switch the scene to where an RGB light is red.": "Στη συνέχεια, επιλέξτε μια ενέργεια, για παράδειγμα αλλάξτε τη σκηνή στο σημείο όπου ένα φως RGB είναι κόκκινο.",
     "Frontend Version": "Έκδοση Frontend",
-    "Frontend Version do not match backend version!": "Η Frontend έκδοση δεν ταιριάζει με την έκδοση backend!",
+    "Frontend Version does not match backend version!": "Η Frontend έκδοση δεν ταιριάζει με την έκδοση backend!",
     "Base URL": "Βασική διεύθυνση URL",
     "goAlertInfo": "Το GoAlert είναι μια εφαρμογή ανοιχτού κώδικα για προγραμματισμό κλήσεων, αυτοματοποιημένες κλιμακώσεις και ειδοποιήσεις (όπως SMS ή φωνητικές κλήσεις). Αλληλεπιδράστε αυτόματα με το σωστό άτομο, με τον σωστό τρόπο και τη σωστή στιγμή! {0}",
     "goAlertIntegrationKeyInfo": "Λάβετε το generic API integration key για την υπηρεσία σε αυτήν τη μορφή \"aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee\" συνήθως την τιμή της παραμέτρου διακριτικού της αντιγραμμένης διεύθυνσης URL.",

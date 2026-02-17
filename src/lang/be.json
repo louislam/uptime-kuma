@@ -461,7 +461,7 @@
     "Event data:": "даныя падзеі:",
     "Then choose an action, for example switch the scene to where an RGB light is red.": "Затым выберыце дзеянне, напрыклад, пераключыце сцэну на чырвоны індыкатар RGB..",
     "Frontend Version": "Версія інтэрфейса",
-    "Frontend Version do not match backend version!": "Версія інтэрфейса не адпавядае версіі сервернай часткі!",
+    "Frontend Version does not match backend version!": "Версія інтэрфейса не адпавядае версіі сервернай часткі!",
     "backupOutdatedWarning": "Састарэла: гэтая функцыя рэзервовага капіявання больш не падтрымліваецца. Праз даданыя шмат функцый, яна не можа стварыць або аднавіць поўную рэзервовую копію.",
     "backupRecommend": "Зрабіце рэзервовую копію таму або папцы з данымі (./data/) напрамую.",
     "Optional": "Неабавязкова",

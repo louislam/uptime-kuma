@@ -541,7 +541,7 @@
     "chatIDNotFound": "Chatt-id hittade inte; vänligen skicka ett meddelande till den här botten först",
     "Long-Lived Access Token": "Långtidsaccess-token",
     "Frontend Version": "Frontend-version",
-    "Frontend Version do not match backend version!": "Frontend-version matchar inte backend-version!",
+    "Frontend Version does not match backend version!": "Frontend-version matchar inte backend-version!",
     "backupOutdatedWarning": "Avskrivet: Eftersom en massa funktioner har lagts till och denna säkerhetskopieringsfunktion är lite ounderhållen, kan det inte generera eller återställa en komplett säkerhetskopia.",
     "A list of Notification Services can be found in Home Assistant under \"Developer Tools > Services\" search for \"notification\" to find your device/phone name.": "En lista av notifieringstjänster kan hittas i Home Assistant under \"Utvecklarverktyg > Tjänster\", sök efter notifiering för att hitta din enhet/telefon-namn.",
     "Then choose an action, for example switch the scene to where an RGB light is red.": "Välj en åtgärd, till exempel byt scen till en där en RGB-lampa är röd.",

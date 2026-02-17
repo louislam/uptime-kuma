@@ -574,7 +574,7 @@
     "Event data:": "Събитие данни:",
     "Then choose an action, for example switch the scene to where an RGB light is red.": "След което изберете действие, например да превключите сцената, където RGB светлината е червена.",
     "Frontend Version": "Фронтенд версия",
-    "Frontend Version do not match backend version!": "Фронтенд версията не съвпада с Бекенд версията!",
+    "Frontend Version does not match backend version!": "Фронтенд версията не съвпада с Бекенд версията!",
     "Base URL": "Базов URL адрес",
     "goAlertInfo": "GoAlert е приложение с отворен код за планиране на повиквания, автоматизирани ескалации и известия (като SMS или гласови повиквания). Автоматично ангажирайте точния човек, по точния начин и в точното време! {0}",
     "goAlertIntegrationKeyInfo": "Вземете общ API интеграционен ключ за услугата във формат \"aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee\" обикновено стойността на параметъра token на копирания URL адрес.",

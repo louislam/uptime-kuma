@@ -562,7 +562,7 @@
     "Event data:": "Данные события:",
     "Then choose an action, for example switch the scene to where an RGB light is red.": "Затем выберите действие, например, переключите сцену на красный индикатор RGB..",
     "Frontend Version": "Версия интерфейса",
-    "Frontend Version do not match backend version!": "Версия интерфейса не соответствует версии серверной части!",
+    "Frontend Version does not match backend version!": "Версия интерфейса не соответствует версии серверной части!",
     "Base URL": "Базовый URL",
     "goAlertInfo": "GoAlert — это приложение с открытым исходным кодом для составления расписания вызовов, автоматической эскалации и уведомлений (например, SMS или голосовых звонков). Автоматически привлекайте нужного человека, нужным способом и в нужное время! {0}",
     "goAlertIntegrationKeyInfo": "Получите общий ключ интеграции API для сервиса в этом формате \"aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee\", обычно это значение параметра токена скопированного URL.",

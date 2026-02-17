@@ -574,7 +574,7 @@
     "Event data:": "Data event:",
     "Then choose an action, for example switch the scene to where an RGB light is red.": "Kemudian pilih tindakan, misalnya alihkan ke tempat dimana lampu RGB berwarna merah.",
     "Frontend Version": "Versi Frontend",
-    "Frontend Version do not match backend version!": "Versi Frontend tidak sama dengan versi backend!",
+    "Frontend Version does not match backend version!": "Versi Frontend tidak sama dengan versi backend!",
     "Base URL": "URL Dasar",
     "goAlertInfo": "GoAlert adalah aplikasi open source untuk penjadwalan panggilan, eskalasi otomatis dan pemberitahuan (seperti SMS atau panggilan suara). Secara otomatis melibatkan orang yang tepat, dengan cara yang benar, dan pada waktu yang tepat! {0}",
     "goAlertIntegrationKeyInfo": "Dapatkan kunci integrasi API generik untuk layanan dalam format ini \"aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee\" biasanya nilai parameter token dari URL yang disalin.",

@@ -7,7 +7,7 @@
             <div class="frontend-version">{{ $t("frontendVersionIs", { version: $root.frontendVersion }) }}</div>
 
             <div v-if="!$root.isFrontendBackendVersionMatched" class="alert alert-warning mt-4" role="alert">
-                ⚠️ {{ $t("Frontend Version do not match backend version!") }}
+                ⚠️ {{ $t("Frontend Version does not match backend version!") }}
             </div>
 
             <div class="my-3 update-link">

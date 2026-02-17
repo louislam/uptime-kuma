@@ -559,7 +559,7 @@
     "Event data:": "事件資料：",
     "Then choose an action, for example switch the scene to where an RGB light is red.": "然後選擇操作，例如切換至 RGB 燈為紅色的場景。",
     "Frontend Version": "前端版本",
-    "Frontend Version do not match backend version!": "前端版本與後端版本不符！",
+    "Frontend Version does not match backend version!": "前端版本與後端版本不符！",
     "lastDay2": "每月倒數第二天",
     "lastDay3": "每月倒數第三天",
     "lastDay4": "每月倒數第四天",

@@ -578,7 +578,7 @@
     "Event data:": "Ereignisdaten:",
     "Then choose an action, for example switch the scene to where an RGB light is red.": "Wähle dann eine Aktion, z. B. eine Szene, bei der ein RGB-Licht rot leuchtet.",
     "Frontend Version": "Frontend-Version",
-    "Frontend Version do not match backend version!": "Frontend-Version stimmt nicht mit Backend-Version überein!",
+    "Frontend Version does not match backend version!": "Frontend-Version stimmt nicht mit Backend-Version überein!",
     "Maintenance": "Wartung",
     "statusMaintenance": "Wartung",
     "Schedule maintenance": "Wartung planen",

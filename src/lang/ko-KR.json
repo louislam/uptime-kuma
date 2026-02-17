@@ -622,7 +622,7 @@
     "Event type:": "이벤트 종류:",
     "Event data:": "이벤트 데이터:",
     "Frontend Version": "프론트엔드 버전",
-    "Frontend Version do not match backend version!": "프론트엔드 버전이 백엔드 버전과 일치하지 않아요!",
+    "Frontend Version does not match backend version!": "프론트엔드 버전이 백엔드 버전과 일치하지 않아요!",
     "confirmDeleteTagMsg": "이 태그를 삭제하시겠습니까? 이 태그와 연결된 모니터는 삭제되지 않습니다.",
     "infiniteRetention": "무한히 저장하려면 0으로 설정하세요.",
     "backupRecommend": "대신 볼륨 또는 데이터 폴더 (./data/) 를 직접 백업하세요.",

@@ -296,7 +296,7 @@
     "wayToGetTelegramChatID": "Você pode pegar o Chat ID enviando uma mensagem marcando o bot no grupo e indo nessa URL para ver o chat_id:",
     "wayToGetLineNotifyToken": "Você pode pegar o token de acesso de {0}",
     "disableCloudflaredNoAuthMsg": "Você está no modo sem autenticação, a senha não é necessária.",
-    "Frontend Version do not match backend version!": "Versão do frontend é diferente da versão do backend!",
+    "Frontend Version does not match backend version!": "Versão do frontend é diferente da versão do backend!",
     "strategyManual": "Ativar/Desativar Manualmente",
     "weekdayShortThu": "Qui",
     "Basic Settings": "Configurações Básicas",

@@ -575,7 +575,7 @@
     "Event data:": "ইভেন্ট ডেটা:",
     "Then choose an action, for example switch the scene to where an RGB light is red.": "তারপর একটি অ্যাকশন বেছে নিন, উদাহরণস্বরূপ দৃশ্যটি এমন জায়গায় স্যুইচ করুন যেখানে একটি RGB আলো লাল।",
     "Frontend Version": "ফ্রন্টএন্ড সংস্করণ",
-    "Frontend Version do not match backend version!": "ফ্রন্টএন্ড ভার্সন ব্যাকএন্ড ভার্সনের সাথে মেলে না!",
+    "Frontend Version does not match backend version!": "ফ্রন্টএন্ড ভার্সন ব্যাকএন্ড ভার্সনের সাথে মেলে না!",
     "backupRecommend": "অনুগ্রহ করে ভলিউম অথবা ডেটা ফোল্ডার (./data/) সরাসরি ব্যাকআপ করুন।",
     "weekdayShortThu": "বৃহস্পতি",
     "supportBaleChatID": "সরাসরি চ্যাট / গ্রুপ / চ্যানেলের চ্যাট আইডি সমর্থন করুন",

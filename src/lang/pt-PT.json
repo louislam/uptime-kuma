@@ -356,7 +356,7 @@
     "Event data:": "Dados do evento:",
     "Then choose an action, for example switch the scene to where an RGB light is red.": "Depois de escolher uma ação, por exemplo mudar a cena para onde uma luz RGB é vermelha.",
     "Frontend Version": "Versão Frontend",
-    "Frontend Version do not match backend version!": "Versão Frontend não corresponde à versão backend!",
+    "Frontend Version does not match backend version!": "Versão Frontend não corresponde à versão backend!",
     "backupRecommend": "Por favor, faça o backup do volume ou da pasta de dados (./data/) diretamente.",
     "Optional": "Opcional",
     "squadcast": "Squadcast",

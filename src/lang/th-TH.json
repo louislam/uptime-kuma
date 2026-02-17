@@ -574,7 +574,7 @@
     "Event data:": "ข้อมูลกิจกรรม:",
     "Then choose an action, for example switch the scene to where an RGB light is red.": "จากนั้นเลือกการกระทำ, ตัวอย่าง เช่น เปลี่ยนเป็นไฟสีแดง",
     "Frontend Version": "เวอร์ชั่น Frontend",
-    "Frontend Version do not match backend version!": "เวอร์ชั่น Frontend ไม่ตรงกับ Backend !",
+    "Frontend Version does not match backend version!": "เวอร์ชั่น Frontend ไม่ตรงกับ Backend !",
     "webhookAdditionalHeadersTitle": "Header เพิ่มเติม",
     "webhookAdditionalHeadersDesc": "กำหนด Header ที่จะส่งไปหร้อมกับ Webhook โดยแต่ละ header ควรระบุในรูปแบบ key/value แบบ JSON",
     "Start of maintenance": "เริ่มการซ่อมบำรุง",

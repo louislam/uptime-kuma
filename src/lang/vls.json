@@ -559,7 +559,7 @@
     "Event data:": "Event data:",
     "Then choose an action, for example switch the scene to where an RGB light is red.": "Kies een actie, bijvoorbeeld het activeren van een scene.",
     "frontendVersionIs": "Frontend versie: {version}",
-    "Frontend Version do not match backend version!": "Frontend versie komt nie overeen nie met de backend versie!",
+    "Frontend Version does not match backend version!": "Frontend versie komt nie overeen nie met de backend versie!",
     "backupOutdatedWarning": "Deprecated: Er zijn een hoop nieuwe functies toegevoegd en daarom is de backup functie nie onderhouden, het is op dit moment nie mogelijk om een volledige backup te maken en te herstellen.",
     "backupRecommend": "In plaats daarvan, maak een backup van ge Docker volume of de data map (./data/).",
     "Optional": "Optioneel",

@@ -601,7 +601,7 @@
     "Event data:": "נתוני אירועים:",
     "Then choose an action, for example switch the scene to where an RGB light is red.": "ואז בחר פעולה, למשל העבר את הסצינה למקום בו אור RGB הוא אדום.",
     "Frontend Version": "גרסת Frontend",
-    "Frontend Version do not match backend version!": "גרסת Frontend לא תואמת את גרסת Backend!",
+    "Frontend Version does not match backend version!": "גרסת Frontend לא תואמת את גרסת Backend!",
     "Base URL": "כתובת בסיס",
     "goAlertInfo": "SAETRERT הוא יישום קוד פתוח לתזמון שיחה, הסלמות והודעות אוטומטיות (כמו SMS או שיחות קוליות).לעסוק אוטומטית את האדם הנכון, בדרך הנכונה ובזמן הנכון!{0}",
     "goAlertIntegrationKeyInfo": "קבל מפתח אינטגרציה של API גנרי לשירות בפורמט זה \"AAAAAAAA-BBB-CCCC-DDDD-EEEEEEEEEEE \" בדרך כלל הערך של פרמטר האסימון של URL שהועתק.",

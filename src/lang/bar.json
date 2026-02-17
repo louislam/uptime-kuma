@@ -551,7 +551,7 @@
     "Long-Lived Access Token": "Langzeit-Zuagriffstoken",
     "Notification Service": "Benachrichtigungs-Dienst",
     "default: notify all devices": "Standard: Olle Gräta bscheid gem",
-    "Frontend Version do not match backend version!": "D'Frontend-Version basst ned zur Backend-Version zam!",
+    "Frontend Version does not match backend version!": "D'Frontend-Version basst ned zur Backend-Version zam!",
     "lastDay1": "Letzda Dog im Monat",
     "Event type:": "Ereignis-Typ:",
     "Server Timezone": "Server-Zeitzone",

@@ -404,7 +404,7 @@
     "Event data:": "Dades de l'esdeveniment:",
     "Then choose an action, for example switch the scene to where an RGB light is red.": "A continuació, trieu una acció, per exemple, canvieu l'escena a on una llum RGB és vermella.",
     "Frontend Version": "Versió del frontal",
-    "Frontend Version do not match backend version!": "La versió frontal no coincideix amb la versió del dorsal!",
+    "Frontend Version does not match backend version!": "La versió frontal no coincideix amb la versió del dorsal!",
     "backupRecommend": "Si us plau, feu una còpia de seguretat del volum o de la carpeta de dades (./data/) directament.",
     "Optional": "Opcional",
     "and": "i",

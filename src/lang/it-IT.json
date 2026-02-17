@@ -499,7 +499,7 @@
     "Event data:": "Dati dell'evento:",
     "Then choose an action, for example switch the scene to where an RGB light is red.": "Quindi scegli un'azione, ad esempio cambia la scena in cui una luce RGB è rossa.",
     "Frontend Version": "Versione front-end",
-    "Frontend Version do not match backend version!": "La versione del frontend non corrisponde alla versione del backend!",
+    "Frontend Version does not match backend version!": "La versione del frontend non corrisponde alla versione del backend!",
     "backupOutdatedWarning": "Deprecato: poiché sono state aggiunte molte funzionalità e questa funzionalità di backup è un po' trascurata, non può generare o ripristinare un backup completo.",
     "backupRecommend": "Esegui invece il backup diretto del volume o della cartella dei dati (./data/).",
     "Optional": "Opzionale",

@@ -431,7 +431,7 @@
     "Event data:": "Sonraí imeachta:",
     "Then choose an action, for example switch the scene to where an RGB light is red.": "Ansin roghnaigh gníomh, mar shampla athraigh an radharc go dtí an áit a bhfuil solas RGB dearg.",
     "Frontend Version": "Leagan Frontend",
-    "Frontend Version do not match backend version!": "Ní hionann Leagan Frontend leis an leagan inneall!",
+    "Frontend Version does not match backend version!": "Ní hionann Leagan Frontend leis an leagan inneall!",
     "backupOutdatedWarning": "Gan úsáid: Mar gur cuireadh go leor gnéithe nua leis agus mar go bhfuil an gné chúltaca seo neamhcheadaithe go leor, ní féidir leis cúltaca iomlán a ghiniúint ná a thabhairt ar ais.",
     "backupRecommend": "Le do thoil cúltaca an toirt nó an fillteán sonraí (./data/) go díreach ina ionad.",
     "Optional": "Roghnach",

@@ -611,7 +611,7 @@
     "Event data:": "事件数据：",
     "Then choose an action, for example switch the scene to where an RGB light is red.": "然后您可以选择关联操作，例如切换到 RGB 灯发出红光的场景。",
     "Frontend Version": "前端版本",
-    "Frontend Version do not match backend version!": "前端版本与后端版本不匹配！",
+    "Frontend Version does not match backend version!": "前端版本与后端版本不匹配！",
     "Base URL": "API 基础地址",
     "goAlertInfo": "GoAlert 是一个用于呼叫调度、自动汇报和通知（如 SMS 或语音呼叫）的开源应用程序。在正确的时间以正确的方式自动让正确的人参与！{0}",
     "goAlertIntegrationKeyInfo": "使用形如 aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee 的通用 API 集成密钥，通常是复制来的链接中的 token 参数值。",

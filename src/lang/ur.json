@@ -400,7 +400,7 @@
     "Event data:": "ایونٹ کا ڈیٹا:",
     "Then choose an action, for example switch the scene to where an RGB light is red.": "پھر ایک عمل کا انتخاب کریں، مثال کے طور پر منظر کو اس طرف تبدیل کریں جہاں RGB لائٹ سرخ ہو۔",
     "Frontend Version": "فرنٹ اینڈ ورژن",
-    "Frontend Version do not match backend version!": "فرنٹ اینڈ ورژن پسدید ورژن سے مماثل نہیں ہے!",
+    "Frontend Version does not match backend version!": "فرنٹ اینڈ ورژن پسدید ورژن سے مماثل نہیں ہے!",
     "backupRecommend": "براہ کرم اس کے بجائے براہ راست والیوم یا ڈیٹا فولڈر (./data/) کا بیک اپ لیں۔",
     "Optional": "اختیاری",
     "or": "یا",

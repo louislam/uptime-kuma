@@ -611,7 +611,7 @@
     "Event data": "بيانات الحدث",
     "Then choose an action, for example switch the scene to where an RGB light is red.": "ثم اختر إجراءً على سبيل المثال قم بتبديل المشهد إلى حيث يكون ضوء RGB أحمر.",
     "Frontend Version": "إصدار الواجهة الأمامية",
-    "Frontend Version do not match backend version!": "إصدار Frontend لا يتطابق مع الإصدار الخلفي!",
+    "Frontend Version does not match backend version!": "إصدار Frontend لا يتطابق مع الإصدار الخلفي!",
     "Base URL": "عنوان URL الأساسي",
     "goAlertInfo": "الهدف هو تطبيق مفتوح المصدر لجدولة الجدولة التلقائية والإشعارات (مثل الرسائل القصيرة أو المكالمات الصوتية). إشراك الشخص المناسب تلقائيًا بالطريقة الصحيحة وفي الوقت المناسب! {0}",
     "goAlertIntegrationKeyInfo": "احصل على مفتاح تكامل API العام للخدمة في هذا التنسيق \"aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee\" عادةً قيمة المعلمة الرمزية لعنوان url المنسق.",

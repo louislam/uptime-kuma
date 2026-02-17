@@ -430,7 +430,7 @@
     "Container Name / ID": "Container Navn / ID",
     "Packet Size": "Pakke størrelse",
     "Home Assistant URL": "Home Assistant URL",
-    "Frontend Version do not match backend version!": "Frontend versionen stemmer ikke overens med backend versionen!",
+    "Frontend Version does not match backend version!": "Frontend versionen stemmer ikke overens med backend versionen!",
     "Optional": "Valgfri",
     "HomeAssistant": "Home Assistant",
     "disableauth.message1": "Er du sikker på, at du vil {disableAuth}?",

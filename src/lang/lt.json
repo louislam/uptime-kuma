@@ -446,7 +446,7 @@
     "Event data:": "Įvykio duomenys:",
     "Then choose an action, for example switch the scene to where an RGB light is red.": "Tada pasirinkite veiksmą, pavyzdžiui, pakeiskite sceną į tą, kur RGB šviesa yra raudona.",
     "Frontend Version": "Priekinės dalies versija",
-    "Frontend Version do not match backend version!": "Priekinės dalies versija nesutampa su galinės dalies versija!",
+    "Frontend Version does not match backend version!": "Priekinės dalies versija nesutampa su galinės dalies versija!",
     "backupRecommend": "Prašome atsarginę kopiją daryti tiesiogiai iš skaidinio arba duomenų aplanko (./data/).",
     "Optional": "Pasirinktinai",
     "sameAsServerTimezone": "Tokia pati kaip serverio laiko juosta",

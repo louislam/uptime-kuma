@@ -398,7 +398,7 @@
     "Event data:": "بيانات الحدث:",
     "Then choose an action, for example switch the scene to where an RGB light is red.": "ثم اختر إجراءً على سبيل المثال قم بتبديل المشهد إلى حيث يكون ضوء RGB أحمر.",
     "Frontend Version": "إصدار الواجهة الأمامية",
-    "Frontend Version do not match backend version!": "إصدار Frontend لا يتطابق مع الإصدار الخلفي!",
+    "Frontend Version does not match backend version!": "إصدار Frontend لا يتطابق مع الإصدار الخلفي!",
     "backupOutdatedWarning": "مهمل: نظرًا لأنه تمت إضافة الكثير من الميزات وأن ميزة النسخ الاحتياطي هذه لم يتم الحفاظ عليها قليلاً ، فلا يمكنها إنشاء نسخة احتياطية كاملة أو استعادتها.",
     "backupRecommend": "يرجى النسخ الاحتياطي لحجم الصوت أو مجلد البيانات (./data/) مباشرة بدلاً من ذلك.",
     "Optional": "اختياري",
