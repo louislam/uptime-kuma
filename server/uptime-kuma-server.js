@@ -129,10 +129,13 @@ class UptimeKumaServer {
         UptimeKumaServer.monitorTypeList["globalping"] = new GlobalpingMonitorType(async () => {
             const apiKey = await Settings.get("globalpingApiToken");
 
-             return [new Globalping({
-                auth: apiKey,
-                agent: this.getUserAgent(),
-            }), !!apiKey];
+            return [
+                new Globalping({
+                    auth: apiKey,
+                    agent: this.getUserAgent(),
+                }),
+                !!apiKey,
+            ];
         });
         UptimeKumaServer.monitorTypeList["redis"] = new RedisMonitorType();
         UptimeKumaServer.monitorTypeList["system-service"] = new SystemServiceMonitorType();
