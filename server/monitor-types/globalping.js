@@ -39,9 +39,9 @@ class GlobalpingMonitorType extends MonitorType {
 
         switch (monitor.subtype) {
             case "ping":
-                return this.#ping(client, monitor, heartbeat, hasAPIToken);
+                return this.ping(client, monitor, heartbeat, hasAPIToken);
             case "http":
-                return this.#http(client, monitor, heartbeat, hasAPIToken);
+                return this.http(client, monitor, heartbeat, hasAPIToken);
         }
     }
 
@@ -53,7 +53,7 @@ class GlobalpingMonitorType extends MonitorType {
      * @param {boolean} hasAPIToken - Whether the monitor has an API token.
      * @returns {Promise<void>} A promise that resolves when the ping monitor is handled.
      */
-    async #ping(client, monitor, heartbeat, hasAPIToken) {
+    async ping(client, monitor, heartbeat, hasAPIToken) {
         const opts = {
             type: "ping",
             target: monitor.hostname,
@@ -119,7 +119,7 @@ class GlobalpingMonitorType extends MonitorType {
      * @param {boolean} hasAPIToken - Whether the monitor has an API token.
      * @returns {Promise<void>} A promise that resolves when the HTTP monitor is handled.
      */
-    async #http(client, monitor, heartbeat, hasAPIToken) {
+    async http(client, monitor, heartbeat, hasAPIToken) {
         const url = new URL(monitor.url);
 
         let protocol = url.protocol.replace(":", "").toUpperCase();
