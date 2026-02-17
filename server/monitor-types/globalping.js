@@ -1,7 +1,7 @@
 const { MonitorType } = require("./monitor-type");
 const { Globalping, IpVersion } = require("globalping");
 const { Settings } = require("../settings");
-const { log, UP, DOWN, evaluateJsonQuery } = require("../../src/util");
+const { log, UP, evaluateJsonQuery } = require("../../src/util");
 const {
     checkStatusCode,
     getOidcTokenClientCredentials,
@@ -49,6 +49,9 @@ class GlobalpingMonitorType extends MonitorType {
                 break;
             case "http":
                 await this.http(client, monitor, heartbeat, hasAPIToken);
+                break;
+            case "dns":
+                await this.dns(client, monitor, heartbeat, hasAPIToken, R);
                 break;
         }
     }
@@ -107,15 +110,11 @@ class GlobalpingMonitorType extends MonitorType {
         const result = measurement.data.results[0].result;
 
         if (result.status === "failed") {
-            heartbeat.msg = this.formatResponse(probe, `Failed: ${result.rawOutput}`);
-            heartbeat.status = DOWN;
-            return;
+            throw new Error(this.formatResponse(probe, `Failed: ${result.rawOutput}`));
         }
 
         if (!result.timings?.length) {
-            heartbeat.msg = this.formatResponse(probe, `Failed: ${result.rawOutput}`);
-            heartbeat.status = DOWN;
-            return;
+            throw new Error(this.formatResponse(probe, `Failed: ${result.rawOutput}`));
         }
 
         heartbeat.ping = result.stats.avg || 0;
@@ -208,20 +207,15 @@ class GlobalpingMonitorType extends MonitorType {
         const result = measurement.data.results[0].result;
 
         if (result.status === "failed") {
-            heartbeat.msg = this.formatResponse(probe, `Failed: ${result.rawOutput}`);
-            heartbeat.status = DOWN;
-            return;
+            throw new Error(this.formatResponse(probe, `Failed: ${result.rawOutput}`));
         }
 
         heartbeat.ping = result.timings.total || 0;
 
         if (!checkStatusCode(result.statusCode, JSON.parse(monitor.accepted_statuscodes_json))) {
-            heartbeat.msg = this.formatResponse(
-                probe,
-                `Status code ${result.statusCode} not accepted. Output: ${result.rawOutput}`
+            throw new Error(
+                this.formatResponse(probe, `Status code ${result.statusCode} not accepted. Output: ${result.rawOutput}`)
             );
-            heartbeat.status = DOWN;
-            return;
         }
 
         heartbeat.msg = this.formatResponse(probe, `${result.statusCode} - ${result.statusCodeName}`);
@@ -245,12 +239,134 @@ class GlobalpingMonitorType extends MonitorType {
     }
 
     /**
+     * Handles DNS monitors.
+     * @param {Client} client - The client object.
+     * @param {Monitor} monitor - The monitor object.
+     * @param {Heartbeat} heartbeat - The heartbeat object.
+     * @param {boolean} hasAPIToken - Whether the monitor has an API token.
+     * @param {R} redbean - The redbean object.
+     * @returns {Promise<void>} A promise that resolves when the HTTP monitor is handled.
+     */
+    async dns(client, monitor, heartbeat, hasAPIToken, redbean) {
+        const opts = {
+            type: "dns",
+            target: monitor.hostname,
+            inProgressUpdates: false,
+            limit: 1,
+            locations: [{ magic: monitor.location }],
+            measurementOptions: {
+                query: {
+                    type: monitor.dns_resolve_type,
+                },
+                port: monitor.port,
+                protocol: monitor.protocol,
+            },
+        };
+
+        if (monitor.ipFamily === "ipv4") {
+            opts.measurementOptions.ipVersion = IpVersion[4];
+        } else if (monitor.ipFamily === "ipv6") {
+            opts.measurementOptions.ipVersion = IpVersion[6];
+        }
+
+        if (monitor.dns_resolve_server) {
+            opts.measurementOptions.resolver = monitor.dns_resolve_server;
+        }
+
+        log.debug("monitor", `Globalping create measurement: ${JSON.stringify(opts)}`);
+        let res = await client.createMeasurement(opts);
+        log.debug("monitor", `Globalping ${JSON.stringify(res)}`);
+        if (!res.ok) {
+            if (Globalping.isHttpStatus(429, res)) {
+                throw new Error(`Failed to create measurement: ${this.formatTooManyRequestsError(hasAPIToken)}`);
+            }
+            throw new Error(`Failed to create measurement: ${this.formatApiError(res.data.error)}`);
+        }
+
+        log.debug("monitor", `Globalping fetch measurement: ${res.data.id}`);
+        let measurement = await client.awaitMeasurement(res.data.id);
+
+        if (!measurement.ok) {
+            throw new Error(
+                `Failed to fetch measurement (${res.data.id}): ${this.formatApiError(measurement.data.error)}`
+            );
+        }
+
+        const probe = measurement.data.results[0].probe;
+        const result = measurement.data.results[0].result;
+
+        if (result.status === "failed") {
+            throw new Error(this.formatResponse(probe, `Failed: ${result.rawOutput}`));
+        }
+
+        let dnsMessage = (result.answers || []).map((answer) => answer.value).join(" | ");
+        const values = (result.answers || []).map((answer) => answer.value);
+
+        let recordMatched = true;
+
+        // keyword
+        if (monitor.keyword) {
+            recordMatched = this.checkDNSRecordValueMatch(monitor, values, monitor.keyword);
+        }
+
+        if (monitor.dns_last_result !== dnsMessage && dnsMessage !== undefined) {
+            await redbean.exec("UPDATE `monitor` SET dns_last_result = ? WHERE id = ? ", [dnsMessage, monitor.id]);
+        }
+
+        heartbeat.ping = result.timings.total || 0;
+
+        if (!dnsMessage) {
+            dnsMessage = `No records found. ${result.statusCodeName}`;
+        }
+
+        if (!recordMatched) {
+            throw new Error(this.formatResponse(probe, "No record matched. " + dnsMessage));
+        }
+
+        heartbeat.msg = this.formatResponse(probe, dnsMessage);
+        heartbeat.status = UP;
+    }
+
+    /**
      * Handles keyword for HTTP monitors.
+     * @param {Monitor} monitor - The monitor object.
+     * @param {Array<string>} values - The values to search for.
+     * @param {string} keyword - The keyword to search for.
+     * @returns {boolean} True if the regex matches, false otherwise.
+     */
+    checkDNSRecordValueMatch(monitor, values, keyword) {
+        const regex = new RegExp(keyword, "i");
+
+        switch (monitor.dns_resolve_type) {
+            case "A":
+            case "AAAA":
+            case "ANY":
+            case "CNAME":
+            case "DNSKEY":
+            case "DS":
+            case "HTTPS":
+            case "MX":
+            case "NS":
+            case "NSEC":
+            case "PTR":
+            case "RRSIG":
+            case "SOA":
+            case "SRV":
+            case "SVCB":
+            case "TXT":
+                return values.some((record) => regex.test(record));
+        }
+
+        return false;
+    }
+
+    /**
+     * Handles keyword search for HTTP monitors.
      * @param {Monitor} monitor - The monitor object.
      * @param {Heartbeat} heartbeat - The heartbeat object.
      * @param {Result} result - The result object.
      * @param {Probe} probe - The probe object.
-     * @returns {Promise<void>} A promise that resolves when the keyword is handled.
+     * @returns {Promise<void>}
      */
     async handleKeywordForHTTP(monitor, heartbeat, result, probe) {
         let data = result.rawOutput;

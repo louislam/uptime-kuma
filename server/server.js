@@ -745,7 +745,11 @@ let needSetup = false;
                  * List of frontend-only properties that should not be saved to the database.
                  * Should clean up before saving to the database.
                  */
-                const frontendOnlyProperties = ["humanReadableInterval", "responsecheck"];
+                const frontendOnlyProperties = [
+                    "humanReadableInterval",
+                    "globalpingdnsresolvetypeoptions",
+                    "responsecheck",
+                ];
                 for (const prop of frontendOnlyProperties) {
                     if (prop in monitor) {
                         delete monitor[prop];
