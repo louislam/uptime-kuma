@@ -197,7 +197,7 @@ describe("GlobalpingMonitorType", () => {
                 msg: "",
             };
 
-            validateMonitorContract(monitorType, monitor, heartbeat)
+            await validateMonitorContract(monitorType, monitor, heartbeat)
         });
     });
 
@@ -412,7 +412,7 @@ describe("GlobalpingMonitorType", () => {
                 msg: "",
             };
 
-            validateMonitorContract(monitorType, monitor, heartbeat)
+            await validateMonitorContract(monitorType, monitor, heartbeat)
         });
 
         test("should work according to monitor contract", async () => {
@@ -445,7 +445,7 @@ describe("GlobalpingMonitorType", () => {
                 ping: 0,
             };
 
-            validateMonitorContract(monitorType, monitor, heartbeat)
+            await validateMonitorContract(monitorType, monitor, heartbeat)
         });
 
         test("should handle invalid status code", async () => {
@@ -830,8 +830,8 @@ describe("GlobalpingMonitorType", () => {
  * @param {Heartbeat} heartbeat - The heartbeat object after check() completes
  * @throws {Error} When monitor sets non-UP status without throwing (contract violation)
  */
-function validateMonitorContract(monitorType, monitor, heartbeat) {
-    monitorType.check(monitor, heartbeat, true)
+async function validateMonitorContract(monitorType, monitor, heartbeat) {
+    await monitorType.check(monitor, heartbeat, true)
 
     if (!monitorType.allowCustomStatus && heartbeat.status !== UP) {
         throw new Error("The monitor implementation is incorrect, non-UP error must throw error inside check()");
