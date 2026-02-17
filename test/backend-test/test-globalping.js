@@ -85,11 +85,12 @@ describe("GlobalpingMonitorType", () => {
                 msg: "",
             };
 
-            await monitorType.check(monitor, heartbeat, true);
-
-            assert.deepStrictEqual(heartbeat, {
-                status: DOWN,
-                msg: "Ashburn (VA), US, NA, Amazon.com (AS14618), (aws-us-east-1) : Failed: Host unreachable",
+            await assert.rejects(monitorType.check(monitor, heartbeat, true), (error) => {
+                assert.deepStrictEqual(
+                    error,
+                    new Error("Ashburn (VA), US, NA, Amazon.com (AS14618), (aws-us-east-1) : Failed: Host unreachable")
+                );
+                return true;
             });
         });
 
@@ -197,7 +198,16 @@ describe("GlobalpingMonitorType", () => {
                 msg: "",
             };
 
-            await validateMonitorContract(monitorType, monitor, heartbeat)
+            await assert.rejects(
+                validateMonitorContract(monitorType, monitor, heartbeat),
+                (error) => {
+                    assert.strictEqual(
+                        error.message,
+                        "Ashburn (VA), US, NA, Amazon.com (AS14618), (aws-us-east-1) : Failed: No response"
+                    );
+                    return true;
+                }
+            );
         });
     });
 
@@ -297,11 +307,12 @@ describe("GlobalpingMonitorType", () => {
                 msg: "",
             };
 
-            await monitorType.check(monitor, heartbeat, true);
-
-            assert.deepStrictEqual(heartbeat, {
-                status: DOWN,
-                msg: "New York (NY), US, NA, MASSIVEGRID (AS49683) : Failed: Host unreachable",
+            await assert.rejects(monitorType.check(monitor, heartbeat, true), (error) => {
+                assert.deepStrictEqual(
+                    error,
+                    new Error("New York (NY), US, NA, MASSIVEGRID (AS49683) : Failed: Host unreachable")
+                );
+                return true;
             });
         });
 
@@ -412,7 +423,16 @@ describe("GlobalpingMonitorType", () => {
                 msg: "",
             };
 
-            await validateMonitorContract(monitorType, monitor, heartbeat)
+            await assert.rejects(
+                validateMonitorContract(monitorType, monitor, heartbeat),
+                (error) => {
+                    assert.strictEqual(
+                        error.message,
+                        "New York (NY), US, NA, MASSIVEGRID (AS49683) : Failed: Connection timeout"
+                    );
+                    return true;
+                }
+            );
         });
 
         test("should work according to monitor contract", async () => {
@@ -445,7 +465,16 @@ describe("GlobalpingMonitorType", () => {
                 ping: 0,
             };
 
-            await validateMonitorContract(monitorType, monitor, heartbeat)
+            await assert.rejects(
+                validateMonitorContract(monitorType, monitor, heartbeat),
+                (error) => {
+                    assert.strictEqual(
+                        error.message,
+                        "New York (NY), US, NA, MASSIVEGRID (AS49683) : Status code 500 not accepted. Output: Error response"
+                    );
+                    return true;
+                }
+            );
         });
 
         test("should handle invalid status code", async () => {
@@ -476,12 +505,12 @@ describe("GlobalpingMonitorType", () => {
                 ping: 0,
             };
 
-            await monitorType.check(monitor, heartbeat, true);
-
-            assert.deepStrictEqual(heartbeat, {
-                status: DOWN,
-                msg: "New York (NY), US, NA, MASSIVEGRID (AS49683) : Status code 301 not accepted. Output: RAW OUTPUT",
-                ping: 1440,
+            await assert.rejects(monitorType.check(monitor, heartbeat, true), (error) => {
+                assert.deepStrictEqual(
+                    error,
+                    new Error("New York (NY), US, NA, MASSIVEGRID (AS49683) : Status code 301 not accepted. Output: RAW OUTPUT")
+                );
+                return true;
             });
         });
 

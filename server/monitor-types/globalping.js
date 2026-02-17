@@ -28,7 +28,7 @@ class GlobalpingMonitorType extends MonitorType {
      */
     constructor(clientFactory) {
         super();
-        this.clientFactory = clientFactory
+        this.clientFactory = clientFactory;
     }
 
     /**
@@ -99,15 +99,11 @@ class GlobalpingMonitorType extends MonitorType {
         const result = measurement.data.results[0].result;
 
         if (result.status === "failed") {
-            heartbeat.msg = this.formatResponse(probe, `Failed: ${result.rawOutput}`);
-            heartbeat.status = DOWN;
-            return;
+            throw new Error(this.formatResponse(probe, `Failed: ${result.rawOutput}`));
         }
 
         if (!result.timings?.length) {
-            heartbeat.msg = this.formatResponse(probe, `Failed: ${result.rawOutput}`);
-            heartbeat.status = DOWN;
-            return;
+            throw new Error(this.formatResponse(probe, `Failed: ${result.rawOutput}`));
         }
 
         heartbeat.ping = result.stats.avg || 0;
@@ -200,20 +196,15 @@ class GlobalpingMonitorType extends MonitorType {
         const result = measurement.data.results[0].result;
 
         if (result.status === "failed") {
-            heartbeat.msg = this.formatResponse(probe, `Failed: ${result.rawOutput}`);
-            heartbeat.status = DOWN;
-            return;
+            throw new Error(this.formatResponse(probe, `Failed: ${result.rawOutput}`));
         }
 
         heartbeat.ping = result.timings.total || 0;
 
         if (!checkStatusCode(result.statusCode, JSON.parse(monitor.accepted_statuscodes_json))) {
-            heartbeat.msg = this.formatResponse(
-                probe,
-                `Status code ${result.statusCode} not accepted. Output: ${result.rawOutput}`
+            throw new Error(
+                this.formatResponse(probe, `Status code ${result.statusCode} not accepted. Output: ${result.rawOutput}`)
             );
-            heartbeat.status = DOWN;
-            return;
         }
 
         heartbeat.msg = this.formatResponse(probe, `${result.statusCode} - ${result.statusCodeName}`);
