@@ -617,18 +617,17 @@ class Monitor extends BeanModel {
                     }
 
                     let tlsInfo = {};
-                    // Store tlsInfo when secureConnect event is emitted
+                    // Collect tlsInfo when secureConnect event is emitted
                     // The keylog event listener is a workaround to access the tlsSocket
-                    options.httpsAgent.once("keylog", async (line, tlsSocket) => {
-                        tlsSocket.once("secureConnect", async () => {
+                    // Note: only collect data here, DB operations are deferred to the main flow
+                    options.httpsAgent.once("keylog", (line, tlsSocket) => {
+                        tlsSocket.once("secureConnect", () => {
                             tlsInfo = checkCertificate(tlsSocket);
                             tlsInfo.valid = tlsSocket.authorized || false;
                             tlsInfo.hostnameMatchMonitorUrl = checkCertificateHostname(
                                 tlsInfo.certInfo.raw,
                                 this.getUrl()?.hostname
                             );
-
-                            await this.handleTlsInfo(tlsInfo);
                         });
                     });
 
@@ -646,7 +645,7 @@ class Monitor extends BeanModel {
                         await this.saveResponseData(bean, res.data);
                     }
 
-                    // fallback for if kelog event is not emitted, but we may still have tlsInfo,
+                    // fallback for if keylog event is not emitted, but we may still have tlsInfo,
                     // e.g. if the connection is made through a proxy
                     if (this.getUrl()?.protocol === "https:" && tlsInfo.valid === undefined) {
                         const tlsSocket = res.request.res.socket;
@@ -658,9 +657,12 @@ class Monitor extends BeanModel {
                                 tlsInfo.certInfo.raw,
                                 this.getUrl()?.hostname
                             );
-
-                            await this.handleTlsInfo(tlsInfo);
                         }
+                    }
+
+                    // Handle TLS info in the main flow to avoid DB race conditions
+                    if (tlsInfo.valid !== undefined) {
+                        await this.handleTlsInfo(tlsInfo);
                     }
 
                     // eslint-disable-next-line eqeqeq
@@ -959,6 +961,11 @@ class Monitor extends BeanModel {
 
                 if (this.getSaveErrorResponse() && error?.response?.data !== undefined) {
                     await this.saveResponseData(bean, error.response.data);
+                }
+
+                // Handle TLS info even on request failure, if it was collected during handshake
+                if (typeof tlsInfo !== "undefined" && tlsInfo.valid !== undefined) {
+                    await this.handleTlsInfo(tlsInfo);
                 }
 
                 // If UP come in here, it must be upside down mode
