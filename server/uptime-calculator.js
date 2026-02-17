@@ -60,8 +60,8 @@ class UptimeCalculator {
      */
     migrationMode = false;
 
-    statMinutelyKeepHour = 24;
-    statHourlyKeepDay = 30;
+    static statMinutelyKeepHour = 24;
+    static statHourlyKeepDay = 30;
 
     /**
      * Get the uptime calculator for a monitor
@@ -318,7 +318,7 @@ class UptimeCalculator {
 
         // For migration mode, we don't need to store old hourly and minutely data, but we need 30-day's hourly data
         // Run anyway for non-migration mode
-        if (!this.migrationMode || date.isAfter(currentDate.subtract(this.statHourlyKeepDay, "day"))) {
+        if (!this.migrationMode || date.isAfter(currentDate.subtract(UptimeCalculator.statHourlyKeepDay, "day"))) {
             let hourlyStatBean = await this.getHourlyStatBean(hourlyKey);
             hourlyStatBean.up = hourlyData.up;
             hourlyStatBean.down = hourlyData.down;
@@ -337,7 +337,7 @@ class UptimeCalculator {
 
         // For migration mode, we don't need to store old hourly and minutely data, but we need 24-hour's minutely data
         // Run anyway for non-migration mode
-        if (!this.migrationMode || date.isAfter(currentDate.subtract(this.statMinutelyKeepHour, "hour"))) {
+        if (!this.migrationMode || date.isAfter(currentDate.subtract(UptimeCalculator.statMinutelyKeepHour, "hour"))) {
             let minutelyStatBean = await this.getMinutelyStatBean(divisionKey);
             minutelyStatBean.up = minutelyData.up;
             minutelyStatBean.down = minutelyData.down;
@@ -352,22 +352,6 @@ class UptimeCalculator {
                 }
             }
             await R.store(minutelyStatBean);
-        }
-
-        // No need to remove old data in migration mode
-        if (!this.migrationMode) {
-            // Remove the old data
-            // TODO: Improvement: Convert it to a job?
-            log.debug("uptime_calc", "Remove old data");
-            await R.exec("DELETE FROM stat_minutely WHERE monitor_id = ? AND timestamp < ?", [
-                this.monitorID,
-                this.getMinutelyKey(currentDate.subtract(this.statMinutelyKeepHour, "hour")),
-            ]);
-
-            await R.exec("DELETE FROM stat_hourly WHERE monitor_id = ? AND timestamp < ?", [
-                this.monitorID,
-                this.getHourlyKey(currentDate.subtract(this.statHourlyKeepDay, "day")),
-            ]);
         }
 
         return date;
