@@ -1,5 +1,4 @@
 self.addEventListener("install", function (event) {
-    // Force the waiting service worker to become the active service worker
     self.skipWaiting();
 });
 
