@@ -77,6 +77,7 @@ async function getRdapDnsData() {
         nextChecking = Date.now() + 24 * 60 * 60 * 1000;
     }
 
+    running = false;
     return data;
 }
 
