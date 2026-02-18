@@ -27,6 +27,8 @@ describe(
 
             try {
                 await postgresMonitor.check(monitor, heartbeat, {});
+                // Test for val.slice is not a function: https://github.com/louislam/uptime-kuma/issues/6794
+                assert.strictEqual(typeof heartbeat.msg, "string", `Expected heartbeat.msg to be a string but got ${typeof heartbeat.msg}`);
                 assert.strictEqual(heartbeat.status, UP);
             } finally {
                 postgresContainer.stop();
