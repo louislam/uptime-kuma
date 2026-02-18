@@ -32,6 +32,10 @@ class Matrix extends NotificationProvider {
                 body: msg,
             };
 
+            if (notification.matrixUseTemplate) {
+                data.body = await this.renderTemplate(notification.matrixTemplate, msg, monitorJSON, heartbeatJSON);
+            }
+
             config = this.getAxiosConfigWithProxy(config);
             await axios.put(
                 `${notification.homeserverUrl}/_matrix/client/r0/rooms/${roomId}/send/m.room.message/${randomString}`,

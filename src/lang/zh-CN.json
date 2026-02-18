@@ -1554,5 +1554,18 @@
     "See Jira Cloud Docs": "参阅 Jira Cloud 文档",
     "aboutJiraCloudId": "关于 Jira Cloud ID 的更多信息：{0}",
     "see Jira Cloud Docs": "参阅 Jira Cloud 文档",
-    "Jira Service Management": "Jira 服务管理"
+    "Jira Service Management": "Jira 服务管理",
+    "halopsa_payload_desc": "下列字段将会发送至 Halo PSA webhook：",
+    "Webhook Payload Fields": "Webhook 内容字段",
+    "halopsa_field_uptime_kuma_version": "Uptime Kuma 版本号",
+    "halopsa_field_timestamp": "ISO 8601 格式的事件时间戳",
+    "halopsa_field_message": "含状态和详情的完整警报消息",
+    "halopsa_field_monitor_id": "监控项的唯一识别符（测试时为 null），可用于将警报与工单匹配",
+    "halopsa_field_monitor": "监控项名称",
+    "halopsa_field_status": "监控项状态：正常、故障、通知或未知",
+    "halopsa_setup_step5": "配置 runbook 以通过 monitor_id 将警报与现有工单进行匹配",
+    "halopsa_id_usage_hint": "💡提示：使用 monitor_id 可以可靠地将警报与工单匹配，如需跟踪事件历史记录则可用 heartbeat_id",
+    "halopsa_field_title": "警告标题（总是 \"Uptime Kuma Alert\"）",
+    "matrixUseTemplateDescription": "如果启用，该消息将使用自定义模板发送。",
+    "matrixUseTemplate": "使用自定义消息模板"
 }

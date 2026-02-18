@@ -44,6 +44,14 @@ app.component("FontAwesomeIcon", FontAwesomeIcon);
 
 app.mount("#app");
 
+// Service Worker
+// Mainly for Webpush notification
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/serviceWorker.js", { scope: "/" }).catch((error) => {
+        console.error("Service worker registration failed:", error);
+    });
+}
+
 // Expose the vue instance for development
 if (process.env.NODE_ENV === "development") {
     console.log("Dev Only: window.app is the vue instance");
