@@ -47,7 +47,7 @@ app.mount("#app");
 // Service Worker
 // Mainly for Webpush notification
 if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch((error) => {
+    navigator.serviceWorker.register("/serviceWorker.js", { scope: "/" }).catch((error) => {
         console.error("Service worker registration failed:", error);
     });
 }
