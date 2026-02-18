@@ -1655,7 +1655,10 @@ let needSetup = false;
                 await UptimeCalculator.clearStatistics(monitorID);
 
                 if (monitorID in server.monitorList) {
-                    await restartMonitor(socket.userID, monitorID);
+                    const monitor = server.monitorList[monitorID];
+                    if (monitor.active) {
+                        await restartMonitor(socket.userID, monitorID);
+                    }
                 }
 
                 await sendHeartbeatList(socket, monitorID, true, true);
@@ -1681,7 +1684,10 @@ let needSetup = false;
 
                 // Restart all monitors to reset the stats
                 for (let monitorID in server.monitorList) {
-                    await restartMonitor(socket.userID, monitorID);
+                    const monitor = server.monitorList[monitorID];
+                    if (monitor.active) {
+                        await restartMonitor(socket.userID, monitorID);
+                    }
                 }
 
                 callback({
