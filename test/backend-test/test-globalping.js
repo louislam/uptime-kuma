@@ -1,7 +1,7 @@
 const { describe, test, mock } = require("node:test");
 const assert = require("node:assert");
 const { encodeBase64 } = require("../../server/util-server");
-const { UP, DOWN, PENDING } = require("../../src/util");
+const { UP, PENDING } = require("../../src/util");
 
 describe("GlobalpingMonitorType", () => {
     const { GlobalpingMonitorType } = require("../../server/monitor-types/globalping");
@@ -82,11 +82,12 @@ describe("GlobalpingMonitorType", () => {
                 msg: "",
             };
 
-            await monitorType.ping(mockClient, monitor, heartbeat, true);
-
-            assert.deepStrictEqual(heartbeat, {
-                status: DOWN,
-                msg: "Ashburn (VA), US, NA, Amazon.com (AS14618), (aws-us-east-1) : Failed: Host unreachable",
+            await assert.rejects(monitorType.ping(mockClient, monitor, heartbeat, true), (error) => {
+                assert.deepStrictEqual(
+                    error,
+                    new Error("Ashburn (VA), US, NA, Amazon.com (AS14618), (aws-us-east-1) : Failed: Host unreachable")
+                );
+                return true;
             });
         });
 
@@ -260,11 +261,12 @@ describe("GlobalpingMonitorType", () => {
                 msg: "",
             };
 
-            await monitorType.http(mockClient, monitor, heartbeat, true);
-
-            assert.deepStrictEqual(heartbeat, {
-                status: DOWN,
-                msg: "New York (NY), US, NA, MASSIVEGRID (AS49683) : Failed: Host unreachable",
+            await assert.rejects(monitorType.http(mockClient, monitor, heartbeat, true), (error) => {
+                assert.deepStrictEqual(
+                    error,
+                    new Error("New York (NY), US, NA, MASSIVEGRID (AS49683) : Failed: Host unreachable")
+                );
+                return true;
             });
         });
 
@@ -372,13 +374,18 @@ describe("GlobalpingMonitorType", () => {
                 ping: 0,
             };
 
-            await monitorType.http(mockClient, monitor, heartbeat, true);
-
-            assert.deepStrictEqual(heartbeat, {
-                status: DOWN,
-                msg: "New York (NY), US, NA, MASSIVEGRID (AS49683) : Status code 301 not accepted. Output: RAW OUTPUT",
-                ping: 1440,
+            await assert.rejects(monitorType.http(mockClient, monitor, heartbeat, true), (error) => {
+                assert.deepStrictEqual(
+                    error,
+                    new Error(
+                        "New York (NY), US, NA, MASSIVEGRID (AS49683) : Status code 301 not accepted. Output: RAW OUTPUT"
+                    )
+                );
+                return true;
             });
+
+            // heartbeat.ping should still be set before the error is thrown
+            assert.strictEqual(heartbeat.ping, 1440);
         });
 
         test("should handle keyword check (keyword present)", async () => {
@@ -574,6 +581,271 @@ describe("GlobalpingMonitorType", () => {
         });
     });
 
+    describe("dns", () => {
+        test("should handle successful dns", async () => {
+            const monitorType = new GlobalpingMonitorType("test-agent/1.0");
+            const mockClient = createGlobalpingClientMock();
+            const createResponse = createMockResponse({
+                id: "2g8T7V3OwXG3JV6Y10011zF2v",
+            });
+            const measurement = createDnsMeasurement();
+            const awaitResponse = createMockResponse(measurement);
+
+            mockClient.createMeasurement.mock.mockImplementation(() => createMockResponse(createResponse));
+            mockClient.awaitMeasurement.mock.mockImplementation(() => awaitResponse);
+
+            const redbeanMock = createRedbeanMock();
+            redbeanMock.exec.mock.mockImplementation(() => Promise.resolve());
+
+            const monitor = {
+                id: "1",
+                hostname: "example.com",
+                location: "us-east-1",
+                dns_resolve_type: "A",
+                port: 53,
+                protocol: "udp",
+            };
+
+            const heartbeat = {
+                status: PENDING,
+                msg: "",
+                ping: null,
+            };
+
+            await monitorType.dns(mockClient, monitor, heartbeat, false, redbeanMock);
+
+            assert.strictEqual(mockClient.createMeasurement.mock.calls.length, 1);
+            assert.deepStrictEqual(mockClient.createMeasurement.mock.calls[0].arguments[0], {
+                type: "dns",
+                target: "example.com",
+                inProgressUpdates: false,
+                limit: 1,
+                locations: [{ magic: "us-east-1" }],
+                measurementOptions: {
+                    query: { type: "A" },
+                    port: 53,
+                    protocol: "udp",
+                },
+            });
+
+            assert.deepStrictEqual(heartbeat, {
+                status: UP,
+                msg: "New York (NY), US, NA, MASSIVEGRID (AS49683) : 93.184.216.34",
+                ping: 25,
+            });
+
+            assert.strictEqual(redbeanMock.exec.mock.calls.length, 1);
+            assert.deepStrictEqual(redbeanMock.exec.mock.calls[0].arguments, [
+                "UPDATE `monitor` SET dns_last_result = ? WHERE id = ? ",
+                ["93.184.216.34", "1"],
+            ]);
+        });
+
+        test("should handle failed dns with status failed", async () => {
+            const monitorType = new GlobalpingMonitorType("test-agent/1.0");
+            const mockClient = createGlobalpingClientMock();
+            const createResponse = createMockResponse({
+                id: "2g8T7V3OwXG3JV6Y10011zF2v",
+            });
+            const measurement = createDnsMeasurement();
+            measurement.results[0].result.status = "failed";
+            measurement.results[0].result.rawOutput = "NXDOMAIN";
+            const awaitResponse = createMockResponse(measurement);
+
+            mockClient.createMeasurement.mock.mockImplementation(() => createMockResponse(createResponse));
+            mockClient.awaitMeasurement.mock.mockImplementation(() => awaitResponse);
+
+            const monitor = {
+                hostname: "nonexistent.example.com",
+                location: "us-east-1",
+                dns_resolve_type: "A",
+                port: 53,
+            };
+
+            const heartbeat = {
+                status: PENDING,
+                msg: "",
+            };
+
+            await assert.rejects(
+                async () => {
+                    await monitorType.dns(mockClient, monitor, heartbeat, false);
+                },
+                (error) => {
+                    assert.strictEqual(
+                        error.message,
+                        "New York (NY), US, NA, MASSIVEGRID (AS49683) : Failed: NXDOMAIN"
+                    );
+                    return true;
+                }
+            );
+        });
+
+        test("should handle API error on create measurement", async () => {
+            const monitorType = new GlobalpingMonitorType("test-agent/1.0");
+            const mockClient = createGlobalpingClientMock();
+            const createResponse = createMockResponse({
+                error: {
+                    type: "validation_error",
+                    message: "Invalid target",
+                    params: { target: "example.com" },
+                },
+            });
+            createResponse.ok = false;
+            createResponse.response.status = 400;
+
+            mockClient.createMeasurement.mock.mockImplementation(() => createResponse);
+
+            const monitor = {
+                hostname: "example.com",
+                location: "us-east-1",
+                dns_resolve_type: "A",
+                port: 53,
+            };
+
+            const heartbeat = {
+                status: PENDING,
+                msg: "",
+            };
+
+            await assert.rejects(monitorType.dns(mockClient, monitor, heartbeat, false), (error) => {
+                assert.deepStrictEqual(
+                    error,
+                    new Error("Failed to create measurement: validation_error Invalid target.\ntarget: example.com")
+                );
+                return true;
+            });
+        });
+
+        test("should handle API error on await measurement", async () => {
+            const monitorType = new GlobalpingMonitorType("test-agent/1.0");
+            const mockClient = createGlobalpingClientMock();
+            const createResponse = createMockResponse({
+                id: "2g8T7V3OwXG3JV6Y10011zF2v",
+            });
+            const awaitResponse = createMockResponse({
+                error: {
+                    type: "internal_error",
+                    message: "Server error",
+                },
+            });
+            awaitResponse.ok = false;
+            awaitResponse.response.status = 400;
+
+            mockClient.createMeasurement.mock.mockImplementation(() => createResponse);
+            mockClient.awaitMeasurement.mock.mockImplementation(() => awaitResponse);
+
+            const monitor = {
+                hostname: "example.com",
+                location: "us-east-1",
+                dns_resolve_type: "A",
+                port: 53,
+            };
+
+            const heartbeat = {
+                status: PENDING,
+                msg: "",
+            };
+
+            await assert.rejects(monitorType.dns(mockClient, monitor, heartbeat, false), (error) => {
+                assert.deepStrictEqual(
+                    error,
+                    new Error("Failed to fetch measurement (2g8T7V3OwXG3JV6Y10011zF2v): internal_error Server error.")
+                );
+                return true;
+            });
+        });
+
+        test("should handle regex matched", async () => {
+            const monitorType = new GlobalpingMonitorType("test-agent/1.0");
+            const mockClient = createGlobalpingClientMock();
+            const createResponse = {
+                id: "2g8T7V3OwXG3JV6Y10011zF2v",
+            };
+            const measurement = createDnsMeasurement();
+            const awaitResponse = createMockResponse(measurement);
+
+            mockClient.createMeasurement.mock.mockImplementation(() => createMockResponse(createResponse));
+            mockClient.awaitMeasurement.mock.mockImplementation(() => awaitResponse);
+
+            const redbeanMock = createRedbeanMock();
+            redbeanMock.exec.mock.mockImplementation(() => Promise.resolve());
+
+            const monitor = {
+                id: "1",
+                hostname: "example.com",
+                location: "us-east-1",
+                dns_resolve_type: "A",
+                port: 53,
+                protocol: "udp",
+                keyword: "93\\.184\\.216\\.34",
+            };
+
+            const heartbeat = {
+                status: PENDING,
+                msg: "",
+                ping: null,
+            };
+
+            await monitorType.dns(mockClient, monitor, heartbeat, false, redbeanMock);
+
+            assert.deepStrictEqual(heartbeat, {
+                status: UP,
+                msg: "New York (NY), US, NA, MASSIVEGRID (AS49683) : 93.184.216.34",
+                ping: 25,
+            });
+
+            assert.deepStrictEqual(redbeanMock.exec.mock.calls[0].arguments, [
+                "UPDATE `monitor` SET dns_last_result = ? WHERE id = ? ",
+                ["93.184.216.34", "1"],
+            ]);
+        });
+
+        test("should handle regex not matched", async () => {
+            const monitorType = new GlobalpingMonitorType("test-agent/1.0");
+            const mockClient = createGlobalpingClientMock();
+            const createResponse = {
+                id: "2g8T7V3OwXG3JV6Y10011zF2v",
+            };
+            const measurement = createDnsMeasurement();
+            const awaitResponse = createMockResponse(measurement);
+
+            mockClient.createMeasurement.mock.mockImplementation(() => createMockResponse(createResponse));
+            mockClient.awaitMeasurement.mock.mockImplementation(() => awaitResponse);
+
+            const redbeanMock = createRedbeanMock();
+            redbeanMock.exec.mock.mockImplementation(() => Promise.resolve());
+
+            const monitor = {
+                id: "1",
+                hostname: "example.com",
+                location: "us-east-1",
+                dns_resolve_type: "A",
+                port: 53,
+                protocol: "udp",
+                keyword: "192\\.168\\.1\\.1",
+            };
+
+            const heartbeat = {
+                status: PENDING,
+                msg: "",
+            };
+
+            await assert.rejects(monitorType.dns(mockClient, monitor, heartbeat, false, redbeanMock), (error) => {
+                assert.deepStrictEqual(
+                    error,
+                    new Error("New York (NY), US, NA, MASSIVEGRID (AS49683) : No record matched. 93.184.216.34")
+                );
+                return true;
+            });
+
+            assert.deepStrictEqual(redbeanMock.exec.mock.calls[0].arguments, [
+                "UPDATE `monitor` SET dns_last_result = ? WHERE id = ? ",
+                ["93.184.216.34", "1"],
+            ]);
+        });
+    });
+
     describe("helper methods", () => {
         test("formatProbeLocation should format location correctly", () => {
             const monitorType = new GlobalpingMonitorType("test-agent/1.0");
@@ -723,6 +995,16 @@ function createGlobalpingClientMock() {
 }
 
 /**
+ * Reusable mock factory for RedBean
+ * @returns {object} Mocked RedBean
+ */
+function createRedbeanMock() {
+    return {
+        exec: mock.fn(),
+    };
+}
+
+/**
  * Reusable mock factory for Globalping response
  * @param {object} data Response data
  * @returns {object} Mocked Globalping response
@@ -860,6 +1142,56 @@ function createHttpMeasurement() {
                         dns: 9,
                         tls: 22,
                         tcp: 16,
+                    },
+                },
+            },
+        ],
+    };
+}
+
+/**
+ * Creates a successful DNS measurement response
+ * @returns {object} Mock measurement response
+ */
+function createDnsMeasurement() {
+    return {
+        id: "2g8T7V3OwXG3JV6Y10011zF2v",
+        type: "dns",
+        status: "finished",
+        createdAt: "2025-11-05T08:30:00.000Z",
+        updatedAt: "2025-11-05T08:30:01.000Z",
+        target: "example.com",
+        probesCount: 1,
+        locations: [{ magic: "us-east-1" }],
+        results: [
+            {
+                probe: {
+                    continent: "NA",
+                    region: "Northern America",
+                    country: "US",
+                    state: "NY",
+                    city: "New York",
+                    asn: 49683,
+                    longitude: -74.01,
+                    latitude: 40.71,
+                    network: "MASSIVEGRID",
+                    tags: ["datacenter-network", "u-gbzret4d"],
+                    resolvers: ["private"],
+                },
+                result: {
+                    status: "finished",
+                    rawOutput: ";; ANSWER SECTION:\nexample.com.\t\t86400\tIN\tA\t93.184.216.34",
+                    answers: [
+                        {
+                            name: "example.com.",
+                            type: "A",
+                            ttl: 86400,
+                            class: "IN",
+                            value: "93.184.216.34",
+                        },
+                    ],
+                    timings: {
+                        total: 25,
                     },
                 },
             },
