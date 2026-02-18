@@ -1,6 +1,6 @@
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { R } = require("redbean-node");
-const { log, TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD, sleep } = require("../../src/util");
+const { log, TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD } = require("../../src/util");
 const { parse: parseTld } = require("tldts");
 const { setting, setSetting } = require("../util-server");
 const { Notification } = require("../notification");
