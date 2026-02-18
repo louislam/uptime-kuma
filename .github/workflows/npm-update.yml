@@ -5,7 +5,9 @@ on:
   schedule:
     - cron: "0 0 * * *"  # Run daily at midnight UTC
 
-permissions: {}
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
   npm-update:
