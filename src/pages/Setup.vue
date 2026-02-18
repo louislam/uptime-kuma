@@ -46,6 +46,9 @@
                     <label for="floatingPassword">{{ $t("Password") }}</label>
                 </div>
 
+                <!-- Password strength indicator -->
+                <PasswordStrengthMeter :password="password" :username="username" />
+
                 <div class="form-floating mt-3">
                     <input
                         id="repeat"
@@ -73,7 +76,12 @@
 </template>
 
 <script>
+import PasswordStrengthMeter from "../components/PasswordStrengthMeter.vue";
+
 export default {
+    components: {
+        PasswordStrengthMeter,
+    },
     data() {
         return {
             processing: false,
@@ -109,6 +117,11 @@ export default {
             this.$root.getSocket().emit("setup", this.username, this.password, (res) => {
                 this.processing = false;
                 this.$root.toastRes(res);
+
+                // Show warning toast if password was found in breach database
+                if (res.ok && res.warning) {
+                    this.$root.toastWarning(res.warning.msg, res.warning.meta);
+                }
 
                 if (res.ok) {
                     this.processing = true;

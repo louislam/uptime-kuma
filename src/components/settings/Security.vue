@@ -42,6 +42,12 @@
                             autocomplete="new-password"
                             required
                         />
+                        
+                        <!-- Password strength indicator -->
+                        <PasswordStrengthMeter 
+                            :password="password.newPassword" 
+                            :username="$root.username"
+                        />
                     </div>
 
                     <div class="mb-3">
@@ -146,11 +152,13 @@
 <script>
 import Confirm from "../../components/Confirm.vue";
 import TwoFADialog from "../../components/TwoFADialog.vue";
+import PasswordStrengthMeter from "../../components/PasswordStrengthMeter.vue";
 
 export default {
     components: {
         Confirm,
         TwoFADialog,
+        PasswordStrengthMeter,
     },
 
     data() {
@@ -193,6 +201,12 @@ export default {
             } else {
                 this.$root.getSocket().emit("changePassword", this.password, (res) => {
                     this.$root.toastRes(res);
+                    
+                    // Show warning toast if password was found in breach database
+                    if (res.ok && res.warning) {
+                        this.$root.toastWarning(res.warning);
+                    }
+                    
                     if (res.ok) {
                         this.password.currentPassword = "";
                         this.password.newPassword = "";

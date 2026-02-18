@@ -83,7 +83,7 @@ log.debug("server", "Importing http-graceful-shutdown");
 const gracefulShutdown = require("http-graceful-shutdown");
 log.debug("server", "Importing prometheus-api-metrics");
 const prometheusAPIMetrics = require("prometheus-api-metrics");
-const { passwordStrength } = require("check-password-strength");
+const { validatePassword } = require("./password-util");
 const TranslatableError = require("./translatable-error");
 
 log.debug("server", "Importing 2FA Modules");
@@ -683,8 +683,9 @@ let needSetup = false;
 
         socket.on("setup", async (username, password, callback) => {
             try {
-                if (passwordStrength(password).value === "Too weak") {
-                    throw new TranslatableError("passwordTooWeak");
+                const passwordValidation = await validatePassword(password, true);
+                if (!passwordValidation.ok) {
+                    throw new TranslatableError("passwordTooShort");
                 }
 
                 if ((await R.knex("user").count("id as count").first()).count !== 0) {
@@ -704,6 +705,7 @@ let needSetup = false;
                     ok: true,
                     msg: "successAdded",
                     msgi18n: true,
+                    warning: passwordValidation.warning,
                 });
             } catch (e) {
                 callback({
@@ -1423,8 +1425,9 @@ let needSetup = false;
                     throw new Error("Invalid new password");
                 }
 
-                if (passwordStrength(password.newPassword).value === "Too weak") {
-                    throw new TranslatableError("passwordTooWeak");
+                const passwordValidation = await validatePassword(password.newPassword, true);
+                if (!passwordValidation.ok) {
+                    throw new TranslatableError("passwordTooShort");
                 }
 
                 let user = await doubleCheckPassword(socket, password.currentPassword);
@@ -1437,6 +1440,7 @@ let needSetup = false;
                     token: User.createJWT(user, server.jwtSecret),
                     msg: "successAuthChangePassword",
                     msgi18n: true,
+                    warning: passwordValidation.warning,
                 });
             } catch (e) {
                 callback({
