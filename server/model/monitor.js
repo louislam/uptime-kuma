@@ -98,11 +98,7 @@ class Monitor extends BeanModel {
             obj.tags = await this.getTags();
         }
 
-        if (
-            certExpiry &&
-            (this.type === "http" || this.type === "keyword" || this.type === "json-query") &&
-            this.getURLProtocol() === "https:"
-        ) {
+        if (certExpiry) {
             const { certExpiryDaysRemaining, validCert } = await this.getCertExpiry(this.id);
             obj.certExpiryDaysRemaining = certExpiryDaysRemaining;
             obj.validCert = validCert;
