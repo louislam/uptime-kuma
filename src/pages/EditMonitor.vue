@@ -1491,7 +1491,9 @@
                                 <label class="form-check-label" for="expiry-notification">
                                     {{ $t("Certificate Expiry Notification") }}
                                 </label>
-                                <div class="form-text"></div>
+                                <div class="form-text">
+                                    {{ $t("certificateExpiryNotificationHelp") }}
+                                </div>
                             </div>
 
                             <!-- Screenshot Delay - Real Browser only -->
@@ -1535,6 +1537,9 @@
                                 <label class="form-check-label" for="domain-expiry-notification">
                                     {{ $t("labelDomainNameExpiryNotification") }}
                                 </label>
+                                <div v-if="hasDomain" class="form-text">
+                                    {{ $t("domainExpiryNotificationHelp") }}
+                                </div>
                                 <div v-if="!hasDomain && domainExpiryUnsupportedReason" class="form-text">
                                     {{ domainExpiryUnsupportedReason }}
                                 </div>

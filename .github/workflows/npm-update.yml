@@ -3,9 +3,11 @@ name: NPM Update
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 0 * * *"  # Run daily at midnight UTC
+    - cron: "0 0 * * *" # Run daily at midnight UTC
 
-permissions: {}
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
   npm-update:
@@ -29,7 +31,7 @@ jobs:
           node-version: 20
 
       - name: Run npm update
-        run: npm update
+        run: npm update --package-lock-only
 
       - name: Check if there are changes
         id: check_changes
