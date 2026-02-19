@@ -399,7 +399,7 @@ class Database {
 
     /**
      * Initialize SQLite for each connection
-     * @param rawConn The raw node-sqlite3 Database object
+     * @param {any} rawConn The raw node-sqlite3 Database object
      * @param {boolean} testMode Should the connection be started in test mode?
      * @returns {Promise<void>}
      */
