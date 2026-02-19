@@ -111,6 +111,20 @@
                                     {{ $t("Logout") }}
                                 </button>
                             </li>
+
+                            <li v-if="$root.info.version">
+                                <hr class="dropdown-divider" />
+                            </li>
+                            <li v-if="$root.info.version">
+                                <a
+                                    :href="'https://github.com/louislam/uptime-kuma/releases/tag/' + $root.info.version"
+                                    class="dropdown-item dropdown-item-version"
+                                    target="_blank"
+                                    rel="noopener"
+                                >
+                                    v{{ $root.info.version }}
+                                </a>
+                            </li>
                         </ul>
                     </div>
                 </li>
@@ -359,6 +373,17 @@ main {
             padding: 0.7rem 1rem;
         }
 
+        .dropdown-item-version {
+            font-size: 12px;
+            text-align: center;
+            color: #999;
+            padding: 0.4rem 1rem;
+
+            &:hover {
+                color: #666;
+            }
+        }
+
         .dark & {
             background-color: $dark-bg;
             color: $dark-font-color;
@@ -374,6 +399,14 @@ main {
 
                 &:hover {
                     background-color: $dark-bg2;
+                }
+            }
+
+            .dropdown-item-version {
+                color: #666;
+
+                &:hover {
+                    color: #999;
                 }
             }
         }
