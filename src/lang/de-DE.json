@@ -1564,5 +1564,19 @@
     "matrixUseTemplate": "Benutzerdefinierte Nachrichtenvorlage verwenden",
     "matrixUseTemplateDescription": "Wenn aktiviert, wird die Nachricht unter Verwendung einer benutzerdefinierten Vorlage gesendet.",
     "teamsEnableTagsDescription": "Wenn diese Option aktiviert ist, enthält die Nachricht die Monitor-Tags.",
-    "teamsEnableTags": "Mit Tags"
+    "teamsEnableTags": "Mit Tags",
+    "teltonikaUrl": "Deine Teltonika Geräte-URL",
+    "teltonikaUnsafeTls": "Zertifikatsvalidierung ignorieren",
+    "teltonikaUrlHelptext": "Die URL muss als vollständiger Origin definiert sein (z. B. {0} oder {1}).",
+    "teltonikaUsername": "API Benutzername",
+    "teltonikaUsernameHelptext": "Empfehlung: Erstelle ein separates Konto, das nur für den Versand von SMS-Nachichten berechtigt ist, und gib den Benutzernamen hier ein",
+    "teltonikaPassword": "API Passwort",
+    "teltonikaPasswordHelptext": "Du kannst das Passwort des API-Benutzers im Teltonika-Router festlegen, z. B. {0}",
+    "teltonikaModem": "Modem-ID",
+    "teltonikaPhoneNumber": "Telefonnummer",
+    "teltonikaPhoneNumberHelptext": "Die Nummer muss im internationalen Format ({0}, {1}) vorliegen. Nur eine Nummer ist erlaubt.",
+    "Teltonika SMS Gateway": "Teltonika SMS-Gateway",
+    "teltonikaVersionWarning": "Dieser Benachrichtigungsanbieter erfordert, dass auf deinem Teltonika-Gerät RMS-Version 7.14.0 oder höher installiert ist.",
+    "teltonikaUnsafeTlsDescription": "Die Deaktivierung der TLS Zertifikatsprüfung setzt dich möglichen On-Path-Angriffen (Man in the Middle-Attacken) aus, welche zu Datenlecks und Systemübernahmen führen können. Deaktiviere diese Prüfung nur, wenn du den Angriffsvektor akzeptierst. Wir empfehlen die Verwendung von Let's Encrypt mit automatischer Verlängerung.",
+    "teltonikaModemHelptext": "Die ID des SMS-Modems muss das Format {0} haben. Weitere Informationen kannst du unter https://developers.teltonika-networks.com/reference/ finden."
 }
