@@ -6,16 +6,19 @@ const { setting, setSetting } = require("../util-server");
 const { Notification } = require("../notification");
 const TranslatableError = require("../translatable-error");
 const dayjs = require("dayjs");
+const { Settings } = require("../settings");
 
-// Load static RDAP DNS data from local file (auto-updated by CI)
-const rdapDnsData = require("./rdap-dns.json");
+let cacheRdapDnsData = null;
+let nextChecking = 0;
+let running = false;
 
 /**
  * Find the RDAP server for a given TLD
  * @param {string} tld TLD
  * @returns {string|null} First RDAP server found
  */
-function getRdapServer(tld) {
+async function getRdapServer(tld) {
+    const rdapDnsData = await getRdapDnsData();
     const services = rdapDnsData["services"] ?? [];
     const rootTld = tld?.split(".").pop();
     if (rootTld) {
@@ -30,13 +33,83 @@ function getRdapServer(tld) {
 }
 
 /**
+ * Get RDAP DNS data from IANA and save to Setting
+ * @returns {Promise<{}>} RDAP DNS data
+ */
+async function getRdapDnsData() {
+    // Cache for one week
+    if (cacheRdapDnsData && Date.now() < nextChecking) {
+        return cacheRdapDnsData;
+    }
+
+    // Avoid multiple simultaneous updates
+    // Use older data first if another update is in progress
+    if (running) {
+        return await getOfflineRdapDnsData();
+    }
+
+    try {
+        running = true;
+        log.info("rdap", "Updating RDAP DNS data from IANA...");
+        const response = await fetch("https://data.iana.org/rdap/dns.json");
+        if (!response.ok) {
+            throw new Error(`HTTP error: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        // Simple validation
+        if (!data.services || !Array.isArray(data.services)) {
+            throw new Error("Invalid RDAP DNS data structure");
+        }
+
+        cacheRdapDnsData = data;
+
+        // Next week
+        nextChecking = Date.now() + 7 * 24 * 60 * 60 * 1000;
+        await Settings.set("rdapDnsData", data);
+        log.info("rdap", "RDAP DNS data updated successfully. Number of services: " + data.services.length);
+    } catch (error) {
+        log.info("rdap", `Uable to update RDAP DNS data from source: ${error.message}`);
+        cacheRdapDnsData = await getOfflineRdapDnsData();
+
+        // Check again next day
+        nextChecking = Date.now() + 24 * 60 * 60 * 1000;
+    }
+
+    running = false;
+    return cacheRdapDnsData;
+}
+
+/**
+ * Get RDAP DNS data from Setting or hardcoded file as fallback
+ * Fail safe
+ * @returns {Promise<{}>} RDAP DNS data
+ */
+async function getOfflineRdapDnsData() {
+    let data = null;
+    try {
+        data = await Settings.get("rdapDnsData");
+
+        // Simple validation
+        if (!data.services || !Array.isArray(data.services)) {
+            throw new Error("Invalid RDAP DNS data structure");
+        }
+    } catch (e) {
+        // If not downloaded previously, use the hardcoded data
+        data = require("../../extra/rdap-dns.json");
+    }
+    return data;
+}
+
+/**
  * Request RDAP server to retrieve the expiry date of a domain
  * @param {string} domain Domain to retrieve the expiry date from
  * @returns {Promise<(Date|null)>} Expiry date from RDAP server
  */
 async function getRdapDomainExpiryDate(domain) {
     const tld = DomainExpiry.parseTld(domain).publicSuffix;
-    const rdapServer = getRdapServer(tld);
+    const rdapServer = await getRdapServer(tld);
     if (rdapServer === null) {
         log.warn("rdap", `No RDAP server found, TLD ${tld} not supported.`);
         return null;
@@ -164,7 +237,7 @@ class DomainExpiry extends BeanModel {
 
         const publicSuffix = tld.publicSuffix;
         const rootTld = publicSuffix.split(".").pop();
-        const rdap = getRdapServer(publicSuffix);
+        const rdap = await getRdapServer(publicSuffix);
         if (!rdap) {
             throw new TranslatableError("domain_expiry_unsupported_unsupported_tld_no_rdap_endpoint", {
                 publicSuffix,

@@ -745,7 +745,11 @@ let needSetup = false;
                  * List of frontend-only properties that should not be saved to the database.
                  * Should clean up before saving to the database.
                  */
-                const frontendOnlyProperties = ["humanReadableInterval", "responsecheck"];
+                const frontendOnlyProperties = [
+                    "humanReadableInterval",
+                    "globalpingdnsresolvetypeoptions",
+                    "responsecheck",
+                ];
                 for (const prop of frontendOnlyProperties) {
                     if (prop in monitor) {
                         delete monitor[prop];
@@ -1651,7 +1655,10 @@ let needSetup = false;
                 await UptimeCalculator.clearStatistics(monitorID);
 
                 if (monitorID in server.monitorList) {
-                    await restartMonitor(socket.userID, monitorID);
+                    const monitor = server.monitorList[monitorID];
+                    if (monitor.active) {
+                        await restartMonitor(socket.userID, monitorID);
+                    }
                 }
 
                 await sendHeartbeatList(socket, monitorID, true, true);
@@ -1677,7 +1684,10 @@ let needSetup = false;
 
                 // Restart all monitors to reset the stats
                 for (let monitorID in server.monitorList) {
-                    await restartMonitor(socket.userID, monitorID);
+                    const monitor = server.monitorList[monitorID];
+                    if (monitor.active) {
+                        await restartMonitor(socket.userID, monitorID);
+                    }
                 }
 
                 callback({
