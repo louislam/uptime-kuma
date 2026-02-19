@@ -164,7 +164,7 @@ export default {
         },
         depthMargin() {
             return {
-                marginLeft: `${20 * this.depth}px`,
+                paddingLeft: `${20 * this.depth}px`,
             };
         },
     },
