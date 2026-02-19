@@ -65,6 +65,8 @@ async function getRdapDnsData() {
             throw new Error("Invalid RDAP DNS data structure");
         }
 
+        cacheRdapDnsData = data;
+
         // Next week
         nextChecking = Date.now() + 7 * 24 * 60 * 60 * 1000;
         await Settings.set("rdapDnsData", data);
