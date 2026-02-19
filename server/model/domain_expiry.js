@@ -42,8 +42,6 @@ async function getRdapDnsData() {
         return cacheRdapDnsData;
     }
 
-    let data = null;
-
     // Avoid multiple simultaneous updates
     // Use older data first if another update is in progress
     if (running) {
@@ -58,12 +56,14 @@ async function getRdapDnsData() {
             throw new Error(`HTTP error: ${response.status}`);
         }
 
-        data = await response.json();
+        const data = await response.json();
 
         // Simple validation
         if (!data.services || !Array.isArray(data.services)) {
             throw new Error("Invalid RDAP DNS data structure");
         }
+
+        cacheRdapDnsData = data;
 
         // Next week
         nextChecking = Date.now() + 7 * 24 * 60 * 60 * 1000;
@@ -71,14 +71,14 @@ async function getRdapDnsData() {
         log.info("rdap", "RDAP DNS data updated successfully. Number of services: " + data.services.length);
     } catch (error) {
         log.info("rdap", `Uable to update RDAP DNS data from source: ${error.message}`);
-        data = await getOfflineRdapDnsData();
+        cacheRdapDnsData = await getOfflineRdapDnsData();
 
         // Check again next day
         nextChecking = Date.now() + 24 * 60 * 60 * 1000;
     }
 
     running = false;
-    return data;
+    return cacheRdapDnsData;
 }
 
 /**
