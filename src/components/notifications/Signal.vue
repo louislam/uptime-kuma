@@ -52,4 +52,48 @@
             </p>
         </div>
     </div>
+
+    <div class="mb-3">
+        <div class="form-check form-switch">
+            <input v-model="$parent.notification.signalUseTemplate" class="form-check-input" type="checkbox" />
+            <label class="form-check-label">{{ $t("signalUseTemplate") }}</label>
+        </div>
+
+        <div class="form-text">
+            {{ $t("signalUseTemplateDescription") }}
+        </div>
+    </div>
+
+    <template v-if="$parent.notification.signalUseTemplate">
+        <div class="mb-3">
+            <label class="form-label" for="signal-template">{{ $t("Message Template") }}</label>
+            <TemplatedTextarea
+                id="signal-template"
+                v-model="$parent.notification.signalTemplate"
+                :required="true"
+                :placeholder="signalTemplatedTextareaPlaceholder"
+            ></TemplatedTextarea>
+        </div>
+    </template>
 </template>
+
+<script>
+import TemplatedTextarea from "../TemplatedTextarea.vue";
+
+export default {
+    components: {
+        TemplatedTextarea,
+    },
+    computed: {
+        signalTemplatedTextareaPlaceholder() {
+            return this.$t("Example:", [
+                `
+Signal Alert{% if monitorJSON %} - {{ monitorJSON['name'] }}{% endif %}
+
+{{ msg }}
+            `,
+            ]);
+        },
+    },
+};
+</script>
