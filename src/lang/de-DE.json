@@ -1578,5 +1578,8 @@
     "Teltonika SMS Gateway": "Teltonika SMS-Gateway",
     "teltonikaVersionWarning": "Dieser Benachrichtigungsanbieter erfordert, dass auf deinem Teltonika-Gerät RMS-Version 7.14.0 oder höher installiert ist.",
     "teltonikaUnsafeTlsDescription": "Die Deaktivierung der TLS Zertifikatsprüfung setzt dich möglichen On-Path-Angriffen (Man in the Middle-Attacken) aus, welche zu Datenlecks und Systemübernahmen führen können. Deaktiviere diese Prüfung nur, wenn du den Angriffsvektor akzeptierst. Wir empfehlen die Verwendung von Let's Encrypt mit automatischer Verlängerung.",
-    "teltonikaModemHelptext": "Die ID des SMS-Modems muss das Format {0} haben. Weitere Informationen kannst du unter https://developers.teltonika-networks.com/reference/ finden."
+    "teltonikaModemHelptext": "Die ID des SMS-Modems muss das Format {0} haben. Weitere Informationen kannst du unter https://developers.teltonika-networks.com/reference/ finden.",
+    "RecordMatch": "Datensatzwert-Übereinstimmung",
+    "RegexMatch": "Gib einen regulären Ausdruck ein, der mit dem Datensatzwert übereinstimmt",
+    "GlobalpingMonitorDescription": "Globalping bietet Zugriff auf Tausende von Community-gehosteten Sonden, um Netzwerktests und -messungen durchzuführen. Für alle anonymen Benutzer gilt eine Begrenzung von 250 Tests pro Stunde. Um die Begrenzung auf 500 pro Stunde zu verdoppeln, speichere bitte dein Token in {accountSettings}. Weitere Informationen findest du in den {docs}."
 }
