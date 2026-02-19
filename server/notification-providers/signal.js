@@ -11,8 +11,20 @@ class Signal extends NotificationProvider {
         const okMsg = "Sent Successfully.";
 
         try {
+            let message = msg;
+
+            // Use template if enabled
+            if (notification.signalUseTemplate) {
+                message = await this.renderTemplate(
+                    notification.signalTemplate,
+                    msg,
+                    monitorJSON,
+                    heartbeatJSON
+                );
+            }
+
             let data = {
-                message: msg,
+                message: message,
                 number: notification.signalNumber,
                 recipients: notification.signalRecipients.replace(/\s/g, "").split(","),
             };
