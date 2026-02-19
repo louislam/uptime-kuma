@@ -15,12 +15,7 @@ class Signal extends NotificationProvider {
 
             // Use template if enabled
             if (notification.signalUseTemplate) {
-                message = await this.renderTemplate(
-                    notification.signalTemplate,
-                    msg,
-                    monitorJSON,
-                    heartbeatJSON
-                );
+                message = await this.renderTemplate(notification.signalTemplate, msg, monitorJSON, heartbeatJSON);
             }
 
             let data = {
