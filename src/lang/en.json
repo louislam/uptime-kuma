@@ -863,6 +863,8 @@
     "Remove domain": "Remove domain '{0}'",
     "Icon Emoji": "Icon Emoji",
     "signalImportant": "IMPORTANT: You cannot mix groups and numbers in recipients!",
+    "signalUseTemplate": "Use custom message template",
+    "signalUseTemplateDescription": "If enabled, the message will be sent using a custom template. You can use Liquid templating to customize the notification format.",
     "aboutWebhooks": "More info about Webhooks on: {0}",
     "aboutJiraCloudId": "More info about Jira Cloud ID: {0}",
     "see Jira Cloud Docs": "see Jira Cloud Docs",
