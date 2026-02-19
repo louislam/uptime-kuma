@@ -18,7 +18,7 @@ class Signal extends NotificationProvider {
             }
 
             let data = {
-                message: message,
+                message,
                 number: notification.signalNumber,
                 recipients: notification.signalRecipients.replace(/\s/g, "").split(","),
             };
