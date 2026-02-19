@@ -24,7 +24,13 @@ class DnsMonitorType extends MonitorType {
         let dnsMessage = "";
 
         const resolverServers = await this.resolveDnsResolverServers(monitor.dns_resolve_server);
-        let dnsRes = await this.dnsResolve(monitor.hostname, resolverServers, monitor.port, monitor.dns_resolve_type, monitor.timeout * 1000);
+        let dnsRes = await this.dnsResolve(
+            monitor.hostname,
+            resolverServers,
+            monitor.port,
+            monitor.dns_resolve_type,
+            monitor.timeout * 1000
+        );
         heartbeat.ping = dayjs().valueOf() - startTime;
 
         const conditions = ConditionExpressionGroup.fromMonitor(monitor);
