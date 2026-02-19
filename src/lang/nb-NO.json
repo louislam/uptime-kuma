@@ -1495,5 +1495,7 @@
     "halopsa_id_usage_hint": "💡 Tips: Bruk monitor_id for å pålitelig koble varsler til saker, og heartbeat_id for å spore hendelseshistorikk",
     "halopsa_setup_step5": "Konfigurer runbooken til å bruke monitor_id for å matche varsler med eksisterende saker",
     "matrixUseTemplate": "Bruk egendefinert meldingsmal",
-    "matrixUseTemplateDescription": "Hvis aktivert, vil meldingen bli sendt ved hjelp av en egendefinert mal."
+    "matrixUseTemplateDescription": "Hvis aktivert, vil meldingen bli sendt ved hjelp av en egendefinert mal.",
+    "teamsEnableTags": "Inkluder tagger",
+    "teamsEnableTagsDescription": "Hvis aktivert, vil meldingen inkludere overvokere-tagger."
 }
