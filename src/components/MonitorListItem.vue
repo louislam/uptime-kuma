@@ -397,19 +397,19 @@ export default {
     .draggable-item {
         // Adjust width to account for parent's margin to prevent text cropping
         max-width: calc(100% - 20px);
-        
+
         .childs .draggable-item {
             max-width: calc(100% - 20px);
         }
-        
+
         .childs .childs .draggable-item {
             max-width: calc(100% - 20px);
         }
-        
+
         .childs .childs .childs .draggable-item {
             max-width: calc(100% - 20px);
         }
-        
+
         .childs .childs .childs .childs .draggable-item {
             max-width: calc(100% - 20px);
         }
