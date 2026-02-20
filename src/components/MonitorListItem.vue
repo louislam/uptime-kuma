@@ -390,4 +390,29 @@ export default {
         cursor: grabbing;
     }
 }
+
+// Fix for nested group monitor names being cropped
+// Each nesting level adds 20px margin, so we need to reduce width accordingly
+.childs {
+    .draggable-item {
+        // Adjust width to account for parent's margin to prevent text cropping
+        max-width: calc(100% - 20px);
+        
+        .childs .draggable-item {
+            max-width: calc(100% - 20px);
+        }
+        
+        .childs .childs .draggable-item {
+            max-width: calc(100% - 20px);
+        }
+        
+        .childs .childs .childs .draggable-item {
+            max-width: calc(100% - 20px);
+        }
+        
+        .childs .childs .childs .childs .draggable-item {
+            max-width: calc(100% - 20px);
+        }
+    }
+}
 </style>
