@@ -61,6 +61,12 @@ export default {
     opacity: 0;
     background: white;
 
+    // Fix for mobile: prevent dropdown from overflowing viewport
+    @media (max-width: 550px) {
+        max-width: calc(100vw - 20px);
+        right: 10px;
+    }
+
     &.open {
         height: unset;
         visibility: inherit;
