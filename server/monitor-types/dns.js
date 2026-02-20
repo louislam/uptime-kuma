@@ -175,7 +175,7 @@ class DnsMonitorType extends MonitorType {
      * @param {string[]} resolverServer Array of DNS server IP addresses to use
      * @param {string} resolverPort Port the DNS server is listening on
      * @param {string} rrtype The type of record to request
-     * @param {number} [timeout=5000] Timeout in milliseconds for the DNS query (defaults to c-ares default of 5000ms)
+     * @param {number} timeout Timeout in milliseconds for the DNS query (defaults to c-ares default of 5000ms)
      * @returns {Promise<(string[] | object[] | object)>} DNS response
      */
     async dnsResolve(hostname, resolverServer, resolverPort, rrtype, timeout = 5000) {
