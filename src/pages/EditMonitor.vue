@@ -1532,15 +1532,19 @@
                                     v-model="monitor.domainExpiryNotification"
                                     class="form-check-input"
                                     type="checkbox"
-                                    :disabled="!hasDomain"
                                 />
                                 <label class="form-check-label" for="domain-expiry-notification">
                                     {{ $t("labelDomainNameExpiryNotification") }}
                                 </label>
-                                <div v-if="hasDomain" class="form-text">
+                                <div class="form-text">
                                     {{ $t("domainExpiryNotificationHelp") }}
                                 </div>
-                                <div v-if="!hasDomain && domainExpiryUnsupportedReason" class="form-text">
+                                <div
+                                    v-if="
+                                        !hasDomain && monitor.domainExpiryNotification && domainExpiryUnsupportedReason
+                                    "
+                                    class="form-text"
+                                >
                                     {{ domainExpiryUnsupportedReason }}
                                 </div>
                             </div>
@@ -3279,11 +3283,7 @@ message HealthCheckResponse {
 
             this.checkMonitorDebounce = setTimeout(() => {
                 this.$root.getSocket().emit("checkMointor", data, (res) => {
-                    const wasSupported = this.hasDomain;
                     this.hasDomain = !!res?.ok;
-                    if (this.hasDomain !== wasSupported) {
-                        this.monitor.domainExpiryNotification = this.hasDomain;
-                    }
                     this.domainExpiryUnsupportedReason = res.msgi18n ? this.$t(res.msg, res.meta) : res.msg;
                 });
             }, 500);
