@@ -1744,7 +1744,7 @@ let needSetup = false;
         if (hostname) {
             log.info("server", `Listening on ${hostname}:${port}`);
         } else {
-            log.info("server", `Listening on ${port}`);
+            log.info("server", `Listening on 0.0.0.0:${port}`);
         }
         await startMonitors();
 

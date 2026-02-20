@@ -308,7 +308,7 @@ class SetupDatabase {
 
             tempServer = app.listen(port, hostname, () => {
                 log.info("setup-database", `Starting Setup Database on ${port}`);
-                let domain = hostname ? hostname : "localhost";
+                let domain = hostname ? hostname : "0.0.0.0";
                 log.info("setup-database", `Open http://${domain}:${port} in your browser`);
                 log.info("setup-database", "Waiting for user action...");
             });
