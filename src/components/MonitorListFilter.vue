@@ -436,12 +436,16 @@ export default {
 
     &:first-child {
         border-right: 1px solid #ced4da;
-        .dark & { border-right-color: $dark-border-color; }
+        .dark & {
+            border-right-color: $dark-border-color;
+        }
     }
 
     &:hover:not(.active) {
         background-color: #f8f9fa;
-        .dark & { background-color: $dark-bg2; }
+        .dark & {
+            background-color: $dark-bg2;
+        }
     }
 }
 </style>
