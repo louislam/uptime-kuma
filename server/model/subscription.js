@@ -69,11 +69,10 @@ class Subscription extends BeanModel {
      */
     static async getByStatusPage(statusPageId, componentId = null) {
         if (componentId) {
-            return await R.find(
-                "subscription",
-                " status_page_id = ? AND (component_id = ? OR component_id IS NULL) ",
-                [statusPageId, componentId]
-            );
+            return await R.find("subscription", " status_page_id = ? AND (component_id = ? OR component_id IS NULL) ", [
+                statusPageId,
+                componentId,
+            ]);
         }
         return await R.find("subscription", " status_page_id = ? ", [statusPageId]);
     }
@@ -87,17 +86,16 @@ class Subscription extends BeanModel {
      */
     static async exists(subscriberId, statusPageId, componentId = null) {
         if (componentId) {
-            return await R.findOne(
-                "subscription",
-                " subscriber_id = ? AND status_page_id = ? AND component_id = ? ",
-                [subscriberId, statusPageId, componentId]
-            );
+            return await R.findOne("subscription", " subscriber_id = ? AND status_page_id = ? AND component_id = ? ", [
+                subscriberId,
+                statusPageId,
+                componentId,
+            ]);
         }
-        return await R.findOne(
-            "subscription",
-            " subscriber_id = ? AND status_page_id = ? AND component_id IS NULL ",
-            [subscriberId, statusPageId]
-        );
+        return await R.findOne("subscription", " subscriber_id = ? AND status_page_id = ? AND component_id IS NULL ", [
+            subscriberId,
+            statusPageId,
+        ]);
     }
 }
 
