@@ -30,6 +30,9 @@ It is a temporary live demo, all data will be deleted after 10 minutes. Sponsore
 - [Multi Languages](https://github.com/louislam/uptime-kuma/tree/master/src/lang)
 - Multiple status pages
 - Map status pages to specific domains
+
+> **Note:** After adding monitors, you need to create a status page to view them publicly. Go to **Settings** → **Status Pages** → **Add New Status Page**. For more details, see the [Status Page Wiki](https://github.com/louislam/uptime-kuma/wiki/Status-Page).
+
 - Ping chart
 - Certificate info
 - Proxy support
