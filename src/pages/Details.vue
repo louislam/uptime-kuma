@@ -154,7 +154,7 @@
                             v-if="pingStatus"
                             class="badge rounded-pill m-1"
                             :class="'bg-' + pingStatus.color"
-                            style="font-size: 30px;"
+                            style="font-size: 30px"
                         >
                             {{ pingStatus.text }}
                         </span>
@@ -351,7 +351,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(beat, index) in displayedRecords" :key="index" style="padding: 10px;">
+                        <tr v-for="(beat, index) in displayedRecords" :key="index" style="padding: 10px">
                             <td>
                                 <div v-if="beat.important"><Status :status="beat.status" /></div>
                                 <div v-if="beat.pingImportant"><Status :status="beat.pingStatus" /></div>
@@ -569,7 +569,7 @@ export default {
                 return this.$root.pingStatusList[this.monitor.id];
             }
 
-            return { };
+            return {};
         },
 
         tlsInfo() {

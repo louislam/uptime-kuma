@@ -21,10 +21,7 @@
                     </div>
                     <div class="col">
                         <h3>{{ $t("Slow") }}</h3>
-                        <span
-                            class="num"
-                            :class="$root.stats.slow > 0 ? 'text-warning' : 'text-secondary'"
-                        >
+                        <span class="num" :class="$root.stats.slow > 0 ? 'text-warning' : 'text-secondary'">
                             {{ $root.stats.slow }}
                         </span>
                     </div>
@@ -89,7 +86,7 @@
                                 <div v-if="beat.important"><Status :status="beat.status" /></div>
                                 <div v-if="beat.pingImportant"><Status :status="beat.pingStatus" /></div>
                             </td>
-                            <td :class="{ 'border-0': !beat.msg}"><Datetime :value="beat.time" /></td>
+                            <td :class="{ 'border-0': !beat.msg }"><Datetime :value="beat.time" /></td>
                             <td class="border-0">
                                 <div v-if="beat.important">{{ beat.msg }}</div>
                                 <div v-if="beat.pingImportant">{{ beat.pingMsg }}</div>

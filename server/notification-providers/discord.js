@@ -257,33 +257,36 @@ class Discord extends NotificationProvider {
             } else if (heartbeatJSON["status"] === SLOW) {
                 let discordslowdata = {
                     username: discordDisplayName,
-                    embeds: [{
-                        title: "🐌 Your service " + monitorJSON["name"] + " responded slow. 🐌",
-                        color: 16761095,
-                        timestamp: heartbeatJSON["time"],
-                        fields: [
-                            {
-                                name: "Service Name",
-                                value: monitorJSON["name"],
-                            },
-                            {
-                                name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
-                                value: monitorJSON["type"] === "push" ? "Heartbeat" : this.extractAddress(monitorJSON),
-                            },
-                            {
-                                name: `Time (${heartbeatJSON["timezone"]})`,
-                                value: heartbeatJSON["localDateTime"],
-                            },
-                            {
-                                name: "Ping",
-                                value: heartbeatJSON["calculatedResponse"],
-                            },
-                            {
-                                name: "Threshold",
-                                value: heartbeatJSON["calculatedThreshold"],
-                            },
-                        ],
-                    }],
+                    embeds: [
+                        {
+                            title: "🐌 Your service " + monitorJSON["name"] + " responded slow. 🐌",
+                            color: 16761095,
+                            timestamp: heartbeatJSON["time"],
+                            fields: [
+                                {
+                                    name: "Service Name",
+                                    value: monitorJSON["name"],
+                                },
+                                {
+                                    name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
+                                    value:
+                                        monitorJSON["type"] === "push" ? "Heartbeat" : this.extractAddress(monitorJSON),
+                                },
+                                {
+                                    name: `Time (${heartbeatJSON["timezone"]})`,
+                                    value: heartbeatJSON["localDateTime"],
+                                },
+                                {
+                                    name: "Ping",
+                                    value: heartbeatJSON["calculatedResponse"],
+                                },
+                                {
+                                    name: "Threshold",
+                                    value: heartbeatJSON["calculatedThreshold"],
+                                },
+                            ],
+                        },
+                    ],
                 };
 
                 if (notification.discordPrefixMessage) {
@@ -295,37 +298,40 @@ class Discord extends NotificationProvider {
             } else if (heartbeatJSON["status"] === NOMINAL) {
                 let discordnominaldata = {
                     username: discordDisplayName,
-                    embeds: [{
-                        title: "🚀 Your service " + monitorJSON["name"] + " is responding normally! 🚀",
-                        color: 65280,
-                        timestamp: heartbeatJSON["time"],
-                        fields: [
-                            {
-                                name: "Service Name",
-                                value: monitorJSON["name"],
-                            },
-                            {
-                                name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
-                                value: monitorJSON["type"] === "push" ? "Heartbeat" : this.extractAddress(monitorJSON),
-                            },
-                            {
-                                name: `Time (${heartbeatJSON["timezone"]})`,
-                                value: heartbeatJSON["localDateTime"],
-                            },
-                            {
-                                name: "Ping",
-                                value: heartbeatJSON["calculatedResponse"],
-                            },
-                            {
-                                name: "Threshold",
-                                value: heartbeatJSON["calculatedThreshold"],
-                            },
-                            {
-                                name: "Slow For",
-                                value: heartbeatJSON["slowFor"],
-                            },
-                        ],
-                    }],
+                    embeds: [
+                        {
+                            title: "🚀 Your service " + monitorJSON["name"] + " is responding normally! 🚀",
+                            color: 65280,
+                            timestamp: heartbeatJSON["time"],
+                            fields: [
+                                {
+                                    name: "Service Name",
+                                    value: monitorJSON["name"],
+                                },
+                                {
+                                    name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
+                                    value:
+                                        monitorJSON["type"] === "push" ? "Heartbeat" : this.extractAddress(monitorJSON),
+                                },
+                                {
+                                    name: `Time (${heartbeatJSON["timezone"]})`,
+                                    value: heartbeatJSON["localDateTime"],
+                                },
+                                {
+                                    name: "Ping",
+                                    value: heartbeatJSON["calculatedResponse"],
+                                },
+                                {
+                                    name: "Threshold",
+                                    value: heartbeatJSON["calculatedThreshold"],
+                                },
+                                {
+                                    name: "Slow For",
+                                    value: heartbeatJSON["slowFor"],
+                                },
+                            ],
+                        },
+                    ],
                 };
 
                 if (notification.discordPrefixMessage) {

@@ -1365,7 +1365,9 @@ let needSetup = false;
                 if (monitorID == null) {
                     count = await R.count("heartbeat", "important = 1 OR ping_important = 1");
                 } else {
-                    count = await R.count("heartbeat", "monitor_id = ? AND (important = 1 OR ping_important = 1)", [monitorID]);
+                    count = await R.count("heartbeat", "monitor_id = ? AND (important = 1 OR ping_important = 1)", [
+                        monitorID,
+                    ]);
                 }
 
                 callback({
@@ -1640,7 +1642,10 @@ let needSetup = false;
 
                 log.info("manage", `Clear Events Monitor: ${monitorID} User ID: ${socket.userID}`);
 
-                await R.exec("UPDATE heartbeat SET msg = ?, important = ?, ping_msg = ?, ping_important = ? WHERE monitor_id = ? ", ["", "0", "", "0", monitorID,]);
+                await R.exec(
+                    "UPDATE heartbeat SET msg = ?, important = ?, ping_msg = ?, ping_important = ? WHERE monitor_id = ? ",
+                    ["", "0", "", "0", monitorID]
+                );
 
                 callback({
                     ok: true,

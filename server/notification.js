@@ -215,10 +215,16 @@ class Notification {
      */
     static async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         if (this.providerList[notification.type]) {
-            if ((heartbeatJSON?.status === SLOW || heartbeatJSON?.status === NOMINAL) && !this.providerList[notification.type].supportSlowNotifications) {
+            if (
+                (heartbeatJSON?.status === SLOW || heartbeatJSON?.status === NOMINAL) &&
+                !this.providerList[notification.type].supportSlowNotifications
+            ) {
                 // This is a SLOW/NOMINAL notification where the provider does NOT support card notificatons yet
                 // TODO Ideally, this goes away once all the notification providers support slow response notification cards
-                log.debug("notification", `${notification.type} does not support card notifications for SLOW/NOMINAL events yet. Sending plain text message.`);
+                log.debug(
+                    "notification",
+                    `${notification.type} does not support card notifications for SLOW/NOMINAL events yet. Sending plain text message.`
+                );
                 return this.providerList[notification.type].send(notification, msg);
             } else {
                 return this.providerList[notification.type].send(notification, msg, monitorJSON, heartbeatJSON);

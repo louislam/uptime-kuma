@@ -194,7 +194,7 @@ class Slack extends NotificationProvider {
                 icon_emoji: notification.slackiconemo,
                 attachments: [],
             };
-          
+
             let alert_color;
             switch (heartbeatJSON["status"]) {
                 case UP:

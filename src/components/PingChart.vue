@@ -92,7 +92,8 @@ export default {
     },
     computed: {
         threshold() {
-            let heartbeatList = (this.monitorId in this.$root.heartbeatList && this.$root.heartbeatList[this.monitorId]) || [];
+            let heartbeatList =
+                (this.monitorId in this.$root.heartbeatList && this.$root.heartbeatList[this.monitorId]) || [];
 
             let lastBeat = heartbeatList.at(-1);
 
@@ -234,11 +235,11 @@ export default {
                                 endValue: this.threshold,
                                 borderColor: "rgba(248,163,6,1.0)",
                                 borderWith: 2,
-                                borderDash: [ 1, 3 ],
+                                borderDash: [1, 3],
                                 adjustScaleRange: false,
                                 display: this.threshold !== undefined,
-                            }
-                        }
+                            },
+                        },
                     },
                 },
             };

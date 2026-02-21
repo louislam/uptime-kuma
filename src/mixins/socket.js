@@ -235,7 +235,6 @@ export default {
                 }
 
                 if (data.pingImportant) {
-
                     if (this.monitorList[data.monitorID] !== undefined) {
                         if (data.pingStatus === SLOW) {
                             toast.warning(`[${this.monitorList[data.monitorID].name}] [SLOW] ${data.pingMsg}`, {
