@@ -1414,7 +1414,7 @@
                                 </div>
                             </div>
 
-                            <!-- Timeout: HTTP / JSON query / Keyword / Ping / RabbitMQ / SNMP / Websocket Upgrade only -->
+                            <!-- Timeout: HTTP / JSON query / Keyword / Ping / RabbitMQ / SNMP / Websocket Upgrade / DNS only -->
                             <div
                                 v-if="
                                     monitor.type === 'http' ||
@@ -1423,7 +1423,8 @@
                                     monitor.type === 'ping' ||
                                     monitor.type === 'rabbitmq' ||
                                     monitor.type === 'snmp' ||
-                                    monitor.type === 'websocket-upgrade'
+                                    monitor.type === 'websocket-upgrade' ||
+                                    monitor.type === 'dns'
                                 "
                                 class="my-3"
                             >
@@ -3331,6 +3332,8 @@ message HealthCheckResponse {
                     // snmp is not expected to be executed via the internet => we can choose a lower default timeout
                     this.monitor.timeout = 5;
                 } else if (this.monitor.type === "ping") {
+                    this.monitor.timeout = 10;
+                } else if (this.monitor.type === "dns") {
                     this.monitor.timeout = 10;
                 } else {
                     this.monitor.timeout = 48;
