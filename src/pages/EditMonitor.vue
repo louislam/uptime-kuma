@@ -2833,11 +2833,22 @@ const toast = useToast();
 
 const pushTokenLength = 32;
 
+const defaultValueList = {
+    http: {
+        url: "https://",
+        accepted_statuscodes: ["200-299"],
+    },
+    "websocket-upgrade": {
+        url: "wss://",
+        accepted_statuscodes: ["1000"],
+    },
+};
+
 const monitorDefaults = {
     type: "http",
     name: "",
     parent: null,
-    url: "https://",
+    url: defaultValueList.http.url,
     wsSubprotocol: "",
     method: "GET",
     protocol: null,
@@ -2855,7 +2866,7 @@ const monitorDefaults = {
     expiryNotification: false,
     domainExpiryNotification: false,
     maxredirects: 10,
-    accepted_statuscodes: ["200-299"],
+    accepted_statuscodes: defaultValueList.http.accepted_statuscodes,
     saveResponse: false,
     saveErrorResponse: true,
     responseMaxLength: 1024,
@@ -3311,10 +3322,38 @@ message HealthCheckResponse {
                 this.monitor.dns_resolve_server = "1.1.1.1";
             }
 
-            if (oldType && this.monitor.type === "websocket-upgrade") {
-                this.monitor.url = "wss://";
-                this.monitor.accepted_statuscodes = ["1000"];
+            // Change to websocket-upgrade (override http defaults)
+            if (newType === "websocket-upgrade") {
+                if (!this.monitor.url || this.monitor.url === defaultValueList.http.url) {
+                    this.monitor.url = defaultValueList["websocket-upgrade"].url;
+                }
+
+                if (
+                    !this.monitor.accepted_statuscodes ||
+                    (this.monitor.accepted_statuscodes.length === 1 &&
+                        this.monitor.accepted_statuscodes[0] === defaultValueList.http.accepted_statuscodes)
+                ) {
+                    this.monitor.accepted_statuscodes = defaultValueList["websocket-upgrade"].accepted_statuscodes;
+                }
             }
+
+            // Change to http (override websocket-upgrade defaults)
+            // Because user may see wss:// and default to http code 1000, which is strange for http monitor.
+            if (["http", "keyword", "real-browser"].includes(newType)) {
+                if (!this.monitor.url || this.monitor.url === defaultValueList["websocket-upgrade"].url) {
+                    this.monitor.url = defaultValueList.http.url;
+                }
+
+                if (
+                    !this.monitor.accepted_statuscodes ||
+                    (this.monitor.accepted_statuscodes.length === 1 &&
+                        this.monitor.accepted_statuscodes[0] ===
+                            defaultValueList["websocket-upgrade"].accepted_statuscodes)
+                ) {
+                    this.monitor.accepted_statuscodes = defaultValueList.http.accepted_statuscodes;
+                }
+            }
+
             if (this.monitor.type === "push") {
                 if (!this.monitor.pushToken) {
                     // ideally this would require checking if the generated token is already used
