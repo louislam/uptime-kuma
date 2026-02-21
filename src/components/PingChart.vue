@@ -57,7 +57,7 @@ Chart.register(
     LinearScale,
     Tooltip,
     Filler,
-    Legent,
+    Legend,
     annotationPlugin
 );
 
