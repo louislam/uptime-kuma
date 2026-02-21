@@ -992,7 +992,7 @@ module.exports.commandExists = commandExists;
  * localhost plus every non-internal network address.
  * @param {string} tag Log tag (e.g. "server", "setup-database")
  * @param {number} port Port number
- * @param {string} [hostname] Bound hostname, if any
+ * @param {string} hostname Bound hostname, if any
  */
 module.exports.printServerUrls = (tag, port, hostname) => {
     if (hostname) {
