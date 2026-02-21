@@ -195,25 +195,25 @@ class Slack extends NotificationProvider {
                 attachments: [],
             };
 
-            let alert_color;
+            let alertColor;
             switch (heartbeatJSON["status"]) {
                 case UP:
                 case NOMINAL:
-                    alert_color = "#2eb886";
+                    alertColor = "#2eb886";
                     break;
                 case SLOW:
-                    alert_color = "#ffc107";
+                    alertColor = "#ffc107";
                     break;
                 case DOWN:
-                    alert_color = "#e01e5a";
+                    alertColor = "#e01e5a";
                     break;
                 default:
-                    alert_color = "#0dcaf0";
+                    alertColor = "#0dcaf0";
             }
 
             if (notification.slackrichmessage) {
                 data.attachments.push({
-                    color: alert_color,
+                    color: alertColor,
                     blocks: this.buildBlocks(baseURL, monitorJSON, heartbeatJSON, title, msg, includeGroupName),
                 });
             } else {
