@@ -1,0 +1,49 @@
+name: autofix.ci
+
+on:
+  push:
+    branches: ["master", "1.23.X"]
+  pull_request:
+permissions: {}
+
+jobs:
+  autofix:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with: { persist-credentials: false }
+
+      - name: Cache/Restore node_modules
+        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
+        id: node-modules-cache
+        with:
+          path: node_modules
+          key: node-modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Auto-fix JavaScript/Vue linting issues
+        run: npm run lint-fix:js
+        continue-on-error: true
+
+      - name: Auto-fix CSS/SCSS linting issues
+        run: npm run lint-fix:style
+        continue-on-error: true
+
+      - name: Auto-format code with Prettier
+        run: npm run fmt
+        continue-on-error: true
+
+      - name: Compile TypeScript
+        run: npm run tsc
+        continue-on-error: true
+
+      - uses: autofix-ci/action@635ffb0c9798bd160680f18fd73371e355b85f27

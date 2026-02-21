@@ -1,25 +1,58 @@
 <template>
     <div class="mb-3">
         <label for="ntfy-ntfytopic" class="form-label">{{ $t("ntfy Topic") }}</label>
-        <input id="ntfy-ntfytopic" v-model="$parent.notification.ntfytopic" type="text" class="form-control" required>
+        <input id="ntfy-ntfytopic" v-model="$parent.notification.ntfytopic" type="text" class="form-control" required />
     </div>
     <div class="mb-3">
         <label for="ntfy-server-url" class="form-label">{{ $t("Server URL") }}</label>
-        <input id="ntfy-server-url" v-model="$parent.notification.ntfyserverurl" type="text" class="form-control" required>
+        <input
+            id="ntfy-server-url"
+            v-model="$parent.notification.ntfyserverurl"
+            type="text"
+            class="form-control"
+            required
+        />
         <div class="form-text">
             {{ $t("Server URL should not contain the nfty topic") }}
         </div>
     </div>
     <div class="mb-3">
         <label for="ntfy-priority" class="form-label">{{ $t("Priority") }}</label>
-        <input id="ntfy-priority" v-model="$parent.notification.ntfyPriority" type="number" class="form-control" required min="1" max="5" step="1">
+        <input
+            id="ntfy-priority"
+            v-model="$parent.notification.ntfyPriority"
+            type="number"
+            class="form-control"
+            required
+            min="1"
+            max="5"
+            step="1"
+        />
         <label for="ntfy-priority-down" class="form-label">{{ $t("ntfyPriorityDown") }}</label>
-        <input id="ntfy-priority-down" v-model="$parent.notification.ntfyPriorityDown" type="number" class="form-control" required min="1" max="5" step="1">
+        <input
+            id="ntfy-priority-down"
+            v-model="$parent.notification.ntfyPriorityDown"
+            type="number"
+            class="form-control"
+            required
+            min="1"
+            max="5"
+            step="1"
+        />
         <div class="form-text">
-            <p v-if="$parent.notification.ntfyPriority == $parent.notification.ntfyPriorityDown && $parent.notification.ntfyPriority >= 5">
+            <p
+                v-if="
+                    $parent.notification.ntfyPriority == $parent.notification.ntfyPriorityDown &&
+                    $parent.notification.ntfyPriority >= 5
+                "
+            >
                 {{ $t("ntfyPriorityHelptextAllEvents") }}
             </p>
-            <i18n-t v-else-if="$parent.notification.ntfyPriority > $parent.notification.ntfyPriorityDown" tag="p" keypath="ntfyPriorityHelptextPriorityHigherThanDown">
+            <i18n-t
+                v-else-if="$parent.notification.ntfyPriority > $parent.notification.ntfyPriorityDown"
+                tag="p"
+                keypath="ntfyPriorityHelptextPriorityHigherThanDown"
+            >
                 <code>DOWN</code>
                 <code>{{ $parent.notification.ntfyPriority }}</code>
                 <code>{{ $parent.notification.ntfyPriorityDown }}</code>
@@ -38,11 +71,15 @@
     </div>
     <div v-if="$parent.notification.ntfyAuthenticationMethod === 'usernamePassword'" class="mb-3">
         <label for="ntfy-username" class="form-label">{{ $t("Username") }}</label>
-        <input id="ntfy-username" v-model="$parent.notification.ntfyusername" type="text" class="form-control">
+        <input id="ntfy-username" v-model="$parent.notification.ntfyusername" type="text" class="form-control" />
     </div>
     <div v-if="$parent.notification.ntfyAuthenticationMethod === 'usernamePassword'" class="mb-3">
         <label for="ntfy-password" class="form-label">{{ $t("Password") }}</label>
-        <HiddenInput id="ntfy-password" v-model="$parent.notification.ntfypassword" autocomplete="new-password"></HiddenInput>
+        <HiddenInput
+            id="ntfy-password"
+            v-model="$parent.notification.ntfypassword"
+            autocomplete="new-password"
+        ></HiddenInput>
     </div>
     <div v-if="$parent.notification.ntfyAuthenticationMethod === 'accessToken'" class="mb-3">
         <label for="ntfy-access-token" class="form-label">{{ $t("Access Token") }}</label>
@@ -50,25 +87,83 @@
     </div>
     <div class="mb-3">
         <label for="ntfy-icon" class="form-label">{{ $t("IconUrl") }}</label>
-        <input id="ntfy-icon" v-model="$parent.notification.ntfyIcon" type="text" class="form-control">
+        <input id="ntfy-icon" v-model="$parent.notification.ntfyIcon" type="text" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label for="ntfy-call" class="form-label">{{ $t("ntfyCall") }}</label>
+        <input
+            id="ntfy-call"
+            v-model="$parent.notification.ntfyCall"
+            type="text"
+            class="form-control"
+            placeholder="yes or +12223334444"
+        />
+        <div class="form-text">
+            {{ $t("ntfyCallHelptext") }}
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <div class="form-check form-switch">
+            <input
+                id="ntfy-use-template"
+                v-model="$parent.notification.ntfyUseTemplate"
+                class="form-check-input"
+                type="checkbox"
+            />
+            <label class="form-check-label" for="ntfy-use-template">
+                {{ $t("ntfyUseTemplate") }}
+            </label>
+        </div>
+        <div class="form-text">
+            {{ $t("ntfyUseTemplateDescription") }}
+        </div>
+    </div>
+
+    <div v-show="$parent.notification.ntfyUseTemplate">
+        <div class="mb-3">
+            <label for="ntfy-title" class="form-label">{{ $t("ntfyCustomTitle") }}</label>
+            <TemplatedInput
+                id="ntfy-title"
+                v-model="$parent.notification.ntfyCustomTitle"
+                :required="false"
+                placeholder=""
+            ></TemplatedInput>
+            <div class="form-text">{{ $t("ntfyNotificationTemplateFallback") }}</div>
+        </div>
+
+        <div class="mb-3">
+            <label for="ntfy-message" class="form-label">{{ $t("ntfyCustomMessage") }}</label>
+            <TemplatedTextarea
+                id="ntfy-message"
+                v-model="$parent.notification.ntfyCustomMessage"
+                :required="false"
+                placeholder=""
+            ></TemplatedTextarea>
+            <div class="form-text">{{ $t("ntfyNotificationTemplateFallback") }}</div>
+        </div>
     </div>
 </template>
 
 <script>
 import HiddenInput from "../HiddenInput.vue";
+import TemplatedInput from "../TemplatedInput.vue";
+import TemplatedTextarea from "../TemplatedTextarea.vue";
 
 export default {
     components: {
         HiddenInput,
+        TemplatedInput,
+        TemplatedTextarea,
     },
     computed: {
         authenticationMethods() {
             return {
                 none: this.$t("None"),
                 usernamePassword: this.$t("ntfyUsernameAndPassword"),
-                accessToken: this.$t("Access Token")
+                accessToken: this.$t("Access Token"),
             };
-        }
+        },
     },
     mounted() {
         if (typeof this.$parent.notification.ntfyPriority === "undefined") {
@@ -88,6 +183,13 @@ export default {
             } else {
                 this.$parent.notification.ntfyAuthenticationMethod = "usernamePassword";
             }
+        }
+
+        // Auto-enable template checkbox if either field has content
+        if (typeof this.$parent.notification.ntfyUseTemplate === "undefined") {
+            const hasTitle = !!this.$parent.notification.ntfyCustomTitle?.trim();
+            const hasMessage = !!this.$parent.notification.ntfyCustomMessage?.trim();
+            this.$parent.notification.ntfyUseTemplate = hasTitle || hasMessage;
         }
     },
 };

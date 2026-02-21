@@ -38,29 +38,39 @@ class Teams extends NotificationProvider {
     };
 
     /**
+     * Format the tag for display. If the tag has a value, display as "name: value", otherwise just "name".
+     * @param {object} tag The tag object to format
+     * @returns {string} Formatted tag for display
+     */
+    _tagDisplayText = (tag) => {
+        if (tag.value === "" || tag.value === undefined || tag.value === null) {
+            return tag.name;
+        } else {
+            return `${tag.name}: ${tag.value}`;
+        }
+    };
+
+    /**
      * Generate payload for notification
      * @param {object} args Method arguments
      * @param {object} args.heartbeatJSON Heartbeat details
-     * @param {string} args.monitorName Name of the monitor affected
-     * @param {string} args.monitorUrl URL of the monitor affected
+     * @param {object} args.monitorJSON Monitor details
      * @param {string} args.dashboardUrl URL of the dashboard affected
+     * @param {boolean} args.enableTags Whether to include tags in the notification
      * @returns {object} Notification payload
      */
-    _notificationPayloadFactory = ({
-        heartbeatJSON,
-        monitorName,
-        monitorUrl,
-        dashboardUrl,
-    }) => {
+    _notificationPayloadFactory = ({ heartbeatJSON, monitorJSON, dashboardUrl, enableTags }) => {
+        const monitorUrl = this.extractAddress(monitorJSON);
+        const monitorName = monitorJSON?.name;
         const status = heartbeatJSON?.status;
         const facts = [];
         const actions = [];
 
         if (dashboardUrl) {
             actions.push({
-                "type": "Action.OpenUrl",
-                "title": "Visit Uptime Kuma",
-                "url": dashboardUrl
+                type: "Action.OpenUrl",
+                title: "Visit Uptime Kuma",
+                url: dashboardUrl,
             });
         }
 
@@ -85,9 +95,9 @@ class Teams extends NotificationProvider {
                 value: `[${monitorUrl}](${monitorUrl})`,
             });
             actions.push({
-                "type": "Action.OpenUrl",
-                "title": "Visit Monitor URL",
-                "url": monitorUrl
+                type: "Action.OpenUrl",
+                title: "Visit Monitor URL",
+                url: monitorUrl,
             });
         }
 
@@ -98,80 +108,104 @@ class Teams extends NotificationProvider {
             });
         }
 
-        const payload = {
-            "type": "message",
-            // message with status prefix as notification text
-            "summary": this._statusMessageFactory(status, monitorName, true),
-            "attachments": [
-                {
-                    "contentType": "application/vnd.microsoft.card.adaptive",
-                    "contentUrl": "",
-                    "content": {
-                        "type": "AdaptiveCard",
-                        "body": [
+        const payloadBody = [
+            {
+                type: "Container",
+                verticalContentAlignment: "Center",
+                items: [
+                    {
+                        type: "ColumnSet",
+                        style: this._getStyle(status),
+                        columns: [
                             {
-                                "type": "Container",
-                                "verticalContentAlignment": "Center",
-                                "items": [
+                                type: "Column",
+                                width: "auto",
+                                verticalContentAlignment: "Center",
+                                items: [
                                     {
-                                        "type": "ColumnSet",
-                                        "style": this._getStyle(status),
-                                        "columns": [
-                                            {
-                                                "type": "Column",
-                                                "width": "auto",
-                                                "verticalContentAlignment": "Center",
-                                                "items": [
-                                                    {
-                                                        "type": "Image",
-                                                        "width": "32px",
-                                                        "style": "Person",
-                                                        "url": "https://raw.githubusercontent.com/louislam/uptime-kuma/master/public/icon.png",
-                                                        "altText": "Uptime Kuma Logo"
-                                                    }
-                                                ]
-                                            },
-                                            {
-                                                "type": "Column",
-                                                "width": "stretch",
-                                                "items": [
-                                                    {
-                                                        "type": "TextBlock",
-                                                        "size": "Medium",
-                                                        "weight": "Bolder",
-                                                        "text": `**${this._statusMessageFactory(status, monitorName, false)}**`,
-                                                    },
-                                                    {
-                                                        "type": "TextBlock",
-                                                        "size": "Small",
-                                                        "weight": "Default",
-                                                        "text": "Uptime Kuma Alert",
-                                                        "isSubtle": true,
-                                                        "spacing": "None"
-                                                    }
-                                                ]
-                                            }
-                                        ]
-                                    }
-                                ]
+                                        type: "Image",
+                                        width: "32px",
+                                        style: "Person",
+                                        url: "https://raw.githubusercontent.com/louislam/uptime-kuma/master/public/icon.png",
+                                        altText: "Uptime Kuma Logo",
+                                    },
+                                ],
                             },
                             {
-                                "type": "FactSet",
-                                "separator": false,
-                                "facts": facts
-                            }
+                                type: "Column",
+                                width: "stretch",
+                                items: [
+                                    {
+                                        type: "TextBlock",
+                                        size: "Medium",
+                                        weight: "Bolder",
+                                        text: `**${this._statusMessageFactory(status, monitorName, false)}**`,
+                                    },
+                                    {
+                                        type: "TextBlock",
+                                        size: "Small",
+                                        weight: "Default",
+                                        text: "Uptime Kuma Alert",
+                                        isSubtle: true,
+                                        spacing: "None",
+                                    },
+                                ],
+                            },
                         ],
-                        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
-                        "version": "1.5"
-                    }
-                }
-            ]
+                    },
+                ],
+            },
+            {
+                type: "FactSet",
+                separator: false,
+                facts: facts,
+            },
+        ];
+
+        if (enableTags && monitorJSON?.tags?.length > 0) {
+            payloadBody.push({
+                type: "Container",
+                layouts: [
+                    {
+                        type: "Layout.Flow",
+                        columnSpacing: "Small",
+                        rowSpacing: "Small",
+                        horizontalItemsAlignment: "Left",
+                    },
+                ],
+                items: monitorJSON.tags.map((tag) => {
+                    return {
+                        type: "Badge",
+                        text: this._tagDisplayText(tag),
+                        size: "Medium",
+                        style: "Accent",
+                    };
+                }),
+            });
+        }
+
+        const payload = {
+            type: "message",
+            // message with status prefix as notification text
+            summary: this._statusMessageFactory(status, monitorName, true),
+            attachments: [
+                {
+                    contentType: "application/vnd.microsoft.card.adaptive",
+                    contentUrl: "",
+                    content: {
+                        type: "AdaptiveCard",
+                        body: payloadBody,
+                        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+                        version: "1.5",
+                    },
+                },
+            ],
         };
 
         if (actions) {
             payload.attachments[0].content.body.push({
-                "type": "ActionSet",
-                "actions": actions,
+                type: "ActionSet",
+                actions: actions,
             });
         }
 
@@ -198,8 +232,8 @@ class Teams extends NotificationProvider {
     _handleGeneralNotification = (webhookUrl, msg) => {
         const payload = this._notificationPayloadFactory({
             heartbeatJSON: {
-                msg: msg
-            }
+                msg: msg,
+            },
         });
 
         return this._sendNotification(webhookUrl, payload);
@@ -225,9 +259,9 @@ class Teams extends NotificationProvider {
 
             const payload = this._notificationPayloadFactory({
                 heartbeatJSON: heartbeatJSON,
-                monitorName: monitorJSON.name,
-                monitorUrl: this.extractAddress(monitorJSON),
+                monitorJSON: monitorJSON,
                 dashboardUrl: dashboardUrl,
+                enableTags: notification.teamsEnableTags ?? false,
             });
 
             await this._sendNotification(notification.webhookUrl, payload);

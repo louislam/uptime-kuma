@@ -49,7 +49,7 @@ class PostgresMonitorType extends MonitorType {
             const client = new Client(config);
 
             client.on("error", (error) => {
-                log.debug("postgres", "Error caught in the error event handler.");
+                log.debug(this.name, "Error caught in the error event handler.");
                 reject(error);
             });
 

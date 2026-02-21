@@ -15,14 +15,14 @@
                         icon="arrow-down"
                         :class="{
                             'arrow-inactive': !group.sortKey || group.sortDirection !== 'desc',
-                            'arrow-active': group.sortKey && group.sortDirection === 'desc'
+                            'arrow-active': group.sortKey && group.sortDirection === 'desc',
                         }"
                     />
                     <font-awesome-icon
                         icon="arrow-up"
                         :class="{
                             'arrow-inactive': !group.sortKey || group.sortDirection !== 'asc',
-                            'arrow-active': group.sortKey && group.sortDirection === 'asc'
+                            'arrow-active': group.sortKey && group.sortDirection === 'asc',
                         }"
                     />
                 </div>
@@ -127,9 +127,9 @@ export default {
         showCertificateExpiry: {
             type: Boolean,
             default: false,
-        }
+        },
     },
-    emits: [ "update-group" ],
+    emits: ["update-group"],
     computed: {
         /**
          * Parse sort settings from URL query parameters
@@ -138,22 +138,26 @@ export default {
         sortSettingsFromURL() {
             const sortSettings = {};
             if (this.$route && this.$route.query) {
-                for (const [ key, value ] of Object.entries(this.$route.query)) {
+                for (const [key, value] of Object.entries(this.$route.query)) {
                     if (key.startsWith("sort_") && typeof value === "string") {
                         const groupId = key.replace("sort_", "");
-                        const [ sortKey, direction ] = value.split("_");
-                        if (sortKey && [ "status", "name", "uptime", "cert" ].includes(sortKey) &&
-                            direction && [ "asc", "desc" ].includes(direction)) {
-                            sortSettings[ groupId ] = {
+                        const [sortKey, direction] = value.split("_");
+                        if (
+                            sortKey &&
+                            ["status", "name", "uptime", "cert"].includes(sortKey) &&
+                            direction &&
+                            ["asc", "desc"].includes(direction)
+                        ) {
+                            sortSettings[groupId] = {
                                 sortKey,
-                                direction
+                                direction,
                             };
                         }
                     }
                 }
             }
             return sortSettings;
-        }
+        },
     },
     watch: {
         // Watch for changes in heartbeat list, reapply sorting
@@ -177,12 +181,12 @@ export default {
             handler(newSortSettings) {
                 if (this.group) {
                     const groupId = this.getGroupIdentifier();
-                    const urlSetting = newSortSettings[ groupId ];
+                    const urlSetting = newSortSettings[groupId];
 
                     if (urlSetting) {
                         this.updateGroup({
                             sortKey: urlSetting.sortKey,
-                            sortDirection: urlSetting.direction
+                            sortDirection: urlSetting.direction,
                         });
                     } else {
                         // Set defaults if not in URL
@@ -198,8 +202,8 @@ export default {
                 }
             },
             immediate: true,
-            deep: true
-        }
+            deep: true,
+        },
     },
     methods: {
         /**
@@ -227,12 +231,12 @@ export default {
         setSort(key) {
             if (this.group.sortKey === key) {
                 this.updateGroup({
-                    sortDirection: this.group.sortDirection === "asc" ? "desc" : "asc"
+                    sortDirection: this.group.sortDirection === "asc" ? "desc" : "asc",
                 });
             } else {
                 this.updateGroup({
                     sortKey: key,
-                    sortDirection: "asc"
+                    sortDirection: "asc",
                 });
             }
 
@@ -253,9 +257,9 @@ export default {
             const groupId = this.getGroupIdentifier();
 
             if (this.group.sortKey && this.group.sortDirection) {
-                query[ `sort_${groupId}` ] = `${this.group.sortKey}_${this.group.sortDirection}`;
+                query[`sort_${groupId}`] = `${this.group.sortKey}_${this.group.sortDirection}`;
             } else {
-                delete query[ `sort_${groupId}` ];
+                delete query[`sort_${groupId}`];
             }
 
             this.$router.push({ query }).catch(() => {});
@@ -274,7 +278,7 @@ export default {
             const sortDirection = this.group.sortDirection || "desc";
 
             this.updateGroup({
-                monitorList: [ ...this.group.monitorList ].sort((a, b) => {
+                monitorList: [...this.group.monitorList].sort((a, b) => {
                     if (!a || !b) {
                         return 0;
                     }
@@ -291,7 +295,7 @@ export default {
                             }
 
                             const hbList = this.$root.heartbeatList || {};
-                            const hbArr = hbList[ monitor.id ];
+                            const hbArr = hbList[monitor.id];
                             if (hbArr && hbArr.length > 0) {
                                 const lastStatus = hbArr.at(-1).status;
                                 if (lastStatus === 0) {
@@ -318,8 +322,8 @@ export default {
                     } else if (sortKey === "uptime") {
                         // Sort by uptime
                         const uptimeList = this.$root.uptimeList || {};
-                        const uptimeA = a.id ? parseFloat(uptimeList[ `${a.id}_24` ]) || 0 : 0;
-                        const uptimeB = b.id ? parseFloat(uptimeList[ `${b.id}_24` ]) || 0 : 0;
+                        const uptimeA = a.id ? parseFloat(uptimeList[`${a.id}_24`]) || 0 : 0;
+                        const uptimeB = b.id ? parseFloat(uptimeList[`${b.id}_24`]) || 0 : 0;
                         valueA = uptimeA;
                         valueB = uptimeB;
                     } else if (sortKey === "cert") {
@@ -336,11 +340,11 @@ export default {
 
                     // Special handling for status sorting
                     if (sortKey === "status") {
-                        return sortDirection === "desc" ? (comparison * -1) : comparison;
+                        return sortDirection === "desc" ? comparison * -1 : comparison;
                     } else {
-                        return sortDirection === "asc" ? comparison : (comparison * -1);
+                        return sortDirection === "asc" ? comparison : comparison * -1;
                     }
-                })
+                }),
             });
         },
 
@@ -356,8 +360,8 @@ export default {
 
             // Fallback to the current index for unsaved groups
             return `group${this.groupIndex}`;
-        }
-    }
+        },
+    },
 };
 </script>
 
@@ -384,7 +388,8 @@ export default {
         background-color: #f8f9fa;
     }
 
-    &:focus, &:active {
+    &:focus,
+    &:active {
         box-shadow: 0 15px 70px rgba(0, 0, 0, 0.1);
         border: none;
         outline: none;
@@ -399,7 +404,8 @@ export default {
             background-color: $dark-bg2;
         }
 
-        &:focus, &:active {
+        &:focus,
+        &:active {
             box-shadow: 0 15px 70px rgba(0, 0, 0, 0.3);
         }
     }

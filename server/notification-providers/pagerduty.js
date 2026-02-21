@@ -60,7 +60,6 @@ class PagerDuty extends NotificationProvider {
      * @returns {Promise<string>} Success message
      */
     async postNotification(notification, title, body, monitorInfo, eventAction = "trigger") {
-
         let monitorUrl;
         if (monitorInfo.type === "port") {
             monitorUrl = monitorInfo.hostname;
@@ -86,14 +85,14 @@ class PagerDuty extends NotificationProvider {
             headers: { "Content-Type": "application/json" },
             data: {
                 payload: {
-                    summary: `[${title}] [${monitorInfo.name}] ${body}`,
+                    summary: monitorInfo.name ? `[${title}] [${monitorInfo.name}] ${body}` : `[${title}] ${body}`,
                     severity: notification.pagerdutyPriority || "warning",
                     source: monitorUrl,
                 },
                 routing_key: notification.pagerdutyIntegrationKey,
                 event_action: eventAction,
-                dedup_key: "Uptime Kuma/" + monitorInfo.id,
-            }
+                dedup_key: monitorInfo.id ? "Uptime Kuma/" + monitorInfo.id : "Uptime Kuma/test",
+            },
         };
 
         const baseURL = await setting("primaryBaseURL");

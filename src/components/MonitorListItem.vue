@@ -21,21 +21,38 @@
                 />
             </div>
 
-            <router-link :to="monitorURL(monitor.id)" class="item" :class="{ 'disabled': ! monitor.active }">
+            <router-link :to="monitorURL(monitor.id)" class="item" :class="{ disabled: !monitor.active }">
                 <div class="row">
-                    <div class="col-6 small-padding" :class="{ 'monitor-item': $root.userHeartbeatBar == 'bottom' || $root.userHeartbeatBar == 'none' }">
-                        <div class="info">
+                    <div
+                        class="col-9 col-xl-6 small-padding d-flex gap-2 align-items-center"
+                        :class="{
+                            'monitor-item': $root.userHeartbeatBar == 'bottom' || $root.userHeartbeatBar == 'none',
+                        }"
+                    >
+                        <div class="me-1">
                             <Uptime :monitor="monitor" type="24" :pill="true" />
-                            <span v-if="hasChildren" class="collapse-padding" @click.prevent="changeCollapsed">
-                                <font-awesome-icon icon="chevron-down" class="animated" :class="{ collapsed: isCollapsed}" />
-                            </span>
-                            {{ monitor.name }}
                         </div>
-                        <div v-if="monitor.tags.length > 0" class="tags gap-1">
-                            <Tag v-for="tag in monitor.tags" :key="tag" :item="tag" :size="'sm'" />
+                        <div class="d-flex align-items-center gap-2 flex-fill" style="min-width: 0">
+                            <span v-if="hasChildren" class="collapse-padding" @click.prevent="changeCollapsed">
+                                <font-awesome-icon
+                                    icon="chevron-down"
+                                    class="animated"
+                                    :class="{ collapsed: isCollapsed }"
+                                />
+                            </span>
+                            <div class="flex-fill text-truncate" style="min-width: 0">
+                                <div class="text-truncate">{{ monitor.name }}</div>
+                                <div v-if="monitor.tags.length > 0" class="tags gap-1">
+                                    <Tag v-for="tag in monitor.tags" :key="tag" :item="tag" :size="'sm'" />
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div v-show="$root.userHeartbeatBar == 'normal'" :key="$root.userHeartbeatBar" class="col-6">
+                    <div
+                        v-show="$root.userHeartbeatBar == 'normal'"
+                        :key="$root.userHeartbeatBar"
+                        class="col-3 col-xl-6"
+                    >
                         <HeartbeatBar ref="heartbeatBar" size="small" :monitor-id="monitor.id" />
                     </div>
                 </div>
@@ -99,28 +116,28 @@ export default {
         /** Callback to determine if monitor is selected */
         isSelected: {
             type: Function,
-            default: () => {}
+            default: () => {},
         },
         /** Callback fired when monitor is selected */
         select: {
             type: Function,
-            default: () => {}
+            default: () => {},
         },
         /** Callback fired when monitor is deselected */
         deselect: {
             type: Function,
-            default: () => {}
+            default: () => {},
         },
         /** Function to filter child monitors */
         filterFunc: {
             type: Function,
-            default: () => {}
+            default: () => {},
         },
         /** Function to sort child monitors */
         sortFunc: {
             type: Function,
             default: () => {},
-        }
+        },
     },
     data() {
         return {
@@ -133,7 +150,7 @@ export default {
             let result = Object.values(this.$root.monitorList);
 
             // Get children
-            result = result.filter(childMonitor => childMonitor.parent === this.monitor.id);
+            result = result.filter((childMonitor) => childMonitor.parent === this.monitor.id);
 
             // Run filter on children
             result = result.filter(this.filterFunc);
@@ -147,7 +164,7 @@ export default {
         },
         depthMargin() {
             return {
-                marginLeft: `${31 * this.depth}px`,
+                marginLeft: `${20 * this.depth}px`,
             };
         },
     },
@@ -155,10 +172,9 @@ export default {
         isSelectMode() {
             // TODO: Resize the heartbeat bar, but too slow
             // this.$refs.heartbeatBar.resize();
-        }
+        },
     },
     beforeMount() {
-
         // Always unfold if monitor is accessed directly
         if (this.monitor.childrenIDs.includes(parseInt(this.$route.params.id))) {
             this.isCollapsed = false;
@@ -313,18 +329,13 @@ export default {
     padding-right: 5px !important;
 }
 
-.collapse-padding {
-    padding-left: 8px !important;
-    padding-right: 2px !important;
-}
-
 // .monitor-item {
 //     width: 100%;
 // }
 
 .tags {
     margin-top: 4px;
-    padding-left: 67px;
+    padding-left: 4px;
     display: flex;
     flex-wrap: wrap;
     gap: 0;
@@ -371,6 +382,7 @@ export default {
 
     /* We don't want the padding change due to the border animated */
     .item {
+        padding: 12px 15px;
         transition: none !important;
     }
 
@@ -378,5 +390,4 @@ export default {
         cursor: grabbing;
     }
 }
-
 </style>

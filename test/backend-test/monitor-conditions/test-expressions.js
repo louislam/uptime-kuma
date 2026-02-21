@@ -6,37 +6,37 @@ test("Test ConditionExpressionGroup.fromMonitor", async (t) => {
     const monitor = {
         conditions: JSON.stringify([
             {
-                "type": "expression",
-                "andOr": "and",
-                "operator": "contains",
-                "value": "foo",
-                "variable": "record"
+                type: "expression",
+                andOr: "and",
+                operator: "contains",
+                value: "foo",
+                variable: "record",
             },
             {
-                "type": "group",
-                "andOr": "and",
-                "children": [
+                type: "group",
+                andOr: "and",
+                children: [
                     {
-                        "type": "expression",
-                        "andOr": "and",
-                        "operator": "contains",
-                        "value": "bar",
-                        "variable": "record"
+                        type: "expression",
+                        andOr: "and",
+                        operator: "contains",
+                        value: "bar",
+                        variable: "record",
                     },
                     {
-                        "type": "group",
-                        "andOr": "and",
-                        "children": [
+                        type: "group",
+                        andOr: "and",
+                        children: [
                             {
-                                "type": "expression",
-                                "andOr": "and",
-                                "operator": "contains",
-                                "value": "car",
-                                "variable": "record"
-                            }
-                        ]
+                                type: "expression",
+                                andOr: "and",
+                                operator: "contains",
+                                value: "car",
+                                variable: "record",
+                            },
+                        ],
                     },
-                ]
+                ],
             },
         ]),
     };

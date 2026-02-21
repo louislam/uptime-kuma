@@ -2,10 +2,12 @@
     <div>
         <div v-if="$root.isMobile" class="shadow-box mb-3">
             <router-link to="/manage-status-page" class="nav-link">
-                <font-awesome-icon icon="stream" /> {{ $t("Status Pages") }}
+                <font-awesome-icon icon="stream" />
+                {{ $t("Status Pages") }}
             </router-link>
             <router-link to="/maintenance" class="nav-link">
-                <font-awesome-icon icon="wrench" /> {{ $t("Maintenance") }}
+                <font-awesome-icon icon="wrench" />
+                {{ $t("Maintenance") }}
             </router-link>
         </div>
 
@@ -16,18 +18,18 @@
         <div class="shadow-box shadow-box-settings">
             <div class="row">
                 <div v-if="showSubMenu" class="settings-menu col-lg-3 col-md-5">
-                    <router-link
-                        v-for="(item, key) in subMenus"
-                        :key="key"
-                        :to="`/settings/${key}`"
-                    >
+                    <router-link v-for="(item, key) in subMenus" :key="key" :to="`/settings/${key}`">
                         <div class="menu-item">
                             {{ item.title }}
                         </div>
                     </router-link>
 
                     <!-- Logout Button -->
-                    <a v-if="$root.isMobile && $root.loggedIn && $root.socket.token !== 'autoLogin'" class="logout" @click.prevent="$root.logout">
+                    <a
+                        v-if="$root.isMobile && $root.loggedIn && $root.socket.token !== 'autoLogin'"
+                        class="logout"
+                        @click.prevent="$root.logout"
+                    >
                         <div class="menu-item">
                             <font-awesome-icon icon="sign-out-alt" />
                             {{ $t("Logout") }}
@@ -111,7 +113,7 @@ export default {
                     title: this.$t("Security"),
                 },
                 "api-keys": {
-                    title: this.$t("API Keys")
+                    title: this.$t("API Keys"),
                 },
                 proxies: {
                     title: this.$t("Proxies"),
@@ -126,7 +128,7 @@ export default {
     watch: {
         "$root.isMobile"() {
             this.loadGeneralPage();
-        }
+        },
     },
 
     mounted() {
@@ -135,7 +137,6 @@ export default {
     },
 
     methods: {
-
         /**
          * Load the general settings page
          * For desktop only, on mobile do nothing
@@ -176,7 +177,11 @@ export default {
                 }
 
                 if (this.settings.tlsExpiryNotifyDays === undefined) {
-                    this.settings.tlsExpiryNotifyDays = [ 7, 14, 21 ];
+                    this.settings.tlsExpiryNotifyDays = [7, 14, 21];
+                }
+
+                if (this.settings.domainExpiryNotifyDays === undefined) {
+                    this.settings.domainExpiryNotifyDays = [7, 14, 21];
                 }
 
                 if (this.settings.trustProxy === undefined) {
@@ -232,7 +237,7 @@ export default {
                 msg: "",
             };
         },
-    }
+    },
 };
 </script>
 
