@@ -2,7 +2,7 @@ name: "PR description template check"
 
 on: # zizmor: ignore[dangerous-triggers]
   pull_request_target:
-    types: [opened]
+    types: [opened, reopened]
 
 permissions:
   pull-requests: write
