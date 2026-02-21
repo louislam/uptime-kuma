@@ -35,18 +35,12 @@
                                     class="form-select"
                                     data-testid="monitor-type-select"
                                 >
+                                    <!-- Unsorted, since HTTP is commonly used -->
                                     <optgroup :label="$t('General Monitor Type')">
-                                        <option value="group">
-                                            {{ $t("Group") }}
-                                        </option>
                                         <option value="http">HTTP(s)</option>
+                                        <option value="keyword">HTTP(s) - {{ $t("Keyword") }}</option>
                                         <option value="port">TCP Port</option>
                                         <option value="ping">Ping</option>
-                                        <option value="smtp">SMTP</option>
-                                        <option value="snmp">SNMP</option>
-                                        <option value="keyword">HTTP(s) - {{ $t("Keyword") }}</option>
-                                        <option value="json-query">HTTP(s) - {{ $t("Json Query") }}</option>
-                                        <option value="grpc-keyword">gRPC(s) - {{ $t("Keyword") }}</option>
                                         <option value="dns">DNS</option>
                                         <option value="docker">
                                             {{ $t("Docker Container") }}
@@ -63,7 +57,12 @@
                                         <option value="real-browser">
                                             HTTP(s) - Browser Engine (Chrome/Chromium) (Beta)
                                         </option>
-                                        <option value="websocket-upgrade">Websocket Upgrade</option>
+                                    </optgroup>
+
+                                    <optgroup :label="$t('Speical')">
+                                        <option value="group">
+                                            {{ $t("Group") }}
+                                        </option>
                                     </optgroup>
 
                                     <optgroup :label="$t('Passive Monitor Type')">
@@ -73,28 +72,42 @@
                                         </option>
                                     </optgroup>
 
+                                    <!-- Should sort from A to Z in this category -->
                                     <optgroup :label="$t('Specific Monitor Type')">
                                         <option value="globalping">
                                             {{ $t("Globalping - Access global monitoring probes") }}
                                         </option>
-                                        <option value="steam">
-                                            {{ $t("Steam Game Server") }}
-                                        </option>
-                                        <option value="gamedig">GameDig</option>
+                                        <option value="grpc-keyword">gRPC(s) - {{ $t("Keyword") }}</option>
+                                        <option value="json-query">HTTP(s) - {{ $t("Json Query") }}</option>
+                                        <option value="kafka-producer">Kafka Producer</option>
                                         <option value="mqtt">MQTT</option>
                                         <option value="rabbitmq">RabbitMQ</option>
-                                        <option value="kafka-producer">Kafka Producer</option>
-                                        <option value="sqlserver">Microsoft SQL Server</option>
-                                        <option value="postgres">PostgreSQL</option>
-                                        <option value="mysql">MySQL/MariaDB</option>
-                                        <option value="mongodb">MongoDB</option>
-                                        <option value="radius">Radius</option>
-                                        <option value="redis">Redis</option>
                                         <option v-if="!$root.info.isContainer" value="sip-options">
                                             SIP Options Ping
                                         </option>
+                                        <option value="smtp">SMTP</option>
+                                        <option value="snmp">SNMP</option>
                                         <option v-if="!$root.info.isContainer" value="tailscale-ping">
                                             Tailscale Ping
+                                        </option>
+                                        <option value="websocket-upgrade">Websocket Upgrade</option>
+                                    </optgroup>
+
+                                    <!-- Should sort from A to Z in this category -->
+                                    <optgroup :label="$t('Database Monitor Type')">
+                                        <option value="sqlserver">Microsoft SQL Server</option>
+                                        <option value="mongodb">MongoDB</option>
+                                        <option value="mysql">MySQL/MariaDB</option>
+                                        <option value="postgres">PostgreSQL</option>
+                                        <option value="radius">Radius</option>
+                                        <option value="redis">Redis</option>
+                                    </optgroup>
+
+                                    <!-- Should sort from A to Z in this category -->
+                                    <optgroup :label="$t('Game Server')">
+                                        <option value="gamedig">GameDig</option>
+                                        <option value="steam">
+                                            {{ $t("Steam Game Server") }}
                                         </option>
                                     </optgroup>
                                 </select>
