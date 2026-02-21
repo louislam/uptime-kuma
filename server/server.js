@@ -1744,7 +1744,17 @@ let needSetup = false;
         if (hostname) {
             log.info("server", `Listening on ${hostname}:${port}`);
         } else {
-            log.info("server", `Listening on 0.0.0.0:${port}`);
+            log.info("server", `Listening on:`);
+            log.info("server", `  Local:   http://localhost:${port}`);
+            const { networkInterfaces } = require("os");
+            const nets = networkInterfaces();
+            for (const name of Object.keys(nets)) {
+                for (const net of nets[name]) {
+                    if (!net.internal && net.family === "IPv4") {
+                        log.info("server", `  Network: http://${net.address}:${port}`);
+                    }
+                }
+            }
         }
         await startMonitors();
 

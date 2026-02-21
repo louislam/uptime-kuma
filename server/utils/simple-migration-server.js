@@ -67,7 +67,17 @@ class SimpleMigrationServer {
                 if (hostname) {
                     log.info("migration", `Migration server is running on http://${hostname}:${port}`);
                 } else {
-                    log.info("migration", `Migration server is running on http://localhost:${port}`);
+                    log.info("migration", `Migration server is running on:`);
+                    log.info("migration", `  Local:   http://localhost:${port}`);
+                    const { networkInterfaces } = require("os");
+                    const nets = networkInterfaces();
+                    for (const name of Object.keys(nets)) {
+                        for (const net of nets[name]) {
+                            if (!net.internal && net.family === "IPv4") {
+                                log.info("migration", `  Network: http://${net.address}:${port}`);
+                            }
+                        }
+                    }
                 }
                 resolve();
             });
