@@ -64,6 +64,25 @@
                     </select>
                 </div>
 
+                <!-- Status Page Language -->
+                <div class="my-3">
+                    <label for="status-page-language" class="form-label">{{ $t("Language") }}</label>
+                    <select
+                        id="status-page-language"
+                        v-model="config.language"
+                        class="form-select"
+                        data-testid="status-page-language-select"
+                    >
+                        <option value="auto">{{ $t("Auto") }}</option>
+                        <option v-for="(langName, langCode) in $root.languageList" :key="langCode" :value="langCode">
+                            {{ langName }}
+                        </option>
+                    </select>
+                    <div class="form-text">
+                        {{ $t("Leave as 'Auto' to use visitor's browser language") }}
+                    </div>
+                </div>
+
                 <div class="my-3 form-check form-switch">
                     <input
                         id="showTags"
@@ -985,6 +1004,12 @@ export default {
         this.getData()
             .then((res) => {
                 this.config = res.data.config;
+
+                // Apply status page language if set (not 'auto')
+                if (this.config.language && this.config.language !== "auto") {
+                    this.$root.locale = this.config.language;
+                    this.$i18n.locale = this.config.language;
+                }
 
                 if (!this.config.domainNameList) {
                     this.config.domainNameList = [];

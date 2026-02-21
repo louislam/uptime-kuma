@@ -428,6 +428,7 @@
     "Footer Text": "Footer Text",
     "RSS Title": "RSS Title",
     "Leave blank to use status page title": "Leave blank to use status page title",
+    "Leave as 'Auto' to use visitor's browser language": "Leave as 'Auto' to use visitor's browser language",
     "Refresh Interval": "Refresh Interval",
     "Refresh Interval Description": "The status page will do a full site refresh every {0} seconds",
     "Show Powered By": "Show Powered By",

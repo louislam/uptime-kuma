@@ -1328,6 +1328,7 @@
     "Umami": "Umami",
     "RSS Title": "Заголовок RSS",
     "Leave blank to use status page title": "Оставьте поле пустым, чтобы использовать заголовок страницы состояния",
+    "Leave as 'Auto' to use visitor's browser language": "Оставьте 'Авто', чтобы использовать язык браузера посетителя",
     "year": "год | годов",
     "domain_expiry_unsupported_monitor_type": "Мониторинг срока действия домена не поддерживается для этого типа монитора",
     "Analytics Type": "Тип аналитики",
