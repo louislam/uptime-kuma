@@ -3302,6 +3302,7 @@ message HealthCheckResponse {
                 this.monitor.url = "wss://";
                 this.monitor.accepted_statuscodes = ["1000"];
             }
+
             if (this.monitor.type === "push") {
                 if (!this.monitor.pushToken) {
                     // ideally this would require checking if the generated token is already used
@@ -3653,25 +3654,12 @@ message HealthCheckResponse {
 
             // Validate hostname field input for various monitors
             if (
-                [
-                    "mqtt",
-                    "dns",
-                    "port",
-                    "ping",
-                    "steam",
-                    "gamedig",
-                    "radius",
-                    "tailscale-ping",
-                    "smtp",
-                    "snmp",
-                ].includes(this.monitor.type) &&
+                ["dns", "port", "ping", "steam", "gamedig", "radius", "tailscale-ping", "smtp", "snmp"].includes(
+                    this.monitor.type
+                ) &&
                 this.monitor.hostname
             ) {
                 let hostname = this.monitor.hostname.trim();
-
-                if (this.monitor.type === "mqtt") {
-                    hostname = hostname.replace(/^(mqtt|ws)s?:\/\//, "");
-                }
 
                 if (this.monitor.type === "dns" && isIP(hostname)) {
                     toast.error(this.$t("hostnameCannotBeIP"));
@@ -3699,30 +3687,42 @@ message HealthCheckResponse {
                 }
             }
 
-            // Validate URL field input for various monitors
-            if (
-                ["http", "keyword", "json-query", "websocket-upgrade", "real-browser"].includes(this.monitor.type) &&
-                this.monitor.url
-            ) {
+            // monitor type : url protocol restrictions
+            // null is no restriction, as long as it is able to be parsed by new URL()
+            const acceptList = {
+                http: ["http:", "https:"],
+                keyword: ["http:", "https:"],
+                "json-query": ["http:", "https:"],
+                "websocket-upgrade": ["ws:", "wss:"],
+                "real-browser": null,
+                mqtt: ["mqtt:", "ws:", "wss:"],
+            };
+
+            if (this.monitor.type in acceptList) {
+                const allowedProtocols = acceptList[this.monitor.type];
+
                 try {
-                    const url = new URL(this.monitor.url);
-                    // Browser can encode *.hostname.com to %2A.hostname.com
-                    if (url.hostname.includes("*") || url.hostname.includes("%2A")) {
-                        toast.error(this.$t("wildcardOnlyForDNS"));
+                    let url;
+
+                    // Special handling for MQTT, because it was wrongly used hostname field to store the URL.
+                    if (this.monitor.type === "mqtt") {
+                        url = new URL(this.monitor.hostname);
+                    } else {
+                        url = new URL(this.monitor.url);
+                    }
+
+                    if (allowedProtocols && !allowedProtocols.includes(url.protocol)) {
+                        console.log(url);
+                        toast.error(this.$t("invalidURL"));
                         return false;
                     }
-                    if (
-                        !isFQDN(url.hostname, {
-                            require_tld: false,
-                            allow_underscores: true,
-                            allow_trailing_dot: true,
-                        }) &&
-                        !isIP(url.hostname)
-                    ) {
-                        toast.error(this.$t("invalidHostnameOrIP"));
+
+                    // No empty hostname (mainly for non-http/ws URLs)
+                    if (!url.host) {
+                        toast.error(this.$t("invalidURL"));
                         return false;
                     }
-                } catch (err) {
+                } catch (e) {
                     toast.error(this.$t("invalidURL"));
                     return false;
                 }
