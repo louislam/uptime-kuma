@@ -110,6 +110,7 @@ const {
     shake256,
     SHAKE256_LENGTH,
     allowDevAllOrigin,
+    printServerUrls,
 } = require("./util-server");
 
 log.debug("server", "Importing Notification");
@@ -1741,21 +1742,7 @@ let needSetup = false;
     await server.start();
 
     server.httpServer.listen(port, hostname, async () => {
-        if (hostname) {
-            log.info("server", `Listening on ${hostname}:${port}`);
-        } else {
-            log.info("server", `Listening on:`);
-            log.info("server", `  Local:   http://localhost:${port}`);
-            const { networkInterfaces } = require("os");
-            const nets = networkInterfaces();
-            for (const name of Object.keys(nets)) {
-                for (const net of nets[name]) {
-                    if (!net.internal && net.family === "IPv4") {
-                        log.info("server", `  Network: http://${net.address}:${port}`);
-                    }
-                }
-            }
-        }
+        printServerUrls("server", port, hostname);
         await startMonitors();
 
         // Put this here. Start background jobs after the db and server is ready to prevent clear up during db migration.

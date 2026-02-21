@@ -4,7 +4,7 @@ const expressStaticGzip = require("express-static-gzip");
 const fs = require("fs");
 const path = require("path");
 const Database = require("./database");
-const { allowDevAllOrigin } = require("./util-server");
+const { allowDevAllOrigin, printServerUrls } = require("./util-server");
 const mysql = require("mysql2/promise");
 
 /**
@@ -307,21 +307,8 @@ class SetupDatabase {
             });
 
             tempServer = app.listen(port, hostname, () => {
-                log.info("setup-database", `Starting Setup Database`);
-                if (hostname) {
-                    log.info("setup-database", `Open http://${hostname}:${port} in your browser`);
-                } else {
-                    log.info("setup-database", `  Local:   http://localhost:${port}`);
-                    const { networkInterfaces } = require("os");
-                    const nets = networkInterfaces();
-                    for (const name of Object.keys(nets)) {
-                        for (const net of nets[name]) {
-                            if (!net.internal && net.family === "IPv4") {
-                                log.info("setup-database", `  Network: http://${net.address}:${port}`);
-                            }
-                        }
-                    }
-                }
+                log.info("setup-database", "Starting Setup Database");
+                printServerUrls("setup-database", port, hostname);
                 log.info("setup-database", "Waiting for user action...");
             });
         });

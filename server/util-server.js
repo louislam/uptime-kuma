@@ -985,3 +985,33 @@ async function commandExists(command) {
     }
 }
 module.exports.commandExists = commandExists;
+
+/**
+ * Log the server's listening URLs, similar to Vite's dev server output.
+ * When no hostname is specified (bound to all interfaces), it prints
+ * localhost plus every non-internal network address.
+ * @param {string} tag Log tag (e.g. "server", "setup-database")
+ * @param {number} port Port number
+ * @param {string} [hostname] Bound hostname, if any
+ */
+module.exports.printServerUrls = (tag, port, hostname) => {
+    if (hostname) {
+        log.info(tag, `Listening on http://${hostname}:${port}`);
+        return;
+    }
+
+    const { networkInterfaces } = require("os");
+    const nets = networkInterfaces();
+
+    log.info(tag, "Listening on:");
+    log.info(tag, `  Local:   http://localhost:${port}`);
+
+    for (const iface of Object.values(nets)) {
+        for (const addr of iface) {
+            if (!addr.internal) {
+                const host = addr.family === "IPv6" ? `[${addr.address}]` : addr.address;
+                log.info(tag, `  Network: http://${host}:${port}`);
+            }
+        }
+    }
+};
