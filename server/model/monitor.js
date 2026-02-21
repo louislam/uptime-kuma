@@ -7,6 +7,8 @@ const {
     DOWN,
     PENDING,
     MAINTENANCE,
+    NOMINAL,
+    SLOW,
     flipStatus,
     MAX_INTERVAL_SECOND,
     MIN_INTERVAL_SECOND,
@@ -72,6 +74,9 @@ const rootCertificates = rootCertificatesFingerprints();
  *      1 = UP
  *      2 = PENDING
  *      3 = MAINTENANCE
+ *  pingStatus:
+ *      4 = SLOW
+ *      5 = NOMINAL
  */
 class Monitor extends BeanModel {
     /**
@@ -174,6 +179,13 @@ class Monitor extends BeanModel {
             mqttCheckType: this.mqttCheckType,
             databaseQuery: this.databaseQuery,
             authMethod: this.authMethod,
+            slowResponseNotification: this.isEnabledSlowResponseNotification(),
+            slowResponseNotificationMethod: this.slowResponseNotificationMethod,
+            slowResponseNotificationRange: this.slowResponseNotificationRange,
+            slowResponseNotificationThresholdMethod: this.slowResponseNotificationThresholdMethod,
+            slowResponseNotificationThreshold: this.slowResponseNotificationThreshold,
+            slowResponseNotificationThresholdMultiplier: this.slowResponseNotificationThresholdMultiplier,
+            slowResponseNotificationResendInterval: this.slowResponseNotificationResendInterval,
             grpcUrl: this.grpcUrl,
             grpcProtobuf: this.grpcProtobuf,
             grpcMethod: this.grpcMethod,
@@ -370,6 +382,14 @@ class Monitor extends BeanModel {
     }
 
     /**
+     * Is the slow response notification enabled?
+     * @returns {boolean} Slow response notification is enabled?
+     */
+    isEnabledSlowResponseNotification() {
+        return Boolean(this.slowResponseNotification);
+    }
+
+    /**
      * Parse to boolean
      * @returns {boolean} Kafka Producer Ssl enabled?
      */
@@ -450,6 +470,7 @@ class Monitor extends BeanModel {
             bean.time = R.isoDateTimeMillis(dayjs.utc());
             bean.status = DOWN;
             bean.downCount = previousBeat?.downCount || 0;
+            bean.slowResponseCount = previousBeat?.slowResponseCount || 0;
 
             if (this.isUpsideDown()) {
                 bean.status = flipStatus(bean.status);
@@ -1089,6 +1110,12 @@ class Monitor extends BeanModel {
             let endTimeDayjs = await uptimeCalculator.update(bean.status, parseFloat(bean.ping));
             bean.end_time = R.isoDateTimeMillis(endTimeDayjs);
 
+            // Check if response time is slow
+            if (this.isEnabledSlowResponseNotification() && !isFirstBeat) {
+                log.debug("monitor", `[${this.name}] Check if response is slow`);
+                await this.checkSlowResponseNotification(this, bean);
+            }
+
             // Send to frontend
             log.debug("monitor", `[${this.name}] Send to socket`);
             io.to(this.user_id).emit("heartbeat", bean.toJSON());
@@ -1610,6 +1637,238 @@ class Monitor extends BeanModel {
                 this.id,
                 targetDays,
             ]);
+        }
+    }
+
+    /**
+     * Send a slow response notification about a monitor
+     * @param {Monitor} monitor The monitor to send a notificaton about
+     * @param {Bean} bean Status information about monitor
+     * @param {object} slowStats Slow response information
+     * @returns {void}
+     */
+    static async sendSlowResponseNotification(monitor, bean, slowStats) {
+        // Send notification
+        const notificationList = await Monitor.getNotificationList(monitor);
+
+        let text;
+        if (bean.pingStatus === NOMINAL) {
+            text = "🚀 Nominal";
+        } else {
+            text = "🐌 Slow";
+        }
+
+        let msg = `[${monitor.name}] [${text}] ${bean.pingMsg}`;
+
+        for (let notification of notificationList) {
+            try {
+                const heartbeatJSON = bean.toJSON();
+                const monitorData = [{ id: monitor.id, active: monitor.active, name: monitor.name }];
+                const preloadData = await Monitor.preparePreloadData(monitorData);
+
+                // Override status with SLOW/NOMINAL, add slowStats
+                heartbeatJSON["status"] = bean.pingStatus;
+                heartbeatJSON["calculatedResponse"] = slowStats.calculatedResponse;
+                heartbeatJSON["calculatedThreshold"] = slowStats.calculatedThreshold;
+                heartbeatJSON["slowFor"] = slowStats.slowFor;
+
+                // Also provide the time in server timezone
+                heartbeatJSON["timezone"] = await UptimeKumaServer.getInstance().getTimezone();
+                heartbeatJSON["timezoneOffset"] = UptimeKumaServer.getInstance().getTimezoneOffset();
+                heartbeatJSON["localDateTime"] = dayjs
+                    .utc(heartbeatJSON["time"])
+                    .tz(heartbeatJSON["timezone"])
+                    .format(SQL_DATETIME_FORMAT);
+
+                await Notification.send(
+                    JSON.parse(notification.config),
+                    msg,
+                    monitor.toJSON(preloadData, false),
+                    heartbeatJSON
+                );
+            } catch (e) {
+                log.error("monitor", `[${this.name}] Cannot send slow response notification to ${notification.name}`);
+                log.error("monitor", e);
+            }
+        }
+    }
+
+    /**
+     * Check if heartbeat response time is slower than threshold.
+     * @param {Monitor} monitor The monitor to send a notification about
+     * @param {Bean} bean Status information about monitor
+     * @returns {Promise<void>}
+     */
+    async checkSlowResponseNotification(monitor, bean) {
+        if (bean.status !== UP) {
+            log.debug("monitor", `[${this.name}] Monitor status is not UP, skipping slow response check`);
+            return;
+        }
+
+        const method = monitor.slowResponseNotificationMethod;
+        const thresholdMethod = monitor.slowResponseNotificationThresholdMethod;
+        const thresholdMultipler = monitor.slowResponseNotificationThresholdMultiplier;
+        const windowDuration = monitor.slowResponseNotificationRange;
+        let actualResponseTime = 0;
+
+        let previousBeats;
+        if (method !== "last") {
+            //Get recent heartbeat list with range of time
+            const afterThisDate = new Date(Date.now() - 1000 * (monitor.slowResponseNotificationRange + 1)); // add 1 second otherwise we grab 0 previous beats when Time Range == Heartbeat Interval
+            previousBeats = await R.getAll(
+                `
+                SELECT * FROM heartbeat
+                WHERE monitor_id = ? AND time > datetime(?) AND status = ?`,
+                [monitor.id, afterThisDate.toISOString(), UP]
+            );
+        }
+
+        switch (method) {
+            case "average":
+                previousBeats.forEach((beat) => {
+                    actualResponseTime = actualResponseTime + beat.ping;
+                });
+                actualResponseTime = Math.round(actualResponseTime / previousBeats.length);
+                break;
+
+            case "max":
+                previousBeats.forEach((beat) => {
+                    actualResponseTime = Math.max(actualResponseTime, beat.ping);
+                });
+                break;
+
+            case "last":
+                actualResponseTime = bean.ping;
+                break;
+
+            default:
+                log.error(
+                    "monitor",
+                    `[${this.name}] Unknown response time calculation method for slow response notification: ${method}`
+                );
+                return;
+        }
+
+        let threshold;
+        let thresholdDescription;
+        let afterThisDate;
+        let avgPing;
+        switch (thresholdMethod) {
+            case "threshold-static":
+                threshold = monitor.slowResponseNotificationThreshold;
+                thresholdDescription = "static";
+                break;
+
+            case "threshold-relative-24-hour":
+                //Get average response time over last 24 hours
+                afterThisDate = new Date(Date.now() - 1000 * (24 * 60 * 60)); // 24 hours in milliseconds
+                avgPing = parseInt(
+                    await R.getCell(
+                        `
+                    SELECT AVG(ping) FROM heartbeat
+                    WHERE time > datetime(?)
+                    AND ping IS NOT NULL
+                    AND monitor_id = ?
+                    AND status = ?
+                    `,
+                        [afterThisDate.toISOString(), monitor.id, UP]
+                    )
+                );
+                //calculate threshold
+                threshold = Math.round(avgPing * thresholdMultipler);
+                thresholdDescription = `${thresholdMultipler}x 24H Avg`;
+                break;
+
+            default:
+                log.error(
+                    "monitor",
+                    `[${this.name}] Unknown threshold calculation method for slow response notification: ${thresholdMethod}`
+                );
+                return;
+        }
+
+        // Verify valid response time was calculated
+        if (actualResponseTime === 0 || !Number.isInteger(actualResponseTime)) {
+            log.debug("monitor", `[${this.name}] Failed to calculate valid response time`);
+            return;
+        }
+
+        // Verify valid threshold was calculated
+        if (!Number.isInteger(threshold)) {
+            log.debug("monitor", `[${this.name}] Failed to calculate valid threshold`);
+            return;
+        }
+
+        // Create stats to append to messages/logs
+        const methodDescription = ["average", "max"].includes(method) ? `${method} of last ${windowDuration}s` : method;
+        let msgStats = `Response: ${actualResponseTime}ms (${methodDescription}) | Threshold: ${threshold}ms (${thresholdDescription})`;
+        const slowStats = {
+            calculatedResponse: `${actualResponseTime}ms (${methodDescription})`,
+            calculatedThreshold: `${threshold}ms (${thresholdDescription})`,
+            slowFor: `${bean.slowResponseCount * monitor.interval}s`,
+        };
+
+        bean.pingThreshold = threshold;
+
+        // Responding normally
+        if (actualResponseTime < threshold) {
+            bean.pingStatus = NOMINAL;
+            if (bean.slowResponseCount === 0) {
+                log.debug(
+                    "monitor",
+                    `[${this.name}] Responding normally. No need to send slow response notification | ${msgStats}`
+                );
+            } else {
+                msgStats += ` | Slow for: ${bean.slowResponseCount * monitor.interval}s`;
+                log.debug("monitor", `[${this.name}] Returned to normal response time | ${msgStats}`);
+
+                // Mark important (SLOW -> NOMINAL)
+                bean.pingImportant = true;
+                bean.pingMsg = `Returned to Normal Response Time \n${msgStats}`;
+
+                Monitor.sendSlowResponseNotification(monitor, bean, slowStats);
+            }
+
+            // Reset slow response count
+            bean.slowResponseCount = 0;
+
+            // Responding slowly
+        } else {
+            bean.pingStatus = SLOW;
+            ++bean.slowResponseCount;
+
+            // Always send first notification
+            if (bean.slowResponseCount === 1) {
+                log.debug("monitor", `[${this.name}] Responded slow, sending notification | ${msgStats}`);
+
+                // Mark important (NOMINAL -> SLOW)
+                bean.pingImportant = true;
+                bean.pingMsg = `Responded Slow \n${msgStats}`;
+
+                Monitor.sendSlowResponseNotification(monitor, bean, slowStats);
+
+                // Send notification every x times
+            } else if (this.slowResponseNotificationResendInterval > 0) {
+                if (bean.slowResponseCount % this.slowResponseNotificationResendInterval === 0) {
+                    // Send notification again, because we are still responding slow
+                    msgStats += ` | Slow for: ${bean.slowResponseCount * monitor.interval}s`;
+                    log.debug(
+                        "monitor",
+                        `[${this.name}] Still responding slow, sendSlowResponseNotification again | ${msgStats}`
+                    );
+
+                    bean.pingMsg = `Still Responding Slow \n${msgStats}`;
+
+                    Monitor.sendSlowResponseNotification(monitor, bean, slowStats);
+                } else {
+                    log.debug(
+                        "monitor",
+                        `[${this.name}] Still responding slow, waiting for resend interal | ${msgStats}`
+                    );
+                }
+            } else {
+                log.debug("monitor", `[${this.name}] Still responding slow, but resend is disabled | ${msgStats}`);
+            }
         }
     }
 
