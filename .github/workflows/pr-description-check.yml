@@ -1,0 +1,51 @@
+name: "PR description template check"
+
+on:
+  pull_request:
+    types: [opened]
+
+permissions:
+  pull-requests: write
+  issues: write
+  contents: read
+
+jobs:
+  check-pr-description:
+    name: Check PR description and close if missing template phrase
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR description
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const body = (pr && pr.body) ? pr.body : "";
+            const requiredPhrase = "avoid unnecessary back and forth";
+
+            const exclude = ["UptimeKumaBot", "Copilot", "copilot-swe-agent"];
+            const excludeLower = exclude.map((e) => e.toLowerCase());
+            const author = pr?.user?.login || "";
+
+            // If author is in exclude list, skip
+            if (author && excludeLower.includes(author.toLowerCase())) {
+              core.info(`PR #${pr.number} opened by excluded user '${author}', skipping template check.`);
+              return;
+            }
+
+            if (!body || !body.toLowerCase().includes(requiredPhrase.toLowerCase())) {
+              const owner = context.repo.owner;
+              const repo = context.repo.repo;
+              const number = pr.number;
+
+              const commentBody = `Hello! This pull request does not follow the repository's PR template and is being closed automatically.`;
+
+              // Post comment
+              await github.rest.issues.createComment({ owner, repo, issue_number: number, body: commentBody });
+
+              // Close
+              await github.rest.pulls.update({ owner, repo, pull_number: number, state: "closed" });
+
+              core.info(`Closed PR #${number} because required phrase was not present.`);
+            } else {
+              core.info("PR description contains required phrase; no action taken.");
+            }
