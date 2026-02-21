@@ -656,6 +656,8 @@ export default {
     display: flex;
     align-items: center;
     gap: 8px;
+    overflow: hidden;
+    min-width: 0;
 }
 
 .actions-wrapper {

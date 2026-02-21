@@ -51,7 +51,7 @@ export default {
     overflow: hidden;
 
     position: absolute;
-    inset: 0 auto auto 0;
+    inset: 0 0 auto auto;
     margin: 0;
     transform: translate(0, 36px);
     box-shadow: 0 15px 70px rgba(0, 0, 0, 0.1);
@@ -60,6 +60,7 @@ export default {
     height: 0;
     opacity: 0;
     background: white;
+    max-width: calc(100vw - 20px);
 
     &.open {
         height: unset;
@@ -105,6 +106,10 @@ export default {
     align-items: center;
     margin-left: 0;
     color: $link-color;
+    max-width: 180px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 
     .dark & {
         color: $dark-font-color;
