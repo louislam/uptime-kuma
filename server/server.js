@@ -1064,6 +1064,16 @@ let needSetup = false;
                 await startMonitor(socket.userID, monitorID);
                 await server.sendUpdateMonitorIntoList(socket, monitorID);
 
+                // If resuming a group, also refresh child monitors so that monitors
+                // created while the group was paused get their active/forceInactive
+                // state updated on the frontend.
+                const children = await Monitor.getChildren(monitorID);
+                if (children && children.length > 0) {
+                    for (const child of children) {
+                        await server.sendUpdateMonitorIntoList(socket, child.id);
+                    }
+                }
+
                 callback({
                     ok: true,
                     msg: "successResumed",
