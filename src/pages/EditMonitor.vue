@@ -3218,6 +3218,17 @@ message HealthCheckResponse {
         },
     },
     watch: {
+        "monitor.parent"(parentID) {
+            if (this.isAdd && parentID) {
+                let parent = this.$root.monitorList[parentID];
+                if (parent) {
+                    if (parent.active === false || parent.active === 0) {
+                        this.monitor.active = false;
+                    }
+                }
+            }
+        },
+
         "$root.proxyList"() {
             if (this.isAdd) {
                 if (this.$root.proxyList && !this.monitor.proxyId) {
