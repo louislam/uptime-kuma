@@ -209,7 +209,7 @@ function NtlmClient(credentials, AxiosConfig) {
                             // The header may look like this: `Negotiate, NTLM, Basic realm="itsahiddenrealm.example.net"`Add commentMore actions
                             // so extract the 'NTLM' part first
                             const ntlmheader =
-                                error.headers["www-authenticate"]
+                                (error?.headers?.["www-authenticate"] || "")
                                     .split(",")
                                     .find((_) => _.match(/ *NTLM/))
                                     ?.trim() || "";
