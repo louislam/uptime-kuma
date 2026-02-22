@@ -29,7 +29,9 @@ RUN mkdir ./data
 FROM $BASE_IMAGE AS release
 WORKDIR /app
 
-LABEL org.opencontainers.image.source="https://github.com/louislam/uptime-kuma"
+ARG VERSION
+LABEL org.opencontainers.image.source="https://github.com/louislam/uptime-kuma" \
+      org.opencontainers.image.version="${VERSION}"
 
 ENV UPTIME_KUMA_IS_CONTAINER=1
 
