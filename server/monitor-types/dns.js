@@ -24,7 +24,13 @@ class DnsMonitorType extends MonitorType {
         let dnsMessage = "";
 
         const resolverServers = await this.resolveDnsResolverServers(monitor.dns_resolve_server);
-        let dnsRes = await this.dnsResolve(monitor.hostname, resolverServers, monitor.port, monitor.dns_resolve_type);
+        let dnsRes = await this.dnsResolve(
+            monitor.hostname,
+            resolverServers,
+            monitor.port,
+            monitor.dns_resolve_type,
+            monitor.timeout != null ? monitor.timeout * 1000 : 5000
+        );
         heartbeat.ping = dayjs().valueOf() - startTime;
 
         const conditions = ConditionExpressionGroup.fromMonitor(monitor);
@@ -169,10 +175,11 @@ class DnsMonitorType extends MonitorType {
      * @param {string[]} resolverServer Array of DNS server IP addresses to use
      * @param {string} resolverPort Port the DNS server is listening on
      * @param {string} rrtype The type of record to request
+     * @param {number} timeout Timeout in milliseconds for the DNS query (defaults to c-ares default of 5000ms)
      * @returns {Promise<(string[] | object[] | object)>} DNS response
      */
-    async dnsResolve(hostname, resolverServer, resolverPort, rrtype) {
-        const resolver = new Resolver();
+    async dnsResolve(hostname, resolverServer, resolverPort, rrtype, timeout = 5000) {
+        const resolver = new Resolver({ timeout });
         resolver.setServers(resolverServer.map((server) => `[${server}]:${resolverPort}`));
         if (rrtype === "PTR") {
             return await resolver.reverse(hostname);
