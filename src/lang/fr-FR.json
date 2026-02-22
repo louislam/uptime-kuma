@@ -1586,5 +1586,7 @@
     "RegexMatch": "Saisissez une expression régulière pour faire correspondre la valeur de l'enregistrement",
     "domainExpiryNotificationHelp": "Le nombre de jours à l'avance peut être configuré dans les Paramètres.",
     "matrixUseTemplate": "Utiliser un modèle de message personnalisé",
-    "matrixUseTemplateDescription": "Si cette option est activée, le message sera envoyé à l'aide d'un modèle personnalisé."
+    "matrixUseTemplateDescription": "Si cette option est activée, le message sera envoyé à l'aide d'un modèle personnalisé.",
+    "signalUseTemplate": "Utiliser un modèle de message personnalisé",
+    "signalUseTemplateDescription": "Si cette option est activée, le message sera envoyé à l'aide d'un modèle personnalisé. Vous pouvez utiliser les modèles Liquid pour personnaliser le format de la notification."
 }
