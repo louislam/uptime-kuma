@@ -65,14 +65,14 @@
                             <td v-if="showGroupColumn">
                                 <router-link
                                     v-if="getGroupName(beat.monitorID)"
-                                    :to="`/dashboard/${getGroupId(beat.monitorID)}`"
+                                    :to="getMonitorURL(getGroupId(beat.monitorID))"
                                 >
                                     {{ getGroupName(beat.monitorID) }}
                                 </router-link>
                                 <span v-else class="text-secondary">—</span>
                             </td>
                             <td class="name-column">
-                                <router-link :to="`/dashboard/${beat.monitorID}`">
+                                <router-link :to="getMonitorURL(beat.monitorID)">
                                     {{ $root.monitorList[beat.monitorID]?.name }}
                                 </router-link>
                             </td>
@@ -117,6 +117,7 @@ import Status from "../components/Status.vue";
 import Datetime from "../components/Datetime.vue";
 import Pagination from "v-pagination-3";
 import Confirm from "../components/Confirm.vue";
+import { getMonitorURL } from "../routes.ts";
 
 export default {
     components: {
@@ -183,6 +184,7 @@ export default {
     },
 
     methods: {
+        getMonitorURL,
         /**
          * Returns the group (parent) name for a monitor, or empty string if none.
          * @param {number} monitorID - The monitor ID.

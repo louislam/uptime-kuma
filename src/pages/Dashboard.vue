@@ -3,7 +3,7 @@
         <div class="row">
             <div v-if="!$root.isMobile" class="col-12 col-md-5 col-xl-4 ps-0">
                 <div>
-                    <router-link to="/add" class="btn btn-primary mb-3">
+                    <router-link :to="ROUTES.MONITOR_ADD" class="btn btn-primary mb-3">
                         <font-awesome-icon icon="plus" />
                         {{ $t("Add New Monitor") }}
                     </router-link>
@@ -21,6 +21,7 @@
 
 <script>
 import MonitorList from "../components/MonitorList.vue";
+import { ROUTES } from "../routes.ts";
 
 export default {
     components: {
@@ -28,6 +29,7 @@ export default {
     },
     data() {
         return {
+            ROUTES,
             height: 0,
         };
     },

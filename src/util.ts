@@ -18,6 +18,7 @@ import * as timezone from "dayjs/plugin/timezone";
 import * as utc from "dayjs/plugin/utc";
 
 import * as jsonata from "jsonata";
+import { ROUTES } from "./routes";
 
 export const isDev = process.env.NODE_ENV === "development";
 export const isNode = typeof process !== "undefined" && process?.versions?.node;
@@ -543,7 +544,7 @@ export function genSecret(length = 64) {
  * @returns Formatted relative path
  */
 export function getMonitorRelativeURL(id: string) {
-    return "/dashboard/" + id;
+    return ROUTES.DASHBOARD_MONITOR.replace(":id", id);
 }
 
 /**

@@ -6,6 +6,7 @@ import dayjs from "dayjs";
 import mitt from "mitt";
 
 import { DOWN, MAINTENANCE, PENDING, UP } from "../util.ts";
+import { ROUTES } from "../routes.ts";
 import {
     getDevContainerServerHostname,
     isDevContainer,
@@ -18,7 +19,7 @@ let socket;
 
 const noSocketIOPages = [
     /^\/status-page$/, //  /status-page
-    /^\/status/, // /status**
+    /^\/status(\/|$)/, // /status and /status/:slug (but not /status-page/*)
     /^\/$/, //  /
 ];
 
@@ -98,7 +99,7 @@ export default {
             }
 
             // Also don't need to connect to the socket.io for setup database page
-            if (location.pathname === "/setup-database") {
+            if (location.pathname === ROUTES.SETUP_DATABASE) {
                 return;
             }
 
@@ -124,7 +125,7 @@ export default {
             });
 
             socket.on("setup", (monitorID, data) => {
-                this.$router.push("/setup");
+                this.$router.push(ROUTES.SETUP);
             });
 
             socket.on("autoLogin", (monitorID, data) => {

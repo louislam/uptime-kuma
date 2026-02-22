@@ -279,7 +279,7 @@
                         {{ $t("Edit Status Page") }}
                     </button>
 
-                    <a href="/manage-status-page" class="btn btn-primary mb-2">
+                    <a :href="ROUTES.STATUS_PAGE_MANAGE" class="btn btn-primary mb-2">
                         <font-awesome-icon icon="tachometer-alt" />
                         {{ $t("Go to Dashboard") }}
                     </a>
@@ -477,7 +477,7 @@
                     </div>
                     <div v-else class="text-center">
                         {{ $t("No monitors available.") }}
-                        <router-link to="/add">{{ $t("Add one") }}</router-link>
+                        <router-link :to="ROUTES.MONITOR_ADD">{{ $t("Add one") }}</router-link>
                     </div>
                 </div>
             </div>
@@ -633,6 +633,7 @@ import {
 } from "../util.ts";
 import Tag from "../components/Tag.vue";
 import VueMultiselect from "vue-multiselect";
+import { ROUTES } from "../routes.ts";
 
 const toast = useToast();
 dayjs.extend(duration);
@@ -684,6 +685,7 @@ export default {
 
     data() {
         return {
+            ROUTES,
             slug: null,
             enableEditMode: false,
             enableEditIncidentMode: false,
@@ -1190,7 +1192,7 @@ export default {
             this.$root.getSocket().emit("deleteStatusPage", this.slug, (res) => {
                 if (res.ok) {
                     this.enableEditMode = false;
-                    location.href = "/manage-status-page";
+                    location.href = ROUTES.STATUS_PAGE_MANAGE;
                 } else {
                     this.$root.toastError(res.msg);
                 }

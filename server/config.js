@@ -35,6 +35,8 @@ function getLocalWebSocketURL() {
 
 const localWebSocketURL = getLocalWebSocketURL();
 
+const adminPrefix = process.env.UPTIME_KUMA_ADMIN_PREFIX || "";
+
 const demoMode = args["demo"] || false;
 
 module.exports = {
@@ -46,5 +48,6 @@ module.exports = {
     sslKeyPassphrase,
     isSSL,
     localWebSocketURL,
+    adminPrefix,
     demoMode,
 };

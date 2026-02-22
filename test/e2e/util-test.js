@@ -2,6 +2,8 @@ const fs = require("fs");
 const path = require("path");
 const serverUrl = require("../../config/playwright.config.js").url;
 
+export { ROUTES, getStatusPageURL } from "../../src/routes.js";
+
 const dbPath = "./../../data/playwright-test/kuma.db";
 
 /**

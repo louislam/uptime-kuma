@@ -88,7 +88,7 @@
 import HeartbeatBar from "../components/HeartbeatBar.vue";
 import Tag from "../components/Tag.vue";
 import Uptime from "../components/Uptime.vue";
-import { getMonitorRelativeURL } from "../util.ts";
+import { getMonitorURL } from "../routes.ts";
 
 export default {
     name: "MonitorListItem",
@@ -304,7 +304,7 @@ export default {
          * @returns {string} Relative URL of monitor
          */
         monitorURL(id) {
-            return getMonitorRelativeURL(id);
+            return getMonitorURL(id);
         },
         /**
          * Toggle selection of monitor

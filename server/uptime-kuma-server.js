@@ -12,7 +12,7 @@ const dayjs = require("dayjs");
 const childProcessAsync = require("promisify-child-process");
 const path = require("path");
 const axios = require("axios");
-const { isSSL, sslKey, sslCert, sslKeyPassphrase } = require("./config");
+const { isSSL, sslKey, sslCert, sslKeyPassphrase, adminPrefix } = require("./config");
 // DO NOT IMPORT HERE IF THE MODULES USED `UptimeKumaServer.getInstance()`, put at the bottom of this file instead.
 
 /**
@@ -101,6 +101,13 @@ class UptimeKumaServer {
 
         try {
             this.indexHTML = fs.readFileSync("./dist/index.html").toString();
+            // Inject the admin route prefix into the HTML so the frontend can read it
+            if (adminPrefix) {
+                this.indexHTML = this.indexHTML.replace(
+                    "<head>",
+                    `<head><script>window.__UPTIME_KUMA_ADMIN_PREFIX__=${JSON.stringify(adminPrefix)};</script>`
+                );
+            }
         } catch (e) {
             // "dist/index.html" is not necessary for development
             if (process.env.NODE_ENV !== "development") {

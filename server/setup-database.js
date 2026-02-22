@@ -1,5 +1,6 @@
 const express = require("express");
 const { log } = require("../src/util");
+const { ROUTES } = require("../src/routes.js");
 const expressStaticGzip = require("express-static-gzip");
 const fs = require("fs");
 const path = require("path");
@@ -144,7 +145,7 @@ class SetupDatabase {
             });
 
             app.get("/", async (request, response) => {
-                response.redirect("/setup-database");
+                response.redirect(ROUTES.SETUP_DATABASE);
             });
 
             app.get("/api/entry-page", async (request, response) => {

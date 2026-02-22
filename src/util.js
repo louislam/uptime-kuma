@@ -1,4 +1,5 @@
 "use strict";
+/* eslint-disable camelcase */
 /*!
 // Common Util for frontend and backend
 //
@@ -14,8 +15,13 @@ exports.CONSOLE_STYLE_FgLightBlue = exports.CONSOLE_STYLE_FgLightGreen = exports
 exports.TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD = exports.evaluateJsonQuery = exports.intHash = exports.localToUTC = exports.utcToLocal = exports.utcToISODateTime = exports.isoToUTCDateTime = exports.parseTimeFromTimeObject = exports.parseTimeObject = exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.log = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.badgeConstants = exports.CONSOLE_STYLE_BgGray = exports.CONSOLE_STYLE_BgWhite = exports.CONSOLE_STYLE_BgCyan = exports.CONSOLE_STYLE_BgMagenta = exports.CONSOLE_STYLE_BgBlue = exports.CONSOLE_STYLE_BgYellow = exports.CONSOLE_STYLE_BgGreen = exports.CONSOLE_STYLE_BgRed = exports.CONSOLE_STYLE_BgBlack = exports.CONSOLE_STYLE_FgPink = exports.CONSOLE_STYLE_FgBrown = exports.CONSOLE_STYLE_FgViolet = void 0;
 const dayjs_1 = require("dayjs");
 const jsonata = require("jsonata");
+const routes_1 = require("./routes");
 exports.isDev = process.env.NODE_ENV === "development";
 exports.isNode = typeof process !== "undefined" && ((_a = process === null || process === void 0 ? void 0 : process.versions) === null || _a === void 0 ? void 0 : _a.node);
+/**
+ * Smarter dayjs import that supports both frontend and backend
+ * @returns {dayjs.Dayjs} dayjs instance
+ */
 const dayjs = exports.isNode ? require("dayjs") : dayjs_1.default;
 exports.appName = "Uptime Kuma";
 exports.DOWN = 0;
@@ -29,23 +35,37 @@ exports.STATUS_PAGE_MAINTENANCE = 3;
 exports.SQL_DATE_FORMAT = "YYYY-MM-DD";
 exports.SQL_DATETIME_FORMAT = "YYYY-MM-DD HH:mm:ss";
 exports.SQL_DATETIME_FORMAT_WITHOUT_SECOND = "YYYY-MM-DD HH:mm";
-exports.MAX_INTERVAL_SECOND = 2073600;
-exports.MIN_INTERVAL_SECOND = 1;
+exports.MAX_INTERVAL_SECOND = 2073600; // 24 days
+exports.MIN_INTERVAL_SECOND = 1; // 1 second
 exports.INCIDENT_PAGE_SIZE = 10;
+// Packet Size limits
 exports.PING_PACKET_SIZE_MIN = 1;
 exports.PING_PACKET_SIZE_MAX = 65500;
 exports.PING_PACKET_SIZE_DEFAULT = 56;
+// Global timeout (aka deadline) limits in seconds
 exports.PING_GLOBAL_TIMEOUT_MIN = 1;
 exports.PING_GLOBAL_TIMEOUT_MAX = 300;
 exports.PING_GLOBAL_TIMEOUT_DEFAULT = 10;
+// Ping count limits
 exports.PING_COUNT_MIN = 1;
 exports.PING_COUNT_MAX = 100;
 exports.PING_COUNT_DEFAULT = 1;
+// per-request timeout (aka timeout) limits in seconds
 exports.PING_PER_REQUEST_TIMEOUT_MIN = 1;
 exports.PING_PER_REQUEST_TIMEOUT_MAX = 60;
 exports.PING_PER_REQUEST_TIMEOUT_DEFAULT = 2;
+/**
+ * Response body length cutoff used by default (10kb)
+ * (measured in bytes)
+ */
 exports.RESPONSE_BODY_LENGTH_DEFAULT = 1024;
+/**
+ * Maximum allowed response body length to store (1mb)
+ * (measured in bytes)
+ */
 exports.RESPONSE_BODY_LENGTH_MAX = 1024 * 1024;
+// Console colors
+// https://stackoverflow.com/questions/9781218/how-to-change-node-jss-console-font-color
 exports.CONSOLE_STYLE_Reset = "\x1b[0m";
 exports.CONSOLE_STYLE_Bright = "\x1b[1m";
 exports.CONSOLE_STYLE_Dim = "\x1b[2m";
@@ -95,6 +115,11 @@ const consoleLevelColors = {
     ERROR: exports.CONSOLE_STYLE_FgRed,
     DEBUG: exports.CONSOLE_STYLE_FgGray,
 };
+/**
+ * Flip the status of s
+ * @param s input status: UP or DOWN
+ * @returns {number} UP or DOWN
+ */
 exports.badgeConstants = {
     naColor: "#999",
     defaultUpColor: "#66c20a",
@@ -110,9 +135,15 @@ exports.badgeConstants = {
     defaultUptimeLabelSuffix: "h",
     defaultCertExpValueSuffix: " days",
     defaultCertExpLabelSuffix: "h",
+    // Values Come From Default Notification Times
     defaultCertExpireWarnDays: "14",
     defaultCertExpireDownDays: "7",
 };
+/**
+ * Flip the status of s between UP and DOWN if this is possible
+ * @param s {number} status
+ * @returns {number} flipped status
+ */
 function flipStatus(s) {
     if (s === exports.UP) {
         return exports.DOWN;
@@ -123,10 +154,20 @@ function flipStatus(s) {
     return s;
 }
 exports.flipStatus = flipStatus;
+/**
+ * Delays for specified number of seconds
+ * @param ms Number of milliseconds to sleep for
+ * @returns {Promise<void>} Promise that resolves after ms
+ */
 function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 exports.sleep = sleep;
+/**
+ * PHP's ucfirst
+ * @param str string input
+ * @returns {string} string with first letter capitalized
+ */
 function ucfirst(str) {
     if (!str) {
         return str;
@@ -135,12 +176,29 @@ function ucfirst(str) {
     return firstLetter.toUpperCase() + str.substr(1);
 }
 exports.ucfirst = ucfirst;
+/**
+ * @deprecated Use log.debug (https://github.com/louislam/uptime-kuma/pull/910)
+ * @param msg Message to write
+ * @returns {void}
+ */
 function debug(msg) {
     exports.log.log("", "debug", msg);
 }
 exports.debug = debug;
 class Logger {
+    /**
+     *
+     */
     constructor() {
+        /**
+         * UPTIME_KUMA_HIDE_LOG=debug_monitor,info_monitor
+         *
+         * Example:
+         *  [
+         *     "debug_monitor",          // Hide all logs that level is debug and the module is monitor
+         *     "info_monitor",
+         *  ]
+         */
         this.hideLog = {
             info: [],
             warn: [],
@@ -150,6 +208,7 @@ class Logger {
         if (typeof process !== "undefined" && process.env.UPTIME_KUMA_HIDE_LOG) {
             const list = process.env.UPTIME_KUMA_HIDE_LOG.split(",").map((v) => v.toLowerCase());
             for (const pair of list) {
+                // split first "_" only
                 const values = pair.split(/_(.*)/s);
                 if (values.length >= 2) {
                     this.hideLog[values[0]].push(values[1]);
@@ -159,6 +218,13 @@ class Logger {
             this.debug("server", this.hideLog);
         }
     }
+    /**
+     * Write a message to the log
+     * @param module The module the log comes from
+     * @param level Log level. One of INFO, WARN, ERROR, DEBUG or can be customized.
+     * @param msg Message to write
+     * @returns {void}
+     */
     log(module, level, ...msg) {
         if (level === "DEBUG" && !exports.isDev) {
             return;
@@ -181,6 +247,7 @@ class Logger {
         let modulePart;
         let levelPart;
         if (exports.isNode) {
+            // Add console colors
             switch (level) {
                 case "DEBUG":
                     timePart = exports.CONSOLE_STYLE_FgGray + now + exports.CONSOLE_STYLE_Reset;
@@ -193,10 +260,12 @@ class Logger {
             levelPart = levelColor + `${level}:` + exports.CONSOLE_STYLE_Reset;
         }
         else {
+            // No console colors
             timePart = now;
             modulePart = `[${module}]`;
             levelPart = `${level}:`;
         }
+        // Write to console
         switch (level) {
             case "ERROR":
                 console.error(timePart, modulePart, levelPart, ...msg);
@@ -217,38 +286,86 @@ class Logger {
                 break;
         }
     }
+    /**
+     * Log an INFO message
+     * @param module Module log comes from
+     * @param msg Message to write
+     * @returns {void}
+     */
     info(module, ...msg) {
         this.log(module, "info", ...msg);
     }
+    /**
+     * Log a WARN message
+     * @param module Module log comes from
+     * @param msg Message to write
+     * @returns {void}
+     */
     warn(module, ...msg) {
         this.log(module, "warn", ...msg);
     }
+    /**
+     * Log an ERROR message
+     * @param module Module log comes from
+     * @param msg Message to write
+     * @returns {void}
+     */
     error(module, ...msg) {
         this.log(module, "error", ...msg);
     }
+    /**
+     * Log a DEBUG message
+     * @param module Module log comes from
+     * @param msg Message to write
+     * @returns {void}
+     */
     debug(module, ...msg) {
         this.log(module, "debug", ...msg);
     }
+    /**
+     * Log an exception as an ERROR
+     * @param module Module log comes from
+     * @param exception The exception to include
+     * @param msg The message to write
+     * @returns {void}
+     */
     exception(module, exception, ...msg) {
         this.log(module, "error", ...msg, exception);
     }
 }
 exports.log = new Logger();
+/**
+ * String.prototype.replaceAll() polyfill
+ * https://gomakethings.com/how-to-replace-a-section-of-a-string-with-another-one-with-vanilla-js/
+ * @author Chris Ferdinandi
+ * @license MIT
+ * @returns {void}
+ */
 function polyfill() {
     if (!String.prototype.replaceAll) {
         String.prototype.replaceAll = function (str, newStr) {
+            // If a regex pattern
             if (Object.prototype.toString.call(str).toLowerCase() === "[object regexp]") {
                 return this.replace(str, newStr);
             }
+            // If a string
             return this.replace(new RegExp(str, "g"), newStr);
         };
     }
 }
 exports.polyfill = polyfill;
 class TimeLogger {
+    /**
+     *
+     */
     constructor() {
         this.startTime = dayjs().valueOf();
     }
+    /**
+     * Output time since start of monitor
+     * @param name Name of monitor
+     * @returns {void}
+     */
     print(name) {
         if (exports.isDev && process.env.TIMELOGGER === "1") {
             console.log(name + ": " + (dayjs().valueOf() - this.startTime) + "ms");
@@ -256,18 +373,41 @@ class TimeLogger {
     }
 }
 exports.TimeLogger = TimeLogger;
+/**
+ * Returns a random number between min (inclusive) and max (exclusive)
+ * @param min minumim value, inclusive
+ * @param max maximum value, exclusive
+ * @returns {number} Random number
+ */
 function getRandomArbitrary(min, max) {
     return Math.random() * (max - min) + min;
 }
 exports.getRandomArbitrary = getRandomArbitrary;
+/**
+ * From: https://stackoverflow.com/questions/1527803/generating-random-whole-numbers-in-javascript-in-a-specific-range
+ *
+ * Returns a random integer between min (inclusive) and max (inclusive).
+ * The value is no lower than min (or the next integer greater than min
+ * if min isn't an integer) and no greater than max (or the next integer
+ * lower than max if max isn't an integer).
+ * Using Math.round() will give you a non-uniform distribution!
+ * @param min minumim value, inclusive
+ * @param max maximum value, exclusive
+ * @returns {number} Random number
+ */
 function getRandomInt(min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 exports.getRandomInt = getRandomInt;
+/**
+ * Returns either the NodeJS crypto.randomBytes() function or its
+ * browser equivalent implemented via window.crypto.getRandomValues()
+ * @returns {Uint8Array} Random bytes
+ */
 const getRandomBytes = (typeof window !== "undefined" && window.crypto
-    ?
+    ? // Browsers
         function () {
             return (numBytes) => {
                 const randomBytes = new Uint8Array(numBytes);
@@ -277,11 +417,20 @@ const getRandomBytes = (typeof window !== "undefined" && window.crypto
                 return randomBytes;
             };
         }
-    :
+    : // Node
         function () {
+            // eslint-disable-next-line @typescript-eslint/no-var-requires
             return require("crypto").randomBytes;
         })();
+/**
+ * Get a random integer suitable for use in cryptography between upper
+ * and lower bounds.
+ * @param min Minimum value of integer
+ * @param max Maximum value of integer
+ * @returns Cryptographically suitable random integer
+ */
 function getCryptoRandomInt(min, max) {
+    // synchronous version of: https://github.com/joepie91/node-random-number-csprng
     const range = max - min;
     if (range >= Math.pow(2, 32)) {
         console.log("Warning! Range is too large.");
@@ -312,6 +461,11 @@ function getCryptoRandomInt(min, max) {
     }
 }
 exports.getCryptoRandomInt = getCryptoRandomInt;
+/**
+ * Generate a random alphanumeric string of fixed length
+ * @param length Length of string to generate
+ * @returns string
+ */
 function genSecret(length = 64) {
     let secret = "";
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -322,10 +476,21 @@ function genSecret(length = 64) {
     return secret;
 }
 exports.genSecret = genSecret;
+/**
+ * Get the path of a monitor
+ * @param id ID of monitor
+ * @returns Formatted relative path
+ */
 function getMonitorRelativeURL(id) {
-    return "/dashboard/" + id;
+    return routes_1.ROUTES.DASHBOARD_MONITOR.replace(":id", id);
 }
 exports.getMonitorRelativeURL = getMonitorRelativeURL;
+/**
+ * Parse to Time Object that used in VueDatePicker
+ * @param {string} time E.g. 12:00
+ * @returns object
+ * @throws {Error} if time string is invalid
+ */
 function parseTimeObject(time) {
     if (!time) {
         return {
@@ -348,6 +513,11 @@ function parseTimeObject(time) {
     return obj;
 }
 exports.parseTimeObject = parseTimeObject;
+/**
+ * Parse time to string from object {hours: number, minutes: number, seconds?: number}
+ * @param obj object to parse
+ * @returns {string} e.g. 12:00
+ */
 function parseTimeFromTimeObject(obj) {
     if (!obj) {
         return obj;
@@ -360,31 +530,70 @@ function parseTimeFromTimeObject(obj) {
     return result;
 }
 exports.parseTimeFromTimeObject = parseTimeFromTimeObject;
+/**
+ * Convert ISO date to UTC
+ * @param input Date
+ * @returns ISO Date time
+ */
 function isoToUTCDateTime(input) {
     return dayjs(input).utc().format(exports.SQL_DATETIME_FORMAT);
 }
 exports.isoToUTCDateTime = isoToUTCDateTime;
+/**
+ * @param input valid datetime string
+ * @returns {string} ISO DateTime string
+ */
 function utcToISODateTime(input) {
     return dayjs.utc(input).toISOString();
 }
 exports.utcToISODateTime = utcToISODateTime;
+/**
+ * For SQL_DATETIME_FORMAT
+ * @param input valid datetime string
+ * @param format Format to return
+ * @returns A string date of SQL_DATETIME_FORMAT
+ */
 function utcToLocal(input, format = exports.SQL_DATETIME_FORMAT) {
     return dayjs.utc(input).local().format(format);
 }
 exports.utcToLocal = utcToLocal;
+/**
+ * Convert local datetime to UTC
+ * @param input Local date
+ * @param format Format to return
+ * @returns Date in requested format
+ */
 function localToUTC(input, format = exports.SQL_DATETIME_FORMAT) {
     return dayjs(input).utc().format(format);
 }
 exports.localToUTC = localToUTC;
+/**
+ * Generate a decimal integer number from a string
+ * @param str Input
+ * @param length Default is 10 which means 0 - 9
+ * @returns {number} output number
+ */
 function intHash(str, length = 10) {
+    // A simple hashing function (you can use more complex hash functions if needed)
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
         hash += str.charCodeAt(i);
     }
-    return ((hash % length) + length) % length;
+    // Normalize the hash to the range [0, 10]
+    return ((hash % length) + length) % length; // Ensure the result is non-negative
 }
 exports.intHash = intHash;
+/**
+ * Evaluate a JSON query expression against the provided data.
+ * @param data The data to evaluate the JSON query against.
+ * @param jsonPath The JSON path or custom JSON query expression.
+ * @param jsonPathOperator The operator to use for comparison.
+ * @param expectedValue The expected value to compare against.
+ * @returns An object containing the status and the evaluation result.
+ * @throws Error if the evaluation returns undefined.
+ */
 async function evaluateJsonQuery(data, jsonPath, jsonPathOperator, expectedValue) {
+    // Attempt to parse data as JSON; if unsuccessful, handle based on data type.
     let response;
     try {
         response = JSON.parse(data);
@@ -394,10 +603,12 @@ async function evaluateJsonQuery(data, jsonPath, jsonPathOperator, expectedValue
             (typeof data === "object" || typeof data === "number") && !Buffer.isBuffer(data) ? data : data.toString();
     }
     try {
+        // If a JSON path is provided, pre-evaluate the data using it.
         response = jsonPath ? await jsonata(jsonPath).evaluate(response) : response;
         if (response === null || response === undefined) {
             throw new Error("Empty or undefined response. Check query syntax and response structure");
         }
+        // Check for arrays: JSONata filter expressions like .[predicate] always return arrays
         if (Array.isArray(response)) {
             const responseStr = JSON.stringify(response);
             const truncatedResponse = responseStr.length > 25 ? responseStr.substring(0, 25) + "...]" : responseStr;
@@ -409,6 +620,7 @@ async function evaluateJsonQuery(data, jsonPath, jsonPathOperator, expectedValue
         if (typeof response === "object" || response instanceof Date || typeof response === "function") {
             throw new Error(`The post-JSON query evaluated response from the server is of type ${typeof response}, which cannot be directly compared to the expected value`);
         }
+        // Perform the comparison logic using the chosen operator
         let jsonQueryExpression;
         switch (jsonPathOperator) {
             case ">":
@@ -429,6 +641,7 @@ async function evaluateJsonQuery(data, jsonPath, jsonPathOperator, expectedValue
             default:
                 throw new Error(`Invalid condition ${jsonPathOperator}`);
         }
+        // Evaluate the JSON Query Expression
         const expression = jsonata(jsonQueryExpression);
         const status = await expression.evaluate({
             value: response.toString(),
@@ -439,16 +652,17 @@ async function evaluateJsonQuery(data, jsonPath, jsonPathOperator, expectedValue
         }
         return {
             status,
-            response,
+            response, // The response from the server or result from initial json-query evaluation
         };
     }
     catch (err) {
-        response = JSON.stringify(response);
-        response = response && response.length > 50 ? `${response.substring(0, 100)}… (truncated)` : response;
+        response = JSON.stringify(response); // Ensure the response is treated as a string for the console
+        response = response && response.length > 50 ? `${response.substring(0, 100)}… (truncated)` : response; // Truncate long responses to the console
         throw new Error(`Error evaluating JSON query: ${err.message}. Response from server was: ${response}`);
     }
 }
 exports.evaluateJsonQuery = evaluateJsonQuery;
+// these types will have domain expiry support via the specified field
 exports.TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD = {
     http: "url",
     keyword: "url",
