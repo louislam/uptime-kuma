@@ -482,8 +482,8 @@ export default {
                             }
 
                             const gapX = [
-                                lastHeartbeatTime.subtract(monitorInterval, "second").format("YYYY-MM-DD HH:mm:ss"),
-                                this.$root.unixToDateTime(datapoint.timestamp + 60),
+                                lastHeartbeatTime.add(monitorInterval, "second").format("YYYY-MM-DD HH:mm:ss"),
+                                beatTime.subtract(monitorInterval, "second").format("YYYY-MM-DD HH:mm:ss"),
                             ];
 
                             for (const x of gapX) {

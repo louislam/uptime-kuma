@@ -760,7 +760,8 @@ class UptimeCalculator {
             }
         }
 
-        return result;
+        // Return in chronological order (oldest first) so consumers can iterate oldest-to-newest
+        return result.reverse();
     }
 
     /**
