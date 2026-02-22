@@ -1559,7 +1559,7 @@ class Monitor extends BeanModel {
      */
     static async getNotificationList(monitor) {
         let notificationList = await R.getAll(
-            "SELECT notification.* FROM notification, monitor_notification WHERE monitor_id = ? AND monitor_notification.notification_id = notification.id ",
+            "SELECT DISTINCT notification.* FROM notification, monitor_notification WHERE monitor_id = ? AND monitor_notification.notification_id = notification.id ",
             [monitor.id]
         );
         return notificationList;
