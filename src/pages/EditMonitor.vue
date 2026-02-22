@@ -35,18 +35,12 @@
                                     class="form-select"
                                     data-testid="monitor-type-select"
                                 >
+                                    <!-- Unsorted, since HTTP is commonly used -->
                                     <optgroup :label="$t('General Monitor Type')">
-                                        <option value="group">
-                                            {{ $t("Group") }}
-                                        </option>
                                         <option value="http">HTTP(s)</option>
+                                        <option value="keyword">HTTP(s) - {{ $t("Keyword") }}</option>
                                         <option value="port">TCP Port</option>
                                         <option value="ping">Ping</option>
-                                        <option value="smtp">SMTP</option>
-                                        <option value="snmp">SNMP</option>
-                                        <option value="keyword">HTTP(s) - {{ $t("Keyword") }}</option>
-                                        <option value="json-query">HTTP(s) - {{ $t("Json Query") }}</option>
-                                        <option value="grpc-keyword">gRPC(s) - {{ $t("Keyword") }}</option>
                                         <option value="dns">DNS</option>
                                         <option value="docker">
                                             {{ $t("Docker Container") }}
@@ -63,7 +57,12 @@
                                         <option value="real-browser">
                                             HTTP(s) - Browser Engine (Chrome/Chromium) (Beta)
                                         </option>
-                                        <option value="websocket-upgrade">Websocket Upgrade</option>
+                                    </optgroup>
+
+                                    <optgroup :label="$t('Speical')">
+                                        <option value="group">
+                                            {{ $t("Group") }}
+                                        </option>
                                     </optgroup>
 
                                     <optgroup :label="$t('Passive Monitor Type')">
@@ -73,28 +72,42 @@
                                         </option>
                                     </optgroup>
 
+                                    <!-- Should sort from A to Z in this category -->
                                     <optgroup :label="$t('Specific Monitor Type')">
                                         <option value="globalping">
                                             {{ $t("Globalping - Access global monitoring probes") }}
                                         </option>
-                                        <option value="steam">
-                                            {{ $t("Steam Game Server") }}
-                                        </option>
-                                        <option value="gamedig">GameDig</option>
+                                        <option value="grpc-keyword">gRPC(s) - {{ $t("Keyword") }}</option>
+                                        <option value="json-query">HTTP(s) - {{ $t("Json Query") }}</option>
+                                        <option value="kafka-producer">Kafka Producer</option>
                                         <option value="mqtt">MQTT</option>
                                         <option value="rabbitmq">RabbitMQ</option>
-                                        <option value="kafka-producer">Kafka Producer</option>
-                                        <option value="sqlserver">Microsoft SQL Server</option>
-                                        <option value="postgres">PostgreSQL</option>
-                                        <option value="mysql">MySQL/MariaDB</option>
-                                        <option value="mongodb">MongoDB</option>
-                                        <option value="radius">Radius</option>
-                                        <option value="redis">Redis</option>
                                         <option v-if="!$root.info.isContainer" value="sip-options">
                                             SIP Options Ping
                                         </option>
+                                        <option value="smtp">SMTP</option>
+                                        <option value="snmp">SNMP</option>
                                         <option v-if="!$root.info.isContainer" value="tailscale-ping">
                                             Tailscale Ping
+                                        </option>
+                                        <option value="websocket-upgrade">Websocket Upgrade</option>
+                                    </optgroup>
+
+                                    <!-- Should sort from A to Z in this category -->
+                                    <optgroup :label="$t('Database Monitor Type')">
+                                        <option value="sqlserver">Microsoft SQL Server</option>
+                                        <option value="mongodb">MongoDB</option>
+                                        <option value="mysql">MySQL/MariaDB</option>
+                                        <option value="postgres">PostgreSQL</option>
+                                        <option value="radius">Radius</option>
+                                        <option value="redis">Redis</option>
+                                    </optgroup>
+
+                                    <!-- Should sort from A to Z in this category -->
+                                    <optgroup :label="$t('Game Server')">
+                                        <option value="gamedig">GameDig</option>
+                                        <option value="steam">
+                                            {{ $t("Steam Game Server") }}
                                         </option>
                                     </optgroup>
                                 </select>
@@ -2820,11 +2833,22 @@ const toast = useToast();
 
 const pushTokenLength = 32;
 
+const defaultValueList = {
+    http: {
+        url: "https://",
+        accepted_statuscodes: ["200-299"],
+    },
+    "websocket-upgrade": {
+        url: "wss://",
+        accepted_statuscodes: ["1000"],
+    },
+};
+
 const monitorDefaults = {
     type: "http",
     name: "",
     parent: null,
-    url: "https://",
+    url: defaultValueList.http.url,
     wsSubprotocol: "",
     method: "GET",
     protocol: null,
@@ -2842,7 +2866,7 @@ const monitorDefaults = {
     expiryNotification: false,
     domainExpiryNotification: false,
     maxredirects: 10,
-    accepted_statuscodes: ["200-299"],
+    accepted_statuscodes: defaultValueList.http.accepted_statuscodes,
     saveResponse: false,
     saveErrorResponse: true,
     responseMaxLength: 1024,
@@ -3298,10 +3322,38 @@ message HealthCheckResponse {
                 this.monitor.dns_resolve_server = "1.1.1.1";
             }
 
-            if (oldType && this.monitor.type === "websocket-upgrade") {
-                this.monitor.url = "wss://";
-                this.monitor.accepted_statuscodes = ["1000"];
+            // Change to websocket-upgrade (override http defaults)
+            if (newType === "websocket-upgrade") {
+                if (!this.monitor.url || this.monitor.url === defaultValueList.http.url) {
+                    this.monitor.url = defaultValueList["websocket-upgrade"].url;
+                }
+
+                if (
+                    !this.monitor.accepted_statuscodes ||
+                    (this.monitor.accepted_statuscodes.length === 1 &&
+                        this.monitor.accepted_statuscodes[0] === defaultValueList.http.accepted_statuscodes)
+                ) {
+                    this.monitor.accepted_statuscodes = defaultValueList["websocket-upgrade"].accepted_statuscodes;
+                }
             }
+
+            // Change to http (override websocket-upgrade defaults)
+            // Because user may see wss:// and default to http code 1000, which is strange for http monitor.
+            if (["http", "keyword", "real-browser"].includes(newType)) {
+                if (!this.monitor.url || this.monitor.url === defaultValueList["websocket-upgrade"].url) {
+                    this.monitor.url = defaultValueList.http.url;
+                }
+
+                if (
+                    !this.monitor.accepted_statuscodes ||
+                    (this.monitor.accepted_statuscodes.length === 1 &&
+                        this.monitor.accepted_statuscodes[0] ===
+                            defaultValueList["websocket-upgrade"].accepted_statuscodes)
+                ) {
+                    this.monitor.accepted_statuscodes = defaultValueList.http.accepted_statuscodes;
+                }
+            }
+
             if (this.monitor.type === "push") {
                 if (!this.monitor.pushToken) {
                     // ideally this would require checking if the generated token is already used
