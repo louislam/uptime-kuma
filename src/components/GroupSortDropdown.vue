@@ -47,6 +47,25 @@
                         </div>
                     </button>
                 </li>
+                <li v-if="showDomainExpiry">
+                    <button
+                        class="dropdown-item sort-item"
+                        type="button"
+                        :aria-label="$t('Sort by domain expiry')"
+                        :title="$t('Sort by domain expiry')"
+                        @click="setSort('domain')"
+                    >
+                        <div class="sort-item-content">
+                            <span>{{ $t("Domain Exp.") }}</span>
+                            <span v-if="getSortKey() === 'domain'" class="sort-indicators">
+                                <font-awesome-icon
+                                    :icon="group.sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"
+                                    class="arrow-active me-1"
+                                />
+                            </span>
+                        </div>
+                    </button>
+                </li>
                 <li>
                     <button
                         class="dropdown-item sort-item"
@@ -128,6 +147,11 @@ export default {
             type: Boolean,
             default: false,
         },
+        /** Should domain expiry options be shown? */
+        showDomainExpiry: {
+            type: Boolean,
+            default: false,
+        },
     },
     emits: ["update-group"],
     computed: {
@@ -144,7 +168,7 @@ export default {
                         const [sortKey, direction] = value.split("_");
                         if (
                             sortKey &&
-                            ["status", "name", "uptime", "cert"].includes(sortKey) &&
+                            ["status", "name", "uptime", "cert", "domain"].includes(sortKey) &&
                             direction &&
                             ["asc", "desc"].includes(direction)
                         ) {
@@ -330,6 +354,16 @@ export default {
                         // Sort by certificate expiry time
                         valueA = a.validCert && a.certExpiryDaysRemaining ? a.certExpiryDaysRemaining : -1;
                         valueB = b.validCert && b.certExpiryDaysRemaining ? b.certExpiryDaysRemaining : -1;
+                    } else if (sortKey === "domain") {
+                        // Sort by domain expiry time
+                        valueA =
+                            a.domainExpiryDaysRemaining !== undefined && a.domainExpiryDaysRemaining !== ""
+                                ? a.domainExpiryDaysRemaining
+                                : -1;
+                        valueB =
+                            b.domainExpiryDaysRemaining !== undefined && b.domainExpiryDaysRemaining !== ""
+                                ? b.domainExpiryDaysRemaining
+                                : -1;
                     }
 
                     if (valueA < valueB) {
