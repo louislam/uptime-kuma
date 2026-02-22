@@ -1414,6 +1414,35 @@
                                 </div>
                             </div>
 
+                            <div class="my-3">
+                                <label for="down-retry-interval" class="form-label">
+                                    {{ $t("Recovery Check Interval") }}
+                                    <span v-if="monitor.downRetryInterval > 0">
+                                        ({{ $t("downCheckEverySecond", [monitor.downRetryInterval]) }})
+                                    </span>
+                                    <span v-else>({{ $t("downRetryIntervalDisabled") }})</span>
+                                </label>
+                                <input
+                                    id="down-retry-interval"
+                                    v-model="monitor.downRetryInterval"
+                                    type="number"
+                                    class="form-control"
+                                    required
+                                    min="0"
+                                    step="1"
+                                    @focus="lowIntervalConfirmation.editedValue = true"
+                                />
+                                <div class="form-text">
+                                    {{ $t("downRetryIntervalDescription") }}
+                                </div>
+                                <div
+                                    v-if="monitor.downRetryInterval > 0 && monitor.downRetryInterval < 20"
+                                    class="form-text"
+                                >
+                                    {{ $t("minimumIntervalWarning") }}
+                                </div>
+                            </div>
+
                             <!-- Timeout: HTTP / JSON query / Keyword / Ping / RabbitMQ / SNMP / Websocket Upgrade only -->
                             <div
                                 v-if="
@@ -2833,6 +2862,7 @@ const monitorDefaults = {
     interval: 60,
     humanReadableInterval: timeDurationFormatter.secondsToHumanReadableFormat(60),
     retryInterval: 60,
+    downRetryInterval: 0,
     resendInterval: 0,
     maxretries: 0,
     retryOnlyOnStatusCodeFailure: false,
@@ -3239,6 +3269,9 @@ message HealthCheckResponse {
             if (this.monitor.retryInterval === oldValue) {
                 this.monitor.retryInterval = value;
             }
+            if (this.monitor.downRetryInterval === oldValue) {
+                this.monitor.downRetryInterval = value;
+            }
             // Converting monitor.interval to human readable format.
             this.monitor.humanReadableInterval = timeDurationFormatter.secondsToHumanReadableFormat(value);
         },
@@ -3574,6 +3607,9 @@ message HealthCheckResponse {
                         if (this.monitor.retryInterval === 0) {
                             this.monitor.retryInterval = this.monitor.interval;
                         }
+                        if (this.monitor.downRetryInterval === undefined || this.monitor.downRetryInterval === null) {
+                            this.monitor.downRetryInterval = 0;
+                        }
                         // Handling for monitors that are missing/zeroed timeout
                         if (!this.monitor.timeout) {
                             if (this.monitor.type === "ping") {
@@ -3751,7 +3787,9 @@ message HealthCheckResponse {
             // do this if the interval value has changed since last save.
             if (
                 this.lowIntervalConfirmation.editedValue &&
-                (this.monitor.interval < 20 || this.monitor.retryInterval < 20) &&
+                (this.monitor.interval < 20 ||
+                    this.monitor.retryInterval < 20 ||
+                    (this.monitor.downRetryInterval > 0 && this.monitor.downRetryInterval < 20)) &&
                 !this.lowIntervalConfirmation.confirmed
             ) {
                 // The dialog will then re-call submit
