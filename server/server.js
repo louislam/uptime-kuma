@@ -110,6 +110,7 @@ const {
     shake256,
     SHAKE256_LENGTH,
     allowDevAllOrigin,
+    printServerUrls,
 } = require("./util-server");
 
 log.debug("server", "Importing Notification");
@@ -1741,11 +1742,7 @@ let needSetup = false;
     await server.start();
 
     server.httpServer.listen(port, hostname, async () => {
-        if (hostname) {
-            log.info("server", `Listening on ${hostname}:${port}`);
-        } else {
-            log.info("server", `Listening on ${port}`);
-        }
+        printServerUrls("server", port, hostname);
         await startMonitors();
 
         // Put this here. Start background jobs after the db and server is ready to prevent clear up during db migration.

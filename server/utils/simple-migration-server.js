@@ -1,6 +1,7 @@
 const express = require("express");
 const http = require("node:http");
 const { log } = require("../../src/util");
+const { printServerUrls } = require("../util-server");
 
 /**
  * SimpleMigrationServer
@@ -64,11 +65,7 @@ class SimpleMigrationServer {
 
         return new Promise((resolve) => {
             this.server.listen(port, hostname, () => {
-                if (hostname) {
-                    log.info("migration", `Migration server is running on http://${hostname}:${port}`);
-                } else {
-                    log.info("migration", `Migration server is running on http://localhost:${port}`);
-                }
+                printServerUrls("migration", port, hostname);
                 resolve();
             });
         });

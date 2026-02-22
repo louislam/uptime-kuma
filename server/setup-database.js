@@ -4,7 +4,7 @@ const expressStaticGzip = require("express-static-gzip");
 const fs = require("fs");
 const path = require("path");
 const Database = require("./database");
-const { allowDevAllOrigin } = require("./util-server");
+const { allowDevAllOrigin, printServerUrls } = require("./util-server");
 const mysql = require("mysql2/promise");
 
 /**
@@ -307,9 +307,8 @@ class SetupDatabase {
             });
 
             tempServer = app.listen(port, hostname, () => {
-                log.info("setup-database", `Starting Setup Database on ${port}`);
-                let domain = hostname ? hostname : "localhost";
-                log.info("setup-database", `Open http://${domain}:${port} in your browser`);
+                log.info("setup-database", "Starting Setup Database");
+                printServerUrls("setup-database", port, hostname);
                 log.info("setup-database", "Waiting for user action...");
             });
         });
