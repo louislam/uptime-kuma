@@ -1454,7 +1454,7 @@
     "saveErrorResponseForNotifications": "保存 HTTP 错误响应以用于通知",
     "saveResponseForNotifications": "保存 HTTP 成功响应以用于通知",
     "pausedMonitorsMsg": "暂停 {n} 个监控项",
-    "responseMaxLengthDescription": "响应数据可保存大小的最大值。设置为 0 表示不限制。超出该值的部分会被阶段。默认值：1024（即 1 KiB）",
+    "responseMaxLengthDescription": "响应数据可保存大小的最大值。设置为 0 表示不限制。超出该值的部分会被截断。默认值：1024（即 1 KiB）",
     "Monitors": "{n} 个监控项",
     "unknownDays": "未知天数",
     "bulkDeleteErrorMsg": "删除 {n} 个监控项失败",
