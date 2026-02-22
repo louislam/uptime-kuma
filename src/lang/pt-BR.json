@@ -1553,5 +1553,7 @@
     "RegexMatch": "Insira uma expressão regular para corresponder ao valor do registro",
     "GlobalpingMonitorDescription": "O Globalping oferece acesso a milhares de sondas hospedadas pela comunidade para executar testes e medições de rede. Há um limite de 250 testes por hora para todos os usuários anônimos. Para dobrar o limite para 500 por hora, salve seu token em {accountSettings}. Consulte a documentação {docs} para obter mais informações.",
     "certificateExpiryNotificationHelp": "O número de dias de antecedência pode ser configurado nas Configurações.",
-    "domainExpiryNotificationHelp": "O número de dias de antecedência pode ser configurado nas Configurações."
+    "domainExpiryNotificationHelp": "O número de dias de antecedência pode ser configurado nas Configurações.",
+    "signalUseTemplate": "Use um modelo de mensagem personalizado",
+    "signalUseTemplateDescription": "Se ativada, a mensagem será enviada usando um modelo personalizado. Você pode usar a linguagem de modelos Liquid para personalizar o formato da notificação."
 }
