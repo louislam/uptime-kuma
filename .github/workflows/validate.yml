@@ -47,4 +47,4 @@ jobs:
         run: node ./extra/check-knex-filenames.mjs
 
       - name: Validate package.json
-        run: node ./extra/check-package-json.js
+        run: node ./extra/check-package-json.mjs
