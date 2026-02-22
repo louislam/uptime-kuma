@@ -124,7 +124,7 @@
         "node-cloudflared-tunnel": "~1.0.9",
         "node-radius-utils": "~1.2.0",
         "nodemailer": "~7.0.12",
-        "nostr-tools": "^2.17.0",
+        "nostr-tools": "~2.20.0",
         "notp": "~2.0.3",
         "openid-client": "^5.4.2",
         "password-hash": "~1.2.2",
