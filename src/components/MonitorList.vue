@@ -159,6 +159,7 @@ export default {
                 status: null,
                 active: null,
                 tags: null,
+                tagFilterMode: "and",
             },
             collapseKey: 0,
         };
@@ -563,13 +564,17 @@ export default {
                 activeMatch = this.filterState.active.includes(monitor.active);
             }
 
-            // filter by tags
+            // filter by tags (supports AND/OR mode)
             let tagsMatch = true;
             if (this.filterState.tags != null && this.filterState.tags.length > 0) {
-                tagsMatch =
-                    monitor.tags
-                        .map((tag) => tag.tag_id) // convert to array of tag IDs
-                        .filter((monitorTagId) => this.filterState.tags.includes(monitorTagId)).length > 0; // perform Array Intersaction between filter and monitor's tags
+                const monitorTagIds = monitor.tags.map((tag) => tag.tag_id);
+                if (this.filterState.tagFilterMode === "and") {
+                    // AND mode: monitor must have ALL selected tags
+                    tagsMatch = this.filterState.tags.every((filterTagId) => monitorTagIds.includes(filterTagId));
+                } else {
+                    // OR mode: monitor must have at least one of the selected tags
+                    tagsMatch = monitorTagIds.some((monitorTagId) => this.filterState.tags.includes(monitorTagId));
+                }
             }
 
             return searchTextMatch && statusMatch && activeMatch && tagsMatch;
