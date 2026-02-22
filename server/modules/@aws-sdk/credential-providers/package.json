@@ -1,7 +1,0 @@
-{
-    "name": "@aws-sdk/credential-providers",
-    "version": "0.0.0",
-    "private": true,
-    "main": "index.js",
-    "description": "Empty module, it is an unused optional module from mongodb client, but we have never used it. The size is big."
-}
