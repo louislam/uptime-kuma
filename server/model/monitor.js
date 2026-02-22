@@ -761,56 +761,6 @@ class Monitor extends BeanModel {
                         bean.duration = beatInterval;
                         throw new Error("No heartbeat in the time window");
                     }
-                } else if (this.type === "steam") {
-                    const steamApiUrl = "https://api.steampowered.com/IGameServersService/GetServerList/v1/";
-                    const steamAPIKey = await setting("steamAPIKey");
-                    const filter = `addr\\${this.hostname}:${this.port}`;
-
-                    if (!steamAPIKey) {
-                        throw new Error("Steam API Key not found");
-                    }
-
-                    let res = await axios.get(steamApiUrl, {
-                        timeout: this.timeout * 1000,
-                        headers: {
-                            Accept: "*/*",
-                        },
-                        httpsAgent: new https.Agent({
-                            maxCachedSessions: 0, // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
-                            rejectUnauthorized: !this.getIgnoreTls(),
-                            secureOptions: crypto.constants.SSL_OP_LEGACY_SERVER_CONNECT,
-                        }),
-                        httpAgent: new http.Agent({
-                            maxCachedSessions: 0,
-                        }),
-                        maxRedirects: this.maxredirects,
-                        validateStatus: (status) => {
-                            return checkStatusCode(status, this.getAcceptedStatuscodes());
-                        },
-                        params: {
-                            filter: filter,
-                            key: steamAPIKey,
-                        },
-                    });
-
-                    if (res.data.response && res.data.response.servers && res.data.response.servers.length > 0) {
-                        bean.status = UP;
-                        bean.msg = res.data.response.servers[0].name;
-
-                        try {
-                            bean.ping = await ping(
-                                this.hostname,
-                                PING_COUNT_DEFAULT,
-                                "",
-                                true,
-                                this.packetSize,
-                                PING_GLOBAL_TIMEOUT_DEFAULT,
-                                PING_PER_REQUEST_TIMEOUT_DEFAULT
-                            );
-                        } catch (_) {}
-                    } else {
-                        throw new Error("Server not found on Steam");
-                    }
                 } else if (this.type === "docker") {
                     log.debug("monitor", `[${this.name}] Prepare Options for Axios`);
 

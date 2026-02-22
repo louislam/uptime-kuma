@@ -114,6 +114,7 @@ class UptimeKumaServer {
         UptimeKumaServer.monitorTypeList["tailscale-ping"] = new TailscalePing();
         UptimeKumaServer.monitorTypeList["websocket-upgrade"] = new WebSocketMonitorType();
         UptimeKumaServer.monitorTypeList["dns"] = new DnsMonitorType();
+        UptimeKumaServer.monitorTypeList["steam"] = new SteamMonitorType();
         UptimeKumaServer.monitorTypeList["postgres"] = new PostgresMonitorType();
         UptimeKumaServer.monitorTypeList["mqtt"] = new MqttMonitorType();
         UptimeKumaServer.monitorTypeList["smtp"] = new SMTPMonitorType();
@@ -565,6 +566,7 @@ const { RealBrowserMonitorType } = require("./monitor-types/real-browser-monitor
 const { TailscalePing } = require("./monitor-types/tailscale-ping");
 const { WebSocketMonitorType } = require("./monitor-types/websocket-upgrade");
 const { DnsMonitorType } = require("./monitor-types/dns");
+const { SteamMonitorType } = require("./monitor-types/steam");
 const { PostgresMonitorType } = require("./monitor-types/postgres");
 const { MqttMonitorType } = require("./monitor-types/mqtt");
 const { SMTPMonitorType } = require("./monitor-types/smtp");
