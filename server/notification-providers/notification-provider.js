@@ -1,7 +1,112 @@
-const { Liquid } = require("liquidjs");
+const { Liquid, Drop } = require("liquidjs");
+const zlib = require("node:zlib");
+const { promisify } = require("node:util");
 const { DOWN } = require("../../src/util");
 const { HttpProxyAgent } = require("http-proxy-agent");
 const { HttpsProxyAgent } = require("https-proxy-agent");
+
+const brotliDecompress = promisify(zlib.brotliDecompress);
+
+/**
+ * LiquidJS Drop for heartbeats.
+ *
+ * Exposes the stored HTTP response (which is compressed in the DB) to templates
+ * as both a string (`request`) and parsed JSON (`requestJSON`), cached so templates
+ * don't need to deal with compression or repeated JSON.parse.
+ *
+ * Also forwards existing heartbeat fields (status, msg, time, etc.) so
+ * `heartbeatJSON` behaves like the original object with a few extra helpers.
+ *
+ * See https://liquidjs.com/tutorials/drops.html
+ */
+class HeartbeatDrop extends Drop {
+    /**
+     * @param {object} heartbeat Original heartbeat JSON (including `response` as stored in DB).
+     */
+    constructor(heartbeat) {
+        super();
+        this._heartbeat = heartbeat || {};
+        this._decoded = undefined;
+        this._parsed = undefined;
+    }
+
+    /**
+     * Decode compressed response payload (base64 + brotli). Used by request() and by tests.
+     * @param {string|null} response Encoded response payload.
+     * @returns {Promise<string|null>} Decoded response payload.
+     */
+    static async decodeResponseValue(response) {
+        if (!response) {
+            return response;
+        }
+        try {
+            return (await brotliDecompress(Buffer.from(response, "base64"))).toString("utf8");
+        } catch (error) {
+            return response;
+        }
+    }
+
+    /**
+     * Decoded response body. Cached after first call.
+     * @returns {Promise<string>} Decoded response body.
+     */
+    async request() {
+        if (this._decoded !== undefined) {
+            return this._decoded;
+        }
+        this._decoded = await HeartbeatDrop.decodeResponseValue(this._heartbeat.response);
+        return this._decoded ?? "";
+    }
+
+    /**
+     * Response body as JSON. Uses request() and caches the result.
+     * @returns {Promise<object|null>} Parsed JSON object or null on failure.
+     */
+    async requestJSON() {
+        if (this._parsed !== undefined) {
+            return this._parsed;
+        }
+        const decoded = await this.request();
+        try {
+            this._parsed = decoded ? JSON.parse(decoded) : null;
+        } catch (e) {
+            this._parsed = null;
+        }
+        return this._parsed;
+    }
+
+    /**
+     * LiquidJS calls this for property names the Drop doesn't have; we return the value from the heartbeat.
+     * @param {string} key Property name (e.g. status, msg, time).
+     * @returns {*} Value from the heartbeat, or undefined.
+     */
+    liquidMethodMissing(key) {
+        return this._heartbeat[key];
+    }
+
+    /**
+     * When the Drop is used as a value, return heartbeat fields plus request and requestJSON so they can be accessed.
+     * @returns {object} Heartbeat fields plus request and requestJSON.
+     */
+    valueOf() {
+        return Object.assign({}, this._heartbeat, {
+            request: this.request.bind(this),
+            requestJSON: this.requestJSON.bind(this),
+        });
+    }
+
+    /**
+     * So {{ heartbeatJSON | json }} outputs a flat dict with heartbeat fields + request + requestJSON (no _heartbeat).
+     * JSON.stringify calls this; request/requestJSON use cached values if already accessed.
+     * @returns {object} Plain object for JSON serialization.
+     */
+    toJSON() {
+        return Object.assign({}, this._heartbeat, {
+            request: this._decoded ?? null,
+            requestJSON: this._parsed ?? null,
+        });
+    }
+}
 
 class NotificationProvider {
     /**
@@ -93,6 +198,12 @@ class NotificationProvider {
             serviceStatus = heartbeatJSON["status"] === DOWN ? "🔴 Down" : "✅ Up";
         }
 
+        // Drop exposes request(), requestJSON(), and heartbeat fields via liquidMethodMissing.
+        let contextHeartbeatJSON = heartbeatJSON;
+        if (heartbeatJSON !== null) {
+            contextHeartbeatJSON = new HeartbeatDrop(heartbeatJSON);
+        }
+
         const context = {
             // for v1 compatibility, to be removed in v3
             STATUS: serviceStatus,
@@ -104,7 +215,7 @@ class NotificationProvider {
             name: monitorName,
             hostnameOrURL: monitorHostnameOrURL,
             monitorJSON,
-            heartbeatJSON,
+            heartbeatJSON: contextHeartbeatJSON,
             msg,
         };
 
@@ -192,3 +303,4 @@ class NotificationProvider {
 }
 
 module.exports = NotificationProvider;
+module.exports.HeartbeatDrop = HeartbeatDrop;
