@@ -274,6 +274,7 @@ export default {
                 SMSPartner: "SMS Partner",
                 Teltonika: this.$t("Teltonika SMS Gateway"),
                 twilio: "Twilio",
+                Smsmtarget: "M-Target SMS",
             };
 
             // Email - Email services
