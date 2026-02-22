@@ -43,6 +43,7 @@ const {
     encodeBase64,
     checkCertExpiryNotifications,
 } = require("../util-server");
+const { Settings } = require("../settings");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification");
@@ -430,6 +431,16 @@ class Monitor extends BeanModel {
                     console.log("beat interval too low, reset to 20s");
                     beatInterval = 20;
                 }
+            }
+
+            /**
+             * If the monitor designated to represent healthy connectivity is down,
+             * then we can just stop here.
+             */
+            const systemIsHealthy = await this.systemIsHealthy();
+            if (systemIsHealthy === false) {
+                log.warn("monitor", "Health check monitor is down, monitoring paused!");
+                return;
             }
 
             // Expose here for prometheus update
@@ -2101,6 +2112,42 @@ class Monitor extends BeanModel {
             log.debug("monitor", `[${this.name}] call checkCertExpiryNotifications`);
             await checkCertExpiryNotifications(this, tlsInfo);
         }
+    }
+
+    /**
+     * Checks if the monitor selected for the health check is down.
+     * @returns {Promise<boolean>} If true, the system is healthy.
+     */
+    async systemIsHealthy() {
+        let healthCheckMonitorId = await Settings.get("healthCheckMonitorId");
+
+        // User hasn't made a selection yet, save in the database as null
+        if (healthCheckMonitorId === undefined) {
+            await setSetting("healthCheckMonitorId", null);
+            healthCheckMonitorId = null;
+        }
+
+        // No health check monitor is specified, nothing to do!
+        if (healthCheckMonitorId === null) {
+            return true;
+        }
+
+        // We still need to check the health check monitor
+        if (healthCheckMonitorId === this.id) {
+            return true;
+        }
+
+        const healthCheckMonitor = await R.findOne("heartbeat", " monitor_id = ? ORDER BY time DESC", [
+            healthCheckMonitorId,
+        ]);
+
+        if (healthCheckMonitor) {
+            return healthCheckMonitor.status === UP;
+        }
+
+        // Default to indicative of being healthy, this shouldn't happen
+        // Better to be safe if we can't find the selected monitor, it may have been deleted
+        return true;
     }
 }
 

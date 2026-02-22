@@ -1316,6 +1316,8 @@
     "Plain Text": "Plain Text",
     "Message Template": "Message Template",
     "Template Format": "Template Format",
+    "Heath Check": "Heath Check",
+    "HealthCheckDescription": "If the selected monitor is offline, all notifications will be paused and downtime ignored. Ideal for monitoring connectivity to the internet.",
     "Font Twemoji by Twitter licensed under": "Font Twemoji by Twitter licensed under",
     "smsplanetApiToken": "Token for the SMSPlanet API",
     "smsplanetApiDocs": "Detailed information on obtaining API tokens can be found in {the_smsplanet_documentation}.",
