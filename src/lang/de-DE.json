@@ -1581,5 +1581,9 @@
     "teltonikaModemHelptext": "Die ID des SMS-Modems muss das Format {0} haben. Weitere Informationen kannst du unter https://developers.teltonika-networks.com/reference/ finden.",
     "RecordMatch": "Datensatzwert-Übereinstimmung",
     "RegexMatch": "Gib einen regulären Ausdruck ein, der mit dem Datensatzwert übereinstimmt",
-    "GlobalpingMonitorDescription": "Globalping bietet Zugriff auf Tausende von Community-gehosteten Sonden, um Netzwerktests und -messungen durchzuführen. Für alle anonymen Benutzer gilt eine Begrenzung von 250 Tests pro Stunde. Um die Begrenzung auf 500 pro Stunde zu verdoppeln, speichere bitte dein Token in {accountSettings}. Weitere Informationen findest du in den {docs}."
+    "GlobalpingMonitorDescription": "Globalping bietet Zugriff auf Tausende von Community-gehosteten Sonden, um Netzwerktests und -messungen durchzuführen. Für alle anonymen Benutzer gilt eine Begrenzung von 250 Tests pro Stunde. Um die Begrenzung auf 500 pro Stunde zu verdoppeln, speichere bitte dein Token in {accountSettings}. Weitere Informationen findest du in den {docs}.",
+    "certificateExpiryNotificationHelp": "Die Anzahl der Tage im Voraus kann in den Einstellungen konfiguriert werden.",
+    "domainExpiryNotificationHelp": "Die Anzahl der Tage im Voraus kann in Einstellungen konfiguriert werden.",
+    "signalUseTemplate": "Benutzerdefinierte Nachrichtenvorlage verwenden",
+    "signalUseTemplateDescription": "Wenn diese Option aktiviert ist, wird die Nachricht mit einer benutzerdefinierten Vorlage versendet. Du kannst Liquid-Templating verwenden, um das Benachrichtigungsformat anzupassen."
 }
