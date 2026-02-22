@@ -99,30 +99,40 @@ router.all("/api/push/:pushToken", async (request, response) => {
 
         bean.important = Monitor.isImportantBeat(isFirstBeat, previousHeartbeat?.status, bean.status);
 
+        // This prevents a race condition where the background monitor check reads stale data
+        // while notifications are being sent.
+
+        let shouldSendNotification = false;
+        let isResend = false;
+
         if (Monitor.isImportantForNotification(isFirstBeat, previousHeartbeat?.status, bean.status)) {
             // Reset down count
             bean.downCount = 0;
-
-            log.debug("monitor", `[${monitor.name}] sendNotification`);
-            await Monitor.sendNotification(isFirstBeat, monitor, bean);
+            shouldSendNotification = true;
         } else {
             if (bean.status === DOWN && monitor.resendInterval > 0) {
-                ++bean.downCount;
-                if (bean.downCount >= monitor.resendInterval) {
-                    // Send notification again, because we are still DOWN
-                    log.debug(
-                        "monitor",
-                        `[${monitor.name}] sendNotification again: Down Count: ${bean.downCount} | Resend Interval: ${monitor.resendInterval}`
-                    );
-                    await Monitor.sendNotification(isFirstBeat, monitor, bean);
+                // Increment down count (handle potential undefined)
+                bean.downCount = (bean.downCount || 0) + 1;
 
-                    // Reset down count
+                if (bean.downCount >= monitor.resendInterval) {
+                    shouldSendNotification = true;
+                    isResend = true;
                     bean.downCount = 0;
                 }
             }
         }
 
+        // SAVE status to DB immediately so background jobs see the new state
         await R.store(bean);
+
+        if (shouldSendNotification) {
+            if (isResend) {
+                log.debug("monitor", `[${monitor.name}] sendNotification again (Resend Interval)`);
+            } else {
+                log.debug("monitor", `[${monitor.name}] sendNotification`);
+            }
+            await Monitor.sendNotification(isFirstBeat, monitor, bean);
+        }
 
         io.to(monitor.user_id).emit("heartbeat", bean.toJSON());
 
