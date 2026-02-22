@@ -245,8 +245,12 @@ class Prometheus {
         try {
             monitorCertDaysRemaining.remove(this.monitorLabelValues);
             monitorCertIsValid.remove(this.monitorLabelValues);
-            monitorUptimeRatio.remove(this.monitorLabelValues);
-            monitorAverageResponseTimeSeconds.remove(this.monitorLabelValues);
+            monitorUptimeRatio.remove({ ...this.monitorLabelValues, window: "1d" });
+            monitorUptimeRatio.remove({ ...this.monitorLabelValues, window: "30d" });
+            monitorUptimeRatio.remove({ ...this.monitorLabelValues, window: "365d" });
+            monitorAverageResponseTimeSeconds.remove({ ...this.monitorLabelValues, window: "1d" });
+            monitorAverageResponseTimeSeconds.remove({ ...this.monitorLabelValues, window: "30d" });
+            monitorAverageResponseTimeSeconds.remove({ ...this.monitorLabelValues, window: "365d" });
             monitorResponseTime.remove(this.monitorLabelValues);
             monitorStatus.remove(this.monitorLabelValues);
         } catch (e) {
