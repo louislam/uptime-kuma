@@ -3,7 +3,11 @@ name: autofix.ci
 on:
   push:
     branches: ["master", "1.23.X"]
-  pull_request:
+  # Now it will be triggered by validate.yml first
+  # pull_request:
+  workflow_run:
+    workflows: ["validate"]
+    types: ["completed"]
 permissions: {}
 
 jobs:
