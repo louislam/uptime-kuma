@@ -28,6 +28,7 @@ import Line from "./Line.vue";
 import LunaSea from "./LunaSea.vue";
 import Matrix from "./Matrix.vue";
 import Mattermost from "./Mattermost.vue";
+import MobivateSMS from "./MobivateSMS.vue";
 import NextcloudTalk from "./NextcloudTalk.vue";
 import Nostr from "./Nostr.vue";
 import Ntfy from "./Ntfy.vue";
@@ -120,6 +121,7 @@ const NotificationFormList = {
     lunasea: LunaSea,
     matrix: Matrix,
     mattermost: Mattermost,
+    MobivateSMS: MobivateSMS,
     nextcloudtalk: NextcloudTalk,
     nostr: Nostr,
     ntfy: Ntfy,
