@@ -59,7 +59,7 @@
                                         </option>
                                     </optgroup>
 
-                                    <optgroup :label="$t('Speical')">
+                                    <optgroup :label="$t('monitorTypeSpecial')">
                                         <option value="group">
                                             {{ $t("Group") }}
                                         </option>
@@ -94,7 +94,7 @@
                                     </optgroup>
 
                                     <!-- Should sort from A to Z in this category -->
-                                    <optgroup :label="$t('Database Monitor Type')">
+                                    <optgroup :label="$t('monitorTypeDatabase')">
                                         <option value="sqlserver">Microsoft SQL Server</option>
                                         <option value="mongodb">MongoDB</option>
                                         <option value="mysql">MySQL/MariaDB</option>
@@ -104,7 +104,7 @@
                                     </optgroup>
 
                                     <!-- Should sort from A to Z in this category -->
-                                    <optgroup :label="$t('Game Server')">
+                                    <optgroup :label="$t('monitorTypeGameServer')">
                                         <option value="gamedig">GameDig</option>
                                         <option value="steam">
                                             {{ $t("Steam Game Server") }}
