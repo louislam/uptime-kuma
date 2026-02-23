@@ -85,13 +85,13 @@ class PagerDuty extends NotificationProvider {
             headers: { "Content-Type": "application/json" },
             data: {
                 payload: {
-                    summary: `[${title}] [${monitorInfo.name}] ${body}`,
+                    summary: monitorInfo.name ? `[${title}] [${monitorInfo.name}] ${body}` : `[${title}] ${body}`,
                     severity: notification.pagerdutyPriority || "warning",
                     source: monitorUrl,
                 },
                 routing_key: notification.pagerdutyIntegrationKey,
                 event_action: eventAction,
-                dedup_key: "Uptime Kuma/" + monitorInfo.id,
+                dedup_key: monitorInfo.id ? "Uptime Kuma/" + monitorInfo.id : "Uptime Kuma/test",
             },
         };
 
