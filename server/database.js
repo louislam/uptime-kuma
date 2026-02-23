@@ -271,11 +271,17 @@ class Database {
                 },
                 useNullAsDefault: true,
                 pool: {
-                    min: 1,
-                    max: 1,
-                    idleTimeoutMillis: 120 * 1000,
+                    // SQLite is actually multiple connections for WAL mode, so we can set it to a higher number.
+                    // See: https://github.com/knex/knex/issues/3176#issuecomment-3389054899
+                    min: 0,
+                    max: 20,
                     propagateCreateError: false,
                     acquireTimeoutMillis: acquireConnectionTimeout,
+                    afterCreate: (rawConn, done) => {
+                        this.initSQLite(rawConn, testMode)
+                            .then(() => done(undefined, rawConn))
+                            .catch((err) => done(err, rawConn));
+                    },
                 },
             };
         } else if (dbConfig.type === "mariadb") {
@@ -380,40 +386,45 @@ class Database {
         }
 
         if (dbConfig.type === "sqlite") {
-            await this.initSQLite(testMode, noLog);
+            if (!noLog) {
+                log.debug("db", "SQLite config:");
+                log.debug("db", await R.getAll("PRAGMA journal_mode"));
+                log.debug("db", await R.getAll("PRAGMA cache_size"));
+                log.debug("db", "SQLite Version: " + (await R.getCell("SELECT sqlite_version()")));
+            }
         } else if (dbConfig.type.endsWith("mariadb")) {
             await this.initMariaDB();
         }
     }
 
     /**
-     @param {boolean} testMode Should the connection be started in test mode?
-     @param {boolean} noLog Should logs not be output?
-     @returns {Promise<void>}
+     * Initialize SQLite for each connection
+     * @param {any} rawConn The raw node-sqlite3 Database object
+     * @param {boolean} testMode Should the connection be started in test mode?
+     * @returns {Promise<void>}
      */
-    static async initSQLite(testMode, noLog) {
-        await R.exec("PRAGMA foreign_keys = ON");
+    static async initSQLite(rawConn, testMode) {
+        // Since rawConn.run is callback based, in order to avoid callback hell, wrap it in a promise
+        const asyncRun = (sql) => {
+            return new Promise((resolve, reject) => rawConn.run(sql, (err) => (err ? reject(err) : resolve())));
+        };
+
         if (testMode) {
             // Change to MEMORY
-            await R.exec("PRAGMA journal_mode = MEMORY");
+            await asyncRun("PRAGMA journal_mode = MEMORY");
         } else {
             // Change to WAL
-            await R.exec("PRAGMA journal_mode = WAL");
+            await asyncRun("PRAGMA journal_mode = WAL");
         }
-        await R.exec("PRAGMA cache_size = -12000");
-        await R.exec("PRAGMA auto_vacuum = INCREMENTAL");
+
+        await asyncRun("PRAGMA foreign_keys = ON");
+        await asyncRun("PRAGMA cache_size = -12000");
+        await asyncRun("PRAGMA auto_vacuum = INCREMENTAL");
 
         // This ensures that an operating system crash or power failure will not corrupt the database.
         // FULL synchronous is very safe, but it is also slower.
         // Read more: https://sqlite.org/pragma.html#pragma_synchronous
-        await R.exec("PRAGMA synchronous = NORMAL");
-
-        if (!noLog) {
-            log.debug("db", "SQLite config:");
-            log.debug("db", await R.getAll("PRAGMA journal_mode"));
-            log.debug("db", await R.getAll("PRAGMA cache_size"));
-            log.debug("db", "SQLite Version: " + (await R.getCell("SELECT sqlite_version()")));
-        }
+        await asyncRun("PRAGMA synchronous = NORMAL");
     }
 
     /**
