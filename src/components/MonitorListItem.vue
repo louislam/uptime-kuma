@@ -69,7 +69,7 @@
             <div v-if="!isCollapsed" class="childs">
                 <MonitorListItem
                     v-for="(item, index) in sortedChildMonitorList"
-                    :key="index"
+                    :key="item.id"
                     :monitor="item"
                     :isSelectMode="isSelectMode"
                     :isSelected="isSelected"

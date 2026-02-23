@@ -23,7 +23,11 @@ describe("Server Utilities: pingAsync", () => {
         const ipv6WithBrackets = "[2606:4700:4700::1111]";
         const ipv6Raw = "2606:4700:4700::1111";
 
-        await assert.rejects(pingAsync(ipv6WithBrackets, true, 1, "", true, 56, 1, 1), (err) => {
+        try {
+            // If IPv6 is reachable, pingAsync resolves successfully, proving brackets were stripped
+            const time = await pingAsync(ipv6WithBrackets, true, 1, "", true, 56, 1, 1);
+            assert.ok(typeof time === "number" || typeof time === "string", "Ping should return a valid time");
+        } catch (err) {
             assert.strictEqual(
                 err.message.includes(ipv6WithBrackets),
                 false,
@@ -39,8 +43,7 @@ describe("Server Utilities: pingAsync", () => {
                 containsIP || isUnreachable || isMacOSError,
                 `Ping failed correctly, but error message format was unexpected.\nGot: "${err.message}"\nExpected to contain IP "${ipv6Raw}" OR be a standard network error.`
             );
-            return true;
-        });
+        }
     });
 
     test("should handle standard ASCII domains correctly", async () => {
