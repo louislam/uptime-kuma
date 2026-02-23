@@ -33,6 +33,7 @@ export const DOWN = 0;
 export const UP = 1;
 export const PENDING = 2;
 export const MAINTENANCE = 3;
+// pingStatus values for monitoring slow response
 export const SLOW = 4;
 export const NOMINAL = 5;
 
