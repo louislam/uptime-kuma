@@ -51,12 +51,17 @@ class SFTPMonitorType extends MonitorType {
         const host = monitor.hostname;
         const port = monitor.port || 22;
 
+        const timeoutSeconds = (typeof monitor.timeout === "number" && monitor.timeout > 0)
+            ? monitor.timeout
+            : 10;
+        const timeoutMs = timeoutSeconds * 1000;
+
         const connectOptions = {
             host,
             port,
             username: monitor.sftpUsername,
-            readyTimeout: 10000,
-            timeout: 10000,
+            readyTimeout: timeoutMs,
+            timeout: timeoutMs,
         };
 
         if (monitor.sftpAuthMethod === "privateKey") {
