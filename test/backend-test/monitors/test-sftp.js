@@ -47,8 +47,7 @@ function createSftpServer(opts = {}) {
     const { acceptPassword = false, acceptPublicKey = false, existingPaths = [] } = opts;
 
     return new Promise((resolve, reject) => {
-        const server = new Server({ hostKeys: [ HOST_KEY ] }, (client) => {
-
+        const server = new Server({ hostKeys: [HOST_KEY] }, (client) => {
             client.on("authentication", (ctx) => {
                 if (ctx.username !== TEST_USER) {
                     return ctx.reject();
@@ -59,10 +58,9 @@ function createSftpServer(opts = {}) {
                 }
 
                 if (ctx.method === "publickey" && acceptPublicKey) {
-                    const keyMatch = (
-                        ctx.key.algo === parsedClientPubKey.type
-                        && timingSafeEqual(ctx.key.data, parsedClientPubKey.getPublicSSH())
-                    );
+                    const keyMatch =
+                        ctx.key.algo === parsedClientPubKey.type &&
+                        timingSafeEqual(ctx.key.data, parsedClientPubKey.getPublicSSH());
                     // Accept the auth if the key matches (signature verified by SSH protocol itself)
                     return keyMatch ? ctx.accept() : ctx.reject();
                 }
@@ -79,7 +77,7 @@ function createSftpServer(opts = {}) {
 
                         // REALPATH is required by ssh2-sftp-client on connect to resolve "."
                         sftp.on("REALPATH", (reqid, reqPath) => {
-                            sftp.name(reqid, [ { filename: reqPath, longname: reqPath, attrs: {} } ]);
+                            sftp.name(reqid, [{ filename: reqPath, longname: reqPath, attrs: {} }]);
                         });
 
                         /**
@@ -181,11 +179,15 @@ describe("SFTP Monitor", () => {
         t.after(close);
 
         const heartbeat = makeHeartbeat();
-        await monitor.check(makeMonitor({
-            port,
-            sftpAuthMethod: "privateKey",
-            sftpPrivateKey: CLIENT_PRIVATE_KEY,
-        }), heartbeat, {});
+        await monitor.check(
+            makeMonitor({
+                port,
+                sftpAuthMethod: "privateKey",
+                sftpPrivateKey: CLIENT_PRIVATE_KEY,
+            }),
+            heartbeat,
+            {}
+        );
 
         assert.strictEqual(heartbeat.status, UP);
         assert.ok(heartbeat.msg.toLowerCase().includes("successful"), `unexpected msg: "${heartbeat.msg}"`);
@@ -194,7 +196,7 @@ describe("SFTP Monitor", () => {
     test("check() sets status to UP when sftpPath exists on server", async (t) => {
         const { port, close } = await createSftpServer({
             acceptPassword: true,
-            existingPaths: [ EXISTING_PATH ],
+            existingPaths: [EXISTING_PATH],
         });
         t.after(close);
 
@@ -217,9 +219,7 @@ describe("SFTP Monitor", () => {
         t.after(close);
 
         const heartbeat = makeHeartbeat();
-        await assert.rejects(
-            monitor.check(makeMonitor({ port, sftpPassword: "wrongpassword" }), heartbeat, {})
-        );
+        await assert.rejects(monitor.check(makeMonitor({ port, sftpPassword: "wrongpassword" }), heartbeat, {}));
     });
 
     test("check() throws when private key is missing for privateKey auth", async (t) => {
@@ -228,11 +228,15 @@ describe("SFTP Monitor", () => {
 
         const heartbeat = makeHeartbeat();
         await assert.rejects(
-            monitor.check(makeMonitor({
-                port,
-                sftpAuthMethod: "privateKey",
-                sftpPrivateKey: null,
-            }), heartbeat, {}),
+            monitor.check(
+                makeMonitor({
+                    port,
+                    sftpAuthMethod: "privateKey",
+                    sftpPrivateKey: null,
+                }),
+                heartbeat,
+                {}
+            ),
             /private key is required/i
         );
     });
@@ -254,15 +258,16 @@ describe("SFTP Monitor", () => {
 
         const heartbeat = makeHeartbeat();
         await assert.rejects(
-            monitor.check(makeMonitor({
-                port,
-                sftpAuthMethod: "privateKey",
-                sftpPrivateKey: "-----BEGIN OPENSSH PRIVATE KEY-----\nNOTAREALKEY\n-----END OPENSSH PRIVATE KEY-----",
-            }), heartbeat, {})
+            monitor.check(
+                makeMonitor({
+                    port,
+                    sftpAuthMethod: "privateKey",
+                    sftpPrivateKey:
+                        "-----BEGIN OPENSSH PRIVATE KEY-----\nNOTAREALKEY\n-----END OPENSSH PRIVATE KEY-----",
+                }),
+                heartbeat,
+                {}
+            )
         );
     });
 });
-
-
-
-

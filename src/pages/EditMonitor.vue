@@ -797,7 +797,9 @@
 
                                 <!-- Auth Method -->
                                 <div class="my-3">
-                                    <label for="sftp_auth_method" class="form-label">{{ $t("SFTP Auth Method") }}</label>
+                                    <label for="sftp_auth_method" class="form-label">
+                                        {{ $t("SFTP Auth Method") }}
+                                    </label>
                                     <select id="sftp_auth_method" v-model="monitor.sftpAuthMethod" class="form-select">
                                         <option value="password">{{ $t("Password") }}</option>
                                         <option value="privateKey">{{ $t("SSH Private Key") }}</option>
@@ -818,7 +820,9 @@
                                 <!-- SSH Key auth -->
                                 <template v-if="monitor.sftpAuthMethod === 'privateKey'">
                                     <div class="my-3">
-                                        <label for="sftp_private_key" class="form-label">{{ $t("SSH Private Key") }}</label>
+                                        <label for="sftp_private_key" class="form-label">
+                                            {{ $t("SSH Private Key") }}
+                                        </label>
                                         <textarea
                                             id="sftp_private_key"
                                             v-model="monitor.sftpPrivateKey"

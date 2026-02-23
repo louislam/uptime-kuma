@@ -15,9 +15,7 @@ function formatSftpError(err, host, port) {
     const code = err.code || "";
 
     // Strip the "getConnection: " / "sftp: " prefix the library adds to every message
-    const rawMsg = (err.message || "")
-        .replace(/^[\w-]+:\s*/, "")
-        .trim();
+    const rawMsg = (err.message || "").replace(/^[\w-]+:\s*/, "").trim();
 
     switch (code) {
         case "ECONNREFUSED":
@@ -51,9 +49,7 @@ class SFTPMonitorType extends MonitorType {
         const host = monitor.hostname;
         const port = monitor.port || 22;
 
-        const timeoutSeconds = (typeof monitor.timeout === "number" && monitor.timeout > 0)
-            ? monitor.timeout
-            : 10;
+        const timeoutSeconds = typeof monitor.timeout === "number" && monitor.timeout > 0 ? monitor.timeout : 10;
         const timeoutMs = timeoutSeconds * 1000;
 
         const connectOptions = {
