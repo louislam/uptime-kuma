@@ -54,7 +54,6 @@
         "simple-mongo": "docker run --rm -p 27017:27017 mongo",
         "simple-postgres": "docker run --rm -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres",
         "simple-mariadb": "docker run --rm -p 3306:3306 -e MYSQL_ROOT_PASSWORD=mariadb# mariadb",
-        "update-language-files": "cd extra/update-language-files && node index.js && cross-env-shell eslint ../../src/languages/$npm_config_language.js --fix",
         "release-final": "node ./extra/release/final.mjs",
         "release-beta": "node ./extra/release/beta.mjs",
         "release-nightly": "node ./extra/release/nightly.mjs",
