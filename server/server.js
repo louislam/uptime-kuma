@@ -928,6 +928,12 @@ let needSetup = false;
                 bean.manual_status = monitor.manual_status;
                 bean.system_service_name = monitor.system_service_name;
                 bean.expected_tls_alert = monitor.expectedTlsAlert;
+                bean.sftp_username = monitor.sftpUsername;
+                bean.sftp_password = monitor.sftpPassword;
+                bean.sftp_path = monitor.sftpPath;
+                bean.sftp_private_key = monitor.sftpPrivateKey;
+                bean.sftp_passphrase = monitor.sftpPassphrase;
+                bean.sftp_auth_method = monitor.sftpAuthMethod;
 
                 // ping advanced options
                 bean.ping_numeric = monitor.ping_numeric;
