@@ -89,7 +89,17 @@ class SFTPMonitorType extends MonitorType {
         } catch (err) {
             throw new Error(formatSftpError(err, host, port));
         } finally {
-            await sftp.end();
+            // Only tear down if a session was actually established (sftp.sftp is set by the
+            // library after connect() resolves). Swallow teardown errors so they never mask
+            // the real error from the try/catch above.
+            if (sftp.sftp) {
+                try {
+                    await sftp.end();
+                } catch (_) {
+                    // cleanup errors are ignored, only log them for debugging purposes
+                    log.debug("sftp", `Error during SFTP teardown: ${_.message}`);
+                }
+            }
         }
     }
 }
