@@ -1,6 +1,5 @@
 const express = require("express");
 const http = require("node:http");
-const { log } = require("../../src/util");
 const { printServerUrls } = require("../util-server");
 
 /**
