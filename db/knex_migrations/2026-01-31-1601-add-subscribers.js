@@ -22,7 +22,13 @@ exports.up = function (knex) {
             // Create status_page_subscription table (links subscribers to status pages and components)
             .createTable("status_page_subscription", (table) => {
                 table.increments("id").primary();
-                table.integer("subscriber_id").unsigned().notNullable();
+                table.integer("subscriber_id")
+                    .unsigned()
+                    .notNullable()
+                    .references("id")
+                    .inTable("status_page_subscriber")
+                    .onDelete("CASCADE")
+                    .onUpdate("CASCADE");
                 table.integer("status_page_id").unsigned().notNullable();
                 table.integer("component_id").unsigned(); // NULL means subscribe to all components
                 table.boolean("notify_incidents").defaultTo(true);
@@ -43,7 +49,13 @@ exports.up = function (knex) {
             // Create notification queue table
             .createTable("status_page_notification_queue", (table) => {
                 table.increments("id").primary();
-                table.integer("subscriber_id").unsigned().notNullable();
+                table.integer("subscriber_id")
+                    .unsigned()
+                    .notNullable()
+                    .references("id")
+                    .inTable("status_page_subscriber")
+                    .onDelete("CASCADE")
+                    .onUpdate("CASCADE");
                 table.string("notification_type", 50).notNullable(); // 'incident', 'incident_update', 'maintenance', 'status_change'
                 table.string("subject", 255).notNullable();
                 table.text("data").notNullable();
