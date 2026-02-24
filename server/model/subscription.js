@@ -3,10 +3,10 @@ const { R } = require("redbean-node");
 const { nanoid } = require("nanoid");
 
 /**
- * Subscription model
+ * StatusPageSubscription model
  * Links subscribers to status pages and components
  */
-class Subscription extends BeanModel {
+class StatusPageSubscription extends BeanModel {
     /**
      * Generate verification token
      * @returns {string} Verification token
@@ -16,7 +16,7 @@ class Subscription extends BeanModel {
     }
 
     /**
-     * Verify the subscription
+     * Verify the status_page_subscription
      * @returns {Promise<void>}
      */
     async verify() {
@@ -26,12 +26,12 @@ class Subscription extends BeanModel {
     }
 
     /**
-     * Find subscription by verification token
+     * Find status_page_subscription by verification token
      * @param {string} token Verification token
-     * @returns {Promise<Subscription|null>} Subscription or null
+     * @returns {Promise<StatusPageSubscription|null>} StatusPageSubscription or null
      */
     static async findByVerificationToken(token) {
-        return await R.findOne("subscription", " verification_token = ? ", [token]);
+        return await R.findOne("status_page_subscription", " verification_token = ? ", [token]);
     }
 
     /**
@@ -55,48 +55,48 @@ class Subscription extends BeanModel {
     /**
      * Get all subscriptions for a subscriber
      * @param {number} subscriberId Subscriber ID
-     * @returns {Promise<Subscription[]>} Array of subscriptions
+     * @returns {Promise<StatusPageSubscription[]>} Array of subscriptions
      */
     static async getBySubscriber(subscriberId) {
-        return await R.find("subscription", " subscriber_id = ? ", [subscriberId]);
+        return await R.find("status_page_subscription", " subscriber_id = ? ", [subscriberId]);
     }
 
     /**
      * Get all subscriptions for a status page
      * @param {number} statusPageId Status Page ID
      * @param {number|null} componentId Component ID (optional)
-     * @returns {Promise<Subscription[]>} Array of subscriptions
+     * @returns {Promise<StatusPageSubscription[]>} Array of subscriptions
      */
     static async getByStatusPage(statusPageId, componentId = null) {
         if (componentId) {
-            return await R.find("subscription", " status_page_id = ? AND (component_id = ? OR component_id IS NULL) ", [
+            return await R.find("status_page_subscription", " status_page_id = ? AND (component_id = ? OR component_id IS NULL) ", [
                 statusPageId,
                 componentId,
             ]);
         }
-        return await R.find("subscription", " status_page_id = ? ", [statusPageId]);
+        return await R.find("status_page_subscription", " status_page_id = ? ", [statusPageId]);
     }
 
     /**
-     * Check if subscription exists
+     * Check if status_page_subscription exists
      * @param {number} subscriberId Subscriber ID
      * @param {number} statusPageId Status Page ID
      * @param {number|null} componentId Component ID
-     * @returns {Promise<Subscription|null>} Subscription or null
+     * @returns {Promise<StatusPageSubscription|null>} StatusPageSubscription or null
      */
     static async exists(subscriberId, statusPageId, componentId = null) {
         if (componentId) {
-            return await R.findOne("subscription", " subscriber_id = ? AND status_page_id = ? AND component_id = ? ", [
+            return await R.findOne("status_page_subscription", " subscriber_id = ? AND status_page_id = ? AND component_id = ? ", [
                 subscriberId,
                 statusPageId,
                 componentId,
             ]);
         }
-        return await R.findOne("subscription", " subscriber_id = ? AND status_page_id = ? AND component_id IS NULL ", [
+        return await R.findOne("status_page_subscription", " subscriber_id = ? AND status_page_id = ? AND component_id IS NULL ", [
             subscriberId,
             statusPageId,
         ]);
     }
 }
 
-module.exports = Subscription;
+module.exports = StatusPageSubscription;

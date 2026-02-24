@@ -3,10 +3,10 @@ const { R } = require("redbean-node");
 const { nanoid } = require("nanoid");
 
 /**
- * Subscriber model
+ * StatusPageSubscriber model
  * Represents email subscribers to status pages
  */
-class Subscriber extends BeanModel {
+class StatusPageSubscriber extends BeanModel {
     /**
      * Generate unsubscribe token
      * @returns {string} Unsubscribe token
@@ -39,22 +39,22 @@ class Subscriber extends BeanModel {
     }
 
     /**
-     * Find subscriber by email
+     * Find status_page_subscriber by email
      * @param {string} email Email address
-     * @returns {Promise<Subscriber|null>} Subscriber or null
+     * @returns {Promise<StatusPageSubscriber|null>} StatusPageSubscriber or null
      */
     static async findByEmail(email) {
-        return await R.findOne("subscriber", " email = ? ", [email]);
+        return await R.findOne("status_page_subscriber", " email = ? ", [email]);
     }
 
     /**
-     * Find subscriber by unsubscribe token
+     * Find status_page_subscriber by unsubscribe token
      * @param {string} token Unsubscribe token
-     * @returns {Promise<Subscriber|null>} Subscriber or null
+     * @returns {Promise<StatusPageSubscriber|null>} StatusPageSubscriber or null
      */
     static async findByUnsubscribeToken(token) {
-        return await R.findOne("subscriber", " unsubscribe_token = ? ", [token]);
+        return await R.findOne("status_page_subscriber", " unsubscribe_token = ? ", [token]);
     }
 }
 
-module.exports = Subscriber;
+module.exports = StatusPageSubscriber;
