@@ -338,7 +338,8 @@ module.exports.statusPageSocketHandler = (socket) => {
             statusPage.modified_date = R.isoDateTime();
             statusPage.analytics_id = config.analyticsId;
             statusPage.analytics_script_url = config.analyticsScriptUrl;
-            statusPage.analytics_type = config.analyticsType;
+            const validAnalyticsTypes = [ "google", "umami", "plausible", "matomo" ];
+            statusPage.analytics_type = validAnalyticsTypes.includes(config.analyticsType) ? config.analyticsType : null;
 
             await R.store(statusPage);
 
