@@ -1,0 +1,84 @@
+name: NPM Update
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *" # Run daily at midnight UTC
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  npm-update:
+    # Only run on the original repository, not on forks
+    if: github.repository == 'louislam/uptime-kuma'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout master branch
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          ref: master
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        with:
+          node-version: 20
+
+      - name: Run npm update
+        run: npm update --package-lock-only
+
+      - name: Check if there are changes
+        id: check_changes
+        run: |
+          if git diff --quiet package-lock.json; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Configure git
+        if: steps.check_changes.outputs.has_changes == 'true'
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Commit changes
+        if: steps.check_changes.outputs.has_changes == 'true'
+        run: |
+          git add package-lock.json
+          git commit -m "chore: Update dependencies"
+
+      - name: Force push to npm-update branch
+        if: steps.check_changes.outputs.has_changes == 'true'
+        run: |
+          git push -f origin HEAD:npm-update
+
+      - name: Check if PR exists
+        if: steps.check_changes.outputs.has_changes == 'true'
+        id: check_pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_EXISTS=$(gh pr list --base master --head npm-update --json number --jq 'length')
+          if [ "$PR_EXISTS" -eq "0" ]; then
+            echo "pr_exists=false" >> $GITHUB_OUTPUT
+          else
+            echo "pr_exists=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Pull Request
+        if: steps.check_changes.outputs.has_changes == 'true' && steps.check_pr.outputs.pr_exists == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr create \
+            --base master \
+            --head npm-update \
+            --title "chore: Update dependencies" \
+            --body ""
