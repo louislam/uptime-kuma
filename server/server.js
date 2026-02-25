@@ -357,48 +357,45 @@ let needSetup = false;
     app.use(statusPageRouter);
 
     // Universal Route Handler, must be at the end of all express routes.
-app.get("*", async (req, res) => {
+    app.get("*", async (req, res) => {
+        if (req.originalUrl.startsWith("/upload/")) {
+            return res.status(404).send("File not found.");
+        }
 
-    if (req.originalUrl.startsWith("/upload/")) {
-        return res.status(404).send("File not found.");
-    }
+        // Allow known valid SPA routes
+        const allowedPrefixes = [
+            "/",
+            "/empty",
+            "/dashboard",
+            "/edit",
+            "/add",
+            "/clone",
+            "/list",
+            "/settings",
+            "/manage-status-page",
+            "/add-status-page",
+            "/maintenance",
+            "/add-maintenance",
+            "/setup",
+            "/setup-database",
+            "/status-page",
+            "/status",
+            "/:pathMatch",
+            "/socket.io",
+            "/api",
+            "/assets",
+            "/icon",
+            "/metrics",
+        ];
 
-    // Allow known valid SPA routes
-    const allowedPrefixes = [
-        "/",
-        "/empty",
-        "/dashboard",
-        "/edit",
-        "/add",
-        "/clone",
-        "/list",
-        "/settings",
-        "/manage-status-page",
-        "/add-status-page",
-        "/maintenance",
-        "/add-maintenance",
-        "/setup",
-        "/setup-database",
-        "/status-page",
-        "/status",
-        "/:pathMatch",
-        "/socket.io",
-        "/api",
-        "/assets",
-        "/icon",
-        "/metrics",
-    ];
+        const allowed = allowedPrefixes.some((prefix) => req.path === prefix || req.path.startsWith(prefix + "/"));
 
-    const allowed = allowedPrefixes.some(prefix =>
-        req.path === prefix || req.path.startsWith(prefix + "/")
-    );
+        if (!allowed) {
+            return res.status(404).send(server.indexHTML);
+        }
 
-    if (!allowed) {
-        return res.status(404).send(server.indexHTML);
-    }
-
-    res.send(server.indexHTML);
-});
+        res.send(server.indexHTML);
+    });
 
     log.debug("server", "Adding socket handler");
     io.on("connection", async (socket) => {
