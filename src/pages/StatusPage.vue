@@ -688,7 +688,9 @@ export default {
             enableEditMode: false,
             enableEditIncidentMode: false,
             hasToken: false,
-            config: {},
+            config: {
+                analyticsType: null,
+            },
             selectedMonitor: null,
             incident: null,
             previousIncident: null,
