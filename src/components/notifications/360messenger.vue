@@ -242,8 +242,7 @@ Uptime Kuma Alert{% if monitorJSON %} - {{ monitorJSON['name'] }}{% endif %}
                 return;
             }
 
-            this.$parent.notification.Whatsapp360messengerGroupIds =
-                list.filter((x) => x !== id);
+            this.$parent.notification.Whatsapp360messengerGroupIds = list.filter((x) => x !== id);
         },
         async fetchGroups() {
             this.isLoadingGroups = true;
