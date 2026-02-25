@@ -173,6 +173,31 @@ Uptime Kuma Alert{% if monitorJSON %} - {{ monitorJSON['name'] }}{% endif %}
                 this.groups = [];
             }
         },
+        "$parent.notification.Whatsapp360messengerGroupIds": {
+            immediate: true,
+            handler(value) {
+                if (Array.isArray(value)) {
+                    return;
+                }
+
+                let source = value;
+
+                if (!source && this.$parent.notification.Whatsapp360messengerGroupId) {
+                    source = this.$parent.notification.Whatsapp360messengerGroupId;
+                }
+
+                let normalized = [];
+
+                if (typeof source === "string" && source.trim() !== "") {
+                    normalized = source
+                        .split(/[;,]/)
+                        .map((v) => v.trim())
+                        .filter((v) => v !== "");
+                }
+
+                this.$parent.notification.Whatsapp360messengerGroupIds = normalized;
+            },
+        },
     },
     methods: {
         toggleDropdown() {
@@ -180,11 +205,6 @@ Uptime Kuma Alert{% if monitorJSON %} - {{ monitorJSON['name'] }}{% endif %}
                 return;
             }
             this.isDropdownOpen = !this.isDropdownOpen;
-        },
-        ensureGroupIdsArray() {
-            if (!Array.isArray(this.$parent.notification.Whatsapp360messengerGroupIds)) {
-                this.$parent.notification.Whatsapp360messengerGroupIds = this.selectedGroupIds;
-            }
         },
         toggleGroupId(id) {
             const trimmed = typeof id === "string" ? id.trim() : "";
@@ -198,30 +218,32 @@ Uptime Kuma Alert{% if monitorJSON %} - {{ monitorJSON['name'] }}{% endif %}
                 this.addGroupId(trimmed);
             }
         },
-        ensureGroupIdsArray() {
-            if (!Array.isArray(this.$parent.notification.Whatsapp360messengerGroupIds)) {
-                this.$parent.notification.Whatsapp360messengerGroupIds = this.selectedGroupIds;
-            }
-        },
         addGroupId(id) {
             const trimmed = typeof id === "string" ? id.trim() : "";
             if (!trimmed) {
                 return;
             }
 
-            this.ensureGroupIdsArray();
+            const list = this.$parent.notification.Whatsapp360messengerGroupIds;
+            if (!Array.isArray(list)) {
+                return;
+            }
 
             // Prefer the new array-based field going forward
             this.$parent.notification.Whatsapp360messengerGroupId = "";
 
-            if (!this.$parent.notification.Whatsapp360messengerGroupIds.includes(trimmed)) {
-                this.$parent.notification.Whatsapp360messengerGroupIds.push(trimmed);
+            if (!list.includes(trimmed)) {
+                list.push(trimmed);
             }
         },
         removeGroupId(id) {
-            this.ensureGroupIdsArray();
+            const list = this.$parent.notification.Whatsapp360messengerGroupIds;
+            if (!Array.isArray(list)) {
+                return;
+            }
+
             this.$parent.notification.Whatsapp360messengerGroupIds =
-                this.$parent.notification.Whatsapp360messengerGroupIds.filter((x) => x !== id);
+                list.filter((x) => x !== id);
         },
         async fetchGroups() {
             this.isLoadingGroups = true;
