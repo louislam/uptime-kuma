@@ -338,7 +338,7 @@ module.exports.statusPageSocketHandler = (socket) => {
             statusPage.modified_date = R.isoDateTime();
             statusPage.analytics_id = config.analyticsId;
             statusPage.analytics_script_url = config.analyticsScriptUrl;
-            const validAnalyticsTypes = [ "google", "umami", "plausible", "matomo" ];
+            const validAnalyticsTypes = ["google", "umami", "plausible", "matomo"];
             if (config.analyticsType !== null && !validAnalyticsTypes.includes(config.analyticsType)) {
                 throw new Error("Invalid analytics type");
             }
