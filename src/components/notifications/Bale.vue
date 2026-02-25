@@ -51,7 +51,6 @@
 
 <script>
 import HiddenInput from "../HiddenInput.vue";
-import axios from "axios";
 
 export default {
     components: {
@@ -84,10 +83,17 @@ export default {
          */
         async autoGetBaleChatID() {
             try {
-                let res = await axios.get(this.baleGetUpdatesURL("withToken"));
+                let res = await new Promise((resolve, reject) => {
+                    this.$root.getSocket().emit("baleGetUpdates", this.$parent.notification.baleBotToken, (resp) => {
+                        if (!resp.ok) {
+                            return reject(new Error(resp.msg));
+                        }
+                        resolve(resp.data);
+                    });
+                });
 
-                if (res.data.result.length >= 1) {
-                    let update = res.data.result[res.data.result.length - 1];
+                if (res.result?.length >= 1) {
+                    let update = res.result[res.result.length - 1];
 
                     if (update.channel_post) {
                         this.$parent.notification.baleChatID = update.channel_post.chat.id;

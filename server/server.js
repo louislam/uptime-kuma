@@ -75,6 +75,8 @@ log.info("server", "Loading modules");
 log.debug("server", "Importing express");
 const express = require("express");
 const expressStaticGzip = require("express-static-gzip");
+log.debug("server", "Importing axios");
+const axios = require("axios");
 log.debug("server", "Importing redbean-node");
 const { R } = require("redbean-node");
 log.debug("server", "Importing jsonwebtoken");
@@ -1589,6 +1591,33 @@ let needSetup = false;
                 callback({
                     ok: false,
                     msg: e.message,
+                });
+            }
+        });
+
+        socket.on("baleGetUpdates", async (botToken, callback) => {
+            try {
+                checkLogin(socket);
+
+                if (!botToken) {
+                    throw new Error("Bale bot token is required.");
+                }
+
+                const response = await axios.get(`https://tapi.bale.ai/bot${botToken}/getUpdates`, {
+                    timeout: 10000,
+                    headers: {
+                        accept: "application/json",
+                    },
+                });
+
+                callback({
+                    ok: true,
+                    data: response.data,
+                });
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.response?.data?.description || e.message,
                 });
             }
         });
