@@ -1,38 +1,35 @@
 <template>
     <div class="mb-3">
         <label for="360messenger-auth-token" class="form-label">{{ $t("360messengerAuthToken") }}</label>
-        <HiddenInput 
-            id="360messenger-auth-token" 
-            v-model="$parent.notification.Whatsapp360messengerAuthToken" 
-            :required="true" 
+        <HiddenInput
+            id="360messenger-auth-token"
+            v-model="$parent.notification.Whatsapp360messengerAuthToken"
+            :required="true"
             autocomplete="new-password"
         ></HiddenInput>
         <i18n-t tag="div" keypath="360messengerWayToGetUrlAndToken" class="form-text">
-            <a href="https://360messenger.com/en/uptime-kuma" target="_blank">https://360messenger.com/en/uptime-kuma</a>
+            <a href="https://360messenger.com/en/uptime-kuma" target="_blank">
+                https://360messenger.com/en/uptime-kuma
+            </a>
         </i18n-t>
     </div>
 
     <div class="mb-3">
         <label for="360messenger-recipient" class="form-label">{{ $t("360messengerRecipient") }}</label>
-        <input 
-            id="360messenger-recipient" 
-            v-model="$parent.notification.Whatsapp360messengerRecipient" 
-            type="text" 
-            class="form-control" 
+        <input
+            id="360messenger-recipient"
+            v-model="$parent.notification.Whatsapp360messengerRecipient"
+            type="text"
+            class="form-control"
             placeholder="447488888888, 447499999999"
             :required="!hasAnySelectedGroup"
-        >
+        />
         <div class="form-text">{{ $t("360messengerWayToWriteRecipient", ["447488888888"]) }}</div>
     </div>
 
     <!-- Checkbox to enable/disable Combobox -->
     <div class="mb-3 form-check form-switch">
-        <input 
-            id="360messenger-enable-options" 
-            v-model="isOptionsEnabled" 
-            type="checkbox" 
-            class="form-check-input"
-        >
+        <input id="360messenger-enable-options" v-model="isOptionsEnabled" type="checkbox" class="form-check-input" />
         <label for="360messenger-enable-options" class="form-check-label">
             {{ $t("360messengerEnableSendToGroup") }}
         </label>
@@ -71,7 +68,11 @@
 
     <div class="mb-3">
         <div class="form-check form-switch">
-            <input v-model="$parent.notification.Whatsapp360messengerUseTemplate" class="form-check-input" type="checkbox">
+            <input
+                v-model="$parent.notification.Whatsapp360messengerUseTemplate"
+                class="form-check-input"
+                type="checkbox"
+            />
             <label class="form-check-label">{{ $t("360messengerCustomMessageTemplate") }}</label>
         </div>
 
@@ -82,11 +83,11 @@
 
     <template v-if="$parent.notification.Whatsapp360messengerUseTemplate">
         <div class="mb-3">
-            <label class="form-label" for="360messenger-template">{{ $t('360messengerMessageTemplate') }}</label>
-            <TemplatedTextarea 
-                id="360messenger-template" 
-                v-model="$parent.notification.Whatsapp360messengerTemplate" 
-                :required="true" 
+            <label class="form-label" for="360messenger-template">{{ $t("360messengerMessageTemplate") }}</label>
+            <TemplatedTextarea
+                id="360messenger-template"
+                v-model="$parent.notification.Whatsapp360messengerTemplate"
+                :required="true"
                 :placeholder="Whatsapp360messengerTemplatedTextareaPlaceholder"
             ></TemplatedTextarea>
         </div>
@@ -129,7 +130,9 @@ Uptime Kuma Alert{% if monitorJSON %} - {{ monitorJSON['name'] }}{% endif %}
             }));
         },
         selectedGroupIds() {
-            const raw = this.$parent.notification.Whatsapp360messengerGroupIds || this.$parent.notification.Whatsapp360messengerGroupId;
+            const raw =
+                this.$parent.notification.Whatsapp360messengerGroupIds ||
+                this.$parent.notification.Whatsapp360messengerGroupId;
 
             if (Array.isArray(raw)) {
                 return raw
@@ -156,7 +159,7 @@ Uptime Kuma Alert{% if monitorJSON %} - {{ monitorJSON['name'] }}{% endif %}
         },
         hasAnySelectedGroup() {
             return this.selectedGroupIds.length > 0;
-        }
+        },
     },
     watch: {
         // When checkbox is enabled, fetch groups from API
@@ -169,7 +172,7 @@ Uptime Kuma Alert{% if monitorJSON %} - {{ monitorJSON['name'] }}{% endif %}
                 this.$parent.notification.Whatsapp360messengerGroupId = "";
                 this.groups = [];
             }
-        }
+        },
     },
     methods: {
         toggleDropdown() {
@@ -223,7 +226,7 @@ Uptime Kuma Alert{% if monitorJSON %} - {{ monitorJSON['name'] }}{% endif %}
         async fetchGroups() {
             this.isLoadingGroups = true;
             this.errorMessage = "";
-            
+
             try {
                 const token = this.$parent.notification.Whatsapp360messengerAuthToken;
 
@@ -234,12 +237,12 @@ Uptime Kuma Alert{% if monitorJSON %} - {{ monitorJSON['name'] }}{% endif %}
                     return;
                 }
 
-                const response = await fetch('https://api.360messenger.com/v2/groupChat/getGroupList', {
-                    method: 'GET',
+                const response = await fetch("https://api.360messenger.com/v2/groupChat/getGroupList", {
+                    method: "GET",
                     headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
                 });
 
                 const result = await response.json();
@@ -260,12 +263,12 @@ Uptime Kuma Alert{% if monitorJSON %} - {{ monitorJSON['name'] }}{% endif %}
             } catch (error) {
                 this.errorMessage = this.$t("360messengerErrorGeneric", { message: error.message });
                 this.isOptionsEnabled = false;
-                console.error('Error fetching groups:', error);
+                console.error("Error fetching groups:", error);
             } finally {
                 this.isLoadingGroups = false;
             }
-        }
-    }
+        },
+    },
 };
 </script>
 

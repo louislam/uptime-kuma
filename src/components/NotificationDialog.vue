@@ -244,7 +244,7 @@ export default {
                 whapi: "WhatsApp (Whapi)",
                 evolution: "WhatsApp (Evolution)",
                 waha: "WhatsApp (WAHA)",
-                Whatsapp360messenger : "WhatsApp (360messenger)",
+                Whatsapp360messenger: "WhatsApp (360messenger)",
             };
 
             // Push Services - Push notification services

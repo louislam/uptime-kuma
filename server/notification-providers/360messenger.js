@@ -13,17 +13,22 @@ class Whatsapp360messenger extends NotificationProvider {
         try {
             let config = {
                 headers: {
-                    "Accept": "application/json",
+                    Accept: "application/json",
                     "Content-Type": "application/json",
-                    "Authorization": "Bearer " + notification.Whatsapp360messengerAuthToken,
-                }
+                    Authorization: "Bearer " + notification.Whatsapp360messengerAuthToken,
+                },
             };
             config = this.getAxiosConfigWithProxy(config);
 
             // Use custom template if enabled
             let message = msg;
             if (notification.Whatsapp360messengerUseTemplate && notification.Whatsapp360messengerTemplate) {
-                message = this.applyTemplate(notification.Whatsapp360messengerTemplate, msg, monitorJSON, heartbeatJSON);
+                message = this.applyTemplate(
+                    notification.Whatsapp360messengerTemplate,
+                    msg,
+                    monitorJSON,
+                    heartbeatJSON
+                );
             }
 
             // Normalize recipients: support comma/semicolon-separated list
@@ -33,7 +38,8 @@ class Whatsapp360messenger extends NotificationProvider {
                 .filter((r) => r !== "");
 
             // Normalize group IDs: support array (multi-select) and fallback to single value / delimited string
-            const rawGroupIds = notification.Whatsapp360messengerGroupIds || notification.Whatsapp360messengerGroupId || "";
+            const rawGroupIds =
+                notification.Whatsapp360messengerGroupIds || notification.Whatsapp360messengerGroupId || "";
 
             let groupIds = [];
             if (Array.isArray(rawGroupIds)) {
@@ -112,7 +118,6 @@ class Whatsapp360messenger extends NotificationProvider {
             } else {
                 throw new Error("No recipient or group specified");
             }
-
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }
@@ -130,28 +135,27 @@ class Whatsapp360messenger extends NotificationProvider {
         try {
             // Simple template replacement
             let result = template;
-            
+
             // Replace monitor variables
             if (monitorJSON) {
-                result = result.replace(/{{ monitorJSON\['name'\] }}/g, monitorJSON.name || '');
-                result = result.replace(/{{ monitorJSON\['url'\] }}/g, monitorJSON.url || '');
+                result = result.replace(/{{ monitorJSON\['name'\] }}/g, monitorJSON.name || "");
+                result = result.replace(/{{ monitorJSON\['url'\] }}/g, monitorJSON.url || "");
             }
-            
+
             // Replace message variable
             result = result.replace(/{{ msg }}/g, msg);
-            
+
             // Handle conditional blocks (simple if statements)
             result = result.replace(/{% if monitorJSON %}([\s\S]*?){% endif %}/g, (match, content) => {
-                return monitorJSON ? content : '';
+                return monitorJSON ? content : "";
             });
-            
+
             return result;
         } catch (error) {
             // If template parsing fails, return original message
             return msg;
         }
     }
-
 }
 
 module.exports = Whatsapp360messenger;
