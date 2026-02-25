@@ -30,7 +30,13 @@ exports.up = function (knex) {
                     .onDelete("CASCADE")
                     .onUpdate("CASCADE");
                 table.integer("status_page_id").unsigned().notNullable();
-                table.integer("component_id").unsigned(); // NULL means subscribe to all components
+                table.integer("group_id") // NULL means subscribe to all components on a status page
+                    .unsigned()
+                    .nullable()
+                    .references("id")
+                    .inTable("group")
+                    .onDelete("CASCADE")
+                    .onUpdate("CASCADE"); 
                 table.boolean("notify_incidents").defaultTo(true);
                 table.boolean("notify_maintenance").defaultTo(true);
                 table.boolean("notify_status_changes").defaultTo(false);
@@ -40,11 +46,11 @@ exports.up = function (knex) {
 
                 table.index("subscriber_id", "status_page_subscription_subscriber_id");
                 table.index("status_page_id", "status_page_subscription_status_page_id");
-                table.index("component_id", "status_page_subscription_component_id");
+                table.index("group_id", "status_page_subscription_group_id");
                 table.index("verification_token", "status_page_subscription_verification_token");
 
                 // Prevent duplicate subscriptions
-                table.unique(["subscriber_id", "status_page_id", "component_id"]);
+                table.unique(["subscriber_id", "status_page_id", "group_id"]);
             })
             // Create notification queue table
             .createTable("status_page_notification_queue", (table) => {
