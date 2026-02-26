@@ -106,15 +106,6 @@
                                                     :size="'sm'"
                                                 />
                                             </div>
-                                            <div v-if="showTags">
-                                                <Tag
-                                                    v-for="tag in monitor.element.tags"
-                                                    :key="tag"
-                                                    :item="tag"
-                                                    :size="'sm'"
-                                                    data-testid="monitor-tag"
-                                                />
-                                            </div>
                                             <div v-if="showDomainExpiry && monitor.element.domainExpiryDaysRemaining">
                                                 <Tag
                                                     :item="{
@@ -123,6 +114,15 @@
                                                         color: domainExpiryColor(monitor),
                                                     }"
                                                     :size="'sm'"
+                                                />
+                                            </div>
+                                            <div v-if="showTags">
+                                                <Tag
+                                                    v-for="tag in monitor.element.tags"
+                                                    :key="tag"
+                                                    :item="tag"
+                                                    :size="'sm'"
+                                                    data-testid="monitor-tag"
                                                 />
                                             </div>
                                         </div>
