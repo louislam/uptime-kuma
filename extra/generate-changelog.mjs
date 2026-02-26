@@ -4,17 +4,21 @@
 
 import * as childProcess from "child_process";
 
-const ignoreList = ["louislam", "CommanderStorm", "UptimeKumaBot", "weblate", "Copilot", "autofix-ci[bot]", "app/copilot-swe-agent", "app/github-actions", "github-actions[bot]"];
+const ignoreList = [
+    "louislam",
+    "CommanderStorm",
+    "UptimeKumaBot",
+    "weblate",
+    "Copilot",
+    "autofix-ci[bot]",
+    "app/copilot-swe-agent",
+    "app/github-actions",
+    "github-actions[bot]",
+];
 
 const mergeList = ["chore: Translations Update from Weblate", "chore: Update dependencies"];
 
-const template = `
-
-LLM Task: Please help to put above PRs into the following sections based on their content. If a PR fits multiple sections, choose the most relevant one. If a PR doesn't fit any section, place it in "Others". If there are grammatical errors in the PR titles, please correct them. Don't change the PR numbers and authors, and keep the format. Output as markdown file format.
-
-Changelog:
-
-### 🆕 New Features
+const template = `### 🆕 New Features
 
 ### 💇‍♀️ Improvements
 
@@ -109,9 +113,9 @@ export async function generateChangelog(previousVersion) {
  * @returns {Promise<object>} List of Pull Requests merged since previousVersion
  */
 async function getPullRequestList(previousVersion) {
-    // Get the date of previousVersion in YYYY-MM-DD format from git
+    // Get the date of previousVersion in iso8601-strict format (2026-02-19T13:34:03+08:00) from git
     const previousVersionDate = childProcess
-        .execSync(`git log -1 --format=%cd --date=short ${previousVersion}`)
+        .execSync(`git log -1 --format=%cd --date=iso8601-strict ${previousVersion}`)
         .toString()
         .trim();
 
