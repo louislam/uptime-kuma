@@ -10,10 +10,10 @@ class GoAlert extends NotificationProvider {
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
-
         try {
             let data = {
                 summary: msg,
+                dedup: monitorJSON ? String(monitorJSON["id"]) : msg,
             };
             if (heartbeatJSON != null && heartbeatJSON["status"] === UP) {
                 data["action"] = "close";
