@@ -90,6 +90,11 @@ class GlobalpingMonitorType extends MonitorType {
         log.debug("monitor", `Globalping create measurement: ${JSON.stringify(opts)}`);
         let res = await client.createMeasurement(opts);
 
+        // Retry if the server returns a 500 error
+        if (!res.ok && Globalping.isHttpStatus(500, res)) {
+            res = await client.createMeasurement(opts);
+        }
+
         if (!res.ok) {
             if (Globalping.isHttpStatus(429, res)) {
                 throw new Error(`Failed to create measurement: ${this.formatTooManyRequestsError(hasAPIToken)}`);
@@ -187,6 +192,11 @@ class GlobalpingMonitorType extends MonitorType {
         log.debug("monitor", `Globalping create measurement: ${JSON.stringify(opts)}`);
         let res = await client.createMeasurement(opts);
 
+        // Retry if the server returns a 500 error
+        if (!res.ok && Globalping.isHttpStatus(500, res)) {
+            res = await client.createMeasurement(opts);
+        }
+
         if (!res.ok) {
             if (Globalping.isHttpStatus(429, res)) {
                 throw new Error(`Failed to create measurement: ${this.formatTooManyRequestsError(hasAPIToken)}`);
@@ -275,7 +285,14 @@ class GlobalpingMonitorType extends MonitorType {
 
         log.debug("monitor", `Globalping create measurement: ${JSON.stringify(opts)}`);
         let res = await client.createMeasurement(opts);
+
         log.debug("monitor", `Globalping ${JSON.stringify(res)}`);
+
+        // Retry if the server returns a 500 error
+        if (!res.ok && Globalping.isHttpStatus(500, res)) {
+            res = await client.createMeasurement(opts);
+        }
+
         if (!res.ok) {
             if (Globalping.isHttpStatus(429, res)) {
                 throw new Error(`Failed to create measurement: ${this.formatTooManyRequestsError(hasAPIToken)}`);
