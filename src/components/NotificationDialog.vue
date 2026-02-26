@@ -244,6 +244,7 @@ export default {
                 whapi: "WhatsApp (Whapi)",
                 evolution: "WhatsApp (Evolution)",
                 waha: "WhatsApp (WAHA)",
+                Whatsapp360messenger: "WhatsApp (360messenger)",
             };
 
             // Push Services - Push notification services
@@ -272,6 +273,7 @@ export default {
                 SevenIO: "SevenIO",
                 SMSEagle: "SMSEagle",
                 SMSPartner: "SMS Partner",
+                Teltonika: this.$t("Teltonika SMS Gateway"),
                 twilio: "Twilio",
             };
 

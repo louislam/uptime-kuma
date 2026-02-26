@@ -1,5 +1,13 @@
 const { parse: parseTld } = require("tldts");
-const rdapDnsData = require("../../server/model/rdap-dns.json");
+
+/*
+ * TODO:
+ *  This migration file is scary, because the json file is dynamically updated.
+ *  Problem 1: Migration files should ideally be stateless.
+ *  Problem 2: This migration only runs once, what happens if rdp-dns.json is updated after this migration has run?
+ *  Have to investigate later.
+ */
+const rdapDnsData = require("../../extra/rdap-dns.json");
 
 const TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD = {
     http: "url",
