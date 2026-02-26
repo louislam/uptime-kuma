@@ -536,7 +536,7 @@
                                         class="form-control"
                                         required
                                     />
-                                    <i18n-t keypath="GlobalpingLocation" tag="div" class="form-text">
+                                    <i18n-t keypath="GlobalpingLocationDescription" tag="div" class="form-text">
                                         <template #plus>
                                             <code>+</code>
                                         </template>
@@ -545,6 +545,9 @@
                                         </template>
                                         <template #comcastPlusCalifornia>
                                             <code>comcast+california</code>
+                                        </template>
+                                        <template #datacenter>
+                                            <code>+datacenter</code>
                                         </template>
                                         <template #fullDocs>
                                             <a
@@ -3700,6 +3703,14 @@ message HealthCheckResponse {
                 const pattern = /^\/[A-Za-z0-9-_&()*+]*$/;
                 if (!pattern.test(this.monitor.mqttWebsocketPath)) {
                     toast.error(this.$t("mqttWebsocketPathInvalid"));
+                    return false;
+                }
+            }
+
+            // Validate Globalping location if present
+            if (this.monitor.type === "globalping" && this.monitor.location) {
+                if (this.monitor.location.includes(",")) {
+                    toast.error(this.$t("GlobalpingMultipleLocationsError"));
                     return false;
                 }
             }
