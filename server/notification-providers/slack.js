@@ -47,8 +47,7 @@ class Slack extends NotificationProvider {
         }
 
         const address = this.extractAddress(monitorJSON);
-        if (
-          (address)) {
+        if (address) {
             try {
                 actions.push({
                     type: "button",

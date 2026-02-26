@@ -206,7 +206,7 @@ export function ucfirst(str: string) {
  * @returns {void}
  */
 export function debug(msg: unknown) {
-    log.log("", "debug", msg);
+    log.log("", "DEBUG", msg);
 }
 
 class Logger {
@@ -254,7 +254,7 @@ class Logger {
      * @param msg Message to write
      * @returns {void}
      */
-    log(module: string, level: "INFO"|"WARN"|"ERROR"|"DEBUG", ...msg: unknown[]) {
+    log(module: string, level: "INFO" | "WARN" | "ERROR" | "DEBUG", ...msg: unknown[]) {
         if (level === "DEBUG" && !isDev) {
             return;
         }
@@ -273,12 +273,14 @@ class Logger {
         }
 
         if (process.env.UPTIME_KUMA_LOG_FORMAT === "json") {
-            console.log(JSON.stringify({
-                time: now,
-                module: module,
-                level: level,
-                msg: typeof msg === "string" ? msg : JSON.stringify(msg),
-            }));
+            console.log(
+                JSON.stringify({
+                    time: now,
+                    module: module,
+                    level: level,
+                    msg: typeof msg === "string" ? msg : JSON.stringify(msg),
+                })
+            );
             return;
         }
 
