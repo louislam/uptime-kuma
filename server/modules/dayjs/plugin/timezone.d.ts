@@ -1,20 +1,20 @@
-import { PluginFunc, ConfigType } from 'dayjs'
+import { PluginFunc, ConfigType } from "dayjs";
 
-declare const plugin: PluginFunc
-export = plugin
+declare const plugin: PluginFunc;
+export = plugin;
 
-declare module 'dayjs' {
-  interface Dayjs {
-    tz(timezone?: string, keepLocalTime?: boolean): Dayjs
-    offsetName(type?: 'short' | 'long'): string | undefined
-  }
+declare module "dayjs" {
+    interface Dayjs {
+        tz(timezone?: string, keepLocalTime?: boolean): Dayjs;
+        offsetName(type?: "short" | "long"): string | undefined;
+    }
 
-  interface DayjsTimezone {
-    (date: ConfigType, timezone?: string): Dayjs
-    (date: ConfigType, format: string, timezone?: string): Dayjs
-    guess(): string
-    setDefault(timezone?: string): void
-  }
+    interface DayjsTimezone {
+        (date: ConfigType, timezone?: string): Dayjs;
+        (date: ConfigType, format: string, timezone?: string): Dayjs;
+        guess(): string;
+        setDefault(timezone?: string): void;
+    }
 
-  const tz: DayjsTimezone
+    const tz: DayjsTimezone;
 }

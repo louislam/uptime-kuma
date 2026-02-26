@@ -28,7 +28,6 @@ module.exports.proxySocketHandler = (socket) => {
                 msgi18n: true,
                 id: proxyBean.id,
             });
-
         } catch (e) {
             callback({
                 ok: false,
@@ -50,7 +49,6 @@ module.exports.proxySocketHandler = (socket) => {
                 msg: "successDeleted",
                 msgi18n: true,
             });
-
         } catch (e) {
             callback({
                 ok: false,

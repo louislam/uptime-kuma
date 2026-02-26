@@ -40,10 +40,12 @@ class SevenIO extends NotificationProvider {
 
             // If heartbeatJSON is not null, we go into the normal alerting loop.
             if (heartbeatJSON["status"] === DOWN) {
-                data.text = `Your service ${monitorJSON["name"]} ${address}went down at ${heartbeatJSON["localDateTime"]} ` +
+                data.text =
+                    `Your service ${monitorJSON["name"]} ${address}went down at ${heartbeatJSON["localDateTime"]} ` +
                     `(${heartbeatJSON["timezone"]}). Error: ${heartbeatJSON["msg"]}`;
             } else if (heartbeatJSON["status"] === UP) {
-                data.text = `Your service ${monitorJSON["name"]} ${address}went back up at ${heartbeatJSON["localDateTime"]} ` +
+                data.text =
+                    `Your service ${monitorJSON["name"]} ${address}went back up at ${heartbeatJSON["localDateTime"]} ` +
                     `(${heartbeatJSON["timezone"]}).`;
             }
             await axios.post("sms", data, config);
@@ -52,7 +54,6 @@ class SevenIO extends NotificationProvider {
             this.throwGeneralAxiosError(error);
         }
     }
-
 }
 
 module.exports = SevenIO;

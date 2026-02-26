@@ -24,10 +24,10 @@ class PushPlus extends NotificationProvider {
             };
             config = this.getAxiosConfigWithProxy(config);
             const params = {
-                "token": notification.pushPlusSendKey,
-                "title": this.checkStatus(heartbeatJSON, monitorJSON),
-                "content": msg,
-                "template": "html"
+                token: notification.pushPlusSendKey,
+                title: this.checkStatus(heartbeatJSON, monitorJSON),
+                content: msg,
+                template: "html",
             };
             await axios.post(url, params, config);
             return okMsg;

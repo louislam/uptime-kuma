@@ -16,7 +16,7 @@ class Bale extends NotificationProvider {
                 `${url}/bot${notification.baleBotToken}/sendMessage`,
                 {
                     chat_id: notification.baleChatID,
-                    text: msg
+                    text: msg,
                 },
                 {
                     headers: {

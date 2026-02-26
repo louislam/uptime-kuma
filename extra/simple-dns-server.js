@@ -7,7 +7,7 @@ const dns2 = require("dns2");
 const { Packet } = dns2;
 
 const server = dns2.createServer({
-    udp: true
+    udp: true,
 });
 
 server.on("request", (request, send, rinfo) => {
@@ -17,14 +17,13 @@ server.on("request", (request, send, rinfo) => {
         const response = Packet.createResponseFromRequest(request);
 
         if (question.name === "existing.com") {
-
             if (question.type === Packet.TYPE.A) {
                 response.answers.push({
                     name: question.name,
                     type: question.type,
                     class: question.class,
                     ttl: 300,
-                    address: "1.2.3.4"
+                    address: "1.2.3.4",
                 });
             } else if (question.type === Packet.TYPE.AAAA) {
                 response.answers.push({
@@ -49,7 +48,7 @@ server.on("request", (request, send, rinfo) => {
                     class: question.class,
                     ttl: 300,
                     exchange: "mx1.existing.com",
-                    priority: 5
+                    priority: 5,
                 });
             } else if (question.type === Packet.TYPE.NS) {
                 response.answers.push({
@@ -103,7 +102,6 @@ server.on("request", (request, send, rinfo) => {
                     value: "ca.existing.com",
                 });
             }
-
         }
 
         if (question.name === "4.3.2.1.in-addr.arpa") {
@@ -132,7 +130,7 @@ server.on("close", () => {
 });
 
 server.listen({
-    udp: 5300
+    udp: 5300,
 });
 
 /**

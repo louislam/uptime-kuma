@@ -1,0 +1,93 @@
+name: Beta Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Beta version number (e.g., 2.1.0-beta.2)"
+        required: true
+        type: string
+      previous_version:
+        description: "Previous version tag for changelog (e.g., 2.1.0-beta.1)"
+        required: true
+        type: string
+      dry_run:
+        description: "Dry Run (The docker image will not be pushed to registries. PR will still be created.)"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  beta-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          ref: master
+          persist-credentials: true
+          fetch-depth: 0 # Fetch all history for changelog generation
+
+      - name: Set up Node.js
+        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        with:
+          node-version: 24
+
+      - name: Create release branch
+        env:
+          VERSION: ${{ inputs.version }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git"
+          # Delete remote branch if it exists
+          git push origin --delete "release-${VERSION}" || true
+          # Delete local branch if it exists
+          git branch -D "release-${VERSION}" || true
+          # For testing purpose
+          # git checkout beta-workflow
+          git checkout -b "release-${VERSION}"
+
+      - name: Install dependencies
+        run: npm clean-install --no-fund
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@988b5a0280414f521da01fcc63a27aeeb4b104db # v3.6.1
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3.7.0
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.GHCR_USERNAME }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Run release-beta
+        env:
+          RELEASE_BETA_VERSION: ${{ inputs.version }}
+          RELEASE_PREVIOUS_VERSION: ${{ inputs.previous_version }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+        run: npm run release-beta
+
+      - name: Upload dist.tar.gz as artifact
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        with:
+          name: dist-${{ inputs.version }}
+          path: ./tmp/dist.tar.gz
+          retention-days: 90

@@ -77,16 +77,9 @@ class Mattermost extends NotificationProvider {
                 icon_url: mattermostIconUrl,
                 attachments: [
                     {
-                        fallback:
-                            "Your " +
-                            monitorJSON.pathName +
-                            " service went " +
-                            statusText,
+                        fallback: "Your " + monitorJSON.pathName + " service went " + statusText,
                         color: color,
-                        title:
-                            monitorJSON.pathName +
-                            " service went " +
-                            statusText,
+                        title: monitorJSON.pathName + " service went " + statusText,
                         title_link: monitorJSON.url,
                         fields: [
                             statusField,
@@ -104,7 +97,6 @@ class Mattermost extends NotificationProvider {
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }
-
     }
 }
 

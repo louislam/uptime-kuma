@@ -29,7 +29,7 @@ class Stackfield extends NotificationProvider {
             }
 
             const data = {
-                "Title": textMsg,
+                Title: textMsg,
             };
             let config = this.getAxiosConfigWithProxy({});
 
@@ -38,7 +38,6 @@ class Stackfield extends NotificationProvider {
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }
-
     }
 }
 

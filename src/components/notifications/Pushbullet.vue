@@ -1,10 +1,15 @@
 <template>
     <div class="mb-3">
         <label for="pushbullet-access-token" class="form-label">{{ $t("Access Token") }}</label>
-        <HiddenInput id="pushbullet-access-token" v-model="$parent.notification.pushbulletAccessToken" :required="true" autocomplete="new-password"></HiddenInput>
+        <HiddenInput
+            id="pushbullet-access-token"
+            v-model="$parent.notification.pushbulletAccessToken"
+            :required="true"
+            autocomplete="new-password"
+        ></HiddenInput>
     </div>
 
-    <i18n-t tag="p" keypath="More info on:" style="margin-top: 8px;">
+    <i18n-t tag="p" keypath="More info on:" style="margin-top: 8px">
         <a href="https://docs.pushbullet.com" target="_blank">https://docs.pushbullet.com</a>
     </i18n-t>
 </template>

@@ -31,7 +31,7 @@ exports.verify = function (password, hash) {
  * @returns {boolean} Is SHA1 hash?
  */
 function isSHA1(hash) {
-    return (typeof hash === "string" && hash.startsWith("sha1"));
+    return typeof hash === "string" && hash.startsWith("sha1");
 }
 
 /**

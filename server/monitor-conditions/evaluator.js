@@ -13,7 +13,13 @@ function evaluateExpression(expression, context) {
      */
     const operator = operatorMap.get(expression.operator) || null;
     if (operator === null) {
-        throw new Error("Unexpected expression operator ID '" + expression.operator + "'. Expected one of [" + operatorMap.keys().join(",") + "]");
+        throw new Error(
+            "Unexpected expression operator ID '" +
+                expression.operator +
+                "'. Expected one of [" +
+                operatorMap.keys().join(",") +
+                "]"
+        );
     }
 
     if (!Object.prototype.hasOwnProperty.call(context, expression.variable)) {
@@ -44,7 +50,9 @@ function evaluateExpressionGroup(group, context) {
         } else if (child instanceof ConditionExpressionGroup) {
             childResult = evaluateExpressionGroup(child, context);
         } else {
-            throw new Error("Invalid child type in ConditionExpressionGroup. Expected ConditionExpression or ConditionExpressionGroup");
+            throw new Error(
+                "Invalid child type in ConditionExpressionGroup. Expected ConditionExpression or ConditionExpressionGroup"
+            );
         }
 
         if (result === null) {
@@ -54,7 +62,11 @@ function evaluateExpressionGroup(group, context) {
         } else if (child.andOr === LOGICAL.AND) {
             result = result && childResult;
         } else {
-            throw new Error("Invalid logical operator in child of ConditionExpressionGroup. Expected 'and' or 'or'. Got '" + group.andOr + "'");
+            throw new Error(
+                "Invalid logical operator in child of ConditionExpressionGroup. Expected 'and' or 'or'. Got '" +
+                    group.andOr +
+                    "'"
+            );
         }
     }
 

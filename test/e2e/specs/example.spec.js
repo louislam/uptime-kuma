@@ -2,7 +2,6 @@ import { expect, test } from "@playwright/test";
 import { login, restoreSqliteSnapshot, screenshot } from "../util-test";
 
 test.describe("Example Spec", () => {
-
     test.beforeEach(async ({ page }) => {
         await restoreSqliteSnapshot(page);
     });
@@ -35,5 +34,4 @@ test.describe("Example Spec", () => {
         await expect(page.getByTestId("monitor-list")).not.toContainText("example.com");
         await screenshot(testInfo, page);
     });
-
 });

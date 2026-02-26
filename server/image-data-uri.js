@@ -6,7 +6,6 @@ let fs = require("fs");
 const { log } = require("../src/util");
 
 let ImageDataURI = (() => {
-
     /**
      * Decode the data:image/ URI
      * @param {string} dataURI data:image/ URI to decode
@@ -17,7 +16,7 @@ let ImageDataURI = (() => {
      */
     function decode(dataURI) {
         if (!/data:image\//.test(dataURI)) {
-            log.error("image-data-uri", "It seems that it is not an Image Data URI. Couldn't match \"data:image/\"");
+            log.error("image-data-uri", 'It seems that it is not an Image Data URI. Couldn\'t match "data:image/"');
             return null;
         }
 
@@ -25,7 +24,7 @@ let ImageDataURI = (() => {
         return {
             imageType: regExMatches[1],
             dataBase64: regExMatches[2],
-            dataBuffer: new Buffer(regExMatches[2], "base64")
+            dataBuffer: new Buffer(regExMatches[2], "base64"),
         };
     }
 
@@ -42,8 +41,8 @@ let ImageDataURI = (() => {
             return null;
         }
 
-        mediaType = (/\//.test(mediaType)) ? mediaType : "image/" + mediaType;
-        let dataBase64 = (Buffer.isBuffer(data)) ? data.toString("base64") : new Buffer(data).toString("base64");
+        mediaType = /\//.test(mediaType) ? mediaType : "image/" + mediaType;
+        let dataBase64 = Buffer.isBuffer(data) ? data.toString("base64") : new Buffer(data).toString("base64");
         let dataImgBase64 = "data:" + mediaType + ";base64," + dataBase64;
 
         return dataImgBase64;
@@ -60,7 +59,7 @@ let ImageDataURI = (() => {
         return new Promise((resolve, reject) => {
             let imageDecoded = decode(dataURI);
 
-            fs.writeFile(filePath, imageDecoded.dataBuffer, err => {
+            fs.writeFile(filePath, imageDecoded.dataBuffer, (err) => {
                 if (err) {
                     return reject("ImageDataURI :: Error :: " + JSON.stringify(err, null, 4));
                 }

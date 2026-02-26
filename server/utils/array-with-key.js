@@ -81,5 +81,5 @@ class ArrayWithKey {
 }
 
 module.exports = {
-    ArrayWithKey
+    ArrayWithKey,
 };

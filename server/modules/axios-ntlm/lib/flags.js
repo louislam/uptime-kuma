@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 // Original file https://raw.githubusercontent.com/elasticio/node-ntlm-client/master/lib/flags.js
 module.exports.NTLMFLAG_NEGOTIATE_UNICODE = 1 << 0;
 /* Indicates that Unicode strings are supported for use in security buffer

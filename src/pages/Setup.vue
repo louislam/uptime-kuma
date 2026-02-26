@@ -4,9 +4,7 @@
             <form @submit.prevent="submit">
                 <div>
                     <object width="64" height="64" data="/icon.svg" />
-                    <div style="font-size: 28px; font-weight: bold; margin-top: 5px;">
-                        Uptime Kuma
-                    </div>
+                    <div style="font-size: 28px; font-weight: bold; margin-top: 5px">Uptime Kuma</div>
                 </div>
 
                 <p class="mt-3">
@@ -23,21 +21,50 @@
                 </div>
 
                 <div class="form-floating mt-3">
-                    <input id="floatingInput" v-model="username" type="text" class="form-control" :placeholder="$t('Username')" required data-cy="username-input">
+                    <input
+                        id="floatingInput"
+                        v-model="username"
+                        type="text"
+                        class="form-control"
+                        :placeholder="$t('Username')"
+                        required
+                        data-cy="username-input"
+                    />
                     <label for="floatingInput">{{ $t("Username") }}</label>
                 </div>
 
                 <div class="form-floating mt-3">
-                    <input id="floatingPassword" v-model="password" type="password" class="form-control" :placeholder="$t('Password')" required data-cy="password-input">
+                    <input
+                        id="floatingPassword"
+                        v-model="password"
+                        type="password"
+                        class="form-control"
+                        :placeholder="$t('Password')"
+                        required
+                        data-cy="password-input"
+                    />
                     <label for="floatingPassword">{{ $t("Password") }}</label>
                 </div>
 
                 <div class="form-floating mt-3">
-                    <input id="repeat" v-model="repeatPassword" type="password" class="form-control" :placeholder="$t('Repeat Password')" required data-cy="password-repeat-input">
+                    <input
+                        id="repeat"
+                        v-model="repeatPassword"
+                        type="password"
+                        class="form-control"
+                        :placeholder="$t('Repeat Password')"
+                        required
+                        data-cy="password-repeat-input"
+                    />
                     <label for="repeat">{{ $t("Repeat Password") }}</label>
                 </div>
 
-                <button class="w-100 btn btn-primary mt-3" type="submit" :disabled="processing" data-cy="submit-setup-form">
+                <button
+                    class="w-100 btn btn-primary mt-3"
+                    type="submit"
+                    :disabled="processing"
+                    data-cy="submit-setup-form"
+                >
                     {{ $t("Create") }}
                 </button>
             </form>
@@ -55,14 +82,12 @@ export default {
             repeatPassword: "",
         };
     },
-    watch: {
-
-    },
+    watch: {},
     mounted() {
         // TODO: Check if it is a database setup
 
         this.$root.getSocket().emit("needSetup", (needSetup) => {
-            if (! needSetup) {
+            if (!needSetup) {
                 this.$router.push("/");
             }
         });
@@ -128,7 +153,6 @@ export default {
 }
 
 .form {
-
     width: 100%;
     max-width: 330px;
     padding: 15px;

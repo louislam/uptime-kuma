@@ -51,5 +51,5 @@ export default {
                 return location.protocol + "//" + location.host;
             }
         },
-    }
+    },
 };

@@ -15,22 +15,24 @@ class SMSIR extends NotificationProvider {
             let config = {
                 headers: {
                     "Content-Type": "application/json",
-                    "Accept": "application/json",
-                    "X-API-Key": notification.smsirApiKey
-                }
+                    Accept: "application/json",
+                    "X-API-Key": notification.smsirApiKey,
+                },
             };
             config = this.getAxiosConfigWithProxy(config);
 
-            const formattedMobiles = notification.smsirNumber
-                .split(",")
-                .map(mobile => {
-                    if (mobile.length === 11 && mobile.startsWith("09") && String(parseInt(mobile)) === mobile.substring(1)) {
-                        // 09xxxxxxxxx Format
-                        return mobile.substring(1);
-                    }
+            const formattedMobiles = notification.smsirNumber.split(",").map((mobile) => {
+                if (
+                    mobile.length === 11 &&
+                    mobile.startsWith("09") &&
+                    String(parseInt(mobile)) === mobile.substring(1)
+                ) {
+                    // 09xxxxxxxxx Format
+                    return mobile.substring(1);
+                }
 
-                    return mobile;
-                });
+                return mobile;
+            });
 
             const MAX_MESSAGE_LENGTH = 20; // This is a limitation placed by SMSIR
             // Shorten By removing spaces, keeping context is better than cutting off the text
@@ -44,23 +46,22 @@ class SMSIR extends NotificationProvider {
             }
 
             // Run multiple network requests at once
-            const requestPromises = formattedMobiles
-                .map(mobile => {
-                    axios.post(
-                        url,
-                        {
-                            mobile: mobile,
-                            templateId: parseInt(notification.smsirTemplate),
-                            parameters: [
-                                {
-                                    name: "uptkumaalert",
-                                    value: msg
-                                }
-                            ]
-                        },
-                        config
-                    );
-                });
+            const requestPromises = formattedMobiles.map((mobile) => {
+                axios.post(
+                    url,
+                    {
+                        mobile: mobile,
+                        templateId: parseInt(notification.smsirTemplate),
+                        parameters: [
+                            {
+                                name: "uptkumaalert",
+                                value: msg,
+                            },
+                        ],
+                    },
+                    config
+                );
+            });
 
             await Promise.all(requestPromises);
 

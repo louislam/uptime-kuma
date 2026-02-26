@@ -17,8 +17,8 @@ class LunaSea extends NotificationProvider {
             const target = this.getTarget(notification);
             if (heartbeatJSON == null) {
                 let testdata = {
-                    "title": "Uptime Kuma Alert",
-                    "body": msg,
+                    title: "Uptime Kuma Alert",
+                    body: msg,
                 };
                 await axios.post(`${url}/custom/${target}`, testdata, config);
                 return okMsg;
@@ -26,10 +26,11 @@ class LunaSea extends NotificationProvider {
 
             if (heartbeatJSON["status"] === DOWN) {
                 let downdata = {
-                    "title": "UptimeKuma Alert: " + monitorJSON["name"],
-                    "body": "[🔴 Down] " +
+                    title: "UptimeKuma Alert: " + monitorJSON["name"],
+                    body:
+                        "[🔴 Down] " +
                         heartbeatJSON["msg"] +
-                        `\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`
+                        `\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`,
                 };
                 await axios.post(`${url}/custom/${target}`, downdata, config);
                 return okMsg;
@@ -37,15 +38,15 @@ class LunaSea extends NotificationProvider {
 
             if (heartbeatJSON["status"] === UP) {
                 let updata = {
-                    "title": "UptimeKuma Alert: " + monitorJSON["name"],
-                    "body": "[✅ Up] " +
+                    title: "UptimeKuma Alert: " + monitorJSON["name"],
+                    body:
+                        "[✅ Up] " +
                         heartbeatJSON["msg"] +
-                        `\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`
+                        `\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`,
                 };
                 await axios.post(`${url}/custom/${target}`, updata, config);
                 return okMsg;
             }
-
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }
@@ -61,7 +62,6 @@ class LunaSea extends NotificationProvider {
             return "user/" + notification.lunaseaUserID;
         }
         return "device/" + notification.lunaseaDevice;
-
     }
 }
 

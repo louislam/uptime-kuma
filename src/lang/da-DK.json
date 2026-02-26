@@ -813,5 +813,12 @@
     "telegramServerUrl": "(Valgfrit) Server URL",
     "Clear All Events": "Ryd alle begivenheder",
     "clearAllEventsMsg": "Er du sikker på du vil slette alle begivenheder?",
-    "Remove domain": "Fjern domæne '{0}'"
+    "Remove domain": "Fjern domæne '{0}'",
+    "tagNameExists": "Et system tag med dette navn eksisterer allerede. Vælg det fra listen eller brug et andet navn.",
+    "year": "år",
+    "mariadbCaCertificateHelptext": "Indsæt CA certifikat i PEM format for at bruge et self-signed certifikat. Efterlad blank hvis din database bruger et certifikat signeret af en offentlig CA.",
+    "versionIs": "Version: {version}",
+    "enableSSL": "Slå SSL/TLS til",
+    "mariadbUseSSLHelptext": "Slå krypteret forbindelse til mod databasen. Påkrævet for de fleste cloud databaser.",
+    "mariadbCaCertificateLabel": "CA certifikat"
 }

@@ -5,7 +5,6 @@ const { ArrayWithKey } = require("./array-with-key");
  * The first element will be removed when the length exceeds the limit
  */
 class LimitQueue extends ArrayWithKey {
-
     /**
      * The limit of the queue after which the first element will be removed
      * @private
@@ -40,9 +39,8 @@ class LimitQueue extends ArrayWithKey {
             }
         }
     }
-
 }
 
 module.exports = {
-    LimitQueue
+    LimitQueue,
 };

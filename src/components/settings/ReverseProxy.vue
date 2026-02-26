@@ -15,10 +15,6 @@
                 <span v-else-if="!running" class="text-danger">{{ $t("Not running") }}</span>
             </div>
 
-            <div v-if="false">
-                {{ message }}
-            </div>
-
             <div v-if="errorMessage" class="mt-3">
                 {{ $t("Message:") }}
                 <textarea v-model="errorMessage" class="form-control" readonly></textarea>
@@ -28,16 +24,16 @@
                 <a
                     href="https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/installation/"
                     target="_blank"
-                >{{ $t("cloudflareWebsite") }}</a>
+                >
+                    {{ $t("cloudflareWebsite") }}
+                </a>
             </i18n-t>
         </div>
 
         <!-- If installed show token input -->
         <div v-if="installed" class="mb-2">
             <div class="mb-4">
-                <label class="form-label" for="cloudflareTunnelToken">
-                    Cloudflare Tunnel {{ $t("Token") }}
-                </label>
+                <label class="form-label" for="cloudflareTunnelToken">Cloudflare Tunnel {{ $t("Token") }}</label>
                 <HiddenInput
                     id="cloudflareTunnelToken"
                     v-model="cloudflareTunnelToken"
@@ -49,8 +45,12 @@
                         <span v-if="!running" class="remove-token" @click="removeToken">{{ $t("Remove Token") }}</span>
                     </div>
 
-                    {{ $t("Don't know how to get the token? Please read the guide:") }}<br />
-                    <a href="https://github.com/louislam/uptime-kuma/wiki/Reverse-Proxy-with-Cloudflare-Tunnel" target="_blank">
+                    {{ $t("Don't know how to get the token? Please read the guide:") }}
+                    <br />
+                    <a
+                        href="https://github.com/louislam/uptime-kuma/wiki/Reverse-Proxy-with-Cloudflare-Tunnel"
+                        target="_blank"
+                    >
                         https://github.com/louislam/uptime-kuma/wiki/Reverse-Proxy-with-Cloudflare-Tunnel
                     </a>
                 </div>
@@ -61,12 +61,22 @@
                     {{ $t("Start") }} cloudflared
                 </button>
 
-                <button v-if="running" class="btn btn-danger" type="submit" @click="$refs.confirmStop.show();">
+                <button v-if="running" class="btn btn-danger" type="submit" @click="$refs.confirmStop.show()">
                     {{ $t("Stop") }} cloudflared
                 </button>
 
-                <Confirm ref="confirmStop" btn-style="btn-danger" :yes-text="$t('Stop') + ' cloudflared'" :no-text="$t('Cancel')" @yes="stop">
-                    {{ $t("The current connection may be lost if you are currently connecting via Cloudflare Tunnel. Are you sure want to stop it? Type your current password to confirm it.") }}
+                <Confirm
+                    ref="confirmStop"
+                    btn-style="btn-danger"
+                    :yes-text="$t('Stop') + ' cloudflared'"
+                    :no-text="$t('Cancel')"
+                    @yes="stop"
+                >
+                    {{
+                        $t(
+                            "The current connection may be lost if you are currently connecting via Cloudflare Tunnel. Are you sure want to stop it? Type your current password to confirm it."
+                        )
+                    }}
 
                     <p class="mt-2">{{ $t("disableCloudflaredNoAuthMsg") }}</p>
 
@@ -88,8 +98,13 @@
 
         <h4 class="mt-4">{{ $t("Other Software") }}</h4>
         <div>
-            {{ $t("For example: nginx, Apache and Traefik.") }} <br />
-            {{ $t("Please read") }} <a href="https://github.com/louislam/uptime-kuma/wiki/Reverse-Proxy" target="_blank">https://github.com/louislam/uptime-kuma/wiki/Reverse-Proxy</a>.
+            {{ $t("For example: nginx, Apache and Traefik.") }}
+            <br />
+            {{ $t("Please read") }}
+            <a href="https://github.com/louislam/uptime-kuma/wiki/Reverse-Proxy" target="_blank">
+                https://github.com/louislam/uptime-kuma/wiki/Reverse-Proxy
+            </a>
+            .
         </div>
 
         <h4 class="my-4">{{ $t("HTTP Headers") }}</h4>
@@ -148,7 +163,7 @@ const prefix = "cloudflared_";
 export default {
     components: {
         HiddenInput,
-        Confirm
+        Confirm,
     },
     data() {
         // See /src/mixins/socket.js
@@ -165,9 +180,7 @@ export default {
             return this.$parent.$parent.$parent.settingsLoaded;
         },
     },
-    watch: {
-
-    },
+    watch: {},
     created() {
         this.$root.getSocket().emit(prefix + "join");
     },
@@ -198,8 +211,8 @@ export default {
         removeToken() {
             this.$root.getSocket().emit(prefix + "removeToken");
             this.cloudflareTunnelToken = "";
-        }
-    }
+        },
+    },
 };
 </script>
 

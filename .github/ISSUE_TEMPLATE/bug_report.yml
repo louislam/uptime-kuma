@@ -10,8 +10,6 @@ body:
       value: |
         🚫 **We kindly ask you to refrain from pinging maintainers unless absolutely necessary. Pings are reserved for critical/urgent issues that require immediate attention.**
 
-        **Why**: Reserving pings for urgent matters ensures maintainers can prioritize critical tasks effectively
-
   - type: textarea
     id: related-issues
     validations:

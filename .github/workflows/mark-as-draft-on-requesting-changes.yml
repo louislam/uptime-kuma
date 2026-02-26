@@ -1,0 +1,65 @@
+name: Mark PR as draft when changes are requested
+
+# pull_request_target is safe here because:
+# 1. Does not use any external actions; only uses the GitHub CLI via run commands
+# 2. Has minimal permissions
+# 3. Doesn't checkout or execute any untrusted code from PRs
+# 4. Only adds/removes labels or changes the draft status
+on: # zizmor: ignore[dangerous-triggers]
+  pull_request_target:
+    types:
+      - review_submitted
+      - labeled
+      - ready_for_review
+
+permissions: {}
+
+jobs:
+  mark-draft:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    if: |
+      (
+        github.event.action == 'review_submitted' &&
+        github.event.review.state == 'changes_requested'
+      ) || (
+        github.event.action == 'labeled' &&
+        github.event.label.name == 'pr:please address review comments'
+      )
+    steps:
+      - name: Add label on requested changes
+        if: github.event.review.state == 'changes_requested'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue edit "${{ github.event.pull_request.number }}" \
+            --repo "${{ github.repository }}" \
+            --add-label "pr:please address review comments"
+
+      - name: Mark PR as draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr ready "${{ github.event.pull_request.number }}" \
+            --repo "${{ github.repository }}" \
+            --undo || true
+          # || true to ignore the case where the pr is already a draft
+
+  ready-for-review:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    if: github.event.action == 'ready_for_review'
+    steps:
+      - name: Update labels for review
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue edit "${{ github.event.pull_request.number }}" \
+            --repo "${{ github.repository }}" \
+            --remove-label "pr:please address review comments" || true
+
+          gh issue edit "${{ github.event.pull_request.number }}" \
+            --repo "${{ github.repository }}" \
+            --add-label "pr:needs review"

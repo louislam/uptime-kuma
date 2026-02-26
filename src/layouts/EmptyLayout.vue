@@ -5,4 +5,3 @@
 <script>
 export default {};
 </script>
-

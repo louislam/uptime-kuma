@@ -11,10 +11,10 @@
             :required="required"
             :readonly="readonly"
             :disabled="disabled"
-        >
+        />
 
         <!-- A hidden textarea for copying text on non-https -->
-        <textarea ref="hiddenTextarea" style="position: fixed; left: -999999px; top: -999999px;"></textarea>
+        <textarea ref="hiddenTextarea" style="position: fixed; left: -999999px; top: -999999px"></textarea>
 
         <a class="btn btn-outline-primary" @click="copyToClipboard(model)">
             <font-awesome-icon :icon="icon" />
@@ -23,7 +23,6 @@
 </template>
 
 <script>
-
 let timeout;
 
 export default {
@@ -31,22 +30,22 @@ export default {
         /** ID of this input */
         id: {
             type: String,
-            default: ""
+            default: "",
         },
         /** Type of input */
         type: {
             type: String,
-            default: "text"
+            default: "text",
         },
         /** The value of the input */
         modelValue: {
             type: String,
-            default: ""
+            default: "",
         },
         /** A placeholder to use */
         placeholder: {
             type: String,
-            default: ""
+            default: "",
         },
         /** Should the field auto complete */
         autocomplete: {
@@ -55,7 +54,7 @@ export default {
         },
         /** Is the input required? */
         required: {
-            type: Boolean
+            type: Boolean,
         },
         /** Should the input be read only? */
         readonly: {
@@ -68,7 +67,7 @@ export default {
             default: undefined,
         },
     },
-    emits: [ "update:modelValue" ],
+    emits: ["update:modelValue"],
     data() {
         return {
             visibility: "password",
@@ -82,14 +81,11 @@ export default {
             },
             set(value) {
                 this.$emit("update:modelValue", value);
-            }
-        }
+            },
+        },
     },
-    created() {
-
-    },
+    created() {},
     methods: {
-
         /**
          * Show the input
          * @returns {void}
@@ -135,8 +131,7 @@ export default {
                     document.execCommand("copy") ? res() : rej();
                 });
             }
-        }
-
-    }
+        },
+    },
 };
 </script>

@@ -21,4 +21,3 @@ const main = async () => {
 };
 
 main();
-

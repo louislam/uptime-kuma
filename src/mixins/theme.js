@@ -1,8 +1,7 @@
 export default {
-
     data() {
         return {
-            system: (window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light",
+            system: window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
             userTheme: localStorage.theme,
             userHeartbeatBar: localStorage.heartbeatBarTheme,
             styleElapsedTime: localStorage.styleElapsedTime,
@@ -14,7 +13,7 @@ export default {
 
     mounted() {
         // Default Light
-        if (! this.userTheme) {
+        if (!this.userTheme) {
             this.userTheme = "auto";
         }
 
@@ -62,7 +61,7 @@ export default {
 
         isDark() {
             return this.theme === "dark";
-        }
+        },
     },
 
     watch: {
@@ -91,7 +90,7 @@ export default {
         heartbeatBarTheme(to, from) {
             document.body.classList.remove(from);
             document.body.classList.add(this.heartbeatBarTheme);
-        }
+        },
     },
 
     methods: {
@@ -105,7 +104,6 @@ export default {
             } else {
                 document.querySelector("#theme-color").setAttribute("content", "#5cdd8b");
             }
-        }
-    }
+        },
+    },
 };
-

@@ -2,11 +2,7 @@
     <div>
         <div class="my-4">
             <label for="keepDataPeriodDays" class="form-label">
-                {{
-                    $t("clearDataOlderThan", [
-                        settings.keepDataPeriodDays,
-                    ])
-                }}
+                {{ $t("clearDataOlderThan", [settings.keepDataPeriodDays]) }}
                 {{ $t("infiniteRetention") }}
             </label>
             <input
@@ -41,11 +37,7 @@
                     </template>
                 </i18n-t>
             </div>
-            <button
-                id="clearAllStats-btn"
-                class="btn btn-outline-danger me-2 mb-2"
-                @click="confirmClearStatistics"
-            >
+            <button id="clearAllStats-btn" class="btn btn-outline-danger me-2 mb-2" @click="confirmClearStatistics">
                 {{ $t("Clear all statistics") }}
             </button>
         </div>
@@ -87,9 +79,7 @@ export default {
             return this.$parent.$parent.$parent.settingsLoaded;
         },
         databaseSizeDisplay() {
-            return (
-                Math.round((this.databaseSize / 1024 / 1024) * 10) / 10 + " MB"
-            );
+            return Math.round((this.databaseSize / 1024 / 1024) * 10) / 10 + " MB";
         },
     },
 

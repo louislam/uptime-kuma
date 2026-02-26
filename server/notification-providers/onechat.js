@@ -33,8 +33,7 @@ class OneChat extends NotificationProvider {
                     to: notification.recieverId,
                     bot_id: notification.botId,
                     type: "text",
-                    message:
-                        `UptimeKuma Alert:
+                    message: `UptimeKuma Alert:
 [🔴 Down]
 Name: ${monitorJSON["name"]}
 ${heartbeatJSON["msg"]}
@@ -46,8 +45,7 @@ Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`,
                     to: notification.recieverId,
                     bot_id: notification.botId,
                     type: "text",
-                    message:
-                        `UptimeKuma Alert:
+                    message: `UptimeKuma Alert:
 [🟢 Up]
 Name: ${monitorJSON["name"]}
 ${heartbeatJSON["msg"]}
@@ -60,9 +58,7 @@ Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`,
         } catch (error) {
             // Handle errors and throw a descriptive message
             if (error.response) {
-                const errorMessage =
-                    error.response.data?.message ||
-                    "Unknown API error occurred.";
+                const errorMessage = error.response.data?.message || "Unknown API error occurred.";
                 throw new Error(`OneChat API Error: ${errorMessage}`);
             } else {
                 this.throwGeneralAxiosError(error);

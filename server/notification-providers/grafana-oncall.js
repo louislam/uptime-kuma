@@ -45,7 +45,6 @@ class GrafanaOncall extends NotificationProvider {
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }
-
     }
 }
 

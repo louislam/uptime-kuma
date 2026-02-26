@@ -35,10 +35,10 @@ class AlertNow extends NotificationProvider {
             }
 
             const data = {
-                "summary": textMsg,
-                "status": status,
-                "event_type": eventType,
-                "event_id": eventId,
+                summary: textMsg,
+                status: status,
+                event_type: eventType,
+                event_id: eventId,
             };
 
             let config = this.getAxiosConfigWithProxy({});
@@ -48,7 +48,6 @@ class AlertNow extends NotificationProvider {
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }
-
     }
 }
 

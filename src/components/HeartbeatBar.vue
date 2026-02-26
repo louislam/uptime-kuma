@@ -19,7 +19,8 @@
         </div>
         <div
             v-if="!$root.isMobile && size !== 'small' && beatList.length > 4 && $root.styleElapsedTime !== 'none'"
-            class="d-flex justify-content-between align-items-center word" :style="timeStyle"
+            class="d-flex justify-content-between align-items-center word"
+            :style="timeStyle"
         >
             <div>{{ timeSinceFirstBeat }}</div>
             <div v-if="$root.styleElapsedTime === 'with-line'" class="connecting-line"></div>
@@ -65,8 +66,8 @@ export default {
         /** Heartbeat bar days */
         heartbeatBarDays: {
             type: Number,
-            default: 0
-        }
+            default: 0,
+        },
     },
     data() {
         return {
@@ -88,7 +89,6 @@ export default {
         };
     },
     computed: {
-
         /**
          * Normalized heartbeatBarDays as a number
          * @returns {number} Number of days for heartbeat bar
@@ -173,8 +173,8 @@ export default {
         },
 
         wrapStyle() {
-            let topBottom = (((this.beatHeight * this.hoverScale) - this.beatHeight) / 2);
-            let leftRight = (((this.beatWidth * this.hoverScale) - this.beatWidth) / 2);
+            let topBottom = (this.beatHeight * this.hoverScale - this.beatHeight) / 2;
+            let leftRight = (this.beatWidth * this.hoverScale - this.beatWidth) / 2;
 
             return {
                 padding: `${topBottom}px ${leftRight}px`,
@@ -190,12 +190,10 @@ export default {
                     transition: "all ease-in-out 0.25s",
                     transform: `translateX(${width}px)`,
                 };
-
             }
             return {
                 transform: "translateX(0)",
             };
-
         },
 
         beatHoverAreaStyle() {
@@ -228,7 +226,7 @@ export default {
          */
         timeSinceFirstBeat() {
             if (this.normalizedHeartbeatBarDays === 1) {
-                return (this.normalizedHeartbeatBarDays * 24) + "h";
+                return this.normalizedHeartbeatBarDays * 24 + "h";
             }
             if (this.normalizedHeartbeatBarDays >= 2) {
                 return this.normalizedHeartbeatBarDays + "d";
@@ -256,9 +254,9 @@ export default {
             if (seconds < tolerance) {
                 return this.$t("now");
             } else if (seconds < 60 * 60) {
-                return this.$t("time ago", [ (seconds / 60).toFixed(0) + "m" ] );
+                return this.$t("time ago", [(seconds / 60).toFixed(0) + "m"]);
             } else {
-                return this.$t("time ago", [ (seconds / 60 / 60).toFixed(0) + "h" ] );
+                return this.$t("time ago", [(seconds / 60 / 60).toFixed(0) + "h"]);
             }
         },
 
@@ -267,7 +265,7 @@ export default {
          * @returns {number} Canvas width in pixels
          */
         canvasWidth() {
-            const beatFullWidth = this.beatWidth + (this.beatHoverAreaPadding * 2);
+            const beatFullWidth = this.beatWidth + this.beatHoverAreaPadding * 2;
             return this.shortBeatList.length * beatFullWidth;
         },
 
@@ -288,9 +286,9 @@ export default {
                 return "Heartbeat history: No data";
             }
 
-            const validBeats = this.shortBeatList.filter(b => b !== 0 && b !== null);
-            const upCount = validBeats.filter(b => Number(b.status) === UP).length;
-            const downCount = validBeats.filter(b => Number(b.status) === DOWN).length;
+            const validBeats = this.shortBeatList.filter((b) => b !== 0 && b !== null);
+            const upCount = validBeats.filter((b) => Number(b.status) === UP).length;
+            const downCount = validBeats.filter((b) => Number(b.status) === DOWN).length;
 
             return `Heartbeat history: ${validBeats.length} checks, ${upCount} up, ${downCount} down`;
         },
@@ -376,7 +374,9 @@ export default {
          */
         resize() {
             if (this.$refs.wrap) {
-                const newMaxBeat = Math.floor(this.$refs.wrap.clientWidth / (this.beatWidth + this.beatHoverAreaPadding * 2));
+                const newMaxBeat = Math.floor(
+                    this.$refs.wrap.clientWidth / (this.beatWidth + this.beatHoverAreaPadding * 2)
+                );
 
                 // If maxBeat changed and we're in configured days mode, notify parent to reload data
                 if (newMaxBeat !== this.maxBeat && this.normalizedHeartbeatBarDays > 0) {
@@ -426,7 +426,7 @@ export default {
             return {
                 down: status === DOWN,
                 pending: status === PENDING,
-                maintenance: status === MAINTENANCE
+                maintenance: status === MAINTENANCE,
             };
         },
 
@@ -473,7 +473,7 @@ export default {
                 this.tooltipContent = beat;
 
                 // Calculate the beat's position within the canvas
-                const beatFullWidth = this.beatWidth + (this.beatHoverAreaPadding * 2);
+                const beatFullWidth = this.beatWidth + this.beatHoverAreaPadding * 2;
                 const beatCenterX = beatIndex * beatFullWidth + beatFullWidth / 2;
 
                 // Convert to viewport coordinates
@@ -500,9 +500,9 @@ export default {
                 const tooltipWidth = 120; // Approximate tooltip width
                 let adjustedX = x;
 
-                if ((x - tooltipWidth / 2) < 10) {
+                if (x - tooltipWidth / 2 < 10) {
                     adjustedX = tooltipWidth / 2 + 10;
-                } else if ((x + tooltipWidth / 2) > (window.innerWidth - 10)) {
+                } else if (x + tooltipWidth / 2 > window.innerWidth - 10) {
                     adjustedX = window.innerWidth - tooltipWidth / 2 - 10;
                 }
 
@@ -553,7 +553,7 @@ export default {
             // Clear canvas
             ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
 
-            const beatFullWidth = this.beatWidth + (this.beatHoverAreaPadding * 2);
+            const beatFullWidth = this.beatWidth + this.beatHoverAreaPadding * 2;
             const centerY = this.canvasHeight / 2;
 
             // Cache CSS colors once per redraw
@@ -692,7 +692,7 @@ export default {
 
             const rect = canvas.getBoundingClientRect();
             const x = event.clientX - rect.left;
-            const beatFullWidth = this.beatWidth + (this.beatHoverAreaPadding * 2);
+            const beatFullWidth = this.beatWidth + this.beatHoverAreaPadding * 2;
             const beatIndex = Math.floor(x / beatFullWidth);
 
             if (beatIndex >= 0 && beatIndex < this.shortBeatList.length) {
@@ -729,8 +729,8 @@ export default {
          */
         handleKeydown(event) {
             const validIndices = this.shortBeatList
-                .map((beat, index) => (beat !== 0 && beat !== null) ? index : -1)
-                .filter(index => index !== -1);
+                .map((beat, index) => (beat !== 0 && beat !== null ? index : -1))
+                .filter((index) => index !== -1);
 
             if (validIndices.length === 0) {
                 return;
@@ -788,7 +788,7 @@ export default {
         handleFocus() {
             // Select first valid beat on focus if none selected
             if (this.hoveredBeatIndex === -1) {
-                const firstValidIndex = this.shortBeatList.findIndex(beat => beat !== 0 && beat !== null);
+                const firstValidIndex = this.shortBeatList.findIndex((beat) => beat !== 0 && beat !== null);
                 if (firstValidIndex !== -1) {
                     const beat = this.shortBeatList[firstValidIndex];
                     const canvas = this.$refs.canvas;
@@ -808,7 +808,6 @@ export default {
             this.hoveredBeatIndex = -1;
             this.hideTooltip();
         },
-
     },
 };
 </script>

@@ -12,6 +12,7 @@ import {
     faArrowUp,
     faCog,
     faEdit,
+    faExclamationTriangle,
     faEye,
     faEyeSlash,
     faList,
@@ -52,6 +53,8 @@ import {
     faInfoCircle,
     faClone,
     faCertificate,
+    faFolder,
+    faFolderOpen,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -60,6 +63,7 @@ library.add(
     faArrowUp,
     faCog,
     faEdit,
+    faExclamationTriangle,
     faEye,
     faEyeSlash,
     faList,
@@ -101,6 +105,8 @@ library.add(
     faInfoCircle,
     faClone,
     faCertificate,
+    faFolder,
+    faFolderOpen,
 );
 
 export { FontAwesomeIcon };

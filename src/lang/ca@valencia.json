@@ -1,0 +1,12 @@
+{
+    "settingUpDatabaseMSG": "Configurant la base de dades. Pot trigar una mica, si us plau, espereu.",
+    "dbName": "Nom de la Base de Dades",
+    "Settings": "Configuració",
+    "setupDatabaseChooseDatabase": "Quina base de dades vols fer servir?",
+    "setupDatabaseEmbeddedMariaDB": "No cal configurar rés. Aquesta imatge Docker té MariaDB inclosa. Uptime Kuma s'hi connectarà amb un socket Unix.",
+    "setupDatabaseMariaDB": "Connectar a una base de dades MariaDB externa. Cal configurar la informació de la connexió.",
+    "setupDatabaseSQLite": "Es recomana un sistema senzill de base de dades per desenvolupaments petits. Abans de la versió 2.0.0 es feia servir SQLite per defecte.",
+    "Dashboard": "Penell de control",
+    "Help": "Ajuda",
+    "New Update": "Nova actualització"
+}

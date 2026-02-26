@@ -746,5 +746,7 @@
     "templateStatus": "egoera",
     "webhookBodyCustomOption": "Pertsonalizatutako mezu gorputza",
     "telegramSendSilentlyDescription": "Bidali mezuak isilik. Erabiltzaileak soinurik gabeko jakinarazpena jasoko du.",
-    "setupDatabaseMariaDB": "Konektatu kanpo MariaDB datu base batekin. Datu base konexioaren informazioa ezarri behar da."
+    "setupDatabaseMariaDB": "Konektatu kanpo MariaDB datu base batekin. Datu base konexioaren informazioa ezarri behar da.",
+    "Json Query Expression": "Json Query espresioa",
+    "ignoredTLSError": "TLS/SSL erroreei ezikusiarena eginda"
 }

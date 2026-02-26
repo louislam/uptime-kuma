@@ -8,7 +8,7 @@ async function main() {
     const branch = process.argv[2];
 
     // Use gh to get current branch's pr id
-    let currentBranchPRID = execSync("gh pr view --json number --jq \".number\"").toString().trim();
+    let currentBranchPRID = execSync('gh pr view --json number --jq ".number"').toString().trim();
     console.log("Pr ID: ", currentBranchPRID);
 
     // Use gh commend to get pr commits

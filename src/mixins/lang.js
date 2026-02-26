@@ -28,8 +28,7 @@ export default {
          * @returns {Promise<void>}
          */
         async changeLang(lang) {
-            let message = (await langModules["../lang/" + lang + ".json"]())
-                .default;
+            let message = (await langModules["../lang/" + lang + ".json"]()).default;
             this.$i18n.setLocaleMessage(lang, message);
             this.$i18n.locale = lang;
             localStorage.locale = lang;
