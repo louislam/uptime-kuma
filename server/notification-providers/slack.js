@@ -15,13 +15,15 @@ class Slack extends NotificationProvider {
      * @returns {Promise<void>}
      */
     static async deprecateURL(url) {
-        let currentPrimaryBaseURL = await Settings.get("primaryBaseURL");
+        let currentPrimaryBaseURL = await setting("primaryBaseURL");
 
         if (!currentPrimaryBaseURL) {
-            log.error("notification", "Move the url to be the primary base URL");
-            await Settings.set("primaryBaseURL", url, "general");
+            console.log("Move the url to be the primary base URL");
+            await setSettings("general", {
+                primaryBaseURL: url,
+            });
         } else {
-            log.debug("notification", "Already there, no need to move the primary base URL");
+            console.log("Already there, no need to move the primary base URL");
         }
     }
 
@@ -47,7 +49,7 @@ class Slack extends NotificationProvider {
         }
 
         const address = this.extractAddress(monitorJSON);
-        if (address) {
+        if (isUrl(address)) {
             try {
                 actions.push({
                     type: "button",
@@ -155,7 +157,7 @@ class Slack extends NotificationProvider {
                 return okMsg;
             }
 
-            const baseURL = await Settings.get("primaryBaseURL");
+            const baseURL = await setting("primaryBaseURL");
 
             // Check if templating is enabled
             if (notification.slackUseTemplate) {

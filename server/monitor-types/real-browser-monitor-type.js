@@ -62,7 +62,6 @@ if (process.platform === "win32") {
  * @returns {Promise<boolean>} The executable is allowed?
  */
 async function isAllowedChromeExecutable(executablePath) {
-    log.info("chromium", config.args);
     if (config.args["allow-all-chrome-exec"] || process.env.UPTIME_KUMA_ALLOW_ALL_CHROME_EXEC === "1") {
         return true;
     }
