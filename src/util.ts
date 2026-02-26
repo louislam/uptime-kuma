@@ -273,12 +273,26 @@ class Logger {
         }
 
         if (process.env.UPTIME_KUMA_LOG_FORMAT === "json") {
+            const msgString = msg
+                .map((m) => {
+                    if (typeof m === "string") {
+                        return m;
+                    } else {
+                        try {
+                            return JSON.stringify(m);
+                        } catch {
+                            return String(m);
+                        }
+                    }
+                })
+                .join(" ");
+
             console.log(
                 JSON.stringify({
                     time: now,
                     module: module,
                     level: level,
-                    msg: typeof msg === "string" ? msg : JSON.stringify(msg),
+                    msg: msgString,
                 })
             );
             return;
