@@ -13,6 +13,7 @@ class GoAlert extends NotificationProvider {
         try {
             let data = {
                 summary: msg,
+                /* Added consistent deadup key to ensure alerts close correctly */
                 dedup: monitorJSON ? String(monitorJSON["id"]) : msg,
             };
             if (heartbeatJSON != null && heartbeatJSON["status"] === UP) {
