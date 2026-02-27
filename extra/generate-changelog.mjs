@@ -192,7 +192,7 @@ export async function generateChangelog(previousVersion, categorizedMap) {
 
 /**
  * @param {string} previousVersion Previous Version Tag
- * @param removeAuthor
+ * @param {boolean} removeAuthor Whether to strip the author field from the returned PR list
  * @returns {Promise<object>} List of Pull Requests merged since previousVersion
  */
 async function getPullRequestList(previousVersion, removeAuthor = false) {
