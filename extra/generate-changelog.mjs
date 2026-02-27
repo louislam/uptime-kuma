@@ -33,7 +33,7 @@ const prompt = `Input Data:
 \`\`\`
 
 LLM Task:
-- Output a one line JSON have the following format:
+- Output a one-line JSON object in the following format:
 {{ outputFormat }}
 - Empty arrays included if there are no items for that category.
 - Exclude reverted pull requests.
