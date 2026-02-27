@@ -339,7 +339,7 @@ ${prompt}
 Run the following command to generate the changelog with the categorized map from LLM:
 
 \`\`\`bash
-npm run generate-changelog ${version} generate 'JSON_MAPPING_BY_LLM_HERE'
+npm run generate-changelog ${previousVersion} generate 'JSON_MAPPING_BY_LLM_HERE'
 \`\`\`
 
 ### Release Artifacts
