@@ -229,15 +229,6 @@ class DomainExpiry extends BeanModel {
             });
         }
 
-        // Avoid logging for incomplete/invalid input while editing monitors.
-        if (tld.isIp) {
-            throw new TranslatableError("domain_expiry_unsupported_is_ip", { hostname: tld.hostname });
-        }
-        // No one-letter public suffix exists; treat this as an incomplete/invalid input while typing.
-        if (tld.publicSuffix.length < 2) {
-            throw new TranslatableError("domain_expiry_public_suffix_too_short", { publicSuffix: tld.publicSuffix });
-        }
-
         const publicSuffix = tld.publicSuffix;
         const rootTld = publicSuffix.split(".").pop();
         const rdap = await getRdapServer(publicSuffix);
