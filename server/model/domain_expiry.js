@@ -222,7 +222,6 @@ class DomainExpiry extends BeanModel {
 
         // It must be checked first, filter out non-ICANN domains.
         if (!tld.isIcann) {
-            console.log(tld);
             throw new TranslatableError("domain_expiry_unsupported_is_icann", {
                 // If domain is null, use hostname as fallback for better error message.
                 domain: tld.domain ?? tld.hostname ?? "EMPTY DOMAIN",
