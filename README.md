@@ -48,6 +48,9 @@ docker compose up -d
 
 Uptime Kuma is now running on all network interfaces (e.g. http://localhost:3001 or http://your-ip:3001).
 
+> [!NOTE]
+> To view the status page, you need to create one first. Go to **Status Page** → **New Status Page** in the dashboard. The default `/status` endpoint will be blank until you create at least one status page. See the [Status Page documentation](https://github.com/louislam/uptime-kuma/wiki/Status-Page) for more details.
+
 > [!WARNING]
 > File Systems like **NFS** (Network File System) are **NOT** supported. Please map to a local directory or volume.
 
