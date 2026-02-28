@@ -64,6 +64,20 @@
                     </select>
                 </div>
 
+                <!-- Status Page Language -->
+                <div class="my-3">
+                    <label for="status-page-language" class="form-label">{{ $t("Language") }}</label>
+                    <select id="status-page-language" v-model="config.language" class="form-select" data-testid="language-select">
+                        <option :value="null">{{ $t("Auto") }}</option>
+                        <option v-for="(lang, i) in $i18n.availableLocales" :key="`Lang${i}`" :value="lang">
+                            {{ $i18n.messages[lang].languageName || lang }}
+                        </option>
+                    </select>
+                    <div class="form-text">
+                        {{ $t("statusPageLanguageDescription") }}
+                    </div>
+                </div>
+
                 <div class="my-3 form-check form-switch">
                     <input
                         id="showTags"
@@ -994,6 +1008,12 @@ export default {
 
                 if (this.config.icon) {
                     this.imgDataUrl = this.config.icon;
+                }
+
+                // Apply the status page language for public (unauthenticated) visitors
+                // Only override if the admin configured a language and the user hasn't set their own preference
+                if (this.config.language && !localStorage.locale && !this.hasToken) {
+                    this.$root.changeLang(this.config.language);
                 }
 
                 this.maintenanceList = res.data.maintenanceList;
