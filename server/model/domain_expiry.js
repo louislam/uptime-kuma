@@ -220,6 +220,16 @@ class DomainExpiry extends BeanModel {
 
         const tld = parseTld(target);
 
+        // It must be checked first, filter out non-ICANN domains.
+        if (!tld.isIcann) {
+            console.log(tld);
+            throw new TranslatableError("domain_expiry_unsupported_is_icann", {
+                // If domain is null, use hostname as fallback for better error message.
+                domain: tld.domain ?? tld.hostname ?? "EMPTY DOMAIN",
+                publicSuffix: tld.publicSuffix,
+            });
+        }
+
         // Avoid logging for incomplete/invalid input while editing monitors.
         if (tld.isIp) {
             throw new TranslatableError("domain_expiry_unsupported_is_ip", { hostname: tld.hostname });
@@ -227,12 +237,6 @@ class DomainExpiry extends BeanModel {
         // No one-letter public suffix exists; treat this as an incomplete/invalid input while typing.
         if (tld.publicSuffix.length < 2) {
             throw new TranslatableError("domain_expiry_public_suffix_too_short", { publicSuffix: tld.publicSuffix });
-        }
-        if (!tld.isIcann) {
-            throw new TranslatableError("domain_expiry_unsupported_is_icann", {
-                domain: tld.domain,
-                publicSuffix: tld.publicSuffix,
-            });
         }
 
         const publicSuffix = tld.publicSuffix;

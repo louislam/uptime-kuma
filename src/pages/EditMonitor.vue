@@ -2870,7 +2870,7 @@ const monitorDefaults = {
     ignoreTls: false,
     upsideDown: false,
     expiryNotification: false,
-    domainExpiryNotification: false,
+    domainExpiryNotification: true,
     maxredirects: 10,
     accepted_statuscodes: defaultValueList.http.accepted_statuscodes,
     saveResponse: false,
@@ -4026,6 +4026,7 @@ message HealthCheckResponse {
                 };
 
                 this.$root.getSocket().emit("checkDomain", data, (res) => {
+                    console.log(data);
                     if (!res.ok) {
                         this.domainExpiryUnsupportedReason = res.msgi18n ? this.$t(res.msg, res.meta) : res.msg;
                     } else {
