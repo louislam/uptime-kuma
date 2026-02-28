@@ -85,7 +85,7 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
 
         // Get the status page to determine the heartbeat range
         let statusPage = await R.findOne("status_page", " id = ? ", [statusPageID]);
-        let heartbeatBarDays = statusPage ? (statusPage.heartbeat_bar_days || 0) : 0;
+        let heartbeatBarDays = statusPage ? statusPage.heartbeat_bar_days || 0 : 0;
 
         // Get max beats parameter from query string (for client-side screen width constraints)
         const maxBeats = Math.min(parseInt(request.query.maxBeats) || 100, 100);
@@ -98,34 +98,41 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
 
             if (heartbeatBarDays === 0) {
                 // Auto mode - use original LIMIT 100 logic
-                let list = await R.getAll(`
+                let list = await R.getAll(
+                    `
                     SELECT * FROM heartbeat
                     WHERE monitor_id = ?
                     ORDER BY time DESC
                     LIMIT 100
-                `, [
-                    monitorID,
-                ]);
+                `,
+                    [monitorID]
+                );
 
                 list = R.convertToBeans("heartbeat", list);
                 heartbeats = list.reverse().map((row) => row.toPublicJSON());
             } else {
                 // For configured day ranges, use aggregated data from UptimeCalculator
                 const buckets = uptimeCalculator.getAggregatedBuckets(heartbeatBarDays, maxBeats);
-                heartbeats = buckets.map(bucket => {
+                heartbeats = buckets.map((bucket) => {
                     // If bucket has no data, return 0 (empty beat) to match original behavior
                     if (bucket.up === 0 && bucket.down === 0 && bucket.maintenance === 0 && bucket.pending === 0) {
                         return 0;
                     }
 
                     return {
-                        status: bucket.down > 0 ? DOWN :
-                            bucket.maintenance > 0 ? MAINTENANCE :
-                                bucket.pending > 0 ? PENDING :
-                                    bucket.up > 0 ? UP : 0,
+                        status:
+                            bucket.down > 0
+                                ? DOWN
+                                : bucket.maintenance > 0
+                                  ? MAINTENANCE
+                                  : bucket.pending > 0
+                                    ? PENDING
+                                    : bucket.up > 0
+                                      ? UP
+                                      : 0,
                         time: dayjs.unix(bucket.end).toISOString(),
                         msg: "",
-                        ping: null
+                        ping: null,
                     };
                 });
             }
@@ -141,7 +148,7 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
             return {
                 monitorID,
                 heartbeats,
-                uptime
+                uptime,
             };
         });
 

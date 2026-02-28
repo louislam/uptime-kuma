@@ -117,7 +117,11 @@
                                         </div>
                                     </div>
                                     <div :key="$root.userHeartbeatBar" class="col-3 col-xl-6">
-                                        <HeartbeatBar size="mid" :monitor-id="monitor.element.id" :heartbeat-bar-days="heartbeatBarDays" />
+                                        <HeartbeatBar
+                                            size="mid"
+                                            :monitor-id="monitor.element.id"
+                                            :heartbeat-bar-days="heartbeatBarDays"
+                                        />
                                     </div>
                                 </div>
                             </div>
@@ -165,8 +169,8 @@ export default {
         },
         /** Heartbeat bar days */
         heartbeatBarDays: {
-            type: [ Number, String ],
-            default: 0
+            type: [Number, String],
+            default: 0,
         },
         /** Should only the last heartbeat be shown? */
         showOnlyLastHeartbeat: {

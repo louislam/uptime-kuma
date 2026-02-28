@@ -881,13 +881,13 @@ class UptimeCalculator {
                 up: 0,
                 down: 0,
                 maintenance: 0,
-                pending: 0
+                pending: 0,
             });
         }
 
         // Sort data points by timestamp ascending for efficient single-pass aggregation
         const sortedDataPoints = rawDataPoints
-            .filter(point => point && point.timestamp)
+            .filter((point) => point && point.timestamp)
             .sort((a, b) => a.timestamp - b.timestamp);
 
         // Single-pass aggregation: iterate through sorted data and buckets together
@@ -898,8 +898,7 @@ class UptimeCalculator {
             const timestamp = dataPoint.timestamp;
 
             // Move to the appropriate bucket (only forward, since data is sorted)
-            while (currentBucketIndex < buckets.length &&
-                   timestamp >= buckets[currentBucketIndex].end) {
+            while (currentBucketIndex < buckets.length && timestamp >= buckets[currentBucketIndex].end) {
                 currentBucketIndex++;
             }
 
