@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { login, restoreSqliteSnapshot, screenshot } from "../util-test";
+import { login, restoreSqliteSnapshot, screenshot, ROUTES } from "../util-test";
 
 /**
  * Selects the monitor type from the dropdown.
@@ -22,7 +22,7 @@ test.describe("Monitor Form", () => {
     });
 
     test("condition ui", async ({ page }, testInfo) => {
-        await page.goto("./add");
+        await page.goto("." + ROUTES.MONITOR_ADD);
         await login(page);
         await screenshot(testInfo, page);
         await selectMonitorType(page);
@@ -46,7 +46,7 @@ test.describe("Monitor Form", () => {
     });
 
     test("successful condition", async ({ page }, testInfo) => {
-        await page.goto("./add");
+        await page.goto("." + ROUTES.MONITOR_ADD);
         await login(page);
         await screenshot(testInfo, page);
         await selectMonitorType(page);
@@ -71,7 +71,7 @@ test.describe("Monitor Form", () => {
 
         await screenshot(testInfo, page);
         await page.getByTestId("save-button").click();
-        await page.waitForURL("/dashboard/*");
+        await page.waitForURL(ROUTES.DASHBOARD + "/*");
 
         await expect(page.getByTestId("monitor-status")).toHaveText("up", { ignoreCase: true });
 
@@ -79,7 +79,7 @@ test.describe("Monitor Form", () => {
     });
 
     test("failing condition", async ({ page }, testInfo) => {
-        await page.goto("./add");
+        await page.goto("." + ROUTES.MONITOR_ADD);
         await login(page);
         await screenshot(testInfo, page);
         await selectMonitorType(page);
@@ -99,7 +99,7 @@ test.describe("Monitor Form", () => {
 
         await screenshot(testInfo, page);
         await page.getByTestId("save-button").click();
-        await page.waitForURL("/dashboard/*");
+        await page.waitForURL(ROUTES.DASHBOARD + "/*");
 
         await expect(page.getByTestId("monitor-status")).toHaveText("down", { ignoreCase: true });
 
@@ -107,7 +107,7 @@ test.describe("Monitor Form", () => {
     });
 
     test("save response settings persist", async ({ page }, testInfo) => {
-        await page.goto("./add");
+        await page.goto("." + ROUTES.MONITOR_ADD);
         await login(page);
         await selectMonitorType(page, "http");
 
@@ -124,10 +124,10 @@ test.describe("Monitor Form", () => {
 
         await screenshot(testInfo, page);
         await page.getByTestId("save-button").click();
-        await page.waitForURL("/dashboard/*");
+        await page.waitForURL(ROUTES.DASHBOARD + "/*");
 
         await page.getByRole("link", { name: "Edit" }).click();
-        await page.waitForURL("/edit/*");
+        await page.waitForURL(ROUTES.MONITOR_EDIT.replace(":id", "*"));
 
         await expect(page.getByLabel("Save HTTP Success Response for Notifications")).toBeHidden();
         await expect(page.getByLabel("Save HTTP Error Response for Notifications")).not.toBeChecked();

@@ -6,7 +6,7 @@
             </h1>
 
             <div>
-                <router-link to="/add-status-page" class="btn btn-primary mb-3">
+                <router-link :to="ROUTES.STATUS_PAGE_ADD" class="btn btn-primary mb-3">
                     <font-awesome-icon icon="plus" />
                     {{ $t("New Status Page") }}
                 </router-link>
@@ -64,6 +64,7 @@
 <script>
 import Confirm from "../components/Confirm.vue";
 import { getResBaseURL } from "../util-frontend";
+import { ROUTES } from "../routes.ts";
 
 export default {
     components: {
@@ -71,6 +72,7 @@ export default {
     },
     data() {
         return {
+            ROUTES,
             selectedStatusSlug: "",
         };
     },

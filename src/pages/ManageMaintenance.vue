@@ -6,7 +6,7 @@
             </h1>
 
             <div>
-                <router-link to="/add-maintenance" class="btn btn-primary mb-3">
+                <router-link :to="ROUTES.MAINTENANCE_ADD" class="btn btn-primary mb-3">
                     <font-awesome-icon icon="plus" />
                     {{ $t("Schedule Maintenance") }}
                 </router-link>
@@ -56,7 +56,7 @@
                             </button>
 
                             <router-link
-                                :to="'/maintenance/clone/' + item.id"
+                                :to="getMaintenanceCloneURL(item.id)"
                                 class="btn btn-normal"
                                 :aria-label="$t('ariaCloneMaintenance')"
                             >
@@ -65,7 +65,7 @@
                             </router-link>
 
                             <router-link
-                                :to="'/maintenance/edit/' + item.id"
+                                :to="getMaintenanceEditURL(item.id)"
                                 class="btn btn-normal"
                                 :aria-label="$t('ariaEditMaintenance')"
                             >
@@ -113,6 +113,7 @@
 import { getResBaseURL } from "../util-frontend";
 import Confirm from "../components/Confirm.vue";
 import MaintenanceTime from "../components/MaintenanceTime.vue";
+import { ROUTES, getMaintenanceEditURL, getMaintenanceCloneURL } from "../routes.ts";
 
 export default {
     components: {
@@ -121,6 +122,7 @@ export default {
     },
     data() {
         return {
+            ROUTES,
             selectedMaintenanceID: undefined,
             statusOrderList: {
                 "under-maintenance": 1000,
@@ -148,6 +150,9 @@ export default {
     },
     mounted() {},
     methods: {
+        getMaintenanceEditURL,
+        getMaintenanceCloneURL,
+
         /**
          * Get the correct URL for the icon
          * @param {string} icon Path for icon
@@ -180,7 +185,7 @@ export default {
             this.$root.deleteMaintenance(this.selectedMaintenanceID, (res) => {
                 this.$root.toastRes(res);
                 if (res.ok) {
-                    this.$router.push("/maintenance");
+                    this.$router.push(ROUTES.MAINTENANCE);
                 }
             });
         },

@@ -20,6 +20,16 @@ import ManageMaintenance from "./pages/ManageMaintenance.vue";
 import APIKeys from "./components/settings/APIKeys.vue";
 import SetupDatabase from "./pages/SetupDatabase.vue";
 
+import {
+    ROUTES,
+    getAdminPrefix,
+    getMonitorURL,
+    getMonitorEditURL,
+    getMonitorCloneURL,
+    getMaintenanceEditURL,
+    getMaintenanceCloneURL,
+} from "./routes.ts";
+
 // Settings - Sub Pages
 import Appearance from "./components/settings/Appearance.vue";
 import General from "./components/settings/General.vue";
@@ -34,7 +44,7 @@ import RemoteBrowsers from "./components/settings/RemoteBrowsers.vue";
 
 const routes = [
     {
-        path: "/",
+        path: ROUTES.ROOT,
         component: Entry,
     },
     {
@@ -50,11 +60,11 @@ const routes = [
                 children: [
                     {
                         name: "DashboardHome",
-                        path: "/dashboard",
+                        path: ROUTES.DASHBOARD,
                         component: DashboardHome,
                         children: [
                             {
-                                path: "/dashboard/:id",
+                                path: ROUTES.DASHBOARD_MONITOR,
                                 component: EmptyLayout,
                                 children: [
                                     {
@@ -62,7 +72,7 @@ const routes = [
                                         component: Details,
                                     },
                                     {
-                                        path: "/edit/:id",
+                                        path: ROUTES.MONITOR_EDIT,
                                         component: EditMonitor,
                                     },
                                 ],
@@ -70,21 +80,21 @@ const routes = [
                         ],
                     },
                     {
-                        path: "/add",
+                        path: ROUTES.MONITOR_ADD,
                         component: EditMonitor,
                         children: [
                             {
-                                path: "/clone/:id",
+                                path: ROUTES.MONITOR_CLONE,
                                 component: EditMonitor,
                             },
                         ],
                     },
                     {
-                        path: "/list",
+                        path: ROUTES.MONITOR_LIST,
                         component: List,
                     },
                     {
-                        path: "/settings",
+                        path: ROUTES.SETTINGS,
                         component: Settings,
                         children: [
                             {
@@ -138,27 +148,27 @@ const routes = [
                         ],
                     },
                     {
-                        path: "/manage-status-page",
+                        path: ROUTES.STATUS_PAGE_MANAGE,
                         component: ManageStatusPage,
                     },
                     {
-                        path: "/add-status-page",
+                        path: ROUTES.STATUS_PAGE_ADD,
                         component: AddStatusPage,
                     },
                     {
-                        path: "/maintenance",
+                        path: ROUTES.MAINTENANCE,
                         component: ManageMaintenance,
                     },
                     {
-                        path: "/add-maintenance",
+                        path: ROUTES.MAINTENANCE_ADD,
                         component: EditMaintenance,
                     },
                     {
-                        path: "/maintenance/edit/:id",
+                        path: ROUTES.MAINTENANCE_EDIT,
                         component: EditMaintenance,
                     },
                     {
-                        path: "/maintenance/clone/:id",
+                        path: ROUTES.MAINTENANCE_CLONE,
                         component: EditMaintenance,
                     },
                 ],
@@ -166,25 +176,45 @@ const routes = [
         ],
     },
     {
-        path: "/setup",
+        path: ROUTES.SETUP,
         component: Setup,
     },
     {
-        path: "/setup-database",
+        path: ROUTES.SETUP_DATABASE,
         component: SetupDatabase,
     },
     {
-        path: "/status-page",
+        path: ROUTES.STATUS_PAGE_COMPAT,
         component: StatusPage,
     },
     {
-        path: "/status",
+        path: ROUTES.STATUS_COMPAT,
         component: StatusPage,
     },
     {
-        path: "/status/:slug",
+        path: ROUTES.STATUS_PAGE,
         component: StatusPage,
     },
+    // Backward-compatibility redirects for restructured routes (always active)
+    { path: "/add", redirect: ROUTES.MONITOR_ADD },
+    { path: "/edit/:id", redirect: (to) => getMonitorEditURL(to.params.id) },
+    { path: "/clone/:id", redirect: (to) => getMonitorCloneURL(to.params.id) },
+    { path: "/list", redirect: ROUTES.MONITOR_LIST },
+    { path: "/manage-status-page", redirect: ROUTES.STATUS_PAGE_MANAGE },
+    { path: "/add-status-page", redirect: ROUTES.STATUS_PAGE_ADD },
+    { path: "/add-maintenance", redirect: ROUTES.MAINTENANCE_ADD },
+    // Backward-compatibility redirects that only apply when a prefix is set
+    // (without a prefix these would self-redirect)
+    ...(getAdminPrefix()
+        ? [
+              { path: "/dashboard/:id", redirect: (to) => getMonitorURL(to.params.id) },
+              { path: "/dashboard", redirect: ROUTES.DASHBOARD },
+              { path: "/maintenance/edit/:id", redirect: (to) => getMaintenanceEditURL(to.params.id) },
+              { path: "/maintenance/clone/:id", redirect: (to) => getMaintenanceCloneURL(to.params.id) },
+              { path: "/maintenance", redirect: ROUTES.MAINTENANCE },
+              { path: "/settings/:page(.*)", redirect: (to) => `${ROUTES.SETTINGS}/${to.params.page}` },
+          ]
+        : []),
     {
         path: "/:pathMatch(.*)*",
         component: NotFound,
