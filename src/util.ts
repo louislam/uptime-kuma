@@ -206,7 +206,7 @@ export function ucfirst(str: string) {
  * @returns {void}
  */
 export function debug(msg: unknown) {
-    log.log("", "debug", msg);
+    log.log("", "DEBUG", msg);
 }
 
 class Logger {
@@ -254,7 +254,7 @@ class Logger {
      * @param msg Message to write
      * @returns {void}
      */
-    log(module: string, level: string, ...msg: unknown[]) {
+    log(module: string, level: "INFO" | "WARN" | "ERROR" | "DEBUG", ...msg: unknown[]) {
         if (level === "DEBUG" && !isDev) {
             return;
         }
@@ -264,13 +264,38 @@ class Logger {
         }
 
         module = module.toUpperCase();
-        level = level.toUpperCase();
 
         let now;
         if (dayjs.tz) {
             now = dayjs.tz(new Date()).format();
         } else {
             now = dayjs().format();
+        }
+
+        if (process.env.UPTIME_KUMA_LOG_FORMAT === "json") {
+            const msgString = msg
+                .map((m) => {
+                    if (typeof m === "string") {
+                        return m;
+                    } else {
+                        try {
+                            return JSON.stringify(m);
+                        } catch {
+                            return String(m);
+                        }
+                    }
+                })
+                .join(" ");
+
+            console.log(
+                JSON.stringify({
+                    time: now,
+                    module: module,
+                    level: level,
+                    msg: msgString,
+                })
+            );
+            return;
         }
 
         const levelColor = consoleLevelColors[level];
@@ -329,7 +354,7 @@ class Logger {
      * @returns {void}
      */
     info(module: string, ...msg: unknown[]) {
-        this.log(module, "info", ...msg);
+        this.log(module, "INFO", ...msg);
     }
 
     /**
@@ -339,7 +364,7 @@ class Logger {
      * @returns {void}
      */
     warn(module: string, ...msg: unknown[]) {
-        this.log(module, "warn", ...msg);
+        this.log(module, "WARN", ...msg);
     }
 
     /**
@@ -349,7 +374,7 @@ class Logger {
      * @returns {void}
      */
     error(module: string, ...msg: unknown[]) {
-        this.log(module, "error", ...msg);
+        this.log(module, "ERROR", ...msg);
     }
 
     /**
@@ -359,7 +384,7 @@ class Logger {
      * @returns {void}
      */
     debug(module: string, ...msg: unknown[]) {
-        this.log(module, "debug", ...msg);
+        this.log(module, "DEBUG", ...msg);
     }
 
     /**
@@ -370,7 +395,7 @@ class Logger {
      * @returns {void}
      */
     exception(module: string, exception: unknown, ...msg: unknown[]) {
-        this.log(module, "error", ...msg, exception);
+        this.log(module, "ERROR", ...msg, exception);
     }
 }
 
@@ -418,7 +443,7 @@ export class TimeLogger {
      * @param name Name of monitor
      * @returns {void}
      */
-    print(name: string) {
+    print(name: string): void {
         if (isDev && process.env.TIMELOGGER === "1") {
             console.log(name + ": " + (dayjs().valueOf() - this.startTime) + "ms");
         }

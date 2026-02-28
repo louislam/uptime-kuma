@@ -65,7 +65,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
                 maintenanceID: bean.id,
             });
         } catch (e) {
-            console.error(e);
+            log.error("maintenance", e);
             callback({
                 ok: false,
                 msg: e.message,
@@ -165,7 +165,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
                 ok: true,
             });
         } catch (e) {
-            console.error(e);
+            log.error("maintenance", e);
             callback({
                 ok: false,
                 msg: e.message,
@@ -189,7 +189,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
                 monitors,
             });
         } catch (e) {
-            console.error(e);
+            log.error("maintenance", e);
             callback({
                 ok: false,
                 msg: e.message,
@@ -213,7 +213,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
                 statusPages,
             });
         } catch (e) {
-            console.error(e);
+            log.error("maintenance", e);
             callback({
                 ok: false,
                 msg: e.message,
