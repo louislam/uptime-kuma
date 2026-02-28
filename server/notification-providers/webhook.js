@@ -12,7 +12,7 @@ class Webhook extends NotificationProvider {
         const okMsg = "Sent Successfully.";
 
         try {
-            const httpMethod = notification.httpMethod.toLowerCase() || "post";
+            const httpMethod = notification.httpMethod?.toLowerCase() || "post";
 
             let data = {
                 heartbeat: heartbeatJSON,
@@ -20,12 +20,12 @@ class Webhook extends NotificationProvider {
                 msg,
             };
             let config = {
-                headers: {}
+                headers: {},
             };
 
             if (httpMethod === "get") {
                 config.params = {
-                    msg: msg
+                    msg: msg,
                 };
 
                 if (heartbeatJSON) {
@@ -48,7 +48,7 @@ class Webhook extends NotificationProvider {
                 try {
                     config.headers = {
                         ...config.headers,
-                        ...JSON.parse(notification.webhookAdditionalHeaders)
+                        ...JSON.parse(notification.webhookAdditionalHeaders),
                     };
                 } catch (err) {
                     throw new Error("Additional Headers is not a valid JSON");
@@ -64,13 +64,10 @@ class Webhook extends NotificationProvider {
             }
 
             return okMsg;
-
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }
-
     }
-
 }
 
 module.exports = Webhook;

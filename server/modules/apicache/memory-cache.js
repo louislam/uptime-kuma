@@ -4,7 +4,7 @@ function MemoryCache() {
 }
 
 /**
- * 
+ *
  * @param {string} key Key to store cache as
  * @param {any} value Value to store
  * @param {number} time Time to store for
@@ -22,7 +22,7 @@ MemoryCache.prototype.add = function (key, value, time, timeoutCallback) {
         timeout: setTimeout(function () {
             instance.delete(key);
             return timeoutCallback && typeof timeoutCallback === "function" && timeoutCallback(value, key);
-        }, time)
+        }, time),
     };
 
     this.cache[key] = entry;
@@ -52,7 +52,7 @@ MemoryCache.prototype.delete = function (key) {
 
 /**
  * Get value of key
- * @param {string} key 
+ * @param {string} key
  * @returns {Object}
  */
 MemoryCache.prototype.get = function (key) {
@@ -63,7 +63,7 @@ MemoryCache.prototype.get = function (key) {
 
 /**
  * Get value of cache entry
- * @param {string} key 
+ * @param {string} key
  * @returns {any}
  */
 MemoryCache.prototype.getValue = function (key) {

@@ -46,11 +46,11 @@ class RadiusClient {
             const packet = {
                 code: "Access-Request",
                 secret: secret,
-                attributes: {}
+                attributes: {},
             };
 
             // Convert attributes array to object
-            attributes.forEach(([ attr, value ]) => {
+            attributes.forEach(([attr, value]) => {
                 packet.attributes[attr] = value;
             });
 
@@ -67,23 +67,47 @@ class RadiusClient {
             let attempts = 0;
             let responseReceived = false;
             let timeoutHandle;
+            let socketClosed = false;
+
+            /**
+             * Safely close socket and clear timeout
+             * @returns {void}
+             */
+            const cleanup = () => {
+                if (timeoutHandle) {
+                    clearTimeout(timeoutHandle);
+                    timeoutHandle = null;
+                }
+                if (!socketClosed) {
+                    socketClosed = true;
+                    try {
+                        socket.close();
+                    } catch (err) {
+                        // Ignore errors during cleanup
+                    }
+                }
+            };
 
             /**
              * Send RADIUS request with retry logic
              * @returns {void}
              */
             const sendRequest = () => {
+                if (responseReceived || socketClosed) {
+                    return;
+                }
+
                 attempts++;
 
                 socket.send(encodedPacket, 0, encodedPacket.length, this.port, this.host, (err) => {
                     if (err) {
-                        socket.close();
+                        cleanup();
                         return reject(new Error(`Failed to send RADIUS request: ${err.message}`));
                     }
 
                     // Set timeout for this attempt
                     timeoutHandle = setTimeout(() => {
-                        if (responseReceived) {
+                        if (responseReceived || socketClosed) {
                             return;
                         }
 
@@ -92,7 +116,7 @@ class RadiusClient {
                             sendRequest();
                         } else {
                             // All retries exhausted
-                            socket.close();
+                            cleanup();
                             reject(new Error(`RADIUS request timeout after ${attempts} attempts`));
                         }
                     }, this.timeout);
@@ -101,30 +125,25 @@ class RadiusClient {
 
             // Handle response
             socket.on("message", (msg) => {
-                if (responseReceived) {
+                if (responseReceived || socketClosed) {
                     return;
                 }
 
                 responseReceived = true;
-                clearTimeout(timeoutHandle);
+                cleanup();
 
                 let response;
                 try {
-                    response = radius.decode({ packet: msg,
-                        secret: secret });
+                    response = radius.decode({ packet: msg, secret: secret });
                 } catch (error) {
-                    socket.close();
                     return reject(new Error(`RADIUS response decoding failed: ${error.message}`));
                 }
-
-                socket.close();
 
                 // Map response code to match node-radius-client format
                 const responseCode = response.code;
 
                 if (responseCode === "Access-Accept") {
-                    resolve({ code: "Access-Accept",
-                        ...response });
+                    resolve({ code: "Access-Accept", ...response });
                 } else if (responseCode === "Access-Reject") {
                     // Reject as error to match original behavior
                     const error = new Error("Access-Reject");
@@ -136,17 +155,15 @@ class RadiusClient {
                     error.response = { code: "Access-Challenge" };
                     reject(error);
                 } else {
-                    resolve({ code: responseCode,
-                        ...response });
+                    resolve({ code: responseCode, ...response });
                 }
             });
 
             // Handle socket errors
             socket.on("error", (err) => {
-                if (!responseReceived) {
+                if (!responseReceived && !socketClosed) {
                     responseReceived = true;
-                    clearTimeout(timeoutHandle);
-                    socket.close();
+                    cleanup();
                     reject(new Error(`RADIUS socket error: ${err.message}`));
                 }
             });

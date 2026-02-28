@@ -1242,7 +1242,7 @@
     "WebSocket Application Messaging Protocol": "WAMP (The WebSocket Application Messaging Protocol)",
     "ignoreSecWebsocketAcceptHeaderDescription": "Ermöglicht es dem Server, nicht mit dem Sec-WebSocket-Accept-Header zu antworten, wenn das WebSocket-Upgrade erfolgreich ist.",
     "Ignore Sec-WebSocket-Accept header": "Ignoriere {0} Header",
-    "wsSubprotocolDescription": "Weitere Informationen zu Subprotokollen findest du in der {documentation}",
+    "wsSubprotocolDescription": "Kommagetrennte Liste von Subprotokollen eingeben. Weitere Informationen zu Subprotokollen findest du in der {documentation}",
     "Session Initiation Protocol": "WebSocket-Transport für SIP (Session Initiation Protocol)",
     "Network API for Notification Channel": "OMA RESTful-Netzwerk-API für Benachrichtigungskanal",
     "Web Process Control Protocol": "Web Process Control Protocol (WPCP)",
@@ -1284,5 +1284,8 @@
     "settingsDomainExpiry": "Ablauf der Domain",
     "labelDomainExpiry": "Ablauf der Domain",
     "labelDomainNameExpiryNotification": "Benachrichtigung zum Ablauf des Domainnamens",
-    "domainExpiryDescription": "Benachrichtigung auslösen, wenn Domainnamen abläuft. In:"
+    "domainExpiryDescription": "Benachrichtigung auslösen, wenn Domainnamen abläuft. In:",
+    "wsCodeDescription": "Für mehr Informationen über die verfügbaren Statuscodes siehe {rfc6455}",
+    "Subprotocol(s)": "Unterprotokoll(e)",
+    "hostnameCannotBeIP": "Der DNS-Hostname darf keine IP-Adresse sein. Resolver-Feld verwenden?"
 }

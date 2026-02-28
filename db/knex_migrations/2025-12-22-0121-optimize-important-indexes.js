@@ -9,11 +9,11 @@ exports.up = async function (knex) {
 
         // Create partial indexes with predicate
         await knex.schema.alterTable("heartbeat", function (table) {
-            table.index([ "monitor_id", "time" ], "monitor_important_time_index", {
-                predicate: knex.whereRaw("important = 1")
+            table.index(["monitor_id", "time"], "monitor_important_time_index", {
+                predicate: knex.whereRaw("important = 1"),
             });
-            table.index([ "important" ], "heartbeat_important_index", {
-                predicate: knex.whereRaw("important = 1")
+            table.index(["important"], "heartbeat_important_index", {
+                predicate: knex.whereRaw("important = 1"),
             });
         });
     }
@@ -29,8 +29,8 @@ exports.down = async function (knex) {
         await knex.raw("DROP INDEX IF EXISTS heartbeat_important_index");
 
         await knex.schema.alterTable("heartbeat", function (table) {
-            table.index([ "monitor_id", "important", "time" ], "monitor_important_time_index");
-            table.index([ "important" ]);
+            table.index(["monitor_id", "important", "time"], "monitor_important_time_index");
+            table.index(["important"]);
         });
     }
     // For MariaDB/MySQL: No changes

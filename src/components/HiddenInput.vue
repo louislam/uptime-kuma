@@ -10,7 +10,7 @@
             :autocomplete="autocomplete"
             :required="required"
             :readonly="readonly"
-        >
+        />
 
         <a v-if="visibility == 'password'" class="btn btn-outline-primary" @click="showInput()">
             <font-awesome-icon icon="eye" />
@@ -27,17 +27,17 @@ export default {
         /** The value of the input */
         modelValue: {
             type: String,
-            default: ""
+            default: "",
         },
         /** A placeholder to use */
         placeholder: {
             type: String,
-            default: ""
+            default: "",
         },
         /** Maximum length of the input */
         maxlength: {
             type: Number,
-            default: 255
+            default: 255,
         },
         /** Should the field auto complete */
         autocomplete: {
@@ -46,7 +46,7 @@ export default {
         },
         /** Is the input required? */
         required: {
-            type: Boolean
+            type: Boolean,
         },
         /** Should the input be read only? */
         readonly: {
@@ -54,7 +54,7 @@ export default {
             default: undefined,
         },
     },
-    emits: [ "update:modelValue" ],
+    emits: ["update:modelValue"],
     data() {
         return {
             visibility: "password",
@@ -67,12 +67,10 @@ export default {
             },
             set(value) {
                 this.$emit("update:modelValue", value);
-            }
-        }
+            },
+        },
     },
-    created() {
-
-    },
+    created() {},
     methods: {
         /**
          * Show users input in plain text
@@ -88,6 +86,6 @@ export default {
         hideInput() {
             this.visibility = "password";
         },
-    }
+    },
 };
 </script>

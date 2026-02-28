@@ -1,7 +1,7 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
-const { setting } = require("../util-server");
 const { getMonitorRelativeURL, UP, DOWN } = require("../../src/util");
+const { Settings } = require("../settings");
 
 class AlertNow extends NotificationProvider {
     name = "AlertNow";
@@ -29,16 +29,16 @@ class AlertNow extends NotificationProvider {
 
             textMsg += ` - ${msg}`;
 
-            const baseURL = await setting("primaryBaseURL");
+            const baseURL = await Settings.get("primaryBaseURL");
             if (baseURL && monitorJSON) {
                 textMsg += ` >> ${baseURL + getMonitorRelativeURL(monitorJSON.id)}`;
             }
 
             const data = {
-                "summary": textMsg,
-                "status": status,
-                "event_type": eventType,
-                "event_id": eventId,
+                summary: textMsg,
+                status: status,
+                event_type: eventType,
+                event_id: eventId,
             };
 
             let config = this.getAxiosConfigWithProxy({});
@@ -48,7 +48,6 @@ class AlertNow extends NotificationProvider {
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }
-
     }
 }
 

@@ -26,10 +26,10 @@ class PushDeer extends NotificationProvider {
         }
 
         let data = {
-            "pushkey": notification.pushdeerKey,
-            "text": title,
-            "desp": msg.replace(/\n/g, "\n\n"),
-            "type": "markdown",
+            pushkey: notification.pushdeerKey,
+            text: title,
+            desp: msg.replace(/\n/g, "\n\n"),
+            type: "markdown",
         };
 
         try {

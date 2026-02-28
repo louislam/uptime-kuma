@@ -1,19 +1,24 @@
 <template>
     <div class="mb-3">
         <label for="line-channel-access-token" class="form-label">{{ $t("Channel access token (Long-lived)") }}</label>
-        <HiddenInput id="line-channel-access-token" v-model="$parent.notification.lineChannelAccessToken" :required="true" autocomplete="new-password"></HiddenInput>
+        <HiddenInput
+            id="line-channel-access-token"
+            v-model="$parent.notification.lineChannelAccessToken"
+            :required="true"
+            autocomplete="new-password"
+        ></HiddenInput>
     </div>
     <i18n-t tag="div" keypath="lineDevConsoleTo" class="form-text">
         <b>{{ $t("Messaging API") }}</b>
     </i18n-t>
-    <div class="mb-3" style="margin-top: 12px;">
+    <div class="mb-3" style="margin-top: 12px">
         <label for="line-user-id" class="form-label">{{ $t("Your User ID") }}</label>
-        <input id="line-user-id" v-model="$parent.notification.lineUserID" type="text" class="form-control" required>
+        <input id="line-user-id" v-model="$parent.notification.lineUserID" type="text" class="form-control" required />
     </div>
     <i18n-t tag="div" keypath="lineDevConsoleTo" class="form-text">
         <b>{{ $t("Basic Settings") }}</b>
     </i18n-t>
-    <i18n-t tag="div" keypath="wayToGetLineChannelToken" class="form-text" style="margin-top: 8px;">
+    <i18n-t tag="div" keypath="wayToGetLineChannelToken" class="form-text" style="margin-top: 8px">
         <a href="https://developers.line.biz/console/" target="_blank">{{ $t("Line Developers Console") }}</a>
     </i18n-t>
 </template>

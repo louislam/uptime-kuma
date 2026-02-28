@@ -22,10 +22,11 @@ export default defineConfig({
     // Reporter to use
     reporter: [
         [
-            "html", {
+            "html",
+            {
                 outputFolder: "../private/playwright-report",
                 open: "never",
-            }
+            },
         ],
     ],
 
@@ -47,7 +48,7 @@ export default defineConfig({
         {
             name: "specs",
             use: { ...devices["Desktop Chrome"] },
-            dependencies: [ "run-once setup" ],
+            dependencies: ["run-once setup"],
         },
         /*
         {

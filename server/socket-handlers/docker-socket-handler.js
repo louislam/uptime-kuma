@@ -22,7 +22,6 @@ module.exports.dockerSocketHandler = (socket) => {
                 msgi18n: true,
                 id: dockerHostBean.id,
             });
-
         } catch (e) {
             callback({
                 ok: false,
@@ -43,7 +42,6 @@ module.exports.dockerSocketHandler = (socket) => {
                 msg: "successDeleted",
                 msgi18n: true,
             });
-
         } catch (e) {
             callback({
                 ok: false,
@@ -69,7 +67,6 @@ module.exports.dockerSocketHandler = (socket) => {
                 ok: true,
                 msg,
             });
-
         } catch (e) {
             log.error("docker", e);
 

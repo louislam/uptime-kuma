@@ -12,7 +12,7 @@
     "keywordDescription": "Ključna riječ za pretragu, u obliku običnog HTML-a ili u JSON formatu. Pretraga je osjetljiva na velika i mala slova.",
     "deleteMonitorMsg": "Jeste li sigurni da želite izbrisati monitor?",
     "deleteNotificationMsg": "Jeste li sigurni da želite izbrisati ovu obavijest za sve monitore?",
-    "resolverserverDescription": "Cloudflare je zadani DNS poslužitelj. Možete to promijeniti u bilo kojem trenutku.",
+    "resolverserverDescription": "Cloudflare je zadani DNS poslužitelj. Možete zadati više poslužitelja kao popis IP adresa odvojenih zarezom.",
     "rrtypeDescription": "Odaberite vrstu DNS zapisa o resursu kojeg želite pratiti",
     "pauseMonitorMsg": "Jeste li sigurni da želite pauzirati?",
     "enableDefaultNotificationDescription": "Ova će obavijesti biti omogućena za sve nove monitore. Možete ju ručno onemogućiti za pojedini monitor.",
@@ -58,7 +58,7 @@
     "Cert Exp.": "Istek cert.",
     "day": "dan | dana",
     "-day": "-dnevno",
-    "hour": "sat",
+    "hour": "sat(i)",
     "-hour": "-satno",
     "Response": "Odgovor",
     "Ping": "Odziv",
@@ -695,7 +695,7 @@
     "Proto Content": "Proto sadržaj",
     "Economy": "Ekonomski",
     "high": "visoko",
-    "SMSManager API Docs": "Dokumentacija SMSManager API-ja ",
+    "SMSManager API Docs": "Dokumentacija SMSManager API-ja",
     "Gateway Type": "Tip poveznika (gateway)",
     "Base URL": "Osnovni URL",
     "goAlertIntegrationKeyInfo": "Nabavite generički integracijski API ključ za ovu uslugu u formatu \"aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee\", koji je obično vrijednost token parametra kopiranog URL-a.",
@@ -1234,5 +1234,8 @@
     "ariaDeleteMaintenance": "Obriši ovaj raspored održavanja",
     "twilioApiKeyHelptext": "API ključ je neobvezan, ali se preporučuje. Možete navesti ili SID računa i AuthToken s Twilio konzole ili SID računa te API ključ s tajnom",
     "twilioMessagingServiceSID": "SID usluge za slanje poruka (neobvezno)",
-    "twilloMessagingServiceSIDHelptext": "Ovdje unesite SID svoje usluge za slanje poruka ako koristite {twillo_messaging_service_help_link} za upravljanje pošiljateljima i ostalim značajkama"
+    "twilloMessagingServiceSIDHelptext": "Ovdje unesite SID svoje usluge za slanje poruka ako koristite {twillo_messaging_service_help_link} za upravljanje pošiljateljima i ostalim značajkama",
+    "enableSSL": "Omogući SSL/TLS",
+    "mariadbUseSSLHelptext": "Omogućiti za korištenje šifrirane veze do bate. Postavka je nužna za većinu baza u oblaku.",
+    "mariadbCaCertificateLabel": "CA certifikat"
 }

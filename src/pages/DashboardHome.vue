@@ -5,32 +5,23 @@
                 {{ $t("Quick Stats") }}
             </h1>
 
-            <div class="shadow-box big-padding text-center mb-4">
+            <div class="shadow-box big-padding text-center mb-3">
                 <div class="row">
                     <div class="col">
                         <h3>{{ $t("Up") }}</h3>
-                        <span
-                            class="num"
-                            :class="$root.stats.up === 0 && 'text-secondary'"
-                        >
+                        <span class="num" :class="$root.stats.up === 0 && 'text-secondary'">
                             {{ $root.stats.up }}
                         </span>
                     </div>
                     <div class="col">
                         <h3>{{ $t("Down") }}</h3>
-                        <span
-                            class="num"
-                            :class="$root.stats.down > 0 ? 'text-danger' : 'text-secondary'"
-                        >
+                        <span class="num" :class="$root.stats.down > 0 ? 'text-danger' : 'text-secondary'">
                             {{ $root.stats.down }}
                         </span>
                     </div>
                     <div class="col">
                         <h3>{{ $t("Maintenance") }}</h3>
-                        <span
-                            class="num"
-                            :class="$root.stats.maintenance > 0 ? 'text-maintenance' : 'text-secondary'"
-                        >
+                        <span class="num" :class="$root.stats.maintenance > 0 ? 'text-maintenance' : 'text-secondary'">
                             {{ $root.stats.maintenance }}
                         </span>
                     </div>
@@ -45,7 +36,7 @@
                 </div>
             </div>
 
-            <div class="shadow-box table-shadow-box" style="overflow-x: hidden;">
+            <div class="shadow-box table-shadow-box table-wrapper">
                 <div class="mb-3 text-end">
                     <button
                         class="btn btn-sm btn-outline-danger"
@@ -58,22 +49,40 @@
                 <table class="table table-borderless table-hover">
                     <thead>
                         <tr>
-                            <th>{{ $t("Name") }}</th>
+                            <th v-if="showGroupColumn">{{ $t("Group Name") }}</th>
+                            <th class="name-column">{{ $t("Name") }}</th>
                             <th>{{ $t("Status") }}</th>
                             <th>{{ $t("DateTime") }}</th>
                             <th>{{ $t("Message") }}</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(beat, index) in displayedRecords" :key="index" :class="{ 'shadow-box': $root.windowWidth <= 550}">
-                            <td class="name-column"><router-link :to="`/dashboard/${beat.monitorID}`">{{ $root.monitorList[beat.monitorID]?.name }}</router-link></td>
+                        <tr
+                            v-for="(beat, index) in displayedRecords"
+                            :key="index"
+                            :class="{ 'shadow-box': $root.windowWidth <= 550 }"
+                        >
+                            <td v-if="showGroupColumn">
+                                <router-link
+                                    v-if="getGroupName(beat.monitorID)"
+                                    :to="`/dashboard/${getGroupId(beat.monitorID)}`"
+                                >
+                                    {{ getGroupName(beat.monitorID) }}
+                                </router-link>
+                                <span v-else class="text-secondary">—</span>
+                            </td>
+                            <td class="name-column">
+                                <router-link :to="`/dashboard/${beat.monitorID}`">
+                                    {{ $root.monitorList[beat.monitorID]?.name }}
+                                </router-link>
+                            </td>
                             <td><Status :status="beat.status" /></td>
-                            <td :class="{ 'border-0':! beat.msg}"><Datetime :value="beat.time" /></td>
+                            <td :class="{ 'border-0': !beat.msg }"><Datetime :value="beat.time" /></td>
                             <td class="border-0">{{ beat.msg }}</td>
                         </tr>
 
                         <tr v-if="importantHeartBeatListLength === 0">
-                            <td colspan="4">
+                            <td :colspan="tableColumnCount">
                                 {{ $t("No important events") }}
                             </td>
                         </tr>
@@ -119,8 +128,8 @@ export default {
     props: {
         calculatedHeight: {
             type: Number,
-            default: 0
-        }
+            default: 0,
+        },
     },
     data() {
         return {
@@ -135,6 +144,14 @@ export default {
             displayedRecords: [],
             clearingAllEvents: false,
         };
+    },
+    computed: {
+        showGroupColumn() {
+            return Object.values(this.$root.monitorList).some((m) => m.parent != null);
+        },
+        tableColumnCount() {
+            return this.showGroupColumn ? 5 : 4;
+        },
     },
     watch: {
         perPage() {
@@ -166,6 +183,30 @@ export default {
     },
 
     methods: {
+        /**
+         * Returns the group (parent) name for a monitor, or empty string if none.
+         * @param {number} monitorID - The monitor ID.
+         * @returns {string} The group name or empty string.
+         */
+        getGroupName(monitorID) {
+            const monitor = this.$root.monitorList[monitorID];
+            if (!monitor || monitor.parent == null) {
+                return "";
+            }
+            const parent = this.$root.monitorList[monitor.parent];
+            return parent ? parent.name : "";
+        },
+
+        /**
+         * Returns the group (parent) ID for a monitor, or null if none.
+         * @param {number} monitorID - The monitor ID.
+         * @returns {number|null} The group monitor ID or null.
+         */
+        getGroupId(monitorID) {
+            const monitor = this.$root.monitorList[monitorID];
+            return monitor && monitor.parent != null ? monitor.parent : null;
+        },
+
         /**
          * Updates the displayed records when a new important heartbeat arrives.
          * @param {object} heartbeat - The heartbeat object received.
@@ -222,7 +263,6 @@ export default {
             } else {
                 this.perPage = this.initialPerPage;
             }
-
         },
 
         clearAllEventsDialog() {
@@ -303,5 +343,8 @@ table {
         min-width: 200px;
     }
 }
-</style>
 
+.table-wrapper {
+    overflow-x: auto;
+}
+</style>

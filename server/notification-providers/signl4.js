@@ -23,8 +23,8 @@ class SIGNL4 extends NotificationProvider {
 
             let config = {
                 headers: {
-                    "Content-Type": "application/json"
-                }
+                    "Content-Type": "application/json",
+                },
             };
             config = this.getAxiosConfigWithProxy(config);
 

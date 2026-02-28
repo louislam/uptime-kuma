@@ -260,20 +260,20 @@ class GreaterThanOrEqualToOperator extends ConditionOperator {
 }
 
 const operatorMap = new Map([
-    [ OP_STR_EQUALS, new StringEqualsOperator ],
-    [ OP_STR_NOT_EQUALS, new StringNotEqualsOperator ],
-    [ OP_CONTAINS, new ContainsOperator ],
-    [ OP_NOT_CONTAINS, new NotContainsOperator ],
-    [ OP_STARTS_WITH, new StartsWithOperator ],
-    [ OP_NOT_STARTS_WITH, new NotStartsWithOperator ],
-    [ OP_ENDS_WITH, new EndsWithOperator ],
-    [ OP_NOT_ENDS_WITH, new NotEndsWithOperator ],
-    [ OP_NUM_EQUALS, new NumberEqualsOperator ],
-    [ OP_NUM_NOT_EQUALS, new NumberNotEqualsOperator ],
-    [ OP_LT, new LessThanOperator ],
-    [ OP_GT, new GreaterThanOperator ],
-    [ OP_LTE, new LessThanOrEqualToOperator ],
-    [ OP_GTE, new GreaterThanOrEqualToOperator ],
+    [OP_STR_EQUALS, new StringEqualsOperator()],
+    [OP_STR_NOT_EQUALS, new StringNotEqualsOperator()],
+    [OP_CONTAINS, new ContainsOperator()],
+    [OP_NOT_CONTAINS, new NotContainsOperator()],
+    [OP_STARTS_WITH, new StartsWithOperator()],
+    [OP_NOT_STARTS_WITH, new NotStartsWithOperator()],
+    [OP_ENDS_WITH, new EndsWithOperator()],
+    [OP_NOT_ENDS_WITH, new NotEndsWithOperator()],
+    [OP_NUM_EQUALS, new NumberEqualsOperator()],
+    [OP_NUM_NOT_EQUALS, new NumberNotEqualsOperator()],
+    [OP_LT, new LessThanOperator()],
+    [OP_GT, new GreaterThanOperator()],
+    [OP_LTE, new LessThanOrEqualToOperator()],
+    [OP_GTE, new GreaterThanOrEqualToOperator()],
 ]);
 
 const defaultStringOperators = [
@@ -284,7 +284,7 @@ const defaultStringOperators = [
     operatorMap.get(OP_STARTS_WITH),
     operatorMap.get(OP_NOT_STARTS_WITH),
     operatorMap.get(OP_ENDS_WITH),
-    operatorMap.get(OP_NOT_ENDS_WITH)
+    operatorMap.get(OP_NOT_ENDS_WITH),
 ];
 
 const defaultNumberOperators = [
@@ -293,7 +293,7 @@ const defaultNumberOperators = [
     operatorMap.get(OP_LT),
     operatorMap.get(OP_GT),
     operatorMap.get(OP_LTE),
-    operatorMap.get(OP_GTE)
+    operatorMap.get(OP_GTE),
 ];
 
 module.exports = {

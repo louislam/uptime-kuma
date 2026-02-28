@@ -14,8 +14,8 @@ class DingDing extends NotificationProvider {
         const mentionAll = notification.mentioning === "everyone";
         const mobileList = notification.mentioning === "specify-mobiles" ? notification.mobileList : [];
         const userList = notification.mentioning === "specify-users" ? notification.userList : [];
-        const finalList = [ ...mobileList || [], ...userList || [] ];
-        const mentionStr = finalList.length > 0 ? "\n" : "" + finalList.map(item => `@${item}`).join(" ");
+        const finalList = [...(mobileList || []), ...(userList || [])];
+        const mentionStr = finalList.length > 0 ? "\n" : "" + finalList.map((item) => `@${item}`).join(" ");
         try {
             if (heartbeatJSON != null) {
                 let params = {
@@ -27,8 +27,8 @@ class DingDing extends NotificationProvider {
                     at: {
                         isAtAll: mentionAll,
                         atUserIds: userList,
-                        atMobiles: mobileList
-                    }
+                        atMobiles: mobileList,
+                    },
                 };
                 if (await this.sendToDingDing(notification, params)) {
                     return okMsg;
@@ -37,13 +37,13 @@ class DingDing extends NotificationProvider {
                 let params = {
                     msgtype: "text",
                     text: {
-                        content: `${msg}${mentionStr}`
+                        content: `${msg}${mentionStr}`,
                     },
                     at: {
                         isAtAll: mentionAll,
                         atUserIds: userList,
-                        atMobiles: mobileList
-                    }
+                        atMobiles: mobileList,
+                    },
                 };
                 if (await this.sendToDingDing(notification, params)) {
                     return okMsg;
@@ -87,8 +87,7 @@ class DingDing extends NotificationProvider {
      * @returns {string} Base64 encoded signature
      */
     sign(timestamp, secretKey) {
-        return Crypto
-            .createHmac("sha256", Buffer.from(secretKey, "utf8"))
+        return Crypto.createHmac("sha256", Buffer.from(secretKey, "utf8"))
             .update(Buffer.from(`${timestamp}\n${secretKey}`, "utf8"))
             .digest("base64");
     }

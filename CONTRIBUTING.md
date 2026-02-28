@@ -6,9 +6,11 @@ Because of this, I also never thought that other people would actually read and
 edit my code. Parts of the code are not very well-structured or commented, sorry
 about that.
 
-The project was created with `vite.js` and is written in `vue3`. Our backend
-lives in the `server`-directory and mostly communicates via websockets. Both
-frontend and backend share the same `package.json`.
+Before you start, please read our [Code of Conduct](CODE_OF_CONDUCT.md) to understand our community standards.
+
+The project was created with `vite` and is written in `vue3`. Our backend
+lives in the `server`-directory and mostly communicates via websockets.
+Both frontend and backend share the same `package.json`.
 
 For production, the frontend is built into the `dist`-directory and the server
 (`express.js`) exposes the `dist` directory as the root of the endpoint. For
@@ -52,8 +54,7 @@ to review the appropriate one for your contribution.
   [**PLEASE SEE OUR SECURITY POLICY.**](SECURITY.md)
 
   [advisory]: https://github.com/louislam/uptime-kuma/security/advisories/new
-  [issue]:
-    https://github.com/louislam/uptime-kuma/issues/new?template=security_issue.yml
+  [issue]: https://github.com/louislam/uptime-kuma/issues/new?template=security_issue.yml
 
   </p>
   </details>
@@ -63,7 +64,6 @@ to review the appropriate one for your contribution.
 
   If you come across a bug and think you can solve, we appreciate your work.
   Please make sure that you follow these rules:
-
   - keep the PR as small as possible, fix only one thing at a time => keeping it
     reviewable
   - test that your code does what you claim it does.
@@ -77,23 +77,16 @@ to review the appropriate one for your contribution.
 - <details><summary><b>Translations / Internationalisation (i18n)</b> (click to expand)</summary>
   <p>
 
-  We use weblate to localise this project into many languages. If you are
-  unhappy with a translation this is the best start. On how to translate using
-  weblate, please see
-  [these instructions](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md).
+  Please add **all** strings that are translatable to `src/lang/en.json`. If translation keys are omitted, they cannot be translated. **Do not include any other languages in your initial pull request** (even if it is your mother tongue) to avoid merge conflicts between Weblate and `master`. Once your PR is merged into `master`, the strings can be translated by awesome people donating their language skills.
 
-  There are two cases in which a change cannot be done in weblate and requires a
-  PR:
+  We use Weblate to localise this project into many languages. If you want to help translate Uptime Kuma into your language, please see [these instructions on how to translate using Weblate](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md).
 
-  - A text may not be currently localisable. In this case, **adding a new
-    language key** via `$t("languageKey")` might be necessary
-  - language keys need to be **added to `en.json`** to be visible in weblate. If
-    this has not happened, a PR is appreciated.
-  - **Adding a new language** requires a new file see
-    [these instructions](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md)
+  There are some cases where a change cannot be done directly in Weblate and requires a PR:
+  - A text may not yet be localisable. In this case, **adding a new language key** via `{{ $t("Translation key") }}` or [`<i18n-t keypath="Translation key">`](https://vue-i18n.intlify.dev/guide/advanced/component.html) might be necessary.
+  - Language keys need to be **added to `en.json`** to appear in Weblate. If this has not been done, a PR is appreciated.
+  - **Adding a new language** requires creating a new file. See [these instructions](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md).
 
-  <sub>Because maintainer time is precious, junior maintainers may merge
-  uncontroversial PRs in this area.</sub>
+  <sub>Because maintainer time is precious, junior maintainers may merge uncontroversial PRs in this area.</sub>
 
   </p>
   </details>
@@ -102,7 +95,6 @@ to review the appropriate one for your contribution.
   <p>
 
   To set up a new notification provider these files need to be modified/created:
-
   - `server/notification-providers/PROVIDER_NAME.js` is where the heart of the
     notification provider lives.
 
@@ -139,7 +131,6 @@ to review the appropriate one for your contribution.
   translations (`{{ $t("Translation key") }}`,
   [`i18n-t keypath="Translation key">`](https://vue-i18n.intlify.dev/guide/advanced/component.html))
   in `src/lang/en.json` to enable our translators to translate this
-
   - `src/components/notifications/index.js` is where the frontend of the
     provider needs to be registered. _If you have an idea how we can skip this
     step, we would love to hear about it ^^_
@@ -151,9 +142,9 @@ to review the appropriate one for your contribution.
 
   To make sure you have tested the notification provider, please include
   screenshots of the following events in the pull-request description:
-
   - `UP`/`DOWN`
   - Certificate Expiry via <https://expired.badssl.com/>
+  - Domain Expiry via <https://google.com/> and a larger time set
   - Testing (the test button on the notification provider setup page)
 
   <br/>
@@ -166,6 +157,7 @@ to review the appropriate one for your contribution.
   | `UP`               | ![Before](image-link) | ![After](image-link) |
   | `DOWN`             | ![Before](image-link) | ![After](image-link) |
   | Certificate-expiry | ![Before](image-link) | ![After](image-link) |
+  | Domain-expiry      | ![Before](image-link) | ![After](image-link) |
   | Testing            | ![Before](image-link) | ![After](image-link) |
   ```
 
@@ -179,14 +171,11 @@ to review the appropriate one for your contribution.
   <p>
 
   To set up a new notification provider these files need to be modified/created:
-
-  - `server/monitor-types/MONITORING_TYPE.js` is the core of each monitor. the
-    `async check(...)`-function should:
-
-        - throw an error for each fault that is detected with an actionable error
-
-  message - in the happy-path, you should set `heartbeat.msg` to a successful
-  message and set `heartbeat.status = UP`
+  - `server/monitor-types/MONITORING_TYPE.js` is the core of each monitor.
+    The `async check(...)`-function should:
+    - in the happy-path: set `heartbeat.msg` to a successful message and set `heartbeat.status = UP`
+    - in the unhappy-path: throw an `Error` for each fault that is detected with an actionable error message.
+    - NEVER set `heartbeat.status = DOWN` unless you want to explicitly ignore retries.
 
   - `server/uptime-kuma-server.js` is where the monitoring backend needs to be
     registered. _If you have an idea how we can skip this step, we would love to
@@ -197,7 +186,7 @@ to review the appropriate one for your contribution.
     credentials - included all the necessary helptexts/placeholder/.. to make
     sure the notification provider is simple to setup for new users. - include
     all translations (`{{ $t("Translation key") }}`,
-    [`i18n-t keypath="Translation key">`](https://vue-i18n.intlify.dev/guide/advanced/component.html))
+    [`<i18n-t keypath="Translation key">`](https://vue-i18n.intlify.dev/guide/advanced/component.html))
     in `src/lang/en.json` to enable our translators to translate this
 
   <sub>Because maintainer time is precious, junior maintainers may merge
@@ -210,8 +199,9 @@ to review the appropriate one for your contribution.
   <p>
 
   be sure to **create an empty draft pull request or open an issue, so we can
-  have a discussion first**. This is especially important for a large pull
-  request or when you don't know if it will be merged or not.
+  have a discussion first**.
+  This is especially important for large pull requests or when you don't know if it will be merged or not.
+  When adding new features, please also add tests to ensure your changes work as expected and to prevent future regressions.
 
   <sub>Because of the large impact of this work, only senior maintainers may
   merge PRs in this area. </sub>
@@ -219,105 +209,36 @@ to review the appropriate one for your contribution.
   </p>
   </details>
 
-- <details><summary><b>Pull Request Guidelines</b> (click to expand)</summary>
+- <details><summary><b>As a First-Time Contributor</b> (click to expand)</summary>
   <p>
 
-  ## Steps to Submit a Pull Request
-
-  1. **Fork** the [Uptime-Kuma repository].
-
-  [Uptime-Kuma repository]: https://github.com/louislam/uptime-kuma/
-
-  2. **Clone** your forked repository to your local machine.
-  3. **Create a new branch** for your changes (e.g.,
-     `feature/add-new-notification-provider-signal`).
-  4. **Initiate a discussion before making major changes** by creating an empty
-     commit:
-
-     ```sh
-     git commit -m "<YOUR TASK NAME>" --allow-empty
-     ```
-
-  5. **Push** your branch to your forked repository.
-  6. **Open a pull request** using this link: [Compare & Pull Request].
-
-  [Compare & Pull Request]: https://github.com/louislam/uptime-kuma/compare/
-
-  7. **Select the correct source and target branches**.
-  8. **Link to related issues** for context.
-  9. **Provide a clear and concise description** explaining the changes and
-     their purpose.
-
-  - **Type of changes**
-
-    - Bugfix (a non-breaking change that resolves an issue)
-    - New feature (a non-breaking change that adds new functionality)
-    - Breaking change (a fix or feature that alters existing functionality in a
-      way that could cause issues)
-    - User Interface (UI) updates
-    - New Documentation (addition of new documentation)
-    - Documentation Update (modification of existing documentation)
-    - Documentation Update Required (the change requires updates to related
-      documentation)
-    - Other (please specify):
-      - Provide additional details here.
-
-  - **Checklist**
-
-    - My code adheres to the style guidelines of this project.
-    - I ran ESLint and other code linters for modified files.
-    - I have reviewed and tested my code.
-    - I have commented my code, especially in hard-to-understand areas (e.g.,
-      using JSDoc for methods).
-    - My changes generate no new warnings.
-    - My code needed automated testing. I have added them (this is an optional
-      task).
-    - Documentation updates are included (if applicable).
-    - I have considered potential security impacts and mitigated risks.
-    - Dependency updates are listed and explained.
-    - I have read and understood the
-      [Pull Request guidelines](#recommended-pull-request-guideline).
-
-  10. **When publishing your PR, set it as a** `Draft pull request` **to allow
-      for review and prevent automatic merging.**
-  11. **Maintainers will assign relevant labels** (e.g., `A:maintenance`,
-      `A:notifications`).
-  12. **Complete the PR checklist**, ensuring that:
-
-      - Documentation is updated if necessary.
-      - Tests are written or updated.
-      - CI/CD checks pass successfully.
-
-  13. **Request feedback** from team members to refine your changes before the
-      final review.
+  Contributing is easy and fun. We will guide you through the process:
+  1. **Fork** the [Uptime-Kuma repository](https://github.com/louislam/uptime-kuma/) and **clone** it to your local machine.
+  2. **Create a new branch** for your changes (e.g., `signal-notification-provider`).
+  3. **Make your changes** and **commit** them with a clear message.
+  4. **Push** your changes to your forked repository.
+  5. **Open a pull request** to the `master` branch of the Uptime Kuma repository.
+     - For large changes, please open a **draft pull request** first to discuss the changes with the maintainers.
+  6. **Provide a clear and concise description** of the changes you've made and link any related issues.
+  7. **Complete the PR checklist** and make sure all CI checks pass.
+  8. **Request a review** when your pull request is ready.
 
   ## When Can You Change the PR Status to "Ready for Review"?
 
-  A PR should remain in **draft status** until all tasks are completed. Only
-  change the status to **Ready for Review** when:
-
+  A PR should remain in **draft status** until all tasks are completed.
+  Only change the status to **Ready for Review** when:
   - You have implemented all planned changes.
-  - You have addressed all feedback.
-  - Your code is fully tested and ready for integration.
+  - Your code is fully tested and ready for review.
   - You have updated or created the necessary tests.
   - You have verified that CI/CD checks pass successfully.
 
-  <br />
+  A volunteer maintainer will review your PR as soon as possible.
+  You can help us by reviewing other PRs or taking a look at open issues.
 
-  A **work-in-progress (WIP) PR** must stay in **draft status** until everything
-  is finalized.
-
-  <sub>Since maintainer time is valuable, junior maintainers may merge
-  uncontroversial PRs.</sub>
-
-  </p>
-  </details>
-
-## The following rules are essential for making your PR mergable
+## The following rules are essential for making your PR mergeable
 
 - Merging multiple issues by a huge PR is more difficult to review and causes
   conflicts with other PRs. Please
-
   - (if possible) **create one PR for one issue** or
   - (if not possible) **explain which issues a PR addresses and why this PR
     should not be broken apart**
@@ -335,18 +256,22 @@ to review the appropriate one for your contribution.
 - Don't modify or delete existing logic without a valid reason.
 - Don't convert existing code into other programming languages for no reason.
 
-I ([@louislam](https://github.com/louislam)) have the final say. If your pull
-request does not meet my expectations, I will reject it, no matter how much time
-you spent on it. Therefore, it is essential to have a discussion beforehand.
+### Continuous Integration
 
-I will assign your pull request to a [milestone], if I plan to review and merge
-it.
+All pull requests must pass our continuous integration checks. These checks include:
 
-[milestone]: https://github.com/louislam/uptime-kuma/milestones
+- **Linting**: We use ESLint and Stylelint for code quality checks. You can run the linter locally with `npm run lint`.
+- **Formatting**: We use Prettier for code formatting. You can format your code with `npm run fmt` (or CI will do this for you)
+- **Testing**: We use Playwright for end-to-end tests and have a suite of backend tests. You can run the tests locally with `npm test`.
 
-Please don't rush or ask for an ETA. We have to understand the pull request,
-make sure it has no breaking changes and stick to the vision of this project,
-especially for large pull requests.
+I ([@louislam](https://github.com/louislam)) have the final say.
+If your pull request does not meet my expectations, I will reject it, no matter how much time
+you spent on it.
+
+We will assign your pull request to a [milestone](https://github.com/louislam/uptime-kuma/milestones), if we plan to review and merge it.
+
+Please don't rush or ask for an ETA.
+We have to understand the pull request, make sure it has no breaking changes and stick to the vision of this project, especially for large pull requests.
 
 ## I'd Like to Work on an Issue. How Do I Do That?
 
@@ -354,105 +279,20 @@ We have found that assigning people to issues is unnecessary management
 overhead. Instead, a short comment stating that you want to work on an issue is
 appreciated, as it saves time for other developers. If you encounter any
 problems during development, feel free to leave a comment describing what you
-are stuck on.
+are stuck on. We are here to help.
 
-### Recommended Pull Request Guideline
-
-Before jumping into coding, it's recommended to initiate a discussion by
-creating an empty pull request. This approach allows us to align on the
-direction and scope of the feature, ensuring it doesn't conflict with existing
-or planned work. It also provides an opportunity to identify potential pitfalls
-early on, helping to avoid issues down the line.
-
-1. **Fork** the [Uptime-Kuma repository].
-2. **Clone** your forked repository to your local machine.
-3. **Create a new branch** for your changes (e.g.,
-   `feature/add-new-notification-provider-signal`).
-4. **Initiate a discussion before making major changes** by creating an empty
-   commit:
-
-   ```sh
-   git commit -m "<YOUR TASK NAME>" --allow-empty
-   ```
-
-5. **Push** your branch to your forked repository.
-6. **Open a pull request** using this link: [Compare & Pull Request].
-7. **Select the correct source and target branches**.
-8. **Link to related issues** for context.
-9. **Provide a clear and concise description** explaining the changes and their
-   purpose.
-
-   - **Type of changes**
-
-     - Bugfix (a non-breaking change that resolves an issue)
-     - New feature (a non-breaking change that adds new functionality)
-     - Breaking change (a fix or feature that alters existing functionality in a
-       way that could cause issues)
-     - User Interface (UI) updates
-     - New Documentation (addition of new documentation)
-     - Documentation Update (modification of existing documentation)
-     - Documentation Update Required (the change requires updates to related
-       documentation)
-     - Other (please specify):
-       - Provide additional details here.
-
-   - **Checklist**
-
-     - My code adheres to the style guidelines of this project.
-     - I ran ESLint and other code linters for modified files.
-     - I have reviewed and tested my code.
-     - I have commented my code, especially in hard-to-understand areas (e.g.,
-       using JSDoc for methods).
-     - My changes generate no new warnings.
-     - My code needed automated testing. I have added them (this is an optional
-       task).
-     - Documentation updates are included (if applicable).
-     - I have considered potential security impacts and mitigated risks.
-     - Dependency updates are listed and explained.
-     - I have read and understood the
-       [Pull Request guidelines](#recommended-pull-request-guideline).
-
-10. **When publishing your PR, set it as a** `Draft pull request` **to allow for
-    review and prevent automatic merging.**
-11. **Maintainers will assign relevant labels** (e.g., `A:maintenance`,
-    `A:notifications`).
-12. **Complete the PR checklist**, ensuring that:
-
-    - Documentation is updated if necessary.
-    - Tests are written or updated.
-    - CI/CD checks pass successfully.
-
-13. **Request feedback** from team members to refine your changes before the
-    final review.
-
-### When Can You Change the PR Status to "Ready for Review"?
-
-A PR should remain in **draft status** until all tasks are completed. Only
-change the status to **Ready for Review** when:
-
-- You have implemented all planned changes.
-- You have addressed all feedback.
-- Your code is fully tested and ready for integration.
-- You have updated or created the necessary tests.
-- You have verified that CI/CD checks pass successfully.
-
-A **work-in-progress (WIP) PR** must stay in **draft status** until everything
-is finalized.
-
-## Project Styles
+## Project Style
 
 I personally do not like something that requires a lot of configuration before
 you can finally start the app. The goal is to make the Uptime Kuma installation
 as easy as installing a mobile app.
 
 - Easy to install for non-Docker users
-
   - no native build dependency is needed (for `x86_64`/`armv7`/`arm64`)
   - no extra configuration and
   - no extra effort required to get it running
 
 - Single container for Docker users
-
   - no complex docker-compose file
   - mapping the volume and exposing the port should be the only requirements
 
@@ -476,7 +316,7 @@ as easy as installing a mobile app.
 
 ## Tools
 
-- [`Node.js`](https://nodejs.org/) >= 18
+- [`Node.js`](https://nodejs.org/) >= 20.4.0
 - [`npm`](https://www.npmjs.com/) >= 9.3
 - [`git`](https://git-scm.com/)
 - IDE that supports [`ESLint`](https://eslint.org/) and EditorConfig (I am using
@@ -500,8 +340,6 @@ npm ci
 ```
 
 ## Dev Server
-
-(2022-04-26 Update)
 
 We can start the frontend dev server and the backend dev server in one command.
 
@@ -549,15 +387,9 @@ in the `socket.io` handlers. `express.js` is also used to serve:
 It binds to `0.0.0.0:3000` by default. The frontend dev server is used for
 development only.
 
-For production, it is not used. It will be compiled to `dist` directory instead.
+For production, it is not used. It will be compiled to `dist` directory instead via `npm run build`.
 
 You can use Vue.js devtools Chrome extension for debugging.
-
-### Build the frontend
-
-```bash
-npm run build
-```
 
 ### Frontend Details
 
@@ -566,8 +398,7 @@ by Vue Router.
 
 The router is in `src/router.js`
 
-As you can see, most data in the frontend is stored at the root level, even
-though you changed the current router to any other pages.
+Most data in the frontend is stored at the root level, even though the router can navigate to different pages.
 
 The data and socket logic are in `src/mixins/socket.js`.
 
@@ -577,6 +408,8 @@ See: <https://github.com/louislam/uptime-kuma/tree/master/db/knex_migrations>
 
 ## Unit Test
 
+To run unit tests, use the following command:
+
 ```bash
 npm run build
 npm test
@@ -584,8 +417,8 @@ npm test
 
 ## Dependencies
 
-Both frontend and backend share the same `package.json`. However, the frontend
-dependencies are eventually not used in the production environment, because it
+Both frontend and backend share the same `package.json`.
+However, the frontend dependencies are eventually not used in the production environment, because it
 is usually also baked into `dist` files. So:
 
 - Frontend dependencies = "devDependencies"
@@ -605,26 +438,10 @@ Patch release = the third digit ([Semantic Versioning](https://semver.org/))
 If for security / bug / other reasons, a library must be updated, breaking
 changes need to be checked by the person proposing the change.
 
-## Translations
-
-Please add **all** the strings which are translatable to `src/lang/en.json` (if
-translation keys are omitted, they can not be translated.)
-
-**Don't include any other languages in your initial pull request** (even if this
-is your mother tongue), to avoid merge-conflicts between weblate and `master`.
-The translations can then (after merging a PR into `master`) be translated by
-awesome people donating their language skills.
-
-If you want to help by translating Uptime Kuma into your language, please visit
-the [instructions on how to translate using weblate].
-
-[instructions on how to translate using weblate]:
-  https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md
-
 ## Spelling & Grammar
 
-Feel free to correct the grammar in the documentation or code. My mother
-language is not English and my grammar is not that great.
+Feel free to correct the spelling and grammar in the documentation or code.
+English is not the native language of the maintainers.
 
 ## Wiki
 
@@ -633,46 +450,7 @@ repo to do that.
 
 <https://github.com/louislam/uptime-kuma-wiki>
 
-## Docker
-
-### Arch
-
-- amd64
-- arm64
-- armv7
-
-### Docker Tags
-
-#### v2
-
-- `2`, `latest-2`: v2 with full features such as Chromium and bundled MariaDB
-- `2.x.x`
-- `2-slim`: v2 with basic features
-- `2.x.x-slim`
-- `beta2`: Latest beta build
-- `2.x.x-beta.x`
-- `nightly2`: Dev build
-- `base2`: Basic Debian setup without Uptime Kuma source code (Full features)
-- `base2-slim`: Basic Debian setup without Uptime Kuma source code
-- `pr-test2`: For testing pull request without setting up a local environment
-
-#### v1
-
-- `1`, `latest`, `1-debian`, `debian`: Latest version of v1
-- `1.x.x`, `1.x.x-debian`
-- `1.x.x-beta.x`: Beta build
-- `beta`: Latest beta build
-- `nightly`: Dev build
-- `base-debian`: Basic Debian setup without Uptime Kuma source code
-- `pr-test`: For testing pull request without setting up a local environment
-- `base-alpine`: (Deprecated) Basic Alpine setup without Uptime Kuma source code
-- `1-alpine`, `alpine`: (Deprecated)
-- `1.x.x-alpine`: (Deprecated)
-
 ## Maintainer
-
-Check the latest issues and pull requests:
-<https://github.com/louislam/uptime-kuma/issues?q=sort%3Aupdated-desc>
 
 ### What is a maintainer and what are their roles?
 
@@ -691,18 +469,16 @@ We have a few procedures we follow. These are documented here:
 
 - <details><summary><b>Set up a Docker Builder</b> (click to expand)</summary>
   <p>
-
   - amd64, armv7 using local.
   - arm64 using remote arm64 cpu, as the emulator is too slow and can no longer
     pass the `npm ci` command.
-
   1. Add the public key to the remote server.
   2. Add the remote context. The remote machine must be arm64 and installed
      Docker CE.
 
-     ```bash
-     docker context create oracle-arm64-jp --docker "host=ssh://root@100.107.174.88"
-     ```
+  ```bash
+  docker context create oracle-arm64-jp --docker "host=ssh://root@100.107.174.88"
+  ```
 
   3. Create a new builder.
 
@@ -726,7 +502,6 @@ We have a few procedures we follow. These are documented here:
 
 - <details><summary><b>Release</b> (click to expand)</summary>
   <p>
-
   1. Draft a release note
   2. Make sure the repo is cleared
   3. If the healthcheck is updated, remember to re-compile it:
@@ -739,7 +514,6 @@ We have a few procedures we follow. These are documented here:
   9. Deploy to the demo server: `npm run deploy-demo-server`
 
   These Items need to be checked:
-
   - [ ] Check all tags is fine on
         <https://hub.docker.com/r/louislam/uptime-kuma/tags>
   - [ ] Try the Docker image with tag 1.X.X (Clean install / amd64 / arm64 /
@@ -751,7 +525,6 @@ We have a few procedures we follow. These are documented here:
 
 - <details><summary><b>Release Beta</b> (click to expand)</summary>
   <p>
-
   1. Draft a release note, check `This is a pre-release`
   2. Make sure the repo is cleared
   3. `npm run release-beta` with env vars: `VERSION` and `GITHUB_TOKEN`

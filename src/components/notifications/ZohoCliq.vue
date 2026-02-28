@@ -9,10 +9,7 @@
             required
         />
         <i18n-t tag="div" keypath="wayToGetZohoCliqURL" class="form-text">
-            <a
-                href="https://www.zoho.com/cliq/help/platform/webhook-tokens.html"
-                target="_blank"
-            >{{ $t("here") }}</a>
+            <a href="https://www.zoho.com/cliq/help/platform/webhook-tokens.html" target="_blank">{{ $t("here") }}</a>
         </i18n-t>
     </div>
 </template>

@@ -12,17 +12,27 @@ class GrpcKeywordMonitorType extends MonitorType {
      */
     async check(monitor, heartbeat, _server) {
         const startTime = dayjs().valueOf();
-        const service = this.constructGrpcService(monitor.grpcUrl, monitor.grpcProtobuf, monitor.grpcServiceName, monitor.grpcEnableTls);
+        const service = this.constructGrpcService(
+            monitor.grpcUrl,
+            monitor.grpcProtobuf,
+            monitor.grpcServiceName,
+            monitor.grpcEnableTls
+        );
         let response = await this.grpcQuery(service, monitor.grpcMethod, monitor.grpcBody);
         heartbeat.ping = dayjs().valueOf() - startTime;
         log.debug(this.name, "gRPC response:", response);
         let keywordFound = response.toString().includes(monitor.keyword);
         if (keywordFound !== !monitor.isInvertKeyword()) {
-            log.debug(this.name, `GRPC response [${response}] + ", but keyword [${monitor.keyword}] is ${keywordFound ? "present" : "not"} in [" + ${response} + "]"`);
+            log.debug(
+                this.name,
+                `GRPC response [${response}] + ", but keyword [${monitor.keyword}] is ${keywordFound ? "present" : "not"} in [" + ${response} + "]"`
+            );
 
-            let truncatedResponse = (response.length > 50) ? response.toString().substring(0, 47) + "..." : response;
+            let truncatedResponse = response.length > 50 ? response.toString().substring(0, 47) + "..." : response;
 
-            throw new Error(`keyword [${monitor.keyword}] is ${keywordFound ? "present" : "not"} in [" + ${truncatedResponse} + "]`);
+            throw new Error(
+                `keyword [${monitor.keyword}] is ${keywordFound ? "present" : "not"} in [" + ${truncatedResponse} + "]`
+            );
         }
         heartbeat.status = UP;
         heartbeat.msg = `${response}, keyword [${monitor.keyword}] ${keywordFound ? "is" : "not"} found`;
@@ -42,19 +52,24 @@ class GrpcKeywordMonitorType extends MonitorType {
         const Client = grpc.makeGenericClientConstructor({});
         const credentials = enableTls ? grpc.credentials.createSsl() : grpc.credentials.createInsecure();
         const client = new Client(url, credentials);
-        return protoServiceObject.create((method, requestData, cb) => {
-            const fullServiceName = method.fullName;
-            const serviceFQDN = fullServiceName.split(".");
-            const serviceMethod = serviceFQDN.pop();
-            const serviceMethodClientImpl = `/${serviceFQDN.slice(1).join(".")}/${serviceMethod}`;
-            log.debug(this.name, `gRPC method ${serviceMethodClientImpl}`);
-            client.makeUnaryRequest(
-                serviceMethodClientImpl,
-                arg => arg,
-                arg => arg,
-                requestData,
-                cb);
-        }, false, false);
+        return protoServiceObject.create(
+            (method, requestData, cb) => {
+                const fullServiceName = method.fullName;
+                const serviceFQDN = fullServiceName.split(".");
+                const serviceMethod = serviceFQDN.pop();
+                const serviceMethodClientImpl = `/${serviceFQDN.slice(1).join(".")}/${serviceMethod}`;
+                log.debug(this.name, `gRPC method ${serviceMethodClientImpl}`);
+                client.makeUnaryRequest(
+                    serviceMethodClientImpl,
+                    (arg) => arg,
+                    (arg) => arg,
+                    requestData,
+                    cb
+                );
+            },
+            false,
+            false
+        );
     }
 
     /**

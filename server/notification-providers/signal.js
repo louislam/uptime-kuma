@@ -11,10 +11,16 @@ class Signal extends NotificationProvider {
         const okMsg = "Sent Successfully.";
 
         try {
+            let message = msg;
+
+            if (notification.signalUseTemplate) {
+                message = await this.renderTemplate(notification.signalTemplate, msg, monitorJSON, heartbeatJSON);
+            }
+
             let data = {
-                "message": msg,
-                "number": notification.signalNumber,
-                "recipients": notification.signalRecipients.replace(/\s/g, "").split(","),
+                message,
+                number: notification.signalNumber,
+                recipients: notification.signalRecipients.replace(/\s/g, "").split(","),
             };
             let config = {};
             config = this.getAxiosConfigWithProxy(config);

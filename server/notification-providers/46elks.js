@@ -14,13 +14,15 @@ class Elks extends NotificationProvider {
         try {
             let data = new URLSearchParams();
             data.append("from", notification.elksFromNumber);
-            data.append("to", notification.elksToNumber );
+            data.append("to", notification.elksToNumber);
             data.append("message", msg);
 
             let config = {
                 headers: {
-                    "Authorization": "Basic " + Buffer.from(`${notification.elksUsername}:${notification.elksAuthToken}`).toString("base64")
-                }
+                    Authorization:
+                        "Basic " +
+                        Buffer.from(`${notification.elksUsername}:${notification.elksAuthToken}`).toString("base64"),
+                },
             };
 
             config = this.getAxiosConfigWithProxy(config);

@@ -13,19 +13,21 @@ class Whapi extends NotificationProvider {
         try {
             let config = {
                 headers: {
-                    "Accept": "application/json",
+                    Accept: "application/json",
                     "Content-Type": "application/json",
-                    "Authorization": "Bearer " + notification.whapiAuthToken,
-                }
+                    Authorization: "Bearer " + notification.whapiAuthToken,
+                },
             };
             config = this.getAxiosConfigWithProxy(config);
 
             let data = {
-                "to": notification.whapiRecipient,
-                "body": msg,
+                to: notification.whapiRecipient,
+                body: msg,
             };
 
-            let url = (notification.whapiApiUrl || "https://gate.whapi.cloud/").replace(/([^/])\/+$/, "$1") + "/messages/text";
+            let url =
+                (notification.whapiApiUrl || "https://gate.whapi.cloud/").replace(/([^/])\/+$/, "$1") +
+                "/messages/text";
 
             await axios.post(url, data, config);
 
@@ -34,7 +36,6 @@ class Whapi extends NotificationProvider {
             this.throwGeneralAxiosError(error);
         }
     }
-
 }
 
 module.exports = Whapi;

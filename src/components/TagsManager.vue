@@ -17,7 +17,8 @@
                 data-testid="add-tag-button"
                 @click.stop="showAddDialog"
             >
-                <font-awesome-icon class="me-1" icon="plus" /> {{ $t("Add") }}
+                <font-awesome-icon class="me-1" icon="plus" />
+                {{ $t("Add") }}
             </button>
         </div>
         <div ref="modal" class="modal fade" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
@@ -25,7 +26,11 @@
                 <div class="modal-content">
                     <div class="modal-body">
                         <h4 v-if="stagedForBatchAdd.length > 0">{{ $t("Add Tags") }}</h4>
-                        <div v-if="stagedForBatchAdd.length > 0" class="mb-3 staging-area" style="max-height: 150px; overflow-y: auto;">
+                        <div
+                            v-if="stagedForBatchAdd.length > 0"
+                            class="mb-3 staging-area"
+                            style="max-height: 150px; overflow-y: auto"
+                        >
                             <Tag
                                 v-for="stagedTag in stagedForBatchAdd"
                                 :key="stagedTag.keyForList"
@@ -47,17 +52,18 @@
                             <template #option="{ option }">
                                 <div
                                     class="mx-2 py-1 px-3 rounded d-inline-flex"
-                                    style="margin-top: -5px; margin-bottom: -5px; height: 24px;"
+                                    style="margin-top: -5px; margin-bottom: -5px; height: 24px"
                                     :style="{ color: textColor(option), backgroundColor: option.color + ' !important' }"
                                 >
                                     <span>
-                                        {{ option.name }}</span>
+                                        {{ option.name }}
+                                    </span>
                                 </div>
                             </template>
                             <template #singleLabel="{ option }">
                                 <div
                                     class="py-1 px-3 rounded d-inline-flex"
-                                    style="height: 24px;"
+                                    style="height: 24px"
                                     :style="{ color: textColor(option), backgroundColor: option.color + ' !important' }"
                                 >
                                     <span>{{ option.name }}</span>
@@ -67,8 +73,14 @@
                         <div v-if="newDraftTag.select?.name == null" class="d-flex mb-2">
                             <div class="w-50 pe-2">
                                 <input
-                                    v-model="newDraftTag.name" class="form-control"
-                                    :class="{'is-invalid': validateDraftTag.invalid && (validateDraftTag.messageKey === 'tagNameColorRequired' || validateDraftTag.messageKey === 'tagNameExists')}"
+                                    v-model="newDraftTag.name"
+                                    class="form-control"
+                                    :class="{
+                                        'is-invalid':
+                                            validateDraftTag.invalid &&
+                                            (validateDraftTag.messageKey === 'tagNameColorRequired' ||
+                                                validateDraftTag.messageKey === 'tagNameExists'),
+                                    }"
                                     :placeholder="$t('Name')"
                                     data-testid="tag-name-input"
                                     @keydown.enter.prevent="onEnter"
@@ -90,7 +102,7 @@
                                     <template #option="{ option }">
                                         <div
                                             class="mx-2 py-1 px-3 rounded d-inline-flex"
-                                            style="height: 24px; color: white;"
+                                            style="height: 24px; color: white"
                                             :style="{ backgroundColor: option.color + ' !important' }"
                                         >
                                             <span>{{ option.name }}</span>
@@ -99,7 +111,7 @@
                                     <template #singleLabel="{ option }">
                                         <div
                                             class="py-1 px-3 rounded d-inline-flex"
-                                            style="height: 24px; color: white;"
+                                            style="height: 24px; color: white"
                                             :style="{ backgroundColor: option.color + ' !important' }"
                                         >
                                             <span>{{ option.name }}</span>
@@ -110,24 +122,47 @@
                         </div>
                         <div class="mb-2">
                             <input
-                                v-model="newDraftTag.value" class="form-control"
-                                :class="{'is-invalid': validateDraftTag.invalid && validateDraftTag.messageKey === 'tagAlreadyOnMonitor'}"
+                                v-model="newDraftTag.value"
+                                class="form-control"
+                                :class="{
+                                    'is-invalid':
+                                        validateDraftTag.invalid &&
+                                        validateDraftTag.messageKey === 'tagAlreadyOnMonitor',
+                                }"
                                 :placeholder="$t('value (optional)')"
                                 data-testid="tag-value-input"
                                 @keydown.enter.prevent="onEnter"
                             />
                         </div>
 
-                        <div v-if="validateDraftTag.invalid && validateDraftTag.messageKey" class="form-text text-danger mb-2">
+                        <div
+                            v-if="validateDraftTag.invalid && validateDraftTag.messageKey"
+                            class="form-text text-danger mb-2"
+                        >
                             {{ $t(validateDraftTag.messageKey, validateDraftTag.messageParams) }}
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" @click.stop="clearStagingAndCloseModal">{{ $t("Cancel") }}</button>
-                        <button type="button" class="btn btn-outline-primary me-2" :disabled="processing || validateDraftTag.invalid" @click.stop="stageCurrentTag">
+                        <button type="button" class="btn btn-secondary" @click.stop="clearStagingAndCloseModal">
+                            {{ $t("Cancel") }}
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-outline-primary me-2"
+                            :disabled="processing || validateDraftTag.invalid"
+                            @click.stop="stageCurrentTag"
+                        >
                             {{ $t("Add Another Tag") }}
                         </button>
-                        <button type="button" class="btn btn-primary" :disabled="processing || (stagedForBatchAdd.length === 0 && validateDraftTag.invalid)" data-testid="add-tags-final-button" @click.stop="confirmAndCommitStagedTags">{{ $t("Done") }}</button>
+                        <button
+                            type="button"
+                            class="btn btn-primary"
+                            :disabled="processing || (stagedForBatchAdd.length === 0 && validateDraftTag.invalid)"
+                            data-testid="add-tags-final-button"
+                            @click.stop="confirmAndCommitStagedTags"
+                        >
+                            {{ $t("Done") }}
+                        </button>
                     </div>
                 </div>
             </div>
@@ -195,11 +230,11 @@ export default {
     },
     computed: {
         tagOptions() {
-            const tagOptions = [ ...this.existingTags ]; // Create a copy
+            const tagOptions = [...this.existingTags]; // Create a copy
 
             // Add tags from newTags
             for (const tag of this.newTags) {
-                if (!tagOptions.find(t => t.name === tag.name && t.color === tag.color)) {
+                if (!tagOptions.find((t) => t.name === tag.name && t.color === tag.color)) {
                     tagOptions.push(tag);
                 }
             }
@@ -208,12 +243,12 @@ export default {
             for (const stagedTag of this.stagedForBatchAdd) {
                 if (stagedTag.isNewSystemTag) {
                     // Check if this system tag is already in the options
-                    if (!tagOptions.find(t => t.name === stagedTag.name && t.color === stagedTag.color)) {
+                    if (!tagOptions.find((t) => t.name === stagedTag.name && t.color === stagedTag.color)) {
                         // Create a tag option object for the dropdown
                         tagOptions.push({
                             id: null, // Will be assigned when actually created
                             name: stagedTag.name,
-                            color: stagedTag.color
+                            color: stagedTag.color,
                         });
                     }
                 }
@@ -233,12 +268,13 @@ export default {
             // Helper function to get tag ID from different structures
             const getTagId = (tag) => tag.tag_id || tag.id;
 
-            return this.preSelectedTags.concat(this.newTags).filter(tag =>
-                !this.deleteTags.find(monitorTag => {
-                    const tagIdMatch = getTagId(monitorTag) === getTagId(tag);
-                    const valueMatch = normalizeValue(monitorTag.value) === normalizeValue(tag.value);
-                    return tagIdMatch && valueMatch;
-                })
+            return this.preSelectedTags.concat(this.newTags).filter(
+                (tag) =>
+                    !this.deleteTags.find((monitorTag) => {
+                        const tagIdMatch = getTagId(monitorTag) === getTagId(tag);
+                        const valueMatch = normalizeValue(monitorTag.value) === normalizeValue(tag.value);
+                        return tagIdMatch && valueMatch;
+                    })
             );
         },
         /**
@@ -269,7 +305,9 @@ export default {
                         messageParams: null,
                     };
                 }
-                if (this.tagOptions.find(opt => opt.name.toLowerCase() === this.newDraftTag.name.trim().toLowerCase())) {
+                if (
+                    this.tagOptions.find((opt) => opt.name.toLowerCase() === this.newDraftTag.name.trim().toLowerCase())
+                ) {
                     return {
                         invalid: true,
                         messageKey: "tagNameExists",
@@ -283,7 +321,9 @@ export default {
             const draftTagValue = this.newDraftTag.value ? this.newDraftTag.value.trim() : ""; // Treat null/undefined value as empty string for comparison
 
             // Check if (name + value) combination already exists in this.stagedForBatchAdd
-            if (this.stagedForBatchAdd.find(staged => staged.name === draftTagName && staged.value === draftTagValue)) {
+            if (
+                this.stagedForBatchAdd.find((staged) => staged.name === draftTagName && staged.value === draftTagValue)
+            ) {
                 return {
                     invalid: true,
                     messageKey: "tagAlreadyStaged",
@@ -293,12 +333,16 @@ export default {
 
             // Check if (name + value) combination already exists in this.selectedTags (final list on monitor)
             // AND it's NOT an "undo delete"
-            const isUndoDelete = this.deleteTags.find(dTag =>
-                dTag.tag_id === (this.newDraftTag.select ? this.newDraftTag.select.id : null) &&
-                dTag.value === draftTagValue
+            const isUndoDelete = this.deleteTags.find(
+                (dTag) =>
+                    dTag.tag_id === (this.newDraftTag.select ? this.newDraftTag.select.id : null) &&
+                    dTag.value === draftTagValue
             );
 
-            if (!isUndoDelete && this.selectedTags.find(sTag => sTag.name === draftTagName && sTag.value === draftTagValue)) {
+            if (
+                !isUndoDelete &&
+                this.selectedTags.find((sTag) => sTag.name === draftTagName && sTag.value === draftTagValue)
+            ) {
                 return {
                     invalid: true,
                     messageKey: "tagAlreadyOnMonitor",
@@ -362,7 +406,7 @@ export default {
         deleteTag(item) {
             if (item.new) {
                 // Undo Adding a new Tag
-                this.newTags = this.newTags.filter(tag => !(tag.name === item.name && tag.value === item.value));
+                this.newTags = this.newTags.filter((tag) => !(tag.name === item.name && tag.value === item.value));
             } else {
                 // Remove an Existing Tag
                 this.deleteTags.push(item);
@@ -466,7 +510,7 @@ export default {
                     }
                     tagId = newTagResult.id;
                     // Assign the new ID to the tags of the same name & color
-                    this.newTags.map(tag => {
+                    this.newTags.map((tag) => {
                         if (tag.name === newTag.name && tag.color === newTag.color) {
                             tag.id = newTagResult.id;
                         }
@@ -493,13 +537,15 @@ export default {
 
             for (const deleteTag of this.deleteTags) {
                 let deleteMonitorTagResult;
-                await this.deleteMonitorTagAsync(deleteTag.tag_id, deleteTag.monitor_id, deleteTag.value).then((res) => {
-                    if (!res.ok) {
-                        this.$root.toastError(res.msg);
-                        deleteMonitorTagResult = false;
+                await this.deleteMonitorTagAsync(deleteTag.tag_id, deleteTag.monitor_id, deleteTag.value).then(
+                    (res) => {
+                        if (!res.ok) {
+                            this.$root.toastError(res.msg);
+                            deleteMonitorTagResult = false;
+                        }
+                        deleteMonitorTagResult = true;
                     }
-                    deleteMonitorTagResult = true;
-                });
+                );
                 if (!deleteMonitorTagResult) {
                     // abort
                     this.processing = false;
@@ -546,7 +592,7 @@ export default {
                 value: value,
                 isNewSystemTag: isNew,
                 systemTagId: isNew ? null : this.newDraftTag.select.id,
-                keyForList: `staged-${Date.now()}-${Math.random().toString(36).substring(2, 15)}` // Unique key
+                keyForList: `staged-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`, // Unique key
             };
 
             this.stagedForBatchAdd.push(stagedTagObject);
@@ -558,7 +604,7 @@ export default {
          * @returns {void}
          */
         unstageTag(tagToUnstage) {
-            this.stagedForBatchAdd = this.stagedForBatchAdd.filter(tag => tag.keyForList !== tagToUnstage.keyForList);
+            this.stagedForBatchAdd = this.stagedForBatchAdd.filter((tag) => tag.keyForList !== tagToUnstage.keyForList);
         },
         /**
          * Maps a staged tag object to the structure expected by the Tag component.
@@ -608,9 +654,10 @@ export default {
             for (const sTag of this.stagedForBatchAdd) {
                 let isAnUndo = false; // Flag to track if this was an undo
                 // Check if it's an "undo delete"
-                if (sTag.systemTagId) { // Only existing system tags can be an undo delete
+                if (sTag.systemTagId) {
+                    // Only existing system tags can be an undo delete
                     const undoDeleteIndex = this.deleteTags.findIndex(
-                        dTag => dTag.tag_id === sTag.systemTagId && dTag.value === sTag.value
+                        (dTag) => dTag.tag_id === sTag.systemTagId && dTag.value === sTag.value
                     );
                     if (undoDeleteIndex > -1) {
                         this.deleteTags.splice(undoDeleteIndex, 1);

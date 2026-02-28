@@ -2,9 +2,10 @@ const { describe, test } = require("node:test");
 const fs = require("fs");
 const path = require("path");
 const { GenericContainer, Wait } = require("testcontainers");
+const { MySqlContainer } = require("@testcontainers/mysql");
 
-describe("Database Migration - Optimize Important Indexes", () => {
-    test("SQLite: All migrations run successfully", async () => {
+describe("Database Migration", () => {
+    test("SQLite migrations run successfully from fresh database", async () => {
         const testDbPath = path.join(__dirname, "../../data/test-migration.db");
         const testDbDir = path.dirname(testDbPath);
 
@@ -26,7 +27,7 @@ describe("Database Migration - Optimize Important Indexes", () => {
         const db = knex({
             client: Dialect,
             connection: {
-                filename: testDbPath
+                filename: testDbPath,
             },
             useNullAsDefault: true,
         });
@@ -42,11 +43,10 @@ describe("Database Migration - Optimize Important Indexes", () => {
 
             // Run all migrations like production code does
             await R.knex.migrate.latest({
-                directory: path.join(__dirname, "../../db/knex_migrations")
+                directory: path.join(__dirname, "../../db/knex_migrations"),
             });
 
             // Test passes if migrations complete successfully without errors
-
         } finally {
             // Clean up
             await R.knex.destroy();
@@ -57,20 +57,18 @@ describe("Database Migration - Optimize Important Indexes", () => {
     });
 
     test(
-        "MariaDB: All migrations run successfully",
+        "MariaDB migrations run successfully from fresh database",
         {
-            skip:
-                !!process.env.CI &&
-                (process.platform !== "linux" || process.arch !== "x64"),
+            skip: !!process.env.CI && (process.platform !== "linux" || process.arch !== "x64"),
         },
         async () => {
             // Start MariaDB container (using MariaDB 12 to match current production)
             const mariadbContainer = await new GenericContainer("mariadb:12")
                 .withEnvironment({
-                    "MYSQL_ROOT_PASSWORD": "root",
-                    "MYSQL_DATABASE": "kuma_test",
-                    "MYSQL_USER": "kuma",
-                    "MYSQL_PASSWORD": "kuma"
+                    MYSQL_ROOT_PASSWORD: "root",
+                    MYSQL_DATABASE: "kuma_test",
+                    MYSQL_USER: "kuma",
+                    MYSQL_PASSWORD: "kuma",
                 })
                 .withExposedPorts(3306)
                 .withWaitStrategy(Wait.forLogMessage("ready for connections", 2))
@@ -78,7 +76,7 @@ describe("Database Migration - Optimize Important Indexes", () => {
                 .start();
 
             // Wait a bit more to ensure MariaDB is fully ready
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            await new Promise((resolve) => setTimeout(resolve, 2000));
 
             const knex = require("knex");
             const knexInstance = knex({
@@ -110,11 +108,10 @@ describe("Database Migration - Optimize Important Indexes", () => {
 
                 // Run all migrations like production code does
                 await R.knex.migrate.latest({
-                    directory: path.join(__dirname, "../../db/knex_migrations")
+                    directory: path.join(__dirname, "../../db/knex_migrations"),
                 });
 
                 // Test passes if migrations complete successfully without errors
-
             } finally {
                 // Clean up
                 try {
@@ -124,6 +121,65 @@ describe("Database Migration - Optimize Important Indexes", () => {
                 }
                 try {
                     await mariadbContainer.stop();
+                } catch (e) {
+                    // Ignore cleanup errors
+                }
+            }
+        }
+    );
+
+    test(
+        "MySQL migrations run successfully from fresh database",
+        {
+            skip: !!process.env.CI && (process.platform !== "linux" || process.arch !== "x64"),
+        },
+        async () => {
+            // Start MySQL 8.0 container (the version mentioned in the issue)
+            const mysqlContainer = await new MySqlContainer("mysql:8.0").withStartupTimeout(120000).start();
+
+            const knex = require("knex");
+            const knexInstance = knex({
+                client: "mysql2",
+                connection: {
+                    host: mysqlContainer.getHost(),
+                    port: mysqlContainer.getPort(),
+                    user: mysqlContainer.getUsername(),
+                    password: mysqlContainer.getUserPassword(),
+                    database: mysqlContainer.getDatabase(),
+                    connectTimeout: 60000,
+                },
+                pool: {
+                    min: 0,
+                    max: 10,
+                    acquireTimeoutMillis: 60000,
+                    idleTimeoutMillis: 60000,
+                },
+            });
+
+            // Setup R (redbean) with knex instance like production code does
+            const { R } = require("redbean-node");
+            R.setup(knexInstance);
+
+            try {
+                // Use production code to initialize MySQL tables
+                const { createTables } = require("../../db/knex_init_db.js");
+                await createTables();
+
+                // Run all migrations like production code does
+                await R.knex.migrate.latest({
+                    directory: path.join(__dirname, "../../db/knex_migrations"),
+                });
+
+                // Test passes if migrations complete successfully without errors
+            } finally {
+                // Clean up
+                try {
+                    await R.knex.destroy();
+                } catch (e) {
+                    // Ignore cleanup errors
+                }
+                try {
+                    await mysqlContainer.stop();
                 } catch (e) {
                     // Ignore cleanup errors
                 }

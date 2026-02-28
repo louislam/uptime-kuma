@@ -14,7 +14,7 @@ let interval;
 
 exports.startInterval = () => {
     let check = async () => {
-        if (await setting("checkUpdate") === false) {
+        if ((await setting("checkUpdate")) === false) {
             return;
         }
 
@@ -40,11 +40,9 @@ exports.startInterval = () => {
             if (res.data.slow) {
                 exports.latestVersion = res.data.slow;
             }
-
         } catch (_) {
             log.info("update-checker", "Failed to check for new versions");
         }
-
     };
 
     check();

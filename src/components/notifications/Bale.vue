@@ -1,7 +1,12 @@
 <template>
     <div class="mb-3">
         <label for="bale-bot-token" class="form-label">{{ $t("Bot Token") }}</label>
-        <HiddenInput id="bale-bot-token" v-model="$parent.notification.baleBotToken" :required="true" autocomplete="new-password"></HiddenInput>
+        <HiddenInput
+            id="bale-bot-token"
+            v-model="$parent.notification.baleBotToken"
+            :required="true"
+            autocomplete="new-password"
+        ></HiddenInput>
         <i18n-t tag="div" keypath="wayToGetBaleToken" class="form-text">
             <a href="https://ble.ir/BotFather" target="_blank">https://ble.ir/BotFather</a>
         </i18n-t>
@@ -11,8 +16,19 @@
         <label for="bale-chat-id" class="form-label">{{ $t("Chat ID") }}</label>
 
         <div class="input-group mb-3">
-            <input id="bale-chat-id" v-model="$parent.notification.baleChatID" type="text" class="form-control" required>
-            <button v-if="$parent.notification.baleBotToken" class="btn btn-outline-secondary" type="button" @click="autoGetBaleChatID">
+            <input
+                id="bale-chat-id"
+                v-model="$parent.notification.baleChatID"
+                type="text"
+                class="form-control"
+                required
+            />
+            <button
+                v-if="$parent.notification.baleBotToken"
+                class="btn btn-outline-secondary"
+                type="button"
+                @click="autoGetBaleChatID"
+            >
                 {{ $t("Auto Get") }}
             </button>
         </div>
@@ -20,12 +36,14 @@
         <div class="form-text">
             {{ $t("supportBaleChatID") }}
 
-            <p style="margin-top: 8px;">
+            <p style="margin-top: 8px">
                 {{ $t("wayToGetBaleChatID") }}
             </p>
 
-            <p style="margin-top: 8px;">
-                <a :href="baleGetUpdatesURL('withToken')" target="_blank" style="word-break: break-word;">{{ baleGetUpdatesURL("masked") }}</a>
+            <p style="margin-top: 8px">
+                <a :href="baleGetUpdatesURL('withToken')" target="_blank" style="word-break: break-word">
+                    {{ baleGetUpdatesURL("masked") }}
+                </a>
             </p>
         </div>
     </div>
@@ -78,16 +96,13 @@ export default {
                     } else {
                         throw new Error(this.$t("chatIDNotFound"));
                     }
-
                 } else {
                     throw new Error(this.$t("chatIDNotFound"));
                 }
-
             } catch (error) {
                 this.$root.toastError(error.message);
             }
-
         },
-    }
+    },
 };
 </script>

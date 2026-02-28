@@ -14,7 +14,9 @@ if (platform === "linux/arm/v7") {
         console.log("Already built in the host, skip.");
         process.exit(0);
     } else {
-        console.log("prebuilt not found, it will be slow! You should execute `npm run build-healthcheck-armv7` before build.");
+        console.log(
+            "prebuilt not found, it will be slow! You should execute `npm run build-healthcheck-armv7` before build."
+        );
     }
 } else {
     if (fs.existsSync("./extra/healthcheck-armv7")) {
@@ -24,4 +26,3 @@ if (platform === "linux/arm/v7") {
 
 const output = childProcess.execSync("go build -x -o ./extra/healthcheck ./extra/healthcheck.go").toString("utf8");
 console.log(output);
-

@@ -2,30 +2,35 @@ const { log } = require("../../src/util");
 const { Settings } = require("../settings");
 const { sendInfo } = require("../client");
 const { checkLogin } = require("../util-server");
-const GameResolver = require("gamedig/lib/GameResolver");
+const { games } = require("gamedig");
 const { testChrome } = require("../monitor-types/real-browser-monitor-type");
 const fsAsync = require("fs").promises;
 const path = require("path");
 
-let gameResolver = new GameResolver();
-let gameList = null;
-
 /**
  * Get a game list via GameDig
- * @returns {object[]} list of games supported by GameDig
+ * @returns {object} list of games supported by GameDig
  */
 function getGameList() {
-    if (gameList == null) {
-        gameList = gameResolver._readGames().games.sort((a, b) => {
-            if ( a.pretty < b.pretty ) {
-                return -1;
-            }
-            if ( a.pretty > b.pretty ) {
-                return 1;
-            }
-            return 0;
-        });
-    }
+    let gameList = [];
+    gameList = Object.keys(games).map((key) => {
+        const item = games[key];
+        return {
+            keys: [key],
+            pretty: item.name,
+            options: item.options,
+            extra: item.extra || {},
+        };
+    });
+    gameList.sort((a, b) => {
+        if (a.pretty < b.pretty) {
+            return -1;
+        }
+        if (a.pretty > b.pretty) {
+            return 1;
+        }
+        return 0;
+    });
     return gameList;
 }
 
@@ -67,21 +72,23 @@ module.exports.generalSocketHandler = (socket, server) => {
         try {
             checkLogin(socket);
             // Just noticed that await call could block the whole socket.io server!!! Use pure promise instead.
-            testChrome(executable).then((version) => {
-                callback({
-                    ok: true,
-                    msg: {
-                        key: "foundChromiumVersion",
-                        values: [ version ],
-                    },
-                    msgi18n: true,
+            testChrome(executable)
+                .then((version) => {
+                    callback({
+                        ok: true,
+                        msg: {
+                            key: "foundChromiumVersion",
+                            values: [version],
+                        },
+                        msgi18n: true,
+                    });
+                })
+                .catch((e) => {
+                    callback({
+                        ok: false,
+                        msg: e.message,
+                    });
                 });
-            }).catch((e) => {
-                callback({
-                    ok: false,
-                    msg: e.message,
-                });
-            });
         } catch (e) {
             callback({
                 ok: false,
@@ -117,9 +124,7 @@ module.exports.generalSocketHandler = (socket, server) => {
                     return;
                 }
             }
-        } catch (e) {
-
-        }
+        } catch (e) {}
 
         callback({
             ok: false,

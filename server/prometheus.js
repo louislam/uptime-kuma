@@ -4,6 +4,8 @@ const { R } = require("redbean-node");
 
 let monitorCertDaysRemaining = null;
 let monitorCertIsValid = null;
+let monitorUptimeRatio = null;
+let monitorAverageResponseTimeSeconds = null;
 let monitorResponseTime = null;
 let monitorStatus = null;
 
@@ -22,7 +24,7 @@ class Prometheus {
             monitor_type: monitor.type,
             monitor_url: monitor.url,
             monitor_hostname: monitor.hostname,
-            monitor_port: monitor.port
+            monitor_port: monitor.port,
         };
     }
 
@@ -36,11 +38,16 @@ class Prometheus {
     static async init() {
         // Add all available tags as possible labels,
         // and use Set to remove possible duplicates (for when multiple tags contain non-ascii characters, and thus are sanitized to the same label)
-        const tags = new Set((await R.findAll("tag")).map((tag) => {
-            return Prometheus.sanitizeForPrometheus(tag.name);
-        }).filter((tagName) => {
-            return tagName !== "";
-        }).sort(this.sortTags));
+        const tags = new Set(
+            (await R.findAll("tag"))
+                .map((tag) => {
+                    return Prometheus.sanitizeForPrometheus(tag.name);
+                })
+                .filter((tagName) => {
+                    return tagName !== "";
+                })
+                .sort(this.sortTags)
+        );
 
         const commonLabels = [
             ...tags,
@@ -55,25 +62,37 @@ class Prometheus {
         monitorCertDaysRemaining = new PrometheusClient.Gauge({
             name: "monitor_cert_days_remaining",
             help: "The number of days remaining until the certificate expires",
-            labelNames: commonLabels
+            labelNames: commonLabels,
         });
 
         monitorCertIsValid = new PrometheusClient.Gauge({
             name: "monitor_cert_is_valid",
             help: "Is the certificate still valid? (1 = Yes, 0= No)",
-            labelNames: commonLabels
+            labelNames: commonLabels,
+        });
+
+        monitorUptimeRatio = new PrometheusClient.Gauge({
+            name: "monitor_uptime_ratio",
+            help: "Uptime ratio calculated over sliding window specified by the 'window' label. (0.0 - 1.0)",
+            labelNames: [...commonLabels, "window"],
+        });
+
+        monitorAverageResponseTimeSeconds = new PrometheusClient.Gauge({
+            name: "monitor_response_time_seconds",
+            help: "Average response time in seconds calculated over sliding window specified by the 'window' label",
+            labelNames: [...commonLabels, "window"],
         });
 
         monitorResponseTime = new PrometheusClient.Gauge({
             name: "monitor_response_time",
             help: "Monitor Response Time (ms)",
-            labelNames: commonLabels
+            labelNames: commonLabels,
         });
 
         monitorStatus = new PrometheusClient.Gauge({
             name: "monitor_status",
             help: "Monitor Status (1 = UP, 0= DOWN, 2= PENDING, 3= MAINTENANCE)",
-            labelNames: commonLabels
+            labelNames: commonLabels,
         });
     }
 
@@ -115,19 +134,23 @@ class Prometheus {
         });
 
         // Order the tags alphabetically
-        return Object.keys(mappedTags).sort(this.sortTags).reduce((obj, key) => {
-            obj[key] = mappedTags[key];
-            return obj;
-        }, {});
+        return Object.keys(mappedTags)
+            .sort(this.sortTags)
+            .reduce((obj, key) => {
+                obj[key] = mappedTags[key];
+                return obj;
+            }, {});
     }
 
     /**
      * Update the metrics page
+     * @typedef {import("./uptime-calculator").UptimeDataResult} UptimeDataResult
      * @param {object} heartbeat Heartbeat details
      * @param {object} tlsInfo TLS details
+     * @param {{data24h: UptimeDataResult, data30d: UptimeDataResult, data1y:UptimeDataResult} | null} uptime the uptime and average response rate over a variety of fixed windows
      * @returns {void}
      */
-    update(heartbeat, tlsInfo) {
+    update(heartbeat, tlsInfo, uptime) {
         if (typeof tlsInfo !== "undefined") {
             try {
                 let isValid;
@@ -138,8 +161,7 @@ class Prometheus {
                 }
                 monitorCertIsValid.set(this.monitorLabelValues, isValid);
             } catch (e) {
-                log.error("prometheus", "Caught error");
-                log.error("prometheus", e);
+                log.error("prometheus", "Caught error", e);
             }
 
             try {
@@ -147,8 +169,49 @@ class Prometheus {
                     monitorCertDaysRemaining.set(this.monitorLabelValues, tlsInfo.certInfo.daysRemaining);
                 }
             } catch (e) {
-                log.error("prometheus", "Caught error");
-                log.error("prometheus", e);
+                log.error("prometheus", "Caught error", e);
+            }
+        }
+
+        if (uptime) {
+            try {
+                monitorAverageResponseTimeSeconds.set(
+                    { ...this.monitorLabelValues, window: "1d" },
+                    uptime.data24h.avgPing / 1000
+                );
+            } catch (e) {
+                log.error("prometheus", "Caught error", e);
+            }
+            try {
+                monitorAverageResponseTimeSeconds.set(
+                    { ...this.monitorLabelValues, window: "30d" },
+                    uptime.data30d.avgPing / 1000
+                );
+            } catch (e) {
+                log.error("prometheus", "Caught error", e);
+            }
+            try {
+                monitorAverageResponseTimeSeconds.set(
+                    { ...this.monitorLabelValues, window: "365d" },
+                    uptime.data1y.avgPing / 1000
+                );
+            } catch (e) {
+                log.error("prometheus", "Caught error", e);
+            }
+            try {
+                monitorUptimeRatio.set({ ...this.monitorLabelValues, window: "1d" }, uptime.data24h.uptime);
+            } catch (e) {
+                log.error("prometheus", "Caught error", e);
+            }
+            try {
+                monitorUptimeRatio.set({ ...this.monitorLabelValues, window: "30d" }, uptime.data30d.uptime);
+            } catch (e) {
+                log.error("prometheus", "Caught error", e);
+            }
+            try {
+                monitorUptimeRatio.set({ ...this.monitorLabelValues, window: "365d" }, uptime.data1y.uptime);
+            } catch (e) {
+                log.error("prometheus", "Caught error", e);
             }
         }
 
@@ -182,6 +245,8 @@ class Prometheus {
         try {
             monitorCertDaysRemaining.remove(this.monitorLabelValues);
             monitorCertIsValid.remove(this.monitorLabelValues);
+            monitorUptimeRatio.remove(this.monitorLabelValues);
+            monitorAverageResponseTimeSeconds.remove(this.monitorLabelValues);
             monitorResponseTime.remove(this.monitorLabelValues);
             monitorStatus.remove(this.monitorLabelValues);
         } catch (e) {
@@ -212,5 +277,5 @@ class Prometheus {
 }
 
 module.exports = {
-    Prometheus
+    Prometheus,
 };

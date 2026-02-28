@@ -4,12 +4,26 @@
             <a href="https://liquidjs.com/" target="_blank">{{ $t("documentation") }}</a>
         </i18n-t>
 
-        <code v-pre>{{ msg }}</code>: {{ $t("templateMsg") }}<br />
-        <code v-pre>{{ name }}</code>: {{ $t("templateServiceName") }}<br />
-        <code v-pre>{{ status }}</code>: {{ $t("templateStatus") }}<br />
-        <code v-pre>{{ hostnameOrURL }}</code>: {{ $t("templateHostnameOrURL") }}<br />
-        <code v-pre>{{ heartbeatJSON }}</code>: {{ $t("templateHeartbeatJSON") }} <b>({{ $t("templateLimitedToUpDownNotifications") }})</b><br />
-        <code v-pre>{{ monitorJSON }}</code>: {{ $t("templateMonitorJSON") }} <b>({{ $t("templateLimitedToUpDownCertNotifications") }})</b><br />
+        <code v-pre>{{ msg }}</code>
+        : {{ $t("templateMsg") }}
+        <br />
+        <code v-pre>{{ name }}</code>
+        : {{ $t("templateServiceName") }}
+        <br />
+        <code v-pre>{{ status }}</code>
+        : {{ $t("templateStatus") }}
+        <br />
+        <code v-pre>{{ hostnameOrURL }}</code>
+        : {{ $t("templateHostnameOrURL") }}
+        <br />
+        <code v-pre>{{ heartbeatJSON }}</code>
+        : {{ $t("templateHeartbeatJSON") }}
+        <b>({{ $t("templateLimitedToUpDownNotifications") }})</b>
+        <br />
+        <code v-pre>{{ monitorJSON }}</code>
+        : {{ $t("templateMonitorJSON") }}
+        <b>({{ $t("templateLimitedToUpDownCertNotifications") }})</b>
+        <br />
     </div>
 
     <input
@@ -21,7 +35,7 @@
         :placeholder="placeholder"
         :required="required"
         autocomplete="false"
-    >
+    />
 </template>
 
 <script>
@@ -32,7 +46,7 @@ export default {
          */
         modelValue: {
             type: String,
-            default: ""
+            default: "",
         },
         /**
          * id for the templated input.
@@ -54,10 +68,10 @@ export default {
          */
         placeholder: {
             type: String,
-            default: ""
+            default: "",
         },
     },
-    emits: [ "update:modelValue" ],
+    emits: ["update:modelValue"],
     computed: {
         /**
          * Send value update to parent on change.
@@ -68,8 +82,8 @@ export default {
             },
             set(value) {
                 this.$emit("update:modelValue", value);
-            }
-        }
+            },
+        },
     },
 };
 </script>

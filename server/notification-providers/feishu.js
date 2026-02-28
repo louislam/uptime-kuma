@@ -46,9 +46,9 @@ class Feishu extends NotificationProvider {
                                     tag: "lark_md",
                                     content: getContent(heartbeatJSON),
                                 },
-                            }
-                        ]
-                    }
+                            },
+                        ],
+                    },
                 };
                 await axios.post(notification.feishuWebHookUrl, downdata, config);
                 return okMsg;
@@ -77,8 +77,8 @@ class Feishu extends NotificationProvider {
                                     content: getContent(heartbeatJSON),
                                 },
                             },
-                        ]
-                    }
+                        ],
+                    },
                 };
                 await axios.post(notification.feishuWebHookUrl, updata, config);
                 return okMsg;
@@ -98,7 +98,7 @@ function getContent(heartbeatJSON) {
     return [
         "**Message**: " + heartbeatJSON["msg"],
         "**Ping**: " + (heartbeatJSON["ping"] == null ? "N/A" : heartbeatJSON["ping"] + " ms"),
-        `**Time (${heartbeatJSON["timezone"]})**: ${heartbeatJSON["localDateTime"]}`
+        `**Time (${heartbeatJSON["timezone"]})**: ${heartbeatJSON["localDateTime"]}`,
     ].join("\n");
 }
 

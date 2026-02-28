@@ -23,18 +23,22 @@ class PromoSMS extends NotificationProvider {
             let config = {
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": "Basic " + Buffer.from(notification.promosmsLogin + ":" + notification.promosmsPassword).toString("base64"),
-                    "Accept": "text/json",
-                }
+                    Authorization:
+                        "Basic " +
+                        Buffer.from(notification.promosmsLogin + ":" + notification.promosmsPassword).toString(
+                            "base64"
+                        ),
+                    Accept: "text/json",
+                },
             };
             config = this.getAxiosConfigWithProxy(config);
             let data = {
-                "recipients": [ notification.promosmsPhoneNumber ],
+                recipients: [notification.promosmsPhoneNumber],
                 //Trim message to maximum length of 1 SMS or 4 if we allowed long messages
-                "text": notification.promosmsAllowLongSMS ? cleanMsg.substring(0, 639) : cleanMsg.substring(0, 159),
+                text: notification.promosmsAllowLongSMS ? cleanMsg.substring(0, 639) : cleanMsg.substring(0, 159),
                 "long-sms": notification.promosmsAllowLongSMS,
-                "type": Number(notification.promosmsSMSType),
-                "sender": notification.promosmsSenderName
+                type: Number(notification.promosmsSMSType),
+                sender: notification.promosmsSenderName,
             };
 
             let resp = await axios.post(url, data, config);

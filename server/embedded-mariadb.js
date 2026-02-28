@@ -7,7 +7,6 @@ const mysql = require("mysql2");
  * It is only used inside the docker container
  */
 class EmbeddedMariaDB {
-
     static instance = null;
 
     exec = "mariadbd";
@@ -59,7 +58,9 @@ class EmbeddedMariaDB {
         // Check if the current user is "node" or "root"
         this.username = require("os").userInfo().username;
         if (this.username !== "node" && this.username !== "root") {
-            throw new Error("Embedded Mariadb supports only 'node' or 'root' user, but the current user is: " + this.username);
+            throw new Error(
+                "Embedded Mariadb supports only 'node' or 'root' user, but the current user is: " + this.username
+            );
         }
 
         this.initDB();
@@ -211,7 +212,6 @@ class EmbeddedMariaDB {
         log.info("mariadb", "Embedded MariaDB is ready for connections");
         this.started = true;
     }
-
 }
 
 module.exports = {

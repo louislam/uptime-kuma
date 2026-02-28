@@ -1,4 +1,4 @@
-const { test } = require("node:test");
+const { describe, test } = require("node:test");
 
 const assert = require("node:assert");
 
@@ -36,12 +36,14 @@ iPenGDCg1awOyRnvxNq1MtMDkR9AHwksukzwiYNexYjyvE2t0UzXhFXwazQ3
 -----END CERTIFICATE-----
 `;
 
-test("Certificate and hostname match", () => {
-    const result = checkCertificateHostname(testCert, "www.eff.org");
-    assert.strictEqual(result, true);
-});
+describe("Certificate Hostname Validation", () => {
+    test("checkCertificateHostname() returns true when certificate matches hostname", () => {
+        const result = checkCertificateHostname(testCert, "www.eff.org");
+        assert.strictEqual(result, true);
+    });
 
-test("Certificate and hostname mismatch", () => {
-    const result = checkCertificateHostname(testCert, "example.com");
-    assert.strictEqual(result, false);
+    test("checkCertificateHostname() returns false when certificate does not match hostname", () => {
+        const result = checkCertificateHostname(testCert, "example.com");
+        assert.strictEqual(result, false);
+    });
 });

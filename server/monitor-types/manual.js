@@ -34,5 +34,5 @@ class ManualMonitorType extends MonitorType {
 }
 
 module.exports = {
-    ManualMonitorType
+    ManualMonitorType,
 };

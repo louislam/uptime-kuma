@@ -1,8 +1,11 @@
 <template>
     <div>
         <!-- Desktop header -->
-        <header v-if="! $root.isMobile" class="d-flex flex-wrap justify-content-center py-3 mb-3 border-bottom">
-            <router-link to="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
+        <header v-if="!$root.isMobile" class="d-flex flex-wrap justify-content-center py-3 mb-3 border-bottom">
+            <router-link
+                to="/"
+                class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none"
+            >
                 <object class="bi me-2 ms-4" width="40" height="40" data="/icon.svg" />
                 <span class="fs-4 title">Uptime Kuma</span>
             </router-link>
@@ -28,11 +31,16 @@
                     <li>{{ $t("There might be a typing error in the address.") }}</li>
                 </ul>
 
-                {{ $t("What you can try:") }}<br />
+                {{ $t("What you can try:") }}
+                <br />
                 <ul>
                     <li>{{ $t("Retype the address.") }}</li>
-                    <li><a href="#" class="go-back" @click="goBack()">{{ $t("Go back to the previous page.") }}</a></li>
-                    <li><a href="/" class="go-back">{{ $t("Go back to home page.") }}</a></li>
+                    <li>
+                        <a href="#" class="go-back" @click="goBack()">{{ $t("Go back to the previous page.") }}</a>
+                    </li>
+                    <li>
+                        <a href="/" class="go-back">{{ $t("Go back to home page.") }}</a>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -41,9 +49,7 @@
 
 <script>
 export default {
-    async mounted() {
-
-    },
+    async mounted() {},
     methods: {
         /**
          * Go back 1 in browser history
@@ -51,8 +57,8 @@ export default {
          */
         goBack() {
             history.back();
-        }
-    }
+        },
+    },
 };
 </script>
 
