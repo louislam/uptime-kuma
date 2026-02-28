@@ -1542,5 +1542,9 @@
     "teltonikaUsernameHelptext": "Odporúčanie: Vytvorte samostatný účet, ktorý je obmedzený iba na odosielanie SMS správ, a zadajte sem jeho používateľské meno",
     "teltonikaPhoneNumberHelptext": "Číslo musí byť v medzinárodnom formáte {0}, {1}. Je povolené iba jedno číslo.",
     "RegexMatch": "Zadajte regulárny výraz, ktorý zodpovedá hodnote záznamu",
-    "GlobalpingMonitorDescription": "Globalping poskytuje prístup k tisícom komunitných sond na vykonávanie sieťových testov a meraní. Pre všetkých anonymných používateľov je stanovený limit 250 testov za hodinu. Ak chcete tento limit zdvojnásobiť na 500 testov za hodinu, uložte si svoj token v {accountSettings}. Ďalšie informácie nájdete v {docs}."
+    "GlobalpingMonitorDescription": "Globalping poskytuje prístup k tisícom komunitných sond na vykonávanie sieťových testov a meraní. Pre všetkých anonymných používateľov je stanovený limit 250 testov za hodinu. Ak chcete tento limit zdvojnásobiť na 500 testov za hodinu, uložte si svoj token v {accountSettings}. Ďalšie informácie nájdete v {docs}.",
+    "certificateExpiryNotificationHelp": "Počet dní vopred je možné nastaviť v nastaveniach.",
+    "signalUseTemplate": "Použite vlastnú šablónu správy",
+    "signalUseTemplateDescription": "Ak je táto funkcia povolená, správa bude odoslaná pomocou vlastnej šablóny. Na prispôsobenie formátu oznámenia môžete použiť šablóny Liquid.",
+    "domainExpiryNotificationHelp": "Počet dní vopred je možné nastaviť v nastaveniach."
 }

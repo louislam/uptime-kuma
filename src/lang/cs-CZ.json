@@ -1474,5 +1474,22 @@
     "Quick Setup Guide": "Stručný návod",
     "Pinned incidents are shown prominently on the status page": "Připnuté mimořádné události jsou předním obsahem stavové stránky",
     "Edit Incident": "Upravit mimořádnou událost",
-    "Paste the script code (see below)": "Vložte kód sem (vizte níže)"
+    "Paste the script code (see below)": "Vložte kód sem (vizte níže)",
+    "monitorTypeGameServer": "Herní server",
+    "slug is not found": "Slug nebyl nalezen",
+    "Cloud ID": "Cloud ID",
+    "certificateExpiryNotificationHelp": "Počet dní předem lze nastavit v nastavení.",
+    "aboutJiraCloudId": "Další informace o Jira Cloud ID: {0}",
+    "Click Deploy → New deployment → Web app": "Klikněte na Nasadit → Nové nasazení → Webová aplikace",
+    "matrixUseTemplateDescription": "Pokud je tato možnost povolena, bude zpráva odeslána pomocí vlastní šablony.",
+    "signalUseTemplateDescription": "Pokud je tato možnost povolena, bude zpráva odeslána pomocí vlastní šablony. K přizpůsobení formátu oznámení můžete použít šablony Liquid.",
+    "slackIncludeGroupName": "Zahrnout název skupiny dohledů",
+    "signalUseTemplate": "Použít vlastní šablonu zprávy",
+    "monitorTypeDatabase": "Typ monitorování databáze",
+    "monitorTypeSpecial": "Speciální",
+    "Google Apps Script Code": "Kód skriptu Google Apps",
+    "Jira Service Management": "Správa služeb Jira",
+    "Go to Extensions → Apps Script": "Přejdi do Rozšíření → Skript aplikací",
+    "Set 'Execute as: Me' and 'Who has access: Anyone'": "Nastavte „Spustit jako: Já“ a „Kdo má přístup: Kdokoli“",
+    "Copy the web app URL and paste it above": "Zkopírujte adresu URL webové aplikace a vložte ji výše"
 }
