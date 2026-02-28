@@ -4016,15 +4016,15 @@ message HealthCheckResponse {
                 return;
             }
 
-            const { type, url, hostname, grpcUrl } = this.monitor;
-            const data = {
-                type,
-                url,
-                hostname,
-                grpcUrl,
-            };
-
             this.checkDomainDebounce = setTimeout(() => {
+                const { type, url, hostname, grpcUrl } = this.monitor;
+                const data = {
+                    type,
+                    url,
+                    hostname,
+                    grpcUrl,
+                };
+
                 this.$root.getSocket().emit("checkDomain", data, (res) => {
                     if (!res.ok) {
                         this.domainExpiryUnsupportedReason = res.msgi18n ? this.$t(res.msg, res.meta) : res.msg;
