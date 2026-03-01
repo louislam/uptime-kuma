@@ -1502,5 +1502,7 @@
     "SipPort": "SIP Port",
     "process503AsMaintenanceLabel": "Process 503 As Maintenance",
     "sipURL": "Hostname (IP/Domain)",
-    "ignoreTLSErrorForSIP": "Ignore TLS/SSL error for SIP websites"
+    "ignoreTLSErrorForSIP": "Ignore TLS/SSL error for SIP websites",
+    "SIP Options": "SIP Options",
+    "SIP Basic Auth": "SIP Basic Auth"
 }
