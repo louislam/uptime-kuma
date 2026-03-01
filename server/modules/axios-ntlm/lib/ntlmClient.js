@@ -205,11 +205,17 @@ function NtlmClient(credentials, AxiosConfig) {
                 return __generator(this, function (_b) {
                     switch (_b.label) {
                         case 0:
-                            error = err.response;
-                            // The header may look like this: `Negotiate, NTLM, Basic realm="itsahiddenrealm.example.net"`Add commentMore actions
+                            error = err === null || err === void 0 ? void 0 : err.response;
+                            const wwwAuthenticateHeader = error === null || error === void 0 ? void 0 : error.headers?.["www-authenticate"];
+                            const authHeaderValue = Array.isArray(wwwAuthenticateHeader)
+                                ? wwwAuthenticateHeader.join(",")
+                                : typeof wwwAuthenticateHeader === "string"
+                                  ? wwwAuthenticateHeader
+                                  : "";
+                            // The header may look like this: `Negotiate, NTLM, Basic realm="itsahiddenrealm.example.net"`
                             // so extract the 'NTLM' part first
                             const ntlmheader =
-                                error.headers["www-authenticate"]
+                                authHeaderValue
                                     .split(",")
                                     .find((_) => _.match(/ *NTLM/))
                                     ?.trim() || "";
@@ -217,8 +223,8 @@ function NtlmClient(credentials, AxiosConfig) {
                                 !(
                                     error &&
                                     error.status === 401 &&
-                                    error.headers["www-authenticate"] &&
-                                    error.headers["www-authenticate"].includes("NTLM")
+                                    authHeaderValue &&
+                                    authHeaderValue.includes("NTLM")
                                 )
                             )
                                 return [3 /*break*/, 3];
@@ -228,6 +234,7 @@ function NtlmClient(credentials, AxiosConfig) {
                             // but this is the easiest option for now
                             if (ntlmheader.length < 50) {
                                 t1Msg = ntlm.createType1Message(credentials.workstation, credentials.domain);
+                                error.config.headers = error.config.headers || {};
                                 error.config.headers["Authorization"] = t1Msg;
                             } else {
                                 t2Msg = ntlm.decodeType2Message((ntlmheader.match(/^NTLM\s+(.+?)(,|\s+|$)/) || [])[1]);
@@ -238,6 +245,7 @@ function NtlmClient(credentials, AxiosConfig) {
                                     credentials.workstation,
                                     credentials.domain
                                 );
+                                error.config.headers = error.config.headers || {};
                                 error.config.headers["X-retry"] = "false";
                                 error.config.headers["Authorization"] = t3Msg;
                             }
