@@ -36,7 +36,10 @@ describe("NtlmClient", () => {
 
     test("rethrows original error when response is missing", async () => {
         const err = new Error("network error");
-        await assert.rejects(() => rejectHandler(err), (caught) => caught === err);
+        await assert.rejects(
+            () => rejectHandler(err),
+            (caught) => caught === err
+        );
     });
 
     test("rethrows original error when 401 response has null www-authenticate header", async () => {
@@ -50,7 +53,10 @@ describe("NtlmClient", () => {
                 headers: {},
             },
         };
-        await assert.rejects(() => rejectHandler(err), (caught) => caught === err);
+        await assert.rejects(
+            () => rejectHandler(err),
+            (caught) => caught === err
+        );
     });
 
     test("rethrows original error when response headers are missing", async () => {
@@ -62,7 +68,10 @@ describe("NtlmClient", () => {
             },
         };
 
-        await assert.rejects(() => rejectHandler(err), (caught) => caught === err);
+        await assert.rejects(
+            () => rejectHandler(err),
+            (caught) => caught === err
+        );
     });
 
     test("handles array-form www-authenticate header without crashing", async () => {
@@ -77,6 +86,9 @@ describe("NtlmClient", () => {
             },
         };
 
-        await assert.rejects(() => rejectHandler(err), (caught) => caught === err);
+        await assert.rejects(
+            () => rejectHandler(err),
+            (caught) => caught === err
+        );
     });
 });
