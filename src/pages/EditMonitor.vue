@@ -536,7 +536,7 @@
                                         class="form-control"
                                         required
                                     />
-                                    <i18n-t keypath="GlobalpingLocation" tag="div" class="form-text">
+                                    <i18n-t keypath="GlobalpingLocationDescription" tag="div" class="form-text">
                                         <template #plus>
                                             <code>+</code>
                                         </template>
@@ -545,6 +545,9 @@
                                         </template>
                                         <template #comcastPlusCalifornia>
                                             <code>comcast+california</code>
+                                        </template>
+                                        <template #datacenter>
+                                            <code>+datacenter</code>
                                         </template>
                                         <template #fullDocs>
                                             <a
@@ -1430,7 +1433,6 @@
                             <!-- Timeout: HTTP / JSON query / Keyword / Ping / RabbitMQ / SNMP / Websocket Upgrade only -->
                             <div
                                 v-if="
-                                    monitor.type === 'dns' ||
                                     monitor.type === 'http' ||
                                     monitor.type === 'json-query' ||
                                     monitor.type === 'keyword' ||
@@ -1546,15 +1548,17 @@
                                     v-model="monitor.domainExpiryNotification"
                                     class="form-check-input"
                                     type="checkbox"
-                                    :disabled="!hasDomain"
                                 />
                                 <label class="form-check-label" for="domain-expiry-notification">
                                     {{ $t("labelDomainNameExpiryNotification") }}
                                 </label>
-                                <div v-if="hasDomain" class="form-text">
+                                <div class="form-text">
                                     {{ $t("domainExpiryNotificationHelp") }}
                                 </div>
-                                <div v-if="!hasDomain && domainExpiryUnsupportedReason" class="form-text">
+                                <div
+                                    v-if="monitor.domainExpiryNotification && domainExpiryUnsupportedReason"
+                                    class="form-text"
+                                >
                                     {{ domainExpiryUnsupportedReason }}
                                 </div>
                             </div>
@@ -2865,7 +2869,7 @@ const monitorDefaults = {
     ignoreTls: false,
     upsideDown: false,
     expiryNotification: false,
-    domainExpiryNotification: false,
+    domainExpiryNotification: true,
     maxredirects: 10,
     accepted_statuscodes: defaultValueList.http.accepted_statuscodes,
     saveResponse: false,
@@ -2927,9 +2931,8 @@ export default {
                 notificationIDList: {},
                 // Do not add default value here, please check init() method
             },
-            hasDomain: false,
             domainExpiryUnsupportedReason: null,
-            checkMonitorDebounce: null,
+            checkDomainDebounce: null,
             acceptedStatusCodeOptions: [],
             acceptedWebsocketCodeOptions: [],
             dnsresolvetypeOptions: [],
@@ -2986,16 +2989,6 @@ export default {
             }
             // Default placeholder if neither hostname nor URL is available
             return this.$t("defaultFriendlyName");
-        },
-
-        monitorTypeUrlHost() {
-            const { type, url, hostname, grpcUrl } = this.monitor;
-            return {
-                type,
-                url,
-                hostname,
-                grpcUrl,
-            };
         },
 
         showDomainExpiryNotification() {
@@ -3291,30 +3284,25 @@ message HealthCheckResponse {
             }
         },
 
-        monitorTypeUrlHost(data) {
-            if (this.checkMonitorDebounce != null) {
-                clearTimeout(this.checkMonitorDebounce);
-            }
+        showDomainExpiryNotification() {
+            this.checkDomain();
+        },
 
-            if (!this.showDomainExpiryNotification) {
-                this.hasDomain = false;
-                this.domainExpiryUnsupportedReason = null;
-                return;
-            }
+        "monitor.hostname"() {
+            this.checkDomain();
+        },
 
-            this.checkMonitorDebounce = setTimeout(() => {
-                this.$root.getSocket().emit("checkMointor", data, (res) => {
-                    const wasSupported = this.hasDomain;
-                    this.hasDomain = !!res?.ok;
-                    if (this.hasDomain !== wasSupported) {
-                        this.monitor.domainExpiryNotification = this.hasDomain;
-                    }
-                    this.domainExpiryUnsupportedReason = res.msgi18n ? this.$t(res.msg, res.meta) : res.msg;
-                });
-            }, 500);
+        "monitor.url"() {
+            this.checkDomain();
+        },
+
+        "monitor.grpcUrl"() {
+            this.checkDomain();
         },
 
         "monitor.type"(newType, oldType) {
+            this.checkDomain();
+
             if (newType === "globalping" && !this.monitor.subtype) {
                 this.monitor.subtype = "ping";
             }
@@ -3704,6 +3692,14 @@ message HealthCheckResponse {
                 }
             }
 
+            // Validate Globalping location if present
+            if (this.monitor.type === "globalping" && this.monitor.location) {
+                if (this.monitor.location.includes(",")) {
+                    toast.error(this.$t("GlobalpingMultipleLocationsError"));
+                    return false;
+                }
+            }
+
             // Validate hostname field input for various monitors
             if (
                 ["dns", "port", "ping", "steam", "gamedig", "radius", "tailscale-ping", "smtp", "snmp"].includes(
@@ -4004,6 +4000,39 @@ message HealthCheckResponse {
                     this.monitor.timeout = clampedValue;
                 }
             }
+        },
+
+        // Check Domain
+        // Do nothing if not checked
+        checkDomain() {
+            console.log("checkDomain called");
+            if (this.checkDomainDebounce != null) {
+                clearTimeout(this.checkDomainDebounce);
+            }
+
+            if (!this.showDomainExpiryNotification) {
+                this.domainExpiryUnsupportedReason = null;
+                return;
+            }
+
+            this.checkDomainDebounce = setTimeout(() => {
+                const { type, url, hostname, grpcUrl } = this.monitor;
+                const data = {
+                    type,
+                    url,
+                    hostname,
+                    grpcUrl,
+                };
+
+                this.$root.getSocket().emit("checkDomain", data, (res) => {
+                    console.log(data);
+                    if (!res.ok) {
+                        this.domainExpiryUnsupportedReason = res.msgi18n ? this.$t(res.msg, res.meta) : res.msg;
+                    } else {
+                        this.domainExpiryUnsupportedReason = null;
+                    }
+                });
+            }, 500);
         },
     },
 };
