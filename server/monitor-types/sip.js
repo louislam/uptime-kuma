@@ -107,18 +107,19 @@ class SipMonitorType extends MonitorType {
 
         if (matchingStatus) {
             sipMessage = `${sipResponse.status} - ${matchingStatus.msg}`;
-            heartbeat.status = sipResponse.status === 200 ? UP : DOWN;
-
-            if (sipResponse.status === 503 && monitor.sipMaintainence === 1) {
-                sipMessage = "Monitor under maintenance";
-                heartbeat.status = MAINTENANCE;
-            }
         } else {
-            sipMessage = `${sipResponse?.status} - Not Ok`;
-            heartbeat.status = DOWN;
+            sipMessage = `${sipResponse?.status} - Unknown Status`;
         }
 
-        heartbeat.msg = sipMessage;
+        if (sipResponse?.status === 503 && monitor.sipMaintainence === 1) {
+            heartbeat.status = MAINTENANCE;
+            heartbeat.msg = "Monitor under maintenance";
+        } else if (sipResponse?.status === 200) {
+            heartbeat.status = UP;
+            heartbeat.msg = sipMessage;
+        } else {
+            throw new Error(sipMessage);
+        }
     }
 }
 
