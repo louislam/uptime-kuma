@@ -204,12 +204,8 @@ class Monitor extends BeanModel {
             conditions: JSON.parse(this.conditions),
             ipFamily: this.ipFamily,
             expectedTlsAlert: this.expected_tls_alert,
-            sipUrl: this.sipUrl,
-            sipPort: this.sipPort,
             sipProtocol: this.sipProtocol,
             sipMethod: this.sipMethod,
-            sipMaintainence: this.isSipMaintainence(),
-            sipAuthMethod: this.sipAuthMethod,
 
             // ping advanced options
             ping_numeric: this.isPingNumeric(),
@@ -253,8 +249,6 @@ class Monitor extends BeanModel {
                 kafkaProducerSaslOptions: JSON.parse(this.kafkaProducerSaslOptions),
                 rabbitmqUsername: this.rabbitmqUsername,
                 rabbitmqPassword: this.rabbitmqPassword,
-                sip_basic_auth_user: this.sip_basic_auth_user,
-                sip_basic_auth_pass: this.sip_basic_auth_pass,
             };
         }
 
@@ -392,14 +386,6 @@ class Monitor extends BeanModel {
      */
     getKafkaProducerAllowAutoTopicCreation() {
         return Boolean(this.kafkaProducerAllowAutoTopicCreation);
-    }
-
-    /**
-     * Parse to boolean
-     * @returns {boolean} Sip Allow Maintainenece Option
-     */
-    isSipMaintainence() {
-        return Boolean(this.sipMaintainence);
     }
 
     /**

@@ -292,21 +292,7 @@
                                     {{ $t("invertKeywordDescription") }}
                                 </div>
                             </div>
-                            <!--SIP URL-->
-                            <div v-if="monitor.type === 'sip'" class="my-3">
-                                <label for="sip-url" class="form-label">{{ $t("sipURL") }}</label>
-                                <!-- <input id="sip-url" v-model="monitor.sipURL" type="url" class="form-control" pattern="((https?|ftp):\/\/)?([a-zA-Z0-9.-]
-                                +\.[a-zA-Z]{2,})(:\d{1,5})?\/?|
-                                (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})" required> -->
-                                <input id="sip-url" v-model="monitor.sipUrl" type="text" class="form-control" pattern="((https?|ftp):\/\/)?([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(:\d{1,5})?\/?|(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})" required>
-                            </div>
-                            <div v-if="monitor.type === 'sip'" class="my-3">
-                                <label for="sipport" class="form-label mt-3">{{ $t("SipPort") }}</label>
-                                <input
-                                    v-if="monitor.sipProtocol !== 'SRV'" id="sipport" v-model="monitor.sipPort" type="number"
-                                    class="form-control" placeholder="Enter SIP Port"
-                                >
-                            </div>
+
                             <!-- Remote Browser -->
                             <div v-if="monitor.type === 'real-browser'" class="my-3">
                                 <!-- Toggle -->
@@ -492,7 +478,8 @@
                                     monitor.type === 'tailscale-ping' ||
                                     monitor.type === 'smtp' ||
                                     monitor.type === 'snmp' ||
-                                    monitor.type === 'sip-options'
+                                    monitor.type === 'sip-options' ||
+                                    monitor.type === 'sip'
                                 "
                                 class="my-3"
                             >
@@ -704,9 +691,11 @@
                                     monitor.type === 'smtp' ||
                                     monitor.type === 'snmp' ||
                                     monitor.type === 'sip-options' ||
+                                    monitor.type === 'sip' ||
                                     (monitor.type === 'globalping' &&
                                         monitor.subtype === 'ping' &&
                                         monitor.protocol === 'TCP')
+                                    
                                 "
                                 class="my-3"
                             >
@@ -1673,18 +1662,6 @@
                                     {{ $t("upsideDownModeDescription") }}
                                 </div>
                             </div>
-                            <div v-if="monitor.type === 'sip'" class="my-3 form-check">
-                                <input
-                                    id="process-503-as-maintenance"
-                                    v-model="monitor.sipMaintainence"
-                                    class="form-check-input"
-                                    type="checkbox"
-                                    value=""
-                                />
-                                <label class="form-check-label" for="process-503-as-maintenance">
-                                    {{ $t("process503AsMaintenanceLabel") }}
-                                </label>
-                            </div>
 
                             <div v-if="monitor.type === 'gamedig'" class="my-3 form-check">
                                 <input
@@ -2262,37 +2239,22 @@
                                 <!-- HTTP Auth -->
                                 <h4 class="mt-5 mb-2">{{ $t("Authentication") }}</h4>
 
-                                <!-- Method -->
+                                <!-- SIP Credentials -->
                                 <div class="my-3">
-                                    <label for="authmethod" class="form-label">{{
-                                        $t("Method")
-                                    }}</label>
-                                    <select id="authsipmethod" v-model="monitor.sipAuthMethod" class="form-select">
-                                        <option :value="null">
-                                            {{ $t("None") }}
-                                        </option>
-                                        <option value="basic">
-                                            {{ $t("SIP Basic Auth") }}
-                                        </option>
-                                    </select>
+                                    <label for="sip-username" class="form-label">{{ $t("Username") }}</label>
+                                    <input
+                                        id="sip-username" v-model="monitor.basic_auth_user" type="text" class="form-control"
+                                        :placeholder="$t('Username')"
+                                    />
                                 </div>
-                                <template v-if="monitor.sipAuthMethod === 'basic'">
-                                    <div class="my-3">
-                                        <label for="basicauth-user" class="form-label">{{ $t("Username") }}</label>
-                                        <input
-                                            id="basicauth-user" v-model="monitor.sip_basic_auth_user" type="text" class="form-control"
-                                            :placeholder="$t('Username')"
-                                        />
-                                    </div>
 
-                                    <div class="my-3">
-                                        <label for="basicauth-pass" class="form-label">{{ $t("Password") }}</label>
-                                        <input
-                                            id="basicauth-pass" v-model="monitor.sip_basic_auth_pass" type="password" autocomplete="new-password"
-                                            class="form-control" :placeholder="$t('Password')"
-                                        />
-                                    </div>
-                                </template>
+                                <div class="my-3">
+                                    <label for="sip-password" class="form-label">{{ $t("Password") }}</label>
+                                    <input
+                                        id="sip-password" v-model="monitor.basic_auth_pass" type="password" autocomplete="new-password"
+                                        class="form-control" :placeholder="$t('Password')"
+                                    />
+                                </div>
                             </template>
                             <!-- HTTP Options -->
                             <template
@@ -3026,11 +2988,7 @@ const monitorDefaults = {
     conditions: [],
     system_service_name: "",
     sipProtocol: "UDP",
-    sipPort: 5060,
-    sipUrl: null,
     sipMethod: "OPTIONS",
-    sipMaintainence: false,
-    sipAuthMethod: null,
 };
 
 export default {
@@ -3479,7 +3437,7 @@ message HealthCheckResponse {
             }
 
             // Set default port for DNS if not already defined
-            if (!this.monitor.port || this.monitor.port === "53" || this.monitor.port === "1812") {
+            if (!this.monitor.port || this.monitor.port === "53" || this.monitor.port === "1812" || this.monitor.port === "5060") {
                 if (this.monitor.type === "dns") {
                     this.monitor.port = "53";
                 } else if (this.monitor.type === "radius") {
@@ -3488,6 +3446,8 @@ message HealthCheckResponse {
                     this.monitor.port = "161";
                 } else if (this.monitor.type === "globalping" && this.monitor.subtype === "ping") {
                     this.monitor.port = "80";
+                } else if (this.monitor.type === "sip") {
+                    this.monitor.port = "5060";
                 } else {
                     this.monitor.port = undefined;
                 }

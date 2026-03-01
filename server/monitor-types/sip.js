@@ -1,6 +1,6 @@
 const { MonitorType } = require("./monitor-type");
-const { UP,  MAINTENANCE } = require("../../src/util");
-const { sipRegisterRequest, sipOptionRequest } = require("../util-server");
+const { UP } = require("../../src/util");
+const { sipRegisterRequest, sipOptionRequest } = require("../sip");
 const dayjs = require("dayjs");
 const version = require("../../package.json").version;
 
@@ -96,9 +96,9 @@ class SipMonitorType extends MonitorType {
         let startTime = dayjs().valueOf();
 
         if (monitor.sipMethod === "OPTIONS") {
-            sipResponse = await sipOptionRequest(monitor.sipUrl, monitor.sipPort, monitor.sipProtocol, monitor.sip_basic_auth_user, monitor.sip_basic_auth_pass, version);
+            sipResponse = await sipOptionRequest(monitor.hostname, monitor.port, monitor.sipProtocol, monitor.basic_auth_user, monitor.basic_auth_pass, version);
         } else {
-            sipResponse = await sipRegisterRequest(monitor.sipUrl, monitor.sipPort, monitor.sipProtocol, monitor.sip_basic_auth_user, monitor.sip_basic_auth_pass, version);
+            sipResponse = await sipRegisterRequest(monitor.hostname, monitor.port, monitor.sipProtocol, monitor.basic_auth_user, monitor.basic_auth_pass, version);
         }
 
         heartbeat.ping = dayjs().valueOf() - startTime;
@@ -111,10 +111,7 @@ class SipMonitorType extends MonitorType {
             sipMessage = `${sipResponse?.status} - Unknown Status`;
         }
 
-        if (sipResponse?.status === 503 && monitor.sipMaintainence === 1) {
-            heartbeat.status = MAINTENANCE;
-            heartbeat.msg = "Monitor under maintenance";
-        } else if (sipResponse?.status === 200) {
+        if (sipResponse?.status === 200) {
             heartbeat.status = UP;
             heartbeat.msg = sipMessage;
         } else {

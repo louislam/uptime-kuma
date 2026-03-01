@@ -1499,10 +1499,6 @@
     "teltonikaPhoneNumber": "Phone number",
     "teltonikaPhoneNumberHelptext": "The number must be in the international format {0}, {1}. Only one number is allowed.",
     "SipProtocol": "SIP Protocol",
-    "SipPort": "SIP Port",
-    "process503AsMaintenanceLabel": "Process 503 As Maintenance",
-    "sipURL": "Hostname (IP/Domain)",
     "ignoreTLSErrorForSIP": "Ignore TLS/SSL error for SIP websites",
-    "SIP Options": "SIP Options",
-    "SIP Basic Auth": "SIP Basic Auth"
+    "SIP Options": "SIP Options"
 }

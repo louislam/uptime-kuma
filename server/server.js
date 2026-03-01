@@ -929,13 +929,7 @@ let needSetup = false;
                 bean.manual_status = monitor.manual_status;
                 bean.system_service_name = monitor.system_service_name;
                 bean.expected_tls_alert = monitor.expectedTlsAlert;
-                bean.sipUrl = monitor.sipUrl;
-                bean.sipPort = monitor.sipPort;
-                bean.sip_basic_auth_user = monitor.sip_basic_auth_user;
-                bean.sip_basic_auth_pass = monitor.sip_basic_auth_pass;
-                bean.sipMaintainence = monitor.sipMaintainence;
                 bean.sipMethod = monitor.sipMethod;
-                bean.sipAuthMethod = monitor.sipAuthMethod;
 
                 // ping advanced options
                 bean.ping_numeric = monitor.ping_numeric;
