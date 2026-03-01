@@ -44,7 +44,10 @@ describe("NtlmClient interceptor guards", () => {
         const rejectHandler = buildClientAndGetRejectHandler();
         const err = new Error("network error");
 
-        await assert.rejects(() => rejectHandler(err), (caught) => caught === err);
+        await assert.rejects(
+            () => rejectHandler(err),
+            (caught) => caught === err
+        );
     });
 
     test("rethrows original error when www-authenticate header is null", async () => {
@@ -60,7 +63,10 @@ describe("NtlmClient interceptor guards", () => {
             },
         };
 
-        await assert.rejects(() => rejectHandler(err), (caught) => caught === err);
+        await assert.rejects(
+            () => rejectHandler(err),
+            (caught) => caught === err
+        );
     });
 
     test("rethrows original error when response headers are missing", async () => {
@@ -73,7 +79,10 @@ describe("NtlmClient interceptor guards", () => {
             },
         };
 
-        await assert.rejects(() => rejectHandler(err), (caught) => caught === err);
+        await assert.rejects(
+            () => rejectHandler(err),
+            (caught) => caught === err
+        );
     });
 
     test("handles array-form www-authenticate header without crashing", async () => {
@@ -82,14 +91,16 @@ describe("NtlmClient interceptor guards", () => {
         err.response = {
             status: 401,
             headers: {
-                "www-authenticate": [ "Negotiate", "Basic realm=\"example\"" ],
+                "www-authenticate": ["Negotiate", 'Basic realm="example"'],
             },
             config: {
                 headers: {},
             },
         };
 
-        await assert.rejects(() => rejectHandler(err), (caught) => caught === err);
+        await assert.rejects(
+            () => rejectHandler(err),
+            (caught) => caught === err
+        );
     });
-
 });

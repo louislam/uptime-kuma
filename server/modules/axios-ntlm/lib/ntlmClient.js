@@ -206,7 +206,8 @@ function NtlmClient(credentials, AxiosConfig) {
                     switch (_b.label) {
                         case 0:
                             error = err === null || err === void 0 ? void 0 : err.response;
-                            const wwwAuthenticateHeader = error === null || error === void 0 ? void 0 : error.headers?.["www-authenticate"];
+                            const wwwAuthenticateHeader =
+                                error === null || error === void 0 ? void 0 : error.headers?.["www-authenticate"];
                             const authHeaderValue = Array.isArray(wwwAuthenticateHeader)
                                 ? wwwAuthenticateHeader.join(",")
                                 : typeof wwwAuthenticateHeader === "string"
@@ -219,14 +220,7 @@ function NtlmClient(credentials, AxiosConfig) {
                                     .split(",")
                                     .find((_) => _.match(/ *NTLM/))
                                     ?.trim() || "";
-                            if (
-                                !(
-                                    error &&
-                                    error.status === 401 &&
-                                    authHeaderValue &&
-                                    authHeaderValue.includes("NTLM")
-                                )
-                            )
+                            if (!(error && error.status === 401 && authHeaderValue && authHeaderValue.includes("NTLM")))
                                 return [3 /*break*/, 3];
                             // This length check is a hack because SharePoint is awkward and will
                             // include the Negotiate option when responding with the T2 message
