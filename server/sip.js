@@ -1,6 +1,6 @@
 const { log } = require("../src/util");
 const crypto = require("crypto");
-let sip = require("sip");
+const sip = require("sip");
 const uuid = require("uuid");
 
 /**
@@ -13,74 +13,65 @@ const uuid = require("uuid");
  * @param {string} version The version of the SIP health monitor
  * @returns {Promise<object>} The response from the SIP REGISTER request
  */
-exports.sipRegisterRequest = function (sipServer, sipPort, transport, username, userPassword, version) {
+exports.sipRegisterRequest = async function (sipServer, sipPort, transport, username, userPassword, version) {
+    const userAor = username.includes("@") ? username : `${username}@${sipServer}`;
+    const registerRequest = {
+        method: "REGISTER",
+        uri: `sip:${sipServer}:${sipPort}`,
+        headers: {
+            to: { uri: `sip:${userAor}` },
+            from: { uri: `sip:${userAor}`, params: { tag: uuid.v4() } },
+            "call-id": uuid.v4(),
+            cseq: { method: "REGISTER",
+                seq: 1 },
+            "max-forwards": 70,
+            "content-length": 0,
+            contact: [{ uri: `sip:${userAor}` }],
+            "User-Agent": "SIP Health Monitor " + version,
+            "Expires": 60,
+        },
+        transport: transport.toLowerCase(),
+    };
+    const registrationResponse = await exports.sipRegister(registerRequest);
+    log.debug("sip", "Initial response status: " + registrationResponse.status);
 
-    // eslint-disable-next-line no-async-promise-executor
-    return new Promise(async (resolve, reject) => {
-        try {
-            const userAor = username.includes("@") ? username : `${username}@${sipServer}`;
-            const registerRequest = {
-                method: "REGISTER",
-                uri: `sip:${sipServer}:${sipPort}`,
-                headers: {
-                    to: { uri: `sip:${userAor}` },
-                    from: { uri: `sip:${userAor}`, params: { tag: uuid.v4() } },
-                    "call-id": uuid.v4(),
-                    cseq: { method: "REGISTER",
-                        seq: 1 },
-                    "max-forwards": 70,
-                    "content-length": 0,
-                    contact: [{ uri: `sip:${userAor}` }],
-                    "User-Agent": "SIP Health Monitor " + version,
-                    "Expires": 60,
-                },
-                transport: transport.toLowerCase(),
-            };
-            const registrationResponse = await exports.sipRegister(registerRequest);
-            log.debug("sip", "Initial response status: " + registrationResponse.status);
-
-            // Handle authentication challenges (401 = WWW-Authenticate, 407 = Proxy-Authenticate)
-            let authHeader = null;
-            let authType = null;
-            if (registrationResponse.status === 401) {
-                authHeader = registrationResponse.headers["www-authenticate"];
-                if (Array.isArray(authHeader)) {
-                    authHeader = authHeader[0];
-                }
-                authType = "Authorization";
-            } else if (registrationResponse.status === 407) {
-                authHeader = registrationResponse.headers["proxy-authenticate"];
-                if (Array.isArray(authHeader)) {
-                    authHeader = authHeader[0];
-                }
-                authType = "Proxy-Authorization";
-            }
-
-            log.debug("sip", "Auth header found");
-
-            if (authHeader) {
-                const authorizedRegisterRequest = exports.constructAuthorizedRequest(
-                    registerRequest,
-                    username,
-                    userPassword,
-                    authHeader,
-                    authType
-                );
-                // Increment CSeq for the authenticated retry
-                authorizedRegisterRequest.headers.cseq = { method: registerRequest.method, seq: 2 };
-                log.debug("sip", "Sending authenticated request");
-                const secondResponse = await exports.sipRegister(authorizedRegisterRequest);
-                log.debug("sip", "Authenticated response status: " + secondResponse.status);
-                resolve(secondResponse);
-            } else {
-                log.debug("sip", "No auth header found in response, resolving with initial response");
-                resolve(registrationResponse);
-            }
-        } catch (error) {
-            log.error("sip", "Error: " + error.message);
-            reject(error);
+    // Handle authentication challenges (401 = WWW-Authenticate, 407 = Proxy-Authenticate)
+    let authHeader = null;
+    let authType = null;
+    if (registrationResponse.status === 401) {
+        authHeader = registrationResponse.headers["www-authenticate"];
+        if (Array.isArray(authHeader)) {
+            authHeader = authHeader[0];
         }
-    });
+        authType = "Authorization";
+    } else if (registrationResponse.status === 407) {
+        authHeader = registrationResponse.headers["proxy-authenticate"];
+        if (Array.isArray(authHeader)) {
+            authHeader = authHeader[0];
+        }
+        authType = "Proxy-Authorization";
+    }
+
+    log.debug("sip", "Auth header found");
+
+    if (authHeader) {
+        const authorizedRegisterRequest = exports.constructAuthorizedRequest(
+            registerRequest,
+            username,
+            userPassword,
+            authHeader,
+            authType
+        );
+        // Increment CSeq for the authenticated retry
+        authorizedRegisterRequest.headers.cseq = { method: registerRequest.method, seq: 2 };
+        log.debug("sip", "Sending authenticated request");
+        const secondResponse = await exports.sipRegister(authorizedRegisterRequest);
+        log.debug("sip", "Authenticated response status: " + secondResponse.status);
+        return secondResponse;
+    } else {
+        log.debug("sip", "No auth header found in response, resolving with initial response");
+        return registrationResponse;
+    }
 };
 
 exports.sipRegister = function (registerRequest) {
@@ -151,8 +142,12 @@ exports.constructAuthorizedRequest = function (request, username, userPassword, 
     const realm = (challengeHeader.realm || "").replace(/"/g, "");
     const nonce = (challengeHeader.nonce || "").replace(/"/g, "");
     const opaque = (challengeHeader.opaque || "").replace(/"/g, "");
-    const qop = (challengeHeader.qop || "").replace(/"/g, "");
+    const qopRaw = (challengeHeader.qop || "").replace(/"/g, "");
     const algorithm = (challengeHeader.algorithm || "MD5").replace(/"/g, "");
+
+    // Parse qop list (e.g., "auth,auth-int") and select preferred value
+    const qopOptions = qopRaw.split(",").map(q => q.trim().toLowerCase()).filter(Boolean);
+    const qop = qopOptions.includes("auth") ? "auth" : (qopOptions[0] || "");
 
     // Determine hash function based on server's algorithm
     let hashFn;
@@ -216,67 +211,57 @@ exports.constructAuthorizedRequest = function (request, username, userPassword, 
  * @param {string} version The version of the SIP Health Monitor
  * @returns {Promise<object>} The response from the SIP OPTIONS request
  */
-exports.sipOptionRequest = function (sipServer, sipPort, transport, username, password, version) {
+exports.sipOptionRequest = async function (sipServer, sipPort, transport, username, password, version) {
     const publicIP = process.env.PUBLIC_IP || sipServer;
-    // eslint-disable-next-line no-async-promise-executor
-    return new Promise(async (resolve, reject) => {
-        try {
-            const optionsRequest = {
-                method: "OPTIONS",
-                uri: `sip:${sipServer}:${sipPort}`,
-                headers: {
-                    to: { uri: `sip:${sipServer}:${sipPort}` },
-                    from: { uri: `sip:monitor@${publicIP}`, params: { tag: uuid.v4() } },
-                    "call-id": uuid.v4(),
-                    cseq: { method: "OPTIONS",
-                        seq: 1 },
-                    "max-forwards": 70,
-                    "content-length": 0,
-                    contact: [{ uri: `sip:monitor@${publicIP}` }],
-                    "User-Agent": "SIP Health Monitor " + version,
-                },
-                transport: transport.toLowerCase(),
-            };
-            let optionResponse;
-            if (!username) {
-                log.debug("sip", "Sending unauthenticated OPTIONS request");
-                const optionResponse = await exports.sipOption(optionsRequest);
-                log.debug("sip", "optionResponse: " + JSON.stringify(optionResponse));
-                resolve(optionResponse);
-            } else {
-                optionResponse = await exports.sipOption(optionsRequest);
-                log.debug("sip", "optionResponse: " + JSON.stringify(optionResponse));
+    const optionsRequest = {
+        method: "OPTIONS",
+        uri: `sip:${sipServer}:${sipPort}`,
+        headers: {
+            to: { uri: `sip:${sipServer}:${sipPort}` },
+            from: { uri: `sip:monitor@${publicIP}`, params: { tag: uuid.v4() } },
+            "call-id": uuid.v4(),
+            cseq: { method: "OPTIONS",
+                seq: 1 },
+            "max-forwards": 70,
+            "content-length": 0,
+            contact: [{ uri: `sip:monitor@${publicIP}` }],
+            "User-Agent": "SIP Health Monitor " + version,
+        },
+        transport: transport.toLowerCase(),
+    };
 
-                let authHeader = null;
-                let authType = null;
-                if (optionResponse.status === 401 && optionResponse.headers["www-authenticate"]) {
-                    authHeader = optionResponse.headers["www-authenticate"][0] || optionResponse.headers["www-authenticate"];
-                    authType = "Authorization";
-                } else if (optionResponse.status === 407 && optionResponse.headers["proxy-authenticate"]) {
-                    authHeader = optionResponse.headers["proxy-authenticate"][0] || optionResponse.headers["proxy-authenticate"];
-                    authType = "Proxy-Authorization";
-                }
+    if (!username) {
+        log.debug("sip", "Sending unauthenticated OPTIONS request");
+        const optionResponse = await exports.sipOption(optionsRequest);
+        log.debug("sip", "optionResponse: " + JSON.stringify(optionResponse));
+        return optionResponse;
+    }
 
-                if (authHeader) {
-                    const authorizedOptionRequest = exports.constructAuthorizedRequest(
-                        optionsRequest,
-                        username,
-                        password,
-                        authHeader,
-                        authType
-                    );
-                    const secondResponse = await exports.sipOption(authorizedOptionRequest);
-                    resolve(secondResponse);
-                } else {
-                    resolve(optionResponse);
-                }
-            }
+    const optionResponse = await exports.sipOption(optionsRequest);
+    log.debug("sip", "optionResponse: " + JSON.stringify(optionResponse));
 
-        } catch (error) {
-            log.error("sip", "Error: " + error.message);
-            reject(error);
-        }
-    });
+    let authHeader = null;
+    let authType = null;
+    if (optionResponse.status === 401 && optionResponse.headers["www-authenticate"]) {
+        authHeader = optionResponse.headers["www-authenticate"][0] || optionResponse.headers["www-authenticate"];
+        authType = "Authorization";
+    } else if (optionResponse.status === 407 && optionResponse.headers["proxy-authenticate"]) {
+        authHeader = optionResponse.headers["proxy-authenticate"][0] || optionResponse.headers["proxy-authenticate"];
+        authType = "Proxy-Authorization";
+    }
+
+    if (authHeader) {
+        const authorizedOptionRequest = exports.constructAuthorizedRequest(
+            optionsRequest,
+            username,
+            password,
+            authHeader,
+            authType
+        );
+        return await exports.sipOption(authorizedOptionRequest);
+    }
+
+    return optionResponse;
 };
 exports.sipOption = function (optionsRequest) {
     const server = sip.create({
