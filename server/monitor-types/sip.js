@@ -1,5 +1,5 @@
 const { MonitorType } = require("./monitor-type");
-const { log, UP, DOWN, MAINTENANCE } = require("../../src/util");
+const { UP,  MAINTENANCE } = require("../../src/util");
 const { sipRegisterRequest, sipOptionRequest } = require("../util-server");
 const dayjs = require("dayjs");
 const version = require("../../package.json").version;
