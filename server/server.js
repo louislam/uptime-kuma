@@ -935,6 +935,9 @@ let needSetup = false;
                 bean.ping_count = monitor.ping_count;
                 bean.ping_per_request_timeout = monitor.ping_per_request_timeout;
 
+                // script advanced options
+                bean.script_args = monitor.args;
+
                 bean.validate();
 
                 await R.store(bean);
