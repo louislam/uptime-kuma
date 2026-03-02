@@ -23,7 +23,7 @@
 
             <router-link :to="monitorURL(monitor.id)" class="item" :class="{ disabled: !monitor.active }">
                 <div class="row">
-                    <div class="small-padding d-flex gap-2 align-items-center" :class="monitorItem">
+                    <div class="small-padding d-flex gap-2 align-items-center" :class="monitorStyle">
                         <div class="me-1">
                             <Uptime :monitor="monitor" type="24" :pill="true" />
                         </div>
@@ -162,12 +162,10 @@ export default {
                 marginLeft: `${20 * this.depth}px`,
             };
         },
-        monitorItem() {
+        monitorStyle() {
             const isFullWidth = this.$root.userHeartbeatBar === "bottom" || this.$root.userHeartbeatBar === "none";
             const c = {};
-            if (isFullWidth) {
-                c["monitor-item"] = true;
-            } else {
+            if (!isFullWidth) {
                 c["col-9"] = true;
                 c["col-xl-6"] = true;
             }
