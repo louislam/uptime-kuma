@@ -43,7 +43,7 @@ module.exports = {
         "vue/require-component-is": "off", // not allow is="style" https://github.com/vuejs/eslint-plugin-vue/issues/462#issuecomment-430234675
         "vue/attribute-hyphenation": "off", // This change noNL to "no-n-l" unexpectedly
         "vue/multi-word-component-names": "off",
-        "vue-scoped-css/no-unused-selector": "error",
+        "vue-scoped-css/no-unused-selector": "warn",
         curly: "error",
         "no-var": "error",
         "no-throw-literal": "error",

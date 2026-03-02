@@ -636,12 +636,6 @@ export default {
     }
 }
 
-.aaa {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-}
-
 .filter-row {
     display: flex;
     justify-content: flex-start;
