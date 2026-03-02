@@ -35,7 +35,7 @@ async function sipRegisterRequest(sipServer, sipPort, transport, username, userP
         },
         transport: transport.toLowerCase(),
     };
-    const registrationResponse = await sipRegister(registerRequest);
+    const registrationResponse = await sipSend(registerRequest, "REGISTER");
     log.debug("sip", "Initial response status: " + registrationResponse.status);
 
     // Handle authentication challenges (401 = WWW-Authenticate, 407 = Proxy-Authenticate)
@@ -68,7 +68,7 @@ async function sipRegisterRequest(sipServer, sipPort, transport, username, userP
         // Increment CSeq for the authenticated retry
         authorizedRegisterRequest.headers.cseq = { method: registerRequest.method, seq: 2 };
         log.debug("sip", "Sending authenticated request");
-        const secondResponse = await sipRegister(authorizedRegisterRequest);
+        const secondResponse = await sipSend(authorizedRegisterRequest, "REGISTER");
         log.debug("sip", "Authenticated response status: " + secondResponse.status);
         return secondResponse;
     } else {
@@ -78,11 +78,13 @@ async function sipRegisterRequest(sipServer, sipPort, transport, username, userP
 }
 
 /**
- * Sends a SIP REGISTER request via the sip library
- * @param {object} registerRequest The SIP REGISTER request object
+ * Sends a SIP request via the sip library and returns the response.
+ * Shared helper used by both REGISTER and OPTIONS flows.
+ * @param {object} request The SIP request object to send
+ * @param {string} label A human-readable label for log messages (e.g. "REGISTER", "OPTIONS")
  * @returns {Promise<object>} The response from the SIP server
  */
-function sipRegister(registerRequest) {
+function sipSend(request, label) {
     const server = sip.create({
         logger: "console",
         port: 0,
@@ -113,18 +115,18 @@ function sipRegister(registerRequest) {
             }
             settled = true;
             cleanup();
-            log.error("sip", "SIP Register request timed out.");
-            reject(new Error("SIP Register request timed out."));
+            log.error("sip", `SIP ${label} request timed out.`);
+            reject(new Error(`SIP ${label} request timed out.`));
         }, timeout);
 
         try {
-            server.send(registerRequest, (response) => {
+            server.send(request, (response) => {
                 if (settled) {
                     return;
                 }
                 settled = true;
                 cleanup();
-                log.debug("sip", "Received SIP register response: " + JSON.stringify(response));
+                log.debug("sip", `Received SIP ${label} response: ` + JSON.stringify(response));
                 if (response) {
                     resolve(response);
                 } else {
@@ -137,8 +139,8 @@ function sipRegister(registerRequest) {
             }
             settled = true;
             cleanup();
-            log.error("sip", "Error sending SIP register request: " + error.message);
-            reject(new Error("Error sending SIP register request: " + error.message));
+            log.error("sip", `Error sending SIP ${label} request: ` + error.message);
+            reject(new Error(`Error sending SIP ${label} request: ` + error.message));
         }
     });
 }
@@ -151,17 +153,18 @@ function sipRegister(registerRequest) {
  * @param {object} challengeHeader The challenge header from the server
  * @param {string} headerName The header name to use for authorization
  * @returns {object} The authorized SIP request
+ * @throws {Error} If password is required but not provided for digest authentication
  */
 function constructAuthorizedRequest(request, username, userPassword, challengeHeader, headerName = "Authorization") {
     if (!userPassword) {
         throw new Error("Password is required for digest authentication");
     }
 
-    const realm = (challengeHeader.realm || "").replace(/"/g, "");
-    const nonce = (challengeHeader.nonce || "").replace(/"/g, "");
-    const opaque = (challengeHeader.opaque || "").replace(/"/g, "");
-    const qopRaw = (challengeHeader.qop || "").replace(/"/g, "");
-    const algorithm = (challengeHeader.algorithm || "MD5").replace(/"/g, "");
+    const realm = (challengeHeader.realm || "").replaceAll('"', "");
+    const nonce = (challengeHeader.nonce || "").replaceAll('"', "");
+    const opaque = (challengeHeader.opaque || "").replaceAll('"', "");
+    const qopRaw = (challengeHeader.qop || "").replaceAll('"', "");
+    const algorithm = (challengeHeader.algorithm || "MD5").replaceAll('"', "");
 
     // Parse qop list (e.g., "auth,auth-int") and select preferred value
     const qopOptions = qopRaw.split(",").map(q => q.trim().toLowerCase()).filter(Boolean);
@@ -193,9 +196,7 @@ function constructAuthorizedRequest(request, username, userPassword, challengeHe
         const nc = "00000001";
         const cnonce = crypto.randomBytes(16).toString("hex");
         response = hashFn(`${ha1}:${nonce}:${nc}:${cnonce}:${qop}:${ha2}`);
-        authParts.push(`qop=${qop}`);
-        authParts.push(`nc=${nc}`);
-        authParts.push(`cnonce="${cnonce}"`);
+        authParts.push(`qop=${qop}`, `nc=${nc}`, `cnonce="${cnonce}"`);
     } else {
         // Basic digest: response = H(HA1:nonce:HA2)
         response = hashFn(`${ha1}:${nonce}:${ha2}`);
@@ -251,12 +252,12 @@ async function sipOptionRequest(sipServer, sipPort, transport, username, passwor
 
     if (!username) {
         log.debug("sip", "Sending unauthenticated OPTIONS request");
-        const optionResponse = await sipOption(optionsRequest);
+        const optionResponse = await sipSend(optionsRequest, "OPTIONS");
         log.debug("sip", "optionResponse: " + JSON.stringify(optionResponse));
         return optionResponse;
     }
 
-    const optionResponse = await sipOption(optionsRequest);
+    const optionResponse = await sipSend(optionsRequest, "OPTIONS");
     log.debug("sip", "optionResponse: " + JSON.stringify(optionResponse));
 
     let authHeader = null;
@@ -277,76 +278,10 @@ async function sipOptionRequest(sipServer, sipPort, transport, username, passwor
             authHeader,
             authType
         );
-        return await sipOption(authorizedOptionRequest);
+        return await sipSend(authorizedOptionRequest, "OPTIONS");
     }
 
     return optionResponse;
-}
-
-/**
- * Sends a SIP OPTIONS request via the sip library
- * @param {object} optionsRequest The SIP OPTIONS request object
- * @returns {Promise<object>} The response from the SIP server
- */
-function sipOption(optionsRequest) {
-    const server = sip.create({
-        logger: "console",
-        port: 0,
-    });
-    log.debug("sip", "SIP server created");
-    return new Promise((resolve, reject) => {
-        const timeout = 5000;
-        let settled = false;
-
-        /**
-         * Clears the timeout and destroys the SIP server instance.
-         * @returns {void}
-         */
-        function cleanup() {
-            if (timeoutID) {
-                clearTimeout(timeoutID);
-                timeoutID = null;
-            }
-            if (server && server.destroy) {
-                server.destroy();
-                log.debug("sip", "SIP server destroyed.");
-            }
-        }
-
-        let timeoutID = setTimeout(() => {
-            if (settled) {
-                return;
-            }
-            settled = true;
-            cleanup();
-            log.error("sip", "SIP OPTIONS request timed out.");
-            reject(new Error("SIP OPTIONS request timed out."));
-        }, timeout);
-
-        try {
-            server.send(optionsRequest, (response) => {
-                if (settled) {
-                    return;
-                }
-                settled = true;
-                cleanup();
-                log.debug("sip", "Received SIP options response: " + JSON.stringify(response));
-                if (response) {
-                    resolve(response);
-                } else {
-                    reject(new Error("Empty SIP response received."));
-                }
-            });
-        } catch (error) {
-            if (settled) {
-                return;
-            }
-            settled = true;
-            cleanup();
-            log.error("sip", "Error sending SIP options request: " + error.message);
-            reject(new Error("Error sending SIP options request: " + error.message));
-        }
-    });
 }
 
 const sipStatusCodes = [
