@@ -335,10 +335,6 @@ export default {
     padding-right: 5px !important;
 }
 
-// .monitor-item {
-//     width: 100%;
-// }
-
 .tags {
     margin-top: 4px;
     padding-left: 4px;
@@ -395,10 +391,6 @@ export default {
     &.dragging {
         cursor: grabbing;
     }
-}
-
-.monitor-item {
-    width: 100%;
 }
 
 .bottom-style {
