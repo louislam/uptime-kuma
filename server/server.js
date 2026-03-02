@@ -1003,7 +1003,8 @@ let needSetup = false;
             }
         });
 
-        socket.on("checkMointor", async (partial, callback) => {
+        // partial { type, url, hostname, grpcUrl }
+        socket.on("checkDomain", async (partial, callback) => {
             try {
                 checkLogin(socket);
                 const DomainExpiry = require("./model/domain_expiry");
