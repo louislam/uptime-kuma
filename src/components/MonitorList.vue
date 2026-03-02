@@ -739,11 +739,6 @@ export default {
     }
 }
 
-.actions-row {
-    display: flex;
-    align-items: center;
-}
-
 .selection-controls {
     margin-top: 5px;
     display: flex;
