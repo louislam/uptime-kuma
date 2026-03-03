@@ -25,13 +25,12 @@ async function sipRegisterRequest(sipServer, sipPort, transport, username, userP
             to: { uri: `sip:${userAor}` },
             from: { uri: `sip:${userAor}`, params: { tag: uuid.v4() } },
             "call-id": uuid.v4(),
-            cseq: { method: "REGISTER",
-                seq: 1 },
+            cseq: { method: "REGISTER", seq: 1 },
             "max-forwards": 70,
             "content-length": 0,
             contact: [{ uri: `sip:${userAor}` }],
             "User-Agent": "SIP Health Monitor " + ver,
-            "Expires": 60,
+            Expires: 60,
         },
         transport: transport.toLowerCase(),
     };
@@ -167,8 +166,11 @@ function constructAuthorizedRequest(request, username, userPassword, challengeHe
     const algorithm = (challengeHeader.algorithm || "MD5").replaceAll('"', "");
 
     // Parse qop list (e.g., "auth,auth-int") and select preferred value
-    const qopOptions = qopRaw.split(",").map(q => q.trim().toLowerCase()).filter(Boolean);
-    const qop = qopOptions.includes("auth") ? "auth" : (qopOptions[0] || "");
+    const qopOptions = qopRaw
+        .split(",")
+        .map((q) => q.trim().toLowerCase())
+        .filter(Boolean);
+    const qop = qopOptions.includes("auth") ? "auth" : qopOptions[0] || "";
 
     // Determine hash function based on server's algorithm
     let hashFn;
@@ -240,8 +242,7 @@ async function sipOptionRequest(sipServer, sipPort, transport, username, passwor
             to: { uri: `sip:${sipServer}:${sipPort}` },
             from: { uri: `sip:monitor@${publicIP}`, params: { tag: uuid.v4() } },
             "call-id": uuid.v4(),
-            cseq: { method: "OPTIONS",
-                seq: 1 },
+            cseq: { method: "OPTIONS", seq: 1 },
             "max-forwards": 70,
             "content-length": 0,
             contact: [{ uri: `sip:monitor@${publicIP}` }],
@@ -376,14 +377,28 @@ class SipMonitorType extends MonitorType {
         let startTime = dayjs().valueOf();
 
         if (monitor.sipMethod === "OPTIONS") {
-            sipResponse = await sipOptionRequest(monitor.hostname, monitor.port, monitor.sipProtocol, monitor.basic_auth_user, monitor.basic_auth_pass, version);
+            sipResponse = await sipOptionRequest(
+                monitor.hostname,
+                monitor.port,
+                monitor.sipProtocol,
+                monitor.basic_auth_user,
+                monitor.basic_auth_pass,
+                version
+            );
         } else {
-            sipResponse = await sipRegisterRequest(monitor.hostname, monitor.port, monitor.sipProtocol, monitor.basic_auth_user, monitor.basic_auth_pass, version);
+            sipResponse = await sipRegisterRequest(
+                monitor.hostname,
+                monitor.port,
+                monitor.sipProtocol,
+                monitor.basic_auth_user,
+                monitor.basic_auth_pass,
+                version
+            );
         }
 
         heartbeat.ping = dayjs().valueOf() - startTime;
 
-        const matchingStatus = sipStatusCodes.find(code => code.status === sipResponse?.status);
+        const matchingStatus = sipStatusCodes.find((code) => code.status === sipResponse?.status);
 
         if (matchingStatus) {
             sipMessage = `${sipResponse.status} - ${matchingStatus.msg}`;

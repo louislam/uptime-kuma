@@ -695,7 +695,6 @@
                                     (monitor.type === 'globalping' &&
                                         monitor.subtype === 'ping' &&
                                         monitor.protocol === 'TCP')
-                                    
                                 "
                                 class="my-3"
                             >
@@ -1613,7 +1612,11 @@
                                     value=""
                                 />
                                 <label class="form-check-label" for="ignore-tls">
-                                    {{ monitor.type === "redis" || monitor.type === 'sip' ? $t("ignoreTLSErrorGeneral") : $t("ignoreTLSError") }}
+                                    {{
+                                        monitor.type === "redis" || monitor.type === "sip"
+                                            ? $t("ignoreTLSErrorGeneral")
+                                            : $t("ignoreTLSError")
+                                    }}
                                 </label>
                             </div>
 
@@ -2188,17 +2191,12 @@
                             </template>
                             <!-- SIP Options -->
 
-                            <template
-                                v-if="monitor.type === 'sip'
-                                "
-                            >
+                            <template v-if="monitor.type === 'sip'">
                                 <h2 class="mt-5 mb-2">{{ $t("SIP Options") }}</h2>
 
                                 <!-- Method -->
                                 <div class="my-3">
-                                    <label for="method" class="form-label">{{
-                                        $t("Method")
-                                    }}</label>
+                                    <label for="method" class="form-label">{{ $t("Method") }}</label>
                                     <select id="method" v-model="monitor.sipMethod" class="form-select">
                                         <option value="REGISTER">REGISTER</option>
                                         <option value="OPTIONS">OPTIONS</option>
@@ -2207,10 +2205,12 @@
 
                                 <!-- Encoding -->
                                 <div class="my-3">
-                                    <label for="httpBodyEncoding" class="form-label">{{
-                                        $t("Body Encoding")
-                                    }}</label>
-                                    <select id="httpBodyEncoding" v-model="monitor.httpBodyEncoding" class="form-select">
+                                    <label for="httpBodyEncoding" class="form-label">{{ $t("Body Encoding") }}</label>
+                                    <select
+                                        id="httpBodyEncoding"
+                                        v-model="monitor.httpBodyEncoding"
+                                        class="form-select"
+                                    >
                                         <option value="json">JSON</option>
                                         <option value="xml">XML</option>
                                     </select>
@@ -2220,18 +2220,20 @@
                                 <div class="my-3">
                                     <label for="body" class="form-label">{{ $t("Body") }}</label>
                                     <textarea
-                                        id="body" v-model="monitor.body" class="form-control"
+                                        id="body"
+                                        v-model="monitor.body"
+                                        class="form-control"
                                         :placeholder="bodyPlaceholder"
                                     ></textarea>
                                 </div>
 
                                 <!-- Headers -->
                                 <div class="my-3">
-                                    <label for="headers" class="form-label">{{
-                                        $t("Headers")
-                                    }}</label>
+                                    <label for="headers" class="form-label">{{ $t("Headers") }}</label>
                                     <textarea
-                                        id="headers" v-model="monitor.headers" class="form-control"
+                                        id="headers"
+                                        v-model="monitor.headers"
+                                        class="form-control"
                                         :placeholder="headersPlaceholder"
                                     ></textarea>
                                 </div>
@@ -2243,7 +2245,10 @@
                                 <div class="my-3">
                                     <label for="sip-username" class="form-label">{{ $t("Username") }}</label>
                                     <input
-                                        id="sip-username" v-model="monitor.basic_auth_user" type="text" class="form-control"
+                                        id="sip-username"
+                                        v-model="monitor.basic_auth_user"
+                                        type="text"
+                                        class="form-control"
                                         :placeholder="$t('Username')"
                                     />
                                 </div>
@@ -2251,8 +2256,12 @@
                                 <div class="my-3">
                                     <label for="sip-password" class="form-label">{{ $t("Password") }}</label>
                                     <input
-                                        id="sip-password" v-model="monitor.basic_auth_pass" type="password" autocomplete="new-password"
-                                        class="form-control" :placeholder="$t('Password')"
+                                        id="sip-password"
+                                        v-model="monitor.basic_auth_pass"
+                                        type="password"
+                                        autocomplete="new-password"
+                                        class="form-control"
+                                        :placeholder="$t('Password')"
                                     />
                                 </div>
                             </template>
@@ -3437,7 +3446,12 @@ message HealthCheckResponse {
             }
 
             // Set default port for DNS if not already defined
-            if (!this.monitor.port || this.monitor.port === "53" || this.monitor.port === "1812" || this.monitor.port === "5060") {
+            if (
+                !this.monitor.port ||
+                this.monitor.port === "53" ||
+                this.monitor.port === "1812" ||
+                this.monitor.port === "5060"
+            ) {
                 if (this.monitor.type === "dns") {
                     this.monitor.port = "53";
                 } else if (this.monitor.type === "radius") {
