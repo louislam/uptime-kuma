@@ -136,7 +136,7 @@ function ucfirst(str) {
 }
 exports.ucfirst = ucfirst;
 function debug(msg) {
-    exports.log.log("", "debug", msg);
+    exports.log.log("", "DEBUG", msg);
 }
 exports.debug = debug;
 class Logger {
@@ -167,13 +167,36 @@ class Logger {
             return;
         }
         module = module.toUpperCase();
-        level = level.toUpperCase();
         let now;
         if (dayjs.tz) {
             now = dayjs.tz(new Date()).format();
         }
         else {
             now = dayjs().format();
+        }
+        if (process.env.UPTIME_KUMA_LOG_FORMAT === "json") {
+            const msgString = msg
+                .map((m) => {
+                if (typeof m === "string") {
+                    return m;
+                }
+                else {
+                    try {
+                        return JSON.stringify(m);
+                    }
+                    catch (_a) {
+                        return String(m);
+                    }
+                }
+            })
+                .join(" ");
+            console.log(JSON.stringify({
+                time: now,
+                module: module,
+                level: level,
+                msg: msgString,
+            }));
+            return;
         }
         const levelColor = consoleLevelColors[level];
         const moduleColor = consoleModuleColors[intHash(module, consoleModuleColors.length)];
@@ -218,19 +241,19 @@ class Logger {
         }
     }
     info(module, ...msg) {
-        this.log(module, "info", ...msg);
+        this.log(module, "INFO", ...msg);
     }
     warn(module, ...msg) {
-        this.log(module, "warn", ...msg);
+        this.log(module, "WARN", ...msg);
     }
     error(module, ...msg) {
-        this.log(module, "error", ...msg);
+        this.log(module, "ERROR", ...msg);
     }
     debug(module, ...msg) {
-        this.log(module, "debug", ...msg);
+        this.log(module, "DEBUG", ...msg);
     }
     exception(module, exception, ...msg) {
-        this.log(module, "error", ...msg, exception);
+        this.log(module, "ERROR", ...msg, exception);
     }
 }
 exports.log = new Logger();

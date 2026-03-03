@@ -35,18 +35,12 @@
                                     class="form-select"
                                     data-testid="monitor-type-select"
                                 >
+                                    <!-- Unsorted, since HTTP is commonly used -->
                                     <optgroup :label="$t('General Monitor Type')">
-                                        <option value="group">
-                                            {{ $t("Group") }}
-                                        </option>
                                         <option value="http">HTTP(s)</option>
+                                        <option value="keyword">HTTP(s) - {{ $t("Keyword") }}</option>
                                         <option value="port">TCP Port</option>
                                         <option value="ping">Ping</option>
-                                        <option value="smtp">SMTP</option>
-                                        <option value="snmp">SNMP</option>
-                                        <option value="keyword">HTTP(s) - {{ $t("Keyword") }}</option>
-                                        <option value="json-query">HTTP(s) - {{ $t("Json Query") }}</option>
-                                        <option value="grpc-keyword">gRPC(s) - {{ $t("Keyword") }}</option>
                                         <option value="dns">DNS</option>
                                         <option value="docker">
                                             {{ $t("Docker Container") }}
@@ -63,7 +57,12 @@
                                         <option value="real-browser">
                                             HTTP(s) - Browser Engine (Chrome/Chromium) (Beta)
                                         </option>
-                                        <option value="websocket-upgrade">Websocket Upgrade</option>
+                                    </optgroup>
+
+                                    <optgroup :label="$t('monitorTypeSpecial')">
+                                        <option value="group">
+                                            {{ $t("Group") }}
+                                        </option>
                                     </optgroup>
 
                                     <optgroup :label="$t('Passive Monitor Type')">
@@ -73,28 +72,42 @@
                                         </option>
                                     </optgroup>
 
+                                    <!-- Should sort from A to Z in this category -->
                                     <optgroup :label="$t('Specific Monitor Type')">
                                         <option value="globalping">
                                             {{ $t("Globalping - Access global monitoring probes") }}
                                         </option>
-                                        <option value="steam">
-                                            {{ $t("Steam Game Server") }}
-                                        </option>
-                                        <option value="gamedig">GameDig</option>
+                                        <option value="grpc-keyword">gRPC(s) - {{ $t("Keyword") }}</option>
+                                        <option value="json-query">HTTP(s) - {{ $t("Json Query") }}</option>
+                                        <option value="kafka-producer">Kafka Producer</option>
                                         <option value="mqtt">MQTT</option>
                                         <option value="rabbitmq">RabbitMQ</option>
-                                        <option value="kafka-producer">Kafka Producer</option>
-                                        <option value="sqlserver">Microsoft SQL Server</option>
-                                        <option value="postgres">PostgreSQL</option>
-                                        <option value="mysql">MySQL/MariaDB</option>
-                                        <option value="mongodb">MongoDB</option>
-                                        <option value="radius">Radius</option>
-                                        <option value="redis">Redis</option>
                                         <option v-if="!$root.info.isContainer" value="sip-options">
                                             SIP Options Ping
                                         </option>
+                                        <option value="smtp">SMTP</option>
+                                        <option value="snmp">SNMP</option>
                                         <option v-if="!$root.info.isContainer" value="tailscale-ping">
                                             Tailscale Ping
+                                        </option>
+                                        <option value="websocket-upgrade">Websocket Upgrade</option>
+                                    </optgroup>
+
+                                    <!-- Should sort from A to Z in this category -->
+                                    <optgroup :label="$t('monitorTypeDatabase')">
+                                        <option value="sqlserver">Microsoft SQL Server</option>
+                                        <option value="mongodb">MongoDB</option>
+                                        <option value="mysql">MySQL/MariaDB</option>
+                                        <option value="postgres">PostgreSQL</option>
+                                        <option value="radius">Radius</option>
+                                        <option value="redis">Redis</option>
+                                    </optgroup>
+
+                                    <!-- Should sort from A to Z in this category -->
+                                    <optgroup :label="$t('monitorTypeGameServer')">
+                                        <option value="gamedig">GameDig</option>
+                                        <option value="steam">
+                                            {{ $t("Steam Game Server") }}
                                         </option>
                                     </optgroup>
                                 </select>
@@ -523,7 +536,7 @@
                                         class="form-control"
                                         required
                                     />
-                                    <i18n-t keypath="GlobalpingLocation" tag="div" class="form-text">
+                                    <i18n-t keypath="GlobalpingLocationDescription" tag="div" class="form-text">
                                         <template #plus>
                                             <code>+</code>
                                         </template>
@@ -532,6 +545,9 @@
                                         </template>
                                         <template #comcastPlusCalifornia>
                                             <code>comcast+california</code>
+                                        </template>
+                                        <template #datacenter>
+                                            <code>+datacenter</code>
                                         </template>
                                         <template #fullDocs>
                                             <a
@@ -1532,15 +1548,17 @@
                                     v-model="monitor.domainExpiryNotification"
                                     class="form-check-input"
                                     type="checkbox"
-                                    :disabled="!hasDomain"
                                 />
                                 <label class="form-check-label" for="domain-expiry-notification">
                                     {{ $t("labelDomainNameExpiryNotification") }}
                                 </label>
-                                <div v-if="hasDomain" class="form-text">
+                                <div class="form-text">
                                     {{ $t("domainExpiryNotificationHelp") }}
                                 </div>
-                                <div v-if="!hasDomain && domainExpiryUnsupportedReason" class="form-text">
+                                <div
+                                    v-if="monitor.domainExpiryNotification && domainExpiryUnsupportedReason"
+                                    class="form-text"
+                                >
                                     {{ domainExpiryUnsupportedReason }}
                                 </div>
                             </div>
@@ -2820,11 +2838,22 @@ const toast = useToast();
 
 const pushTokenLength = 32;
 
+const defaultValueList = {
+    http: {
+        url: "https://",
+        accepted_statuscodes: ["200-299"],
+    },
+    "websocket-upgrade": {
+        url: "wss://",
+        accepted_statuscodes: ["1000"],
+    },
+};
+
 const monitorDefaults = {
     type: "http",
     name: "",
     parent: null,
-    url: "https://",
+    url: defaultValueList.http.url,
     wsSubprotocol: "",
     method: "GET",
     protocol: null,
@@ -2840,9 +2869,9 @@ const monitorDefaults = {
     ignoreTls: false,
     upsideDown: false,
     expiryNotification: false,
-    domainExpiryNotification: false,
+    domainExpiryNotification: true,
     maxredirects: 10,
-    accepted_statuscodes: ["200-299"],
+    accepted_statuscodes: defaultValueList.http.accepted_statuscodes,
     saveResponse: false,
     saveErrorResponse: true,
     responseMaxLength: 1024,
@@ -2902,9 +2931,8 @@ export default {
                 notificationIDList: {},
                 // Do not add default value here, please check init() method
             },
-            hasDomain: false,
             domainExpiryUnsupportedReason: null,
-            checkMonitorDebounce: null,
+            checkDomainDebounce: null,
             acceptedStatusCodeOptions: [],
             acceptedWebsocketCodeOptions: [],
             dnsresolvetypeOptions: [],
@@ -2961,16 +2989,6 @@ export default {
             }
             // Default placeholder if neither hostname nor URL is available
             return this.$t("defaultFriendlyName");
-        },
-
-        monitorTypeUrlHost() {
-            const { type, url, hostname, grpcUrl } = this.monitor;
-            return {
-                type,
-                url,
-                hostname,
-                grpcUrl,
-            };
         },
 
         showDomainExpiryNotification() {
@@ -3266,30 +3284,25 @@ message HealthCheckResponse {
             }
         },
 
-        monitorTypeUrlHost(data) {
-            if (this.checkMonitorDebounce != null) {
-                clearTimeout(this.checkMonitorDebounce);
-            }
+        showDomainExpiryNotification() {
+            this.checkDomain();
+        },
 
-            if (!this.showDomainExpiryNotification) {
-                this.hasDomain = false;
-                this.domainExpiryUnsupportedReason = null;
-                return;
-            }
+        "monitor.hostname"() {
+            this.checkDomain();
+        },
 
-            this.checkMonitorDebounce = setTimeout(() => {
-                this.$root.getSocket().emit("checkMointor", data, (res) => {
-                    const wasSupported = this.hasDomain;
-                    this.hasDomain = !!res?.ok;
-                    if (this.hasDomain !== wasSupported) {
-                        this.monitor.domainExpiryNotification = this.hasDomain;
-                    }
-                    this.domainExpiryUnsupportedReason = res.msgi18n ? this.$t(res.msg, res.meta) : res.msg;
-                });
-            }, 500);
+        "monitor.url"() {
+            this.checkDomain();
+        },
+
+        "monitor.grpcUrl"() {
+            this.checkDomain();
         },
 
         "monitor.type"(newType, oldType) {
+            this.checkDomain();
+
             if (newType === "globalping" && !this.monitor.subtype) {
                 this.monitor.subtype = "ping";
             }
@@ -3298,10 +3311,38 @@ message HealthCheckResponse {
                 this.monitor.dns_resolve_server = "1.1.1.1";
             }
 
-            if (oldType && this.monitor.type === "websocket-upgrade") {
-                this.monitor.url = "wss://";
-                this.monitor.accepted_statuscodes = ["1000"];
+            // Change to websocket-upgrade (override http defaults)
+            if (newType === "websocket-upgrade") {
+                if (!this.monitor.url || this.monitor.url === defaultValueList.http.url) {
+                    this.monitor.url = defaultValueList["websocket-upgrade"].url;
+                }
+
+                if (
+                    !this.monitor.accepted_statuscodes ||
+                    (this.monitor.accepted_statuscodes.length === 1 &&
+                        this.monitor.accepted_statuscodes[0] === defaultValueList.http.accepted_statuscodes)
+                ) {
+                    this.monitor.accepted_statuscodes = defaultValueList["websocket-upgrade"].accepted_statuscodes;
+                }
             }
+
+            // Change to http (override websocket-upgrade defaults)
+            // Because user may see wss:// and default to http code 1000, which is strange for http monitor.
+            if (["http", "keyword", "real-browser"].includes(newType)) {
+                if (!this.monitor.url || this.monitor.url === defaultValueList["websocket-upgrade"].url) {
+                    this.monitor.url = defaultValueList.http.url;
+                }
+
+                if (
+                    !this.monitor.accepted_statuscodes ||
+                    (this.monitor.accepted_statuscodes.length === 1 &&
+                        this.monitor.accepted_statuscodes[0] ===
+                            defaultValueList["websocket-upgrade"].accepted_statuscodes)
+                ) {
+                    this.monitor.accepted_statuscodes = defaultValueList.http.accepted_statuscodes;
+                }
+            }
+
             if (this.monitor.type === "push") {
                 if (!this.monitor.pushToken) {
                     // ideally this would require checking if the generated token is already used
@@ -3651,29 +3692,24 @@ message HealthCheckResponse {
                 }
             }
 
+            // Validate Globalping location if present
+            if (this.monitor.type === "globalping" && this.monitor.location) {
+                if (this.monitor.location.includes(",")) {
+                    toast.error(this.$t("GlobalpingMultipleLocationsError"));
+                    return false;
+                }
+            }
+
             // Validate hostname field input for various monitors
             if (
-                [
-                    "mqtt",
-                    "dns",
-                    "port",
-                    "ping",
-                    "steam",
-                    "gamedig",
-                    "radius",
-                    "tailscale-ping",
-                    "smtp",
-                    "snmp",
-                ].includes(this.monitor.type) &&
+                ["dns", "port", "ping", "steam", "gamedig", "radius", "tailscale-ping", "smtp", "snmp"].includes(
+                    this.monitor.type
+                ) &&
                 this.monitor.hostname
             ) {
                 let hostname = this.monitor.hostname.trim();
 
-                if (this.monitor.type === "mqtt") {
-                    hostname = hostname.replace(/^(mqtt|ws)s?:\/\//, "");
-                }
-
-                if (this.monitor.type === "dns" && isIP(hostname)) {
+                if (this.monitor.type === "dns" && this.monitor.dns_resolve_type !== "PTR" && isIP(hostname)) {
                     toast.error(this.$t("hostnameCannotBeIP"));
                     return false;
                 }
@@ -3699,30 +3735,42 @@ message HealthCheckResponse {
                 }
             }
 
-            // Validate URL field input for various monitors
-            if (
-                ["http", "keyword", "json-query", "websocket-upgrade", "real-browser"].includes(this.monitor.type) &&
-                this.monitor.url
-            ) {
+            // monitor type : url protocol restrictions
+            // null is no restriction, as long as it is able to be parsed by new URL()
+            const acceptList = {
+                http: ["http:", "https:"],
+                keyword: ["http:", "https:"],
+                "json-query": ["http:", "https:"],
+                "websocket-upgrade": ["ws:", "wss:"],
+                "real-browser": null,
+                mqtt: ["mqtt:", "ws:", "wss:"],
+            };
+
+            if (this.monitor.type in acceptList) {
+                const allowedProtocols = acceptList[this.monitor.type];
+
                 try {
-                    const url = new URL(this.monitor.url);
-                    // Browser can encode *.hostname.com to %2A.hostname.com
-                    if (url.hostname.includes("*") || url.hostname.includes("%2A")) {
-                        toast.error(this.$t("wildcardOnlyForDNS"));
+                    let url;
+
+                    // Special handling for MQTT, because it was wrongly used hostname field to store the URL.
+                    if (this.monitor.type === "mqtt") {
+                        url = new URL(this.monitor.hostname);
+                    } else {
+                        url = new URL(this.monitor.url);
+                    }
+
+                    if (allowedProtocols && !allowedProtocols.includes(url.protocol)) {
+                        console.log(url);
+                        toast.error(this.$t("invalidURL"));
                         return false;
                     }
-                    if (
-                        !isFQDN(url.hostname, {
-                            require_tld: false,
-                            allow_underscores: true,
-                            allow_trailing_dot: true,
-                        }) &&
-                        !isIP(url.hostname)
-                    ) {
-                        toast.error(this.$t("invalidHostnameOrIP"));
+
+                    // No empty hostname (mainly for non-http/ws URLs)
+                    if (!url.host) {
+                        toast.error(this.$t("invalidURL"));
                         return false;
                     }
-                } catch (err) {
+                } catch (e) {
                     toast.error(this.$t("invalidURL"));
                     return false;
                 }
@@ -3952,6 +4000,39 @@ message HealthCheckResponse {
                     this.monitor.timeout = clampedValue;
                 }
             }
+        },
+
+        // Check Domain
+        // Do nothing if not checked
+        checkDomain() {
+            console.log("checkDomain called");
+            if (this.checkDomainDebounce != null) {
+                clearTimeout(this.checkDomainDebounce);
+            }
+
+            if (!this.showDomainExpiryNotification) {
+                this.domainExpiryUnsupportedReason = null;
+                return;
+            }
+
+            this.checkDomainDebounce = setTimeout(() => {
+                const { type, url, hostname, grpcUrl } = this.monitor;
+                const data = {
+                    type,
+                    url,
+                    hostname,
+                    grpcUrl,
+                };
+
+                this.$root.getSocket().emit("checkDomain", data, (res) => {
+                    console.log(data);
+                    if (!res.ok) {
+                        this.domainExpiryUnsupportedReason = res.msgi18n ? this.$t(res.msg, res.meta) : res.msg;
+                    } else {
+                        this.domainExpiryUnsupportedReason = null;
+                    }
+                });
+            }, 500);
         },
     },
 };

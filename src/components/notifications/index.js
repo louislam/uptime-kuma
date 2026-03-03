@@ -73,6 +73,7 @@ import SpugPush from "./SpugPush.vue";
 import SevenIO from "./SevenIO.vue";
 import Whapi from "./Whapi.vue";
 import WAHA from "./WAHA.vue";
+import Whatsapp360messenger from "./360messenger.vue";
 import Evolution from "./Evolution.vue";
 import Cellsynt from "./Cellsynt.vue";
 import WPush from "./WPush.vue";
@@ -168,6 +169,7 @@ const NotificationFormList = {
     evolution: Evolution,
     notifery: Notifery,
     waha: WAHA,
+    Whatsapp360messenger: Whatsapp360messenger,
     gtxmessaging: GtxMessaging,
     Cellsynt: Cellsynt,
     WPush: WPush,
