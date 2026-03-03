@@ -86,6 +86,7 @@ const SMSPlanet = require("./notification-providers/sms-planet");
 const SpugPush = require("./notification-providers/spugpush");
 const SMSIR = require("./notification-providers/smsir");
 const { commandExists } = require("./util-server");
+const Whatsapp360messenger = require("./notification-providers/360messenger");
 const Webpush = require("./notification-providers/Webpush");
 const HaloPSA = require("./notification-providers/HaloPSA");
 
@@ -189,6 +190,7 @@ class Notification {
             new Notifery(),
             new SMSIR(),
             new SendGrid(),
+            new Whatsapp360messenger(),
             new Webpush(),
             new HaloPSA(),
         ];
