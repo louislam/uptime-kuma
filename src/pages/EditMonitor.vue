@@ -3709,7 +3709,7 @@ message HealthCheckResponse {
             ) {
                 let hostname = this.monitor.hostname.trim();
 
-                if (this.monitor.type === "dns" && isIP(hostname)) {
+                if (this.monitor.type === "dns" && this.monitor.dns_resolve_type !== "PTR" && isIP(hostname)) {
                     toast.error(this.$t("hostnameCannotBeIP"));
                     return false;
                 }

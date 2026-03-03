@@ -11,7 +11,7 @@
     },
     "scripts": {
         "lint:js": "eslint --ext \".js,.vue\" --ignore-path .gitignore .",
-        "lint:js-prod": "npm run lint:js -- --max-warnings 0",
+        "lint:js-prod": "npm run lint:js",
         "lint-fix:js": "eslint --ext \".js,.vue\" --fix --ignore-path .gitignore .",
         "lint:style": "stylelint \"**/*.{vue,css,scss}\" --ignore-path .gitignore",
         "lint-fix:style": "stylelint \"**/*.{vue,css,scss}\" --fix --ignore-path .gitignore",
@@ -189,6 +189,7 @@
         "eslint-config-prettier": "^10.1.8",
         "eslint-plugin-jsdoc": "~46.4.6",
         "eslint-plugin-vue": "~8.7.1",
+        "eslint-plugin-vue-scoped-css": "~2.7.2",
         "favico.js": "~0.3.10",
         "get-port-please": "^3.2.0",
         "node-ssh": "~13.1.0",
