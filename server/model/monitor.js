@@ -425,6 +425,14 @@ class Monitor extends BeanModel {
                 beatInterval = 1;
             }
 
+            // Check if monitor still exists in database before proceeding
+            // This prevents FOREIGN KEY constraint errors when monitor is deleted
+            const monitorExists = await R.findOne("monitor", "id = ?", [this.id]);
+            if (!monitorExists) {
+                log.info("monitor", `[${this.name}] Monitor no longer exists, stopping beat`);
+                return;
+            }
+
             if (demoMode) {
                 if (beatInterval < 20) {
                     console.log("beat interval too low, reset to 20s");
