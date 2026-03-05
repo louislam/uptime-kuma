@@ -467,6 +467,7 @@ export default {
             selectedStatusPages: [],
             dark: this.$root.theme === "dark",
             neverEnd: false,
+            endDateManuallyModified: false,
             lastDays: [
                 {
                     langKey: "lastDay1",
@@ -624,6 +625,45 @@ export default {
     watch: {
         "$route.fullPath"() {
             this.init();
+        },
+
+        "maintenance.dateRange": {
+            handler(newVal, oldVal) {
+                // Only handle single strategy
+                if (this.maintenance.strategy !== "single") {
+                    return;
+                }
+
+                // Skip if no start date or during initialization
+                if (!newVal[0] || !oldVal) {
+                    return;
+                }
+
+                // Check if start date changed (index 0)
+                if (newVal[0] !== oldVal[0]) {
+                    // If user hasn't manually modified end date, update it based on duration
+                    if (!this.endDateManuallyModified && newVal[0] && this.currentDurationMinutes) {
+                        const startDate = new Date(newVal[0]);
+                        const endDate = new Date(startDate.getTime() + this.currentDurationMinutes * 60000);
+
+                        const year = endDate.getFullYear();
+                        const month = String(endDate.getMonth() + 1).padStart(2, "0");
+                        const day = String(endDate.getDate()).padStart(2, "0");
+                        const hours = String(endDate.getHours()).padStart(2, "0");
+                        const mins = String(endDate.getMinutes()).padStart(2, "0");
+
+                        this.maintenance.dateRange[1] = `${year}-${month}-${day}T${hours}:${mins}`;
+                    }
+                    // Reset the flag when start date changes
+                    this.endDateManuallyModified = false;
+                }
+
+                // Track if end date was modified by user (index 1)
+                if (newVal[1] !== oldVal[1]) {
+                    this.endDateManuallyModified = true;
+                }
+            },
+            deep: true,
         },
 
         neverEnd(value) {
@@ -806,6 +846,16 @@ export default {
          * @returns {void}
          */
         submit() {
+            // Validate: end date should not be before start date
+            if (this.maintenance.strategy === "single" && this.maintenance.dateRange?.[0] && this.maintenance.dateRange?.[1]) {
+                const startDate = new Date(this.maintenance.dateRange[0]);
+                const endDate = new Date(this.maintenance.dateRange[1]);
+                if (endDate < startDate) {
+                    this.$root.toastError(this.$t("End date cannot be before start date"));
+                    return;
+                }
+            }
+
             // While unusual, not requiring montiors can allow showing on status pages if a "currently unmonitored" service goes down
             if (!this.hasMonitors && this.hasStatusPages) {
                 this.$refs.confirmNoMonitors.show();
