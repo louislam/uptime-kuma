@@ -49,6 +49,10 @@ export default {
 @import "../assets/vars.scss";
 @import "../assets/app.scss";
 
+.dropdown {
+    position: relative;
+}
+
 .filter-dropdown-menu {
     z-index: 100;
     transition: all 0.2s;
@@ -57,15 +61,23 @@ export default {
     overflow: hidden;
 
     position: absolute;
-    inset: 0 auto auto 0;
+    top: 100%;
+    left: 0;
     margin: 0;
-    transform: translate(0, 36px);
+    margin-top: 4px;
     box-shadow: 0 15px 70px rgba(0, 0, 0, 0.1);
     visibility: hidden;
     list-style: none;
     height: 0;
     opacity: 0;
     background: white;
+    min-width: 150px;
+    max-width: calc(100vw - 40px);
+
+    @media (max-width: 550px) {
+        left: auto;
+        right: 0;
+    }
 
     &.open {
         height: unset;
