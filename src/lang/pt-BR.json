@@ -1428,7 +1428,7 @@
     "Monitors": "{n} Monitor | {n} Monitores",
     "Suppress Notifications": "Suprimir notificações",
     "discordSuppressNotificationsHelptext": "Quando ativada, as mensagens serão publicadas no canal, mas não acionarão notificações push ou notificações na área de trabalho para os destinatários.",
-    "domain_expiry_unsupported_is_icann": "O domínio \"{domain}\" não é um candidato para monitoramento de expiração de domínio, porque seu sufixo público \".{publicSuffix}\" não é ICAN",
+    "domain_expiry_unsupported_is_icann": "O domínio \"{domain}\" não é candidato ao monitoramento de expiração de domínio, pois seu sufixo público \".{publicSuffix}\" não é gerenciado pela ICANN",
     "versionIs": "Versão: {version}",
     "logoutCurrentUser": "Sair da sessão {username}",
     "lastUpdatedAt": "Última atualização: {date}",

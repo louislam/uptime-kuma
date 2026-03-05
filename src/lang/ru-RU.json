@@ -1457,7 +1457,7 @@
     "discordSuppressNotificationsHelptext": "Если включено, сообщения будут отправляться в канал, но не будут вызывать push- или настольные уведомления у получателей.",
     "mtls-auth-server-cert-label": "Сертификат",
     "mtls-auth-server-key-label": "Ключ",
-    "domain_expiry_unsupported_is_icann": "Домен «{domain}» не подходит для мониторинга срока действия, так как его публичный суффикс «.{publicSuffix}» не относится к ICANN",
+    "domain_expiry_unsupported_is_icann": "Домен \"{domain}\" не подходит для мониторинга срока действия, так как его публичный суффикс \".{publicSuffix}\" не управляется ICANN",
     "mtls-auth-server-cert-placeholder": "Тело сертификата",
     "systemService": "Системная служба",
     "systemServiceName": "Имя службы",
@@ -1614,5 +1614,7 @@
     "360messengerErrorNoGroups": "Для этой учётной записи не было найдено ни одной группы WhatsApp.",
     "360messengerErrorApi": "Не удалось загрузить список групп WhatsApp (Ошибка {statusCode}: {message}).",
     "360messengerErrorGeneric": "Не удалось загрузить список групп WhatsApp: {message}",
-    "360messengerEnableCustomMessage": "Включить пользовательский шаблон сообщения вместо сообщения по умолчанию."
+    "360messengerEnableCustomMessage": "Включить пользовательский шаблон сообщения вместо сообщения по умолчанию.",
+    "GlobalpingMultipleLocationsError": "Несколько местоположений не поддерживаются, пожалуйста, используйте одно местоположение для каждого монитора.",
+    "GlobalpingLocationDescription": "В поле \"Местоположение\" можно указать континенты, страны, регионы, города, ASN, интернет-провайдеров или облачные регионы. Фильтры можно комбинировать с помощью символа {plus} (например, {amazonPlusGermany} или {comcastPlusCalifornia}). Если задержка является важным показателем, используйте фильтры, чтобы сузить местоположение до небольшого региона, чтобы избежать всплесков, а для большей стабильности установите фильтр {datacenter}. {fullDocs}."
 }
