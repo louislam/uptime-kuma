@@ -33,10 +33,27 @@ class Ntfy extends NotificationProvider {
             config = this.getAxiosConfigWithProxy(config);
             // If heartbeatJSON is null, assume non monitoring notification (Certificate warning) or testing.
             if (heartbeatJSON == null) {
+                // Default values for test notification
+                let title = (monitorJSON?.name || notification.ntfytopic) + " [Uptime-Kuma]";
+                let message = msg;
+
+                // Apply custom templates from notification settings if enabled
+                if (notification.ntfyUseTemplate) {
+                    const customTitle = notification.ntfyCustomTitle?.trim() || "";
+                    if (customTitle !== "") {
+                        title = await this.renderTemplate(customTitle, msg, monitorJSON, heartbeatJSON);
+                    }
+
+                    const customMessage = notification.ntfyCustomMessage?.trim() || "";
+                    if (customMessage !== "") {
+                        message = await this.renderTemplate(customMessage, msg, monitorJSON, heartbeatJSON);
+                    }
+                }
+
                 let ntfyTestData = {
                     topic: notification.ntfytopic,
-                    title: (monitorJSON?.name || notification.ntfytopic) + " [Uptime-Kuma]",
-                    message: msg,
+                    title: title,
+                    message: message,
                     priority: notification.ntfyPriority,
                     tags: ["test_tube"],
                 };
@@ -70,11 +87,28 @@ class Ntfy extends NotificationProvider {
                 tags = tags.concat(monitorTagNames);
             }
 
+            // Default values
+            let title = monitorJSON.name + " " + status + " [Uptime-Kuma]";
+            let message = heartbeatJSON.msg;
+
+            // Apply custom templates from notification settings if enabled
+            if (notification.ntfyUseTemplate) {
+                const customTitle = notification.ntfyCustomTitle?.trim() || "";
+                const customMessage = notification.ntfyCustomMessage?.trim() || "";
+
+                if (customTitle !== "") {
+                    title = await this.renderTemplate(customTitle, msg, monitorJSON, heartbeatJSON);
+                }
+                if (customMessage !== "") {
+                    message = await this.renderTemplate(customMessage, msg, monitorJSON, heartbeatJSON);
+                }
+            }
+
             let data = {
                 topic: notification.ntfytopic,
-                message: heartbeatJSON.msg,
+                message: message,
                 priority: priority,
-                title: monitorJSON.name + " " + status + " [Uptime-Kuma]",
+                title: title,
                 tags: tags,
             };
 

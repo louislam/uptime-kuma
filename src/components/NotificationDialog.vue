@@ -244,6 +244,7 @@ export default {
                 whapi: "WhatsApp (Whapi)",
                 evolution: "WhatsApp (Evolution)",
                 waha: "WhatsApp (WAHA)",
+                Whatsapp360messenger: "WhatsApp (360messenger)",
             };
 
             // Push Services - Push notification services
@@ -272,6 +273,7 @@ export default {
                 SevenIO: "SevenIO",
                 SMSEagle: "SMSEagle",
                 SMSPartner: "SMS Partner",
+                Teltonika: this.$t("Teltonika SMS Gateway"),
                 twilio: "Twilio",
             };
 
@@ -292,6 +294,7 @@ export default {
                 HeiiOnCall: "Heii On-Call",
                 Keep: "Keep",
                 Opsgenie: "Opsgenie",
+                JiraServiceManagement: this.$t("Jira Service Management"),
                 PagerDuty: "PagerDuty",
                 PagerTree: "PagerTree",
                 SIGNL4: "SIGNL4",

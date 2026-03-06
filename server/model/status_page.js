@@ -7,6 +7,7 @@ const analytics = require("../analytics/analytics");
 const { marked } = require("marked");
 const { Feed } = require("feed");
 const config = require("../config");
+const dayjs = require("dayjs");
 
 const { setting } = require("../util-server");
 const {
@@ -100,7 +101,7 @@ class StatusPage extends BeanModel {
                 description: `${heartbeat.name} has been down since ${heartbeat.time} UTC`,
                 id: `${heartbeat.monitorID}-${heartbeat.time}`,
                 link: feedUrl,
-                date: new Date(heartbeat.time),
+                date: dayjs.utc(heartbeat.time).toDate(),
             });
         });
 
