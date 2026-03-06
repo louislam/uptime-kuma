@@ -1,7 +1,7 @@
 import "dotenv/config";
 import * as childProcess from "child_process";
 import semver from "semver";
-import { generateChangelog } from "../generate-changelog.mjs";
+import { getPrompt } from "../generate-changelog.mjs";
 import fs from "fs";
 import tar from "tar";
 
@@ -308,15 +308,15 @@ export async function createDistTarGz() {
  * @returns {Promise<void>}
  */
 export async function createReleasePR(version, previousVersion, dryRun, branchName = "release", githubRunId = null) {
-    const changelog = await generateChangelog(previousVersion);
+    const prompt = await getPrompt(previousVersion);
 
     const title = dryRun ? `chore: update to ${version} (dry run)` : `chore: update to ${version}`;
-    
+
     // Build the artifact link - use direct run link if available, otherwise link to workflow file
-    const artifactLink = githubRunId 
+    const artifactLink = githubRunId
         ? `https://github.com/louislam/uptime-kuma/actions/runs/${githubRunId}/workflow`
         : `https://github.com/louislam/uptime-kuma/actions/workflows/beta-release.yml`;
-    
+
     const body = `## Release ${version}
 
 This PR prepares the release for version ${version}.
@@ -330,10 +330,16 @@ This PR prepares the release for version ${version}.
 - [ ] (Beta only) Set prerelease
 - [ ] Publish the release note on GitHub.
 
-### Changelog
+### Ask LLM to categorize the changelog
 
 \`\`\`md
-${changelog}
+${prompt}
+\`\`\`
+
+Run the following command to generate the changelog with the categorized map from LLM:
+
+\`\`\`bash
+npm run generate-changelog ${previousVersion} generate 'JSON_MAPPING_BY_LLM_HERE'
 \`\`\`
 
 ### Release Artifacts
@@ -341,7 +347,19 @@ The \`dist.tar.gz\` archive will be available as an artifact in the workflow run
 `;
 
     // Create the PR using gh CLI
-    const args = ["pr", "create", "--title", title, "--body", body, "--base", "master", "--head", branchName, "--draft"];
+    const args = [
+        "pr",
+        "create",
+        "--title",
+        title,
+        "--body",
+        body,
+        "--base",
+        "master",
+        "--head",
+        branchName,
+        "--draft",
+    ];
 
     console.log(`Creating draft PR: ${title}`);
 

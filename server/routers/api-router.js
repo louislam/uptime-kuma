@@ -1,6 +1,5 @@
 let express = require("express");
 const {
-    setting,
     allowDevAllOrigin,
     allowAllOrigin,
     percentageToColor,
@@ -18,6 +17,7 @@ const { makeBadge } = require("badge-maker");
 const { Prometheus } = require("../prometheus");
 const Database = require("../database");
 const { UptimeCalculator } = require("../uptime-calculator");
+const { Settings } = require("../settings");
 
 let router = express.Router();
 
@@ -30,7 +30,7 @@ router.get("/api/entry-page", async (request, response) => {
 
     let result = {};
     let hostname = request.hostname;
-    if ((await setting("trustProxy")) && request.headers["x-forwarded-host"]) {
+    if ((await Settings.get("trustProxy")) && request.headers["x-forwarded-host"]) {
         hostname = request.headers["x-forwarded-host"];
     }
 
@@ -168,17 +168,7 @@ router.get("/api/badge/:id/status", cache("5 minutes"), async (request, response
             throw new Error("Invalid monitor ID");
         }
         const overrideValue = value !== undefined ? parseInt(value) : undefined;
-
-        let publicMonitor = await R.getRow(
-            `
-                SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
-                WHERE monitor_group.group_id = \`group\`.id
-                AND monitor_group.monitor_id = ?
-                AND public = 1
-            `,
-            [requestedMonitorId]
-        );
-
+        const publicMonitor = await isMonitorPublic(requestedMonitorId);
         const badgeValues = { style };
 
         if (!publicMonitor) {
@@ -256,16 +246,7 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
             requestedDuration = `${requestedDuration}h`;
         }
 
-        let publicMonitor = await R.getRow(
-            `
-                SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
-                WHERE monitor_group.group_id = \`group\`.id
-                AND monitor_group.monitor_id = ?
-                AND public = 1
-            `,
-            [requestedMonitorId]
-        );
-
+        const publicMonitor = await isMonitorPublic(requestedMonitorId);
         const badgeValues = { style };
 
         if (!publicMonitor) {
@@ -331,19 +312,20 @@ router.get("/api/badge/:id/ping/:duration?", cache("5 minutes"), async (request,
         }
 
         // Check if monitor is public
+        const publicMonitor = await isMonitorPublic(requestedMonitorId);
 
         const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(requestedMonitorId);
-        const publicAvgPing = uptimeCalculator.getDataByDuration(requestedDuration).avgPing;
+        const avgPing = uptimeCalculator.getDataByDuration(requestedDuration).avgPing;
 
         const badgeValues = { style };
 
-        if (!publicAvgPing) {
+        if (!publicMonitor) {
             // return a "N/A" badge in naColor (grey), if monitor is not public / not available / non exsitant
 
             badgeValues.message = "N/A";
             badgeValues.color = badgeConstants.naColor;
         } else {
-            const avgPing = parseInt(overrideValue ?? publicAvgPing);
+            const avgPingValue = parseInt(overrideValue ?? avgPing);
 
             badgeValues.color = color;
             // use a given, custom labelColor or use the default badge label color (defined by badge-maker)
@@ -353,7 +335,7 @@ router.get("/api/badge/:id/ping/:duration?", cache("5 minutes"), async (request,
                 labelPrefix,
                 label ?? `Avg. Ping (${requestedDuration.slice(0, -1)}${labelSuffix})`,
             ]);
-            badgeValues.message = filterAndJoin([prefix, avgPing, suffix]);
+            badgeValues.message = filterAndJoin([prefix, avgPingValue, suffix]);
         }
 
         // build the SVG based on given values
@@ -467,17 +449,7 @@ router.get("/api/badge/:id/cert-exp", cache("5 minutes"), async (request, respon
         }
 
         const overrideValue = value && parseFloat(value);
-
-        let publicMonitor = await R.getRow(
-            `
-            SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
-            WHERE monitor_group.group_id = \`group\`.id
-            AND monitor_group.monitor_id = ?
-            AND public = 1
-            `,
-            [requestedMonitorId]
-        );
-
+        const publicMonitor = await isMonitorPublic(requestedMonitorId);
         const badgeValues = { style };
 
         if (!publicMonitor) {
@@ -554,17 +526,7 @@ router.get("/api/badge/:id/response", cache("5 minutes"), async (request, respon
         }
 
         const overrideValue = value && parseFloat(value);
-
-        let publicMonitor = await R.getRow(
-            `
-            SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
-            WHERE monitor_group.group_id = \`group\`.id
-            AND monitor_group.monitor_id = ?
-            AND public = 1
-            `,
-            [requestedMonitorId]
-        );
-
+        const publicMonitor = await isMonitorPublic(requestedMonitorId);
         const badgeValues = { style };
 
         if (!publicMonitor) {
@@ -654,6 +616,24 @@ function determineStatus(status, previousHeartbeat, maxretries, isUpsideDown, be
             bean.status = status;
         }
     }
+}
+
+/**
+ * Check whether a monitor is publc
+ * @param {number} monitorID - Monitor id
+ * @returns {Promise<boolean>} true if the monitor is public, otherwise false
+ */
+async function isMonitorPublic(monitorID) {
+    let publicMonitor = await R.getRow(
+        `
+            SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
+            WHERE monitor_group.group_id = \`group\`.id
+            AND monitor_group.monitor_id = ?
+            AND public = 1
+        `,
+        [monitorID]
+    );
+    return !!publicMonitor;
 }
 
 module.exports = router;
