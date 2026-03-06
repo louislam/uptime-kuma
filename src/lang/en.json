@@ -1497,5 +1497,8 @@
     "teltonikaModem": "Modem Id",
     "teltonikaModemHelptext": "The id of the SMS modem, must be in the format {0}. Refer to https://developers.teltonika-networks.com/reference/ for guidance.",
     "teltonikaPhoneNumber": "Phone number",
-    "teltonikaPhoneNumberHelptext": "The number must be in the international format {0}, {1}. Only one number is allowed."
+    "teltonikaPhoneNumberHelptext": "The number must be in the international format {0}, {1}. Only one number is allowed.",
+    "SipProtocol": "SIP Protocol",
+    "ignoreTLSErrorForSIP": "Ignore TLS/SSL error for SIP websites",
+    "SIP Options": "SIP Options"
 }

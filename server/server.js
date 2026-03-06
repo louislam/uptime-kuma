@@ -931,6 +931,7 @@ let needSetup = false;
                 bean.manual_status = monitor.manual_status;
                 bean.system_service_name = monitor.system_service_name;
                 bean.expected_tls_alert = monitor.expectedTlsAlert;
+                bean.sipMethod = monitor.sipMethod;
 
                 // ping advanced options
                 bean.ping_numeric = monitor.ping_numeric;

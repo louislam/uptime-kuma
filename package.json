@@ -139,6 +139,7 @@
         "redbean-node": "~0.3.3",
         "redis": "~5.9.0",
         "semver": "~7.5.4",
+        "sip": "~0.0.6",
         "socket.io": "~4.8.3",
         "socket.io-client": "~4.8.3",
         "socks-proxy-agent": "~8.0.5",
@@ -148,6 +149,7 @@
         "thirty-two": "~1.0.2",
         "tldts": "~7.0.23",
         "tough-cookie": "~4.1.4",
+        "uuid": "~13.0.0",
         "validator": "~13.15.26",
         "web-push": "~3.6.7",
         "ws": "~8.19.0"

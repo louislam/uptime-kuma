@@ -294,7 +294,6 @@ exports.kafkaProducerAsync = function (brokers, topic, message, options = {}, sa
         });
     });
 };
-
 /**
  * Use NTLM Auth for a http request.
  * @param {object} options The http request options

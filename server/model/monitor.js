@@ -73,6 +73,7 @@ const rootCertificates = rootCertificatesFingerprints();
  *      2 = PENDING
  *      3 = MAINTENANCE
  */
+
 class Monitor extends BeanModel {
     /**
      * Return an object that ready to parse to JSON for public Only show
@@ -203,6 +204,8 @@ class Monitor extends BeanModel {
             conditions: JSON.parse(this.conditions),
             ipFamily: this.ipFamily,
             expectedTlsAlert: this.expected_tls_alert,
+            sipProtocol: this.sipProtocol,
+            sipMethod: this.sipMethod,
 
             // ping advanced options
             ping_numeric: this.isPingNumeric(),
