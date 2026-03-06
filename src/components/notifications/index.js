@@ -36,6 +36,7 @@ import OneChat from "./OneChat.vue";
 import OneBot from "./OneBot.vue";
 import Onesender from "./Onesender.vue";
 import Opsgenie from "./Opsgenie.vue";
+import JiraServiceManagement from "./JiraServiceManagement.vue";
 import PagerDuty from "./PagerDuty.vue";
 import FlashDuty from "./FlashDuty.vue";
 import PagerTree from "./PagerTree.vue";
@@ -60,6 +61,7 @@ import STMP from "./SMTP.vue";
 import Teams from "./Teams.vue";
 import TechulusPush from "./TechulusPush.vue";
 import Telegram from "./Telegram.vue";
+import Teltonika from "./Teltonika.vue";
 import Threema from "./Threema.vue";
 import Twilio from "./Twilio.vue";
 import Webhook from "./Webhook.vue";
@@ -71,6 +73,7 @@ import SpugPush from "./SpugPush.vue";
 import SevenIO from "./SevenIO.vue";
 import Whapi from "./Whapi.vue";
 import WAHA from "./WAHA.vue";
+import Whatsapp360messenger from "./360messenger.vue";
 import Evolution from "./Evolution.vue";
 import Cellsynt from "./Cellsynt.vue";
 import WPush from "./WPush.vue";
@@ -126,6 +129,7 @@ const NotificationFormList = {
     OneBot: OneBot,
     Onesender: Onesender,
     Opsgenie: Opsgenie,
+    JiraServiceManagement: JiraServiceManagement,
     PagerDuty: PagerDuty,
     FlashDuty: FlashDuty,
     PagerTree: PagerTree,
@@ -150,6 +154,7 @@ const NotificationFormList = {
     stackfield: Stackfield,
     teams: Teams,
     telegram: Telegram,
+    Teltonika: Teltonika,
     threema: Threema,
     twilio: Twilio,
     Splunk: Splunk,
@@ -164,6 +169,7 @@ const NotificationFormList = {
     evolution: Evolution,
     notifery: Notifery,
     waha: WAHA,
+    Whatsapp360messenger: Whatsapp360messenger,
     gtxmessaging: GtxMessaging,
     Cellsynt: Cellsynt,
     WPush: WPush,

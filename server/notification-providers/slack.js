@@ -75,9 +75,10 @@ class Slack extends NotificationProvider {
      * @param {object} heartbeatJSON The heartbeat object
      * @param {string} title The message title
      * @param {string} msg The message body
+     * @param {boolean} includeGroupName Whether to include group name in the message
      * @returns {Array<object>} The rich content blocks for the Slack message
      */
-    buildBlocks(baseURL, monitorJSON, heartbeatJSON, title, msg) {
+    buildBlocks(baseURL, monitorJSON, heartbeatJSON, title, msg, includeGroupName) {
         //create an array to dynamically add blocks
         const blocks = [];
 
@@ -91,17 +92,19 @@ class Slack extends NotificationProvider {
         });
 
         // Optional context line for monitor group path (excluding monitor name)
-        const groupPath = monitorJSON?.path?.length > 1 ? monitorJSON.path.slice(0, -1).join(" / ") : "";
-        if (groupPath) {
-            blocks.push({
-                type: "context",
-                elements: [
-                    {
-                        type: "mrkdwn",
-                        text: `_${groupPath}_`,
-                    },
-                ],
-            });
+        if (includeGroupName) {
+            const groupPath = monitorJSON?.path?.length > 1 ? monitorJSON.path.slice(0, -1).join(" / ") : "";
+            if (groupPath) {
+                blocks.push({
+                    type: "context",
+                    elements: [
+                        {
+                            type: "mrkdwn",
+                            text: `_${groupPath}_`,
+                        },
+                    ],
+                });
+            }
         }
 
         // the body block, containing the details
@@ -156,6 +159,31 @@ class Slack extends NotificationProvider {
 
             const baseURL = await setting("primaryBaseURL");
 
+            // Check if templating is enabled
+            if (notification.slackUseTemplate) {
+                const renderedText = await this.renderTemplate(
+                    notification.slackTemplate,
+                    msg,
+                    monitorJSON,
+                    heartbeatJSON
+                );
+
+                let data = {
+                    text: renderedText,
+                    channel: notification.slackchannel,
+                    username: notification.slackusername,
+                    icon_emoji: notification.slackiconemo,
+                };
+
+                await axios.post(notification.slackwebhookURL, data, config);
+                return okMsg;
+            }
+
+            const includeGroupName = notification.slackIncludeGroupName ?? true;
+
+            const groupPath =
+                includeGroupName && monitorJSON?.path?.length > 1 ? monitorJSON.path.slice(0, -1).join(" / ") : "";
+
             const title = monitorJSON?.name || "Uptime Kuma Alert";
             let data = {
                 text: msg,
@@ -168,10 +196,15 @@ class Slack extends NotificationProvider {
             if (notification.slackrichmessage) {
                 data.attachments.push({
                     color: heartbeatJSON["status"] === UP ? "#2eb886" : "#e01e5a",
-                    blocks: this.buildBlocks(baseURL, monitorJSON, heartbeatJSON, title, msg),
+                    blocks: this.buildBlocks(baseURL, monitorJSON, heartbeatJSON, title, msg, includeGroupName),
                 });
             } else {
-                data.text = `${title}\n${msg}`;
+                // Include group name in plain text messages if enabled
+                if (includeGroupName && groupPath) {
+                    data.text = `_${groupPath}_\n${title}\n${msg}`;
+                } else {
+                    data.text = `${title}\n${msg}`;
+                }
             }
 
             if (notification.slackbutton) {

@@ -1,0 +1,13 @@
+{
+    "languageName": "IsiNgisi",
+    "setupDatabaseChooseDatabase": "Isiphi isizinda sedatha ongathanda ukusisebenzisa?",
+    "setupDatabaseEmbeddedMariaDB": "Awudingi ukusetha noma yini. Lesi sithombe se-Docker sishumekiwe futhi sakulungisela i-MariaDB ngokuzenzakalelayo. I-Uptime Kuma izoxhuma kule database ngesokhethi le-Unix.",
+    "setupDatabaseMariaDB": "Xhuma kusizindalwazi sangaphandle se-MariaDB. Udinga ukusetha imininingwane yokuxhumana yesizindalwazi.",
+    "setupDatabaseSQLite": "Ifayela lesizindalwazi elilula, elinconyelwe ukuthunyelwa kwezinga elincane. Ngaphambi kwe-v2.0.0, i-Uptime Kuma yasebenzisa i-SQLite njengesizindalwazi esizenzakalelayo.",
+    "settingUpDatabaseMSG": "Ukusetha isizindalwazi. Kungase kuthathe isikhashana, sicela ubekezele.",
+    "dbName": "Igama lesizindalwazi",
+    "enableSSL": "Nika amandla i-SSL/TLS",
+    "mariadbUseSSLHelptext": "Nika amandla ukusebenzisa uxhumano olubethelwe kusizindalwazi sakho. Iyadingeka kuzigcinilwazi eziningi zamafu.",
+    "mariadbCaCertificateLabel": "Isitifiketi se-CA",
+    "mariadbCaCertificateHelptext": "Namathisela I-CA Cert ngefomethi ye-PEM ukuze uyisebenzise nezitifiketi ezizisayinele. Shiya kungenalutho uma isizindalwazi sakho sisebenzisa isitifiketi esisayinwe yi-CA yomphakathi."
+}

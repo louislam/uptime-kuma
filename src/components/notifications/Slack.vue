@@ -32,6 +32,43 @@
             <label for="slack-text-message" class="form-label">{{ $t("Send rich messages") }}</label>
         </div>
 
+        <div class="mb-3">
+            <div class="form-check form-switch">
+                <input
+                    id="slack-include-group-name"
+                    v-model="$parent.notification.slackIncludeGroupName"
+                    type="checkbox"
+                    class="form-check-input"
+                />
+                <label for="slack-include-group-name" class="form-check-label">{{ $t("slackIncludeGroupName") }}</label>
+            </div>
+            <div class="form-text">
+                {{ $t("slackIncludeGroupNameDescription") }}
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <div class="form-check form-switch">
+                <input v-model="$parent.notification.slackUseTemplate" class="form-check-input" type="checkbox" />
+                <label class="form-check-label">{{ $t("slackUseTemplate") }}</label>
+            </div>
+            <div class="form-text">
+                {{ $t("slackUseTemplateDescription") }}
+            </div>
+        </div>
+
+        <template v-if="$parent.notification.slackUseTemplate">
+            <div class="mb-3">
+                <label class="form-label" for="slack-message-template">{{ $t("Message Template") }}</label>
+                <TemplatedTextarea
+                    id="slack-message-template"
+                    v-model="$parent.notification.slackTemplate"
+                    :required="true"
+                    :placeholder="slackTemplatedTextareaPlaceholder"
+                ></TemplatedTextarea>
+            </div>
+        </template>
+
         <div class="form-text">
             <span style="color: red"><sup>*</sup></span>
             {{ $t("Required") }}
@@ -67,3 +104,29 @@
         </div>
     </div>
 </template>
+
+<script>
+import TemplatedTextarea from "../TemplatedTextarea.vue";
+
+export default {
+    components: {
+        TemplatedTextarea,
+    },
+    computed: {
+        slackTemplatedTextareaPlaceholder() {
+            return this.$t("Example:", [
+                `
+Uptime Kuma Alert{% if monitorJSON %} - {{ monitorJSON['name'] }}{% endif %}
+{% if monitorJSON and monitorJSON.path and monitorJSON.path.length > 1 %}_{{ monitorJSON.path.slice(0, -1).join(' / ') }}_\n{% endif %}
+{{ msg }}
+                `,
+            ]);
+        },
+    },
+    mounted() {
+        if (typeof this.$parent.notification.slackIncludeGroupName === "undefined") {
+            this.$parent.notification.slackIncludeGroupName = true;
+        }
+    },
+};
+</script>
