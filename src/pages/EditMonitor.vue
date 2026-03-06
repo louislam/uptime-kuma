@@ -8,6 +8,25 @@
                         <div class="col-md-6">
                             <h2 class="mb-2">{{ $t("General") }}</h2>
 
+                            <i18n-t
+                                v-if="monitor.type === 'globalping'"
+                                keypath="GlobalpingMonitorDescription"
+                                tag="p"
+                                class="form-text"
+                            >
+                                <template #accountSettings>
+                                    <router-link to="/settings/general">{{ $t("account settings") }}</router-link>
+                                </template>
+                                <template #docs>
+                                    <a
+                                        href="https://github.com/jsdelivr/globalping?tab=readme-ov-file#uptime-monitoring-use-cases"
+                                        target="_blank"
+                                    >
+                                        {{ $t("documentation") }}
+                                    </a>
+                                </template>
+                            </i18n-t>
+
                             <div class="my-3">
                                 <label for="type" class="form-label">{{ $t("Monitor Type") }}</label>
                                 <select
@@ -16,18 +35,12 @@
                                     class="form-select"
                                     data-testid="monitor-type-select"
                                 >
+                                    <!-- Unsorted, since HTTP is commonly used -->
                                     <optgroup :label="$t('General Monitor Type')">
-                                        <option value="group">
-                                            {{ $t("Group") }}
-                                        </option>
                                         <option value="http">HTTP(s)</option>
+                                        <option value="keyword">HTTP(s) - {{ $t("Keyword") }}</option>
                                         <option value="port">TCP Port</option>
                                         <option value="ping">Ping</option>
-                                        <option value="smtp">SMTP</option>
-                                        <option value="snmp">SNMP</option>
-                                        <option value="keyword">HTTP(s) - {{ $t("Keyword") }}</option>
-                                        <option value="json-query">HTTP(s) - {{ $t("Json Query") }}</option>
-                                        <option value="grpc-keyword">gRPC(s) - {{ $t("Keyword") }}</option>
                                         <option value="dns">DNS</option>
                                         <option value="docker">
                                             {{ $t("Docker Container") }}
@@ -44,7 +57,12 @@
                                         <option value="real-browser">
                                             HTTP(s) - Browser Engine (Chrome/Chromium) (Beta)
                                         </option>
-                                        <option value="websocket-upgrade">Websocket Upgrade</option>
+                                    </optgroup>
+
+                                    <optgroup :label="$t('monitorTypeSpecial')">
+                                        <option value="group">
+                                            {{ $t("Group") }}
+                                        </option>
                                     </optgroup>
 
                                     <optgroup :label="$t('Passive Monitor Type')">
@@ -54,25 +72,42 @@
                                         </option>
                                     </optgroup>
 
+                                    <!-- Should sort from A to Z in this category -->
                                     <optgroup :label="$t('Specific Monitor Type')">
-                                        <option value="steam">
-                                            {{ $t("Steam Game Server") }}
+                                        <option value="globalping">
+                                            {{ $t("Globalping - Access global monitoring probes") }}
                                         </option>
-                                        <option value="gamedig">GameDig</option>
+                                        <option value="grpc-keyword">gRPC(s) - {{ $t("Keyword") }}</option>
+                                        <option value="json-query">HTTP(s) - {{ $t("Json Query") }}</option>
+                                        <option value="kafka-producer">Kafka Producer</option>
                                         <option value="mqtt">MQTT</option>
                                         <option value="rabbitmq">RabbitMQ</option>
-                                        <option value="kafka-producer">Kafka Producer</option>
-                                        <option value="sqlserver">Microsoft SQL Server</option>
-                                        <option value="postgres">PostgreSQL</option>
-                                        <option value="mysql">MySQL/MariaDB</option>
-                                        <option value="mongodb">MongoDB</option>
-                                        <option value="radius">Radius</option>
-                                        <option value="redis">Redis</option>
                                         <option v-if="!$root.info.isContainer" value="sip-options">
                                             SIP Options Ping
                                         </option>
+                                        <option value="smtp">SMTP</option>
+                                        <option value="snmp">SNMP</option>
                                         <option v-if="!$root.info.isContainer" value="tailscale-ping">
                                             Tailscale Ping
+                                        </option>
+                                        <option value="websocket-upgrade">Websocket Upgrade</option>
+                                    </optgroup>
+
+                                    <!-- Should sort from A to Z in this category -->
+                                    <optgroup :label="$t('monitorTypeDatabase')">
+                                        <option value="sqlserver">Microsoft SQL Server</option>
+                                        <option value="mongodb">MongoDB</option>
+                                        <option value="mysql">MySQL/MariaDB</option>
+                                        <option value="postgres">PostgreSQL</option>
+                                        <option value="radius">Radius</option>
+                                        <option value="redis">Redis</option>
+                                    </optgroup>
+
+                                    <!-- Should sort from A to Z in this category -->
+                                    <optgroup :label="$t('monitorTypeGameServer')">
+                                        <option value="gamedig">GameDig</option>
+                                        <option value="steam">
+                                            {{ $t("Steam Game Server") }}
                                         </option>
                                     </optgroup>
                                 </select>
@@ -96,6 +131,20 @@
 
                             <div v-if="monitor.type === 'tailscale-ping'" class="alert alert-warning" role="alert">
                                 {{ $t("tailscalePingWarning") }}
+                            </div>
+
+                            <div v-if="monitor.type === 'globalping'" class="my-3">
+                                <label for="subtype" class="form-label">{{ $t("Monitor Subtype") }}</label>
+                                <select
+                                    id="subtype"
+                                    v-model="monitor.subtype"
+                                    class="form-select"
+                                    data-testid="monitor-subtype-select"
+                                >
+                                    <option value="ping">Ping</option>
+                                    <option value="http">HTTP(s)</option>
+                                    <option value="dns">DNS</option>
+                                </select>
                             </div>
 
                             <div v-if="monitor.type === 'sip-options'" class="alert alert-warning" role="alert">
@@ -442,6 +491,184 @@
                                 </div>
                             </div>
 
+                            <!-- Globalping -->
+                            <template v-if="monitor.type === 'globalping'">
+                                <!-- Hostname -->
+                                <div v-if="monitor.subtype === 'ping' || monitor.subtype === 'dns'" class="my-3">
+                                    <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
+                                    <input
+                                        id="hostname"
+                                        v-model="monitor.hostname"
+                                        type="text"
+                                        class="form-control"
+                                        :pattern="ipOrHostnameRegexPattern"
+                                        required
+                                        data-testid="hostname-input"
+                                    />
+                                    <div class="form-text">
+                                        {{ $t("GlobalpingHostname") }}
+                                    </div>
+                                </div>
+
+                                <div v-if="monitor.subtype === 'http'" class="my-3">
+                                    <label for="url" class="form-label">{{ $t("URL") }}</label>
+                                    <input
+                                        id="url"
+                                        v-model="monitor.url"
+                                        type="url"
+                                        class="form-control"
+                                        pattern="https?://.+"
+                                        required
+                                        data-testid="url-input"
+                                    />
+                                    <div class="form-text">
+                                        {{ $t("GlobalpingHostname") }}
+                                    </div>
+                                </div>
+
+                                <!-- Location -->
+                                <div class="my-3">
+                                    <label for="location" class="form-label">{{ $t("Location") }}</label>
+                                    <input
+                                        id="location"
+                                        v-model="monitor.location"
+                                        type="text"
+                                        class="form-control"
+                                        required
+                                    />
+                                    <i18n-t keypath="GlobalpingLocationDescription" tag="div" class="form-text">
+                                        <template #plus>
+                                            <code>+</code>
+                                        </template>
+                                        <template #amazonPlusGermany>
+                                            <code>amazon+germany</code>
+                                        </template>
+                                        <template #comcastPlusCalifornia>
+                                            <code>comcast+california</code>
+                                        </template>
+                                        <template #datacenter>
+                                            <code>+datacenter</code>
+                                        </template>
+                                        <template #fullDocs>
+                                            <a
+                                                href="https://github.com/jsdelivr/globalping?tab=readme-ov-file#basic-location-targeting-"
+                                                target="_blank"
+                                            >
+                                                {{ $t("GlobalpingLocationDocs") }}
+                                            </a>
+                                        </template>
+                                    </i18n-t>
+                                </div>
+
+                                <!-- IP Family -->
+                                <div class="my-3">
+                                    <label for="ipFamily" class="form-label">{{ $t("Ip Family") }}</label>
+                                    <select id="ipFamily" v-model="monitor.ipFamily" class="form-select">
+                                        <option :value="null">{{ $t("auto-select") }}</option>
+                                        <option value="ipv4">IPv4</option>
+                                        <option value="ipv6">IPv6</option>
+                                    </select>
+                                    <div class="form-text">
+                                        {{ $t("GlobalpingIpFamilyInfo") }}
+                                    </div>
+                                </div>
+
+                                <div v-if="monitor.subtype === 'http' || monitor.subtype === 'dns'" class="my-3">
+                                    <label for="dns_resolve_server" class="form-label">
+                                        {{ $t("Resolver Server") }}
+                                    </label>
+                                    <input
+                                        id="dns_resolve_server"
+                                        v-model="monitor.dns_resolve_server"
+                                        type="text"
+                                        class="form-control"
+                                    />
+                                    <div class="form-text">
+                                        {{ $t("GlobalpingResolverInfo") }}
+                                    </div>
+                                </div>
+
+                                <!-- DNS -->
+                                <template v-if="monitor.subtype === 'dns'">
+                                    <!-- Port -->
+                                    <div class="my-3">
+                                        <label for="port" class="form-label">{{ $t("Port") }}</label>
+                                        <input
+                                            id="port"
+                                            v-model="monitor.port"
+                                            type="number"
+                                            class="form-control"
+                                            required
+                                            min="0"
+                                            max="65535"
+                                            step="1"
+                                            value="53"
+                                        />
+                                        <div class="form-text">
+                                            {{ $t("dnsPortDescription") }}
+                                        </div>
+                                    </div>
+
+                                    <div class="my-3">
+                                        <label for="dns_resolve_type" class="form-label">
+                                            {{ $t("Resource Record Type") }}
+                                        </label>
+
+                                        <!-- :allow-empty="false" is not working, set a default value instead https://github.com/shentao/vue-multiselect/issues/336   -->
+                                        <VueMultiselect
+                                            id="dns_resolve_type"
+                                            v-model="monitor.dns_resolve_type"
+                                            :options="globalpingdnsresolvetypeoptions"
+                                            :multiple="false"
+                                            :close-on-select="true"
+                                            :clear-on-select="false"
+                                            :preserve-search="false"
+                                            :placeholder="$t('Pick a RR-Type...')"
+                                            :preselect-first="false"
+                                            :max-height="500"
+                                            :taggable="false"
+                                            data-testid="resolve-type-select"
+                                        ></VueMultiselect>
+
+                                        <div class="form-text">
+                                            {{ $t("rrtypeDescription") }}
+                                        </div>
+                                    </div>
+
+                                    <div class="my-3">
+                                        <label for="keyword" class="form-label">{{ $t("RecordMatch") }}</label>
+                                        <input
+                                            id="keyword"
+                                            v-model="monitor.keyword"
+                                            type="text"
+                                            class="form-control"
+                                        />
+                                        <div class="form-text">
+                                            {{ $t("RegexMatch") }}
+                                        </div>
+                                    </div>
+                                </template>
+
+                                <!-- Protocol -->
+                                <div class="my-3">
+                                    <label for="protocol" class="form-label">{{ $t("Protocol") }}</label>
+                                    <select id="protocol" v-model="monitor.protocol" class="form-select" required>
+                                        <template v-if="monitor.subtype === 'ping'">
+                                            <option value="ICMP">ICMP</option>
+                                            <option value="TCP">TCP</option>
+                                        </template>
+                                        <template v-else-if="monitor.subtype === 'http'">
+                                            <option :value="null">{{ $t("auto-select") }}</option>
+                                            <option value="HTTP2">HTTP2</option>
+                                        </template>
+                                        <template v-else-if="monitor.subtype === 'dns'">
+                                            <option value="UDP">UDP</option>
+                                            <option value="TCP">TCP</option>
+                                        </template>
+                                    </select>
+                                </div>
+                            </template>
+
                             <!-- Port -->
                             <!-- For TCP Port / Steam / MQTT / Radius Type / SNMP / SIP Options -->
                             <div
@@ -453,7 +680,10 @@
                                     monitor.type === 'radius' ||
                                     monitor.type === 'smtp' ||
                                     monitor.type === 'snmp' ||
-                                    monitor.type === 'sip-options'
+                                    monitor.type === 'sip-options' ||
+                                    (monitor.type === 'globalping' &&
+                                        monitor.subtype === 'ping' &&
+                                        monitor.protocol === 'TCP')
                                 "
                                 class="my-3"
                             >
@@ -1260,7 +1490,9 @@
                                     monitor.type === 'http' ||
                                     monitor.type === 'keyword' ||
                                     monitor.type === 'json-query' ||
-                                    (monitor.type === 'port' && ['starttls', 'secure'].includes(monitor.smtpSecurity))
+                                    (monitor.type === 'port' &&
+                                        ['starttls', 'secure'].includes(monitor.smtpSecurity)) ||
+                                    (monitor.type === 'globalping' && monitor.subtype === 'http')
                                 "
                                 class="my-3 form-check"
                                 :title="monitor.ignoreTls ? $t('ignoredTLSError') : ''"
@@ -1275,7 +1507,9 @@
                                 <label class="form-check-label" for="expiry-notification">
                                     {{ $t("Certificate Expiry Notification") }}
                                 </label>
-                                <div class="form-text"></div>
+                                <div class="form-text">
+                                    {{ $t("certificateExpiryNotificationHelp") }}
+                                </div>
                             </div>
 
                             <!-- Screenshot Delay - Real Browser only -->
@@ -1314,12 +1548,17 @@
                                     v-model="monitor.domainExpiryNotification"
                                     class="form-check-input"
                                     type="checkbox"
-                                    :disabled="!hasDomain"
                                 />
                                 <label class="form-check-label" for="domain-expiry-notification">
                                     {{ $t("labelDomainNameExpiryNotification") }}
                                 </label>
-                                <div v-if="!hasDomain && domainExpiryUnsupportedReason" class="form-text">
+                                <div class="form-text">
+                                    {{ $t("domainExpiryNotificationHelp") }}
+                                </div>
+                                <div
+                                    v-if="monitor.domainExpiryNotification && domainExpiryUnsupportedReason"
+                                    class="form-text"
+                                >
                                     {{ domainExpiryUnsupportedReason }}
                                 </div>
                             </div>
@@ -1348,7 +1587,8 @@
                                     monitor.type === 'http' ||
                                     monitor.type === 'keyword' ||
                                     monitor.type === 'json-query' ||
-                                    monitor.type === 'redis'
+                                    monitor.type === 'redis' ||
+                                    (monitor.type === 'globalping' && monitor.subtype === 'http')
                                 "
                                 class="my-3 form-check"
                             >
@@ -1368,7 +1608,8 @@
                                 v-if="
                                     monitor.type === 'http' ||
                                     monitor.type === 'keyword' ||
-                                    monitor.type === 'json-query'
+                                    monitor.type === 'json-query' ||
+                                    (monitor.type === 'globalping' && monitor.subtype === 'http')
                                 "
                                 class="my-3 form-check"
                             >
@@ -1427,7 +1668,13 @@
                             </div>
 
                             <!-- Max Packets / Count -->
-                            <div v-if="monitor.type === 'ping'" class="my-3">
+                            <div
+                                v-if="
+                                    monitor.type === 'ping' ||
+                                    (monitor.type === 'globalping' && monitor.subtype === 'ping')
+                                "
+                                class="my-3"
+                            >
                                 <label for="ping-count" class="form-label">{{ $t("pingCountLabel") }}</label>
                                 <input
                                     id="ping-count"
@@ -1687,6 +1934,31 @@
                                     </i18n-t>
                                 </div>
                             </template>
+
+                            <!-- Globalping Accepted Status Codes -->
+                            <div v-if="monitor.type === 'globalping' && monitor.subtype === 'http'" class="my-3">
+                                <label for="acceptedStatusCodes" class="form-label">
+                                    {{ $t("Accepted Status Codes") }}
+                                </label>
+
+                                <VueMultiselect
+                                    id="acceptedStatusCodes"
+                                    v-model="monitor.accepted_statuscodes"
+                                    :options="acceptedStatusCodeOptions"
+                                    :multiple="true"
+                                    :close-on-select="false"
+                                    :clear-on-select="false"
+                                    :preserve-search="true"
+                                    :placeholder="$t('Pick Accepted Status Codes...')"
+                                    :preselect-first="false"
+                                    :max-height="600"
+                                    :taggable="true"
+                                ></VueMultiselect>
+
+                                <div class="form-text">
+                                    {{ $t("acceptedStatusCodesDescription") }}
+                                </div>
+                            </div>
 
                             <!-- Parent Monitor -->
                             <div class="my-3">
@@ -2156,6 +2428,281 @@
                                 </template>
                             </template>
 
+                            <!-- Globalping HTTP Options -->
+                            <template v-if="monitor.type === 'globalping' && monitor.subtype === 'http'">
+                                <h2 class="mt-5 mb-2">{{ $t("HTTP Options") }}</h2>
+
+                                <!-- Method -->
+                                <div class="my-3">
+                                    <label for="method" class="form-label">{{ $t("Method") }}</label>
+                                    <select id="method" v-model="monitor.method" class="form-select">
+                                        <option value="HEAD">HEAD</option>
+                                        <option value="GET">GET</option>
+                                        <option value="OPTIONS">OPTIONS</option>
+                                    </select>
+                                </div>
+
+                                <!-- Headers -->
+                                <div class="my-3">
+                                    <label for="headers" class="form-label">{{ $t("Headers") }}</label>
+                                    <textarea
+                                        id="headers"
+                                        v-model="monitor.headers"
+                                        class="form-control"
+                                        :placeholder="headersPlaceholder"
+                                    ></textarea>
+                                </div>
+
+                                <!-- HTTP Auth -->
+                                <h4 class="mt-5 mb-2">{{ $t("Authentication") }}</h4>
+
+                                <!-- Method -->
+                                <div class="my-3">
+                                    <label for="method" class="form-label">{{ $t("Method") }}</label>
+                                    <select id="method" v-model="monitor.authMethod" class="form-select">
+                                        <option :value="null">
+                                            {{ $t("None") }}
+                                        </option>
+                                        <option value="basic">
+                                            {{ $t("HTTP Basic Auth") }}
+                                        </option>
+                                        <option value="oauth2-cc">
+                                            {{ $t("OAuth2: Client Credentials") }}
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <template v-if="monitor.authMethod === 'basic'">
+                                    <div class="my-3">
+                                        <label for="basicauth-user" class="form-label">{{ $t("Username") }}</label>
+                                        <input
+                                            id="basicauth-user"
+                                            v-model="monitor.basic_auth_user"
+                                            type="text"
+                                            class="form-control"
+                                            :placeholder="$t('Username')"
+                                        />
+                                    </div>
+
+                                    <div class="my-3">
+                                        <label for="basicauth-pass" class="form-label">{{ $t("Password") }}</label>
+                                        <input
+                                            id="basicauth-pass"
+                                            v-model="monitor.basic_auth_pass"
+                                            type="password"
+                                            autocomplete="new-password"
+                                            class="form-control"
+                                            :placeholder="$t('Password')"
+                                        />
+                                    </div>
+                                </template>
+                                <template v-else-if="monitor.authMethod === 'oauth2-cc'">
+                                    <div class="my-3">
+                                        <label for="oauth_auth_method" class="form-label">
+                                            {{ $t("Authentication Method") }}
+                                        </label>
+                                        <select
+                                            id="oauth_auth_method"
+                                            v-model="monitor.oauth_auth_method"
+                                            class="form-select"
+                                        >
+                                            <option value="client_secret_basic">
+                                                {{ $t("Authorization Header") }}
+                                            </option>
+                                            <option value="client_secret_post">
+                                                {{ $t("Form Data Body") }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="my-3">
+                                        <label for="oauth_token_url" class="form-label">
+                                            {{ $t("OAuth Token URL") }}
+                                        </label>
+                                        <input
+                                            id="oauth_token_url"
+                                            v-model="monitor.oauth_token_url"
+                                            type="text"
+                                            class="form-control"
+                                            :placeholder="$t('OAuth Token URL')"
+                                            required
+                                        />
+                                    </div>
+                                    <div class="my-3">
+                                        <label for="oauth_client_id" class="form-label">{{ $t("Client ID") }}</label>
+                                        <input
+                                            id="oauth_client_id"
+                                            v-model="monitor.oauth_client_id"
+                                            type="text"
+                                            class="form-control"
+                                            :placeholder="$t('Client ID')"
+                                            required
+                                        />
+                                    </div>
+                                    <template
+                                        v-if="
+                                            monitor.oauth_auth_method === 'client_secret_post' ||
+                                            monitor.oauth_auth_method === 'client_secret_basic'
+                                        "
+                                    >
+                                        <div class="my-3">
+                                            <label for="oauth_client_secret" class="form-label">
+                                                {{ $t("Client Secret") }}
+                                            </label>
+                                            <input
+                                                id="oauth_client_secret"
+                                                v-model="monitor.oauth_client_secret"
+                                                type="password"
+                                                class="form-control"
+                                                :placeholder="$t('Client Secret')"
+                                                required
+                                            />
+                                        </div>
+                                        <div class="my-3">
+                                            <label for="oauth_scopes" class="form-label">{{ $t("OAuth Scope") }}</label>
+                                            <input
+                                                id="oauth_scopes"
+                                                v-model="monitor.oauth_scopes"
+                                                type="text"
+                                                class="form-control"
+                                                :placeholder="$t('Optional: Space separated list of scopes')"
+                                            />
+                                        </div>
+                                        <div class="my-3">
+                                            <label for="oauth_audience" class="form-label">
+                                                {{ $t("OAuth Audience") }}
+                                            </label>
+                                            <input
+                                                id="oauth_audience"
+                                                v-model="monitor.oauth_audience"
+                                                type="text"
+                                                class="form-control"
+                                                :placeholder="$t('Optional: The audience to request the JWT for')"
+                                            />
+                                        </div>
+                                    </template>
+                                </template>
+
+                                <!-- Response -->
+                                <h2 class="mt-5 mb-2">{{ $t("Response") }}</h2>
+                                <div class="my-3">
+                                    <label for="checkfor" class="form-label">{{ $t("Check for") }}</label>
+                                    <select id="checkfor" v-model="monitor.responsecheck" class="form-select">
+                                        <option :value="null">
+                                            {{ $t("None") }}
+                                        </option>
+                                        <option value="keyword">
+                                            {{ $t("Keyword") }}
+                                        </option>
+                                        <option value="json-query">
+                                            {{ $t("Json Query Expression") }}
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <!-- Keyword -->
+                                <template v-if="monitor.responsecheck === 'keyword'">
+                                    <div class="my-3">
+                                        <label for="keyword" class="form-label">{{ $t("Keyword") }}</label>
+                                        <input
+                                            id="keyword"
+                                            v-model="monitor.keyword"
+                                            type="text"
+                                            class="form-control"
+                                        />
+                                        <div class="form-text">
+                                            {{ $t("keywordDescription") }}
+                                        </div>
+                                    </div>
+
+                                    <!-- Invert keyword -->
+                                    <div class="my-3 form-check">
+                                        <input
+                                            id="invert-keyword"
+                                            v-model="monitor.invertKeyword"
+                                            class="form-check-input"
+                                            type="checkbox"
+                                        />
+                                        <label class="form-check-label" for="invert-keyword">
+                                            {{ $t("Invert Keyword") }}
+                                        </label>
+                                        <div class="form-text">
+                                            {{ $t("invertKeywordDescription") }}
+                                        </div>
+                                    </div>
+                                </template>
+
+                                <!-- Json Query -->
+                                <template v-if="monitor.responsecheck === 'json-query'">
+                                    <div class="my-3">
+                                        <div class="my-2">
+                                            <label for="jsonPath" class="form-label mb-0">
+                                                {{ $t("Json Query Expression") }}
+                                            </label>
+                                            <i18n-t tag="div" class="form-text mb-2" keypath="jsonQueryDescription">
+                                                <a href="https://jsonata.org/">jsonata.org</a>
+                                                <a href="https://try.jsonata.org/">{{ $t("playground") }}</a>
+                                            </i18n-t>
+                                            <input
+                                                id="jsonPath"
+                                                v-model="monitor.jsonPath"
+                                                type="text"
+                                                class="form-control"
+                                                placeholder="$"
+                                                required
+                                            />
+                                        </div>
+
+                                        <div class="d-flex align-items-start">
+                                            <div class="me-2">
+                                                <label for="json_path_operator" class="form-label">
+                                                    {{ $t("Condition") }}
+                                                </label>
+                                                <select
+                                                    id="json_path_operator"
+                                                    v-model="monitor.jsonPathOperator"
+                                                    class="form-select me-3"
+                                                    required
+                                                >
+                                                    <option value=">">&gt;</option>
+                                                    <option value=">=">&gt;=</option>
+                                                    <option value="<">&lt;</option>
+                                                    <option value="<=">&lt;=</option>
+                                                    <option value="!=">&#33;=</option>
+                                                    <option value="==">==</option>
+                                                    <option value="contains">contains</option>
+                                                </select>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <label for="expectedValue" class="form-label">
+                                                    {{ $t("Expected Value") }}
+                                                </label>
+                                                <input
+                                                    v-if="
+                                                        monitor.jsonPathOperator !== 'contains' &&
+                                                        monitor.jsonPathOperator !== '==' &&
+                                                        monitor.jsonPathOperator !== '!='
+                                                    "
+                                                    id="expectedValue"
+                                                    v-model="monitor.expectedValue"
+                                                    type="number"
+                                                    class="form-control"
+                                                    required
+                                                    step=".01"
+                                                />
+                                                <input
+                                                    v-else
+                                                    id="expectedValue"
+                                                    v-model="monitor.expectedValue"
+                                                    type="text"
+                                                    class="form-control"
+                                                    required
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </template>
+
                             <!-- gRPC Options -->
                             <template v-if="monitor.type === 'grpc-keyword'">
                                 <!-- Proto service enable TLS -->
@@ -2291,13 +2838,26 @@ const toast = useToast();
 
 const pushTokenLength = 32;
 
+const defaultValueList = {
+    http: {
+        url: "https://",
+        accepted_statuscodes: ["200-299"],
+    },
+    "websocket-upgrade": {
+        url: "wss://",
+        accepted_statuscodes: ["1000"],
+    },
+};
+
 const monitorDefaults = {
     type: "http",
     name: "",
     parent: null,
-    url: "https://",
+    url: defaultValueList.http.url,
     wsSubprotocol: "",
     method: "GET",
+    protocol: null,
+    location: "world",
     ipFamily: null,
     interval: 60,
     humanReadableInterval: timeDurationFormatter.secondsToHumanReadableFormat(60),
@@ -2311,12 +2871,12 @@ const monitorDefaults = {
     expiryNotification: false,
     domainExpiryNotification: true,
     maxredirects: 10,
-    accepted_statuscodes: ["200-299"],
+    accepted_statuscodes: defaultValueList.http.accepted_statuscodes,
     saveResponse: false,
     saveErrorResponse: true,
     responseMaxLength: 1024,
     dns_resolve_type: "A",
-    dns_resolve_server: "1.1.1.1",
+    dns_resolve_server: "",
     docker_container: "",
     docker_host: null,
     proxyId: null,
@@ -2371,12 +2931,12 @@ export default {
                 notificationIDList: {},
                 // Do not add default value here, please check init() method
             },
-            hasDomain: false,
             domainExpiryUnsupportedReason: null,
-            checkMonitorDebounce: null,
+            checkDomainDebounce: null,
             acceptedStatusCodeOptions: [],
             acceptedWebsocketCodeOptions: [],
             dnsresolvetypeOptions: [],
+            globalpingdnsresolvetypeoptions: [],
             kafkaSaslMechanismOptions: [],
             gameList: null,
             connectionStringTemplates: {
@@ -2429,16 +2989,6 @@ export default {
             }
             // Default placeholder if neither hostname nor URL is available
             return this.$t("defaultFriendlyName");
-        },
-
-        monitorTypeUrlHost() {
-            const { type, url, hostname, grpcUrl } = this.monitor;
-            return {
-                type,
-                url,
-                hostname,
-                grpcUrl,
-            };
         },
 
         showDomainExpiryNotification() {
@@ -2734,30 +3284,65 @@ message HealthCheckResponse {
             }
         },
 
-        monitorTypeUrlHost(data) {
-            if (this.checkMonitorDebounce != null) {
-                clearTimeout(this.checkMonitorDebounce);
-            }
+        showDomainExpiryNotification() {
+            this.checkDomain();
+        },
 
-            if (!this.showDomainExpiryNotification) {
-                this.hasDomain = false;
-                this.domainExpiryUnsupportedReason = null;
-                return;
-            }
+        "monitor.hostname"() {
+            this.checkDomain();
+        },
 
-            this.checkMonitorDebounce = setTimeout(() => {
-                this.$root.getSocket().emit("checkMointor", data, (res) => {
-                    this.hasDomain = !!res?.ok;
-                    this.domainExpiryUnsupportedReason = res.msgi18n ? this.$t(res.msg, res.meta) : res.msg;
-                });
-            }, 500);
+        "monitor.url"() {
+            this.checkDomain();
+        },
+
+        "monitor.grpcUrl"() {
+            this.checkDomain();
         },
 
         "monitor.type"(newType, oldType) {
-            if (oldType && this.monitor.type === "websocket-upgrade") {
-                this.monitor.url = "wss://";
-                this.monitor.accepted_statuscodes = ["1000"];
+            this.checkDomain();
+
+            if (newType === "globalping" && !this.monitor.subtype) {
+                this.monitor.subtype = "ping";
             }
+
+            if (newType === "dns" && !this.monitor.dns_resolve_server) {
+                this.monitor.dns_resolve_server = "1.1.1.1";
+            }
+
+            // Change to websocket-upgrade (override http defaults)
+            if (newType === "websocket-upgrade") {
+                if (!this.monitor.url || this.monitor.url === defaultValueList.http.url) {
+                    this.monitor.url = defaultValueList["websocket-upgrade"].url;
+                }
+
+                if (
+                    !this.monitor.accepted_statuscodes ||
+                    (this.monitor.accepted_statuscodes.length === 1 &&
+                        this.monitor.accepted_statuscodes[0] === defaultValueList.http.accepted_statuscodes)
+                ) {
+                    this.monitor.accepted_statuscodes = defaultValueList["websocket-upgrade"].accepted_statuscodes;
+                }
+            }
+
+            // Change to http (override websocket-upgrade defaults)
+            // Because user may see wss:// and default to http code 1000, which is strange for http monitor.
+            if (["http", "keyword", "real-browser"].includes(newType)) {
+                if (!this.monitor.url || this.monitor.url === defaultValueList["websocket-upgrade"].url) {
+                    this.monitor.url = defaultValueList.http.url;
+                }
+
+                if (
+                    !this.monitor.accepted_statuscodes ||
+                    (this.monitor.accepted_statuscodes.length === 1 &&
+                        this.monitor.accepted_statuscodes[0] ===
+                            defaultValueList["websocket-upgrade"].accepted_statuscodes)
+                ) {
+                    this.monitor.accepted_statuscodes = defaultValueList.http.accepted_statuscodes;
+                }
+            }
+
             if (this.monitor.type === "push") {
                 if (!this.monitor.pushToken) {
                     // ideally this would require checking if the generated token is already used
@@ -2774,6 +3359,8 @@ message HealthCheckResponse {
                     this.monitor.port = "1812";
                 } else if (this.monitor.type === "snmp") {
                     this.monitor.port = "161";
+                } else if (this.monitor.type === "globalping" && this.monitor.subtype === "ping") {
+                    this.monitor.port = "80";
                 } else {
                     this.monitor.port = undefined;
                 }
@@ -2840,6 +3427,55 @@ message HealthCheckResponse {
             }
         },
 
+        "monitor.subtype"(newSubtype, oldSubtype) {
+            if (!oldSubtype && !this.monitor.protocol) {
+                if (newSubtype === "ping") {
+                    this.monitor.protocol = "ICMP";
+                } else if (newSubtype === "dns") {
+                    this.monitor.protocol = "UDP";
+                } else if (newSubtype === "http") {
+                    this.monitor.protocol = null;
+                }
+            }
+
+            if (!oldSubtype && this.monitor.port === undefined) {
+                if (newSubtype === "dns") {
+                    this.monitor.port = "53";
+                }
+            }
+
+            if (newSubtype !== oldSubtype) {
+                if (newSubtype === "ping") {
+                    this.monitor.protocol = "ICMP";
+                    this.monitor.port = "80";
+                } else if (newSubtype === "dns") {
+                    this.monitor.protocol = "UDP";
+                    this.monitor.port = "53";
+                } else if (newSubtype === "http") {
+                    this.monitor.protocol = null;
+                }
+            }
+
+            if (newSubtype === "http") {
+                if (this.monitor.keyword) {
+                    this.monitor.responsecheck = "keyword";
+                } else if (this.monitor.expectedValue) {
+                    this.monitor.responsecheck = "json-query";
+                } else {
+                    this.monitor.responsecheck = null;
+                }
+            }
+        },
+
+        "monitor.responsecheck"(newSubtype) {
+            if (newSubtype !== "keyword") {
+                this.monitor.keyword = null;
+            }
+            if (newSubtype !== "json-query") {
+                this.monitor.expectedValue = null;
+            }
+        },
+
         currentGameObject(newGameObject, previousGameObject) {
             if (!this.monitor.port || (previousGameObject && previousGameObject.options.port === this.monitor.port)) {
                 this.monitor.port = newGameObject.options.port;
@@ -2861,6 +3497,24 @@ message HealthCheckResponse {
         let acceptedWebsocketCodeOptions = [];
 
         let dnsresolvetypeOptions = ["A", "AAAA", "CAA", "CNAME", "MX", "NS", "PTR", "SOA", "SRV", "TXT"];
+        const globalpingdnsresolvetypeoptions = [
+            "A",
+            "AAAA",
+            "ANY",
+            "CNAME",
+            "DNSKEY",
+            "DS",
+            "HTTPS",
+            "MX",
+            "NS",
+            "NSEC",
+            "PTR",
+            "RRSIG",
+            "SOA",
+            "SRV",
+            "SVCB",
+            "TXT",
+        ];
 
         let kafkaSaslMechanismOptions = ["None", "plain", "scram-sha-256", "scram-sha-512", "aws"];
 
@@ -2875,6 +3529,7 @@ message HealthCheckResponse {
         this.acceptedWebsocketCodeOptions = acceptedWebsocketCodeOptions;
         this.acceptedStatusCodeOptions = acceptedStatusCodeOptions;
         this.dnsresolvetypeOptions = dnsresolvetypeOptions;
+        this.globalpingdnsresolvetypeoptions = globalpingdnsresolvetypeoptions;
         this.kafkaSaslMechanismOptions = kafkaSaslMechanismOptions;
     },
     methods: {
@@ -2943,6 +3598,16 @@ message HealthCheckResponse {
                                 };
                             });
                             this.monitor.tags = undefined;
+                        }
+
+                        if (this.monitor.type === "globalping" && this.monitor.subtype === "http") {
+                            if (this.monitor.keyword) {
+                                this.monitor.responsecheck = "keyword";
+                            } else if (this.monitor.expectedValue) {
+                                this.monitor.responsecheck = "json-query";
+                            } else {
+                                this.monitor.responsecheck = null;
+                            }
                         }
 
                         // Handling for monitors that are created before 1.7.0
@@ -3027,29 +3692,24 @@ message HealthCheckResponse {
                 }
             }
 
+            // Validate Globalping location if present
+            if (this.monitor.type === "globalping" && this.monitor.location) {
+                if (this.monitor.location.includes(",")) {
+                    toast.error(this.$t("GlobalpingMultipleLocationsError"));
+                    return false;
+                }
+            }
+
             // Validate hostname field input for various monitors
             if (
-                [
-                    "mqtt",
-                    "dns",
-                    "port",
-                    "ping",
-                    "steam",
-                    "gamedig",
-                    "radius",
-                    "tailscale-ping",
-                    "smtp",
-                    "snmp",
-                ].includes(this.monitor.type) &&
+                ["dns", "port", "ping", "steam", "gamedig", "radius", "tailscale-ping", "smtp", "snmp"].includes(
+                    this.monitor.type
+                ) &&
                 this.monitor.hostname
             ) {
                 let hostname = this.monitor.hostname.trim();
 
-                if (this.monitor.type === "mqtt") {
-                    hostname = hostname.replace(/^(mqtt|ws)s?:\/\//, "");
-                }
-
-                if (this.monitor.type === "dns" && isIP(hostname)) {
+                if (this.monitor.type === "dns" && this.monitor.dns_resolve_type !== "PTR" && isIP(hostname)) {
                     toast.error(this.$t("hostnameCannotBeIP"));
                     return false;
                 }
@@ -3075,30 +3735,42 @@ message HealthCheckResponse {
                 }
             }
 
-            // Validate URL field input for various monitors
-            if (
-                ["http", "keyword", "json-query", "websocket-upgrade", "real-browser"].includes(this.monitor.type) &&
-                this.monitor.url
-            ) {
+            // monitor type : url protocol restrictions
+            // null is no restriction, as long as it is able to be parsed by new URL()
+            const acceptList = {
+                http: ["http:", "https:"],
+                keyword: ["http:", "https:"],
+                "json-query": ["http:", "https:"],
+                "websocket-upgrade": ["ws:", "wss:"],
+                "real-browser": null,
+                mqtt: ["mqtt:", "ws:", "wss:"],
+            };
+
+            if (this.monitor.type in acceptList) {
+                const allowedProtocols = acceptList[this.monitor.type];
+
                 try {
-                    const url = new URL(this.monitor.url);
-                    // Browser can encode *.hostname.com to %2A.hostname.com
-                    if (url.hostname.includes("*") || url.hostname.includes("%2A")) {
-                        toast.error(this.$t("wildcardOnlyForDNS"));
+                    let url;
+
+                    // Special handling for MQTT, because it was wrongly used hostname field to store the URL.
+                    if (this.monitor.type === "mqtt") {
+                        url = new URL(this.monitor.hostname);
+                    } else {
+                        url = new URL(this.monitor.url);
+                    }
+
+                    if (allowedProtocols && !allowedProtocols.includes(url.protocol)) {
+                        console.log(url);
+                        toast.error(this.$t("invalidURL"));
                         return false;
                     }
-                    if (
-                        !isFQDN(url.hostname, {
-                            require_tld: false,
-                            allow_underscores: true,
-                            allow_trailing_dot: true,
-                        }) &&
-                        !isIP(url.hostname)
-                    ) {
-                        toast.error(this.$t("invalidHostnameOrIP"));
+
+                    // No empty hostname (mainly for non-http/ws URLs)
+                    if (!url.host) {
+                        toast.error(this.$t("invalidURL"));
                         return false;
                     }
-                } catch (err) {
+                } catch (e) {
                     toast.error(this.$t("invalidURL"));
                     return false;
                 }
@@ -3328,6 +4000,39 @@ message HealthCheckResponse {
                     this.monitor.timeout = clampedValue;
                 }
             }
+        },
+
+        // Check Domain
+        // Do nothing if not checked
+        checkDomain() {
+            console.log("checkDomain called");
+            if (this.checkDomainDebounce != null) {
+                clearTimeout(this.checkDomainDebounce);
+            }
+
+            if (!this.showDomainExpiryNotification) {
+                this.domainExpiryUnsupportedReason = null;
+                return;
+            }
+
+            this.checkDomainDebounce = setTimeout(() => {
+                const { type, url, hostname, grpcUrl } = this.monitor;
+                const data = {
+                    type,
+                    url,
+                    hostname,
+                    grpcUrl,
+                };
+
+                this.$root.getSocket().emit("checkDomain", data, (res) => {
+                    console.log(data);
+                    if (!res.ok) {
+                        this.domainExpiryUnsupportedReason = res.msgi18n ? this.$t(res.msg, res.meta) : res.msg;
+                    } else {
+                        this.domainExpiryUnsupportedReason = null;
+                    }
+                });
+            }, 500);
         },
     },
 };

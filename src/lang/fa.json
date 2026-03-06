@@ -60,7 +60,7 @@
     "hour": "ساعت",
     "-hour": "-ساعت",
     "Response": "پاسخ",
-    "Ping": "Ping",
+    "Ping": "پینگ",
     "Monitor Type": "نوع مانیتور",
     "Keyword": "کلمه کلیدی",
     "Friendly Name": "عنوان",
@@ -1192,5 +1192,13 @@
     "ariaResumeMaintenance": "ادامه این برنامه نگهداری",
     "Template ID": "کد قالب",
     "wayToGetClickSMSIRTemplateID": "قالب شما باید یک فیلد {uptkumaalert} داشته باشد. از {here} میتوانید یک قالب جدید ایجاد کنید.",
-    "Recipient Numbers": "شماره مشترکین"
+    "Recipient Numbers": "شماره مشترکین",
+    "Metadata": "فراداده",
+    "End": "پایان",
+    "Pin this incident": "این رخداد را سنجاق کن",
+    "Loading...": "در حال بارگیری...",
+    "Load More": "بارگیری بیشتر",
+    "days": "{n} روز | {n} روز",
+    "hours": "{n} ساعت | {n} ساعت",
+    "minutes": "{n} دقیقه | {n} دقیقه"
 }

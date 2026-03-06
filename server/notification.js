@@ -36,6 +36,7 @@ const Octopush = require("./notification-providers/octopush");
 const OneChat = require("./notification-providers/onechat");
 const OneBot = require("./notification-providers/onebot");
 const Opsgenie = require("./notification-providers/opsgenie");
+const JiraServiceManagement = require("./notification-providers/jira-service-management");
 const PagerDuty = require("./notification-providers/pagerduty");
 const Pumble = require("./notification-providers/pumble");
 const FlashDuty = require("./notification-providers/flashduty");
@@ -59,6 +60,7 @@ const Stackfield = require("./notification-providers/stackfield");
 const Teams = require("./notification-providers/teams");
 const TechulusPush = require("./notification-providers/techulus-push");
 const Telegram = require("./notification-providers/telegram");
+const Teltonika = require("./notification-providers/teltonika");
 const Threema = require("./notification-providers/threema");
 const Twilio = require("./notification-providers/twilio");
 const Splunk = require("./notification-providers/splunk");
@@ -84,6 +86,7 @@ const SMSPlanet = require("./notification-providers/sms-planet");
 const SpugPush = require("./notification-providers/spugpush");
 const SMSIR = require("./notification-providers/smsir");
 const { commandExists } = require("./util-server");
+const Whatsapp360messenger = require("./notification-providers/360messenger");
 const Webpush = require("./notification-providers/Webpush");
 const HaloPSA = require("./notification-providers/HaloPSA");
 
@@ -138,6 +141,7 @@ class Notification {
             new OneBot(),
             new Onesender(),
             new Opsgenie(),
+            new JiraServiceManagement(),
             new PagerDuty(),
             new FlashDuty(),
             new PagerTree(),
@@ -163,6 +167,7 @@ class Notification {
             new Teams(),
             new TechulusPush(),
             new Telegram(),
+            new Teltonika(),
             new Threema(),
             new Twilio(),
             new Splunk(),
@@ -185,6 +190,7 @@ class Notification {
             new Notifery(),
             new SMSIR(),
             new SendGrid(),
+            new Whatsapp360messenger(),
             new Webpush(),
             new HaloPSA(),
         ];

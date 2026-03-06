@@ -156,7 +156,7 @@
                         class="form-select"
                         data-testid="analytics-type-select"
                     >
-                        <option>{{ $t("None") }}</option>
+                        <option :value="null">{{ $t("None") }}</option>
                         <option value="google">{{ $t("Google") }}</option>
                         <option value="umami">{{ $t("Umami") }}</option>
                         <option value="plausible">{{ $t("Plausible") }}</option>
@@ -688,7 +688,9 @@ export default {
             enableEditMode: false,
             enableEditIncidentMode: false,
             hasToken: false,
-            config: {},
+            config: {
+                analyticsType: null,
+            },
             selectedMonitor: null,
             incident: null,
             previousIncident: null,

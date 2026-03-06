@@ -7,7 +7,6 @@ import {
     checkTagExists,
     checkVersionFormat,
     getRepoNames,
-    execSync,
     checkReleaseBranch,
     createDistTarGz,
     createReleasePR,
