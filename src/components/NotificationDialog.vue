@@ -269,6 +269,7 @@ export default {
                 Elks: "46elks",
                 Cellsynt: "Cellsynt",
                 gtxmessaging: "GtxMessaging",
+                MobivateSMS: "Mobivate SMS",
                 octopush: "Octopush",
                 Onesender: "Onesender",
                 SevenIO: "SevenIO",
