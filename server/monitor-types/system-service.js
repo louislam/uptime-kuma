@@ -7,6 +7,9 @@ class SystemServiceMonitorType extends MonitorType {
     name = "system-service";
     description = "Checks if a system service is running (systemd on Linux, Service Manager on Windows) or a PM2 process.";
 
+    /**
+     * Initialize monitor type dependencies.
+     */
     constructor() {
         super();
         this.execFile = execFile;
@@ -52,7 +55,7 @@ class SystemServiceMonitorType extends MonitorType {
      *  - svc:<platform>:<serviceName> where platform is linux|win32
      *  - <serviceName> (legacy; platform inferred from current host)
      * @param {string} raw Raw monitor.system_service_name.
-     * @returns {{mode: "service" | "pm2", platform: string, name: string}}
+     * @returns {{mode: "service" | "pm2", platform: string, name: string}} Parsed target mode, platform, and name.
      */
     parseTarget(raw) {
         const value = (raw || "").trim();
