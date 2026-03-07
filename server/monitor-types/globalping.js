@@ -11,6 +11,8 @@ const {
 } = require("../util-server");
 const { R } = require("redbean-node");
 
+const DEFAULT_USER_AGENT = "Uptime-Kuma/" + require("../../package.json").version;
+
 /**
  * Globalping is a free and open-source tool that allows you to run network tests
  * and measurements from thousands of community hosted probes around the world.
@@ -22,7 +24,7 @@ const { R } = require("redbean-node");
 class GlobalpingMonitorType extends MonitorType {
     name = "globalping";
 
-    httpUserAgent = "Uptime-Kuma/" + require("../../package.json").version;
+    httpUserAgent = DEFAULT_USER_AGENT;
 
     /**
      * @inheritdoc
