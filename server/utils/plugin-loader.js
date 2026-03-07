@@ -31,7 +31,11 @@ function loadPlugins(directory, type, registerFn) {
         try {
             mod = require(modulePath);
         } catch (e) {
-            throw new Error(`Failed to load plugin "${modulePath}": ${e.stack || e.message}`);
+            const originalMessage = e && typeof e.message === "string" ? e.message : String(e);
+            throw new Error(
+                `Failed to load plugin "${modulePath}": ${originalMessage}`,
+                { cause: e }
+            );
         }
 
         const exportsList =
