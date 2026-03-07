@@ -1079,6 +1079,8 @@
     "nostrRecipientsHelp": "npub format, one per line",
     "showCertificateExpiry": "Show Certificate Expiry",
     "showOnlyLastHeartbeat": "Show Only Last Heartbeat",
+    "Heartbeat Bar Days": "Heartbeat Bar Days",
+    "Status page shows heartbeat history days": "Status page shows {0} days of heartbeats",
     "noOrBadCertificate": "No/Bad Certificate",
     "cacheBusterParam": "Add the {0} parameter",
     "cacheBusterParamDescription": "Randomly generated parameter to skip caches.",
