@@ -59,7 +59,7 @@ function loadPlugins(directory, type, registerFn) {
             try {
                 instance = new exported();
             } catch (e) {
-                throw new Error(`Failed to instantiate plugin "${file}": ${e.message}`);
+                throw new Error(`Failed to instantiate plugin "${file}"`, { cause: e });
             }
 
             registerFn(instance, file);
