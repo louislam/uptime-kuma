@@ -69,6 +69,22 @@ describe("loadPlugins", () => {
             assert.strictEqual(registered.length, 0);
         });
 
+        test("skips arrow function exports", () => {
+            const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), "plugin-loader-arrowfn-"));
+            const registered = [];
+            try {
+                fs.writeFileSync(
+                    path.join(fixtureDir, "arrow-fn.js"),
+                    "module.exports = () => {};",
+                );
+                assert.doesNotThrow(() => {
+                    loadPlugins(fixtureDir, BaseType, (instance) => registered.push(instance));
+                });
+            } finally {
+                fs.rmSync(fixtureDir, { recursive: true, force: true });
+            }
+            assert.strictEqual(registered.length, 0);
+        });
         test("skips classes that do not extend the base type", () => {
             const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), "plugin-loader-wrongbase-"));
             const registered = [];
