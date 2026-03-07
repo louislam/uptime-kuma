@@ -147,7 +147,7 @@ export default {
             }
 
             // For both configured days and auto mode, show only what fits on screen
-            // The server provides consistent data (300 buckets for configured days, 100 beats for auto)
+            // The server provides consistent, capped data for both configured days and auto mode
             // We slice to show only what fits in the current container width
             let placeholders = [];
             let start = this.beatList.length - this.maxBeat;

@@ -1167,7 +1167,11 @@ export default {
         updateHeartbeatList() {
             // If editMode, it will use the data from websocket.
             if (!this.editMode) {
-                this.loadHeartbeatData();
+                if (this.config.heartbeatBarDays > 0 && this.lastHeartbeatReloadMaxBeats != null) {
+                    this.loadHeartbeatData(this.lastHeartbeatReloadMaxBeats);
+                } else {
+                    this.loadHeartbeatData();
+                }
             }
         },
 

@@ -916,10 +916,8 @@ class UptimeCalculator {
                 if (timestamp >= bucket.start && timestamp < bucket.end) {
                     bucket.up += dataPoint.up || 0;
                     bucket.down += dataPoint.down || 0;
-                    if (days > 30) {
-                        bucket.maintenance += dataPoint.maintenance || 0;
-                        bucket.pending += dataPoint.pending || 0;
-                    }
+                    bucket.maintenance += dataPoint.maintenance || 0;
+                    bucket.pending += dataPoint.pending || 0;
                 }
             }
         }

@@ -99,7 +99,7 @@ export default {
                 return this.$t("hours", 24);
             }
             // Handle dynamic day formats (e.g., "7d", "14d", "30d")
-            const dayMatch = this.type.match(/^(\d+)d$/);
+            const dayMatch = this.type && this.type.match(/^(\d+)d$/);
             if (dayMatch) {
                 return this.$t("days", parseInt(dayMatch[1]));
             }

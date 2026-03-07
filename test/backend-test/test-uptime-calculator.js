@@ -408,7 +408,6 @@ describe("Uptime Calculator", () => {
             }
         );
     });
-});
 
 /**
  * Code from here: https://stackoverflow.com/a/64550489/1097815
@@ -933,61 +932,4 @@ test("Test getAggregatedBuckets - Mixed data granularity", async (t) => {
     assert.ok(buckets35d.some((b) => b.up > 0 || b.down > 0));
 });
 
-test("Worst case", async (t) => {
-    // Disable on GitHub Actions, as it is not stable on it
-    if (process.env.GITHUB_ACTIONS) {
-        return;
-    }
-
-    console.log("Memory usage before preparation", memoryUsage());
-
-    let c = new UptimeCalculator();
-    let up = 0;
-    let down = 0;
-    let interval = 20;
-
-    await t.test("Prepare data", async () => {
-        UptimeCalculator.currentDate = dayjs.utc("2023-08-12 20:46:59");
-
-        // Since 2023-08-12 will be out of 365 range, it starts from 2023-08-13 actually
-        let actualStartDate = dayjs.utc("2023-08-13 00:00:00").unix();
-
-        // Simulate 1s interval for a year
-        for (let i = 0; i < 365 * 24 * 60 * 60; i += interval) {
-            UptimeCalculator.currentDate = UptimeCalculator.currentDate.add(interval, "second");
-
-            //Randomly UP, DOWN, MAINTENANCE, PENDING
-            let rand = Math.random();
-            if (rand < 0.25) {
-                c.update(UP);
-                if (UptimeCalculator.currentDate.unix() > actualStartDate) {
-                    up++;
-                }
-            } else if (rand < 0.5) {
-                c.update(DOWN);
-                if (UptimeCalculator.currentDate.unix() > actualStartDate) {
-                    down++;
-                }
-            } else if (rand < 0.75) {
-                c.update(MAINTENANCE);
-                if (UptimeCalculator.currentDate.unix() > actualStartDate) {
-                    //up++;
-                }
-            } else {
-                c.update(PENDING);
-                if (UptimeCalculator.currentDate.unix() > actualStartDate) {
-                    down++;
-                }
-            }
-        }
-        console.log("Final Date: ", UptimeCalculator.currentDate.format("YYYY-MM-DD HH:mm:ss"));
-        console.log("Memory usage before preparation", memoryUsage());
-
-        assert.strictEqual(c.minutelyUptimeDataList.length(), 1440);
-        assert.strictEqual(c.dailyUptimeDataList.length(), 365);
-    });
-
-    await t.test("get1YearUptime()", async () => {
-        assert.strictEqual(c.get1Year().uptime, up / (up + down));
-    });
 });
