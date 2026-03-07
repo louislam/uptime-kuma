@@ -57,6 +57,8 @@
                                         <option value="real-browser">
                                             HTTP(s) - Browser Engine (Chrome/Chromium) (Beta)
                                         </option>
+                                        <option value="websocket-upgrade">Websocket Upgrade</option>
+                                        <option value="sftp">SFTP</option>
                                     </optgroup>
 
                                     <optgroup :label="$t('monitorTypeSpecial')">
@@ -469,7 +471,8 @@
                                     monitor.type === 'tailscale-ping' ||
                                     monitor.type === 'smtp' ||
                                     monitor.type === 'snmp' ||
-                                    monitor.type === 'sip-options'
+                                    monitor.type === 'sip-options' ||
+                                    monitor.type === 'sftp'
                                 "
                                 class="my-3"
                             >
@@ -681,6 +684,7 @@
                                     monitor.type === 'smtp' ||
                                     monitor.type === 'snmp' ||
                                     monitor.type === 'sip-options' ||
+                                    monitor.type === 'sftp' ||
                                     (monitor.type === 'globalping' &&
                                         monitor.subtype === 'ping' &&
                                         monitor.protocol === 'TCP')
@@ -779,6 +783,86 @@
                                     <option value="starttls">STARTTLS</option>
                                 </select>
                             </div>
+
+                            <!-- SFTP Monitor Fields -->
+                            <template v-if="monitor.type === 'sftp'">
+                                <div class="my-3">
+                                    <label for="sftp_username" class="form-label">{{ $t("Username") }}</label>
+                                    <input
+                                        id="sftp_username"
+                                        v-model="monitor.sftpUsername"
+                                        type="text"
+                                        class="form-control"
+                                        required
+                                        autocomplete="username"
+                                    />
+                                </div>
+
+                                <!-- Auth Method -->
+                                <div class="my-3">
+                                    <label for="sftp_auth_method" class="form-label">
+                                        {{ $t("SFTP Auth Method") }}
+                                    </label>
+                                    <select id="sftp_auth_method" v-model="monitor.sftpAuthMethod" class="form-select">
+                                        <option value="password">{{ $t("Password") }}</option>
+                                        <option value="privateKey">{{ $t("SSH Private Key") }}</option>
+                                    </select>
+                                </div>
+
+                                <!-- Password auth -->
+                                <div v-if="monitor.sftpAuthMethod !== 'privateKey'" class="my-3">
+                                    <label for="sftp_password" class="form-label">{{ $t("Password") }}</label>
+                                    <HiddenInput
+                                        id="sftp_password"
+                                        v-model="monitor.sftpPassword"
+                                        autocomplete="current-password"
+                                        required="true"
+                                    ></HiddenInput>
+                                </div>
+
+                                <!-- SSH Key auth -->
+                                <template v-if="monitor.sftpAuthMethod === 'privateKey'">
+                                    <div class="my-3">
+                                        <label for="sftp_private_key" class="form-label">
+                                            {{ $t("SSH Private Key") }}
+                                        </label>
+                                        <textarea
+                                            id="sftp_private_key"
+                                            v-model="monitor.sftpPrivateKey"
+                                            class="form-control"
+                                            rows="6"
+                                            :placeholder="$t('sftpPrivateKeyPlaceholder')"
+                                            required
+                                            autocomplete="off"
+                                        ></textarea>
+                                        <div class="form-text">{{ $t("sftpPrivateKeyHelpText") }}</div>
+                                    </div>
+                                    <div class="my-3">
+                                        <label for="sftp_passphrase" class="form-label">
+                                            {{ $t("Passphrase") }}
+                                            <span class="text-muted small">({{ $t("optional") }})</span>
+                                        </label>
+                                        <HiddenInput
+                                            id="sftp_passphrase"
+                                            v-model="monitor.sftpPassphrase"
+                                            autocomplete="off"
+                                        ></HiddenInput>
+                                        <div class="form-text">{{ $t("sftpPassphraseHelpText") }}</div>
+                                    </div>
+                                </template>
+
+                                <div class="my-3">
+                                    <label for="sftp_path" class="form-label">{{ $t("SFTP Path to Check") }}</label>
+                                    <input
+                                        id="sftp_path"
+                                        v-model="monitor.sftpPath"
+                                        type="text"
+                                        class="form-control"
+                                        placeholder="/path/to/check (optional)"
+                                    />
+                                    <div class="form-text">{{ $t("sftpPathHelpText") }}</div>
+                                </div>
+                            </template>
 
                             <!-- Expected TLS Alert (for TCP monitor mTLS verification) -->
                             <template v-if="monitor.type === 'port'">
@@ -2904,6 +2988,7 @@ const monitorDefaults = {
     rabbitmqPassword: "",
     conditions: [],
     system_service_name: "",
+    sftpAuthMethod: "password",
 };
 
 export default {
