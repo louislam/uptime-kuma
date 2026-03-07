@@ -42,7 +42,11 @@ function loadPlugins(directory, type, registerFn) {
                 continue;
             }
 
-            if (exported === type || !(exported.prototype instanceof type)) {
+            if (
+                exported === type ||
+                !exported.prototype ||
+                !(exported.prototype instanceof type)
+            ) {
                 continue;
             }
 
