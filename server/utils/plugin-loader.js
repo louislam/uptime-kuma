@@ -1,7 +1,6 @@
 const { log } = require("../../src/util");
-const fs = require('fs');
-const path = require('path');
-
+const fs = require("fs");
+const path = require("path");
 
 /**
  * Scans a directory for .js files, instantiates any exported class that extends
@@ -36,14 +35,10 @@ function loadPlugins(directory, type, registerFn) {
         }
 
         const exportsList =
-            typeof mod === "function"
-                ? [mod]
-                : mod && typeof mod === "object"
-                ? Object.values(mod)
-                : [];
+            typeof mod === "function" ? [mod] : mod && typeof mod === "object" ? Object.values(mod) : [];
 
         for (const exported of exportsList) {
-            if (typeof exported !== 'function') {
+            if (typeof exported !== "function") {
                 continue;
             }
 
