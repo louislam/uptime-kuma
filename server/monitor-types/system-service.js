@@ -5,7 +5,8 @@ const { UP } = require("../../src/util");
 
 class SystemServiceMonitorType extends MonitorType {
     name = "system-service";
-    description = "Checks if a system service is running (systemd on Linux, Service Manager on Windows) or a PM2 process.";
+    description =
+        "Checks if a system service is running (systemd on Linux, Service Manager on Windows) or a PM2 process.";
 
     /**
      * Initialize monitor type dependencies.
@@ -106,7 +107,7 @@ class SystemServiceMonitorType extends MonitorType {
             }
 
             const isWindows = process.platform === "win32";
-            const command = isWindows ? (process.env.ComSpec || "cmd.exe") : "pm2";
+            const command = isWindows ? process.env.ComSpec || "cmd.exe" : "pm2";
             const args = isWindows ? ["/d", "/s", "/c", "pm2 jlist"] : ["jlist"];
 
             this.execFile(command, args, { timeout: 5000 }, (error, stdout, stderr) => {
@@ -116,7 +117,9 @@ class SystemServiceMonitorType extends MonitorType {
                         output = output.substring(0, 200) + "...";
                     }
                     const details = output || error.code || error.message;
-                    reject(new Error(`Unable to query PM2 status (${details}). Ensure PM2 is installed and accessible.`));
+                    reject(
+                        new Error(`Unable to query PM2 status (${details}). Ensure PM2 is installed and accessible.`)
+                    );
                     return;
                 }
 
