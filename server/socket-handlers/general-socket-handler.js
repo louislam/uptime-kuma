@@ -6,6 +6,8 @@ const { games } = require("gamedig");
 const { testChrome } = require("../monitor-types/real-browser-monitor-type");
 const fsAsync = require("fs").promises;
 const path = require("path");
+const process = require("process");
+const { execFile } = require("child_process");
 
 /**
  * Get a game list via GameDig
@@ -59,6 +61,63 @@ module.exports.generalSocketHandler = (socket, server) => {
             callback({
                 ok: true,
                 gameList: getGameList(),
+            });
+        } catch (e) {
+            callback({
+                ok: false,
+                msg: e.message,
+            });
+        }
+    });
+
+    socket.on("getPM2ProcessList", async (callback) => {
+        try {
+            checkLogin(socket);
+
+            const isWindows = process.platform === "win32";
+            const command = isWindows ? (process.env.ComSpec || "cmd.exe") : "pm2";
+            const args = isWindows ? ["/d", "/s", "/c", "pm2 jlist"] : ["jlist"];
+
+            execFile(command, args, { timeout: 5000 }, (error, stdout, stderr) => {
+                if (error) {
+                    callback({
+                        ok: false,
+                        msg: "Unable to query PM2 process list.",
+                    });
+                    return;
+                }
+
+                try {
+                    const parsed = JSON.parse((stdout || "").toString());
+                    if (!Array.isArray(parsed)) {
+                        throw new Error("Unexpected PM2 output");
+                    }
+
+                    const processList = parsed.map((item) => {
+                        const id = item.pm_id != null ? String(item.pm_id) : (item.name || "");
+                        const name = item.name || id;
+                        const status = item.pm2_env?.status || "unknown";
+                        return {
+                            id,
+                            name,
+                            status,
+                        };
+                    }).filter((item) => item.id !== "");
+
+                    callback({
+                        ok: true,
+                        processList,
+                    });
+                } catch (parseError) {
+                    let output = (stderr || "").toString().trim();
+                    if (output.length > 200) {
+                        output = output.substring(0, 200) + "...";
+                    }
+                    callback({
+                        ok: false,
+                        msg: output || "Unable to parse PM2 process list output.",
+                    });
+                }
             });
         } catch (e) {
             callback({

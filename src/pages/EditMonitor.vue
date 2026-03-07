@@ -52,7 +52,7 @@
                                             "
                                             value="system-service"
                                         >
-                                            {{ $t("System Service") }}
+                                            {{ $t("System Service") }} / PM2
                                         </option>
                                         <option value="real-browser">
                                             HTTP(s) - Browser Engine (Chrome/Chromium) (Beta)
@@ -1187,52 +1187,117 @@
 
                             <template v-if="monitor.type === 'system-service'">
                                 <div class="my-3">
-                                    <label for="system-service-name" class="form-label">{{ $t("Service Name") }}</label>
-                                    <input
-                                        id="system-service-name"
-                                        v-model="monitor.system_service_name"
-                                        type="text"
-                                        class="form-control"
-                                        required
-                                        placeholder="nginx"
-                                    />
+                                    <label for="system-service-mode" class="form-label">Target Type</label>
+                                    <select id="system-service-mode" v-model="systemServiceMode" class="form-select mb-3">
+                                        <option value="service">System Service</option>
+                                        <option value="pm2">PM2 Process</option>
+                                    </select>
+
+                                    <template v-if="systemServiceMode === 'service'">
+                                        <label for="system-service-platform" class="form-label">Platform</label>
+                                        <select id="system-service-platform" v-model="systemServicePlatform" class="form-select mb-3">
+                                            <option value="linux">Linux</option>
+                                            <option value="win32">Windows Server</option>
+                                        </select>
+
+                                        <label for="system-service-name" class="form-label">{{ $t("Service Name") }}</label>
+                                        <input
+                                            id="system-service-name"
+                                            v-model="systemServiceNameInput"
+                                            type="text"
+                                            class="form-control"
+                                            required
+                                            :placeholder="systemServicePlatform === 'win32' ? 'Dnscache' : 'nginx'"
+                                        />
+                                    </template>
+
+                                    <template v-else>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <label for="pm2-process-name" class="form-label mb-0">PM2 Process</label>
+                                            <button
+                                                class="btn btn-outline-secondary btn-sm"
+                                                type="button"
+                                                :disabled="pm2ProcessLoading"
+                                                @click="loadPM2ProcessList"
+                                            >
+                                                {{ pm2ProcessLoading ? "Loading..." : "Refresh" }}
+                                            </button>
+                                        </div>
+                                        <select
+                                            v-if="pm2ProcessOptions.length > 0"
+                                            id="pm2-process-name"
+                                            v-model="systemServiceNameInput"
+                                            class="form-select mt-2"
+                                            required
+                                        >
+                                            <option disabled value="">Select PM2 process</option>
+                                            <option v-for="item in pm2ProcessOptions" :key="item.id" :value="item.id">
+                                                {{ item.name }} (#{{ item.id }}) - {{ item.status }}
+                                            </option>
+                                        </select>
+                                        <input
+                                            v-else
+                                            id="pm2-process-name"
+                                            v-model="systemServiceNameInput"
+                                            type="text"
+                                            class="form-control mt-2"
+                                            placeholder="api"
+                                            required
+                                        />
+                                        <div v-if="pm2ProcessError" class="text-danger small mt-2">
+                                            {{ pm2ProcessError }}
+                                        </div>
+                                    </template>
 
                                     <div class="form-text">
-                                        <template v-if="$root.info.runtime.platform === 'linux'">
+                                        <template v-if="systemServiceMode === 'pm2'">
+                                            PM2 process will be checked using <code>pm2 jlist</code>.
+                                        </template>
+                                        <template v-else-if="systemServicePlatform === 'linux'">
                                             {{
                                                 $t("systemServiceDescriptionLinux", {
-                                                    service_name: monitor.system_service_name || "nginx",
+                                                    service_name: systemServiceNameInput || "nginx",
                                                 })
                                             }}
                                         </template>
-                                        <template v-else-if="$root.info.runtime.platform === 'win32'">
+                                        <template v-else-if="systemServicePlatform === 'win32'">
                                             {{
                                                 $t("systemServiceDescriptionWindows", {
-                                                    service_name: monitor.system_service_name || "Dnscache",
+                                                    service_name: systemServiceNameInput || "Dnscache",
                                                 })
                                             }}
                                         </template>
                                         <template v-else>
                                             {{
                                                 $t("systemServiceDescription", {
-                                                    service_name: monitor.system_service_name || "nginx",
+                                                    service_name: systemServiceNameInput || "nginx",
                                                 })
                                             }}
                                         </template>
 
                                         <template
                                             v-if="
-                                                !monitor.system_service_name ||
-                                                /^[a-zA-Z0-9_\-\.\@\ ]+$/.test(monitor.system_service_name)
+                                                systemServiceMode === 'pm2' ||
+                                                !systemServiceNameInput ||
+                                                /^[a-zA-Z0-9_\-\.\@\ ]+$/.test(systemServiceNameInput)
                                             "
                                         >
-                                            <div v-if="$root.info.runtime.platform === 'linux'" class="mt-2">
+                                            <div v-if="systemServiceMode === 'pm2'" class="mt-2">
+                                                <div>
+                                                    <code>pm2 jlist</code>
+                                                </div>
+                                                <div class="text-secondary small">
+                                                    Expected state: <code>online</code>. States <code>stopped</code> and
+                                                    <code>errored</code> are treated as DOWN.
+                                                </div>
+                                            </div>
+                                            <div v-else-if="systemServicePlatform === 'linux'" class="mt-2">
                                                 <div>
                                                     <i18n-t keypath="systemServiceCommandHint" tag="span">
                                                         <template #command>
                                                             <code>
                                                                 systemctl is-active
-                                                                {{ monitor.system_service_name || "nginx" }}
+                                                                {{ systemServiceNameInput || "nginx" }}
                                                             </code>
                                                         </template>
                                                     </i18n-t>
@@ -1241,14 +1306,14 @@
                                                     {{ $t("systemServiceExpectedOutput", ["active"]) }}
                                                 </div>
                                             </div>
-                                            <div v-else-if="$root.info.runtime.platform === 'win32'" class="mt-2">
+                                            <div v-else-if="systemServicePlatform === 'win32'" class="mt-2">
                                                 <div>
                                                     <i18n-t keypath="systemServiceCommandHint" tag="span">
                                                         <template #command>
                                                             <code>
                                                                 (Get-Service -Name '{{
                                                                     (
-                                                                        monitor.system_service_name || "Dnscache"
+                                                                        systemServiceNameInput || "Dnscache"
                                                                     ).replaceAll("'", "''")
                                                                 }}').Status
                                                             </code>
@@ -2953,6 +3018,11 @@ export default {
                 confirmed: false,
                 editedValue: false,
             },
+            systemServiceMode: "service",
+            systemServicePlatform: "linux",
+            pm2ProcessOptions: [],
+            pm2ProcessLoading: false,
+            pm2ProcessError: "",
         };
     },
 
@@ -2974,7 +3044,7 @@ export default {
                 return this.monitor.hostname;
             }
             if (this.monitor.system_service_name) {
-                return this.monitor.system_service_name;
+                return this.parseSystemServiceTarget(this.monitor.system_service_name).name;
             }
             if (this.monitor.url) {
                 if (this.monitor.url !== "http://" && this.monitor.url !== "https://") {
@@ -3029,6 +3099,16 @@ export default {
                     this.remoteBrowsersEnabled = false;
                     this.monitor.remote_browser = null;
                 }
+            },
+        },
+
+        systemServiceNameInput: {
+            get() {
+                return this.parseSystemServiceTarget(this.monitor.system_service_name).name;
+            },
+            set(value) {
+                const nextValue = value ?? "";
+                this.monitor.system_service_name = this.buildSystemServiceTarget(nextValue);
             },
         },
 
@@ -3303,6 +3383,10 @@ message HealthCheckResponse {
         "monitor.type"(newType, oldType) {
             this.checkDomain();
 
+            if (newType === "system-service") {
+                this.syncSystemServiceFields();
+            }
+
             if (newType === "globalping" && !this.monitor.subtype) {
                 this.monitor.subtype = "ping";
             }
@@ -3488,6 +3572,32 @@ message HealthCheckResponse {
                 this.monitor.expiryNotification = false;
             }
         },
+
+        systemServiceMode(newMode, oldMode) {
+            if (newMode === oldMode || this.monitor.type !== "system-service") {
+                return;
+            }
+
+            const current = this.parseSystemServiceTarget(this.monitor.system_service_name);
+            this.monitor.system_service_name = this.buildSystemServiceTarget(current.name);
+
+            if (newMode === "pm2") {
+                this.loadPM2ProcessList();
+            }
+        },
+
+        systemServicePlatform(newPlatform, oldPlatform) {
+            if (
+                newPlatform === oldPlatform ||
+                this.monitor.type !== "system-service" ||
+                this.systemServiceMode !== "service"
+            ) {
+                return;
+            }
+
+            const current = this.parseSystemServiceTarget(this.monitor.system_service_name);
+            this.monitor.system_service_name = this.buildSystemServiceTarget(current.name);
+        },
     },
     mounted() {
         this.init();
@@ -3533,6 +3643,100 @@ message HealthCheckResponse {
         this.kafkaSaslMechanismOptions = kafkaSaslMechanismOptions;
     },
     methods: {
+        getDefaultSystemServicePlatform() {
+            return this.$root.info.runtime.platform === "win32" ? "win32" : "linux";
+        },
+
+        parseSystemServiceTarget(rawValue) {
+            const value = (rawValue || "").trim();
+
+            if (!value) {
+                return {
+                    mode: "service",
+                    platform: this.getDefaultSystemServicePlatform(),
+                    name: "",
+                };
+            }
+
+            if (value.toLowerCase().startsWith("pm2:")) {
+                return {
+                    mode: "pm2",
+                    platform: this.getDefaultSystemServicePlatform(),
+                    name: value.slice(4).trim(),
+                };
+            }
+
+            const serviceWithPlatform = value.match(/^svc:(linux|win32):([\s\S]+)$/i);
+            if (serviceWithPlatform) {
+                return {
+                    mode: "service",
+                    platform: serviceWithPlatform[1].toLowerCase(),
+                    name: serviceWithPlatform[2].trim(),
+                };
+            }
+
+            return {
+                mode: "service",
+                platform: this.getDefaultSystemServicePlatform(),
+                name: value,
+            };
+        },
+
+        buildSystemServiceTarget(rawName) {
+            const name = (rawName || "").trim();
+            if (!name) {
+                return "";
+            }
+
+            if (this.systemServiceMode === "pm2") {
+                return `pm2:${name}`;
+            }
+
+            const platform = this.systemServicePlatform || this.getDefaultSystemServicePlatform();
+            return `svc:${platform}:${name}`;
+        },
+
+        syncSystemServiceFields() {
+            const parsed = this.parseSystemServiceTarget(this.monitor.system_service_name);
+            this.systemServiceMode = parsed.mode;
+            this.systemServicePlatform = parsed.platform;
+
+            if (parsed.mode === "pm2") {
+                this.loadPM2ProcessList();
+            }
+        },
+
+        loadPM2ProcessList() {
+            this.pm2ProcessLoading = true;
+            this.pm2ProcessError = "";
+
+            this.$root.getSocket().emit("getPM2ProcessList", (res) => {
+                this.pm2ProcessLoading = false;
+
+                if (!res.ok) {
+                    this.pm2ProcessOptions = [];
+                    this.pm2ProcessError = res.msg || "Unable to query PM2 process list.";
+                    return;
+                }
+
+                this.pm2ProcessOptions = (res.processList || []).map((item) => {
+                    return {
+                        id: item.id,
+                        name: item.name,
+                        status: item.status,
+                    };
+                });
+
+                if (
+                    this.systemServiceMode === "pm2" &&
+                    this.pm2ProcessOptions.length > 0 &&
+                    !this.pm2ProcessOptions.some((item) => item.id === this.systemServiceNameInput)
+                ) {
+                    this.systemServiceNameInput = this.pm2ProcessOptions[0].id;
+                }
+            });
+        },
+
         /**
          * Initialize the edit monitor form
          * @returns {void}
@@ -3560,6 +3764,8 @@ message HealthCheckResponse {
                         this.monitor.notificationIDList[this.$root.notificationList[i].id] = true;
                     }
                 }
+
+                this.syncSystemServiceFields();
             } else if (this.isEdit || this.isClone) {
                 this.$root.getSocket().emit("getMonitor", this.$route.params.id, (res) => {
                     if (res.ok) {
@@ -3623,6 +3829,8 @@ message HealthCheckResponse {
                                 this.monitor.timeout = ~~(this.monitor.interval * 8) / 10;
                             }
                         }
+
+                        this.syncSystemServiceFields();
                     } else {
                         this.$root.toastError(res.msg);
                     }
@@ -3840,6 +4048,10 @@ message HealthCheckResponse {
 
             if (this.monitor.url) {
                 this.monitor.url = this.monitor.url.trim();
+            }
+
+            if (this.monitor.type === "system-service" && this.monitor.system_service_name) {
+                this.systemServiceNameInput = this.systemServiceNameInput.trim();
             }
 
             let createdNewParent = false;
