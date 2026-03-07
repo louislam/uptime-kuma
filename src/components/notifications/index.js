@@ -11,6 +11,7 @@ import CallMeBot from "./CallMeBot.vue";
 import SMSC from "./SMSC.vue";
 import DingDing from "./DingDing.vue";
 import Discord from "./Discord.vue";
+import Fluxer from "./Fluxer.vue";
 import Elks from "./46elks.vue";
 import Feishu from "./Feishu.vue";
 import FreeMobile from "./FreeMobile.vue";
@@ -105,6 +106,7 @@ const NotificationFormList = {
     smsir: SMSIR,
     DingDing: DingDing,
     discord: Discord,
+    fluxer: Fluxer,
     Elks: Elks,
     Feishu: Feishu,
     FreeMobile: FreeMobile,
