@@ -32,10 +32,7 @@ function loadPlugins(directory, type, registerFn) {
             mod = require(modulePath);
         } catch (e) {
             const originalMessage = e && typeof e.message === "string" ? e.message : String(e);
-            throw new Error(
-                `Failed to load plugin "${modulePath}": ${originalMessage}`,
-                { cause: e }
-            );
+            throw new Error(`Failed to load plugin "${modulePath}": ${originalMessage}`, { cause: e });
         }
 
         const exportsList =
@@ -46,11 +43,7 @@ function loadPlugins(directory, type, registerFn) {
                 continue;
             }
 
-            if (
-                exported === type ||
-                !exported.prototype ||
-                !(exported.prototype instanceof type)
-            ) {
+            if (exported === type || !exported.prototype || !(exported.prototype instanceof type)) {
                 continue;
             }
 
