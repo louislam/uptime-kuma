@@ -22,14 +22,17 @@ const { R } = require("redbean-node");
 class GlobalpingMonitorType extends MonitorType {
     name = "globalping";
 
-    httpUserAgent = "";
+    httpUserAgent = "Uptime-Kuma/" + require("../../package.json").version;
 
     /**
      * @inheritdoc
+     * @param {string} httpUserAgent - Optional custom user agent string.
      */
-    constructor(httpUserAgent) {
+    constructor(httpUserAgent = undefined) {
         super();
-        this.httpUserAgent = httpUserAgent;
+        if (httpUserAgent !== undefined) {
+            this.httpUserAgent = httpUserAgent;
+        }
     }
 
     /**
