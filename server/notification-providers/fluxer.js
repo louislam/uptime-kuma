@@ -11,8 +11,6 @@ class Fluxer extends NotificationProvider {
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
 
-        const SUPPRESS_NOTIFICATIONS_FLAG = 1 << 12;
-
         try {
             let config = this.getAxiosConfigWithProxy({});
             const fluxerDisplayName = notification.fluxerUsername || "Uptime Kuma";
@@ -49,9 +47,6 @@ class Fluxer extends NotificationProvider {
                 if (!webhookHasAvatar) {
                     fluxertestdata.avatar_url = "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png";
                 }
-                if (notification.discordSuppressNotifications) {
-                    fluxertestdata.flags = SUPPRESS_NOTIFICATIONS_FLAG;
-                }
                 await axios.post(webhookUrl.toString(), fluxertestdata, config);
                 return okMsg;
             }
@@ -71,9 +66,6 @@ class Fluxer extends NotificationProvider {
                 };
                 if (!webhookHasAvatar) {
                     payload.avatar_url = "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png";
-                }
-                if (notification.discordSuppressNotifications) {
-                    payload.flags = SUPPRESS_NOTIFICATIONS_FLAG;
                 }
 
                 await axios.post(webhookUrl.toString(), payload, config);
@@ -96,9 +88,6 @@ class Fluxer extends NotificationProvider {
                 };
                 if (!webhookHasAvatar) {
                     payload.avatar_url = "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png";
-                }
-                if (notification.discordSuppressNotifications) {
-                    payload.flags = SUPPRESS_NOTIFICATIONS_FLAG;
                 }
 
                 await axios.post(webhookUrl.toString(), payload, config);
@@ -149,9 +138,6 @@ class Fluxer extends NotificationProvider {
                 }
                 if (notification.fluxerPrefixMessage) {
                     fluxerdowndata.content = notification.fluxerPrefixMessage;
-                }
-                if (notification.discordSuppressNotifications) {
-                    fluxerdowndata.flags = SUPPRESS_NOTIFICATIONS_FLAG;
                 }
 
                 await axios.post(webhookUrl.toString(), fluxerdowndata, config);
@@ -220,9 +206,6 @@ class Fluxer extends NotificationProvider {
                 };
                 if (!webhookHasAvatar) {
                     fluxerupdata.avatar_url = "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png";
-                }
-                if (notification.discordSuppressNotifications) {
-                    fluxerupdata.flags = SUPPRESS_NOTIFICATIONS_FLAG;
                 }
                 if (notification.fluxerPrefixMessage) {
                     fluxerupdata.content = notification.fluxerPrefixMessage;

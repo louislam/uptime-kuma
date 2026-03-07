@@ -59,37 +59,6 @@
             <div class="form-text">{{ $t("fluxerUseMessageTemplateDescription") }}</div>
         </div>
     </div>
-
-    <div class="mb-3">
-        <div class="form-check form-switch">
-            <input
-                id="fluxer-disable-url"
-                v-model="$parent.notification.disableUrl"
-                class="form-check-input"
-                type="checkbox"
-                role="switch"
-            />
-            <label class="form-check-label" for="fluxer-disable-url">{{ $t("Disable URL in Notification") }}</label>
-        </div>
-    </div>
-
-    <div class="mb-3">
-        <div class="form-check form-switch">
-            <input
-                id="fluxer-suppress-notifications"
-                v-model="$parent.notification.fluxerSuppressNotifications"
-                class="form-check-input"
-                type="checkbox"
-                role="switch"
-            />
-            <label class="form-check-label" for="fluxer-suppress-notifications">
-                {{ $t("Suppress Notifications") }}
-            </label>
-        </div>
-        <div class="form-text">
-            {{ $t("fluxerSuppressNotificationsHelptext") }}
-        </div>
-    </div>
 </template>
 <script>
 import TemplatedTextarea from "../TemplatedTextarea.vue";
@@ -104,9 +73,6 @@ export default {
         }
         if (this.$parent.notification.disableUrl === undefined) {
             this.$parent.notification.disableUrl = false;
-        }
-        if (this.$parent.notification.fluxerSuppressNotifications === undefined) {
-            this.$parent.notification.fluxerSuppressNotifications = false;
         }
         // Message format: default "normal"; migrate from old checkbox
         if (typeof this.$parent.notification.fluxerMessageFormat === "undefined") {

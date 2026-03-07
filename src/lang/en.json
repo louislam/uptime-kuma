@@ -1358,7 +1358,6 @@
     "discordUseMessageTemplate": "Use custom message template",
     "discordUseMessageTemplateDescription": "If enabled, the message will be sent using a custom template (LiquidJS). Leave blank to use the default Uptime Kuma format.",
     "discordMessageTemplate": "Message Template",
-    "fluxerSuppressNotificationsHelptext": "When enabled, messages will be posted to the channel but won't trigger push or desktop notifications for recipients.",
     "fluxerMessageFormat": "Message Format",
     "fluxerMessageFormatNormal": "Normal (rich embeds)",
     "fluxerMessageFormatMinimalist": "Minimalist (short status)",
