@@ -49,6 +49,7 @@ const languageList = {
     uz: "O'zbek tili",
     ga: "Gaeilge",
     sk: "Slovenčina",
+    "en-GB": "English (United Kingdom)",
 };
 
 let messages = {
