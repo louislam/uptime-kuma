@@ -17,20 +17,27 @@ describe("SystemServiceMonitorType PM2", () => {
 
     test("check() returns UP for an online PM2 process", async () => {
         monitorType.execFile = (cmd, args, opts, callback) => {
-            callback(null, JSON.stringify([
-                {
-                    name: "api",
-                    pm_id: 0,
-                    pm2_env: {
-                        status: "online",
+            callback(
+                null,
+                JSON.stringify([
+                    {
+                        name: "api",
+                        pm_id: 0,
+                        pm2_env: {
+                            status: "online",
+                        },
                     },
-                },
-            ]), "");
+                ]),
+                ""
+            );
         };
 
-        await monitorType.check({
-            system_service_name: "pm2:api",
-        }, heartbeat);
+        await monitorType.check(
+            {
+                system_service_name: "pm2:api",
+            },
+            heartbeat
+        );
 
         assert.strictEqual(heartbeat.status, UP);
         assert.ok(heartbeat.msg.includes("online"));
@@ -38,40 +45,60 @@ describe("SystemServiceMonitorType PM2", () => {
 
     test("check() returns DOWN for a stopped PM2 process", async () => {
         monitorType.execFile = (cmd, args, opts, callback) => {
-            callback(null, JSON.stringify([
-                {
-                    name: "api",
-                    pm_id: 0,
-                    pm2_env: {
-                        status: "stopped",
+            callback(
+                null,
+                JSON.stringify([
+                    {
+                        name: "api",
+                        pm_id: 0,
+                        pm2_env: {
+                            status: "stopped",
+                        },
                     },
-                },
-            ]), "");
+                ]),
+                ""
+            );
         };
 
-        await assert.rejects(monitorType.check({
-            system_service_name: "pm2:api",
-        }, heartbeat), /stopped/);
+        await assert.rejects(
+            monitorType.check(
+                {
+                    system_service_name: "pm2:api",
+                },
+                heartbeat
+            ),
+            /stopped/
+        );
 
         assert.strictEqual(heartbeat.status, DOWN);
     });
 
     test("check() returns DOWN for an errored PM2 process", async () => {
         monitorType.execFile = (cmd, args, opts, callback) => {
-            callback(null, JSON.stringify([
-                {
-                    name: "api",
-                    pm_id: 0,
-                    pm2_env: {
-                        status: "errored",
+            callback(
+                null,
+                JSON.stringify([
+                    {
+                        name: "api",
+                        pm_id: 0,
+                        pm2_env: {
+                            status: "errored",
+                        },
                     },
-                },
-            ]), "");
+                ]),
+                ""
+            );
         };
 
-        await assert.rejects(monitorType.check({
-            system_service_name: "pm2:api",
-        }, heartbeat), /errored/);
+        await assert.rejects(
+            monitorType.check(
+                {
+                    system_service_name: "pm2:api",
+                },
+                heartbeat
+            ),
+            /errored/
+        );
 
         assert.strictEqual(heartbeat.status, DOWN);
     });

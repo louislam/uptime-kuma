@@ -36,9 +36,12 @@ describe("SystemServiceMonitorType platform selection", () => {
             hb.status = UP;
         };
 
-        await monitorType.check({
-            system_service_name: "svc:linux:nginx",
-        }, heartbeat);
+        await monitorType.check(
+            {
+                system_service_name: "svc:linux:nginx",
+            },
+            heartbeat
+        );
 
         assert.strictEqual(calledName, "nginx");
         assert.strictEqual(heartbeat.status, UP);
@@ -56,9 +59,12 @@ describe("SystemServiceMonitorType platform selection", () => {
             hb.status = UP;
         };
 
-        await monitorType.check({
-            system_service_name: "svc:win32:Dnscache",
-        }, heartbeat);
+        await monitorType.check(
+            {
+                system_service_name: "svc:win32:Dnscache",
+            },
+            heartbeat
+        );
 
         assert.strictEqual(calledName, "Dnscache");
         assert.strictEqual(heartbeat.status, UP);
@@ -70,8 +76,14 @@ describe("SystemServiceMonitorType platform selection", () => {
             configurable: true,
         });
 
-        await assert.rejects(monitorType.check({
-            system_service_name: "svc:linux:nginx",
-        }, heartbeat), /Selected platform Linux is not supported on this host/);
+        await assert.rejects(
+            monitorType.check(
+                {
+                    system_service_name: "svc:linux:nginx",
+                },
+                heartbeat
+            ),
+            /Selected platform Linux is not supported on this host/
+        );
     });
 });

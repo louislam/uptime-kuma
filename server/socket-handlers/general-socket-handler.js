@@ -75,7 +75,7 @@ module.exports.generalSocketHandler = (socket, server) => {
             checkLogin(socket);
 
             const isWindows = process.platform === "win32";
-            const command = isWindows ? (process.env.ComSpec || "cmd.exe") : "pm2";
+            const command = isWindows ? process.env.ComSpec || "cmd.exe" : "pm2";
             const args = isWindows ? ["/d", "/s", "/c", "pm2 jlist"] : ["jlist"];
 
             execFile(command, args, { timeout: 5000 }, (error, stdout, stderr) => {
@@ -93,16 +93,18 @@ module.exports.generalSocketHandler = (socket, server) => {
                         throw new Error("Unexpected PM2 output");
                     }
 
-                    const processList = parsed.map((item) => {
-                        const id = item.pm_id != null ? String(item.pm_id) : (item.name || "");
-                        const name = item.name || id;
-                        const status = item.pm2_env?.status || "unknown";
-                        return {
-                            id,
-                            name,
-                            status,
-                        };
-                    }).filter((item) => item.id !== "");
+                    const processList = parsed
+                        .map((item) => {
+                            const id = item.pm_id != null ? String(item.pm_id) : item.name || "";
+                            const name = item.name || id;
+                            const status = item.pm2_env?.status || "unknown";
+                            return {
+                                id,
+                                name,
+                                status,
+                            };
+                        })
+                        .filter((item) => item.id !== "");
 
                     callback({
                         ok: true,

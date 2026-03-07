@@ -1188,19 +1188,29 @@
                             <template v-if="monitor.type === 'system-service'">
                                 <div class="my-3">
                                     <label for="system-service-mode" class="form-label">Target Type</label>
-                                    <select id="system-service-mode" v-model="systemServiceMode" class="form-select mb-3">
+                                    <select
+                                        id="system-service-mode"
+                                        v-model="systemServiceMode"
+                                        class="form-select mb-3"
+                                    >
                                         <option value="service">System Service</option>
                                         <option value="pm2">PM2 Process</option>
                                     </select>
 
                                     <template v-if="systemServiceMode === 'service'">
                                         <label for="system-service-platform" class="form-label">Platform</label>
-                                        <select id="system-service-platform" v-model="systemServicePlatform" class="form-select mb-3">
+                                        <select
+                                            id="system-service-platform"
+                                            v-model="systemServicePlatform"
+                                            class="form-select mb-3"
+                                        >
                                             <option value="linux">Linux</option>
                                             <option value="win32">Windows Server</option>
                                         </select>
 
-                                        <label for="system-service-name" class="form-label">{{ $t("Service Name") }}</label>
+                                        <label for="system-service-name" class="form-label">
+                                            {{ $t("Service Name") }}
+                                        </label>
                                         <input
                                             id="system-service-name"
                                             v-model="systemServiceNameInput"
@@ -1251,7 +1261,9 @@
 
                                     <div class="form-text">
                                         <template v-if="systemServiceMode === 'pm2'">
-                                            PM2 process will be checked using <code>pm2 jlist</code>.
+                                            PM2 process will be checked using
+                                            <code>pm2 jlist</code>
+                                            .
                                         </template>
                                         <template v-else-if="systemServicePlatform === 'linux'">
                                             {{
@@ -1287,8 +1299,13 @@
                                                     <code>pm2 jlist</code>
                                                 </div>
                                                 <div class="text-secondary small">
-                                                    Expected state: <code>online</code>. States <code>stopped</code> and
-                                                    <code>errored</code> are treated as DOWN.
+                                                    Expected state:
+                                                    <code>online</code>
+                                                    . States
+                                                    <code>stopped</code>
+                                                    and
+                                                    <code>errored</code>
+                                                    are treated as DOWN.
                                                 </div>
                                             </div>
                                             <div v-else-if="systemServicePlatform === 'linux'" class="mt-2">
@@ -1312,9 +1329,10 @@
                                                         <template #command>
                                                             <code>
                                                                 (Get-Service -Name '{{
-                                                                    (
-                                                                        systemServiceNameInput || "Dnscache"
-                                                                    ).replaceAll("'", "''")
+                                                                    (systemServiceNameInput || "Dnscache").replaceAll(
+                                                                        "'",
+                                                                        "''"
+                                                                    )
                                                                 }}').Status
                                                             </code>
                                                         </template>
