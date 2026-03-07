@@ -54,6 +54,25 @@
             </div>
         </div>
 
+        <div v-if="settingsLoaded" class="my-4 pt-4">
+            <h5 class="my-4 settings-subheading">{{ $t("Heath Check") }}</h5>
+            <p>{{ $t("HealthCheckDescription") }}</p>
+
+            <div class="my-4">
+                <label for="timezone" class="form-label">
+                    {{ $t("Monitor") }}
+                </label>
+                <select id="timezone" v-model="settings.healthCheckMonitorId" class="form-select">
+                    <option :value="null">
+                        {{ $t("Select") }}
+                    </option>
+                    <option v-for="(monitor, index) in $root.monitorList" :key="index" :value="monitor.id">
+                        {{ monitor.name }}
+                    </option>
+                </select>
+            </div>
+        </div>
+
         <div class="my-4 pt-4">
             <h5 class="my-4 settings-subheading">{{ $t("settingsCertificateExpiry") }}</h5>
             <p>{{ $t("certificationExpiryDescription") }}</p>
