@@ -1,10 +1,10 @@
 <template>
     <div class="mb-3">
         <label for="fluxer-webhook-url" class="form-label">{{ $t("Fluxer Webhook URL") }}</label>
-        <input
+        <HiddenInput
             id="fluxer-webhook-url"
             v-model="$parent.notification.fluxerWebhookUrl"
-            type="text"
+            type="url"
             class="form-control"
             required
             autocomplete="false"
@@ -61,11 +61,13 @@
     </div>
 </template>
 <script>
+import HiddenInput from "../HiddenInput.vue";
 import TemplatedTextarea from "../TemplatedTextarea.vue";
 
 export default {
     components: {
         TemplatedTextarea,
+        HiddenInput,
     },
     mounted() {
         if (!this.$parent.notification.fluxerChannelType) {
