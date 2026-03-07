@@ -140,6 +140,24 @@
                         </li>
                     </ul>
                 </div>
+                <div v-if="filterState.tags?.length >= 2" class="tag-mode-container">
+                    <div class="tag-mode-toggle">
+                        <div
+                            class="mode-item"
+                            :class="{ active: filterState.tagFilterMode === 'and' }"
+                            @click.stop="setTagFilterMode('and')"
+                        >
+                            {{ $t("tagFilterModeAll") }}
+                        </div>
+                        <div
+                            class="mode-item"
+                            :class="{ active: filterState.tagFilterMode === 'or' }"
+                            @click.stop="setTagFilterMode('or')"
+                        >
+                            {{ $t("tagFilterModeAny") }}
+                        </div>
+                    </div>
+                </div>
             </li>
         </template>
     </MonitorListFilterDropdown>
@@ -267,6 +285,26 @@ export default {
                 return monitor.tags.find((monitorTag) => monitorTag.tag_id === tag.id);
             }).length;
         },
+        /**
+         * Set the tag filter mode (AND/OR)
+         * @param {string} mode "and" or "or"
+         * @returns {void}
+         */
+        setTagFilterMode(mode) {
+            let newFilter = {
+                ...this.filterState,
+                tagFilterMode: mode,
+            };
+            this.$emit("updateFilter", newFilter);
+        },
+        /**
+         * Toggle the tag filter mode between AND and OR
+         * @returns {void}
+         */
+        toggleTagFilterMode() {
+            const nextMode = this.filterState.tagFilterMode === "and" ? "or" : "and";
+            this.setTagFilterMode(nextMode);
+        },
     },
 };
 </script>
@@ -353,5 +391,63 @@ export default {
 .tags-dropdown-scroll {
     max-height: min(50vh, 320px);
     overflow-y: auto;
+}
+
+.tag-mode-container {
+    padding: 8px 22px;
+    border-top: 1px solid #eee;
+    margin-top: 4px;
+
+    .dark & {
+        border-top-color: $dark-border-color;
+    }
+}
+
+.tag-mode-toggle {
+    display: flex;
+    border-radius: 50rem;
+    overflow: hidden;
+    border: 1px solid #ced4da;
+
+    .dark & {
+        border-color: $dark-border-color;
+    }
+}
+
+.mode-item {
+    flex: 1;
+    text-align: center;
+    font-size: 11px;
+    padding: 5px 8px;
+    cursor: pointer;
+    font-weight: 600;
+    color: #6c757d;
+    transition: all 0.15s ease;
+    user-select: none;
+
+    &.active {
+        background-color: $highlight-white;
+        color: $primary;
+
+        .dark & {
+            background-color: rgba(92, 221, 139, 0.1);
+        }
+    }
+
+    &:first-child {
+        border-right: 1px solid #ced4da;
+
+        .dark & {
+            border-right-color: $dark-border-color;
+        }
+    }
+
+    &:hover:not(.active) {
+        background-color: #f8f9fa;
+
+        .dark & {
+            background-color: $dark-bg2;
+        }
+    }
 }
 </style>
