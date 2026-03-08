@@ -1005,11 +1005,11 @@ class Monitor extends BeanModel {
 
             bean.retries = retries;
 
-            // Auto-disable maintenance: end when service is confirmed UP.
-            // Skip the first beat (lastActualStatus === null) so maintenance doesn't
-            // end on the same heartbeat cycle it was created.
+            // Auto-disable maintenance: end when service recovers (DOWN → UP).
+            // Requires at least one DOWN beat before auto-disabling, so maintenance
+            // stays active if the service was never actually down.
             if (pendingAutoDisable && pendingAutoDisable.length > 0) {
-                if (bean.status === UP && lastActualStatus !== null) {
+                if (bean.status === UP && lastActualStatus !== null && lastActualStatus !== UP) {
                     const server = UptimeKumaServer.getInstance();
                     for (const maintenance of pendingAutoDisable) {
                         log.info(
@@ -1725,27 +1725,6 @@ class Monitor extends BeanModel {
                 SELECT maintenance_id FROM monitor_maintenance
                 WHERE monitor_id = ?
             )
-            AND active = 1
-        `,
-            [monitorID]
-        );
-    }
-
-    /**
-     * Get the active quick maintenance (manual + auto_disable_on_up) for a monitor
-     * @param {number} monitorID The monitor ID
-     * @returns {Promise<object|null>} The maintenance bean or null
-     */
-    static async getActiveQuickMaintenance(monitorID) {
-        return await R.findOne(
-            "maintenance",
-            `
-            id IN (
-                SELECT maintenance_id FROM monitor_maintenance
-                WHERE monitor_id = ?
-            )
-            AND strategy = 'manual'
-            AND auto_disable_on_up = 1
             AND active = 1
         `,
             [monitorID]
