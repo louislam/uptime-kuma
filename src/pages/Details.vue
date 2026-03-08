@@ -124,11 +124,7 @@
                         <font-awesome-icon icon="wrench" />
                         {{ $t("quickMaintenance") }}
                     </button>
-                    <button
-                        v-if="monitor.maintenance"
-                        class="btn btn-warning"
-                        @click="endMaintenance"
-                    >
+                    <button v-if="monitor.maintenance" class="btn btn-warning" @click="endMaintenance">
                         <font-awesome-icon icon="wrench" />
                         {{ $t("endMaintenance") }}
                     </button>

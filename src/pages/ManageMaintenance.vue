@@ -27,7 +27,9 @@
                             <div class="title">{{ item.title }}</div>
                             <div class="status">
                                 {{ $t("maintenanceStatus-" + item.status) }}
-                                <span v-if="item.autoDisableOnUp" class="badge bg-info ms-2">{{ $t("autoDisableOnUp") }}</span>
+                                <span v-if="item.autoDisableOnUp" class="badge bg-info ms-2">
+                                    {{ $t("autoDisableOnUp") }}
+                                </span>
                             </div>
 
                             <MaintenanceTime :maintenance="item" />
