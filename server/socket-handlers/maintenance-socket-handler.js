@@ -109,7 +109,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
                 throw new Error("No active maintenance found for this monitor.");
             }
 
-            // Use the in-memory bean (same reference as maintenanceList) to ensure consistent state
+            // Prefer the in-memory bean so isUnderMaintenance() sees the change immediately
             let maintenance = server.getMaintenance(dbMaintenance.id);
             if (!maintenance) {
                 maintenance = dbMaintenance;
