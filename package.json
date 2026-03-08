@@ -1,6 +1,6 @@
 {
     "name": "uptime-kuma",
-    "version": "2.1.3",
+    "version": "2.2.0",
     "license": "MIT",
     "repository": {
         "type": "git",
@@ -11,7 +11,7 @@
     },
     "scripts": {
         "lint:js": "eslint --ext \".js,.vue\" --ignore-path .gitignore .",
-        "lint:js-prod": "npm run lint:js -- --max-warnings 0",
+        "lint:js-prod": "npm run lint:js",
         "lint-fix:js": "eslint --ext \".js,.vue\" --fix --ignore-path .gitignore .",
         "lint:style": "stylelint \"**/*.{vue,css,scss}\" --ignore-path .gitignore",
         "lint-fix:style": "stylelint \"**/*.{vue,css,scss}\" --fix --ignore-path .gitignore",
@@ -44,7 +44,7 @@
         "build-docker-pr-test": "docker buildx build -f docker/dockerfile --platform linux/amd64,linux/arm64 -t louislam/uptime-kuma:pr-test2 --target pr-test2 . --push",
         "upload-artifacts": "node extra/release/upload-artifacts.mjs",
         "upload-artifacts-beta": "node extra/release/upload-artifacts-beta.mjs",
-        "setup": "git checkout 2.1.3 && npm ci --omit dev --no-audit && npm run download-dist",
+        "setup": "git checkout 2.2.0 && npm ci --omit dev --no-audit && npm run download-dist",
         "download-dist": "node extra/download-dist.js",
         "mark-as-nightly": "node extra/mark-as-nightly.js",
         "reset-password": "node extra/reset-password.js",
@@ -189,6 +189,7 @@
         "eslint-config-prettier": "^10.1.8",
         "eslint-plugin-jsdoc": "~46.4.6",
         "eslint-plugin-vue": "~8.7.1",
+        "eslint-plugin-vue-scoped-css": "~2.7.2",
         "favico.js": "~0.3.10",
         "get-port-please": "^3.2.0",
         "node-ssh": "~13.1.0",
@@ -224,12 +225,5 @@
         "vuedraggable": "~4.1.0",
         "wait-on": "^7.2.0",
         "whatwg-url": "~12.0.1"
-    },
-    "overrides": {
-        "@aws-sdk/credential-providers": "npm:useless-module@1.0.0",
-        "tedious": {
-            "@azure/identity": "npm:useless-module@1.0.0",
-            "@azure/keyvault-keys": "npm:useless-module@1.0.0"
-        }
     }
 }
