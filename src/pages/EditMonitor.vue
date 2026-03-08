@@ -52,7 +52,7 @@
                                             "
                                             value="system-service"
                                         >
-                                            {{ $t("System Service") }} / PM2
+                                            {{ $t("System Service / PM2") }}
                                         </option>
                                         <option value="real-browser">
                                             HTTP(s) - Browser Engine (Chrome/Chromium) (Beta)
