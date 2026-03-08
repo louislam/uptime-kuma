@@ -1198,7 +1198,9 @@
                                     </select>
 
                                     <template v-if="systemServiceMode === 'service'">
-                                        <label for="system-service-platform" class="form-label">{{ $t("Platform") }}</label>
+                                        <label for="system-service-platform" class="form-label">
+                                            {{ $t("Platform") }}
+                                        </label>
                                         <select
                                             id="system-service-platform"
                                             v-model="systemServicePlatform"
@@ -1223,7 +1225,9 @@
 
                                     <template v-else>
                                         <div class="d-flex justify-content-between align-items-center">
-                                            <label for="pm2-process-name" class="form-label mb-0">{{ $t("PM2 Process") }}</label>
+                                            <label for="pm2-process-name" class="form-label mb-0">
+                                                {{ $t("PM2 Process") }}
+                                            </label>
                                             <button
                                                 class="btn btn-outline-secondary btn-sm"
                                                 type="button"
