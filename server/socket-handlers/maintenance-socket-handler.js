@@ -4,6 +4,7 @@ const { R } = require("redbean-node");
 const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const Maintenance = require("../model/maintenance");
+const Monitor = require("../model/monitor");
 const server = UptimeKumaServer.getInstance();
 
 /**
@@ -34,6 +35,100 @@ module.exports.maintenanceSocketHandler = (socket) => {
                 msgi18n: true,
                 maintenanceID,
             });
+        } catch (e) {
+            callback({
+                ok: false,
+                msg: e.message,
+            });
+        }
+    });
+
+    // Quick maintenance: one-click from monitor detail page
+    socket.on("quickMaintenance", async (monitorID, callback) => {
+        try {
+            checkLogin(socket);
+
+            let monitor = await R.findOne("monitor", " id = ? AND user_id = ? ", [monitorID, socket.userID]);
+            if (!monitor) {
+                throw new Error("Monitor not found.");
+            }
+
+            if (await Monitor.isUnderMaintenance(monitorID)) {
+                throw new Error("Monitor is already under maintenance.");
+            }
+
+            let bean = R.dispense("maintenance");
+            bean.title = "Quick maintenance: " + monitor.name;
+            bean.description = "";
+            bean.strategy = "manual";
+            bean.active = true;
+            bean.auto_disable_on_up = true;
+            bean.user_id = socket.userID;
+
+            let maintenanceID = await R.store(bean);
+
+            let monitorMaintenance = R.dispense("monitor_maintenance");
+            monitorMaintenance.monitor_id = monitorID;
+            monitorMaintenance.maintenance_id = maintenanceID;
+            await R.store(monitorMaintenance);
+
+            server.maintenanceList[maintenanceID] = bean;
+            await bean.run(true);
+
+            apicache.clear();
+
+            callback({
+                ok: true,
+                msg: "maintenanceStarted",
+                msgi18n: true,
+                maintenanceID,
+            });
+
+            await server.sendMaintenanceList(socket);
+            await server.sendUpdateMonitorIntoList(socket, monitorID);
+        } catch (e) {
+            callback({
+                ok: false,
+                msg: e.message,
+            });
+        }
+    });
+
+    // End maintenance for a specific monitor
+    socket.on("endMaintenance", async (monitorID, callback) => {
+        try {
+            checkLogin(socket);
+
+            let monitor = await R.findOne("monitor", " id = ? AND user_id = ? ", [monitorID, socket.userID]);
+            if (!monitor) {
+                throw new Error("Monitor not found.");
+            }
+
+            const dbMaintenance = await Monitor.getActiveMaintenance(monitorID);
+            if (!dbMaintenance) {
+                throw new Error("No active maintenance found for this monitor.");
+            }
+
+            // Use the in-memory bean (same reference as maintenanceList) to ensure consistent state
+            let maintenance = server.getMaintenance(dbMaintenance.id);
+            if (!maintenance) {
+                maintenance = dbMaintenance;
+            }
+
+            maintenance.active = false;
+            await R.store(maintenance);
+            maintenance.stop();
+
+            apicache.clear();
+
+            callback({
+                ok: true,
+                msg: "maintenanceEnded",
+                msgi18n: true,
+            });
+
+            await server.sendMaintenanceList(socket);
+            await server.sendUpdateMonitorIntoList(socket, monitorID);
         } catch (e) {
             callback({
                 ok: false,
