@@ -1187,25 +1187,25 @@
 
                             <template v-if="monitor.type === 'system-service'">
                                 <div class="my-3">
-                                    <label for="system-service-mode" class="form-label">Target Type</label>
+                                    <label for="system-service-mode" class="form-label">{{ $t("Target Type") }}</label>
                                     <select
                                         id="system-service-mode"
                                         v-model="systemServiceMode"
                                         class="form-select mb-3"
                                     >
-                                        <option value="service">System Service</option>
-                                        <option value="pm2">PM2 Process</option>
+                                        <option value="service">{{ $t("System Service") }}</option>
+                                        <option value="pm2">{{ $t("PM2 Process") }}</option>
                                     </select>
 
                                     <template v-if="systemServiceMode === 'service'">
-                                        <label for="system-service-platform" class="form-label">Platform</label>
+                                        <label for="system-service-platform" class="form-label">{{ $t("Platform") }}</label>
                                         <select
                                             id="system-service-platform"
                                             v-model="systemServicePlatform"
                                             class="form-select mb-3"
                                         >
-                                            <option value="linux">Linux</option>
-                                            <option value="win32">Windows Server</option>
+                                            <option value="linux">{{ $t("Linux") }}</option>
+                                            <option value="win32">{{ $t("Windows Server") }}</option>
                                         </select>
 
                                         <label for="system-service-name" class="form-label">
@@ -1223,14 +1223,14 @@
 
                                     <template v-else>
                                         <div class="d-flex justify-content-between align-items-center">
-                                            <label for="pm2-process-name" class="form-label mb-0">PM2 Process</label>
+                                            <label for="pm2-process-name" class="form-label mb-0">{{ $t("PM2 Process") }}</label>
                                             <button
                                                 class="btn btn-outline-secondary btn-sm"
                                                 type="button"
                                                 :disabled="pm2ProcessLoading"
                                                 @click="loadPM2ProcessList"
                                             >
-                                                {{ pm2ProcessLoading ? "Loading..." : "Refresh" }}
+                                                {{ pm2ProcessLoading ? $t("Loading...") : $t("Refresh") }}
                                             </button>
                                         </div>
                                         <select
@@ -1240,7 +1240,7 @@
                                             class="form-select mt-2"
                                             required
                                         >
-                                            <option disabled value="">Select PM2 process</option>
+                                            <option disabled value="">{{ $t("Select PM2 process") }}</option>
                                             <option v-for="item in pm2ProcessOptions" :key="item.id" :value="item.id">
                                                 {{ item.name }} (#{{ item.id }}) - {{ item.status }}
                                             </option>

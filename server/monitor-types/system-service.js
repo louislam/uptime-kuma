@@ -110,7 +110,7 @@ class SystemServiceMonitorType extends MonitorType {
             const command = isWindows ? process.env.ComSpec || "cmd.exe" : "pm2";
             const args = isWindows ? ["/d", "/s", "/c", "pm2 jlist"] : ["jlist"];
 
-            this.execFile(command, args, { timeout: 5000 }, (error, stdout, stderr) => {
+            this.execFile(command, args, { timeout: 5000, maxBuffer: 10 * 1024 * 1024 }, (error, stdout, stderr) => {
                 if (error) {
                     let output = (stderr || "").toString().trim();
                     if (output.length > 200) {

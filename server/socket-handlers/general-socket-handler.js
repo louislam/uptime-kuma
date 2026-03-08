@@ -78,11 +78,16 @@ module.exports.generalSocketHandler = (socket, server) => {
             const command = isWindows ? process.env.ComSpec || "cmd.exe" : "pm2";
             const args = isWindows ? ["/d", "/s", "/c", "pm2 jlist"] : ["jlist"];
 
-            execFile(command, args, { timeout: 5000 }, (error, stdout, stderr) => {
+            execFile(command, args, { timeout: 5000, maxBuffer: 10 * 1024 * 1024 }, (error, stdout, stderr) => {
                 if (error) {
+                    let output = (stderr || "").toString().trim();
+                    if (output.length > 200) {
+                        output = output.substring(0, 200) + "...";
+                    }
+                    const details = output || error.code || error.message;
                     callback({
                         ok: false,
-                        msg: "Unable to query PM2 process list.",
+                        msg: `Unable to query PM2 process list (${details}).`,
                     });
                     return;
                 }
