@@ -1578,5 +1578,14 @@
     "360messengerWayToWriteRecipient": "Insira um ou mais números de telefone no formato internacional, sem o sinal de mais inicial (por exemplo, {0}). Separe vários números com vírgulas.",
     "360messengerErrorApi": "Não foi possível carregar a lista de grupos do WhatsApp (Erro {statusCode}: {message}).",
     "GlobalpingMultipleLocationsError": "Não é possível realizar várias localizações; utilize uma única localização para cada monitor.",
-    "GlobalpingLocationDescription": "O campo de localização aceita continentes, países, regiões, cidades, ASNs, ISPs ou regiões de nuvem. Você pode combinar filtros com {plus} (por exemplo, {amazonPlusGermany} ou {comcastPlusCalifornia}). Se a latência for uma métrica importante, use filtros para restringir a localização a uma região pequena para evitar picos e, para maior estabilidade, defina o filtro {datacenter}. {fullDocs}."
+    "GlobalpingLocationDescription": "O campo de localização aceita continentes, países, regiões, cidades, ASNs, ISPs ou regiões de nuvem. Você pode combinar filtros com {plus} (por exemplo, {amazonPlusGermany} ou {comcastPlusCalifornia}). Se a latência for uma métrica importante, use filtros para restringir a localização a uma região pequena para evitar picos e, para maior estabilidade, defina o filtro {datacenter}. {fullDocs}.",
+    "fluxerMessageFormat": "Formato da mensagem",
+    "fluxerMessageFormatNormal": "Normal (rich embeds)",
+    "fluxerMessageFormatMinimalist": "Minimalista (status curto)",
+    "fluxerUseMessageTemplate": "Use um modelo de mensagem personalizado",
+    "fluxerMessageTemplate": "Modelo de mensagem",
+    "fluxerMessageFormatCustom": "Modelo personalizado",
+    "fluxerUseMessageTemplateDescription": "Se ativada, a mensagem será enviada usando um modelo personalizado (LiquidJS). Deixe em branco para usar o formato padrão do Uptime Kuma.",
+    "Fluxer Webhook URL": "URL do Webhook do Fluxer",
+    "wayToGetFluxerURL": "Você pode obter essa informação acessando as configurações do canal de destino > Webhooks > Criar Webhook > Copiar URL do Webhook."
 }
