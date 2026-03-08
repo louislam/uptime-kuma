@@ -5,7 +5,6 @@
             id="fluxer-webhook-url"
             v-model="$parent.notification.fluxerWebhookUrl"
             type="url"
-            class="form-control"
             required
             autocomplete="false"
         />
