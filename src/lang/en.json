@@ -1506,5 +1506,12 @@
     "teltonikaModem": "Modem Id",
     "teltonikaModemHelptext": "The id of the SMS modem, must be in the format {0}. Refer to https://developers.teltonika-networks.com/reference/ for guidance.",
     "teltonikaPhoneNumber": "Phone number",
-    "teltonikaPhoneNumberHelptext": "The number must be in the international format {0}, {1}. Only one number is allowed."
+    "teltonikaPhoneNumberHelptext": "The number must be in the international format {0}, {1}. Only one number is allowed.",
+    "Notifications": "Notifications",
+    "No notifications": "No notifications",
+    "Clear all": "Clear all",
+    "Clear all notifications?": "Are you sure you want to clear all notifications? This action cannot be undone.",
+    "Dismiss": "Dismiss",
+    "unread": "unread",
+    "User menu": "User menu"
 }

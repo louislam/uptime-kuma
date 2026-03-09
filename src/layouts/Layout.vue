@@ -18,7 +18,7 @@
                 to="/dashboard"
                 class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none"
             >
-                <object class="bi me-2 ms-4" width="40" height="40" data="/icon.svg" />
+                <img class="bi me-2 ms-4" width="40" height="40" src="/icon.svg" alt="Uptime Kuma" />
                 <span class="fs-4 title">{{ $t("Uptime Kuma") }}</span>
             </router-link>
 
@@ -45,26 +45,36 @@
                         {{ $t("Dashboard") }}
                     </router-link>
                 </li>
+                <li v-if="$root.loggedIn" class="nav-item me-2">
+                    <NotificationBell />
+                </li>
                 <li v-if="$root.loggedIn" class="nav-item">
                     <div class="dropdown dropdown-profile-pic">
-                        <div class="nav-link" data-bs-toggle="dropdown">
+                        <div
+                            class="nav-link"
+                            data-bs-toggle="dropdown"
+                            role="button"
+                            aria-haspopup="true"
+                            :aria-label="$t('User menu')"
+                            tabindex="0"
+                        >
                             <div class="profile-pic">{{ $root.usernameFirstChar }}</div>
                             <font-awesome-icon icon="angle-down" />
                         </div>
 
                         <!-- Header's Dropdown Menu -->
-                        <ul class="dropdown-menu">
+                        <ul class="dropdown-menu" role="menu">
                             <!-- Username -->
                             <li>
                                 <i18n-t
-                                    v-if="$root.username != null"
+                                    v-if="$root.username !== null"
                                     tag="span"
                                     keypath="signedInDisp"
                                     class="dropdown-item-text"
                                 >
                                     <strong>{{ $root.username }}</strong>
                                 </i18n-t>
-                                <span v-if="$root.username == null" class="dropdown-item-text">
+                                <span v-if="$root.username === null" class="dropdown-item-text">
                                     {{ $t("signedInDispDisabled") }}
                                 </span>
                             </li>
@@ -76,7 +86,7 @@
                                 <router-link
                                     to="/maintenance"
                                     class="dropdown-item"
-                                    :class="{ active: $route.path.includes('manage-maintenance') }"
+                                    :class="{ active: $route.path.includes('maintenance') }"
                                 >
                                     <font-awesome-icon icon="wrench" />
                                     {{ $t("Maintenance") }}
@@ -118,16 +128,17 @@
         </header>
 
         <!-- Mobile header -->
-        <header v-else class="d-flex flex-wrap justify-content-center pt-2 pb-2 mb-3">
+        <header v-else class="d-flex flex-wrap justify-content-between align-items-center pt-2 pb-2 mb-3 px-3">
             <router-link to="/dashboard" class="d-flex align-items-center text-dark text-decoration-none">
-                <object class="bi" width="40" height="40" data="/icon.svg" />
-                <span class="fs-4 title ms-2">Uptime Kuma</span>
+                <img class="bi" width="40" height="40" src="/icon.svg" alt="Uptime Kuma" />
+                <span class="fs-4 title ms-2">{{ $t("Uptime Kuma") }}</span>
             </router-link>
+            <NotificationBell v-if="$root.loggedIn" />
         </header>
 
         <main>
             <router-view v-if="$root.loggedIn" />
-            <Login v-if="!$root.loggedIn && $root.allowLoginDialog" />
+            <Login v-else-if="!$root.loggedIn && $root.allowLoginDialog" />
         </main>
 
         <!-- Mobile Only -->
@@ -158,6 +169,7 @@
             v-if="numActiveToasts != 0"
             type="button"
             class="btn btn-normal clear-all-toast-btn"
+            :aria-label="$t('Clear all')"
             @click="clearToasts"
         >
             <font-awesome-icon icon="times" />
@@ -167,13 +179,14 @@
 
 <script>
 import Login from "../components/Login.vue";
+import NotificationBell from "../components/NotificationBell.vue";
 import compareVersions from "compare-versions";
 import { useToast } from "vue-toastification";
-const toast = useToast();
 
 export default {
     components: {
         Login,
+        NotificationBell,
     },
 
     data() {
@@ -181,6 +194,7 @@ export default {
             toastContainer: null,
             numActiveToasts: 0,
             toastContainerObserver: null,
+            toast: null,
         };
     },
 
@@ -195,34 +209,49 @@ export default {
 
         hasNewVersion() {
             if (this.$root.info.latestVersion && this.$root.info.version) {
-                return compareVersions(this.$root.info.latestVersion, this.$root.info.version) >= 1;
+                try {
+                    return compareVersions(this.$root.info.latestVersion, this.$root.info.version) >= 1;
+                } catch (err) {
+                    console.warn("Invalid version format:", err);
+                    return false;
+                }
             } else {
                 return false;
             }
         },
     },
 
-    watch: {},
-
     mounted() {
-        this.toastContainer = document.querySelector(".bottom-right.toast-container");
+        // Initialize toast inside component lifecycle
+        this.toast = useToast();
 
-        // Watch the number of active toasts
-        this.toastContainerObserver = new MutationObserver((mutations) => {
-            for (const mutation of mutations) {
-                if (mutation.type === "childList") {
-                    this.numActiveToasts = mutation.target.children.length;
-                }
+        // Retry mechanism for toast container
+        const initToastObserver = () => {
+            this.toastContainer = document.querySelector(".bottom-right.toast-container");
+
+            if (this.toastContainer !== null) {
+                // Watch the number of active toasts
+                this.toastContainerObserver = new MutationObserver((mutations) => {
+                    for (const mutation of mutations) {
+                        if (mutation.type === "childList") {
+                            this.numActiveToasts = mutation.target.children.length;
+                        }
+                    }
+                });
+                this.toastContainerObserver.observe(this.toastContainer, { childList: true });
+            } else {
+                // Retry after a short delay if container not found
+                setTimeout(initToastObserver, 100);
             }
-        });
+        };
 
-        if (this.toastContainer != null) {
-            this.toastContainerObserver.observe(this.toastContainer, { childList: true });
-        }
+        this.$nextTick(initToastObserver);
     },
 
     beforeUnmount() {
-        this.toastContainerObserver.disconnect();
+        if (this.toastContainerObserver) {
+            this.toastContainerObserver.disconnect();
+        }
     },
 
     methods: {
@@ -231,7 +260,9 @@ export default {
          * @returns {void}
          */
         clearToasts() {
-            toast.clear();
+            if (this.toast) {
+                this.toast.clear();
+            }
         },
     },
 };
@@ -316,7 +347,7 @@ main {
     color: white;
     position: fixed;
     width: 100%;
-    z-index: 99999;
+    z-index: 9999;
 }
 
 // Profile Pic Button with Dropdown
@@ -417,7 +448,7 @@ main {
     padding: 9px 15px;
     width: 48px;
     box-shadow: 2px 2px 30px rgba(0, 0, 0, 0.2);
-    z-index: 100;
+    z-index: 1000;
 
     .dark & {
         box-shadow: 2px 2px 30px rgba(0, 0, 0, 0.5);
