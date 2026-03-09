@@ -6,17 +6,14 @@ import dayjs from "dayjs";
 import mitt from "mitt";
 
 import { DOWN, MAINTENANCE, PENDING, UP } from "../util.ts";
-import {
-    getDevContainerServerHostname,
-    isDevContainer,
-} from "../util-frontend.js";
+import { getDevContainerServerHostname, isDevContainer } from "../util-frontend.js";
 import { notificationStore } from "../modules/notificationStore.js";
 const toast = useToast();
 
 let socket;
 
 const noSocketIOPages = [
-    /^\/status($|\/)/,  // /status, /status/, /status/** (not /statuses)
+    /^\/status($|\/)/, // /status, /status/, /status/** (not /statuses)
     /^\/$/, //  /
 ];
 
@@ -224,9 +221,15 @@ export default {
                 if (data.important) {
                     if (this.monitorList[data.monitorID] !== undefined) {
                         if (data.status === 0) {
-                            notificationStore.add("error", `[${this.monitorList[data.monitorID].name}] [DOWN] ${data.msg}`);
+                            notificationStore.add(
+                                "error",
+                                `[${this.monitorList[data.monitorID].name}] [DOWN] ${data.msg}`
+                            );
                         } else if (data.status === 1) {
-                            notificationStore.add("success", `[${this.monitorList[data.monitorID].name}] [Up] ${data.msg}`);
+                            notificationStore.add(
+                                "success",
+                                `[${this.monitorList[data.monitorID].name}] [Up] ${data.msg}`
+                            );
                         } else {
                             notificationStore.add("info", `[${this.monitorList[data.monitorID].name}] ${data.msg}`);
                         }
@@ -473,7 +476,7 @@ export default {
          */
         logout() {
             if (socket) {
-                socket.emit("logout", () => { });
+                socket.emit("logout", () => {});
             }
             this.storage().removeItem("token");
             this.socket.token = null;
@@ -556,7 +559,7 @@ export default {
          */
         getMonitorList(callback) {
             if (!callback) {
-                callback = () => { };
+                callback = () => {};
             }
             if (!socket) {
                 return;
@@ -571,7 +574,7 @@ export default {
          */
         getMaintenanceList(callback) {
             if (!callback) {
-                callback = () => { };
+                callback = () => {};
             }
             if (!socket) {
                 return;
@@ -586,7 +589,7 @@ export default {
          */
         getAPIKeyList(callback) {
             if (!callback) {
-                callback = () => { };
+                callback = () => {};
             }
             if (!socket) {
                 return;
@@ -991,7 +994,12 @@ export default {
                     console.log(`Version changed from ${from} to ${to}, reloading... (${this.versionReloadCount}/3)`);
                     window.location.reload();
                 } else {
-                    console.error("Version mismatch reload limit reached. Server version:", to, "Frontend:", this.frontendVersion);
+                    console.error(
+                        "Version mismatch reload limit reached. Server version:",
+                        to,
+                        "Frontend:",
+                        this.frontendVersion
+                    );
                 }
             }
         },

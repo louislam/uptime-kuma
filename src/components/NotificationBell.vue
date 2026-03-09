@@ -17,11 +17,7 @@
 
         <!-- Notification Panel -->
         <Transition name="slide-fade">
-            <div
-                v-if="isOpen"
-                class="notification-panel"
-                :class="{ 'mobile': isMobile }"
-            >
+            <div v-if="isOpen" class="notification-panel" :class="{ mobile: isMobile }">
                 <!-- Header -->
                 <div class="panel-header">
                     <h3>{{ $t("Notifications") }}</h3>
@@ -62,11 +58,7 @@
                                 <p class="message">{{ notification.message }}</p>
                                 <span class="timestamp">{{ formatTime(notification.timestamp) }}</span>
                             </div>
-                            <button
-                                class="btn-dismiss"
-                                :title="$t('Dismiss')"
-                                @click="remove(notification.id)"
-                            >
+                            <button class="btn-dismiss" :title="$t('Dismiss')" @click="remove(notification.id)">
                                 <font-awesome-icon icon="times" />
                             </button>
                         </div>
@@ -77,11 +69,7 @@
 
         <!-- Mobile Overlay -->
         <Transition name="fade">
-            <div
-                v-if="isOpen && isMobile"
-                class="overlay"
-                @click="closePanel"
-            />
+            <div v-if="isOpen && isMobile" class="overlay" @click="closePanel" />
         </Transition>
     </div>
 </template>
@@ -315,11 +303,22 @@ export default {
 }
 
 @keyframes bell-shake {
-    0%, 100% { transform: rotate(0); }
-    20% { transform: rotate(15deg); }
-    40% { transform: rotate(-15deg); }
-    60% { transform: rotate(10deg); }
-    80% { transform: rotate(-10deg); }
+    0%,
+    100% {
+        transform: rotate(0);
+    }
+    20% {
+        transform: rotate(15deg);
+    }
+    40% {
+        transform: rotate(-15deg);
+    }
+    60% {
+        transform: rotate(10deg);
+    }
+    80% {
+        transform: rotate(-10deg);
+    }
 }
 
 .notification-panel {

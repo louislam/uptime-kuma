@@ -35,9 +35,7 @@ const state = reactive({
 const listeners = new Set();
 
 // Computed refs
-const unreadCount = computed(
-    () => state.notifications.filter(n => !n.read).length
-);
+const unreadCount = computed(() => state.notifications.filter((n) => !n.read).length);
 
 /**
  * Add a notification to the store
@@ -64,9 +62,7 @@ function add(type, message, { ttl = null } = {}) {
 
     // Check for duplicates within time window
     const isDuplicate = state.notifications.some(
-        n => n.message === message
-            && n.type === type
-            && (Date.now() - n.timestamp) < DUPLICATE_WINDOW_MS
+        (n) => n.message === message && n.type === type && Date.now() - n.timestamp < DUPLICATE_WINDOW_MS
     );
 
     if (isDuplicate) {
@@ -96,7 +92,7 @@ function add(type, message, { ttl = null } = {}) {
     }
 
     // Notify listeners
-    listeners.forEach(callback => {
+    listeners.forEach((callback) => {
         try {
             callback(notification);
         } catch (err) {
@@ -153,7 +149,7 @@ function info(message, options) {
  * @returns {void}
  */
 function markAsRead(id) {
-    const notification = state.notifications.find(n => n.id === id);
+    const notification = state.notifications.find((n) => n.id === id);
     if (notification) {
         notification.read = true;
     }
@@ -164,7 +160,7 @@ function markAsRead(id) {
  * @returns {void}
  */
 function markAllAsRead() {
-    state.notifications.forEach(n => {
+    state.notifications.forEach((n) => {
         n.read = true;
     });
 }
@@ -175,7 +171,7 @@ function markAllAsRead() {
  * @returns {void}
  */
 function remove(id) {
-    const index = state.notifications.findIndex(n => n.id === id);
+    const index = state.notifications.findIndex((n) => n.id === id);
     if (index !== -1) {
         state.notifications.splice(index, 1);
     }
@@ -196,8 +192,8 @@ function clearAll() {
  * @returns {Notification[]} The cleared notifications
  */
 function clearRead() {
-    const read = state.notifications.filter(n => n.read);
-    const unread = state.notifications.filter(n => !n.read);
+    const read = state.notifications.filter((n) => n.read);
+    const unread = state.notifications.filter((n) => !n.read);
     state.notifications.splice(0, state.notifications.length, ...unread);
     return read;
 }

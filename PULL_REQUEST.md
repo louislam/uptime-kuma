@@ -10,10 +10,12 @@ In this pull request, the following changes are made:
 - Fixed several existing issues: status route regex matching, localStorage access patterns, and memory optimization for heartbeatList
 
 **New Files:**
+
 - `src/components/NotificationBell.vue` - Bell icon component with dropdown notification panel
 - `src/modules/notificationStore.js` - Centralized reactive notification store
 
 **Modified Files:**
+
 - `src/layouts/Layout.vue` - Added NotificationBell component, improved accessibility
 - `src/mixins/socket.js` - Replaced toasts with notificationStore, fixed multiple issues
 - `src/icon.js` - Added bell icon
@@ -41,13 +43,14 @@ In this pull request, the following changes are made:
 
 ### Desktop - Notification Bell Icon with Badge
 
-| State              | Screenshot                |
-| ------------------ | ------------------------- |
-| Bell Icon (unread) | <img width="486" height="303" alt="Bell icon with unread notifications badge" src="https://github.com/user-attachments/assets/42c70c5c-6f25-4237-b387-c1dba9c0362c" /> |
+| State              | Screenshot                                                                                                                                                                 |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Bell Icon (unread) | <img width="486" height="303" alt="Bell icon with unread notifications badge" src="https://github.com/user-attachments/assets/42c70c5c-6f25-4237-b387-c1dba9c0362c" />     |
 | Notification Panel | <img width="477" height="223" alt="Notification panel open showing notifications" src="https://github.com/user-attachments/assets/a0010dba-4ba6-41fd-a34a-6df14a6ffc88" /> |
-| Empty State        | <img width="454" height="205" alt="No notifications empty state" src="https://github.com/user-attachments/assets/5e5b3e62-7f44-4433-ad66-c90ecdecd837" /> |
+| Empty State        | <img width="454" height="205" alt="No notifications empty state" src="https://github.com/user-attachments/assets/5e5b3e62-7f44-4433-ad66-c90ecdecd837" />                  |
 
 **Features shown:**
+
 - Persistent notification bell icon in header next to user menu
 - Unread count badge (shows up to 99+)
 - Shake animation on new notifications (visible in live testing)
