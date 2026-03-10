@@ -56,6 +56,25 @@
                 </div>
 
                 <div class="my-3">
+                    <label for="heartbeat-bar-days" class="form-label">{{ $t("Heartbeat Bar Days") }}</label>
+                    <input
+                        id="heartbeat-bar-days"
+                        v-model.number="config.heartbeatBarDays"
+                        type="number"
+                        class="form-control"
+                        min="0"
+                        max="365"
+                        data-testid="heartbeat-bar-days-input"
+                    />
+                    <div v-if="config.heartbeatBarDays === 0" class="form-text">
+                        {{ $t("Status page will show last beats", [100]) }}
+                    </div>
+                    <div v-else class="form-text">
+                        {{ $t("Status page shows heartbeat history days", [config.heartbeatBarDays]) }}
+                    </div>
+                </div>
+
+                <div class="my-3">
                     <label for="switch-theme" class="form-label">{{ $t("Theme") }}</label>
                     <select id="switch-theme" v-model="config.theme" class="form-select" data-testid="theme-select">
                         <option value="auto">{{ $t("Auto") }}</option>
@@ -492,6 +511,7 @@
                     :edit-mode="enableEditMode"
                     :show-tags="config.showTags"
                     :show-certificate-expiry="config.showCertificateExpiry"
+                    :heartbeat-bar-days="config.heartbeatBarDays || 0"
                     :show-only-last-heartbeat="config.showOnlyLastHeartbeat"
                 />
             </div>
@@ -689,6 +709,7 @@ export default {
             enableEditIncidentMode: false,
             hasToken: false,
             config: {
+                heartbeatBarDays: 0,
                 analyticsType: null,
             },
             selectedMonitor: null,
@@ -907,6 +928,16 @@ export default {
                     if (res.ok) {
                         this.config = res.config;
 
+                        if (
+                            this.config.heartbeatBarDays === undefined ||
+                            this.config.heartbeatBarDays === null ||
+                            this.config.heartbeatBarDays === ""
+                        ) {
+                            this.config.heartbeatBarDays = 0;
+                        } else {
+                            this.config.heartbeatBarDays = parseInt(this.config.heartbeatBarDays, 10) || 0;
+                        }
+
                         if (!this.config.customCSS) {
                             this.config.customCSS = "body {\n" + "  \n" + "}\n";
                         }
@@ -984,37 +1015,34 @@ export default {
             this.slug = "default";
         }
 
-        this.getData()
-            .then((res) => {
-                this.config = res.data.config;
+        Promise.all([this.getData(), this.editMode ? Promise.resolve() : this.loadHeartbeatData()])
+            .then(([configRes]) => {
+                this.config = configRes.data.config;
 
                 if (!this.config.domainNameList) {
                     this.config.domainNameList = [];
+                }
+
+                if (
+                    this.config.heartbeatBarDays === undefined ||
+                    this.config.heartbeatBarDays === null ||
+                    this.config.heartbeatBarDays === ""
+                ) {
+                    this.config.heartbeatBarDays = 0;
+                } else {
+                    this.config.heartbeatBarDays = parseInt(this.config.heartbeatBarDays, 10) || 0;
                 }
 
                 if (this.config.icon) {
                     this.imgDataUrl = this.config.icon;
                 }
 
-                this.maintenanceList = res.data.maintenanceList;
-                this.$root.publicGroupList = res.data.publicGroupList;
+                this.incident = configRes.data.incident;
+                this.maintenanceList = configRes.data.maintenanceList;
+                this.$root.publicGroupList = configRes.data.publicGroupList;
 
                 this.loading = false;
 
-                feedInterval = setInterval(
-                    () => {
-                        this.updateHeartbeatList();
-                    },
-                    Math.max(5, this.config.autoRefreshInterval) * 1000
-                );
-
-                this.incident = res.data.incident;
-                this.maintenanceList = res.data.maintenanceList;
-                this.$root.publicGroupList = res.data.publicGroupList;
-
-                this.loading = false;
-
-                // Configure auto-refresh loop
                 feedInterval = setInterval(
                     () => {
                         this.updateHeartbeatList();
@@ -1031,7 +1059,6 @@ export default {
                 console.log(error);
             });
 
-        this.updateHeartbeatList();
         this.loadIncidentHistory();
 
         // Go to edit page if ?edit present
@@ -1068,13 +1095,16 @@ export default {
         },
 
         /**
-         * Update the heartbeat list and update favicon if necessary
-         * @returns {void}
+         * Load heartbeat data from API
+         * @param {number|null} maxBeats Maximum number of beats to request from server
+         * @returns {Promise} Promise that resolves when data is loaded
          */
-        updateHeartbeatList() {
-            // If editMode, it will use the data from websocket.
-            if (!this.editMode) {
-                axios.get("/api/status-page/heartbeat/" + this.slug).then((res) => {
+        loadHeartbeatData(maxBeats = null) {
+            return axios
+                .get("/api/status-page/heartbeat/" + this.slug, {
+                    params: { maxBeats },
+                })
+                .then((res) => {
                     const { heartbeatList, uptimeList } = res.data;
 
                     this.$root.heartbeatList = heartbeatList;
@@ -1098,6 +1128,26 @@ export default {
                     this.lastUpdateTime = dayjs();
                     this.updateUpdateTimer();
                 });
+        },
+
+        /**
+         * Reload heartbeat data with a specific maxBeats count
+         * Called by HeartbeatBar when the bar is resized in configured days mode
+         * @param {number} maxBeats Maximum number of beats to request
+         * @returns {void}
+         */
+        reloadHeartbeatData(maxBeats) {
+            this.loadHeartbeatData(maxBeats);
+        },
+
+        /**
+         * Update the heartbeat list and update favicon if necessary
+         * @returns {void}
+         */
+        updateHeartbeatList() {
+            // If editMode, it will use the data from websocket.
+            if (!this.editMode) {
+                this.loadHeartbeatData();
             }
         },
 
