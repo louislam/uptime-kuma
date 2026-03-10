@@ -51,7 +51,7 @@
             <p>
                 {{
                     $t(
-                        'A list of Notification Actions can be found in Home Assistant under "Developer Tools > Actions". Search for "notify" to find your actions. Enter only the part after "notify.", e.g. for the action "notify.mobile_app_xyz" enter "mobile_app_xyz". For built-in mobile notifications, look for "Send a notification via mobile_app_xyz" (not "Send a notification").'
+                        'home_assistent_notification_action_helptext'
                     )
                 }}
             </p>
