@@ -1611,5 +1611,14 @@
     "360messengerWayToWriteRecipient": "Saisissez un ou plusieurs numéros de téléphone au format international sans signe plus (par exemple : {0}). Séparez les numéros par des virgules.",
     "monitorTypeSpecial": "Spécial",
     "monitorTypeGameServer": "Serveur de jeu",
-    "monitorTypeDatabase": "Sonde de Type base de données"
+    "monitorTypeDatabase": "Sonde de Type base de données",
+    "fluxerMessageFormatNormal": "Normal (intégrations riches)",
+    "fluxerUseMessageTemplate": "Utiliser un modèle de message personnalisé",
+    "Fluxer Webhook URL": "URL du Webhook de Fluxer",
+    "wayToGetFluxerURL": "Vous pouvez obtenir cela en allant dans les paramètres du canal cible > Webhooks > Créer un webhook > Copier l’URL du webhook.",
+    "fluxerMessageFormat": "Format du message",
+    "fluxerMessageFormatCustom": "Modèle personnalisé",
+    "fluxerMessageTemplate": "Modèle de message",
+    "fluxerMessageFormatMinimalist": "Minimalist (statut court",
+    "fluxerUseMessageTemplateDescription": "Si activé, le message sera envoyé en utilisant un modèle personnalisé (LiquidJS). Laissez vide pour utiliser le format Uptime Kuma par défaut."
 }
