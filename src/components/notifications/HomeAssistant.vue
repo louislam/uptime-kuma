@@ -48,7 +48,7 @@
         />
 
         <div class="form-text">
-            <p>{{ $t("home_assistent_notification_action_helptext") }}</p>
+            <p>{{ $t("homeAssistantNotificationActionHelptext") }}</p>
             <p>{{ $t("Automations can optionally be triggered in Home Assistant:") }}</p>
             <p>
                 {{ $t("Trigger type:") }}
