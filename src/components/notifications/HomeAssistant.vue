@@ -38,7 +38,7 @@
     </div>
 
     <div class="mb-3">
-        <label for="notificationService" class="form-label">{{ $t("Notification Service") }}</label>
+        <label for="notificationService" class="form-label">{{ $t("Notification Action") }}</label>
         <input
             id="notificationService"
             v-model="$parent.notification.notificationService"
@@ -51,7 +51,7 @@
             <p>
                 {{
                     $t(
-                        'A list of Notification Services can be found in Home Assistant under "Developer Tools > Services" search for "notification" to find your device/phone name.'
+                        'A list of Notification Actions can be found in Home Assistant under "Developer Tools > Actions". Search for "notify" to find your actions. Enter only the part after "notify.", e.g. for the action "notify.mobile_app_xyz" enter "mobile_app_xyz". For built-in mobile notifications, look for "Send a notification via mobile_app_xyz" (not "Send a notification").'
                     )
                 }}
             </p>
@@ -61,14 +61,14 @@
                 <code>Event</code>
                 <br />
                 {{ $t("Event type:") }}
-                <code>call_service</code>
+                <code>call_action</code>
                 <br />
                 {{ $t("Event data:") }}
             </p>
             <pre>
 domain: notify
-service: mobile_app_my_phone # change to your device name
-service_data:
+action: mobile_app_my_phone # change to your device name
+data:
   title: Uptime Kuma
   data:
     status: 0 # 0=down 1=up
