@@ -55,7 +55,7 @@
                 <code>Event</code>
                 <br />
                 {{ $t("Event type:") }}
-                <code>call_action</code>
+                <code>call_service</code>
                 <br />
                 {{ $t("Event data:") }}
             </p>
