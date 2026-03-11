@@ -33,7 +33,7 @@ class JiraServiceManagement extends NotificationProvider {
             if (heartbeatJSON.status === DOWN) {
                 let data = {
                     message: monitorJSON ? `${textMsg}: ${monitorJSON.name}` : textMsg,
-                    alias: monitorJSON.name,
+                    alias: monitorJSON.notificationEventId || monitorJSON.name,
                     description: msg,
                     source: "Uptime Kuma",
                     priority: `P${priority}`,
@@ -45,7 +45,8 @@ class JiraServiceManagement extends NotificationProvider {
 
             if (heartbeatJSON.status === UP) {
                 // JSM requires getting the alert ID first, then closing by ID
-                const getUrl = `${baseUrl}/alerts/alias?alias=${encodeURIComponent(monitorJSON.name)}`;
+                const getUrl =
+                    `${baseUrl}/alerts/alias?alias=${encodeURIComponent(monitorJSON.notificationEventId || monitorJSON.name)}`;
                 const config = this.getConfig(notification);
 
                 let alertResponse = await axios.get(getUrl, config);

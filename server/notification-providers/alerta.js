@@ -50,7 +50,7 @@ class Alerta extends NotificationProvider {
                         correlate: ["service_up", "service_down"],
                         event: monitorJSON["type"],
                         group: "uptimekuma-" + monitorJSON["type"],
-                        resource: monitorJSON["name"],
+                        resource: monitorJSON.notificationEventId || monitorJSON["name"],
                     },
                     data
                 );

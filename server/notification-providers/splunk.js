@@ -90,7 +90,7 @@ class Splunk extends NotificationProvider {
                 state_message: `[${title}] [${monitorUrl}] ${body}`,
                 entity_display_name: "Uptime Kuma Alert: " + monitorInfo.name,
                 routing_key: notification.pagerdutyIntegrationKey,
-                entity_id: "Uptime Kuma/" + monitorInfo.id,
+                entity_id: "Uptime Kuma/" + (monitorInfo.notificationEventId || monitorInfo.id),
             },
         };
 

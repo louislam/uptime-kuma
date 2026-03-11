@@ -2272,15 +2272,20 @@ class Monitor extends BeanModel {
         const monitorData = [{ id: monitor.id, active: monitor.active, name: monitor.name }];
         const preloadData = await Monitor.preparePreloadData(monitorData);
         const monitorJSON = monitor.toJSON(preloadData, false);
+        const notificationEventId = `ping-threshold-${monitor.id}`;
 
-        monitorJSON.id = `ping-threshold-${monitor.id}`;
         monitorJSON.name = `${monitor.name} [Ping Threshold]`;
+        monitorJSON.monitorID = notificationEventId;
+        monitorJSON.notificationEventId = notificationEventId;
 
         heartbeatJSON.msg = msg;
+        heartbeatJSON.monitorID = notificationEventId;
+        heartbeatJSON.id = notificationEventId;
         heartbeatJSON.status = recovered ? UP : DOWN;
         heartbeatJSON.pingThreshold = threshold;
         heartbeatJSON.originalStatus = bean.status;
         heartbeatJSON.pingThresholdExceeded = !recovered;
+        heartbeatJSON.notificationEventId = notificationEventId;
         heartbeatJSON.timezone = await UptimeKumaServer.getInstance().getTimezone();
         heartbeatJSON.timezoneOffset = UptimeKumaServer.getInstance().getTimezoneOffset();
         heartbeatJSON.localDateTime = dayjs

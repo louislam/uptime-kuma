@@ -145,10 +145,15 @@ describe("Ping Threshold", () => {
 
         assert.strictEqual(calls.length, 1);
         assert.match(calls[0][1], /\[API\] \[High Latency\] 750 ms > 500 ms/);
-        assert.strictEqual(calls[0][2].id, "ping-threshold-1");
+        assert.strictEqual(calls[0][2].id, 1);
         assert.strictEqual(calls[0][2].name, "API [Ping Threshold]");
+        assert.strictEqual(calls[0][2].monitorID, "ping-threshold-1");
+        assert.strictEqual(calls[0][2].notificationEventId, "ping-threshold-1");
+        assert.strictEqual(calls[0][3].monitorID, "ping-threshold-1");
+        assert.strictEqual(calls[0][3].id, "ping-threshold-1");
         assert.strictEqual(calls[0][3].status, 0);
         assert.strictEqual(calls[0][3].pingThreshold, 500);
+        assert.strictEqual(calls[0][3].notificationEventId, "ping-threshold-1");
     });
 
     test("handlePingThresholdNotifications() sends a recovery notification once", async () => {

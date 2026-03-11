@@ -91,7 +91,10 @@ class PagerDuty extends NotificationProvider {
                 },
                 routing_key: notification.pagerdutyIntegrationKey,
                 event_action: eventAction,
-                dedup_key: monitorInfo.id ? "Uptime Kuma/" + monitorInfo.id : "Uptime Kuma/test",
+                dedup_key:
+                    monitorInfo.notificationEventId || monitorInfo.id
+                        ? "Uptime Kuma/" + (monitorInfo.notificationEventId || monitorInfo.id)
+                        : "Uptime Kuma/test",
             },
         };
 

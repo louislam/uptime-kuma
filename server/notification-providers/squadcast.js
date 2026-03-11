@@ -23,7 +23,7 @@ class Squadcast extends NotificationProvider {
 
             if (heartbeatJSON !== null) {
                 data.description = heartbeatJSON["msg"];
-                data.event_id = heartbeatJSON["monitorID"];
+                data.event_id = heartbeatJSON["notificationEventId"] || heartbeatJSON["monitorID"];
 
                 if (heartbeatJSON["status"] === DOWN) {
                     data.message = `${monitorJSON["name"]} is DOWN`;
