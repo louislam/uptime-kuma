@@ -208,6 +208,8 @@ class Monitor extends BeanModel {
             ping_numeric: this.isPingNumeric(),
             ping_count: this.ping_count,
             ping_per_request_timeout: this.ping_per_request_timeout,
+            ping_threshold: this.getPingThreshold(),
+            ping_threshold_action: this.getPingThresholdAction(),
 
             // response saving options
             saveResponse: this.getSaveResponse(),
@@ -303,6 +305,36 @@ class Monitor extends BeanModel {
      */
     isPingNumeric() {
         return Boolean(this.ping_numeric);
+    }
+
+    /**
+     * Returns the configured ping threshold in milliseconds.
+     * @returns {?number} Ping threshold in milliseconds, or null when disabled
+     */
+    getPingThreshold() {
+        const threshold = Number(this.ping_threshold);
+
+        if (!Number.isFinite(threshold) || threshold <= 0) {
+            return null;
+        }
+
+        return Math.round(threshold);
+    }
+
+    /**
+     * Returns the action taken when a ping threshold is exceeded.
+     * @returns {"down" | "notify"} Configured ping threshold action
+     */
+    getPingThresholdAction() {
+        return this.ping_threshold_action === "notify" ? "notify" : "down";
+    }
+
+    /**
+     * Whether this monitor type supports latency threshold evaluation.
+     * @returns {boolean} True if latency threshold can be applied
+     */
+    supportsPingThreshold() {
+        return !["docker", "group", "manual", "push"].includes(this.type);
     }
 
     /**
@@ -945,6 +977,8 @@ class Monitor extends BeanModel {
                     }
                 }
 
+                await Monitor.handlePingThreshold(this, bean);
+
                 retries = 0;
             } catch (error) {
                 if (error?.name === "CanceledError") {
@@ -1036,6 +1070,8 @@ class Monitor extends BeanModel {
                     }
                 }
             }
+
+            await Monitor.handlePingThresholdNotifications(this, bean);
 
             if (bean.status !== MAINTENANCE && Boolean(this.domainExpiryNotification)) {
                 try {
@@ -1801,6 +1837,28 @@ class Monitor extends BeanModel {
                 throw new Error(`Invalid JSON in database query: ${error.message}`);
             }
         }
+
+        if (this.ping_threshold !== null && this.ping_threshold !== undefined && this.ping_threshold !== "") {
+            const pingThreshold = Number(this.ping_threshold);
+
+            if (!this.supportsPingThreshold()) {
+                throw new Error(`Ping threshold is not supported for monitor type ${this.type}`);
+            }
+
+            if (!Number.isFinite(pingThreshold) || pingThreshold <= 0) {
+                throw new Error("Ping threshold must be a positive integer in milliseconds");
+            }
+
+            this.ping_threshold = Math.round(pingThreshold);
+        } else {
+            this.ping_threshold = null;
+        }
+
+        if (this.ping_threshold_action && !["down", "notify"].includes(this.ping_threshold_action)) {
+            throw new Error("Ping threshold action must be either down or notify");
+        }
+
+        this.ping_threshold_action = this.getPingThresholdAction();
     }
 
     /**
@@ -2100,6 +2158,143 @@ class Monitor extends BeanModel {
         if (!this.getIgnoreTls() && this.isEnabledExpiryNotification()) {
             log.debug("monitor", `[${this.name}] call checkCertExpiryNotifications`);
             await checkCertExpiryNotifications(this, tlsInfo);
+        }
+    }
+
+    /**
+     * Create a human-readable latency threshold message.
+     * @param {string} monitorName Monitor name
+     * @param {number} ping Current ping
+     * @param {number} threshold Configured threshold
+     * @param {boolean} recovered Whether this is a recovery message
+     * @returns {string} Notification text
+     */
+    static formatPingThresholdMessage(monitorName, ping, threshold, recovered = false) {
+        if (recovered) {
+            return `[${monitorName}] [Latency Recovered] ${ping} ms <= ${threshold} ms`;
+        }
+
+        return `[${monitorName}] [High Latency] ${ping} ms > ${threshold} ms`;
+    }
+
+    /**
+     * Apply ping threshold to a successful beat.
+     * @param {Monitor} monitor Monitor instance
+     * @param {import("./heartbeat")} bean Current heartbeat
+     * @returns {Promise<void>}
+     */
+    static async handlePingThreshold(monitor, bean) {
+        const threshold = monitor.getPingThreshold();
+
+        if (!monitor.supportsPingThreshold() || !threshold || monitor.getPingThresholdAction() !== "down") {
+            return;
+        }
+
+        if (bean.status !== UP) {
+            return;
+        }
+
+        const ping = Number(bean.ping);
+        if (!Number.isFinite(ping) || ping <= threshold) {
+            return;
+        }
+
+        bean.status = DOWN;
+        throw new Error(`Ping threshold exceeded: ${ping} ms > ${threshold} ms`);
+    }
+
+    /**
+     * Send dedicated notifications when high latency starts or recovers.
+     * @param {Monitor} monitor Monitor instance
+     * @param {import("./heartbeat")} bean Current heartbeat
+     * @returns {Promise<void>}
+     */
+    static async handlePingThresholdNotifications(monitor, bean) {
+        const threshold = monitor.getPingThreshold();
+
+        if (!monitor.supportsPingThreshold() || !threshold || monitor.getPingThresholdAction() !== "notify") {
+            return;
+        }
+
+        if (bean.status !== UP) {
+            return;
+        }
+
+        const currentPing = Number(bean.ping);
+        if (!Number.isFinite(currentPing)) {
+            return;
+        }
+
+        const currentAbove = currentPing > threshold;
+        const hasStoredState = typeof monitor.ping_threshold_last_notified_state === "boolean";
+        const previousAbove = hasStoredState ? monitor.ping_threshold_last_notified_state : false;
+
+        if (!hasStoredState && !currentAbove) {
+            await Monitor.storePingThresholdNotificationState(monitor, false);
+            return;
+        }
+
+        if (currentAbove === previousAbove) {
+            return;
+        }
+
+        await Monitor.sendPingThresholdNotification(monitor, bean, threshold, !currentAbove);
+        await Monitor.storePingThresholdNotificationState(monitor, currentAbove);
+    }
+
+    /**
+     * Persist threshold notification state on the monitor bean.
+     * @param {Monitor} monitor Monitor instance
+     * @param {boolean} currentAbove Whether the current beat is above the threshold
+     * @returns {Promise<void>}
+     */
+    static async storePingThresholdNotificationState(monitor, currentAbove) {
+        if (monitor.id) {
+            monitor.ping_threshold_last_notified_state = currentAbove;
+            await R.store(monitor);
+        } else {
+            monitor.ping_threshold_last_notified_state = currentAbove;
+        }
+    }
+
+    /**
+     * Send threshold notifications through the normal incident-style provider path.
+     * @param {Monitor} monitor Monitor instance
+     * @param {import("./heartbeat")} bean Current heartbeat
+     * @param {number} threshold Threshold in milliseconds
+     * @param {boolean} recovered Whether this is a recovery event
+     * @returns {Promise<void>}
+     */
+    static async sendPingThresholdNotification(monitor, bean, threshold, recovered) {
+        const notificationList = await Monitor.getNotificationList(monitor);
+        const msg = Monitor.formatPingThresholdMessage(monitor.name, Number(bean.ping), threshold, recovered);
+        const heartbeatJSON = await bean.toJSONAsync({ decodeResponse: true });
+        const monitorData = [{ id: monitor.id, active: monitor.active, name: monitor.name }];
+        const preloadData = await Monitor.preparePreloadData(monitorData);
+        const monitorJSON = monitor.toJSON(preloadData, false);
+
+        monitorJSON.id = `ping-threshold-${monitor.id}`;
+        monitorJSON.name = `${monitor.name} [Ping Threshold]`;
+
+        heartbeatJSON.msg = msg;
+        heartbeatJSON.status = recovered ? UP : DOWN;
+        heartbeatJSON.pingThreshold = threshold;
+        heartbeatJSON.originalStatus = bean.status;
+        heartbeatJSON.pingThresholdExceeded = !recovered;
+        heartbeatJSON.timezone = await UptimeKumaServer.getInstance().getTimezone();
+        heartbeatJSON.timezoneOffset = UptimeKumaServer.getInstance().getTimezoneOffset();
+        heartbeatJSON.localDateTime = dayjs
+            .utc(heartbeatJSON.time)
+            .tz(heartbeatJSON.timezone)
+            .format(SQL_DATETIME_FORMAT);
+
+        for (let notification of notificationList) {
+            try {
+                await Notification.send(JSON.parse(notification.config), msg, monitorJSON, heartbeatJSON);
+            } catch (e) {
+                log.error("monitor", "Cannot send ping threshold notification to " + notification.name);
+                log.error("monitor", e);
+            }
         }
     }
 }

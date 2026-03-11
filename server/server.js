@@ -821,6 +821,10 @@ let needSetup = false;
                     removeGroupChildren = true;
                 }
 
+                const previousPingThreshold = bean.ping_threshold;
+                const previousPingThresholdAction = bean.ping_threshold_action;
+                const previousType = bean.type;
+
                 // Ensure status code ranges are strings
                 if (!monitor.accepted_statuscodes.every((code) => typeof code === "string")) {
                     throw new Error("Accepted status codes are not all strings");
@@ -936,8 +940,22 @@ let needSetup = false;
                 bean.ping_numeric = monitor.ping_numeric;
                 bean.ping_count = monitor.ping_count;
                 bean.ping_per_request_timeout = monitor.ping_per_request_timeout;
+                bean.ping_threshold =
+                    monitor.ping_threshold === null || monitor.ping_threshold === undefined || monitor.ping_threshold === ""
+                        ? null
+                        : monitor.ping_threshold;
+                bean.ping_threshold_action = monitor.ping_threshold_action || "down";
 
                 bean.validate();
+
+                const pingThresholdConfigChanged =
+                    previousType !== bean.type ||
+                    previousPingThreshold !== bean.ping_threshold ||
+                    previousPingThresholdAction !== bean.ping_threshold_action;
+
+                if (bean.ping_threshold_action !== "notify" || bean.ping_threshold === null || pingThresholdConfigChanged) {
+                    bean.ping_threshold_last_notified_state = null;
+                }
 
                 await R.store(bean);
 

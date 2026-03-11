@@ -1483,6 +1483,43 @@
                                 />
                             </div>
 
+                            <div v-if="supportsPingThreshold" class="my-3">
+                                <label for="ping-threshold" class="form-label">{{ $t("pingThresholdLabel") }}</label>
+                                <input
+                                    id="ping-threshold"
+                                    v-model="monitor.ping_threshold"
+                                    type="number"
+                                    class="form-control"
+                                    min="1"
+                                    step="1"
+                                    :placeholder="$t('pingThresholdDisabledPlaceholder')"
+                                />
+                                <div class="form-text">
+                                    {{ $t("pingThresholdDescription") }}
+                                </div>
+                            </div>
+
+                            <div v-if="supportsPingThreshold" class="my-3">
+                                <label for="ping-threshold-action" class="form-label">
+                                    {{ $t("pingThresholdActionLabel") }}
+                                </label>
+                                <select
+                                    id="ping-threshold-action"
+                                    v-model="monitor.ping_threshold_action"
+                                    class="form-select"
+                                >
+                                    <option value="down">{{ $t("pingThresholdActionDown") }}</option>
+                                    <option value="notify">{{ $t("pingThresholdActionNotify") }}</option>
+                                </select>
+                                <div class="form-text">
+                                    {{
+                                        monitor.ping_threshold_action === "notify"
+                                            ? $t("pingThresholdActionNotifyDescription")
+                                            : $t("pingThresholdActionDownDescription")
+                                    }}
+                                </div>
+                            </div>
+
                             <h2 v-if="monitor.type !== 'push'" class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 
                             <div
@@ -2904,6 +2941,8 @@ const monitorDefaults = {
     rabbitmqPassword: "",
     conditions: [],
     system_service_name: "",
+    ping_threshold: null,
+    ping_threshold_action: "down",
 };
 
 export default {
@@ -2993,6 +3032,10 @@ export default {
 
         showDomainExpiryNotification() {
             return this.monitor.type in TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD;
+        },
+
+        supportsPingThreshold() {
+            return !["docker", "group", "manual", "push"].includes(this.monitor.type);
         },
 
         pageName() {
@@ -3425,6 +3468,13 @@ message HealthCheckResponse {
             if (oldType && newType !== oldType) {
                 this.monitor.conditions = [];
             }
+
+            if (!this.supportsPingThreshold) {
+                this.monitor.ping_threshold = null;
+                this.monitor.ping_threshold_action = "down";
+            } else if (!this.monitor.ping_threshold_action) {
+                this.monitor.ping_threshold_action = "down";
+            }
         },
 
         "monitor.subtype"(newSubtype, oldSubtype) {
@@ -3545,6 +3595,8 @@ message HealthCheckResponse {
                     ping_numeric: true,
                     packetSize: 56,
                     ping_per_request_timeout: 2,
+                    ping_threshold: null,
+                    ping_threshold_action: "down",
                 };
 
                 if (this.$root.proxyList && !this.monitor.proxyId) {
