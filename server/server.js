@@ -941,7 +941,9 @@ let needSetup = false;
                 bean.ping_count = monitor.ping_count;
                 bean.ping_per_request_timeout = monitor.ping_per_request_timeout;
                 bean.ping_threshold =
-                    monitor.ping_threshold === null || monitor.ping_threshold === undefined || monitor.ping_threshold === ""
+                    monitor.ping_threshold === null ||
+                    monitor.ping_threshold === undefined ||
+                    monitor.ping_threshold === ""
                         ? null
                         : monitor.ping_threshold;
                 bean.ping_threshold_action = monitor.ping_threshold_action || "down";
@@ -962,7 +964,9 @@ let needSetup = false;
                     bean.id &&
                     hadOpenPingThresholdIncident &&
                     previousPingThresholdAction === "notify" &&
-                    (bean.ping_threshold_action !== "notify" || bean.ping_threshold === null || pingThresholdConfigChanged)
+                    (bean.ping_threshold_action !== "notify" ||
+                        bean.ping_threshold === null ||
+                        pingThresholdConfigChanged)
                 ) {
                     await Monitor.sendPingThresholdNotification(
                         bean,
@@ -972,7 +976,11 @@ let needSetup = false;
                     );
                 }
 
-                if (bean.ping_threshold_action !== "notify" || bean.ping_threshold === null || pingThresholdConfigChanged) {
+                if (
+                    bean.ping_threshold_action !== "notify" ||
+                    bean.ping_threshold === null ||
+                    pingThresholdConfigChanged
+                ) {
                     bean.ping_threshold_last_notified_state = null;
                 }
 

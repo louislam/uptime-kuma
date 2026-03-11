@@ -88,7 +88,9 @@ class FlashDuty extends NotificationProvider {
                 description: `[${title}] [${monitorInfo.name}] ${body}`,
                 title,
                 event_status: eventStatus || "Info",
-                alert_key: monitorInfo.notificationEventId || (monitorInfo.id ? String(monitorInfo.id) : Math.random().toString(36).substring(7)),
+                alert_key:
+                    monitorInfo.notificationEventId ||
+                    (monitorInfo.id ? String(monitorInfo.id) : Math.random().toString(36).substring(7)),
                 labels,
             },
         };

@@ -1509,10 +1509,9 @@
                                     class="form-select"
                                 >
                                     <option value="down">{{ $t("pingThresholdActionDown") }}</option>
-                                    <option
-                                        v-if="supportsPingThresholdNotify"
-                                        value="notify"
-                                    >{{ $t("pingThresholdActionNotify") }}</option>
+                                    <option v-if="supportsPingThresholdNotify" value="notify">
+                                        {{ $t("pingThresholdActionNotify") }}
+                                    </option>
                                 </select>
                                 <div class="form-text">
                                     {{

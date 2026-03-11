@@ -34,7 +34,7 @@ function createMonitor(props = {}) {
         kafkaProducerBrokers: "[]",
         kafkaProducerSaslOptions: "{}",
         rabbitmqNodes: "[]",
-        accepted_statuscodes_json: "[\"200-299\"]",
+        accepted_statuscodes_json: '["200-299"]',
         toJSON() {
             return {
                 id: this.id,
@@ -179,10 +179,7 @@ describe("Ping Threshold", () => {
         });
 
         try {
-            await Monitor.handlePingThresholdNotifications(
-                monitor,
-                createBeat({ status: UP, ping: 750 })
-            );
+            await Monitor.handlePingThresholdNotifications(monitor, createBeat({ status: UP, ping: 750 }));
         } finally {
             mock.restoreAll();
         }

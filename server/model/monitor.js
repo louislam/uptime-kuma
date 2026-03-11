@@ -2277,7 +2277,9 @@ class Monitor extends BeanModel {
         }
 
         const currentAbove = currentPing > threshold;
-        const previousState = Monitor.normalizePingThresholdNotificationState(monitor.ping_threshold_last_notified_state);
+        const previousState = Monitor.normalizePingThresholdNotificationState(
+            monitor.ping_threshold_last_notified_state
+        );
         const hasStoredState = previousState !== null;
         const previousAbove = previousState === true;
 
