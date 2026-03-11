@@ -969,6 +969,8 @@ class Monitor extends BeanModel {
                     throw new Error("Unknown Monitor Type");
                 }
 
+                await Monitor.handlePingThreshold(this, bean);
+
                 if (this.isUpsideDown()) {
                     bean.status = flipStatus(bean.status);
 
@@ -976,8 +978,6 @@ class Monitor extends BeanModel {
                         throw new Error("Flip UP to DOWN");
                     }
                 }
-
-                await Monitor.handlePingThreshold(this, bean);
 
                 retries = 0;
             } catch (error) {

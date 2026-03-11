@@ -17,7 +17,7 @@ const Monitor = require("../../server/model/monitor");
 const { Notification } = require("../../server/notification");
 const { UptimeKumaServer } = require("../../server/uptime-kuma-server");
 const { R } = require("redbean-node");
-const { UP } = require("../../src/util");
+const { UP, DOWN, flipStatus } = require("../../src/util");
 const dayjs = require("dayjs");
 
 dayjs.extend(require("dayjs/plugin/utc"));
@@ -105,6 +105,32 @@ describe("Ping Threshold", () => {
             async () => Monitor.handlePingThreshold(monitor, { status: UP, ping: 650 }),
             /Ping threshold exceeded: 650 ms > 500 ms/
         );
+    });
+
+    test("handlePingThreshold() still triggers before upside-down flip", async () => {
+        const monitor = createMonitor({
+            type: "http",
+            ping_threshold: 500,
+            ping_threshold_action: "down",
+            isUpsideDown() {
+                return true;
+            },
+        });
+        const beat = { status: UP, ping: 650 };
+
+        await assert.rejects(async () => {
+            await Monitor.handlePingThreshold(monitor, beat);
+
+            if (monitor.isUpsideDown()) {
+                beat.status = flipStatus(beat.status);
+
+                if (beat.status === DOWN) {
+                    throw new Error("Flip UP to DOWN");
+                }
+            }
+        }, /Ping threshold exceeded: 650 ms > 500 ms/);
+
+        assert.strictEqual(beat.status, DOWN);
     });
 
     test("handlePingThresholdNotifications() sends a breach notification once", async () => {
