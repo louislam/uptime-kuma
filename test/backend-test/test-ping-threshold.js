@@ -17,7 +17,7 @@ const Monitor = require("../../server/model/monitor");
 const { Notification } = require("../../server/notification");
 const { UptimeKumaServer } = require("../../server/uptime-kuma-server");
 const { R } = require("redbean-node");
-const { UP, DOWN, flipStatus } = require("../../src/util");
+const { UP, DOWN, PENDING, flipStatus } = require("../../src/util");
 const dayjs = require("dayjs");
 
 dayjs.extend(require("dayjs/plugin/utc"));
@@ -326,7 +326,42 @@ describe("Ping Threshold", () => {
         assert.strictEqual(sendMock.mock.callCount(), 0);
     });
 
-    test("handlePingThresholdNotifications() resolves an open latency incident when monitor goes non-UP", async () => {
+    test("handlePingThresholdNotifications() does not resolve an open latency incident on pending beat", async () => {
+        const monitor = createMonitor({
+            id: 1,
+            name: "API",
+            active: true,
+            type: "http",
+            ping_threshold: 500,
+            ping_threshold_action: "notify",
+            ping_threshold_last_notified_state: true,
+        });
+
+        mock.method(Monitor, "getNotificationList", async () => [
+            {
+                name: "Webhook",
+                config: JSON.stringify({ type: "webhook" }),
+            },
+        ]);
+        mock.method(Monitor, "preparePreloadData", async () => ({}));
+        mock.method(UptimeKumaServer, "getInstance", () => ({
+            getTimezone: async () => "UTC",
+            getTimezoneOffset: () => "+00:00",
+        }));
+        mock.method(R, "exec", async () => {});
+        const sendMock = mock.method(Notification, "send", async () => {});
+
+        try {
+            await Monitor.handlePingThresholdNotifications(monitor, createBeat({ status: PENDING, ping: null }));
+        } finally {
+            mock.restoreAll();
+        }
+
+        assert.strictEqual(sendMock.mock.callCount(), 0);
+        assert.strictEqual(monitor.ping_threshold_last_notified_state, true);
+    });
+
+    test("handlePingThresholdNotifications() resolves an open latency incident when monitor goes down", async () => {
         const monitor = createMonitor({
             id: 1,
             name: "API",

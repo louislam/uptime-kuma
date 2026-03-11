@@ -2216,6 +2216,10 @@ class Monitor extends BeanModel {
             return;
         }
 
+        if (bean.status === PENDING) {
+            return;
+        }
+
         if (bean.status !== UP) {
             if (monitor.ping_threshold_last_notified_state === true) {
                 await Monitor.sendPingThresholdNotification(
