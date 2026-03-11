@@ -85,6 +85,13 @@ describe("Ping Threshold", () => {
         assert.strictEqual(monitor.ping_threshold_action, "notify");
     });
 
+    test("normalizePingThreshold() treats equivalent numeric inputs as the same threshold", () => {
+        assert.strictEqual(Monitor.normalizePingThreshold(500), 500);
+        assert.strictEqual(Monitor.normalizePingThreshold("500"), 500);
+        assert.strictEqual(Monitor.normalizePingThreshold("500.4"), 500);
+        assert.strictEqual(Monitor.normalizePingThreshold(""), null);
+    });
+
     test("validate() rejects ping threshold on unsupported monitor types", () => {
         const monitor = createMonitor({
             type: "push",
@@ -337,6 +344,40 @@ describe("Ping Threshold", () => {
         assert.strictEqual(sendMock.mock.callCount(), 0);
     });
 
+    test("handlePingThresholdNotifications() preserves high-latency state across monitor reloads when DB returns 1", async () => {
+        const monitor = createMonitor({
+            id: 1,
+            name: "API",
+            active: true,
+            type: "http",
+            ping_threshold: 500,
+            ping_threshold_action: "notify",
+            ping_threshold_last_notified_state: 1,
+        });
+
+        mock.method(Monitor, "getNotificationList", async () => [
+            {
+                name: "Webhook",
+                config: JSON.stringify({ type: "webhook" }),
+            },
+        ]);
+        mock.method(Monitor, "preparePreloadData", async () => ({}));
+        mock.method(UptimeKumaServer, "getInstance", () => ({
+            getTimezone: async () => "UTC",
+            getTimezoneOffset: () => "+00:00",
+        }));
+        mock.method(R, "exec", async () => {});
+        const sendMock = mock.method(Notification, "send", async () => {});
+
+        try {
+            await Monitor.handlePingThresholdNotifications(monitor, createBeat({ status: UP, ping: 750 }));
+        } finally {
+            mock.restoreAll();
+        }
+
+        assert.strictEqual(sendMock.mock.callCount(), 0);
+    });
+
     test("handlePingThresholdNotifications() does not resolve an open latency incident on pending beat", async () => {
         const monitor = createMonitor({
             id: 1,
@@ -437,6 +478,46 @@ describe("Ping Threshold", () => {
 
         try {
             await Monitor.handlePingThresholdNotifications(monitor, createBeat({ status: 0, ping: null }));
+        } finally {
+            mock.restoreAll();
+        }
+
+        assert.strictEqual(calls.length, 1);
+        assert.strictEqual(calls[0][3].status, 1);
+        assert.strictEqual(monitor.ping_threshold_last_notified_state, false);
+        assert.match(calls[0][1], /\[API\] \[Latency Recovered\]/);
+    });
+
+    test("handlePingThresholdNotifications() resolves an open latency incident when reloaded state is 1 and monitor goes down", async () => {
+        const monitor = createMonitor({
+            id: 1,
+            name: "API",
+            active: true,
+            type: "http",
+            ping_threshold: 500,
+            ping_threshold_action: "notify",
+            ping_threshold_last_notified_state: 1,
+        });
+
+        const calls = [];
+        mock.method(Monitor, "getNotificationList", async () => [
+            {
+                name: "Webhook",
+                config: JSON.stringify({ type: "webhook" }),
+            },
+        ]);
+        mock.method(Monitor, "preparePreloadData", async () => ({}));
+        mock.method(UptimeKumaServer, "getInstance", () => ({
+            getTimezone: async () => "UTC",
+            getTimezoneOffset: () => "+00:00",
+        }));
+        mock.method(R, "exec", async () => {});
+        mock.method(Notification, "send", async (...args) => {
+            calls.push(args);
+        });
+
+        try {
+            await Monitor.handlePingThresholdNotifications(monitor, createBeat({ status: DOWN, ping: null }));
         } finally {
             mock.restoreAll();
         }

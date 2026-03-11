@@ -948,14 +948,19 @@ let needSetup = false;
 
                 bean.validate();
 
+                const previousNormalizedPingThreshold = Monitor.normalizePingThreshold(previousPingThreshold);
+                const nextNormalizedPingThreshold = Monitor.normalizePingThreshold(bean.ping_threshold);
+                const hadOpenPingThresholdIncident =
+                    Monitor.normalizePingThresholdNotificationState(bean.ping_threshold_last_notified_state) === true;
+
                 const pingThresholdConfigChanged =
                     previousType !== bean.type ||
-                    previousPingThreshold !== bean.ping_threshold ||
+                    previousNormalizedPingThreshold !== nextNormalizedPingThreshold ||
                     previousPingThresholdAction !== bean.ping_threshold_action;
 
                 if (
                     bean.id &&
-                    bean.ping_threshold_last_notified_state === true &&
+                    hadOpenPingThresholdIncident &&
                     previousPingThresholdAction === "notify" &&
                     (bean.ping_threshold_action !== "notify" || bean.ping_threshold === null || pingThresholdConfigChanged)
                 ) {

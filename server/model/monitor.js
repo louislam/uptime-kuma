@@ -308,17 +308,43 @@ class Monitor extends BeanModel {
     }
 
     /**
-     * Returns the configured ping threshold in milliseconds.
-     * @returns {?number} Ping threshold in milliseconds, or null when disabled
+     * Normalize a raw ping threshold value.
+     * @param {unknown} value Raw threshold value
+     * @returns {?number} Ping threshold in milliseconds, or null when disabled/invalid
      */
-    getPingThreshold() {
-        const threshold = Number(this.ping_threshold);
+    static normalizePingThreshold(value) {
+        const threshold = Number(value);
 
         if (!Number.isFinite(threshold) || threshold <= 0) {
             return null;
         }
 
         return Math.round(threshold);
+    }
+
+    /**
+     * Normalize persisted ping-threshold notification state.
+     * @param {unknown} value Raw state from DB/runtime
+     * @returns {?boolean} Boolean state, or null when not initialized
+     */
+    static normalizePingThresholdNotificationState(value) {
+        if (value === true || value === 1 || value === "1") {
+            return true;
+        }
+
+        if (value === false || value === 0 || value === "0") {
+            return false;
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns the configured ping threshold in milliseconds.
+     * @returns {?number} Ping threshold in milliseconds, or null when disabled
+     */
+    getPingThreshold() {
+        return Monitor.normalizePingThreshold(this.ping_threshold);
     }
 
     /**
@@ -1847,17 +1873,17 @@ class Monitor extends BeanModel {
         }
 
         if (this.ping_threshold !== null && this.ping_threshold !== undefined && this.ping_threshold !== "") {
-            const pingThreshold = Number(this.ping_threshold);
-
             if (!this.supportsPingThreshold()) {
                 throw new Error(`Ping threshold is not supported for monitor type ${this.type}`);
             }
 
-            if (!Number.isFinite(pingThreshold) || pingThreshold <= 0) {
+            const normalizedPingThreshold = Monitor.normalizePingThreshold(this.ping_threshold);
+
+            if (normalizedPingThreshold === null) {
                 throw new Error("Ping threshold must be a positive integer in milliseconds");
             }
 
-            this.ping_threshold = Math.round(pingThreshold);
+            this.ping_threshold = normalizedPingThreshold;
         } else {
             this.ping_threshold = null;
         }
@@ -2233,7 +2259,7 @@ class Monitor extends BeanModel {
         }
 
         if (bean.status !== UP) {
-            if (monitor.ping_threshold_last_notified_state === true) {
+            if (Monitor.normalizePingThresholdNotificationState(monitor.ping_threshold_last_notified_state) === true) {
                 await Monitor.sendPingThresholdNotification(
                     monitor,
                     Monitor.createPingThresholdSyntheticBean(threshold, bean.status),
@@ -2251,8 +2277,9 @@ class Monitor extends BeanModel {
         }
 
         const currentAbove = currentPing > threshold;
-        const hasStoredState = typeof monitor.ping_threshold_last_notified_state === "boolean";
-        const previousAbove = hasStoredState ? monitor.ping_threshold_last_notified_state : false;
+        const previousState = Monitor.normalizePingThresholdNotificationState(monitor.ping_threshold_last_notified_state);
+        const hasStoredState = previousState !== null;
+        const previousAbove = previousState === true;
 
         if (!hasStoredState && !currentAbove) {
             await Monitor.storePingThresholdNotificationState(monitor, false);
