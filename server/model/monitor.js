@@ -2217,6 +2217,15 @@ class Monitor extends BeanModel {
         }
 
         if (bean.status !== UP) {
+            if (monitor.ping_threshold_last_notified_state === true) {
+                await Monitor.sendPingThresholdNotification(
+                    monitor,
+                    Monitor.createPingThresholdSyntheticBean(threshold, bean.status),
+                    threshold,
+                    true
+                );
+                await Monitor.storePingThresholdNotificationState(monitor, false);
+            }
             return;
         }
 
@@ -2251,10 +2260,37 @@ class Monitor extends BeanModel {
     static async storePingThresholdNotificationState(monitor, currentAbove) {
         if (monitor.id) {
             monitor.ping_threshold_last_notified_state = currentAbove;
-            await R.store(monitor);
+            await R.exec("UPDATE monitor SET ping_threshold_last_notified_state = ? WHERE id = ?", [
+                currentAbove ? 1 : 0,
+                monitor.id,
+            ]);
         } else {
             monitor.ping_threshold_last_notified_state = currentAbove;
         }
+    }
+
+    /**
+     * Create a synthetic bean-like object for threshold-only notifications.
+     * @param {number} ping Ping value to include in the message
+     * @param {?number} originalStatus Original monitor status that caused the transition
+     * @returns {object} Bean-like object with toJSONAsync
+     */
+    static createPingThresholdSyntheticBean(ping, originalStatus = null) {
+        const time = R.isoDateTimeMillis(dayjs.utc());
+        return {
+            time,
+            ping,
+            status: originalStatus,
+            msg: "",
+            async toJSONAsync() {
+                return {
+                    time,
+                    ping,
+                    status: originalStatus,
+                    msg: "",
+                };
+            },
+        };
     }
 
     /**

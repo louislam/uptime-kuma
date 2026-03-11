@@ -129,7 +129,7 @@ describe("Ping Threshold", () => {
             getTimezone: async () => "UTC",
             getTimezoneOffset: () => "+00:00",
         }));
-        mock.method(R, "store", async () => {});
+        mock.method(R, "exec", async () => {});
         mock.method(Notification, "send", async (...args) => {
             calls.push(args);
         });
@@ -178,7 +178,7 @@ describe("Ping Threshold", () => {
             getTimezone: async () => "UTC",
             getTimezoneOffset: () => "+00:00",
         }));
-        mock.method(R, "store", async () => {});
+        mock.method(R, "exec", async () => {});
         mock.method(Notification, "send", async (...args) => {
             calls.push(args);
         });
@@ -216,7 +216,7 @@ describe("Ping Threshold", () => {
             getTimezone: async () => "UTC",
             getTimezoneOffset: () => "+00:00",
         }));
-        mock.method(R, "store", async () => {});
+        mock.method(R, "exec", async () => {});
         const sendMock = mock.method(Notification, "send", async () => {});
 
         try {
@@ -251,7 +251,7 @@ describe("Ping Threshold", () => {
             getTimezone: async () => "UTC",
             getTimezoneOffset: () => "+00:00",
         }));
-        mock.method(R, "store", async () => {});
+        mock.method(R, "exec", async () => {});
         mock.method(Notification, "send", async (...args) => {
             calls.push(args);
         });
@@ -288,7 +288,7 @@ describe("Ping Threshold", () => {
             getTimezone: async () => "UTC",
             getTimezoneOffset: () => "+00:00",
         }));
-        mock.method(R, "store", async () => {});
+        mock.method(R, "exec", async () => {});
         const sendMock = mock.method(Notification, "send", async () => {});
 
         try {
@@ -298,5 +298,45 @@ describe("Ping Threshold", () => {
         }
 
         assert.strictEqual(sendMock.mock.callCount(), 0);
+    });
+
+    test("handlePingThresholdNotifications() resolves an open latency incident when monitor goes non-UP", async () => {
+        const monitor = createMonitor({
+            id: 1,
+            name: "API",
+            active: true,
+            type: "http",
+            ping_threshold: 500,
+            ping_threshold_action: "notify",
+            ping_threshold_last_notified_state: true,
+        });
+
+        const calls = [];
+        mock.method(Monitor, "getNotificationList", async () => [
+            {
+                name: "Webhook",
+                config: JSON.stringify({ type: "webhook" }),
+            },
+        ]);
+        mock.method(Monitor, "preparePreloadData", async () => ({}));
+        mock.method(UptimeKumaServer, "getInstance", () => ({
+            getTimezone: async () => "UTC",
+            getTimezoneOffset: () => "+00:00",
+        }));
+        mock.method(R, "exec", async () => {});
+        mock.method(Notification, "send", async (...args) => {
+            calls.push(args);
+        });
+
+        try {
+            await Monitor.handlePingThresholdNotifications(monitor, createBeat({ status: 0, ping: null }));
+        } finally {
+            mock.restoreAll();
+        }
+
+        assert.strictEqual(calls.length, 1);
+        assert.strictEqual(calls[0][3].status, 1);
+        assert.strictEqual(monitor.ping_threshold_last_notified_state, false);
+        assert.match(calls[0][1], /\[API\] \[Latency Recovered\]/);
     });
 });

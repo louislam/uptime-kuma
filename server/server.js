@@ -953,6 +953,20 @@ let needSetup = false;
                     previousPingThreshold !== bean.ping_threshold ||
                     previousPingThresholdAction !== bean.ping_threshold_action;
 
+                if (
+                    bean.id &&
+                    bean.ping_threshold_last_notified_state === true &&
+                    previousPingThresholdAction === "notify" &&
+                    (bean.ping_threshold_action !== "notify" || bean.ping_threshold === null || pingThresholdConfigChanged)
+                ) {
+                    await Monitor.sendPingThresholdNotification(
+                        bean,
+                        Monitor.createPingThresholdSyntheticBean(previousPingThreshold || 0),
+                        previousPingThreshold || 0,
+                        true
+                    );
+                }
+
                 if (bean.ping_threshold_action !== "notify" || bean.ping_threshold === null || pingThresholdConfigChanged) {
                     bean.ping_threshold_last_notified_state = null;
                 }
