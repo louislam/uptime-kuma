@@ -48,6 +48,12 @@ docker compose up -d
 
 Uptime Kuma is now running on all network interfaces (e.g. http://localhost:3001 or http://your-ip:3001).
 
+**IPv6 support:** To monitor IPv6-only endpoints, use the IPv6 compose override (requires [Docker daemon IPv6 config](https://docs.docker.com/config/daemon/ipv6/)):
+
+```bash
+docker compose -f compose.yaml -f compose.ipv6.yaml up -d
+```
+
 > [!WARNING]
 > File Systems like **NFS** (Network File System) are **NOT** supported. Please map to a local directory or volume.
 

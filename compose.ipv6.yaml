@@ -1,0 +1,14 @@
+# IPv6 override for compose.yaml
+# Use with: docker compose -f compose.yaml -f compose.ipv6.yaml up -d
+# Requires Docker daemon IPv6 config in /etc/docker/daemon.json:
+#   { "ipv6": true, "fixed-cidr-v6": "fd00::/80" }
+# See: https://docs.docker.com/config/daemon/ipv6/
+
+services:
+  uptime-kuma:
+    networks:
+      - uptime-kuma
+
+networks:
+  uptime-kuma:
+    enable_ipv6: true
