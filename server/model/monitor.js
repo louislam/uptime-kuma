@@ -338,6 +338,14 @@ class Monitor extends BeanModel {
     }
 
     /**
+     * Whether this monitor can use dedicated latency notifications.
+     * @returns {boolean} True if notify mode can be applied
+     */
+    supportsPingThresholdNotify() {
+        return this.supportsPingThreshold() && !this.isUpsideDown();
+    }
+
+    /**
      * Parse to boolean
      * @returns {boolean} Should TLS errors be ignored?
      */
@@ -1859,6 +1867,10 @@ class Monitor extends BeanModel {
         }
 
         this.ping_threshold_action = this.getPingThresholdAction();
+
+        if (this.ping_threshold_action === "notify" && !this.supportsPingThresholdNotify()) {
+            throw new Error("Ping threshold notify mode is not supported for upside-down monitors");
+        }
     }
 
     /**
@@ -2212,11 +2224,11 @@ class Monitor extends BeanModel {
     static async handlePingThresholdNotifications(monitor, bean) {
         const threshold = monitor.getPingThreshold();
 
-        if (!monitor.supportsPingThreshold() || !threshold || monitor.getPingThresholdAction() !== "notify") {
+        if (!monitor.supportsPingThresholdNotify() || !threshold || monitor.getPingThresholdAction() !== "notify") {
             return;
         }
 
-        if (bean.status === PENDING) {
+        if (bean.status === PENDING || bean.status === MAINTENANCE) {
             return;
         }
 

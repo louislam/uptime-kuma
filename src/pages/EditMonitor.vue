@@ -1509,7 +1509,10 @@
                                     class="form-select"
                                 >
                                     <option value="down">{{ $t("pingThresholdActionDown") }}</option>
-                                    <option value="notify">{{ $t("pingThresholdActionNotify") }}</option>
+                                    <option
+                                        v-if="supportsPingThresholdNotify"
+                                        value="notify"
+                                    >{{ $t("pingThresholdActionNotify") }}</option>
                                 </select>
                                 <div class="form-text">
                                     {{
@@ -3038,6 +3041,10 @@ export default {
             return !["docker", "group", "manual", "push"].includes(this.monitor.type);
         },
 
+        supportsPingThresholdNotify() {
+            return this.supportsPingThreshold && !this.monitor.upsideDown;
+        },
+
         pageName() {
             let name = "Add New Monitor";
             if (this.isClone) {
@@ -3472,7 +3479,15 @@ message HealthCheckResponse {
             if (!this.supportsPingThreshold) {
                 this.monitor.ping_threshold = null;
                 this.monitor.ping_threshold_action = "down";
+            } else if (!this.supportsPingThresholdNotify && this.monitor.ping_threshold_action === "notify") {
+                this.monitor.ping_threshold_action = "down";
             } else if (!this.monitor.ping_threshold_action) {
+                this.monitor.ping_threshold_action = "down";
+            }
+        },
+
+        "monitor.upsideDown"(isUpsideDown) {
+            if (isUpsideDown && this.monitor.ping_threshold_action === "notify") {
                 this.monitor.ping_threshold_action = "down";
             }
         },
