@@ -49,6 +49,12 @@ export default {
 @import "../assets/vars.scss";
 @import "../assets/app.scss";
 
+.dropdown {
+    position: relative;
+    flex-shrink: 1;
+    min-width: 0;
+}
+
 .filter-dropdown-menu {
     z-index: 100;
     transition: all 0.2s;
@@ -111,6 +117,15 @@ export default {
     align-items: center;
     margin-left: 0;
     color: $link-color;
+    max-width: 180px;
+    overflow: hidden;
+
+    .px-1.d-flex {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        min-width: 0;
+    }
 
     .dark & {
         color: $dark-font-color;
