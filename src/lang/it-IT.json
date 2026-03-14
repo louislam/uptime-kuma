@@ -1275,5 +1275,8 @@
     "Ignore STARTTLS": "Ignora STARTTLS",
     "Use STARTTLS": "Utilizza STARTTLS",
     "Enter the list of nodes": "Inserisci l'elenco dei nodi di gestione RabbitMQ",
-    "Press Enter to add node": "Premi Invio per aggiungere il nodo"
+    "Press Enter to add node": "Premi Invio per aggiungere il nodo",
+    "enableSSL": "Abilita SSL/TLS",
+    "mariadbUseSSLHelptext": "Abilita per usare una connessione criptata per il tuo database. Richiesto dalla maggior parte dei database cloud.",
+    "mariadbCaCertificateLabel": "Certificato CA"
 }

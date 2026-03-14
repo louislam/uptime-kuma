@@ -49,6 +49,8 @@ const args = require("args-parser")(process.argv);
 const { sleep, log, getRandomInt, genSecret, isDev } = require("../src/util");
 const config = require("./config");
 
+process.title = "uptime-kuma";
+
 log.debug("server", "Arguments");
 log.debug("server", args);
 
@@ -1006,7 +1008,8 @@ let needSetup = false;
             }
         });
 
-        socket.on("checkMointor", async (partial, callback) => {
+        // partial { type, url, hostname, grpcUrl }
+        socket.on("checkDomain", async (partial, callback) => {
             try {
                 checkLogin(socket);
                 const DomainExpiry = require("./model/domain_expiry");
