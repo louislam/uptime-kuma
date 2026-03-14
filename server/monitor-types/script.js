@@ -95,20 +95,20 @@ class ScriptMonitorType extends MonitorType {
         const args = parseArgsStringToArgv(monitor.args ?? "");
 
         try {
-        // Security checks completed - run the script
+            // Security checks completed - run the script
             const child = childProcessAsync.spawn(path.join(this.dir, monitor.script), args, {
-            shell: false, // Security: Prevent command chaining etc.
-            detached: true, // Needed so we can reliably kill any subprocesses (grandchildren)
-            env: process.env, // Default, not a security risk because scripts are trusted
-            encoding: "utf8", // Needed to capture stdout & stderr
-            timeout: 30000,
-            maxBuffer: 1024 * 1024,
-            stdio: ["ignore", "pipe", "pipe"],
-        });
+                shell: false, // Security: Prevent command chaining etc.
+                detached: true, // Needed so we can reliably kill any subprocesses (grandchildren)
+                env: process.env, // Default, not a security risk because scripts are trusted
+                encoding: "utf8", // Needed to capture stdout & stderr
+                timeout: 30000,
+                maxBuffer: 1024 * 1024,
+                stdio: ["ignore", "pipe", "pipe"],
+            });
             const result = await child;
             heartbeat.status = UP;
             heartbeat.msg = result.stdout;
-        } catch (err) {            
+        } catch (err) {
             if (err.stderr) {
                 err.message = err.stderr;
             }

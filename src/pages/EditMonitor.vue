@@ -57,9 +57,7 @@
                                         <option value="real-browser">
                                             HTTP(s) - Browser Engine (Chrome/Chromium) (Beta)
                                         </option>
-                                        <option value="script">
-                                            Custom Script
-                                        </option>
+                                        <option value="script">Custom Script</option>
                                     </optgroup>
 
                                     <optgroup :label="$t('monitorTypeSpecial')">
@@ -182,10 +180,7 @@
                             </div>
 
                             <!-- Script -->
-                            <div
-                                v-if="monitor.type === 'script'"
-                                class="my-3"
-                            >
+                            <div v-if="monitor.type === 'script'" class="my-3">
                                 <label for="script-path" class="form-label">{{ $t("Script") }}</label>
                                 <input
                                     id="script-path"
@@ -193,14 +188,14 @@
                                     type="text"
                                     class="form-control"
                                     required
-                                    @input="onScriptPathUpdate"
                                     data-testid="script-path-input"
-                                    />
+                                    @input="onScriptPathUpdate"
+                                />
                                 <i18n-t v-if="monitor.script" keypath="scriptLocationHint" tag="span" class="form-text">
                                     <template #scriptPath>
                                         <code>
-                                            {{resolvedScriptPath}}
-                                            <span v-if="monitor.script && monitor.args">{{monitor.args}}</span>
+                                            {{ resolvedScriptPath }}
+                                            <span v-if="monitor.script && monitor.args">{{ monitor.args }}</span>
                                         </code>
                                     </template>
                                 </i18n-t>
@@ -1685,8 +1680,7 @@
                                     type="text"
                                     class="form-control"
                                     data-testid="script-arguments-input"
-                                    />
-
+                                />
                             </div>
 
                             <div v-if="monitor.type === 'gamedig'" class="my-3 form-check">
@@ -2875,7 +2869,7 @@ import EditMonitorConditions from "../components/EditMonitorConditions.vue";
 import path from "path-browserify";
 import { SCRIPT_DIR } from "../util.ts";
 
-const isValidScriptPath = script => path.join(SCRIPT_DIR, script).startsWith(SCRIPT_DIR);
+const isValidScriptPath = (script) => path.join(SCRIPT_DIR, script).startsWith(SCRIPT_DIR);
 
 const toast = useToast();
 
@@ -3280,7 +3274,7 @@ message HealthCheckResponse {
                 ];
             }
         },
-        
+
         resolvedScriptPath() {
             return path.join(SCRIPT_DIR, this.monitor.script ?? "");
         },
