@@ -102,6 +102,7 @@
         "http-proxy-agent": "~7.0.2",
         "https-proxy-agent": "~7.0.6",
         "iconv-lite": "~0.6.3",
+        "is-elevated": "^4.0.0",
         "is-url": "~1.2.4",
         "isomorphic-ws": "~5.0.0",
         "jsesc": "~3.0.2",
