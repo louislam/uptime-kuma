@@ -38,7 +38,7 @@
     </div>
 
     <div class="mb-3">
-        <label for="notificationService" class="form-label">{{ $t("Notification Service") }}</label>
+        <label for="notificationService" class="form-label">{{ $t("Notification Action") }}</label>
         <input
             id="notificationService"
             v-model="$parent.notification.notificationService"
@@ -48,13 +48,7 @@
         />
 
         <div class="form-text">
-            <p>
-                {{
-                    $t(
-                        'A list of Notification Services can be found in Home Assistant under "Developer Tools > Services" search for "notification" to find your device/phone name.'
-                    )
-                }}
-            </p>
+            <p>{{ $t("homeAssistantNotificationActionHelptext") }}</p>
             <p>{{ $t("Automations can optionally be triggered in Home Assistant:") }}</p>
             <p>
                 {{ $t("Trigger type:") }}
