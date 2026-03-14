@@ -108,8 +108,7 @@ class ScriptMonitorType extends MonitorType {
             const result = await child;
             heartbeat.status = UP;
             heartbeat.msg = result.stdout;
-        } catch (err) {
-            debugger
+        } catch (err) {            
             if (err.stderr) {
                 err.message = err.stderr;
             }
