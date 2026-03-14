@@ -1508,5 +1508,7 @@
     "teltonikaPhoneNumber": "Phone number",
     "teltonikaPhoneNumberHelptext": "The number must be in the international format {0}, {1}. Only one number is allowed.",
     "scriptLocationHint": "Will attempt to execute: {scriptPath}",
-    "scriptLocationInvalid": "Invalid script location"
+    "scriptLocationInvalid": "Invalid script location",
+    "Script": "Script",
+    "Script Arguments": "Script Arguments"
 }
