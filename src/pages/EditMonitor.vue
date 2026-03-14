@@ -57,6 +57,9 @@
                                         <option value="real-browser">
                                             HTTP(s) - Browser Engine (Chrome/Chromium) (Beta)
                                         </option>
+                                        <option value="script">
+                                            Custom Script
+                                        </option>
                                     </optgroup>
 
                                     <optgroup :label="$t('monitorTypeSpecial')">
@@ -176,6 +179,31 @@
                                         {{ $t("Down") }}
                                     </button>
                                 </div>
+                            </div>
+
+                            <!-- Script -->
+                            <div
+                                v-if="monitor.type === 'script'"
+                                class="my-3"
+                            >
+                                <label for="script-path" class="form-label">{{ $t("Script") }}</label>
+                                <input
+                                    id="script-path"
+                                    v-model="monitor.script"
+                                    type="text"
+                                    class="form-control"
+                                    required
+                                    @input="onScriptPathUpdate"
+                                    data-testid="script-path-input"
+                                    />
+                                <i18n-t v-if="monitor.script" keypath="scriptLocationHint" tag="span" class="form-text">
+                                    <template #scriptPath>
+                                        <code>
+                                            {{resolvedScriptPath}}
+                                            <span v-if="monitor.script && monitor.args">{{monitor.args}}</span>
+                                        </code>
+                                    </template>
+                                </i18n-t>
                             </div>
 
                             <!-- URL -->
@@ -1649,6 +1677,18 @@
                                 </div>
                             </div>
 
+                            <div v-if="monitor.type === 'script'" class="my-3">
+                                <label for="script-arguments" class="form-label">{{ $t("Script Arguments") }}</label>
+                                <input
+                                    id="script-arguments"
+                                    v-model="monitor.args"
+                                    type="text"
+                                    class="form-control"
+                                    data-testid="script-arguments-input"
+                                    />
+
+                            </div>
+
                             <div v-if="monitor.type === 'gamedig'" class="my-3 form-check">
                                 <input
                                     id="gamedig-guess-port"
@@ -2832,6 +2872,10 @@ import isFQDN from "validator/lib/isFQDN";
 import isIP from "validator/lib/isIP";
 import HiddenInput from "../components/HiddenInput.vue";
 import EditMonitorConditions from "../components/EditMonitorConditions.vue";
+import path from "path-browserify";
+import { SCRIPT_DIR } from "../util.ts";
+
+const isValidScriptPath = script => path.join(SCRIPT_DIR, script).startsWith(SCRIPT_DIR);
 
 const toast = useToast();
 
@@ -3235,6 +3279,10 @@ message HealthCheckResponse {
                     },
                 ];
             }
+        },
+        
+        resolvedScriptPath() {
+            return path.join(SCRIPT_DIR, this.monitor.script ?? "");
         },
 
         supportsConditions() {
@@ -3655,6 +3703,15 @@ message HealthCheckResponse {
             this.monitor.rabbitmqNodes.push(newNode);
         },
 
+        onScriptPathUpdate(event) {
+            const input = event.target;
+
+            input.setCustomValidity("");
+            if (!isValidScriptPath(input.value)) {
+                input.setCustomValidity(this.$t("scriptLocationInvalid"));
+            }
+        },
+
         /**
          * Validate form input
          * @returns {boolean} Is the form input valid?
@@ -3679,6 +3736,13 @@ message HealthCheckResponse {
             if (this.monitor.type === "docker") {
                 if (this.monitor.docker_host == null) {
                     toast.error(this.$t("DockerHostRequired"));
+                    return false;
+                }
+            }
+
+            if (this.monitor.type === "script") {
+                if (!isValidScriptPath(this.monitor.script)) {
+                    toast.error(this.$t("scriptLocationInvalid"));
                     return false;
                 }
             }
@@ -3855,6 +3919,10 @@ message HealthCheckResponse {
 
             if (this.monitor.url) {
                 this.monitor.url = this.monitor.url.trim();
+            }
+
+            if (this.monitor.script) {
+                this.monitor.script = this.monitor.script.trim();
             }
 
             let createdNewParent = false;
