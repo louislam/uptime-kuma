@@ -13,6 +13,7 @@ const childProcessAsync = require("promisify-child-process");
 const path = require("path");
 const axios = require("axios");
 const { isSSL, sslKey, sslCert, sslKeyPassphrase } = require("./config");
+const { SCRIPT_DIR } = require("../src/util");
 // DO NOT IMPORT HERE IF THE MODULES USED `UptimeKumaServer.getInstance()`, put at the bottom of this file instead.
 
 /**
@@ -131,6 +132,7 @@ class UptimeKumaServer {
         UptimeKumaServer.monitorTypeList["system-service"] = new SystemServiceMonitorType();
         UptimeKumaServer.monitorTypeList["sqlserver"] = new MssqlMonitorType();
         UptimeKumaServer.monitorTypeList["mysql"] = new MysqlMonitorType();
+        UptimeKumaServer.monitorTypeList["script"] = new ScriptMonitorType(SCRIPT_DIR);
 
         // Allow all CORS origins (polling) in development
         let cors = undefined;
@@ -582,4 +584,5 @@ const { RedisMonitorType } = require("./monitor-types/redis");
 const { SystemServiceMonitorType } = require("./monitor-types/system-service");
 const { MssqlMonitorType } = require("./monitor-types/mssql");
 const { MysqlMonitorType } = require("./monitor-types/mysql");
+const { ScriptMonitorType } = require("./monitor-types/script");
 const Monitor = require("./model/monitor");

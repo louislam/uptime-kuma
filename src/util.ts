@@ -79,6 +79,12 @@ export const RESPONSE_BODY_LENGTH_DEFAULT = 1024;
  */
 export const RESPONSE_BODY_LENGTH_MAX = 1024 * 1024;
 
+/**
+ * path to the directory for scripts
+ * @type {String}
+ */
+export const SCRIPT_DIR = "data/scripts";
+
 // Console colors
 // https://stackoverflow.com/questions/9781218/how-to-change-node-jss-console-font-color
 export const CONSOLE_STYLE_Reset = "\x1b[0m";

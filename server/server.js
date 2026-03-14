@@ -936,7 +936,7 @@ let needSetup = false;
                 bean.ping_per_request_timeout = monitor.ping_per_request_timeout;
 
                 // script advanced options
-                bean.script_args = monitor.args;
+                bean.args = monitor.args;
 
                 bean.validate();
 
