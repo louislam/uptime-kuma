@@ -34,6 +34,21 @@ exports.login = async function (username, password) {
 };
 
 /**
+ * uk prefix + key ID is before _
+ * @param {string} key API Key
+ * @returns {{clear: string, index: string}} Parsed API key
+ */
+exports.parseAPIKey = function (key) {
+    let index = key.substring(2, key.indexOf("_"));
+    let clear = key.substring(key.indexOf("_") + 1, key.length);
+
+    return {
+        index,
+        clear,
+    };
+};
+
+/**
  * Validate a provided API key
  * @param {string} key API key to verify
  * @returns {boolean} API is ok?
@@ -43,9 +58,7 @@ async function verifyAPIKey(key) {
         return false;
     }
 
-    // uk prefix + key ID is before _
-    let index = key.substring(2, key.indexOf("_"));
-    let clear = key.substring(key.indexOf("_") + 1, key.length);
+    const { index, clear } = exports.parseAPIKey(key);
 
     let hash = await R.findOne("api_key", " id=? ", [index]);
 
@@ -60,6 +73,28 @@ async function verifyAPIKey(key) {
     }
 
     return hash && passwordHash.verify(clear, hash.key);
+}
+
+/**
+ * @param {string} key API key to verify
+ * @returns {Promise<void>}
+ * @throws {Error} If API key is invalid or rate limit exceeded
+ */
+async function verifyAPIKeyWithRateLimit(key) {
+    const pass = await apiRateLimiter.pass(null, 0);
+    if (pass) {
+        await apiRateLimiter.removeTokens(1);
+        const valid = await verifyAPIKey(key);
+        if (!valid) {
+            const errMsg = "Failed API auth attempt: invalid API Key";
+            log.warn("api-auth", errMsg);
+            throw new Error(errMsg);
+        }
+    } else {
+        const errMsg = "Failed API auth attempt: rate limit exceeded";
+        log.warn("api-auth", errMsg);
+        throw new Error(errMsg);
+    }
 }
 
 /**
@@ -172,5 +207,65 @@ exports.apiAuth = async function (req, res, next) {
         middleware(req, res, next);
     } else {
         next();
+    }
+};
+
+/**
+ * Use API Key via basic auth only
+ * @param {express.Request} req Express request object
+ * @param {express.Response} res Express response object
+ * @param {express.NextFunction} next Next handler in chain
+ * @returns {void}
+ */
+exports.basicAuthMiddleware = async function (req, res, next) {
+    let middleware = basicAuth({
+        authorizer: apiAuthorizer,
+        authorizeAsync: true,
+        challenge: true,
+    });
+    middleware(req, res, next);
+};
+
+/**
+ * Get the API key from the Authorization header (Bearer token) and verify it
+ * @param {express.Request} req Express request object
+ * @param {express.Response} res Express response object
+ * @param {express.NextFunction} next Next handler in chain
+ * @returns {Promise<void>}
+ */
+exports.headerAuthMiddleware = async function (req, res, next) {
+    const authorizationHeader = req.header("Authorization");
+
+    let key = null;
+
+    if (authorizationHeader && typeof authorizationHeader === "string") {
+        const arr = authorizationHeader.split(" ");
+        if (arr.length === 2) {
+            const type = arr[0];
+            if (type === "Bearer") {
+                key = arr[1];
+            }
+        }
+    }
+
+    if (key) {
+        try {
+            await verifyAPIKeyWithRateLimit(key);
+            res.locals.apiKeyID = exports.parseAPIKey(key).index;
+            next();
+        } catch (e) {
+            res.status(401);
+            res.json({
+                ok: false,
+                msg: e.message,
+            });
+        }
+    } else {
+        await apiRateLimiter.removeTokens(1);
+        res.status(401);
+        res.json({
+            ok: false,
+            msg: 'No API Key provided, please provide an API Key in the "Authorization" header',
+        });
     }
 };
