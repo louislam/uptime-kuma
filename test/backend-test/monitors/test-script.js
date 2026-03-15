@@ -18,8 +18,6 @@ describe("Script Monitor", () => {
      */
     function setup(t, options) {
         options = {
-            uid: 1000,
-            gid: 1000,
             dirWritable: false,
             scriptWritable: false,
             exitCode: 0,
@@ -31,8 +29,6 @@ describe("Script Monitor", () => {
         const EACCES = Object.assign(new Error(), { code: "EACCES" });
         const _access = fs.access;
 
-        t.mock.method(process, "getuid", () => options.uid);
-        t.mock.method(process, "getgid", () => options.gid);
         t.mock.method(fs, "access", async (f, mode) => {
             if (f === SCRIPT_DIR && (mode & fs.constants.W_OK) !== 0) {
                 if (options.dirWritable) {
@@ -64,18 +60,6 @@ describe("Script Monitor", () => {
             }
         });
     }
-
-    test("check() sets status to PENDING when running as root", async (t) => {
-        setup(t, { uid: 0 });
-        const scriptMonitor = new ScriptMonitorType(SCRIPT_DIR);
-
-        const monitor = { script: SCRIPT_NAME };
-        const heartbeat = { status: null, msg: "" };
-        await scriptMonitor.check(monitor, heartbeat, {});
-
-        assert.strictEqual(heartbeat.status, PENDING);
-        assert.strictEqual(heartbeat.msg, "Script execution has been denied for security reasons: running as root");
-    });
 
     test("check() sets status to PENDING when scripts directory is writable", async (t) => {
         setup(t, { dirWritable: true });

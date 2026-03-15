@@ -4,7 +4,6 @@ const fs = require("fs/promises");
 const childProcessAsync = require("promisify-child-process");
 const path = require("path");
 const { parseArgsStringToArgv } = require("string-argv");
-const isElevated = require("is-elevated").default;
 
 class SecurityError extends Error {}
 
@@ -36,11 +35,6 @@ class ScriptMonitorType extends MonitorType {
      * @returns {Promise<void>}
      */
     async checkSecurity(script) {
-        // If running uptime-kuma as root, refuse to execute script for security reasons
-        if (await isElevated()) {
-            throw new SecurityError("Script execution has been denied for security reasons: running as root");
-        }
-
         // If requested script is outside of scripts directory, refuse to execute script for security reasons
         const relative = path.relative(this.dir, path.resolve(this.dir, script));
         if (relative.startsWith(".." + path.sep) || path.isAbsolute(relative)) {
