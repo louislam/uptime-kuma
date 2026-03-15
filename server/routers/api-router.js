@@ -26,10 +26,9 @@ const Socket = require("socket.io-client").Socket;
 const { headerAuthMiddleware } = require("../auth");
 const jwt = require("jsonwebtoken");
 const fs = require("fs");
-const JSON5 = require("json5");
 const config = require("../config");
 const { apiRateLimiter } = require("../rate-limiter");
-const apiSpecList = JSON5.parse(fs.readFileSync("./extra/api-spec.json5", "utf8"));
+const apiSpecList = JSON.parse(fs.readFileSync("./extra/api-spec.json", "utf8"));
 const apiSpec = Object.fromEntries(apiSpecList.map((entry) => [entry.name, entry]));
 
 let router = express.Router();

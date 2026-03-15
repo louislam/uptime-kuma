@@ -113,11 +113,10 @@ describe("API Bridge", () => {
         });
     });
 
-    describe("api-spec.json5", () => {
+    describe("api-spec.json", () => {
         test("loads and contains monitor events", () => {
             const fs = require("fs");
-            const JSON5 = require("json5");
-            const spec = JSON5.parse(fs.readFileSync("./extra/api-spec.json5", "utf8"));
+            const spec = JSON.parse(fs.readFileSync("./extra/api-spec.json", "utf8"));
 
             assert.ok(Array.isArray(spec));
             const names = spec.map((s) => s.name);
@@ -131,8 +130,7 @@ describe("API Bridge", () => {
 
         test("loads and contains tag events", () => {
             const fs = require("fs");
-            const JSON5 = require("json5");
-            const spec = JSON5.parse(fs.readFileSync("./extra/api-spec.json5", "utf8"));
+            const spec = JSON.parse(fs.readFileSync("./extra/api-spec.json", "utf8"));
 
             const names = spec.map((s) => s.name);
             assert.ok(names.includes("getTags"));
@@ -146,8 +144,7 @@ describe("API Bridge", () => {
 
         test("all events have required fields", () => {
             const fs = require("fs");
-            const JSON5 = require("json5");
-            const spec = JSON5.parse(fs.readFileSync("./extra/api-spec.json5", "utf8"));
+            const spec = JSON.parse(fs.readFileSync("./extra/api-spec.json", "utf8"));
 
             for (const event of spec) {
                 assert.ok(event.name, "Event missing name");
@@ -164,8 +161,7 @@ describe("API Bridge", () => {
         test("rejects when action is not found in spec", () => {
             // Import the handler indirectly by testing the spec lookup logic
             const fs = require("fs");
-            const JSON5 = require("json5");
-            const spec = JSON5.parse(fs.readFileSync("./extra/api-spec.json5", "utf8"));
+            const spec = JSON.parse(fs.readFileSync("./extra/api-spec.json", "utf8"));
 
             const action = "nonExistentAction";
             const matched = spec.some((s) => s.name === action);
@@ -174,8 +170,7 @@ describe("API Bridge", () => {
 
         test("validates parameter types in spec", () => {
             const fs = require("fs");
-            const JSON5 = require("json5");
-            const spec = JSON5.parse(fs.readFileSync("./extra/api-spec.json5", "utf8"));
+            const spec = JSON.parse(fs.readFileSync("./extra/api-spec.json", "utf8"));
 
             const addEvent = spec.find((s) => s.name === "add");
             assert.ok(addEvent);

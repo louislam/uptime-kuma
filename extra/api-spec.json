@@ -1,0 +1,317 @@
+[
+    {
+        "name": "getPushExample",
+        "description": "Get a push example.",
+        "params": [
+            {
+                "name": "language",
+                "type": "string",
+                "description": "The programming language such as `javascript-fetch` or `python`. See the directory ./extra/push-examples for a list of available languages."
+            }
+        ],
+        "returnType": "response-json",
+        "okReturn": [
+            {
+                "name": "code",
+                "type": "string",
+                "description": "The push example."
+            }
+        ],
+        "possibleErrorReasons": ["The parameter `language` is not available"]
+    },
+    {
+        "name": "checkApprise",
+        "description": "Check if the apprise library is installed.",
+        "params": [],
+        "returnType": "boolean"
+    },
+    {
+        "name": "getSettings",
+        "description": "",
+        "params": [],
+        "returnType": "response-json",
+        "okReturn": [
+            {
+                "name": "data",
+                "type": "object",
+                "description": "The setting object. It does not contain default values."
+            }
+        ],
+        "possibleErrorReasons": []
+    },
+    {
+        "name": "changePassword",
+        "description": "",
+        "params": [
+            {
+                "name": "password",
+                "type": "object",
+                "description": "The password object with the following properties: `currentPassword` and `newPassword`"
+            }
+        ],
+        "returnType": "response-json",
+        "okReturn": [
+            {
+                "name": "data",
+                "type": "object",
+                "description": "The setting object. It does not contain default values."
+            }
+        ],
+        "possibleErrorReasons": ["Incorrect current password", "Invalid new password", "Password is too weak"]
+    },
+    {
+        "name": "getMonitorList",
+        "description": "Get a list of all monitors for the current user.",
+        "params": [],
+        "returnType": "response-json",
+        "okReturn": [],
+        "possibleErrorReasons": []
+    },
+    {
+        "name": "getMonitor",
+        "description": "Get a single monitor by ID.",
+        "params": [
+            {
+                "name": "monitorID",
+                "type": "number",
+                "description": "The monitor ID."
+            }
+        ],
+        "returnType": "response-json",
+        "okReturn": [
+            {
+                "name": "monitor",
+                "type": "object",
+                "description": "The monitor object."
+            }
+        ],
+        "possibleErrorReasons": ["Monitor not found"]
+    },
+    {
+        "name": "add",
+        "description": "Add a new monitor.",
+        "params": [
+            {
+                "name": "monitor",
+                "type": "object",
+                "description": "The monitor object. Required properties: `name` (string), `type` (string, e.g. `http`, `ping`, `port`, `keyword`, `dns`, `push`, `docker`, `group`), `url` (string), `interval` (number, seconds), `maxretries` (number), `accepted_statuscodes` (array of strings, e.g. `[\"200-299\"]`)."
+            }
+        ],
+        "returnType": "response-json",
+        "okReturn": [
+            {
+                "name": "monitorID",
+                "type": "number",
+                "description": "The ID of the newly created monitor."
+            }
+        ],
+        "possibleErrorReasons": ["Invalid monitor type", "Invalid accepted status codes"]
+    },
+    {
+        "name": "editMonitor",
+        "description": "Edit an existing monitor.",
+        "params": [
+            {
+                "name": "monitor",
+                "type": "object",
+                "description": "The monitor object with updated properties. Must include `id` (number) and all required fields."
+            }
+        ],
+        "returnType": "response-json",
+        "okReturn": [
+            {
+                "name": "monitorID",
+                "type": "number",
+                "description": "The ID of the edited monitor."
+            }
+        ],
+        "possibleErrorReasons": ["Permission denied", "Invalid Monitor Group"]
+    },
+    {
+        "name": "deleteMonitor",
+        "description": "Delete a monitor by ID.",
+        "params": [
+            {
+                "name": "monitorID",
+                "type": "number",
+                "description": "The monitor ID to delete."
+            },
+            {
+                "name": "deleteChildren",
+                "type": "boolean",
+                "description": "If the monitor is a group, whether to delete child monitors (true) or unlink them (false)."
+            }
+        ],
+        "returnType": "response-json",
+        "okReturn": [],
+        "possibleErrorReasons": ["Monitor not found"]
+    },
+    {
+        "name": "pauseMonitor",
+        "description": "Pause a monitor.",
+        "params": [
+            {
+                "name": "monitorID",
+                "type": "number",
+                "description": "The monitor ID to pause."
+            }
+        ],
+        "returnType": "response-json",
+        "okReturn": [],
+        "possibleErrorReasons": ["You do not own this monitor"]
+    },
+    {
+        "name": "resumeMonitor",
+        "description": "Resume a paused monitor.",
+        "params": [
+            {
+                "name": "monitorID",
+                "type": "number",
+                "description": "The monitor ID to resume."
+            }
+        ],
+        "returnType": "response-json",
+        "okReturn": [],
+        "possibleErrorReasons": ["You do not own this monitor"]
+    },
+    {
+        "name": "getTags",
+        "description": "Get a list of all tags.",
+        "params": [],
+        "returnType": "response-json",
+        "okReturn": [
+            {
+                "name": "tags",
+                "type": "object",
+                "description": "Array of tag objects with `id`, `name`, and `color` properties."
+            }
+        ],
+        "possibleErrorReasons": []
+    },
+    {
+        "name": "addTag",
+        "description": "Add a new tag.",
+        "params": [
+            {
+                "name": "tag",
+                "type": "object",
+                "description": "The tag object with `name` (string) and `color` (string, hex color code) properties."
+            }
+        ],
+        "returnType": "response-json",
+        "okReturn": [
+            {
+                "name": "tag",
+                "type": "object",
+                "description": "The created tag object."
+            }
+        ],
+        "possibleErrorReasons": []
+    },
+    {
+        "name": "editTag",
+        "description": "Edit an existing tag.",
+        "params": [
+            {
+                "name": "tag",
+                "type": "object",
+                "description": "The tag object with `id` (number), `name` (string), and `color` (string) properties."
+            }
+        ],
+        "returnType": "response-json",
+        "okReturn": [
+            {
+                "name": "tag",
+                "type": "object",
+                "description": "The updated tag object."
+            }
+        ],
+        "possibleErrorReasons": ["Tag not found"]
+    },
+    {
+        "name": "deleteTag",
+        "description": "Delete a tag by ID.",
+        "params": [
+            {
+                "name": "tagID",
+                "type": "number",
+                "description": "The tag ID to delete."
+            }
+        ],
+        "returnType": "response-json",
+        "okReturn": [],
+        "possibleErrorReasons": []
+    },
+    {
+        "name": "addMonitorTag",
+        "description": "Add a tag to a monitor.",
+        "params": [
+            {
+                "name": "tagID",
+                "type": "number",
+                "description": "The tag ID."
+            },
+            {
+                "name": "monitorID",
+                "type": "number",
+                "description": "The monitor ID."
+            },
+            {
+                "name": "value",
+                "type": "string",
+                "description": "The tag value for this monitor."
+            }
+        ],
+        "returnType": "response-json",
+        "okReturn": [],
+        "possibleErrorReasons": []
+    },
+    {
+        "name": "editMonitorTag",
+        "description": "Edit a monitor tag value.",
+        "params": [
+            {
+                "name": "tagID",
+                "type": "number",
+                "description": "The tag ID."
+            },
+            {
+                "name": "monitorID",
+                "type": "number",
+                "description": "The monitor ID."
+            },
+            {
+                "name": "value",
+                "type": "string",
+                "description": "The new tag value."
+            }
+        ],
+        "returnType": "response-json",
+        "okReturn": [],
+        "possibleErrorReasons": []
+    },
+    {
+        "name": "deleteMonitorTag",
+        "description": "Remove a tag from a monitor.",
+        "params": [
+            {
+                "name": "tagID",
+                "type": "number",
+                "description": "The tag ID."
+            },
+            {
+                "name": "monitorID",
+                "type": "number",
+                "description": "The monitor ID."
+            },
+            {
+                "name": "value",
+                "type": "string",
+                "description": "The tag value to match for removal."
+            }
+        ],
+        "returnType": "response-json",
+        "okReturn": [],
+        "possibleErrorReasons": []
+    }
+]

@@ -106,7 +106,6 @@
         "isomorphic-ws": "~5.0.0",
         "jsesc": "~3.0.2",
         "jsonata": "~2.1.0",
-        "json5": "~2.2.3",
         "jsonwebtoken": "~9.0.3",
         "jwt-decode": "~3.1.2",
         "kafkajs": "~2.2.4",
