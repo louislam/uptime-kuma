@@ -1,0 +1,252 @@
+POST http://localhost:3001/api
+Authorization: Bearer uk1_1HaQRETls-E5KlhB6yCtf8WJRW57KwFMuKkya-Tj
+Content-Type: application/json
+
+{
+    "action": "getPushExample",
+    "params": {
+        "language": "javascript-fetch"
+    }
+}
+
+###
+POST http://localhost:3001/api
+Authorization: Bearer uk1_1HaQRETls-E5KlhB6yCtf8WJRW57KwFMuKkya-Tj
+Content-Type: application/json
+
+{
+    "action": "checkApprise"
+}
+
+###
+POST http://localhost:3001/api
+Authorization: Bearer uk1_1HaQRETls-E5KlhB6yCtf8WJRW57KwFMuKkya-Tj
+Content-Type: application/json
+
+{
+    "action": "getSettings"
+}
+
+###
+POST http://localhost:3001/api
+Authorization: Bearer uk1_1HaQRETls-E5KlhB6yCtf8WJRW57KwFMuKkya-Tj
+Content-Type: application/json
+
+{
+    "action": "changePassword",
+    "params": {
+        "password": {
+            "currentPassword": "123456",
+            "newPassword": "1sfdsf234567"
+        }
+    }
+}
+
+### ---------- Monitors ----------
+
+# List all monitors
+POST http://localhost:3001/api
+Authorization: Bearer uk1_1HaQRETls-E5KlhB6yCtf8WJRW57KwFMuKkya-Tj
+Content-Type: application/json
+
+{
+    "action": "getMonitorList"
+}
+
+###
+# Get a single monitor
+POST http://localhost:3001/api
+Authorization: Bearer uk1_1HaQRETls-E5KlhB6yCtf8WJRW57KwFMuKkya-Tj
+Content-Type: application/json
+
+{
+    "action": "getMonitor",
+    "params": {
+        "monitorID": 1
+    }
+}
+
+###
+# Add a new HTTP monitor
+POST http://localhost:3001/api
+Authorization: Bearer uk1_1HaQRETls-E5KlhB6yCtf8WJRW57KwFMuKkya-Tj
+Content-Type: application/json
+
+{
+    "action": "add",
+    "params": {
+        "monitor": {
+            "name": "My Website",
+            "type": "http",
+            "url": "https://example.com",
+            "interval": 60,
+            "maxretries": 1,
+            "accepted_statuscodes": ["200-299"],
+            "notificationIDList": {}
+        }
+    }
+}
+
+###
+# Edit an existing monitor
+POST http://localhost:3001/api
+Authorization: Bearer uk1_1HaQRETls-E5KlhB6yCtf8WJRW57KwFMuKkya-Tj
+Content-Type: application/json
+
+{
+    "action": "editMonitor",
+    "params": {
+        "monitor": {
+            "id": 1,
+            "name": "My Website (updated)",
+            "type": "http",
+            "url": "https://example.com",
+            "interval": 120,
+            "maxretries": 2,
+            "accepted_statuscodes": ["200-299"],
+            "notificationIDList": {}
+        }
+    }
+}
+
+###
+# Delete a monitor
+POST http://localhost:3001/api
+Authorization: Bearer uk1_1HaQRETls-E5KlhB6yCtf8WJRW57KwFMuKkya-Tj
+Content-Type: application/json
+
+{
+    "action": "deleteMonitor",
+    "params": {
+        "monitorID": 1,
+        "deleteChildren": false
+    }
+}
+
+###
+# Pause a monitor
+POST http://localhost:3001/api
+Authorization: Bearer uk1_1HaQRETls-E5KlhB6yCtf8WJRW57KwFMuKkya-Tj
+Content-Type: application/json
+
+{
+    "action": "pauseMonitor",
+    "params": {
+        "monitorID": 1
+    }
+}
+
+###
+# Resume a monitor
+POST http://localhost:3001/api
+Authorization: Bearer uk1_1HaQRETls-E5KlhB6yCtf8WJRW57KwFMuKkya-Tj
+Content-Type: application/json
+
+{
+    "action": "resumeMonitor",
+    "params": {
+        "monitorID": 1
+    }
+}
+
+### ---------- Tags ----------
+
+# List all tags
+POST http://localhost:3001/api
+Authorization: Bearer uk1_1HaQRETls-E5KlhB6yCtf8WJRW57KwFMuKkya-Tj
+Content-Type: application/json
+
+{
+    "action": "getTags"
+}
+
+###
+# Add a new tag
+POST http://localhost:3001/api
+Authorization: Bearer uk1_1HaQRETls-E5KlhB6yCtf8WJRW57KwFMuKkya-Tj
+Content-Type: application/json
+
+{
+    "action": "addTag",
+    "params": {
+        "tag": {
+            "name": "production",
+            "color": "#28a745"
+        }
+    }
+}
+
+###
+# Edit a tag
+POST http://localhost:3001/api
+Authorization: Bearer uk1_1HaQRETls-E5KlhB6yCtf8WJRW57KwFMuKkya-Tj
+Content-Type: application/json
+
+{
+    "action": "editTag",
+    "params": {
+        "tag": {
+            "id": 1,
+            "name": "staging",
+            "color": "#ffc107"
+        }
+    }
+}
+
+###
+# Delete a tag
+POST http://localhost:3001/api
+Authorization: Bearer uk1_1HaQRETls-E5KlhB6yCtf8WJRW57KwFMuKkya-Tj
+Content-Type: application/json
+
+{
+    "action": "deleteTag",
+    "params": {
+        "tagID": 1
+    }
+}
+
+###
+# Add a tag to a monitor
+POST http://localhost:3001/api
+Authorization: Bearer uk1_1HaQRETls-E5KlhB6yCtf8WJRW57KwFMuKkya-Tj
+Content-Type: application/json
+
+{
+    "action": "addMonitorTag",
+    "params": {
+        "tagID": 1,
+        "monitorID": 1,
+        "value": "production-web"
+    }
+}
+
+###
+# Edit a monitor tag value
+POST http://localhost:3001/api
+Authorization: Bearer uk1_1HaQRETls-E5KlhB6yCtf8WJRW57KwFMuKkya-Tj
+Content-Type: application/json
+
+{
+    "action": "editMonitorTag",
+    "params": {
+        "tagID": 1,
+        "monitorID": 1,
+        "value": "staging-web"
+    }
+}
+
+###
+# Remove a tag from a monitor
+POST http://localhost:3001/api
+Authorization: Bearer uk1_1HaQRETls-E5KlhB6yCtf8WJRW57KwFMuKkya-Tj
+Content-Type: application/json
+
+{
+    "action": "deleteMonitorTag",
+    "params": {
+        "tagID": 1,
+        "monitorID": 1,
+        "value": "staging-web"
+    }
+}
