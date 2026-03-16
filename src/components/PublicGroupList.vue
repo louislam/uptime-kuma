@@ -202,7 +202,27 @@ export default {
          * @returns {void}
          */
         toggleGroup(group) {
-            group.collapsed = !group.collapsed;
+            if (!this.$router) {
+                return;
+            }
+
+            const groupId = this.getGroupIdentifier(group);
+            const query = { ...this.$route.query };
+            const collapsed = this.getCollapsedSet();
+
+            if (collapsed.has(groupId)) {
+                collapsed.delete(groupId);
+            } else {
+                collapsed.add(groupId);
+            }
+
+            if (collapsed.size > 0) {
+                query.collapse = [...collapsed].join(",");
+            } else {
+                delete query.collapse;
+            }
+
+            this.$router.push({ query }).catch(() => {});
         },
 
         /**
@@ -211,7 +231,20 @@ export default {
          * @returns {boolean} Whether the group is collapsed
          */
         isGroupCollapsed(group) {
-            return !!group.collapsed;
+            const groupId = this.getGroupIdentifier(group);
+            return this.getCollapsedSet().has(groupId);
+        },
+
+        /**
+         * Parse the collapse query param into a Set of group identifiers
+         * @returns {Set<string>} Set of collapsed group identifiers
+         */
+        getCollapsedSet() {
+            const raw = this.$route?.query?.collapse;
+            if (!raw) {
+                return new Set();
+            }
+            return new Set(raw.split(",").filter(Boolean));
         },
 
         /**
@@ -309,14 +342,10 @@ export default {
          * @returns {string} group identifier
          */
         getGroupIdentifier(group) {
-            // Use the name directly if available
-            if (group.name) {
-                // Only remove spaces and use encodeURIComponent for URL safety
-                const cleanName = group.name.replace(/\s+/g, "");
-                return cleanName;
+            if (group.id !== undefined && group.id !== null) {
+                return group.id.toString();
             }
-            // Fallback to ID or index
-            return group.id ? `group${group.id}` : `group${this.$root.publicGroupList.indexOf(group)}`;
+            return `group${this.$root.publicGroupList.indexOf(group)}`;
         },
     },
 };
