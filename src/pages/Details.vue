@@ -87,7 +87,11 @@
                 </span>
                 <span v-if="monitor.type === 'mysql'">{{ filterPassword(monitor.databaseConnectionString) }}</span>
                 <span v-if="monitor.type === 'oracledb'">
-                    Oracle Database: {{ filterPassword(monitor.databaseConnectionString) }}
+                    {{
+                        $t("oracledbConnectionString", {
+                            connectionString: filterPassword(monitor.databaseConnectionString),
+                        })
+                    }}
                 </span>
                 <span v-if="monitor.type === 'postgres'">{{ filterPassword(monitor.databaseConnectionString) }}</span>
                 <span v-if="monitor.type === 'push'">

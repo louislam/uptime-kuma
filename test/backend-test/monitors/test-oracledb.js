@@ -1,8 +1,14 @@
-const { afterEach, describe, test, mock } = require("node:test");
+const { after, before, describe, test } = require("node:test");
 const assert = require("node:assert");
-const oracledb = require("oracledb");
+const { GenericContainer, Wait } = require("testcontainers");
 const { OracleDbMonitorType } = require("../../../server/monitor-types/oracledb");
 const { UP, PENDING } = require("../../../src/util");
+
+const ORACLE_IMAGE = "gvenzl/oracle-free:23-slim-faststart";
+const ORACLE_PASSWORD = "Oracle123";
+const APP_USER = "uptimekuma";
+const APP_USER_PASSWORD = "Oracle123";
+const ORACLE_SERVICE_NAME = "FREEPDB1";
 
 /**
  * Create a monitor payload for Oracle monitor tests.
@@ -11,11 +17,8 @@ const { UP, PENDING } = require("../../../src/util");
  */
 function createMonitor(overrides = {}) {
     return {
-        databaseConnectionString: JSON.stringify({
-            user: "test",
-            password: "secret",
-            connectString: "localhost:1521/FREEPDB1",
-        }),
+        basic_auth_user: APP_USER,
+        basic_auth_pass: APP_USER_PASSWORD,
         conditions: "[]",
         ...overrides,
     };
@@ -32,122 +35,206 @@ function createHeartbeat() {
     };
 }
 
-describe("Oracle Database Monitor", () => {
-    afterEach(() => {
-        mock.restoreAll();
-    });
+/**
+ * Helper function to create and start an Oracle container.
+ * @returns {Promise<{container: import("testcontainers").StartedTestContainer, connectString: string}>}
+ */
+async function createAndStartOracleContainer() {
+    const container = await new GenericContainer(ORACLE_IMAGE)
+        .withEnvironment({
+            ORACLE_PASSWORD,
+            APP_USER,
+            APP_USER_PASSWORD,
+        })
+        .withExposedPorts(1521)
+        .withWaitStrategy(Wait.forAll([Wait.forListeningPorts(), Wait.forLogMessage("DATABASE IS READY TO USE!")]))
+        .withStartupTimeout(120000)
+        .start();
 
-    test("check() sets status to UP when the Oracle query succeeds", async () => {
-        const close = mock.fn(async () => {});
-        mock.method(oracledb, "getConnection", async (config) => {
-            assert.deepStrictEqual(config, {
-                user: "test",
-                password: "secret",
-                connectString: "localhost:1521/FREEPDB1",
+    return {
+        container,
+        connectString: `${container.getHost()}:${container.getMappedPort(1521)}/${ORACLE_SERVICE_NAME}`,
+    };
+}
+
+describe(
+    "Oracle Database Monitor",
+    {
+        skip: !!process.env.CI && (process.platform !== "linux" || process.arch !== "x64"),
+    },
+    () => {
+        /** @type {import("testcontainers").StartedTestContainer | undefined} */
+        let container;
+        /** @type {string | undefined} */
+        let connectString;
+
+        before(async () => {
+            const oracle = await createAndStartOracleContainer();
+            container = oracle.container;
+            connectString = oracle.connectString;
+        });
+
+        after(async () => {
+            if (container) {
+                await container.stop();
+            }
+        });
+
+        test("check() sets status to UP when Oracle server is reachable", async () => {
+            const oracleMonitor = new OracleDbMonitorType();
+            const monitor = createMonitor({
+                databaseConnectionString: connectString,
             });
+            const heartbeat = createHeartbeat();
 
-            return {
-                execute: async (query, _binds, options) => {
-                    assert.strictEqual(query, "SELECT 1 FROM DUAL");
-                    assert.strictEqual(options.outFormat, oracledb.OUT_FORMAT_OBJECT);
-                    return {
-                        rows: [{ VALUE: 1 }],
-                    };
-                },
-                close,
-            };
+            await oracleMonitor.check(monitor, heartbeat, {});
+            assert.strictEqual(heartbeat.status, UP, `Expected status ${UP} but got ${heartbeat.status}`);
         });
 
-        const oracleMonitor = new OracleDbMonitorType();
-        const heartbeat = createHeartbeat();
+        test("check() rejects when Oracle server is not reachable", async () => {
+            const oracleMonitor = new OracleDbMonitorType();
+            const monitor = createMonitor({
+                databaseConnectionString: "localhost:1/FREEPDB1",
+            });
+            const heartbeat = createHeartbeat();
 
-        await oracleMonitor.check(createMonitor(), heartbeat, {});
-
-        assert.strictEqual(heartbeat.status, UP);
-        assert.strictEqual(heartbeat.msg, "Rows: 1");
-        assert.strictEqual(close.mock.calls.length, 1);
-    });
-
-    test("check() sets status to UP when the Oracle query result meets the condition", async () => {
-        const close = mock.fn(async () => {});
-        mock.method(oracledb, "getConnection", async () => ({
-            execute: async () => ({
-                rows: [{ VALUE: 42 }],
-            }),
-            close,
-        }));
-
-        const oracleMonitor = new OracleDbMonitorType();
-        const heartbeat = createHeartbeat();
-        const monitor = createMonitor({
-            databaseQuery: "SELECT 42 AS value FROM DUAL",
-            conditions: JSON.stringify([
-                {
-                    type: "expression",
-                    andOr: "and",
-                    variable: "result",
-                    operator: "equals",
-                    value: "42",
-                },
-            ]),
+            await assert.rejects(oracleMonitor.check(monitor, heartbeat, {}), (err) => {
+                assert.ok(
+                    err.message.includes("Database connection/query failed"),
+                    `Expected error message to include "Database connection/query failed" but got: ${err.message}`
+                );
+                return true;
+            });
+            assert.notStrictEqual(heartbeat.status, UP, `Expected status should not be ${UP}`);
         });
 
-        await oracleMonitor.check(monitor, heartbeat, {});
+        test("check() sets status to UP when custom query returns single value", async () => {
+            const oracleMonitor = new OracleDbMonitorType();
+            const monitor = createMonitor({
+                databaseConnectionString: connectString,
+                databaseQuery: "SELECT 42 FROM DUAL",
+            });
+            const heartbeat = createHeartbeat();
 
-        assert.strictEqual(heartbeat.status, UP);
-        assert.strictEqual(heartbeat.msg, "Query did meet specified conditions");
-        assert.strictEqual(close.mock.calls.length, 1);
-    });
-
-    test("check() rejects when the Oracle query result does not meet the condition", async () => {
-        const close = mock.fn(async () => {});
-        mock.method(oracledb, "getConnection", async () => ({
-            execute: async () => ({
-                rows: [{ VALUE: 99 }],
-            }),
-            close,
-        }));
-
-        const oracleMonitor = new OracleDbMonitorType();
-        const heartbeat = createHeartbeat();
-        const monitor = createMonitor({
-            databaseQuery: "SELECT 99 AS value FROM DUAL",
-            conditions: JSON.stringify([
-                {
-                    type: "expression",
-                    andOr: "and",
-                    variable: "result",
-                    operator: "equals",
-                    value: "42",
-                },
-            ]),
+            await oracleMonitor.check(monitor, heartbeat, {});
+            assert.strictEqual(heartbeat.status, UP, `Expected status ${UP} but got ${heartbeat.status}`);
         });
 
-        await assert.rejects(
-            oracleMonitor.check(monitor, heartbeat, {}),
-            new Error("Query result did not meet the specified conditions (99)")
-        );
-        assert.strictEqual(heartbeat.status, PENDING);
-        assert.strictEqual(close.mock.calls.length, 1);
-    });
+        test("check() sets status to UP when custom query result meets condition", async () => {
+            const oracleMonitor = new OracleDbMonitorType();
+            const monitor = createMonitor({
+                databaseConnectionString: connectString,
+                databaseQuery: "SELECT 42 AS value FROM DUAL",
+                conditions: JSON.stringify([
+                    {
+                        type: "expression",
+                        andOr: "and",
+                        variable: "result",
+                        operator: "equals",
+                        value: "42",
+                    },
+                ]),
+            });
+            const heartbeat = createHeartbeat();
 
-    test("check() rejects when the Oracle connection config uses connectionString instead of connectString", async () => {
-        const oracleMonitor = new OracleDbMonitorType();
-        const heartbeat = createHeartbeat();
-        const monitor = createMonitor({
-            databaseConnectionString: JSON.stringify({
-                user: "test",
-                password: "secret",
-                connectionString: "localhost:1521/FREEPDB1",
-            }),
+            await oracleMonitor.check(monitor, heartbeat, {});
+            assert.strictEqual(heartbeat.status, UP, `Expected status ${UP} but got ${heartbeat.status}`);
         });
 
-        await assert.rejects(
-            oracleMonitor.check(monitor, heartbeat, {}),
-            new Error(
-                'Database connection/query failed: Oracle connection config must use "connectString" instead of "connectionString"'
-            )
-        );
-        assert.strictEqual(heartbeat.status, PENDING);
-    });
-});
+        test("check() rejects when custom query result does not meet condition", async () => {
+            const oracleMonitor = new OracleDbMonitorType();
+            const monitor = createMonitor({
+                databaseConnectionString: connectString,
+                databaseQuery: "SELECT 99 AS value FROM DUAL",
+                conditions: JSON.stringify([
+                    {
+                        type: "expression",
+                        andOr: "and",
+                        variable: "result",
+                        operator: "equals",
+                        value: "42",
+                    },
+                ]),
+            });
+            const heartbeat = createHeartbeat();
+
+            await assert.rejects(
+                oracleMonitor.check(monitor, heartbeat, {}),
+                new Error("Query result did not meet the specified conditions (99)")
+            );
+            assert.strictEqual(heartbeat.status, PENDING, `Expected status should not be ${heartbeat.status}`);
+        });
+
+        test("check() rejects when query returns no results with conditions", async () => {
+            const oracleMonitor = new OracleDbMonitorType();
+            const monitor = createMonitor({
+                databaseConnectionString: connectString,
+                databaseQuery: "SELECT 1 AS value FROM DUAL WHERE 1 = 0",
+                conditions: JSON.stringify([
+                    {
+                        type: "expression",
+                        andOr: "and",
+                        variable: "result",
+                        operator: "equals",
+                        value: "1",
+                    },
+                ]),
+            });
+            const heartbeat = createHeartbeat();
+
+            await assert.rejects(
+                oracleMonitor.check(monitor, heartbeat, {}),
+                new Error("Database connection/query failed: Query returned no results")
+            );
+            assert.strictEqual(heartbeat.status, PENDING, `Expected status should not be ${heartbeat.status}`);
+        });
+
+        test("check() rejects when query returns multiple rows with conditions", async () => {
+            const oracleMonitor = new OracleDbMonitorType();
+            const monitor = createMonitor({
+                databaseConnectionString: connectString,
+                databaseQuery: "SELECT 1 AS value FROM DUAL UNION ALL SELECT 2 AS value FROM DUAL",
+                conditions: JSON.stringify([
+                    {
+                        type: "expression",
+                        andOr: "and",
+                        variable: "result",
+                        operator: "equals",
+                        value: "1",
+                    },
+                ]),
+            });
+            const heartbeat = createHeartbeat();
+
+            await assert.rejects(
+                oracleMonitor.check(monitor, heartbeat, {}),
+                new Error("Database connection/query failed: Multiple values were found, expected only one value")
+            );
+            assert.strictEqual(heartbeat.status, PENDING, `Expected status should not be ${heartbeat.status}`);
+        });
+
+        test("check() rejects when query returns multiple columns with conditions", async () => {
+            const oracleMonitor = new OracleDbMonitorType();
+            const monitor = createMonitor({
+                databaseConnectionString: connectString,
+                databaseQuery: "SELECT 1 AS col1, 2 AS col2 FROM DUAL",
+                conditions: JSON.stringify([
+                    {
+                        type: "expression",
+                        andOr: "and",
+                        variable: "result",
+                        operator: "equals",
+                        value: "1",
+                    },
+                ]),
+            });
+            const heartbeat = createHeartbeat();
+
+            await assert.rejects(
+                oracleMonitor.check(monitor, heartbeat, {}),
+                new Error("Database connection/query failed: Multiple columns were found, expected only one value")
+            );
+            assert.strictEqual(heartbeat.status, PENDING, `Expected status should not be ${heartbeat.status}`);
+        });
+    }
+);

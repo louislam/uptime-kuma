@@ -1178,21 +1178,35 @@
                                         {{ $t("Connection String") }}
                                     </label>
                                     <input
-                                        v-if="monitor.type !== 'oracledb'"
                                         id="connectionString"
                                         v-model="monitor.databaseConnectionString"
                                         type="text"
                                         class="form-control"
                                         required
                                     />
-                                    <textarea
-                                        v-else
-                                        id="connectionString"
-                                        v-model="monitor.databaseConnectionString"
+                                </div>
+                            </template>
+
+                            <template v-if="monitor.type === 'oracledb'">
+                                <div class="my-3">
+                                    <label for="oracledb-user" class="form-label">{{ $t("Username") }}</label>
+                                    <input
+                                        id="oracledb-user"
+                                        v-model="monitor.basic_auth_user"
+                                        type="text"
                                         class="form-control"
-                                        rows="4"
                                         required
-                                    ></textarea>
+                                    />
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="oracledb-pass" class="form-label">{{ $t("Password") }}</label>
+                                    <HiddenInput
+                                        id="oracledb-pass"
+                                        v-model="monitor.basic_auth_pass"
+                                        autocomplete="new-password"
+                                        :required="true"
+                                    />
                                 </div>
                             </template>
 
@@ -2896,6 +2910,8 @@ const monitorDefaults = {
     docker_container: "",
     docker_host: null,
     proxyId: null,
+    basic_auth_user: "",
+    basic_auth_pass: "",
     mqttUsername: "",
     mqttPassword: "",
     mqttTopic: "",
@@ -2960,15 +2976,7 @@ export default {
                     "Server=<hostname>,<port>;Database=<your database>;User Id=<your user id>;Password=<your password>;Encrypt=<true/false>;TrustServerCertificate=<Yes/No>;Connection Timeout=<int>",
                 postgres: "postgres://username:password@host:port/database",
                 mysql: "mysql://username:password@host:port/database",
-                oracledb: JSON.stringify(
-                    {
-                        user: "<username>",
-                        password: "<password>",
-                        connectString: "localhost:1521/FREEPDB1",
-                    },
-                    null,
-                    2
-                ),
+                oracledb: "localhost:1521/FREEPDB1",
                 redis: "redis://user:password@host:port",
                 mongodb: "mongodb://username:password@host:port/database",
             },
@@ -3865,6 +3873,10 @@ message HealthCheckResponse {
 
             if (this.monitor.url) {
                 this.monitor.url = this.monitor.url.trim();
+            }
+
+            if (this.monitor.databaseConnectionString) {
+                this.monitor.databaseConnectionString = this.monitor.databaseConnectionString.trim();
             }
 
             let createdNewParent = false;

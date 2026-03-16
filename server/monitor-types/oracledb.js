@@ -28,7 +28,12 @@ class OracleDbMonitorType extends MonitorType {
         const startTime = dayjs().valueOf();
         try {
             if (hasConditions) {
-                const result = await this.oracledbQuerySingleValue(monitor.databaseConnectionString, query);
+                const result = await this.oracledbQuerySingleValue(
+                    monitor.databaseConnectionString,
+                    query,
+                    monitor.basic_auth_user,
+                    monitor.basic_auth_pass
+                );
                 heartbeat.ping = dayjs().valueOf() - startTime;
 
                 const conditionsResult = evaluateExpressionGroup(conditions, { result: String(result) });
@@ -40,7 +45,12 @@ class OracleDbMonitorType extends MonitorType {
                 heartbeat.status = UP;
                 heartbeat.msg = "Query did meet specified conditions";
             } else {
-                const result = await this.oracledbQuery(monitor.databaseConnectionString, query);
+                const result = await this.oracledbQuery(
+                    monitor.databaseConnectionString,
+                    query,
+                    monitor.basic_auth_user,
+                    monitor.basic_auth_pass
+                );
                 heartbeat.ping = dayjs().valueOf() - startTime;
                 heartbeat.status = UP;
                 heartbeat.msg = result;
@@ -55,45 +65,21 @@ class OracleDbMonitorType extends MonitorType {
     }
 
     /**
-     * Parse and validate the Oracle DB connection config.
-     * @param {string} connectionString The JSON-encoded Oracle DB connection config
-     * @returns {object} Parsed Oracle DB connection config
-     * @throws {Error} If the config is not valid Oracle DB connection JSON
-     */
-    parseConnectionConfig(connectionString) {
-        let config;
-
-        try {
-            config = JSON.parse(connectionString);
-        } catch (error) {
-            throw new Error(`Oracle connection config must be valid JSON: ${error.message}`);
-        }
-
-        if (config === null || Array.isArray(config) || typeof config !== "object") {
-            throw new Error("Oracle connection config must be a JSON object");
-        }
-
-        if ("connectionString" in config && !("connectString" in config)) {
-            throw new Error('Oracle connection config must use "connectString" instead of "connectionString"');
-        }
-
-        if (typeof config.connectString !== "string" || config.connectString.trim() === "") {
-            throw new Error('Oracle connection config must include a non-empty "connectString"');
-        }
-
-        return config;
-    }
-
-    /**
      * Run a query on Oracle Database.
-     * @param {string} connectionString The JSON-encoded Oracle DB connection config
+     * @param {string} connectionString The Oracle DB connection string
      * @param {string} query The query to execute
+     * @param {string} username Oracle DB username
+     * @param {string} password Oracle DB password
      * @returns {Promise<string>} Row count or execution message
      */
-    async oracledbQuery(connectionString, query) {
+    async oracledbQuery(connectionString, query, username, password) {
         let connection;
         try {
-            connection = await oracledb.getConnection(this.parseConnectionConfig(connectionString));
+            connection = await oracledb.getConnection({
+                connectString: connectionString.trim(),
+                user: username.trim(),
+                password: password.trim(),
+            });
             const result = await connection.execute(query, [], {
                 outFormat: oracledb.OUT_FORMAT_OBJECT,
             });
@@ -119,14 +105,20 @@ class OracleDbMonitorType extends MonitorType {
 
     /**
      * Run a query on Oracle Database expecting a single value result.
-     * @param {string} connectionString The JSON-encoded Oracle DB connection config
+     * @param {string} connectionString The Oracle DB connection string
      * @param {string} query The query to execute
+     * @param {string} username Oracle DB username
+     * @param {string} password Oracle DB password
      * @returns {Promise<any>} Single value from the first column of the first row
      */
-    async oracledbQuerySingleValue(connectionString, query) {
+    async oracledbQuerySingleValue(connectionString, query, username, password) {
         let connection;
         try {
-            connection = await oracledb.getConnection(this.parseConnectionConfig(connectionString));
+            connection = await oracledb.getConnection({
+                connectString: connectionString.trim(),
+                user: username.trim(),
+                password: password.trim(),
+            });
             const result = await connection.execute(query, [], {
                 outFormat: oracledb.OUT_FORMAT_OBJECT,
             });
