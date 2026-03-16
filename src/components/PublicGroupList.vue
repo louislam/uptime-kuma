@@ -207,17 +207,18 @@ export default {
             }
 
             const groupId = this.getGroupIdentifier(group);
-            const query = { ...this.$route.query };
-            const collapsed = this.getCollapsedSet();
+            const collapsed = this.getCollapsedList();
+            const index = collapsed.indexOf(groupId);
 
-            if (collapsed.has(groupId)) {
-                collapsed.delete(groupId);
+            if (index >= 0) {
+                collapsed.splice(index, 1);
             } else {
-                collapsed.add(groupId);
+                collapsed.push(groupId);
             }
 
-            if (collapsed.size > 0) {
-                query.collapse = [...collapsed].join(",");
+            const query = { ...this.$route.query };
+            if (collapsed.length > 0) {
+                query.collapse = collapsed;
             } else {
                 delete query.collapse;
             }
@@ -231,20 +232,20 @@ export default {
          * @returns {boolean} Whether the group is collapsed
          */
         isGroupCollapsed(group) {
-            const groupId = this.getGroupIdentifier(group);
-            return this.getCollapsedSet().has(groupId);
+            return this.getCollapsedList().includes(this.getGroupIdentifier(group));
         },
 
         /**
-         * Parse the collapse query param into a Set of group identifiers
-         * @returns {Set<string>} Set of collapsed group identifiers
+         * Get list of collapsed group identifiers from the query param.
+         * Vue Router normalises repeated params (?collapse=1&collapse=2) into an array.
+         * @returns {string[]} Collapsed group identifiers
          */
-        getCollapsedSet() {
-            const raw = this.$route?.query?.collapse;
+        getCollapsedList() {
+            const raw = this.$route.query.collapse;
             if (!raw) {
-                return new Set();
+                return [];
             }
-            return new Set(raw.split(",").filter(Boolean));
+            return [].concat(raw);
         },
 
         /**
