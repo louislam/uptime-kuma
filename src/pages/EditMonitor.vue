@@ -1302,7 +1302,11 @@
                                         id="sqlQuery"
                                         v-model="monitor.databaseQuery"
                                         class="form-control"
-                                        :placeholder="$t('Example:', [monitor.type === 'oracledb' ? 'SELECT 1 FROM DUAL' : 'SELECT 1'])"
+                                        :placeholder="
+                                            $t('Example:', [
+                                                monitor.type === 'oracledb' ? 'SELECT 1 FROM DUAL' : 'SELECT 1',
+                                            ])
+                                        "
                                     ></textarea>
                                 </div>
                             </template>
@@ -2956,11 +2960,15 @@ export default {
                     "Server=<hostname>,<port>;Database=<your database>;User Id=<your user id>;Password=<your password>;Encrypt=<true/false>;TrustServerCertificate=<Yes/No>;Connection Timeout=<int>",
                 postgres: "postgres://username:password@host:port/database",
                 mysql: "mysql://username:password@host:port/database",
-                oracledb: JSON.stringify({
-                    user: "<username>",
-                    password: "<password>",
-                    connectString: "localhost:1521/FREEPDB1",
-                }, null, 2),
+                oracledb: JSON.stringify(
+                    {
+                        user: "<username>",
+                        password: "<password>",
+                        connectString: "localhost:1521/FREEPDB1",
+                    },
+                    null,
+                    2
+                ),
                 redis: "redis://user:password@host:port",
                 mongodb: "mongodb://username:password@host:port/database",
             },

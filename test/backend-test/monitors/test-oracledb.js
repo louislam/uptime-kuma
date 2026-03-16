@@ -145,7 +145,7 @@ describe("Oracle Database Monitor", () => {
         await assert.rejects(
             oracleMonitor.check(monitor, heartbeat, {}),
             new Error(
-                "Database connection/query failed: Oracle connection config must use \"connectString\" instead of \"connectionString\""
+                'Database connection/query failed: Oracle connection config must use "connectString" instead of "connectionString"'
             )
         );
         assert.strictEqual(heartbeat.status, PENDING);

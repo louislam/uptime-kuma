@@ -74,11 +74,11 @@ class OracleDbMonitorType extends MonitorType {
         }
 
         if ("connectionString" in config && !("connectString" in config)) {
-            throw new Error("Oracle connection config must use \"connectString\" instead of \"connectionString\"");
+            throw new Error('Oracle connection config must use "connectString" instead of "connectionString"');
         }
 
         if (typeof config.connectString !== "string" || config.connectString.trim() === "") {
-            throw new Error("Oracle connection config must include a non-empty \"connectString\"");
+            throw new Error('Oracle connection config must include a non-empty "connectString"');
         }
 
         return config;
