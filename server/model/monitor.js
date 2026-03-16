@@ -1801,6 +1801,28 @@ class Monitor extends BeanModel {
                 throw new Error(`Invalid JSON in database query: ${error.message}`);
             }
         }
+
+        if (this.type === "oracledb" && this.databaseConnectionString) {
+            let config;
+
+            try {
+                config = JSON.parse(this.databaseConnectionString);
+            } catch (error) {
+                throw new Error(`Invalid JSON in Oracle connection config: ${error.message}`);
+            }
+
+            if (config === null || Array.isArray(config) || typeof config !== "object") {
+                throw new Error("Oracle connection config must be a JSON object");
+            }
+
+            if ("connectionString" in config && !("connectString" in config)) {
+                throw new Error("Oracle connection config must use \"connectString\" instead of \"connectionString\"");
+            }
+
+            if (typeof config.connectString !== "string" || config.connectString.trim() === "") {
+                throw new Error("Oracle connection config must include a non-empty \"connectString\"");
+            }
+        }
     }
 
     /**

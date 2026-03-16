@@ -86,6 +86,9 @@
                     MQTT: {{ monitor.hostname }}:{{ monitor.port }}/{{ monitor.mqttTopic }}
                 </span>
                 <span v-if="monitor.type === 'mysql'">{{ filterPassword(monitor.databaseConnectionString) }}</span>
+                <span v-if="monitor.type === 'oracledb'">
+                    Oracle Database: {{ filterPassword(monitor.databaseConnectionString) }}
+                </span>
                 <span v-if="monitor.type === 'postgres'">{{ filterPassword(monitor.databaseConnectionString) }}</span>
                 <span v-if="monitor.type === 'push'">
                     Push:
@@ -775,8 +778,9 @@ export default {
                 }
                 return parsedUrl.toString();
             } catch (e) {
-                // Handle SQL Server
-                return urlString.replaceAll(/Password=(.+);/gi, "Password=******;");
+                return urlString
+                    .replaceAll(/Password=(.+);/gi, "Password=******;")
+                    .replaceAll(/("password"\s*:\s*")[^"]*(")/gi, "$1******$2");
             }
         },
 

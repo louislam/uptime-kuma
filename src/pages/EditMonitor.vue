@@ -98,6 +98,7 @@
                                         <option value="sqlserver">Microsoft SQL Server</option>
                                         <option value="mongodb">MongoDB</option>
                                         <option value="mysql">MySQL/MariaDB</option>
+                                        <option value="oracledb">Oracle Database</option>
                                         <option value="postgres">PostgreSQL</option>
                                         <option value="radius">Radius</option>
                                         <option value="redis">Redis</option>
@@ -1161,12 +1162,13 @@
                                 </div>
                             </template>
 
-                            <!-- SQL Server / PostgreSQL / MySQL / Redis / MongoDB -->
+                            <!-- SQL Server / PostgreSQL / MySQL / Oracle / Redis / MongoDB -->
                             <template
                                 v-if="
                                     monitor.type === 'sqlserver' ||
                                     monitor.type === 'postgres' ||
                                     monitor.type === 'mysql' ||
+                                    monitor.type === 'oracledb' ||
                                     monitor.type === 'redis' ||
                                     monitor.type === 'mongodb'
                                 "
@@ -1176,12 +1178,21 @@
                                         {{ $t("Connection String") }}
                                     </label>
                                     <input
+                                        v-if="monitor.type !== 'oracledb'"
                                         id="connectionString"
                                         v-model="monitor.databaseConnectionString"
                                         type="text"
                                         class="form-control"
                                         required
                                     />
+                                    <textarea
+                                        v-else
+                                        id="connectionString"
+                                        v-model="monitor.databaseConnectionString"
+                                        class="form-control"
+                                        rows="4"
+                                        required
+                                    ></textarea>
                                 </div>
                             </template>
 
@@ -1276,12 +1287,13 @@
                                 </div>
                             </template>
 
-                            <!-- SQL Server / PostgreSQL / MySQL -->
+                            <!-- SQL Server / PostgreSQL / MySQL / Oracle -->
                             <template
                                 v-if="
                                     monitor.type === 'sqlserver' ||
                                     monitor.type === 'postgres' ||
-                                    monitor.type === 'mysql'
+                                    monitor.type === 'mysql' ||
+                                    monitor.type === 'oracledb'
                                 "
                             >
                                 <div class="my-3">
@@ -1290,7 +1302,7 @@
                                         id="sqlQuery"
                                         v-model="monitor.databaseQuery"
                                         class="form-control"
-                                        :placeholder="$t('Example:', ['SELECT 1'])"
+                                        :placeholder="$t('Example:', [monitor.type === 'oracledb' ? 'SELECT 1 FROM DUAL' : 'SELECT 1'])"
                                     ></textarea>
                                 </div>
                             </template>
@@ -2944,6 +2956,11 @@ export default {
                     "Server=<hostname>,<port>;Database=<your database>;User Id=<your user id>;Password=<your password>;Encrypt=<true/false>;TrustServerCertificate=<Yes/No>;Connection Timeout=<int>",
                 postgres: "postgres://username:password@host:port/database",
                 mysql: "mysql://username:password@host:port/database",
+                oracledb: JSON.stringify({
+                    user: "<username>",
+                    password: "<password>",
+                    connectString: "localhost:1521/FREEPDB1",
+                }, null, 2),
                 redis: "redis://user:password@host:port",
                 mongodb: "mongodb://username:password@host:port/database",
             },
