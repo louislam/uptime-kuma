@@ -104,7 +104,9 @@
                                             </div>
                                             <div class="extra-info">
                                                 <div
-                                                    v-if="showCertificateExpiry && monitor.element.certExpiryDaysRemaining"
+                                                    v-if="
+                                                        showCertificateExpiry && monitor.element.certExpiryDaysRemaining
+                                                    "
                                                 >
                                                     <Tag
                                                         :item="{
