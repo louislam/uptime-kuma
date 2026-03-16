@@ -87,6 +87,7 @@ import SMSIR from "./SMSIR.vue";
 import Webpush from "./Webpush.vue";
 import HaloPSA from "./HaloPSA.vue";
 import Resend from "./Resend.vue";
+import Max from "./Max.vue";
 
 /**
  * Manage all notification form.
@@ -182,6 +183,7 @@ const NotificationFormList = {
     SMSPlanet: SMSPlanet,
     Webpush: Webpush,
     HaloPSA: HaloPSA,
+    max: Max,
 };
 
 export default NotificationFormList;
