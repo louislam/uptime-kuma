@@ -1,95 +1,9 @@
 const { R } = require("redbean-node");
 const { log } = require("../src/util");
-const Alerta = require("./notification-providers/alerta");
-const AlertNow = require("./notification-providers/alertnow");
-const AliyunSms = require("./notification-providers/aliyun-sms");
-const Apprise = require("./notification-providers/apprise");
-const Bale = require("./notification-providers/bale");
-const Bark = require("./notification-providers/bark");
-const Bitrix24 = require("./notification-providers/bitrix24");
-const ClickSendSMS = require("./notification-providers/clicksendsms");
-const CallMeBot = require("./notification-providers/call-me-bot");
-const SMSC = require("./notification-providers/smsc");
-const DingDing = require("./notification-providers/dingding");
-const Discord = require("./notification-providers/discord");
-const Fluxer = require("./notification-providers/fluxer");
-const Elks = require("./notification-providers/46elks");
-const Feishu = require("./notification-providers/feishu");
-const Notifery = require("./notification-providers/notifery");
-const FreeMobile = require("./notification-providers/freemobile");
-const GoogleChat = require("./notification-providers/google-chat");
-const GoogleSheets = require("./notification-providers/google-sheets");
-const Gorush = require("./notification-providers/gorush");
-const Gotify = require("./notification-providers/gotify");
-const GrafanaOncall = require("./notification-providers/grafana-oncall");
-const HomeAssistant = require("./notification-providers/home-assistant");
-const HeiiOnCall = require("./notification-providers/heii-oncall");
-const Keep = require("./notification-providers/keep");
-const Kook = require("./notification-providers/kook");
-const Line = require("./notification-providers/line");
-const LunaSea = require("./notification-providers/lunasea");
-const Matrix = require("./notification-providers/matrix");
-const Mattermost = require("./notification-providers/mattermost");
-const NextcloudTalk = require("./notification-providers/nextcloudtalk");
-const Nostr = require("./notification-providers/nostr");
-const Ntfy = require("./notification-providers/ntfy");
-const Octopush = require("./notification-providers/octopush");
-const OneChat = require("./notification-providers/onechat");
-const OneBot = require("./notification-providers/onebot");
-const Opsgenie = require("./notification-providers/opsgenie");
-const JiraServiceManagement = require("./notification-providers/jira-service-management");
-const PagerDuty = require("./notification-providers/pagerduty");
-const Pumble = require("./notification-providers/pumble");
-const FlashDuty = require("./notification-providers/flashduty");
-const PagerTree = require("./notification-providers/pagertree");
-const PromoSMS = require("./notification-providers/promosms");
-const Pushbullet = require("./notification-providers/pushbullet");
-const PushDeer = require("./notification-providers/pushdeer");
-const Pushover = require("./notification-providers/pushover");
-const PushPlus = require("./notification-providers/pushplus");
-const Pushy = require("./notification-providers/pushy");
-const RocketChat = require("./notification-providers/rocket-chat");
-const SerwerSMS = require("./notification-providers/serwersms");
-const Signal = require("./notification-providers/signal");
-const SIGNL4 = require("./notification-providers/signl4");
-const Slack = require("./notification-providers/slack");
-const SMSPartner = require("./notification-providers/smspartner");
-const SMSEagle = require("./notification-providers/smseagle");
-const SMTP = require("./notification-providers/smtp");
-const Squadcast = require("./notification-providers/squadcast");
-const Stackfield = require("./notification-providers/stackfield");
-const Teams = require("./notification-providers/teams");
-const TechulusPush = require("./notification-providers/techulus-push");
-const Telegram = require("./notification-providers/telegram");
-const Teltonika = require("./notification-providers/teltonika");
-const Threema = require("./notification-providers/threema");
-const Twilio = require("./notification-providers/twilio");
-const Splunk = require("./notification-providers/splunk");
-const Webhook = require("./notification-providers/webhook");
-const WeCom = require("./notification-providers/wecom");
-const GoAlert = require("./notification-providers/goalert");
-const SMSManager = require("./notification-providers/smsmanager");
-const ServerChan = require("./notification-providers/serverchan");
-const ZohoCliq = require("./notification-providers/zoho-cliq");
-const SevenIO = require("./notification-providers/sevenio");
-const Whapi = require("./notification-providers/whapi");
-const WAHA = require("./notification-providers/waha");
-const Evolution = require("./notification-providers/evolution");
-const GtxMessaging = require("./notification-providers/gtx-messaging");
-const Cellsynt = require("./notification-providers/cellsynt");
-const Onesender = require("./notification-providers/onesender");
-const Wpush = require("./notification-providers/wpush");
-const SendGrid = require("./notification-providers/send-grid");
-const Brevo = require("./notification-providers/brevo");
-const Resend = require("./notification-providers/resend");
-const YZJ = require("./notification-providers/yzj");
-const SMSPlanet = require("./notification-providers/sms-planet");
-const SpugPush = require("./notification-providers/spugpush");
-const SMSIR = require("./notification-providers/smsir");
+const { loadPlugins } = require("./utils/plugin-loader");
+const path = require("path");
 const { commandExists } = require("./util-server");
-const Whatsapp360messenger = require("./notification-providers/360messenger");
-const Webpush = require("./notification-providers/Webpush");
-const HaloPSA = require("./notification-providers/HaloPSA");
+const NotificationProvider = require("./notification-providers/notification-provider");
 
 class Notification {
     providerList = {};
@@ -97,115 +11,24 @@ class Notification {
     /**
      * Initialize the notification providers
      * @returns {void}
-     * @throws Notification provider does not have a name
-     * @throws Duplicate notification providers in list
+     * @throws {Error} If a notification provider is missing a name
+     * @throws {Error} If duplicate notification provider names are found
      */
     static init() {
         log.debug("notification", "Prepare Notification Providers");
 
         this.providerList = {};
 
-        const list = [
-            new Alerta(),
-            new AlertNow(),
-            new AliyunSms(),
-            new Apprise(),
-            new Bale(),
-            new Bark(),
-            new Bitrix24(),
-            new ClickSendSMS(),
-            new CallMeBot(),
-            new SMSC(),
-            new DingDing(),
-            new Discord(),
-            new Fluxer(),
-            new Elks(),
-            new Feishu(),
-            new FreeMobile(),
-            new GoogleChat(),
-            new GoogleSheets(),
-            new Gorush(),
-            new Gotify(),
-            new GrafanaOncall(),
-            new HomeAssistant(),
-            new HeiiOnCall(),
-            new Keep(),
-            new Kook(),
-            new Line(),
-            new LunaSea(),
-            new Matrix(),
-            new Mattermost(),
-            new NextcloudTalk(),
-            new Nostr(),
-            new Ntfy(),
-            new Octopush(),
-            new OneChat(),
-            new OneBot(),
-            new Onesender(),
-            new Opsgenie(),
-            new JiraServiceManagement(),
-            new PagerDuty(),
-            new FlashDuty(),
-            new PagerTree(),
-            new PromoSMS(),
-            new Pumble(),
-            new Pushbullet(),
-            new PushDeer(),
-            new Pushover(),
-            new PushPlus(),
-            new Pushy(),
-            new RocketChat(),
-            new ServerChan(),
-            new SerwerSMS(),
-            new Signal(),
-            new SIGNL4(),
-            new SMSManager(),
-            new SMSPartner(),
-            new Slack(),
-            new SMSEagle(),
-            new SMTP(),
-            new Squadcast(),
-            new Stackfield(),
-            new Teams(),
-            new TechulusPush(),
-            new Telegram(),
-            new Teltonika(),
-            new Threema(),
-            new Twilio(),
-            new Splunk(),
-            new Webhook(),
-            new WeCom(),
-            new GoAlert(),
-            new ZohoCliq(),
-            new SevenIO(),
-            new Whapi(),
-            new WAHA(),
-            new Evolution(),
-            new GtxMessaging(),
-            new Cellsynt(),
-            new Wpush(),
-            new Brevo(),
-            new Resend(),
-            new YZJ(),
-            new SMSPlanet(),
-            new SpugPush(),
-            new Notifery(),
-            new SMSIR(),
-            new SendGrid(),
-            new Whatsapp360messenger(),
-            new Webpush(),
-            new HaloPSA(),
-        ];
-        for (let item of list) {
-            if (!item.name) {
-                throw new Error("Notification provider without name");
+        loadPlugins(path.join(__dirname, "notification-providers"), NotificationProvider, (instance, filename) => {
+            if (!instance.name) {
+                throw new Error(`Notification provider in file "${filename}" missing 'name' property`);
             }
 
-            if (this.providerList[item.name]) {
-                throw new Error("Duplicate notification provider name");
+            if (this.providerList[instance.name]) {
+                throw new Error(`Duplicate notification provider name "${instance.name}" in file "${filename}"`);
             }
-            this.providerList[item.name] = item;
-        }
+            this.providerList[instance.name] = instance;
+        });
     }
 
     /**
@@ -215,7 +38,7 @@ class Notification {
      * @param {object} monitorJSON Monitor details (For Up/Down only)
      * @param {object} heartbeatJSON Heartbeat details (For Up/Down only)
      * @returns {Promise<string>} Successful msg
-     * @throws Error with fail msg
+     * @throws {Error} If the notification type is unsupported or sending fails
      */
     static async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         if (this.providerList[notification.type]) {
