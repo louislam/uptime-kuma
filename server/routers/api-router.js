@@ -27,7 +27,7 @@ const { headerAuthMiddleware } = require("../auth");
 const jwt = require("jsonwebtoken");
 const fs = require("fs");
 const config = require("../config");
-const { apiRateLimiter } = require("../rate-limiter");
+const rateLimit = require("express-rate-limit");
 const apiSpecList = JSON.parse(fs.readFileSync("./extra/api-spec.json", "utf8"));
 const apiSpec = Object.fromEntries(apiSpecList.map((entry) => [entry.name, entry]));
 
@@ -160,76 +160,73 @@ router.all("/api/push/:pushToken", async (request, response) => {
 /*
  * Map Socket.io API to REST API
  */
-router.post(
-    "/api",
-    async (request, response, next) => {
-        const pass = await apiRateLimiter.pass(null, 0);
-        if (!pass) {
-            return response.status(429).json({
-                ok: false,
-                msg: "Too many requests, please try again later.",
-            });
-        }
-        next();
+const apiRateLimit = rateLimit({
+    windowMs: 60 * 1000,
+    max: 60,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+        ok: false,
+        msg: "Too many requests, please try again later.",
     },
-    headerAuthMiddleware,
-    async (request, response) => {
-        allowDevAllOrigin(response);
-        // TODO: Allow whitelist of origins
+});
 
-        // Generate a JWT for logging in to the socket.io server
-        const apiKeyID = response.locals.apiKeyID;
-        const user = await R.getRow(
-            "SELECT u.* FROM user u JOIN api_key ak ON u.id = ak.user_id WHERE ak.id = ? AND u.active = 1",
-            [apiKeyID]
-        );
+router.post("/api", apiRateLimit, headerAuthMiddleware, async (request, response) => {
+    allowDevAllOrigin(response);
+    // TODO: Allow whitelist of origins
 
-        if (!user) {
-            response.status(401).json({
-                ok: false,
-                msg: "User not found or inactive",
-            });
-            return;
-        }
+    // Generate a JWT for logging in to the socket.io server
+    const apiKeyID = response.locals.apiKeyID;
+    const user = await R.getRow(
+        "SELECT u.* FROM user u JOIN api_key ak ON u.id = ak.user_id WHERE ak.id = ? AND u.active = 1",
+        [apiKeyID]
+    );
 
-        const token = jwt.sign(
-            {
-                username: user.username,
-                h: shake256(user.password, SHAKE256_LENGTH),
-            },
-            server.jwtSecret
-        );
-
-        const requestData = request.body;
-
-        const wsURL = config.localWebSocketURL;
-
-        const socket = ioClient(wsURL, {
-            transports: ["websocket"],
-            reconnection: false,
+    if (!user) {
+        response.status(401).json({
+            ok: false,
+            msg: "User not found or inactive",
         });
-
-        try {
-            let result = await socketClientHandler(socket, token, requestData);
-            let status = 200;
-            if (result.status) {
-                status = result.status;
-            } else if (typeof result === "object" && result.ok === false) {
-                status = 404;
-            }
-            response.status(status).json(result);
-        } catch (e) {
-            const status = e.status || 500;
-            response.status(status).json({
-                ok: false,
-                msg: e.msg || "Internal server error",
-            });
-        }
-
-        log.debug("api", "Close socket");
-        socket.disconnect();
+        return;
     }
-);
+
+    const token = jwt.sign(
+        {
+            username: user.username,
+            h: shake256(user.password, SHAKE256_LENGTH),
+        },
+        server.jwtSecret
+    );
+
+    const requestData = request.body;
+
+    const wsURL = config.localWebSocketURL;
+
+    const socket = ioClient(wsURL, {
+        transports: ["websocket"],
+        reconnection: false,
+    });
+
+    try {
+        let result = await socketClientHandler(socket, token, requestData);
+        let status = 200;
+        if (result.status) {
+            status = result.status;
+        } else if (typeof result === "object" && result.ok === false) {
+            status = 404;
+        }
+        response.status(status).json(result);
+    } catch (e) {
+        const status = e.status || 500;
+        response.status(status).json({
+            ok: false,
+            msg: e.msg || "Internal server error",
+        });
+    }
+
+    log.debug("api", "Close socket");
+    socket.disconnect();
+});
 
 /**
  * Handle Socket.IO client connection, authentication, and event emission
