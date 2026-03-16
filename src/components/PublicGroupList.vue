@@ -17,11 +17,20 @@
                             class="action remove me-3"
                             @click="removeGroup(group.index)"
                         />
+                        <span class="collapse-toggle" @click="toggleGroup(group.element)">
+                            <font-awesome-icon
+                                icon="chevron-down"
+                                class="chevron me-2"
+                                :class="{ collapsed: isGroupCollapsed(group.element) }"
+                            />
+                        </span>
                         <Editable
                             v-model="group.element.name"
                             :contenteditable="editMode"
                             tag="span"
+                            :class="{ 'collapse-toggle': !editMode }"
                             data-testid="group-name"
+                            @click="!editMode && toggleGroup(group.element)"
                         />
                     </div>
 
@@ -33,97 +42,99 @@
                     />
                 </h2>
 
-                <div class="shadow-box monitor-list mt-4 position-relative">
-                    <div v-if="group.element.monitorList.length === 0" class="text-center no-monitor-msg">
-                        {{ $t("No Monitors") }}
-                    </div>
+                <transition name="slide-fade-up">
+                    <div v-if="!isGroupCollapsed(group.element)" class="shadow-box monitor-list mt-4 position-relative">
+                        <div v-if="group.element.monitorList.length === 0" class="text-center no-monitor-msg">
+                            {{ $t("No Monitors") }}
+                        </div>
 
-                    <!-- Monitor List -->
-                    <!-- animation is not working, no idea why -->
-                    <Draggable
-                        v-model="group.element.monitorList"
-                        class="monitor-list"
-                        group="same-group"
-                        :disabled="!editMode"
-                        :animation="100"
-                        item-key="id"
-                    >
-                        <template #item="monitor">
-                            <div class="item" data-testid="monitor">
-                                <div class="row">
-                                    <div class="col-9 col-xl-6 small-padding">
-                                        <div class="info">
-                                            <font-awesome-icon
-                                                v-if="editMode"
-                                                icon="arrows-alt-v"
-                                                class="action drag me-3"
-                                            />
-                                            <font-awesome-icon
-                                                v-if="editMode"
-                                                icon="times"
-                                                class="action remove me-3"
-                                                @click="removeMonitor(group.index, monitor.index)"
-                                            />
+                        <!-- Monitor List -->
+                        <!-- animation is not working, no idea why -->
+                        <Draggable
+                            v-model="group.element.monitorList"
+                            class="monitor-list"
+                            group="same-group"
+                            :disabled="!editMode"
+                            :animation="100"
+                            item-key="id"
+                        >
+                            <template #item="monitor">
+                                <div class="item" data-testid="monitor">
+                                    <div class="row">
+                                        <div class="col-9 col-xl-6 small-padding">
+                                            <div class="info">
+                                                <font-awesome-icon
+                                                    v-if="editMode"
+                                                    icon="arrows-alt-v"
+                                                    class="action drag me-3"
+                                                />
+                                                <font-awesome-icon
+                                                    v-if="editMode"
+                                                    icon="times"
+                                                    class="action remove me-3"
+                                                    @click="removeMonitor(group.index, monitor.index)"
+                                                />
 
-                                            <font-awesome-icon
-                                                v-if="editMode"
-                                                icon="cog"
-                                                class="action me-3 ms-0"
-                                                :class="{ 'link-active': true, 'btn-link': true }"
-                                                data-testid="monitor-settings"
-                                                @click="$refs.monitorSettingDialog.show(group, monitor)"
-                                            />
-                                            <Status
-                                                v-if="showOnlyLastHeartbeat"
-                                                :status="statusOfLastHeartbeat(monitor.element.id)"
-                                            />
-                                            <Uptime v-else :monitor="monitor.element" type="24" :pill="true" />
-                                            <a
-                                                v-if="showLink(monitor)"
-                                                :href="monitor.element.url"
-                                                class="item-name"
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                data-testid="monitor-name"
-                                            >
-                                                {{ monitor.element.name }}
-                                            </a>
-                                            <p v-else class="item-name" data-testid="monitor-name">
-                                                {{ monitor.element.name }}
-                                            </p>
-                                        </div>
-                                        <div class="extra-info">
-                                            <div
-                                                v-if="showCertificateExpiry && monitor.element.certExpiryDaysRemaining"
-                                            >
-                                                <Tag
-                                                    :item="{
-                                                        name: $t('Cert Exp.'),
-                                                        value: formattedCertExpiryMessage(monitor),
-                                                        color: certExpiryColor(monitor),
-                                                    }"
-                                                    :size="'sm'"
+                                                <font-awesome-icon
+                                                    v-if="editMode"
+                                                    icon="cog"
+                                                    class="action me-3 ms-0"
+                                                    :class="{ 'link-active': true, 'btn-link': true }"
+                                                    data-testid="monitor-settings"
+                                                    @click="$refs.monitorSettingDialog.show(group, monitor)"
                                                 />
-                                            </div>
-                                            <div v-if="showTags">
-                                                <Tag
-                                                    v-for="tag in monitor.element.tags"
-                                                    :key="tag"
-                                                    :item="tag"
-                                                    :size="'sm'"
-                                                    data-testid="monitor-tag"
+                                                <Status
+                                                    v-if="showOnlyLastHeartbeat"
+                                                    :status="statusOfLastHeartbeat(monitor.element.id)"
                                                 />
+                                                <Uptime v-else :monitor="monitor.element" type="24" :pill="true" />
+                                                <a
+                                                    v-if="showLink(monitor)"
+                                                    :href="monitor.element.url"
+                                                    class="item-name"
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    data-testid="monitor-name"
+                                                >
+                                                    {{ monitor.element.name }}
+                                                </a>
+                                                <p v-else class="item-name" data-testid="monitor-name">
+                                                    {{ monitor.element.name }}
+                                                </p>
+                                            </div>
+                                            <div class="extra-info">
+                                                <div
+                                                    v-if="showCertificateExpiry && monitor.element.certExpiryDaysRemaining"
+                                                >
+                                                    <Tag
+                                                        :item="{
+                                                            name: $t('Cert Exp.'),
+                                                            value: formattedCertExpiryMessage(monitor),
+                                                            color: certExpiryColor(monitor),
+                                                        }"
+                                                        :size="'sm'"
+                                                    />
+                                                </div>
+                                                <div v-if="showTags">
+                                                    <Tag
+                                                        v-for="tag in monitor.element.tags"
+                                                        :key="tag"
+                                                        :item="tag"
+                                                        :size="'sm'"
+                                                        data-testid="monitor-tag"
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div :key="$root.userHeartbeatBar" class="col-3 col-xl-6">
-                                        <HeartbeatBar size="mid" :monitor-id="monitor.element.id" />
+                                        <div :key="$root.userHeartbeatBar" class="col-3 col-xl-6">
+                                            <HeartbeatBar size="mid" :monitor-id="monitor.element.id" />
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </template>
-                    </Draggable>
-                </div>
+                            </template>
+                        </Draggable>
+                    </div>
+                </transition>
             </div>
         </template>
     </Draggable>
@@ -183,6 +194,24 @@ export default {
         // Sorting is now handled by GroupSortDropdown component
     },
     methods: {
+        /**
+         * Toggle collapsed state for a group
+         * @param {object} group Group to toggle
+         * @returns {void}
+         */
+        toggleGroup(group) {
+            group.collapsed = !group.collapsed;
+        },
+
+        /**
+         * Check if a group is collapsed
+         * @param {object} group Group to check
+         * @returns {boolean} Whether the group is collapsed
+         */
+        isGroupCollapsed(group) {
+            return !!group.collapsed;
+        },
+
         /**
          * Remove the specified group
          * @param {number} index Index of group to remove
@@ -360,6 +389,21 @@ export default {
     span {
         display: inline-block;
         min-width: 15px;
+    }
+}
+
+.collapse-toggle {
+    cursor: pointer;
+    padding: 2px;
+}
+
+.chevron {
+    font-size: 0.8em;
+    color: #bbb;
+    transition: all 0.2s $easing-in;
+
+    &.collapsed {
+        transform: rotate(-90deg);
     }
 }
 
