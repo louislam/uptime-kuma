@@ -203,6 +203,8 @@ class Monitor extends BeanModel {
             conditions: JSON.parse(this.conditions),
             ipFamily: this.ipFamily,
             expectedTlsAlert: this.expected_tls_alert,
+            sftpPath: this.sftp_path,
+            sftpAuthMethod: this.sftp_auth_method || "password",
 
             // ping advanced options
             ping_numeric: this.isPingNumeric(),
@@ -246,6 +248,10 @@ class Monitor extends BeanModel {
                 kafkaProducerSaslOptions: JSON.parse(this.kafkaProducerSaslOptions),
                 rabbitmqUsername: this.rabbitmqUsername,
                 rabbitmqPassword: this.rabbitmqPassword,
+                sftpUsername: this.sftp_username,
+                sftpPassword: this.sftp_password,
+                sftpPrivateKey: this.sftp_private_key,
+                sftpPassphrase: this.sftp_passphrase,
             };
         }
 
