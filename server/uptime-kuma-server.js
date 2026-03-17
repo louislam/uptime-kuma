@@ -13,7 +13,6 @@ const childProcessAsync = require("promisify-child-process");
 const path = require("path");
 const axios = require("axios");
 const { isSSL, sslKey, sslCert, sslKeyPassphrase } = require("./config");
-const { SCRIPT_DIR } = require("../src/util");
 // DO NOT IMPORT HERE IF THE MODULES USED `UptimeKumaServer.getInstance()`, put at the bottom of this file instead.
 
 /**
@@ -26,6 +25,8 @@ class UptimeKumaServer {
      * @type {UptimeKumaServer}
      */
     static instance = null;
+
+    static scriptDir = require("args-parser")(process.argv)["script-dir"] || process.env["UPTIME_KUMA_SCRIPT_DIR"] || path.join(Database.dataDir, "scripts");
 
     /**
      * Main monitor list
@@ -77,6 +78,8 @@ class UptimeKumaServer {
      *
      */
     constructor() {
+        log.info("server", "Directory for script monitors is " + UptimeKumaServer.scriptDir);
+
         // Set axios default user-agent to Uptime-Kuma/version
         axios.defaults.headers.common["User-Agent"] = this.getUserAgent();
 
@@ -132,7 +135,7 @@ class UptimeKumaServer {
         UptimeKumaServer.monitorTypeList["system-service"] = new SystemServiceMonitorType();
         UptimeKumaServer.monitorTypeList["sqlserver"] = new MssqlMonitorType();
         UptimeKumaServer.monitorTypeList["mysql"] = new MysqlMonitorType();
-        UptimeKumaServer.monitorTypeList["script"] = new ScriptMonitorType(SCRIPT_DIR);
+        UptimeKumaServer.monitorTypeList["script"] = new ScriptMonitorType(UptimeKumaServer.scriptDir);
 
         // Allow all CORS origins (polling) in development
         let cors = undefined;

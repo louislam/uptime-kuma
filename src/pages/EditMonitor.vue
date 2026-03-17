@@ -2868,9 +2868,8 @@ import isIP from "validator/lib/isIP";
 import HiddenInput from "../components/HiddenInput.vue";
 import EditMonitorConditions from "../components/EditMonitorConditions.vue";
 import path from "path-browserify";
-import { SCRIPT_DIR } from "../util.ts";
 
-const isValidScriptPath = (script) => path.join(SCRIPT_DIR, script).startsWith(SCRIPT_DIR);
+const isValidScriptPath = (script) => !path.posix.normalize(script).startsWith("../");
 
 const toast = useToast();
 
@@ -3266,7 +3265,7 @@ message HealthCheckResponse {
         },
 
         resolvedScriptPath() {
-            return path.join(SCRIPT_DIR, this.monitor.script ?? "");
+            return path.normalize(this.monitor.script ?? "");
         },
 
         supportsConditions() {
