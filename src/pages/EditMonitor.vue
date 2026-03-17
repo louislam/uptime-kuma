@@ -3879,6 +3879,16 @@ message HealthCheckResponse {
                 this.monitor.databaseConnectionString = this.monitor.databaseConnectionString.trim();
             }
 
+            if (this.monitor.type === "oracledb") {
+                if (this.monitor.basic_auth_user) {
+                    this.monitor.basic_auth_user = this.monitor.basic_auth_user.trim();
+                }
+
+                if (this.monitor.basic_auth_pass) {
+                    this.monitor.basic_auth_pass = this.monitor.basic_auth_pass.trim();
+                }
+            }
+
             let createdNewParent = false;
 
             if (this.draftGroupName && this.monitor.parent === -1) {

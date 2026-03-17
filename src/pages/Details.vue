@@ -782,9 +782,8 @@ export default {
                 }
                 return parsedUrl.toString();
             } catch (e) {
-                return urlString
-                    .replaceAll(/Password=(.+);/gi, "Password=******;")
-                    .replaceAll(/("password"\s*:\s*")[^"]*(")/gi, "$1******$2");
+                // Handle SQL Server
+                return urlString.replaceAll(/Password=(.+);/gi, "Password=******;");
             }
         },
 

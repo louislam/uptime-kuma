@@ -115,9 +115,9 @@ class OracleDbMonitorType extends MonitorType {
         let connection;
         try {
             connection = await oracledb.getConnection({
-                connectString: connectionString.trim(),
-                user: username.trim(),
-                password: password.trim(),
+                connectString: connectionString,
+                user: username,
+                password: password,
             });
             const result = await connection.execute(query, [], {
                 outFormat: oracledb.OUT_FORMAT_OBJECT,
