@@ -90,10 +90,13 @@ class ScriptMonitorType extends MonitorType {
 
         try {
             // Security checks completed - run the script
+            //
+            // Note: spawn() will expose process.env to the child process by default
+            // It enables user scripts to access secrets from environment variables.
+            // This is safe, because scripts are trusted by design.
             const child = childProcessAsync.spawn(path.join(this.dir, monitor.script), args, {
                 shell: false, // Security: Prevent command chaining etc.
                 detached: true, // Needed so we can reliably kill any subprocesses (grandchildren)
-                env: process.env, // Default, not a security risk because scripts are trusted
                 encoding: "utf8", // Needed to capture stdout & stderr
                 timeout: 30000,
                 maxBuffer: 1024 * 1024,
