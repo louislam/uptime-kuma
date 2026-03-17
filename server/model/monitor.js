@@ -59,6 +59,8 @@ const { CookieJar } = require("tough-cookie");
 const { HttpsCookieAgent } = require("http-cookie-agent/http");
 const https = require("https");
 const http = require("http");
+const net = require("net");
+const dns = require("dns/promises");
 const zlib = require("node:zlib");
 const { promisify } = require("node:util");
 const brotliCompress = promisify(zlib.brotliCompress);
@@ -764,7 +766,15 @@ class Monitor extends BeanModel {
                 } else if (this.type === "steam") {
                     const steamApiUrl = "https://api.steampowered.com/IGameServersService/GetServerList/v1/";
                     const steamAPIKey = await setting("steamAPIKey");
-                    const filter = `addr\\${this.hostname}:${this.port}`;
+
+                    // Steam API addr filter requires an IP address.
+                    // Resolve domain names to IPs so users can enter hostnames.
+                    let steamHost = this.hostname;
+                    if (!net.isIP(steamHost)) {
+                        const { address } = await dns.lookup(steamHost);
+                        steamHost = address;
+                    }
+                    const filter = `addr\\${steamHost}:${this.port}`;
 
                     if (!steamAPIKey) {
                         throw new Error("Steam API Key not found");
