@@ -25,12 +25,7 @@ class Max extends NotificationProvider {
             };
 
             if (notification.maxUseTemplate && notification.maxTemplate) {
-                const rendered = await this.renderTemplate(
-                    notification.maxTemplate,
-                    msg,
-                    monitorJSON,
-                    heartbeatJSON
-                );
+                const rendered = await this.renderTemplate(notification.maxTemplate, msg, monitorJSON, heartbeatJSON);
 
                 body.text = rendered;
 
@@ -50,4 +45,3 @@ class Max extends NotificationProvider {
 }
 
 module.exports = Max;
-

@@ -14,13 +14,7 @@
 
     <div class="mb-3">
         <label for="max-api-url" class="form-label">{{ $t("API URL") }}</label>
-        <input
-            id="max-api-url"
-            v-model="$parent.notification.maxApiUrl"
-            type="text"
-            class="form-control"
-            required
-        />
+        <input id="max-api-url" v-model="$parent.notification.maxApiUrl" type="text" class="form-control" required />
         <div class="form-text">
             {{ $t("maxApiUrlDescription") }}
         </div>
@@ -28,13 +22,7 @@
 
     <div class="mb-3">
         <label for="max-chat-id" class="form-label">{{ $t("Chat ID") }}</label>
-        <input
-            id="max-chat-id"
-            v-model="$parent.notification.maxChatID"
-            type="text"
-            class="form-control"
-            required
-        />
+        <input id="max-chat-id" v-model="$parent.notification.maxChatID" type="text" class="form-control" required />
         <div class="form-text">
             {{ $t("wayToGetMaxChatID") }}
         </div>
@@ -92,4 +80,3 @@ export default {
     },
 };
 </script>
-
