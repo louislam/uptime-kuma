@@ -56,23 +56,23 @@
             </p>
 
             <label class="form-label" for="max-message-template">{{ $t("Message Template") }}</label>
-            <textarea
+            <TemplatedTextarea
                 id="max-message-template"
                 v-model="$parent.notification.maxTemplate"
-                class="form-control"
-                rows="4"
-                required
-            ></textarea>
+                :required="true"
+            ></TemplatedTextarea>
         </div>
     </template>
 </template>
 
 <script>
 import HiddenInput from "../HiddenInput.vue";
+import TemplatedTextarea from "../TemplatedTextarea.vue";
 
 export default {
     components: {
         HiddenInput,
+        TemplatedTextarea,
     },
     mounted() {
         this.$parent.notification.maxApiUrl ||= "https://platform-api.max.ru";
