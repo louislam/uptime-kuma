@@ -245,6 +245,7 @@ export default {
             if (!raw) {
                 return [];
             }
+            // Normalise to array: a single query param is a string, repeated params are already an array
             return [].concat(raw);
         },
 
