@@ -99,6 +99,7 @@
                                         <option value="sqlserver">Microsoft SQL Server</option>
                                         <option value="mongodb">MongoDB</option>
                                         <option value="mysql">MySQL/MariaDB</option>
+                                        <option value="oracledb">Oracle Database</option>
                                         <option value="postgres">PostgreSQL</option>
                                         <option value="radius">Radius</option>
                                         <option value="redis">Redis</option>
@@ -1184,12 +1185,13 @@
                                 </div>
                             </template>
 
-                            <!-- SQL Server / PostgreSQL / MySQL / Redis / MongoDB -->
+                            <!-- SQL Server / PostgreSQL / MySQL / Oracle / Redis / MongoDB -->
                             <template
                                 v-if="
                                     monitor.type === 'sqlserver' ||
                                     monitor.type === 'postgres' ||
                                     monitor.type === 'mysql' ||
+                                    monitor.type === 'oracledb' ||
                                     monitor.type === 'redis' ||
                                     monitor.type === 'mongodb'
                                 "
@@ -1204,6 +1206,29 @@
                                         type="text"
                                         class="form-control"
                                         required
+                                    />
+                                </div>
+                            </template>
+
+                            <template v-if="monitor.type === 'oracledb'">
+                                <div class="my-3">
+                                    <label for="oracledb-user" class="form-label">{{ $t("Username") }}</label>
+                                    <input
+                                        id="oracledb-user"
+                                        v-model="monitor.basic_auth_user"
+                                        type="text"
+                                        class="form-control"
+                                        required
+                                    />
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="oracledb-pass" class="form-label">{{ $t("Password") }}</label>
+                                    <HiddenInput
+                                        id="oracledb-pass"
+                                        v-model="monitor.basic_auth_pass"
+                                        autocomplete="new-password"
+                                        :required="true"
                                     />
                                 </div>
                             </template>
@@ -1299,12 +1324,13 @@
                                 </div>
                             </template>
 
-                            <!-- SQL Server / PostgreSQL / MySQL -->
+                            <!-- SQL Server / PostgreSQL / MySQL / Oracle -->
                             <template
                                 v-if="
                                     monitor.type === 'sqlserver' ||
                                     monitor.type === 'postgres' ||
-                                    monitor.type === 'mysql'
+                                    monitor.type === 'mysql' ||
+                                    monitor.type === 'oracledb'
                                 "
                             >
                                 <div class="my-3">
@@ -1313,7 +1339,11 @@
                                         id="sqlQuery"
                                         v-model="monitor.databaseQuery"
                                         class="form-control"
-                                        :placeholder="$t('Example:', ['SELECT 1'])"
+                                        :placeholder="
+                                            $t('Example:', [
+                                                monitor.type === 'oracledb' ? 'SELECT 1 FROM DUAL' : 'SELECT 1',
+                                            ])
+                                        "
                                     ></textarea>
                                 </div>
                             </template>
@@ -2931,6 +2961,8 @@ const monitorDefaults = {
     docker_container: "",
     docker_host: null,
     proxyId: null,
+    basic_auth_user: "",
+    basic_auth_pass: "",
     mqttUsername: "",
     mqttPassword: "",
     mqttTopic: "",
@@ -2995,6 +3027,7 @@ export default {
                     "Server=<hostname>,<port>;Database=<your database>;User Id=<your user id>;Password=<your password>;Encrypt=<true/false>;TrustServerCertificate=<Yes/No>;Connection Timeout=<int>",
                 postgres: "postgres://username:password@host:port/database",
                 mysql: "mysql://username:password@host:port/database",
+                oracledb: "localhost:1521/FREEPDB1",
                 redis: "redis://user:password@host:port",
                 mongodb: "mongodb://username:password@host:port/database",
             },
@@ -3917,6 +3950,19 @@ message HealthCheckResponse {
 
             if (this.monitor.script) {
                 this.monitor.script = this.monitor.script.trim();
+            }
+            if (this.monitor.databaseConnectionString) {
+                this.monitor.databaseConnectionString = this.monitor.databaseConnectionString.trim();
+            }
+
+            if (this.monitor.type === "oracledb") {
+                if (this.monitor.basic_auth_user) {
+                    this.monitor.basic_auth_user = this.monitor.basic_auth_user.trim();
+                }
+
+                if (this.monitor.basic_auth_pass) {
+                    this.monitor.basic_auth_pass = this.monitor.basic_auth_pass.trim();
+                }
             }
 
             let createdNewParent = false;
