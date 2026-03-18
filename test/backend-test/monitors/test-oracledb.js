@@ -1,14 +1,12 @@
 const { after, before, describe, test } = require("node:test");
 const assert = require("node:assert");
-const { GenericContainer, Wait } = require("testcontainers");
+const { OracleDbContainer } = require("@testcontainers/oraclefree");
 const { OracleDbMonitorType } = require("../../../server/monitor-types/oracledb");
 const { UP, PENDING } = require("../../../src/util");
 
 const ORACLE_IMAGE = "gvenzl/oracle-free:23-slim-faststart";
-const ORACLE_PASSWORD = "Oracle123";
 const APP_USER = "uptimekuma";
 const APP_USER_PASSWORD = "Oracle123";
-const ORACLE_SERVICE_NAME = "FREEPDB1";
 
 /**
  * Create a monitor payload for Oracle monitor tests.
@@ -37,23 +35,17 @@ function createHeartbeat() {
 
 /**
  * Helper function to create and start an Oracle container.
- * @returns {Promise<{container: import("testcontainers").StartedTestContainer, connectString: string}>}
+ * @returns {Promise<{container: import("@testcontainers/oraclefree").StartedOracleDbContainer, connectString: string}>}
  */
 async function createAndStartOracleContainer() {
-    const container = await new GenericContainer(ORACLE_IMAGE)
-        .withEnvironment({
-            ORACLE_PASSWORD,
-            APP_USER,
-            APP_USER_PASSWORD,
-        })
-        .withExposedPorts(1521)
-        .withWaitStrategy(Wait.forAll([Wait.forListeningPorts(), Wait.forLogMessage("DATABASE IS READY TO USE!")]))
-        .withStartupTimeout(120000)
+    const container = await new OracleDbContainer(ORACLE_IMAGE)
+        .withUsername(APP_USER)
+        .withPassword(APP_USER_PASSWORD)
         .start();
 
     return {
         container,
-        connectString: `${container.getHost()}:${container.getMappedPort(1521)}/${ORACLE_SERVICE_NAME}`,
+        connectString: container.getUrl(),
     };
 }
 
@@ -63,7 +55,7 @@ describe(
         skip: !!process.env.CI && (process.platform !== "linux" || process.arch !== "x64"),
     },
     () => {
-        /** @type {import("testcontainers").StartedTestContainer | undefined} */
+        /** @type {import("@testcontainers/oraclefree").StartedOracleDbContainer | undefined} */
         let container;
         /** @type {string | undefined} */
         let connectString;
