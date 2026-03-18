@@ -6,6 +6,43 @@ class Ntfy extends NotificationProvider {
     name = "ntfy";
 
     /**
+     * Check if the URL is a valid, non-local, and non-default URL
+     * @param {string} url The URL to check
+     * @returns {boolean} True if the URL is valid
+     */
+    isValidURL(url) {
+        if (!url || url === "https://") {
+            return false;
+        }
+
+        try {
+            const urlObject = new URL(url);
+
+            // Disallow localhost and other local-looking hostnames
+            if (urlObject.hostname === "localhost" || urlObject.hostname === "127.0.0.1" || urlObject.hostname.endsWith(".local")) {
+                return false;
+            }
+
+            // Check for private IP ranges (optional, but good practice)
+            const ip = urlObject.hostname;
+            const ipParts = ip.split(".").map(part => parseInt(part, 10));
+            if (ipParts.length === 4) {
+                if (ipParts[0] === 10 ||
+                    (ipParts[0] === 172 && ipParts[1] >= 16 && ipParts[1] <= 31) ||
+                    (ipParts[0] === 192 && ipParts[1] === 168)) {
+                    return false;
+                }
+            }
+
+        } catch (error) {
+            // Invalid URL format
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
@@ -112,7 +149,7 @@ class Ntfy extends NotificationProvider {
                 tags: tags,
             };
 
-            if (monitorJSON.url && monitorJSON.url !== "https://") {
+            if (monitorJSON.url && this.isValidURL(monitorJSON.url)) {
                 data.actions = [
                     {
                         action: "view",
