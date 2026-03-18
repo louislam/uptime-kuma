@@ -206,13 +206,6 @@ function NtlmClient(credentials, AxiosConfig) {
                     switch (_b.label) {
                         case 0:
                             error = err.response;
-                            // The header may look like this: `Negotiate, NTLM, Basic realm="itsahiddenrealm.example.net"`Add commentMore actions
-                            // so extract the 'NTLM' part first
-                            const ntlmheader =
-                                error.headers["www-authenticate"]
-                                    .split(",")
-                                    .find((_) => _.match(/ *NTLM/))
-                                    ?.trim() || "";
                             if (
                                 !(
                                     error &&
@@ -222,6 +215,13 @@ function NtlmClient(credentials, AxiosConfig) {
                                 )
                             )
                                 return [3 /*break*/, 3];
+                            // The header may look like this: `Negotiate, NTLM, Basic realm="itsahiddenrealm.example.net"`
+                            // so extract the 'NTLM' part first
+                            const ntlmheader =
+                                error.headers["www-authenticate"]
+                                    .split(",")
+                                    .find((_) => _.match(/ *NTLM/))
+                                    ?.trim() || "";
                             // This length check is a hack because SharePoint is awkward and will
                             // include the Negotiate option when responding with the T2 message
                             // There is nore we could do to ensure we are processing correctly,
