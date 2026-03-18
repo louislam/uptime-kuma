@@ -1277,10 +1277,9 @@
                                                         <template #command>
                                                             <code>
                                                                 (Get-Service -Name '{{
-                                                                    (monitor.system_service_name || "Dnscache").replaceAll(
-                                                                        "'",
-                                                                        "''"
-                                                                    )
+                                                                    (
+                                                                        monitor.system_service_name || "Dnscache"
+                                                                    ).replaceAll("'", "''")
                                                                 }}').Status
                                                             </code>
                                                         </template>
@@ -3678,8 +3677,9 @@ message HealthCheckResponse {
                     };
                 });
 
-                const selectedProcess = this.pm2ProcessOptions.find((item) =>
-                    item.id === this.monitor.system_service_name || item.name === this.monitor.system_service_name
+                const selectedProcess = this.pm2ProcessOptions.find(
+                    (item) =>
+                        item.id === this.monitor.system_service_name || item.name === this.monitor.system_service_name
                 );
 
                 if (selectedProcess) {
@@ -3717,7 +3717,6 @@ message HealthCheckResponse {
                         this.monitor.notificationIDList[this.$root.notificationList[i].id] = true;
                     }
                 }
-
             } else if (this.isEdit || this.isClone) {
                 this.$root.getSocket().emit("getMonitor", this.$route.params.id, (res) => {
                     if (res.ok) {

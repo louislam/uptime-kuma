@@ -5,8 +5,7 @@ const { UP } = require("../../src/util");
 
 class SystemServiceMonitorType extends MonitorType {
     name = "system-service";
-    description =
-        "Checks if a system service is running (systemd on Linux, Service Manager on Windows).";
+    description = "Checks if a system service is running (systemd on Linux, Service Manager on Windows).";
 
     /**
      * Check the system service status.
