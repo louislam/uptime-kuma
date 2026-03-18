@@ -13,6 +13,7 @@ const dayjs = require("dayjs");
 const { SimpleMigrationServer } = require("./utils/simple-migration-server");
 const KumaColumnCompiler = require("./utils/knex/lib/dialects/mysql2/schema/mysql2-columncompiler");
 const SqlString = require("sqlstring");
+const { dataDir } = require("./config");
 
 /**
  * Database & App Data Folder
@@ -139,8 +140,7 @@ class Database {
      * @returns {void}
      */
     static initDataDir(args) {
-        // Data Directory (must be end with "/")
-        Database.dataDir = process.env.DATA_DIR || args["data-dir"] || "./data/";
+        Database.dataDir = dataDir;
 
         Database.sqlitePath = path.join(Database.dataDir, "kuma.db");
         if (!fs.existsSync(Database.dataDir)) {

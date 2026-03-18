@@ -12,7 +12,7 @@ const dayjs = require("dayjs");
 const childProcessAsync = require("promisify-child-process");
 const path = require("path");
 const axios = require("axios");
-const { isSSL, sslKey, sslCert, sslKeyPassphrase } = require("./config");
+const { isSSL, sslKey, sslCert, sslKeyPassphrase, scriptDir } = require("./config");
 // DO NOT IMPORT HERE IF THE MODULES USED `UptimeKumaServer.getInstance()`, put at the bottom of this file instead.
 
 /**
@@ -76,14 +76,6 @@ class UptimeKumaServer {
      *
      */
     constructor() {
-        // Effective scripts directory, since it may have been overridden by
-        // command-line argument or environment variable
-        const scriptDir =
-            require("args-parser")(process.argv)["script-dir"] ||
-            process.env["UPTIME_KUMA_SCRIPT_DIR"] ||
-            Database.scriptDir ||
-            path.join(process.env.DATA_DIR || require("args-parser")(process.argv)["data-dir"] || "./data/", "scripts"); // duplicate from Database.initDatadir, because datadir is set late
-
         log.info("server", "Directory for script monitors is " + scriptDir);
 
         // Set axios default user-agent to Uptime-Kuma/version
