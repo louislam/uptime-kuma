@@ -55,6 +55,12 @@ class Database {
     static dockerTLSDir;
 
     /**
+     * Default directory for script monitor scripts.
+     * @type {string}
+     */
+    static scriptDir;
+
+    /**
      * @type {boolean}
      */
     static patched = false;
@@ -156,6 +162,12 @@ class Database {
         Database.dockerTLSDir = path.join(Database.dataDir, "docker-tls/");
         if (!fs.existsSync(Database.dockerTLSDir)) {
             fs.mkdirSync(Database.dockerTLSDir, { recursive: true });
+        }
+
+        Database.scriptDir = path.join(Database.dataDir, "scripts/");
+        if (!fs.existsSync(Database.scriptDir)) {
+            fs.mkdirSync(Database.scriptDir, { recursive: true });
+            fs.chmodSync(Database.scriptDir, 0o775);
         }
 
         log.info("server", `Data Dir: ${Database.dataDir}`);
