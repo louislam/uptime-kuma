@@ -26,11 +26,6 @@ class UptimeKumaServer {
      */
     static instance = null;
 
-    static scriptDir =
-        require("args-parser")(process.argv)["script-dir"] ||
-        process.env["UPTIME_KUMA_SCRIPT_DIR"] ||
-        path.join(Database.dataDir, "scripts");
-
     /**
      * Main monitor list
      * @type {{}}
@@ -81,7 +76,15 @@ class UptimeKumaServer {
      *
      */
     constructor() {
-        log.info("server", "Directory for script monitors is " + UptimeKumaServer.scriptDir);
+        // Effective scripts directory, since it may have been overridden by
+        // command-line argument or environment variable
+        const scriptDir =
+            require("args-parser")(process.argv)["script-dir"] ||
+            process.env["UPTIME_KUMA_SCRIPT_DIR"] ||
+            Database.scriptDir ||
+            path.join(process.env.DATA_DIR || require("args-parser")(process.argv)["data-dir"] || "./data/", "scripts"); // duplicate from Database.initDatadir, because datadir is set late
+
+        log.info("server", "Directory for script monitors is " + scriptDir);
 
         // Set axios default user-agent to Uptime-Kuma/version
         axios.defaults.headers.common["User-Agent"] = this.getUserAgent();
@@ -138,7 +141,7 @@ class UptimeKumaServer {
         UptimeKumaServer.monitorTypeList["system-service"] = new SystemServiceMonitorType();
         UptimeKumaServer.monitorTypeList["sqlserver"] = new MssqlMonitorType();
         UptimeKumaServer.monitorTypeList["mysql"] = new MysqlMonitorType();
-        UptimeKumaServer.monitorTypeList["script"] = new ScriptMonitorType(UptimeKumaServer.scriptDir);
+        UptimeKumaServer.monitorTypeList["script"] = new ScriptMonitorType(scriptDir);
 
         // Allow all CORS origins (polling) in development
         let cors = undefined;
