@@ -98,7 +98,7 @@ class ScriptMonitorType extends MonitorType {
                 shell: false, // Security: Prevent command chaining etc.
                 detached: true, // Needed so we can reliably kill any subprocesses (grandchildren)
                 encoding: "utf8", // Needed to capture stdout & stderr
-                timeout: 30000,
+                timeout: 1000 * monitor.timeout,
                 maxBuffer: 1024 * 1024,
                 stdio: ["ignore", "pipe", "pipe"],
             });

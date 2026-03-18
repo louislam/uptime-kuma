@@ -1682,6 +1682,20 @@
                                     class="form-control"
                                     data-testid="script-arguments-input"
                                 />
+                                <i18n-t keypath="scriptTimeout" tag="label" for="script-timeout" class="form-label">
+                                    <template #timeout>
+                                        {{ monitor.timeout }}
+                                    </template>
+                                  </i18n-t>
+                                <input
+                                    id="script-timeout"
+                                    v-model.number="monitor.timeout"
+                                    :min="timeoutMin"
+                                    :max="timeoutMax"
+                                    :step="timeoutStep"
+                                    type="number"
+                                    class="form-control"
+                                />
                             </div>
 
                             <div v-if="monitor.type === 'gamedig'" class="my-3 form-check">
@@ -3414,6 +3428,8 @@ message HealthCheckResponse {
                     this.monitor.timeout = 5;
                 } else if (this.monitor.type === "ping") {
                     this.monitor.timeout = 10;
+                } else if (this.monitor.type === "script") {
+                    this.monitor.timeout = 30;
                 } else {
                     this.monitor.timeout = 48;
                 }

@@ -1509,6 +1509,7 @@
     "teltonikaPhoneNumberHelptext": "The number must be in the international format {0}, {1}. Only one number is allowed.",
     "scriptLocationHint": "Will attempt to execute: {scriptPath}",
     "scriptLocationInvalid": "Invalid script location",
+    "scriptTimeout": "Timeout (kill script after {timeout} seconds)",
     "Script": "Script",
     "Script Arguments": "Script Arguments"
 }
