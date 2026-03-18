@@ -26,7 +26,10 @@ class UptimeKumaServer {
      */
     static instance = null;
 
-    static scriptDir = require("args-parser")(process.argv)["script-dir"] || process.env["UPTIME_KUMA_SCRIPT_DIR"] || path.join(Database.dataDir, "scripts");
+    static scriptDir =
+        require("args-parser")(process.argv)["script-dir"] ||
+        process.env["UPTIME_KUMA_SCRIPT_DIR"] ||
+        path.join(Database.dataDir, "scripts");
 
     /**
      * Main monitor list

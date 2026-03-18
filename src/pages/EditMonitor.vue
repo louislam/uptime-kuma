@@ -1686,7 +1686,7 @@
                                     <template #timeout>
                                         {{ monitor.timeout }}
                                     </template>
-                                  </i18n-t>
+                                </i18n-t>
                                 <input
                                     id="script-timeout"
                                     v-model.number="monitor.timeout"
