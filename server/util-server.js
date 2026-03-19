@@ -1047,7 +1047,7 @@ module.exports.printServerUrls = (tag, port, hostname, isHTTPS = false) => {
  * Construct a URL a bit more safely
  * @param {boolean} isHTTPS Whether the URL should use HTTPS protocol
  * @param {string} hostname The hostname to use in the URL
- * @param {number} [port=80] The port
+ * @param {number} port The port
  * @returns {string} The constructed URL as a string
  */
 function createURL(isHTTPS, hostname, port = 80) {
