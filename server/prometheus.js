@@ -155,8 +155,8 @@ class Prometheus {
      * @param {object} heartbeat Heartbeat details
      * @param {object} tlsInfo TLS details
      * @param {{data24h: UptimeDataResult, data30d: UptimeDataResult, data1y:UptimeDataResult} | null} uptime the uptime and average response rate over a variety of fixed windows
-     * @param {object} [domainExpiryInfo] Domain expiry details
-     * @param {number} [domainExpiryInfo.daysRemaining] Number of days until domain expires
+     * @param {object} domainExpiryInfo Domain expiry details
+     * @param {number} domainExpiryInfo.daysRemaining Number of days until domain expires
      * @returns {void}
      */
     update(heartbeat, tlsInfo, uptime, domainExpiryInfo) {
