@@ -4,6 +4,7 @@ const { R } = require("redbean-node");
 
 let monitorCertDaysRemaining = null;
 let monitorCertIsValid = null;
+let monitorDomainExpiryDaysRemaining = null;
 let monitorUptimeRatio = null;
 let monitorAverageResponseTimeSeconds = null;
 let monitorResponseTime = null;
@@ -68,6 +69,12 @@ class Prometheus {
         monitorCertIsValid = new PrometheusClient.Gauge({
             name: "monitor_cert_is_valid",
             help: "Is the certificate still valid? (1 = Yes, 0= No)",
+            labelNames: commonLabels,
+        });
+
+        monitorDomainExpiryDaysRemaining = new PrometheusClient.Gauge({
+            name: "monitor_domain_expiry_days_remaining",
+            help: "The number of days remaining until the domain expires",
             labelNames: commonLabels,
         });
 
@@ -148,9 +155,11 @@ class Prometheus {
      * @param {object} heartbeat Heartbeat details
      * @param {object} tlsInfo TLS details
      * @param {{data24h: UptimeDataResult, data30d: UptimeDataResult, data1y:UptimeDataResult} | null} uptime the uptime and average response rate over a variety of fixed windows
+     * @param {object} [domainExpiryInfo] Domain expiry details
+     * @param {number} [domainExpiryInfo.daysRemaining] Number of days until domain expires
      * @returns {void}
      */
-    update(heartbeat, tlsInfo, uptime) {
+    update(heartbeat, tlsInfo, uptime, domainExpiryInfo) {
         if (typeof tlsInfo !== "undefined") {
             try {
                 let isValid;
@@ -167,6 +176,16 @@ class Prometheus {
             try {
                 if (tlsInfo.certInfo != null) {
                     monitorCertDaysRemaining.set(this.monitorLabelValues, tlsInfo.certInfo.daysRemaining);
+                }
+            } catch (e) {
+                log.error("prometheus", "Caught error", e);
+            }
+        }
+
+        if (domainExpiryInfo) {
+            try {
+                if (typeof domainExpiryInfo.daysRemaining === "number") {
+                    monitorDomainExpiryDaysRemaining.set(this.monitorLabelValues, domainExpiryInfo.daysRemaining);
                 }
             } catch (e) {
                 log.error("prometheus", "Caught error", e);
@@ -245,6 +264,7 @@ class Prometheus {
         try {
             monitorCertDaysRemaining.remove(this.monitorLabelValues);
             monitorCertIsValid.remove(this.monitorLabelValues);
+            monitorDomainExpiryDaysRemaining.remove(this.monitorLabelValues);
             ["1d", "30d", "365d"].forEach((window) => {
                 monitorUptimeRatio.remove({ ...this.monitorLabelValues, window });
                 monitorAverageResponseTimeSeconds.remove({ ...this.monitorLabelValues, window });

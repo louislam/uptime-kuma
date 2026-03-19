@@ -1037,11 +1037,16 @@ class Monitor extends BeanModel {
                 }
             }
 
+            let domainExpiryInfo = null;
             if (bean.status !== MAINTENANCE && Boolean(this.domainExpiryNotification)) {
                 try {
                     const supportInfo = await DomainExpiry.checkSupport(this);
                     const domainExpiryDate = await DomainExpiry.checkExpiry(supportInfo.domain);
                     if (domainExpiryDate) {
+                        const domain = await DomainExpiry.findByDomainNameOrCreate(supportInfo.domain);
+                        if (domain) {
+                            domainExpiryInfo = { daysRemaining: domain.daysRemaining };
+                        }
                         DomainExpiry.sendNotifications(
                             supportInfo.domain,
                             (await Monitor.getNotificationList(this)) || []
@@ -1102,7 +1107,7 @@ class Monitor extends BeanModel {
             const data24h = uptimeCalculator.get24Hour();
             const data30d = uptimeCalculator.get30Day();
             const data1y = uptimeCalculator.get1Year();
-            this.prometheus?.update(bean, tlsInfo, { data24h, data30d, data1y });
+            this.prometheus?.update(bean, tlsInfo, { data24h, data30d, data1y }, domainExpiryInfo);
 
             previousBeat = bean;
 
