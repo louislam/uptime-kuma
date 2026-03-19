@@ -3638,24 +3638,6 @@ message HealthCheckResponse {
         this.kafkaSaslMechanismOptions = kafkaSaslMechanismOptions;
     },
     methods: {
-        normalizeLegacyMonitorFields() {
-            if (!this.monitor.system_service_name) {
-                return;
-            }
-
-            if (this.monitor.type === "pm2" && this.monitor.system_service_name.toLowerCase().startsWith("pm2:")) {
-                this.monitor.system_service_name = this.monitor.system_service_name.slice(4).trim();
-                return;
-            }
-
-            if (this.monitor.type === "system-service") {
-                const serviceWithPlatform = this.monitor.system_service_name.match(/^svc:(linux|win32):([\s\S]+)$/i);
-                if (serviceWithPlatform) {
-                    this.monitor.system_service_name = serviceWithPlatform[2].trim();
-                }
-            }
-        },
-
         loadPM2ProcessList() {
             this.pm2ProcessLoading = true;
             this.pm2ProcessError = "";
@@ -3780,8 +3762,6 @@ message HealthCheckResponse {
                                 this.monitor.timeout = ~~(this.monitor.interval * 8) / 10;
                             }
                         }
-
-                        this.normalizeLegacyMonitorFields();
 
                         if (this.monitor.type === "pm2") {
                             this.loadPM2ProcessList();

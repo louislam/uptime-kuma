@@ -1,30 +1,51 @@
-const { describe, test, beforeEach } = require("node:test");
+const { describe, test, beforeEach, afterEach } = require("node:test");
 const assert = require("node:assert");
+const childProcess = require("child_process");
 const { DOWN, UP } = require("../../src/util");
-const { PM2MonitorType } = require("../../server/monitor-types/pm2");
+
+/**
+ * Load the PM2 monitor after swapping child_process.execFile.
+ * @param {typeof childProcess.execFile} execFileStub Stub implementation.
+ * @returns {import("../../server/monitor-types/pm2").PM2MonitorType} A PM2 monitor instance wired to the stub.
+ */
+function createMonitorType(execFileStub) {
+    childProcess.execFile = execFileStub;
+    delete require.cache[require.resolve("../../server/util/pm2")];
+    delete require.cache[require.resolve("../../server/monitor-types/pm2")];
+    const { PM2MonitorType } = require("../../server/monitor-types/pm2");
+    return new PM2MonitorType();
+}
 
 describe("PM2MonitorType", () => {
     let monitorType;
     let heartbeat;
+    let originalExecFile;
 
     beforeEach(() => {
-        monitorType = new PM2MonitorType();
+        monitorType = null;
         heartbeat = {
             status: DOWN,
             msg: "",
         };
+        originalExecFile = childProcess.execFile;
+    });
+
+    afterEach(() => {
+        childProcess.execFile = originalExecFile;
     });
 
     test("check() returns UP for an online PM2 process", async () => {
-        monitorType.getProcessList = async () => {
-            return [
+        monitorType = createMonitorType((command, args, options, callback) => {
+            callback(null, JSON.stringify([
                 {
-                    id: "0",
+                    pm_id: 0,
                     name: "api",
-                    status: "online",
+                    pm2_env: {
+                        status: "online",
+                    },
                 },
-            ];
-        };
+            ]), "");
+        });
 
         await monitorType.check(
             {
@@ -38,15 +59,17 @@ describe("PM2MonitorType", () => {
     });
 
     test("check() returns DOWN for a stopped PM2 process", async () => {
-        monitorType.getProcessList = async () => {
-            return [
+        monitorType = createMonitorType((command, args, options, callback) => {
+            callback(null, JSON.stringify([
                 {
-                    id: "0",
+                    pm_id: 0,
                     name: "api",
-                    status: "stopped",
+                    pm2_env: {
+                        status: "stopped",
+                    },
                 },
-            ];
-        };
+            ]), "");
+        });
 
         await assert.rejects(
             monitorType.check(
@@ -62,15 +85,17 @@ describe("PM2MonitorType", () => {
     });
 
     test("check() accepts legacy pm2: targets", async () => {
-        monitorType.getProcessList = async () => {
-            return [
+        monitorType = createMonitorType((command, args, options, callback) => {
+            callback(null, JSON.stringify([
                 {
-                    id: "3",
+                    pm_id: 3,
                     name: "worker",
-                    status: "online",
+                    pm2_env: {
+                        status: "online",
+                    },
                 },
-            ];
-        };
+            ]), "");
+        });
 
         await monitorType.check(
             {

@@ -7,14 +7,6 @@ class PM2MonitorType extends MonitorType {
     description = "Checks if a PM2 process is online.";
 
     /**
-     * List PM2 processes. Exposed as a method so tests can stub it directly.
-     * @returns {Promise<{id: string, name: string, status: string}[]>} The normalized PM2 process list.
-     */
-    async getProcessList() {
-        return getPM2ProcessList();
-    }
-
-    /**
      * Check the PM2 process status.
      * @param {object} monitor The monitor object containing monitor.system_service_name.
      * @param {object} heartbeat The heartbeat object to update.
@@ -26,15 +18,7 @@ class PM2MonitorType extends MonitorType {
             processName = processName.slice(4).trim();
         }
 
-        if (!processName) {
-            throw new Error("PM2 process name is required.");
-        }
-
-        if (/[\u0000-\u001F\u007F]/.test(processName)) {
-            throw new Error("Invalid PM2 process name.");
-        }
-
-        const processList = await this.getProcessList();
+        const processList = await getPM2ProcessList();
         const entry = processList.find((item) => item.name === processName || item.id === processName);
 
         if (!entry) {
