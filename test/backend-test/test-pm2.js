@@ -36,15 +36,19 @@ describe("PM2MonitorType", () => {
 
     test("check() returns UP for an online PM2 process", async () => {
         monitorType = createMonitorType((command, args, options, callback) => {
-            callback(null, JSON.stringify([
-                {
-                    pm_id: 0,
-                    name: "api",
-                    pm2_env: {
-                        status: "online",
+            callback(
+                null,
+                JSON.stringify([
+                    {
+                        pm_id: 0,
+                        name: "api",
+                        pm2_env: {
+                            status: "online",
+                        },
                     },
-                },
-            ]), "");
+                ]),
+                ""
+            );
         });
 
         await monitorType.check(
@@ -60,15 +64,19 @@ describe("PM2MonitorType", () => {
 
     test("check() returns DOWN for a stopped PM2 process", async () => {
         monitorType = createMonitorType((command, args, options, callback) => {
-            callback(null, JSON.stringify([
-                {
-                    pm_id: 0,
-                    name: "api",
-                    pm2_env: {
-                        status: "stopped",
+            callback(
+                null,
+                JSON.stringify([
+                    {
+                        pm_id: 0,
+                        name: "api",
+                        pm2_env: {
+                            status: "stopped",
+                        },
                     },
-                },
-            ]), "");
+                ]),
+                ""
+            );
         });
 
         await assert.rejects(
@@ -86,15 +94,19 @@ describe("PM2MonitorType", () => {
 
     test("check() accepts legacy pm2: targets", async () => {
         monitorType = createMonitorType((command, args, options, callback) => {
-            callback(null, JSON.stringify([
-                {
-                    pm_id: 3,
-                    name: "worker",
-                    pm2_env: {
-                        status: "online",
+            callback(
+                null,
+                JSON.stringify([
+                    {
+                        pm_id: 3,
+                        name: "worker",
+                        pm2_env: {
+                            status: "online",
+                        },
                     },
-                },
-            ]), "");
+                ]),
+                ""
+            );
         });
 
         await monitorType.check(

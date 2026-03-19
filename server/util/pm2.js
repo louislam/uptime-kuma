@@ -25,40 +25,47 @@ function truncateOutput(output) {
  */
 function getPM2ProcessList() {
     return new Promise((resolve, reject) => {
-        execFile(process.platform === "win32" ? "pm2.cmd" : "pm2", ["jlist"], PM2_EXEC_OPTIONS, (error, stdout, stderr) => {
-            if (error) {
-                const details = truncateOutput(stderr) || error.code || error.message;
-                reject(new Error(`Unable to query PM2 process list (${details}).`));
-                return;
-            }
-
-            try {
-                const parsed = JSON.parse((stdout || "").toString());
-                if (!Array.isArray(parsed)) {
-                    reject(new Error("Unexpected PM2 process list output."));
+        execFile(
+            process.platform === "win32" ? "pm2.cmd" : "pm2",
+            ["jlist"],
+            PM2_EXEC_OPTIONS,
+            (error, stdout, stderr) => {
+                if (error) {
+                    const details = truncateOutput(stderr) || error.code || error.message;
+                    reject(new Error(`Unable to query PM2 process list (${details}).`));
                     return;
                 }
 
-                resolve(parsed
-                    .map((item) => {
-                        const id = item?.pm_id != null ? String(item.pm_id) : null;
-                        const name = item?.name || null;
+                try {
+                    const parsed = JSON.parse((stdout || "").toString());
+                    if (!Array.isArray(parsed)) {
+                        reject(new Error("Unexpected PM2 process list output."));
+                        return;
+                    }
 
-                        if (!id && !name) {
-                            return null;
-                        }
+                    resolve(
+                        parsed
+                            .map((item) => {
+                                const id = item?.pm_id != null ? String(item.pm_id) : null;
+                                const name = item?.name || null;
 
-                        return {
-                            id: id || name,
-                            name: name || id,
-                            status: item?.pm2_env?.status?.toString().toLowerCase() || "unknown",
-                        };
-                    })
-                    .filter(Boolean));
-            } catch (parseError) {
-                reject(new Error(truncateOutput(stderr) || "Unable to parse PM2 process list output."));
+                                if (!id && !name) {
+                                    return null;
+                                }
+
+                                return {
+                                    id: id || name,
+                                    name: name || id,
+                                    status: item?.pm2_env?.status?.toString().toLowerCase() || "unknown",
+                                };
+                            })
+                            .filter(Boolean)
+                    );
+                } catch (parseError) {
+                    reject(new Error(truncateOutput(stderr) || "Unable to parse PM2 process list output."));
+                }
             }
-        });
+        );
     });
 }
 
