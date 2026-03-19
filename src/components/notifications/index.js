@@ -11,6 +11,7 @@ import CallMeBot from "./CallMeBot.vue";
 import SMSC from "./SMSC.vue";
 import DingDing from "./DingDing.vue";
 import Discord from "./Discord.vue";
+import Fluxer from "./Fluxer.vue";
 import Elks from "./46elks.vue";
 import Feishu from "./Feishu.vue";
 import FreeMobile from "./FreeMobile.vue";
@@ -86,6 +87,7 @@ import SMSIR from "./SMSIR.vue";
 import Webpush from "./Webpush.vue";
 import HaloPSA from "./HaloPSA.vue";
 import Resend from "./Resend.vue";
+import Max from "./Max.vue";
 
 /**
  * Manage all notification form.
@@ -105,6 +107,7 @@ const NotificationFormList = {
     smsir: SMSIR,
     DingDing: DingDing,
     discord: Discord,
+    fluxer: Fluxer,
     Elks: Elks,
     Feishu: Feishu,
     FreeMobile: FreeMobile,
@@ -180,6 +183,7 @@ const NotificationFormList = {
     SMSPlanet: SMSPlanet,
     Webpush: Webpush,
     HaloPSA: HaloPSA,
+    max: Max,
 };
 
 export default NotificationFormList;

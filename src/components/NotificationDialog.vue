@@ -215,6 +215,8 @@ export default {
                 bale: "Bale",
                 Bitrix24: "Bitrix24",
                 discord: "Discord",
+                max: this.$t("maxMessenger"),
+                fluxer: "Fluxer",
                 GoogleChat: "Google Chat (Google Workspace)",
                 gorush: "Gorush",
                 gotify: "Gotify",
