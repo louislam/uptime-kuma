@@ -24,7 +24,7 @@ test("isValidURL", () => {
     assert.strictEqual(ntfy.isValidURL("http://127.0.0.1"), false);
     assert.strictEqual(ntfy.isValidURL("http://127.0.0.1:8080"), false);
     assert.strictEqual(ntfy.isValidURL("http://server.local"), false);
-    
+
     // Private IPs
     assert.strictEqual(ntfy.isValidURL("http://10.0.0.1"), false);
     assert.strictEqual(ntfy.isValidURL("http://172.16.0.1"), false);
