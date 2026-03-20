@@ -120,7 +120,10 @@ export default {
             socket = io(url);
 
             socket.on("info", (info) => {
-                this.info = info;
+                this.info = {
+                    ...this.info,
+                    ...info,
+                };
             });
 
             socket.on("setup", (monitorID, data) => {
@@ -869,7 +872,7 @@ export default {
 
         // Reload the SPA if the server version is changed.
         "info.version"(to, from) {
-            if (from && from !== to) {
+            if (from && to && from !== to) {
                 window.location.reload();
             }
         },
