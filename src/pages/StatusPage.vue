@@ -575,12 +575,11 @@
                     </a>
                 </p>
 
-                <div class="refresh-info mb-2">
-                    <div>{{ $t("lastUpdatedAt", { date: lastUpdateTimeDisplay }) }}</div>
-                    <div data-testid="update-countdown-text">
-                        {{ $t("statusPageRefreshIn", [updateCountdownText]) }}
-                    </div>
-                </div>
+                <StatusPageRefreshInfo
+                    :last-update-time="lastUpdateTime"
+                    :auto-refresh-interval="config.autoRefreshInterval"
+                    :show-countdown="!enableEditMode"
+                />
             </footer>
         </div>
 
@@ -603,7 +602,6 @@
 <script>
 import axios from "axios";
 import dayjs from "dayjs";
-import duration from "dayjs/plugin/duration";
 import Favico from "favico.js";
 // import highlighting library (you can use any library you want just return html string)
 import { highlight, languages } from "prismjs/components/prism-core";
@@ -622,6 +620,7 @@ import MaintenanceTime from "../components/MaintenanceTime.vue";
 import IncidentHistory from "../components/IncidentHistory.vue";
 import IncidentManageModal from "../components/IncidentManageModal.vue";
 import IncidentEditForm from "../components/IncidentEditForm.vue";
+import StatusPageRefreshInfo from "../components/StatusPageRefreshInfo.vue";
 import { getResBaseURL } from "../util-frontend";
 import {
     STATUS_PAGE_ALL_DOWN,
@@ -635,7 +634,6 @@ import Tag from "../components/Tag.vue";
 import VueMultiselect from "vue-multiselect";
 
 const toast = useToast();
-dayjs.extend(duration);
 
 const leavePageMsg = "Do you really want to leave? you have unsaved changes!";
 
@@ -658,6 +656,7 @@ export default {
         IncidentHistory,
         IncidentManageModal,
         IncidentEditForm,
+        StatusPageRefreshInfo,
     },
 
     // Leave Page for vue route change
@@ -702,8 +701,6 @@ export default {
             clickedEditButton: false,
             maintenanceList: [],
             lastUpdateTime: dayjs(),
-            updateCountdown: null,
-            updateCountdownText: null,
             loading: true,
             incidentHistory: [],
             incidentHistoryLoading: false,
@@ -855,10 +852,6 @@ export default {
             } else {
                 return "";
             }
-        },
-
-        lastUpdateTimeDisplay() {
-            return this.$root.datetime(this.lastUpdateTime);
         },
 
         /**
@@ -1013,8 +1006,6 @@ export default {
                 this.$root.publicGroupList = res.data.publicGroupList;
 
                 this.loading = false;
-
-                this.updateUpdateTimer();
             })
             .catch(function (error) {
                 if (error.response.status === 404) {
@@ -1034,7 +1025,6 @@ export default {
     },
     unmounted() {
         clearInterval(feedInterval);
-        clearInterval(this.updateCountdown);
     },
     methods: {
         /**
@@ -1092,34 +1082,8 @@ export default {
 
                     this.loadedData = true;
                     this.lastUpdateTime = dayjs();
-                    this.updateUpdateTimer();
                 });
             }
-        },
-
-        /**
-         * Setup timer to display countdown to refresh
-         * @returns {void}
-         */
-        updateUpdateTimer() {
-            clearInterval(this.updateCountdown);
-
-            this.updateCountdown = setInterval(() => {
-                // rounding here as otherwise we sometimes skip numbers in cases of time drift
-                const countdown = dayjs.duration(
-                    Math.round(
-                        this.lastUpdateTime.add(Math.max(5, this.config.autoRefreshInterval), "seconds").diff(dayjs()) /
-                            1000
-                    ),
-                    "seconds"
-                );
-
-                if (countdown.as("seconds") < 0) {
-                    clearInterval(this.updateCountdown);
-                } else {
-                    this.updateCountdownText = countdown.format("mm:ss");
-                }
-            }, 1000);
         },
 
         /**
@@ -1749,10 +1713,6 @@ footer {
     .alert-heading {
         font-weight: bold;
     }
-}
-
-.refresh-info {
-    opacity: 0.7;
 }
 
 .past-incidents-title {
