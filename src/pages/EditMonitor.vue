@@ -81,6 +81,7 @@
                                         <option value="json-query">HTTP(s) - {{ $t("Json Query") }}</option>
                                         <option value="kafka-producer">Kafka Producer</option>
                                         <option value="mqtt">MQTT</option>
+                                        <option value="ntp">NTP</option>
                                         <option value="rabbitmq">RabbitMQ</option>
                                         <option v-if="!$root.info.isContainer" value="sip-options">
                                             SIP Options Ping
@@ -456,7 +457,7 @@
                             </template>
 
                             <!-- Hostname -->
-                            <!-- TCP Port / Ping / DNS / Steam / MQTT / Radius / Tailscale Ping / SNMP / SMTP / SIP Options only -->
+                            <!-- TCP Port / Ping / DNS / Steam / MQTT / NTP / Radius / Tailscale Ping / SNMP / SMTP / SIP Options only -->
                             <div
                                 v-if="
                                     monitor.type === 'port' ||
@@ -469,6 +470,7 @@
                                     monitor.type === 'tailscale-ping' ||
                                     monitor.type === 'smtp' ||
                                     monitor.type === 'snmp' ||
+                                    monitor.type === 'ntp' ||
                                     monitor.type === 'sip-options'
                                 "
                                 class="my-3"
@@ -670,7 +672,7 @@
                             </template>
 
                             <!-- Port -->
-                            <!-- For TCP Port / Steam / MQTT / Radius Type / SNMP / SIP Options -->
+                            <!-- For TCP Port / Steam / MQTT / NTP / Radius Type / SNMP / SIP Options -->
                             <div
                                 v-if="
                                     monitor.type === 'port' ||
@@ -680,6 +682,7 @@
                                     monitor.type === 'radius' ||
                                     monitor.type === 'smtp' ||
                                     monitor.type === 'snmp' ||
+                                    monitor.type === 'ntp' ||
                                     monitor.type === 'sip-options' ||
                                     (monitor.type === 'globalping' &&
                                         monitor.subtype === 'ping' &&
@@ -3352,13 +3355,15 @@ message HealthCheckResponse {
             }
 
             // Set default port for DNS if not already defined
-            if (!this.monitor.port || this.monitor.port === "53" || this.monitor.port === "1812") {
+            if (!this.monitor.port || this.monitor.port === "53" || this.monitor.port === "1812" || this.monitor.port === "123") {
                 if (this.monitor.type === "dns") {
                     this.monitor.port = "53";
                 } else if (this.monitor.type === "radius") {
                     this.monitor.port = "1812";
                 } else if (this.monitor.type === "snmp") {
                     this.monitor.port = "161";
+                } else if (this.monitor.type === "ntp") {
+                    this.monitor.port = "123";
                 } else if (this.monitor.type === "globalping" && this.monitor.subtype === "ping") {
                     this.monitor.port = "80";
                 } else {

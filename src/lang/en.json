@@ -1174,6 +1174,8 @@
     "Condition": "Condition",
     "SNMP Version": "SNMP Version",
     "Please enter a valid OID.": "Please enter a valid OID.",
+    "NTP": "NTP",
+    "ntpHelptext": "Enter the hostname or IP address of the NTP server to monitor.",
     "wayToGetThreemaGateway": "You can register for Threema Gateway {0}.",
     "threemaRecipient": "Recipient",
     "threemaRecipientType": "Recipient Type",
