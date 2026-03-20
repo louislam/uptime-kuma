@@ -2,6 +2,24 @@ const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 const FormData = require("form-data");
 
+/**
+ * Escape a string for safe embedding inside a JSON string value.
+ * Handles newlines, tabs, backslashes, and double quotes.
+ * @param {string} str input
+ * @returns {string} escaped string
+ */
+function jsonEscape(str) {
+    if (typeof str !== "string") {
+        return str;
+    }
+    return str
+        .replace(/\\/g, "\\\\")
+        .replace(/"/g, '\\"')
+        .replace(/\n/g, "\\n")
+        .replace(/\r/g, "\\r")
+        .replace(/\t/g, "\\t");
+}
+
 class Webhook extends NotificationProvider {
     name = "webhook";
 
@@ -41,7 +59,16 @@ class Webhook extends NotificationProvider {
                 config.headers = formData.getHeaders();
                 data = formData;
             } else if (notification.webhookContentType === "custom") {
-                data = await this.renderTemplate(notification.webhookCustomBody, msg, monitorJSON, heartbeatJSON);
+                // Escape msg for safe embedding in JSON templates (#3778)
+                const escapedMsg = jsonEscape(msg);
+                data = await this.renderTemplate(notification.webhookCustomBody, escapedMsg, monitorJSON, heartbeatJSON);
+                try {
+                    // Parse to object so axios serializes it correctly
+                    data = JSON.parse(data);
+                } catch (e) {
+                    // Not JSON — send as-is without axios transforming it
+                    config.transformRequest = [ (d) => d ];
+                }
             }
 
             if (notification.webhookAdditionalHeaders) {
