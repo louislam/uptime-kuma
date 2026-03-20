@@ -7,6 +7,9 @@ const { parseArgsStringToArgv } = require("string-argv");
 
 class SecurityError extends Error {}
 
+/**
+ * @param path
+ */
 function isWorldWritable(path) {
     if (process.platform === "win32") {
         const GET_ACL_COMMAND = ``;
