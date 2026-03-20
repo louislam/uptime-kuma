@@ -7,24 +7,7 @@ const { parseArgsStringToArgv } = require("string-argv");
 
 class SecurityError extends Error {}
 
-/**
- * @param path
- */
-function isWorldWritable(path) {
-    if (process.platform === "win32") {
-        const GET_ACL_COMMAND = ``;
-       
-        
-    } else {
-        const stats = await fs.stat(path);
-        return (stats.mode & 0o002) !== 0;
-    }
-}
-
 class ScriptMonitorType extends MonitorType {
-    static PERMISSIONS_SCRIPT_DIR = 0o755;
-    static PERMISSIONS_SCRIPT_FILE = 0o755;
-
     name = "Custom command";
     type = "script";
     description = "A monitor that executes a script";
@@ -61,7 +44,6 @@ class ScriptMonitorType extends MonitorType {
         }
 
         // If scripts directory is writable for current user, refuse to execute script for security reasons
-        const dirStats = await fs.stat(this.dir);
         try {
             await fs.access(this.dir, fs.constants.W_OK);
             throw new SecurityError(
