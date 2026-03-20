@@ -1014,14 +1014,6 @@ export default {
 
                 this.loading = false;
 
-                // Configure auto-refresh loop
-                feedInterval = setInterval(
-                    () => {
-                        this.updateHeartbeatList();
-                    },
-                    Math.max(5, this.config.autoRefreshInterval) * 1000
-                );
-
                 this.updateUpdateTimer();
             })
             .catch(function (error) {
@@ -1039,6 +1031,10 @@ export default {
         if (this.$route.query.edit || this.$route.query.edit === null) {
             this.edit();
         }
+    },
+    unmounted() {
+        clearInterval(feedInterval);
+        clearInterval(this.updateCountdown);
     },
     methods: {
         /**
