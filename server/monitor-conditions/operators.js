@@ -259,6 +259,76 @@ class GreaterThanOrEqualToOperator extends ConditionOperator {
     }
 }
 
+// --- CIDR Operators ---
+
+const OP_IN_CIDR = "in_cidr";
+const OP_NOT_IN_CIDR = "not_in_cidr";
+
+function ipToLong(ip) {
+    if (typeof ip !== "string") return null;
+
+    const parts = ip.split(".");
+    if (parts.length !== 4) return null;
+
+    let num = 0;
+    for (let part of parts) {
+        const n = Number(part);
+        if (isNaN(n) || n < 0 || n > 255) return null;
+        num = (num << 8) + n;
+    }
+    return num >>> 0;
+}
+
+function cidrContains(ip, cidr) {
+    if (!ip || !cidr) return false;
+
+    const [range, bitsStr] = cidr.split("/");
+    const bits = Number(bitsStr);
+
+    if (!range || isNaN(bits) || bits < 0 || bits > 32) {
+        return false;
+    }
+
+    const ipLong = ipToLong(ip);
+    const rangeLong = ipToLong(range);
+
+    if (ipLong === null || rangeLong === null) return false;
+
+    const mask = bits === 0 ? 0 : (~((1 << (32 - bits)) - 1)) >>> 0;
+
+    return (ipLong & mask) === (rangeLong & mask);
+}
+
+class InCidrOperator extends ConditionOperator {
+    id = OP_IN_CIDR;
+    caption = "is in CIDR";
+
+    test(variable, value) {
+        if (!variable || !value) return false;
+
+        if (Array.isArray(variable)) {
+            return variable.some(ip => cidrContains(ip, value));
+        }
+
+        return cidrContains(variable, value);
+    }
+}
+
+class NotInCidrOperator extends ConditionOperator {
+    id = OP_NOT_IN_CIDR;
+    caption = "is not in CIDR";
+
+    test(variable, value) {
+        if (!variable || !value) return false;
+
+        if (Array.isArray(variable)) {
+            return variable.every(ip => !cidrContains(ip, value));
+        }
+
+        return !cidrContains(variable, value);
+    }
+}
+
 const operatorMap = new Map([
     [OP_STR_EQUALS, new StringEqualsOperator()],
     [OP_STR_NOT_EQUALS, new StringNotEqualsOperator()],
@@ -274,6 +344,8 @@ const operatorMap = new Map([
     [OP_GT, new GreaterThanOperator()],
     [OP_LTE, new LessThanOrEqualToOperator()],
     [OP_GTE, new GreaterThanOrEqualToOperator()],
+    [OP_IN_CIDR, new InCidrOperator()],
+    [OP_NOT_IN_CIDR, new NotInCidrOperator()],
 ]);
 
 const defaultStringOperators = [
@@ -285,6 +357,8 @@ const defaultStringOperators = [
     operatorMap.get(OP_NOT_STARTS_WITH),
     operatorMap.get(OP_ENDS_WITH),
     operatorMap.get(OP_NOT_ENDS_WITH),
+    operatorMap.get(OP_IN_CIDR),
+    operatorMap.get(OP_NOT_IN_CIDR),
 ];
 
 const defaultNumberOperators = [
@@ -315,4 +389,6 @@ module.exports = {
     defaultStringOperators,
     defaultNumberOperators,
     ConditionOperator,
+    OP_IN_CIDR,
+    OP_NOT_IN_CIDR,
 };
