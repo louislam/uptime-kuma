@@ -334,6 +334,7 @@ export default {
                 WPush: "WPush(wpush.cn)",
                 YZJ: "YZJ (云之家自定义机器人)",
                 SMSPlanet: "SMSPlanet.pl",
+                VK: "VK",
             };
 
             // Sort by notification name alphabetically
