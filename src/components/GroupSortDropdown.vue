@@ -110,6 +110,10 @@
 </template>
 
 <script>
+import { DOWN, MAINTENANCE, PENDING, UP } from "../util.ts";
+
+const UNKNOWN_STATUS_PRIORITY = 4;
+
 export default {
     name: "GroupSortDropdown",
     props: {
@@ -158,22 +162,42 @@ export default {
             }
             return sortSettings;
         },
+
+        /**
+         * Values that can affect monitor ordering.
+         * @returns {Array}
+         */
+        sortDependencies() {
+            if (!this.group || !Array.isArray(this.group.monitorList)) {
+                return [];
+            }
+
+            const sortKey = this.group.sortKey || "status";
+            const sortDirection = this.group.sortDirection || "desc";
+
+            return [
+                sortKey,
+                sortDirection,
+                ...this.group.monitorList.map((monitor) => {
+                    if (!monitor || !monitor.id) {
+                        return null;
+                    }
+
+                    if (sortKey === "cert") {
+                        return [monitor.id, monitor.validCert ?? null, monitor.certExpiryDaysRemaining ?? null];
+                    }
+
+                    return [monitor.id, this.getSortValue(monitor, sortKey)];
+                }),
+            ];
+        },
     },
     watch: {
-        // Watch for changes in heartbeat list, reapply sorting
-        "$root.heartbeatList": {
+        sortDependencies: {
             handler() {
                 this.applySort();
             },
-            deep: true,
-        },
-
-        // Watch for changes in uptime list, reapply sorting
-        "$root.uptimeList": {
-            handler() {
-                this.applySort();
-            },
-            deep: true,
+            immediate: true,
         },
 
         // Watch for URL changes and apply sort settings
@@ -266,6 +290,69 @@ export default {
         },
 
         /**
+         * Check whether sorting produced a different monitor order.
+         * @param {object[]} sortedMonitorList
+         * @returns {boolean}
+         */
+        hasMonitorOrderChanged(sortedMonitorList) {
+            if (sortedMonitorList.length !== this.group.monitorList.length) {
+                return true;
+            }
+
+            let hasOrderChanged = false;
+
+            for (const [index, monitor] of sortedMonitorList.entries()) {
+                if (monitor?.id !== this.group.monitorList[index]?.id) {
+                    hasOrderChanged = true;
+                    break;
+                }
+            }
+
+            return hasOrderChanged;
+        },
+
+        /**
+         * Get the sortable value for a monitor.
+         * @param {object} monitor
+         * @param {string} sortKey
+         * @returns {number|string}
+         */
+        getSortValue(monitor, sortKey) {
+            switch (sortKey) {
+                case "status": {
+                    if (!monitor || !monitor.id) {
+                        return UNKNOWN_STATUS_PRIORITY;
+                    }
+
+                    const hbList = this.$root.heartbeatList || {};
+                    const hbArr = hbList[monitor.id];
+
+                    if (hbArr && hbArr.length > 0) {
+                        const lastStatus = hbArr.at(-1).status;
+
+                        if ([DOWN, UP, PENDING, MAINTENANCE].includes(lastStatus)) {
+                            return lastStatus;
+                        }
+                    }
+
+                    return UNKNOWN_STATUS_PRIORITY;
+                }
+                case "name":
+                    return monitor?.name ?? "";
+                case "uptime": {
+                    const uptimeList = this.$root.uptimeList || {};
+                    return monitor?.id ? parseFloat(uptimeList[`${monitor.id}_24`]) || 0 : 0;
+                }
+                case "cert":
+                    return monitor?.validCert && monitor?.certExpiryDaysRemaining
+                        ? monitor.certExpiryDaysRemaining
+                        : -1;
+                default:
+                    return 0;
+            }
+        },
+
+        /**
          * Apply sorting logic directly to the group's monitorList (in-place)
          * @returns {void}
          */
@@ -276,75 +363,37 @@ export default {
 
             const sortKey = this.group.sortKey || "status";
             const sortDirection = this.group.sortDirection || "desc";
+            const sortMultiplier =
+                sortKey === "status" ? (sortDirection === "desc" ? -1 : 1) : sortDirection === "asc" ? 1 : -1;
+            const sortedMonitorList = [...this.group.monitorList].sort((a, b) => {
+                if (!a || !b) {
+                    return 0;
+                }
+
+                const valueA = this.getSortValue(a, sortKey);
+                const valueB = this.getSortValue(b, sortKey);
+                let comparison = 0;
+
+                if (sortKey === "name") {
+                    comparison = valueA.localeCompare(valueB, undefined, {
+                        sensitivity: "base",
+                        numeric: true,
+                    });
+                } else if (valueA < valueB) {
+                    comparison = -1;
+                } else if (valueA > valueB) {
+                    comparison = 1;
+                }
+
+                return comparison * sortMultiplier;
+            });
+
+            if (!this.hasMonitorOrderChanged(sortedMonitorList)) {
+                return;
+            }
 
             this.updateGroup({
-                monitorList: [...this.group.monitorList].sort((a, b) => {
-                    if (!a || !b) {
-                        return 0;
-                    }
-
-                    let comparison = 0;
-                    let valueA;
-                    let valueB;
-
-                    if (sortKey === "status") {
-                        // Sort by status
-                        const getStatusPriority = (monitor) => {
-                            if (!monitor || !monitor.id) {
-                                return 4;
-                            }
-
-                            const hbList = this.$root.heartbeatList || {};
-                            const hbArr = hbList[monitor.id];
-                            if (hbArr && hbArr.length > 0) {
-                                const lastStatus = hbArr.at(-1).status;
-                                if (lastStatus === 0) {
-                                    return 0;
-                                } // Down
-                                if (lastStatus === 1) {
-                                    return 1;
-                                } // Up
-                                if (lastStatus === 2) {
-                                    return 2;
-                                } // Pending
-                                if (lastStatus === 3) {
-                                    return 3;
-                                } // Maintenance
-                            }
-                            return 4; // Unknown/No data
-                        };
-                        valueA = getStatusPriority(a);
-                        valueB = getStatusPriority(b);
-                    } else if (sortKey === "name") {
-                        // Sort alphabetically by name
-                        valueA = a.name ? a.name.toLowerCase() : "";
-                        valueB = b.name ? b.name.toLowerCase() : "";
-                    } else if (sortKey === "uptime") {
-                        // Sort by uptime
-                        const uptimeList = this.$root.uptimeList || {};
-                        const uptimeA = a.id ? parseFloat(uptimeList[`${a.id}_24`]) || 0 : 0;
-                        const uptimeB = b.id ? parseFloat(uptimeList[`${b.id}_24`]) || 0 : 0;
-                        valueA = uptimeA;
-                        valueB = uptimeB;
-                    } else if (sortKey === "cert") {
-                        // Sort by certificate expiry time
-                        valueA = a.validCert && a.certExpiryDaysRemaining ? a.certExpiryDaysRemaining : -1;
-                        valueB = b.validCert && b.certExpiryDaysRemaining ? b.certExpiryDaysRemaining : -1;
-                    }
-
-                    if (valueA < valueB) {
-                        comparison = -1;
-                    } else if (valueA > valueB) {
-                        comparison = 1;
-                    }
-
-                    // Special handling for status sorting
-                    if (sortKey === "status") {
-                        return sortDirection === "desc" ? comparison * -1 : comparison;
-                    } else {
-                        return sortDirection === "asc" ? comparison : comparison * -1;
-                    }
-                }),
+                monitorList: sortedMonitorList,
             });
         },
 
