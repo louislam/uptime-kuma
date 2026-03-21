@@ -1,7 +1,7 @@
 <template>
     <div v-if="loadedTheme" class="container mt-3">
         <!-- Sidebar for edit mode -->
-        <div v-if="enableEditMode" class="sidebar" data-testid="edit-sidebar">
+        <div v-if="editState === 'active'" class="sidebar" data-testid="edit-sidebar">
             <div class="sidebar-body">
                 <div class="my-3">
                     <label for="slug" class="form-label">{{ $t("Slug") }}</label>
@@ -236,7 +236,7 @@
         </div>
 
         <!-- Main Status Page -->
-        <div :class="{ edit: enableEditMode }" class="main">
+        <div :class="{ edit: editState === 'active' }" class="main">
             <!-- Logo & Title -->
             <h1 class="mb-4 title-flex">
                 <!-- Logo -->
@@ -250,7 +250,7 @@
                         <font-awesome-icon icon="times" class="text-danger" />
                     </button>
                     <img :src="logoURL" alt class="logo me-2" :class="logoClass" />
-                    <font-awesome-icon v-if="enableEditMode" class="icon-upload" icon="upload" />
+                    <font-awesome-icon v-if="editState === 'active'" class="icon-upload" icon="upload" />
                 </span>
 
                 <!-- Uploader -->
@@ -273,9 +273,20 @@
 
             <!-- Admin functions -->
             <div v-if="hasToken" class="mb-2">
-                <div v-if="!enableEditMode">
-                    <button class="btn btn-primary mb-2 me-2" data-testid="edit-button" @click="edit">
-                        <font-awesome-icon icon="edit" />
+                <div v-if="editState !== 'active'">
+                    <button
+                        class="btn btn-primary mb-2 me-2"
+                        :disabled="editState === 'loading'"
+                        data-testid="edit-button"
+                        @click="edit"
+                    >
+                        <span
+                            v-if="editState === 'loading'"
+                            class="spinner-border spinner-border-sm me-1"
+                            role="status"
+                            aria-hidden="true"
+                        ></span>
+                        <font-awesome-icon v-else icon="edit" />
                         {{ $t("Edit Status Page") }}
                     </button>
 
@@ -427,7 +438,7 @@
             <!-- Description -->
             <strong v-if="editMode">{{ $t("Description") }}:</strong>
             <Editable
-                v-if="enableEditMode"
+                v-if="editState === 'active'"
                 v-model="config.description"
                 :contenteditable="editMode"
                 tag="div"
@@ -436,7 +447,7 @@
             />
             <!-- eslint-disable vue/no-v-html-->
             <div
-                v-if="!enableEditMode"
+                v-if="editState !== 'active'"
                 class="alert-heading p-2"
                 data-testid="description"
                 v-html="descriptionHTML"
@@ -489,7 +500,7 @@
                 </div>
 
                 <PublicGroupList
-                    :edit-mode="enableEditMode"
+                    :edit-mode="editState === 'active'"
                     :show-tags="config.showTags"
                     :show-certificate-expiry="config.showCertificateExpiry"
                     :show-only-last-heartbeat="config.showOnlyLastHeartbeat"
@@ -512,7 +523,7 @@
                         <div class="shadow-box incident-list-box">
                             <IncidentHistory
                                 :incidents="dateGroup"
-                                :edit-mode="enableEditMode"
+                                :edit-mode="editState === 'active'"
                                 :loading="incidentHistoryLoading"
                                 @edit-incident="$refs.incidentManageModal.showEdit($event)"
                                 @delete-incident="$refs.incidentManageModal.showDelete($event)"
@@ -540,7 +551,7 @@
 
             <!-- Incident Manage Modal -->
             <IncidentManageModal
-                v-if="enableEditMode"
+                v-if="editState === 'active'"
                 ref="incidentManageModal"
                 :slug="slug"
                 @incident-updated="loadIncidentHistory"
@@ -548,20 +559,20 @@
 
             <footer class="mt-5 mb-4">
                 <div class="custom-footer-text text-start">
-                    <strong v-if="enableEditMode">{{ $t("Custom Footer") }}:</strong>
+                    <strong v-if="editState === 'active'">{{ $t("Custom Footer") }}:</strong>
                 </div>
                 <Editable
-                    v-if="enableEditMode"
+                    v-if="editState === 'active'"
                     v-model="config.footerText"
                     tag="div"
-                    :contenteditable="enableEditMode"
+                    :contenteditable="editState === 'active'"
                     :noNL="false"
                     class="alert-heading p-2"
                     data-testid="custom-footer-editable"
                 />
                 <!-- eslint-disable vue/no-v-html-->
                 <div
-                    v-if="!enableEditMode"
+                    v-if="editState !== 'active'"
                     class="alert-heading p-2"
                     data-testid="footer-text"
                     v-html="footerHTML"
@@ -578,7 +589,7 @@
                 <StatusPageRefreshInfo
                     :last-update-time="lastUpdateTime"
                     :auto-refresh-interval="config.autoRefreshInterval"
-                    :show-countdown="!enableEditMode"
+                    :show-countdown="editState !== 'active'"
                 />
             </footer>
         </div>
@@ -684,7 +695,8 @@ export default {
     data() {
         return {
             slug: null,
-            enableEditMode: false,
+            /** @type {'inactive' | 'loading' | 'active'} */
+            editState: "inactive",
             enableEditIncidentMode: false,
             hasToken: false,
             config: {
@@ -759,7 +771,7 @@ export default {
         },
 
         editMode() {
-            return this.enableEditMode && this.$root.socket.connected;
+            return this.editState === "active" && this.$root.socket.connected;
         },
 
         editIncidentMode() {
@@ -896,17 +908,13 @@ export default {
          */
         "$root.loggedIn"(loggedIn) {
             if (loggedIn) {
-                this.$root.getSocket().emit("getStatusPage", this.slug, (res) => {
-                    if (res.ok) {
-                        this.config = res.config;
-
-                        if (!this.config.customCSS) {
-                            this.config.customCSS = "body {\n" + "  \n" + "}\n";
+                this.loadPrivateConfig()
+                    .then(() => {
+                        if (this.editState === "loading") {
+                            this.editState = "active";
                         }
-                    } else {
-                        this.$root.toastError(res.msg);
-                    }
-                });
+                    })
+                    .catch(() => {});
             }
         },
 
@@ -979,15 +987,7 @@ export default {
 
         this.getData()
             .then((res) => {
-                this.config = res.data.config;
-
-                if (!this.config.domainNameList) {
-                    this.config.domainNameList = [];
-                }
-
-                if (this.config.icon) {
-                    this.imgDataUrl = this.config.icon;
-                }
+                this.applyConfig(res.data.config);
 
                 this.maintenanceList = res.data.maintenanceList;
                 this.$root.publicGroupList = res.data.publicGroupList;
@@ -1045,6 +1045,27 @@ export default {
         },
 
         /**
+         * Apply status page config defaults
+         * @param {object} config Status page config
+         * @returns {void}
+         */
+        applyConfig(config) {
+            this.config = config;
+
+            if (!this.config.domainNameList) {
+                this.config.domainNameList = [];
+            }
+
+            if (!this.config.customCSS) {
+                this.config.customCSS = "body {\n" + "  \n" + "}\n";
+            }
+
+            if (this.config.icon) {
+                this.imgDataUrl = this.config.icon;
+            }
+        },
+
+        /**
          * Provide syntax highlighting for CSS
          * @param {string} code Text to highlight
          * @returns {string} Highlighted CSS
@@ -1090,15 +1111,43 @@ export default {
          * Enable editing mode
          * @returns {void}
          */
-        edit() {
+        async edit() {
             if (this.hasToken) {
+                this.editState = "loading";
                 this.$root.initSocketIO(true);
-                this.enableEditMode = true;
                 this.clickedEditButton = true;
 
-                // Try to fix #1658
-                this.loadedData = true;
+                if (this.$root.loggedIn) {
+                    await this.loadPrivateConfig();
+
+                    if (this.editState === "loading") {
+                        this.editState = "active";
+                    }
+                } else {
+                    // Try to fix #1658
+                    this.loadedData = true;
+                }
             }
+        },
+
+        /**
+         * Load private status page config for editing
+         * @returns {Promise<void>}
+         */
+        loadPrivateConfig() {
+            return new Promise((resolve, reject) => {
+                this.$root.getSocket().emit("getStatusPage", this.slug, (res) => {
+                    if (res.ok) {
+                        this.applyConfig(res.config);
+
+                        resolve();
+                    } else {
+                        this.editState = "inactive";
+                        this.$root.toastError(res.msg);
+                        reject(new Error(res.msg));
+                    }
+                });
+            });
         },
 
         /**
@@ -1114,7 +1163,7 @@ export default {
                 .getSocket()
                 .emit("saveStatusPage", this.slug, this.config, this.imgDataUrl, this.$root.publicGroupList, (res) => {
                     if (res.ok) {
-                        this.enableEditMode = false;
+                        this.editState = "inactive";
                         this.$root.publicGroupList = res.publicGroupList;
 
                         // Add some delay, so that the side menu animation would be better
@@ -1151,7 +1200,7 @@ export default {
         deleteStatusPage() {
             this.$root.getSocket().emit("deleteStatusPage", this.slug, (res) => {
                 if (res.ok) {
-                    this.enableEditMode = false;
+                    this.editState = "inactive";
                     location.href = "/manage-status-page";
                 } else {
                     this.$root.toastError(res.msg);
@@ -1367,7 +1416,7 @@ export default {
         loadIncidentHistoryWithCursor(cursor, append = false) {
             this.incidentHistoryLoading = true;
 
-            if (this.enableEditMode) {
+            if (this.editState === "active") {
                 this.$root.getSocket().emit("getIncidentHistory", this.slug, cursor, (res) => {
                     this.incidentHistoryLoading = false;
                     if (res.ok) {
