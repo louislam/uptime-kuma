@@ -13,11 +13,7 @@ class PM2MonitorType extends MonitorType {
      * @returns {Promise<void>}
      */
     async check(monitor, heartbeat) {
-        let processName = (monitor.system_service_name || "").trim();
-        if (processName.toLowerCase().startsWith("pm2:")) {
-            processName = processName.slice(4).trim();
-        }
-
+        const processName = (monitor.system_service_name || "").trim();
         const processList = await getPM2ProcessList();
         const entry = processList.find((item) => item.name === processName || item.id === processName);
 

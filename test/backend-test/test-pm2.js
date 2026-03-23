@@ -91,32 +91,4 @@ describe("PM2MonitorType", () => {
 
         assert.strictEqual(heartbeat.status, DOWN);
     });
-
-    test("check() accepts legacy pm2: targets", async () => {
-        monitorType = createMonitorType((command, args, options, callback) => {
-            callback(
-                null,
-                JSON.stringify([
-                    {
-                        pm_id: 3,
-                        name: "worker",
-                        pm2_env: {
-                            status: "online",
-                        },
-                    },
-                ]),
-                ""
-            );
-        });
-
-        await monitorType.check(
-            {
-                system_service_name: "pm2:worker",
-            },
-            heartbeat
-        );
-
-        assert.strictEqual(heartbeat.status, UP);
-        assert.ok(heartbeat.msg.includes("worker"));
-    });
 });

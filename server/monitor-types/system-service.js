@@ -15,11 +15,7 @@ class SystemServiceMonitorType extends MonitorType {
      * @returns {Promise<void>} Resolves when check is complete.
      */
     async check(monitor, heartbeat) {
-        let serviceName = (monitor.system_service_name || "").trim();
-        const legacyTarget = serviceName.match(/^svc:(linux|win32):([\s\S]+)$/i);
-        if (legacyTarget) {
-            serviceName = legacyTarget[2].trim();
-        }
+        const serviceName = (monitor.system_service_name || "").trim();
 
         if (!serviceName) {
             throw new Error("Service Name is required.");

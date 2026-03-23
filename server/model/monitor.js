@@ -67,33 +67,6 @@ const DomainExpiry = require("./domain_expiry");
 const rootCertificates = rootCertificatesFingerprints();
 
 /**
- * Normalize legacy system-service / PM2 values stored in system_service_name.
- * @param {string} type Monitor type.
- * @param {string | null | undefined} value Raw stored value.
- * @returns {string} Normalized monitor target.
- */
-function normalizeSystemServiceName(type, value) {
-    const normalizedValue = (value || "").trim();
-
-    if (!normalizedValue) {
-        return "";
-    }
-
-    if (type === "pm2" && normalizedValue.toLowerCase().startsWith("pm2:")) {
-        return normalizedValue.slice(4).trim();
-    }
-
-    if (type === "system-service") {
-        const legacyTarget = normalizedValue.match(/^svc:(linux|win32):([\s\S]+)$/i);
-        if (legacyTarget) {
-            return legacyTarget[2].trim();
-        }
-    }
-
-    return normalizedValue;
-}
-
-/**
  * status:
  *      0 = DOWN
  *      1 = UP
@@ -213,7 +186,7 @@ class Monitor extends BeanModel {
             httpBodyEncoding: this.httpBodyEncoding,
             jsonPath: this.jsonPath,
             expectedValue: this.expectedValue,
-            system_service_name: normalizeSystemServiceName(this.type, this.system_service_name),
+            system_service_name: this.system_service_name,
             kafkaProducerTopic: this.kafkaProducerTopic,
             kafkaProducerBrokers: JSON.parse(this.kafkaProducerBrokers),
             kafkaProducerSsl: this.getKafkaProducerSsl(),
@@ -1758,7 +1731,7 @@ class Monitor extends BeanModel {
         }
 
         if (["system-service", "pm2"].includes(this.type)) {
-            this.system_service_name = normalizeSystemServiceName(this.type, this.system_service_name);
+            this.system_service_name = (this.system_service_name || "").trim();
 
             if (!this.system_service_name) {
                 throw new Error(this.type === "pm2" ? "PM2 process name is required." : "Service Name is required.");
