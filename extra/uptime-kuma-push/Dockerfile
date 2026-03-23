@@ -8,6 +8,9 @@ COPY --chown=kuma:kuma build.js build.js
 RUN node build.js $TARGETPLATFORM
 
 FROM debian:bookworm-slim AS release
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 RUN useradd --create-home kuma
 USER kuma
 WORKDIR /home/kuma
