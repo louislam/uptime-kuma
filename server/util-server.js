@@ -1054,6 +1054,6 @@ function createURL(isHTTPS, hostname, port = 80) {
     const url = new URL((isHTTPS ? "https" : "http") + `://` + hostname);
     url.port = String(port);
 
-    // Prefer origin if available, it doesn't contain the tailing slash
+    // Prefer origin if available, it doesn't contain the trailing slash
     return url.origin || url.toString();
 }
