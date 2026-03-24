@@ -1,6 +1,6 @@
 {
     "name": "uptime-kuma",
-    "version": "2.2.0",
+    "version": "2.2.1",
     "license": "MIT",
     "repository": {
         "type": "git",
@@ -44,7 +44,7 @@
         "build-docker-pr-test": "docker buildx build -f docker/dockerfile --platform linux/amd64,linux/arm64 -t louislam/uptime-kuma:pr-test2 --target pr-test2 . --push",
         "upload-artifacts": "node extra/release/upload-artifacts.mjs",
         "upload-artifacts-beta": "node extra/release/upload-artifacts-beta.mjs",
-        "setup": "git checkout 2.2.0 && npm ci --omit dev --no-audit && npm run download-dist",
+        "setup": "git checkout 2.2.1 && npm ci --omit dev --no-audit && npm run download-dist",
         "download-dist": "node extra/download-dist.js",
         "mark-as-nightly": "node extra/mark-as-nightly.js",
         "reset-password": "node extra/reset-password.js",
@@ -126,6 +126,7 @@
         "nostr-tools": "~2.20.0",
         "notp": "~2.0.3",
         "openid-client": "~5.7.1",
+        "oracledb": "~6.10.0",
         "password-hash": "~1.2.2",
         "pg": "~8.11.6",
         "pg-connection-string": "~2.6.4",
@@ -164,6 +165,7 @@
         "@testcontainers/mariadb": "^10.28.0",
         "@testcontainers/mssqlserver": "^10.28.0",
         "@testcontainers/mysql": "^11.12.0",
+        "@testcontainers/oraclefree": "^11.13.0",
         "@testcontainers/postgresql": "^11.12.0",
         "@testcontainers/rabbitmq": "^10.28.0",
         "@types/bootstrap": "~5.1.13",
