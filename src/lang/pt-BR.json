@@ -1587,5 +1587,21 @@
     "fluxerMessageFormatCustom": "Modelo personalizado",
     "fluxerUseMessageTemplateDescription": "Se ativada, a mensagem será enviada usando um modelo personalizado (LiquidJS). Deixe em branco para usar o formato padrão do Uptime Kuma.",
     "Fluxer Webhook URL": "URL do Webhook do Fluxer",
-    "wayToGetFluxerURL": "Você pode obter essa informação acessando as configurações do canal de destino > Webhooks > Criar Webhook > Copiar URL do Webhook."
+    "wayToGetFluxerURL": "Você pode obter essa informação acessando as configurações do canal de destino > Webhooks > Criar Webhook > Copiar URL do Webhook.",
+    "Notification Action": "Ação de notificação",
+    "homeAssistantNotificationActionHelptext": "Uma lista de Ações de Notificação pode ser encontrada no Home Assistant em \"Configurações > Ferramentas do desenvolvedor > Ações\". Busque por \"notify\" para encontrar suas ações. Digite apenas a parte após \"notify.\", por exemplo, para a ação \"notify.mobile_app_xyz\", digite \"mobile_app_xyz\". Para notificações integradas do aplicativo móvel, procure por \"Enviar uma notificação via mobile_app_xyz\" (e não \"Enviar uma notificação\").",
+    "oracledbConnectionString": "Banco de dados Oracle: {connectionString}",
+    "wayToGetMaxToken": "Você pode obter um token MAX bot e outros detalhes de {0}.",
+    "maxMessenger": "mensageiro MAX",
+    "maxApiUrlDescription": "URL base da API do MAX Messenger. Padrão: https://platform-api.max.ru",
+    "wayToGetMaxChatID": "Especifique o identificador do chat no MAX para onde as mensagens devem ser entregues.",
+    "maxUseTemplate": "Use um modelo de mensagem personalizado",
+    "maxUseTemplateDescription": "Se ativada, a mensagem será enviada usando um modelo personalizado.",
+    "maxTemplateFormatDescription": "O mensageiro MAX suporta formatação em texto simples, Markdown e HTML.",
+    "API Version": "Versão da API",
+    "Peer ID": "ID do par",
+    "vkApiVersionDescription": "Versão da API do VK usada para as solicitações. Mantenha a versão padrão, a menos que você precise especificamente de outra versão da API do VK para fins de compatibilidade.",
+    "vkDontParseLinks": "Desativar trechos de links",
+    "vkDontParseLinksDescription": "Se ativada, a opção VK não gerará pré-visualizações/trechos de links.",
+    "vkPeerIdDescription": "Insira o peer_id do VK de destino. Esse valor é enviado para a API exatamente como está."
 }
