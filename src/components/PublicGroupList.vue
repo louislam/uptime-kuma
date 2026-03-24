@@ -308,9 +308,8 @@ export default {
         },
 
         /**
-         * Remove the specified group
-         * @param {number} index Index of group to remove
-         * @param group
+         * Get unique identifier for a group
+         * @param {object} group object
          * @returns {string} group identifier
          */
         getGroupIdentifier(group) {
