@@ -1588,5 +1588,16 @@
     "signalUseTemplateDescription": "Wenn diese Option aktiviert ist, wird die Nachricht mit einer benutzerdefinierten Vorlage versendet. Du kannst Liquid-Templating verwenden, um das Benachrichtigungsformat anzupassen.",
     "monitorTypeGameServer": "Spieleserver",
     "monitorTypeDatabase": "Datenbankmonitor-Typ",
-    "monitorTypeSpecial": "Speziell"
+    "monitorTypeSpecial": "Speziell",
+    "360messengerUseTemplate": "Benutze eine Benutzerdefinierte Nachrichten Vorlage",
+    "360messengerTemplate": "360messenger Nachrichten Vorlage",
+    "360messengerGroupList": "WhatsApp Gruppen",
+    "360messengerSelectGroupList": "Wähle eine Gruppe zum hinzufügen aus",
+    "360messengerCustomMessageTemplate": "Benutzerdefinierte Nachrichten Vorlage",
+    "360messengerMessageTemplate": "Nachrichtenvorlage",
+    "360messengerErrorNoApiKey": "Bitte gebe deinen 360messenger API-Schlüssel zuerst ein.",
+    "360messengerAuthToken": "360messenger API-Schlüssel",
+    "360messengerGroupId": "360messenger Gruppen ID",
+    "fluxerMessageFormatCustom": "Benutzerdefinierte Vorlage",
+    "fluxerMessageFormatMinimalist": "Minimalistisch (kurzer Status)"
 }
