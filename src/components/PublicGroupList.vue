@@ -12,11 +12,20 @@
                         class="action remove me-3"
                         @click="removeGroup(group.index)"
                     />
+                    <span class="collapse-toggle" @click="toggleGroup(group.element)">
+                        <font-awesome-icon
+                            icon="chevron-down"
+                            class="chevron me-2"
+                            :class="{ collapsed: isGroupCollapsed(group.element) }"
+                        />
+                    </span>
                     <Editable
                         v-model="group.element.name"
                         :contenteditable="editMode"
                         tag="span"
+                        :class="{ 'collapse-toggle': !editMode }"
                         data-testid="group-name"
+                        @click="!editMode && toggleGroup(group.element)"
                     />
                 </h2>
 
@@ -296,6 +305,19 @@ export default {
                 return "#059669";
             }
             return "#DC2626";
+        },
+
+        /**
+         * Remove the specified group
+         * @param {number} index Index of group to remove
+         * @param group
+         * @returns {string} group identifier
+         */
+        getGroupIdentifier(group) {
+            if (group.id !== undefined && group.id !== null) {
+                return group.id.toString();
+            }
+            return `group${this.$root.publicGroupList.indexOf(group)}`;
         },
     },
 };
