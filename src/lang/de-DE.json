@@ -1599,5 +1599,7 @@
     "360messengerAuthToken": "360messenger API-Schlüssel",
     "360messengerGroupId": "360messenger Gruppen ID",
     "fluxerMessageFormatCustom": "Benutzerdefinierte Vorlage",
-    "fluxerMessageFormatMinimalist": "Minimalistisch (kurzer Status)"
+    "fluxerMessageFormatMinimalist": "Minimalistisch (kurzer Status)",
+    "Notification Action": "Benachrichtigungsaktion",
+    "homeAssistantNotificationActionHelptext": "Eine Liste an Benachrichtigungsaktionen können in Home Assistant unter „Einstellungen > Entwicklerwerkzeuge > Aktionen“ gefunden werden. Suche nach „notify“, um deine Aktionen zu finden. Gib nur den Teil nach „notify.“ ein, z. B. für die Aktion „notify.mobile_app_xyz“ gib „mobile_app_xyz“ ein. Bei integrierten mobilen Benachrichtigungen suche nach „Send a notification via mobile_app_xyz“ (nicht „Send a notification“)."
 }
