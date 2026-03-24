@@ -5,40 +5,27 @@
             <div class="mb-5" data-testid="group">
                 <!-- Group Title -->
                 <h2 class="group-title">
-                    <div class="title-section">
+                    <font-awesome-icon v-if="editMode && showGroupDrag" icon="arrows-alt-v" class="action drag me-3" />
+                    <font-awesome-icon
+                        v-if="editMode"
+                        icon="times"
+                        class="action remove me-3"
+                        @click="removeGroup(group.index)"
+                    />
+                    <span class="collapse-toggle" @click="toggleGroup(group.element)">
                         <font-awesome-icon
-                            v-if="editMode && showGroupDrag"
-                            icon="arrows-alt-v"
-                            class="action drag me-3"
+                            icon="chevron-down"
+                            class="chevron me-2"
+                            :class="{ collapsed: isGroupCollapsed(group.element) }"
                         />
-                        <font-awesome-icon
-                            v-if="editMode"
-                            icon="times"
-                            class="action remove me-3"
-                            @click="removeGroup(group.index)"
-                        />
-                        <span class="collapse-toggle" @click="toggleGroup(group.element)">
-                            <font-awesome-icon
-                                icon="chevron-down"
-                                class="chevron me-2"
-                                :class="{ collapsed: isGroupCollapsed(group.element) }"
-                            />
-                        </span>
-                        <Editable
-                            v-model="group.element.name"
-                            :contenteditable="editMode"
-                            tag="span"
-                            :class="{ 'collapse-toggle': !editMode }"
-                            data-testid="group-name"
-                            @click="!editMode && toggleGroup(group.element)"
-                        />
-                    </div>
-
-                    <GroupSortDropdown
-                        :group="group.element"
-                        :group-index="group.index"
-                        :show-certificate-expiry="showCertificateExpiry"
-                        @update-group="updateGroup"
+                    </span>
+                    <Editable
+                        v-model="group.element.name"
+                        :contenteditable="editMode"
+                        tag="span"
+                        :class="{ 'collapse-toggle': !editMode }"
+                        data-testid="group-name"
+                        @click="!editMode && toggleGroup(group.element)"
                     />
                 </h2>
 
@@ -150,7 +137,6 @@ import HeartbeatBar from "./HeartbeatBar.vue";
 import Uptime from "./Uptime.vue";
 import Tag from "./Tag.vue";
 import Status from "./Status.vue";
-import GroupSortDropdown from "./GroupSortDropdown.vue";
 
 export default {
     components: {
@@ -160,7 +146,6 @@ export default {
         Uptime,
         Tag,
         Status,
-        GroupSortDropdown,
     },
     props: {
         /** Are we in edit mode? */
@@ -188,12 +173,6 @@ export default {
         showGroupDrag() {
             return this.$root.publicGroupList.length >= 2;
         },
-    },
-    watch: {
-        // No watchers needed - sorting is handled by GroupSortDropdown component
-    },
-    created() {
-        // Sorting is now handled by GroupSortDropdown component
     },
     methods: {
         /**
@@ -329,16 +308,6 @@ export default {
         },
 
         /**
-         * Update group properties
-         * @param {number} groupIndex Index of group to update
-         * @param {object} updates Object with properties to update
-         * @returns {void}
-         */
-        updateGroup(groupIndex, updates) {
-            Object.assign(this.$root.publicGroupList[groupIndex], updates);
-        },
-
-        /**
          * Get unique identifier for a group
          * @param {object} group object
          * @returns {string} group identifier
@@ -410,15 +379,6 @@ export default {
 }
 
 .group-title {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-    .title-section {
-        display: flex;
-        align-items: center;
-    }
-
     span {
         display: inline-block;
         min-width: 15px;
@@ -443,11 +403,6 @@ export default {
 .mobile {
     .item {
         padding: 13px 0 10px;
-    }
-
-    .group-title {
-        flex-direction: column;
-        align-items: flex-start;
     }
 }
 
