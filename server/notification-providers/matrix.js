@@ -18,8 +18,8 @@ class Matrix extends NotificationProvider {
         log.debug("notification", "Random String: " + randomString);
 
         const roomId = encodeURIComponent(notification.internalRoomId);
-        // strip trailing /
-        const baseUrl = notification.homeserverUrl.replace(/\/+$/, "");
+        // normalize URL: trim whitespace and strip trailing /
+        const baseUrl = notification.homeserverUrl.trim().replace(/\/+$/, "");
 
         log.debug("notification", "Matrix Room ID: " + roomId);
 
