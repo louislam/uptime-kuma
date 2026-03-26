@@ -35,6 +35,10 @@
                             <font-awesome-icon icon="pen" />
                             {{ $t("Edit") }}
                         </button>
+                        <button class="btn btn-normal" @click="$refs.userPasswordDialog.show(item.id)">
+                            <font-awesome-icon icon="edit" />
+                            {{ $t("Change Password") }}
+                        </button>
                         <button
                             class="btn btn-danger"
                             :disabled="item.id === currentUserID"
@@ -53,17 +57,20 @@
         </Confirm>
 
         <UserDialog ref="userDialog" @saved="loadUsers" />
+        <UserPasswordDialog ref="userPasswordDialog" @saved="loadUsers" />
     </div>
 </template>
 
 <script>
 import Confirm from "../Confirm.vue";
 import UserDialog from "./UserDialog.vue";
+import UserPasswordDialog from "./UserPasswordDialog.vue";
 
 export default {
     components: {
         Confirm,
         UserDialog,
+        UserPasswordDialog,
     },
     data() {
         return {

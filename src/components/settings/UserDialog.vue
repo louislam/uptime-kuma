@@ -20,17 +20,28 @@
                                 required
                             />
                         </div>
-                        <div class="mb-3">
-                            <label for="user-password" class="form-label">{{ $t("Password") }}</label>
-                            <input
-                                id="user-password"
-                                v-model="formData.password"
-                                type="password"
-                                class="form-control"
-                                :required="!isEdit"
-                                :placeholder="isEdit ? $t('passwordEmptyToKeep') : ''"
-                            />
-                        </div>
+                        <template v-if="!isEdit">
+                            <div class="mb-3">
+                                <label for="user-password" class="form-label">{{ $t("Password") }}</label>
+                                <input
+                                    id="user-password"
+                                    v-model="formData.password"
+                                    type="password"
+                                    class="form-control"
+                                    required
+                                />
+                            </div>
+                            <div class="mb-3">
+                                <label for="user-password-repeat" class="form-label">{{ $t("Repeat Password") }}</label>
+                                <input
+                                    id="user-password-repeat"
+                                    v-model="repeatPassword"
+                                    type="password"
+                                    class="form-control"
+                                    required
+                                />
+                            </div>
+                        </template>
                     </div>
                     <div class="modal-footer">
                         <button class="btn btn-primary" type="submit" :disabled="processing">
@@ -53,6 +64,7 @@ export default {
             modal: null,
             processing: false,
             isEdit: false,
+            repeatPassword: "",
             formData: {
                 id: null,
                 username: "",
@@ -71,6 +83,7 @@ export default {
         showAdd() {
             this.isEdit = false;
             this.formData = { id: null, username: "", password: "" };
+            this.repeatPassword = "";
             this.modal.show();
         },
 
@@ -90,6 +103,11 @@ export default {
          * @returns {void}
          */
         submit() {
+            if (!this.isEdit && this.formData.password !== this.repeatPassword) {
+                this.$root.toastError(this.$t("passwordNotMatchMsg"));
+                return;
+            }
+
             this.processing = true;
             let event = this.isEdit ? "editUser" : "addUser";
 
@@ -97,7 +115,6 @@ export default {
                 this.processing = false;
                 this.$root.toastRes(res);
                 if (res.ok) {
-                    // Update displayed username if the current user edited themselves
                     if (this.isEdit && this.formData.id === this.$root.socket?.userID && this.formData.username) {
                         this.$root.username = this.formData.username;
                     }
