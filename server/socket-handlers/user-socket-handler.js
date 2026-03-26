@@ -14,7 +14,7 @@ module.exports.userSocketHandler = (socket) => {
     socket.on("getUsers", async (callback) => {
         try {
             checkLogin(socket);
-            let users = await R.getAll("SELECT id, username, active, twofa_status FROM user");
+            let users = await R.getAll("SELECT id, username, active FROM user");
             callback({
                 ok: true,
                 users: users,
@@ -32,6 +32,10 @@ module.exports.userSocketHandler = (socket) => {
         try {
             checkLogin(socket);
 
+            if (typeof user.username !== "string" || typeof user.password !== "string") {
+                throw new Error("Invalid input.");
+            }
+            user.username = user.username.trim();
             if (!user.username || !user.password) {
                 throw new Error("Username and password are required.");
             }
@@ -106,8 +110,22 @@ module.exports.userSocketHandler = (socket) => {
         try {
             checkLogin(socket);
 
-            if (Number(userID) === Number(socket.userID)) {
+            if (typeof userID !== "number" || !Number.isInteger(userID)) {
+                throw new Error("Invalid user ID.");
+            }
+
+            if (userID === Number(socket.userID)) {
                 throw new Error("You cannot delete your own account.");
+            }
+
+            let bean = await R.findOne("user", " id = ? ", [userID]);
+            if (!bean) {
+                throw new Error("User not found.");
+            }
+
+            let userCount = await R.count("user");
+            if (userCount <= 1) {
+                throw new Error("Cannot delete the last user.");
             }
 
             await R.exec("DELETE FROM user WHERE id = ? ", [userID]);

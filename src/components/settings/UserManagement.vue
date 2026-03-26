@@ -23,8 +23,8 @@
                 <div class="left-part">
                     <div class="info">
                         <div class="title">{{ item.username }}</div>
-                        <div class="status">
-                            {{ item.twofa_status ? "2FA" : "" }}
+                        <div v-if="item.twofa_status" class="status">
+                            2FA
                         </div>
                     </div>
                 </div>
@@ -77,7 +77,7 @@ export default {
          * @returns {number|null} Current user ID
          */
         currentUserID() {
-            return this.$root.socket.userID;
+            return this.$root.socket?.userID ?? null;
         },
     },
     mounted() {
