@@ -97,6 +97,10 @@ export default {
                 this.processing = false;
                 this.$root.toastRes(res);
                 if (res.ok) {
+                    // Update displayed username if the current user edited themselves
+                    if (this.isEdit && this.formData.id === this.$root.socket?.userID && this.formData.username) {
+                        this.$root.username = this.formData.username;
+                    }
                     this.modal.hide();
                     this.$emit("saved");
                 }
