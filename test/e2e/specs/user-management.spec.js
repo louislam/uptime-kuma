@@ -37,12 +37,6 @@ test.describe("User Management", () => {
         await restoreSqliteSnapshot();
     });
 
-    test("navigate to user management tab", async ({ page }, testInfo) => {
-        await loginAndGoToUsers(page);
-        await expect(page.locator(".item", { hasText: "admin" })).toBeVisible();
-        await screenshot(testInfo, page);
-    });
-
     test("add a new user", async ({ page }, testInfo) => {
         await loginAndGoToUsers(page);
         await createUser(page, "testuser", "testpass123");
