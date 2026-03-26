@@ -81,7 +81,7 @@ test.describe("User Management", () => {
         await screenshot(testInfo, page);
     });
 
-    test("change a user's password", async ({ page }, testInfo) => {
+    test("change a user's password and login with new credentials", async ({ page }, testInfo) => {
         await loginAndGoToUsers(page);
         await createUser(page, "pwduser", "oldpass123");
 
@@ -90,9 +90,18 @@ test.describe("User Management", () => {
         await page.locator("#change-password").fill("newpass456");
         await page.locator("#change-password-repeat").fill("newpass456");
         await page.getByRole("button", { name: "Save" }).click();
-
-        // Modal should close on success
         await expect(page.locator(".modal.show")).toHaveCount(0, { timeout: 10000 });
+
+        // Logout
+        await page.goto("./dashboard");
+        await page.getByText("A", { exact: true }).click();
+        await page.getByRole("button", { name: "Log out" }).click();
+
+        // Login as pwduser with new password
+        await page.getByPlaceholder("Username").fill("pwduser");
+        await page.getByPlaceholder("Password").fill("newpass456");
+        await page.getByRole("button", { name: "Log in" }).click();
+        await expect(page.getByText("Add New Monitor")).toBeVisible();
         await screenshot(testInfo, page);
     });
 
