@@ -169,6 +169,7 @@ const {
     sendAPIKeyList,
     sendRemoteBrowserList,
     sendMonitorTypeList,
+    sendUserList,
 } = require("./client");
 const { statusPageSocketHandler } = require("./socket-handlers/status-page-socket-handler");
 const { databaseSocketHandler } = require("./socket-handlers/database-socket-handler");
@@ -1815,6 +1816,7 @@ async function afterLogin(socket, user) {
         sendProxyList(socket),
         sendDockerHostList(socket),
         sendAPIKeyList(socket),
+        sendUserList(socket),
         sendRemoteBrowserList(socket),
         sendMonitorTypeList(socket),
     ]);
