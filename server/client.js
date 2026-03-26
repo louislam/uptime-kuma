@@ -238,11 +238,17 @@ async function sendMonitorTypeList(socket) {
 /**
  * Send list of users to client
  * @param {Socket} socket Socket.io socket instance
- * @returns {Promise<void>}
+ * @returns {Promise<object[]>} List of users
  */
 async function sendUserList(socket) {
+    const timeLogger = new TimeLogger();
+
     const list = await R.getAll("SELECT id, username, active FROM user");
     io.to(socket.userID).emit("userList", list);
+
+    timeLogger.print("Send User List");
+
+    return list;
 }
 
 module.exports = {

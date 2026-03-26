@@ -19,6 +19,7 @@ module.exports.userSocketHandler = (socket) => {
                 ok: true,
             });
         } catch (e) {
+            log.error("users", e);
             callback({
                 ok: false,
                 msg: e.message,
