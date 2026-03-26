@@ -20,9 +20,14 @@ class Evolution extends NotificationProvider {
             };
             config = this.getAxiosConfigWithProxy(config);
 
+            let text = msg;
+            if (notification.evolutionCustomMessage) {
+                text = await this.renderTemplate(notification.evolutionCustomMessage, msg, monitorJSON, heartbeatJSON);
+            }
+
             let data = {
                 number: notification.evolutionRecipient,
-                text: msg,
+                text,
             };
 
             let url =

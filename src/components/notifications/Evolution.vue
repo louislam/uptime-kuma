@@ -55,6 +55,17 @@
         </div>
     </div>
 
+    <div class="mb-3">
+        <label for="evolution-custom-message" class="form-label">{{ $t("evolutionCustomMessageTitle") }}</label>
+        <TemplatedTextarea
+            id="evolution-custom-message"
+            v-model="$parent.notification.evolutionCustomMessage"
+            :required="false"
+            :placeholder="customMessagePlaceholder"
+        ></TemplatedTextarea>
+        <div class="form-text">{{ $t("evolutionCustomMessageDesc") }}</div>
+    </div>
+
     <i18n-t tag="div" keypath="More info on:" class="mb-3 form-text">
         <a href="https:/evoapicloud.com/" target="_blank">https://evoapicloud.com/</a>
     </i18n-t>
@@ -62,10 +73,19 @@
 
 <script>
 import HiddenInput from "../HiddenInput.vue";
+import TemplatedTextarea from "../TemplatedTextarea.vue";
 
 export default {
     components: {
         HiddenInput,
+        TemplatedTextarea,
+    },
+    computed: {
+        customMessagePlaceholder() {
+            return this.$t("Example:", [
+                `[{{ name }}] [{{ status }}]\n{{ msg }}`,
+            ]);
+        },
     },
 };
 </script>

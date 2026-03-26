@@ -1158,6 +1158,8 @@
     "wayToGetEvolutionUrlAndToken": "You can get the API URL and the token by going into your desired channel from {0}",
     "evolutionRecipient": "Phone Number / Contact ID / Group ID",
     "evolutionInstanceName": "Instance Name",
+    "evolutionCustomMessageTitle": "Custom Message (optional)",
+    "evolutionCustomMessageDesc": "Leave empty to use the default message.",
     "What is a Remote Browser?": "What is a Remote Browser?",
     "wayToGetHeiiOnCallDetails": "How to get the Trigger ID and API Keys is explained in the {documentation}",
     "documentationOf": "{0} Documentation",
