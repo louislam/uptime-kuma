@@ -94,7 +94,7 @@ module.exports.userSocketHandler = (socket) => {
 
             callback({
                 ok: true,
-                msg: "successSaved",
+                msg: "successEdited",
                 msgi18n: true,
             });
 
