@@ -1525,7 +1525,5 @@
     "Add User": "Add User",
     "Edit User": "Edit User",
     "confirmDeleteUser": "Are you sure you want to delete this user?",
-    "cannotDeleteYourself": "You cannot delete your own account.",
-    "passwordEmptyToKeep": "Leave empty to keep current password",
     "No Users": "No Users"
 }
