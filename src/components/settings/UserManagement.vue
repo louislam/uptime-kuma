@@ -8,18 +8,11 @@
         </div>
 
         <div>
-            <span
-                v-if="users.length === 0"
-                class="d-flex align-items-center justify-content-center my-3"
-            >
+            <span v-if="users.length === 0" class="d-flex align-items-center justify-content-center my-3">
                 {{ $t("No Users") }}
             </span>
 
-            <div
-                v-for="item in users"
-                :key="item.id"
-                class="item"
-            >
+            <div v-for="item in users" :key="item.id" class="item">
                 <div class="left-part">
                     <div class="info">
                         <div class="title">{{ item.username }}</div>
@@ -49,7 +42,13 @@
             </div>
         </div>
 
-        <Confirm ref="confirmDeleteDialog" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="deleteUser">
+        <Confirm
+            ref="confirmDeleteDialog"
+            btn-style="btn-danger"
+            :yes-text="$t('Yes')"
+            :no-text="$t('No')"
+            @yes="deleteUser"
+        >
             {{ $t("confirmDeleteUser") }}
         </Confirm>
 

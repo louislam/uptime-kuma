@@ -21,7 +21,9 @@
                             />
                         </div>
                         <div class="mb-3">
-                            <label for="change-password-repeat" class="form-label">{{ $t("Repeat New Password") }}</label>
+                            <label for="change-password-repeat" class="form-label">
+                                {{ $t("Repeat New Password") }}
+                            </label>
                             <input
                                 id="change-password-repeat"
                                 v-model="repeatPassword"
@@ -83,16 +85,20 @@ export default {
 
             this.processing = true;
 
-            this.$root.getSocket().emit("editUser", {
-                id: this.userID,
-                password: this.password,
-            }, (res) => {
-                this.processing = false;
-                this.$root.toastRes(res);
-                if (res.ok) {
-                    this.modal.hide();
+            this.$root.getSocket().emit(
+                "editUser",
+                {
+                    id: this.userID,
+                    password: this.password,
+                },
+                (res) => {
+                    this.processing = false;
+                    this.$root.toastRes(res);
+                    if (res.ok) {
+                        this.modal.hide();
+                    }
                 }
-            });
+            );
         },
     },
 };

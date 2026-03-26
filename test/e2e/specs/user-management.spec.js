@@ -33,7 +33,6 @@ async function createUser(page, username, password) {
 }
 
 test.describe("User Management", () => {
-
     test.beforeEach(async () => {
         await restoreSqliteSnapshot();
     });

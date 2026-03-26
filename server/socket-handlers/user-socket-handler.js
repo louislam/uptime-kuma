@@ -10,7 +10,6 @@ const { sendUserList } = require("../client");
  * @returns {void}
  */
 module.exports.userSocketHandler = (socket) => {
-
     socket.on("getUsers", async (callback) => {
         try {
             checkLogin(socket);
