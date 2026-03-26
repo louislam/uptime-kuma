@@ -67,7 +67,7 @@
     </div>
 
     <i18n-t tag="div" keypath="More info on:" class="mb-3 form-text">
-        <a href="https:/evoapicloud.com/" target="_blank">https://evoapicloud.com/</a>
+        <a href="https://evoapicloud.com/" target="_blank">https://evoapicloud.com/</a>
     </i18n-t>
 </template>
 
