@@ -13,6 +13,7 @@ async function loginAndGoToUsers(page) {
     await page.goto("./settings/users");
     await page.waitForLoadState("networkidle");
     await expect(page.getByRole("button", { name: "Add User" })).toBeVisible({ timeout: 15000 });
+    await expect(page.locator(".item", { hasText: "admin" })).toBeVisible();
 }
 
 /**
@@ -107,6 +108,12 @@ test.describe("User Management", () => {
         await page.locator(".item", { hasText: "deleteme" }).getByRole("button", { name: "Delete" }).click();
         await page.getByRole("button", { name: "Yes" }).click();
 
+        await expect(page.locator(".item", { hasText: "deleteme" })).toHaveCount(0);
+
+        // Verify deletion persists after reload
+        await page.reload();
+        await page.waitForLoadState("networkidle");
+        await expect(page.getByRole("button", { name: "Add User" })).toBeVisible({ timeout: 15000 });
         await expect(page.locator(".item", { hasText: "deleteme" })).toHaveCount(0);
         await screenshot(testInfo, page);
     });
