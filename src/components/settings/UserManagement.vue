@@ -83,6 +83,11 @@ export default {
             return this.$root.userList;
         },
     },
+    mounted() {
+        if (this.$root.userList.length === 0) {
+            this.$root.getSocket().emit("getUsers", () => {});
+        }
+    },
     methods: {
         /**
          * Show confirmation dialog for deletion
