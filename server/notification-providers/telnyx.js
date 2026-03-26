@@ -24,7 +24,7 @@ class Telnyx extends NotificationProvider {
             let config = {
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": "Bearer " + notification.telnyxApiKey,
+                    Authorization: "Bearer " + notification.telnyxApiKey,
                 },
             };
             config = this.getAxiosConfigWithProxy(config);
