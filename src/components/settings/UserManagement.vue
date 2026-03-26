@@ -38,7 +38,7 @@
                         </button>
                         <button
                             class="btn btn-danger"
-                            :disabled="item.id === currentUserID"
+                            :disabled="item.username === $root.username"
                             @click="confirmDelete(item.id)"
                         >
                             <font-awesome-icon icon="trash" />
@@ -81,14 +81,6 @@ export default {
          */
         users() {
             return this.$root.userList;
-        },
-
-        /**
-         * Get the current logged-in user's ID
-         * @returns {number|null} Current user ID
-         */
-        currentUserID() {
-            return this.$root.socket?.userID ?? null;
         },
     },
     mounted() {

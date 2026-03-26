@@ -63,6 +63,7 @@ export default {
             modal: null,
             processing: false,
             isEdit: false,
+            originalUsername: "",
             repeatPassword: "",
             formData: {
                 id: null,
@@ -93,6 +94,7 @@ export default {
          */
         showEdit(user) {
             this.isEdit = true;
+            this.originalUsername = user.username;
             this.formData = { id: user.id, username: user.username, password: "" };
             this.modal.show();
         },
@@ -114,7 +116,7 @@ export default {
                 this.processing = false;
                 this.$root.toastRes(res);
                 if (res.ok) {
-                    if (this.isEdit && this.formData.id === this.$root.socket?.userID && this.formData.username) {
+                    if (this.isEdit && this.originalUsername === this.$root.username && this.formData.username) {
                         this.$root.username = this.formData.username;
                     }
                     this.modal.hide();

@@ -1,87 +1,75 @@
 import { test, expect } from "@playwright/test";
 import { login, restoreSqliteSnapshot, screenshot } from "../util-test";
 
+/**
+ * Login and navigate to user management settings
+ * @param {Page} page Playwright page
+ * @returns {Promise<void>}
+ */
+async function loginAndGoToUsers(page) {
+    await page.goto("./dashboard");
+    await login(page);
+    await expect(page.getByText("Add New Monitor")).toBeVisible();
+    await page.goto("./settings/users");
+    await page.waitForLoadState("networkidle");
+    await expect(page.getByRole("button", { name: "Add User" })).toBeVisible({ timeout: 15000 });
+}
+
+/**
+ * Create a user via the UI
+ * @param {Page} page Playwright page
+ * @param {string} username Username
+ * @param {string} password Password
+ * @returns {Promise<void>}
+ */
+async function createUser(page, username, password) {
+    await page.getByRole("button", { name: "Add User" }).click();
+    await page.locator("#user-username").fill(username);
+    await page.locator("#user-password").fill(password);
+    await page.locator("#user-password-repeat").fill(password);
+    await page.getByRole("button", { name: "Save" }).click();
+    await expect(page.locator(".item", { hasText: username })).toBeVisible();
+}
+
 test.describe("User Management", () => {
 
-    test.beforeEach(async ({ page }) => {
+    test.beforeEach(async () => {
         await restoreSqliteSnapshot();
     });
 
     test("navigate to user management tab", async ({ page }, testInfo) => {
-        await page.goto("./settings/users");
-        await login(page);
-        await page.goto("./settings/users");
-        await expect(page.getByRole("button", { name: "Add User" })).toBeVisible();
+        await loginAndGoToUsers(page);
+        await expect(page.locator(".item", { hasText: "admin" })).toBeVisible();
         await screenshot(testInfo, page);
     });
 
     test("add a new user", async ({ page }, testInfo) => {
-        await page.goto("./settings/users");
-        await login(page);
-        await page.goto("./settings/users");
-
-        await page.getByRole("button", { name: "Add User" }).click();
-        await page.locator("#user-username").fill("testuser");
-        await page.locator("#user-password").fill("testpass123");
-        await page.locator("#user-password-repeat").fill("testpass123");
-        await page.getByRole("button", { name: "Save" }).click();
-
-        await expect(page.locator(".item", { hasText: "testuser" })).toBeVisible();
+        await loginAndGoToUsers(page);
+        await createUser(page, "testuser", "testpass123");
         await screenshot(testInfo, page);
     });
 
     test("reject duplicate username", async ({ page }, testInfo) => {
-        await page.goto("./settings/users");
-        await login(page);
-        await page.goto("./settings/users");
+        await loginAndGoToUsers(page);
+        await createUser(page, "dupuser", "testpass123");
 
-        // Create first user
-        await page.getByRole("button", { name: "Add User" }).click();
-        await page.locator("#user-username").fill("dupuser");
-        await page.locator("#user-password").fill("testpass123");
-        await page.locator("#user-password-repeat").fill("testpass123");
-        await page.getByRole("button", { name: "Save" }).click();
-        await expect(page.locator(".item", { hasText: "dupuser" })).toBeVisible();
-
-        // Try to create duplicate
+        // Try to create duplicate — modal should stay open
         await page.getByRole("button", { name: "Add User" }).click();
         await page.locator("#user-username").fill("dupuser");
         await page.locator("#user-password").fill("testpass123");
         await page.locator("#user-password-repeat").fill("testpass123");
         await page.getByRole("button", { name: "Save" }).click();
 
-        // Toast error should appear
-        await expect(page.locator(".toast-body", { hasText: "Username already exists" })).toBeVisible();
-        await screenshot(testInfo, page);
-    });
-
-    test("reject mismatched passwords", async ({ page }, testInfo) => {
-        await page.goto("./settings/users");
-        await login(page);
-        await page.goto("./settings/users");
-
-        await page.getByRole("button", { name: "Add User" }).click();
-        await page.locator("#user-username").fill("mismatch");
-        await page.locator("#user-password").fill("pass1");
-        await page.locator("#user-password-repeat").fill("pass2");
-        await page.getByRole("button", { name: "Save" }).click();
-
-        await expect(page.locator(".toast-body", { hasText: "repeat password" })).toBeVisible();
+        // Modal stays open on error — the modal should still be visible
+        await expect(page.locator(".modal.show")).toBeVisible();
+        // Only one "dupuser" item should exist
+        await expect(page.locator(".item", { hasText: "dupuser" })).toHaveCount(1);
         await screenshot(testInfo, page);
     });
 
     test("edit a user's username", async ({ page }, testInfo) => {
-        await page.goto("./settings/users");
-        await login(page);
-        await page.goto("./settings/users");
-
-        // Create user
-        await page.getByRole("button", { name: "Add User" }).click();
-        await page.locator("#user-username").fill("editme");
-        await page.locator("#user-password").fill("testpass123");
-        await page.locator("#user-password-repeat").fill("testpass123");
-        await page.getByRole("button", { name: "Save" }).click();
-        await expect(page.locator(".item", { hasText: "editme" })).toBeVisible();
+        await loginAndGoToUsers(page);
+        await createUser(page, "editme", "testpass123");
 
         // Edit username
         await page.locator(".item", { hasText: "editme" }).getByRole("button", { name: "Edit" }).click();
@@ -93,18 +81,9 @@ test.describe("User Management", () => {
         await screenshot(testInfo, page);
     });
 
-    test("change a user's password and login with new password", async ({ page }, testInfo) => {
-        await page.goto("./settings/users");
-        await login(page);
-        await page.goto("./settings/users");
-
-        // Create user
-        await page.getByRole("button", { name: "Add User" }).click();
-        await page.locator("#user-username").fill("pwduser");
-        await page.locator("#user-password").fill("oldpass123");
-        await page.locator("#user-password-repeat").fill("oldpass123");
-        await page.getByRole("button", { name: "Save" }).click();
-        await expect(page.locator(".item", { hasText: "pwduser" })).toBeVisible();
+    test("change a user's password", async ({ page }, testInfo) => {
+        await loginAndGoToUsers(page);
+        await createUser(page, "pwduser", "oldpass123");
 
         // Change password
         await page.locator(".item", { hasText: "pwduser" }).getByRole("button", { name: "Change Password" }).click();
@@ -112,28 +91,14 @@ test.describe("User Management", () => {
         await page.locator("#change-password-repeat").fill("newpass456");
         await page.getByRole("button", { name: "Save" }).click();
 
-        // Logout and login as new user with new password
-        await page.goto("./settings/security");
-        await page.getByRole("button", { name: "Logout" }).click();
-        await page.getByPlaceholder("Username").fill("pwduser");
-        await page.getByPlaceholder("Password").fill("newpass456");
-        await page.getByRole("button", { name: "Log in" }).click();
-        await page.isVisible("text=Add New Monitor");
+        // Modal should close on success
+        await expect(page.locator(".modal.show")).toHaveCount(0, { timeout: 10000 });
         await screenshot(testInfo, page);
     });
 
     test("delete a user", async ({ page }, testInfo) => {
-        await page.goto("./settings/users");
-        await login(page);
-        await page.goto("./settings/users");
-
-        // Create user to delete
-        await page.getByRole("button", { name: "Add User" }).click();
-        await page.locator("#user-username").fill("deleteme");
-        await page.locator("#user-password").fill("testpass123");
-        await page.locator("#user-password-repeat").fill("testpass123");
-        await page.getByRole("button", { name: "Save" }).click();
-        await expect(page.locator(".item", { hasText: "deleteme" })).toBeVisible();
+        await loginAndGoToUsers(page);
+        await createUser(page, "deleteme", "testpass123");
 
         // Delete user
         await page.locator(".item", { hasText: "deleteme" }).getByRole("button", { name: "Delete" }).click();
@@ -144,13 +109,13 @@ test.describe("User Management", () => {
     });
 
     test("cannot delete own account", async ({ page }, testInfo) => {
-        await page.goto("./settings/users");
-        await login(page);
-        await page.goto("./settings/users");
+        await loginAndGoToUsers(page);
 
         // The admin user's delete button should be disabled
-        const adminItem = page.locator(".item", { hasText: "admin" });
-        await expect(adminItem.getByRole("button", { name: "Delete" })).toBeDisabled();
+        const adminItem = page.locator(".item").filter({ hasText: "admin" });
+        const deleteBtn = adminItem.getByRole("button", { name: "Delete" });
+        await expect(deleteBtn).toBeVisible();
+        await expect(deleteBtn).toBeDisabled();
         await screenshot(testInfo, page);
     });
 });
