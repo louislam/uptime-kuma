@@ -1,13 +1,12 @@
 <template>
     <div class="mb-3">
         <label for="telnyx-api-key" class="form-label">{{ $t("telnyxApiKey") }}</label>
-        <input
+        <HiddenInput
             id="telnyx-api-key"
             v-model="$parent.notification.telnyxApiKey"
-            type="password"
-            class="form-control"
-            required
-        />
+            :required="true"
+            autocomplete="new-password"
+        ></HiddenInput>
         <div class="form-text">{{ $t("telnyxApiKeyHelptext") }}</div>
     </div>
 
@@ -21,6 +20,7 @@
             placeholder="+15551234567"
             required
         />
+        <div class="form-text">{{ $t("telnyxPhoneNumberHelptext") }}</div>
     </div>
 
     <div class="mb-3">
@@ -33,6 +33,7 @@
             placeholder="+15559876543"
             required
         />
+        <div class="form-text">{{ $t("telnyxToNumberHelptext") }}</div>
     </div>
 
     <div class="mb-3">
@@ -54,3 +55,13 @@
         </i18n-t>
     </div>
 </template>
+
+<script>
+import HiddenInput from "../HiddenInput.vue";
+
+export default {
+    components: {
+        HiddenInput,
+    },
+};
+</script>
