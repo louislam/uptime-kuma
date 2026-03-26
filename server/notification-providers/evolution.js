@@ -21,8 +21,9 @@ class Evolution extends NotificationProvider {
             config = this.getAxiosConfigWithProxy(config);
 
             let text = msg;
-            if (notification.evolutionCustomMessage) {
-                text = await this.renderTemplate(notification.evolutionCustomMessage, msg, monitorJSON, heartbeatJSON);
+            const customMessage = notification.evolutionCustomMessage;
+            if (notification.evolutionUseCustomMessage && typeof customMessage === "string" && customMessage.trim()) {
+                text = await this.renderTemplate(customMessage, msg, monitorJSON, heartbeatJSON);
             }
 
             let data = {

@@ -56,15 +56,23 @@
     </div>
 
     <div class="mb-3">
-        <label for="evolution-custom-message" class="form-label">{{ $t("evolutionCustomMessageTitle") }}</label>
-        <TemplatedTextarea
-            id="evolution-custom-message"
-            v-model="$parent.notification.evolutionCustomMessage"
-            :required="false"
-            :placeholder="customMessagePlaceholder"
-        ></TemplatedTextarea>
+        <div class="form-check form-switch">
+            <input v-model="$parent.notification.evolutionUseCustomMessage" class="form-check-input" type="checkbox" />
+            <label class="form-check-label">{{ $t("evolutionCustomMessageTitle") }}</label>
+        </div>
         <div class="form-text">{{ $t("evolutionCustomMessageDesc") }}</div>
     </div>
+
+    <template v-if="$parent.notification.evolutionUseCustomMessage">
+        <div class="mb-3">
+            <TemplatedTextarea
+                id="evolution-custom-message"
+                v-model="$parent.notification.evolutionCustomMessage"
+                :required="true"
+                :placeholder="customMessagePlaceholder"
+            ></TemplatedTextarea>
+        </div>
+    </template>
 
     <i18n-t tag="div" keypath="More info on:" class="mb-3 form-text">
         <a href="https://evoapicloud.com/" target="_blank">https://evoapicloud.com/</a>
