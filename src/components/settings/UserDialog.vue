@@ -58,7 +58,6 @@
 import { Modal } from "bootstrap";
 
 export default {
-    emits: ["saved"],
     data() {
         return {
             modal: null,
@@ -119,7 +118,6 @@ export default {
                         this.$root.username = this.formData.username;
                     }
                     this.modal.hide();
-                    this.$emit("saved");
                 }
             });
         },

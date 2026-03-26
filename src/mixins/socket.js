@@ -45,6 +45,7 @@ export default {
             monitorTypeList: {},
             maintenanceList: {},
             apiKeyList: {},
+            userList: [],
             heartbeatList: {},
             avgPingList: {},
             uptimeList: {},
@@ -172,6 +173,10 @@ export default {
 
             socket.on("apiKeyList", (data) => {
                 this.apiKeyList = data;
+            });
+
+            socket.on("userList", (data) => {
+                this.userList = data;
             });
 
             socket.on("notificationList", (data) => {

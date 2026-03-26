@@ -46,7 +46,6 @@
 import { Modal } from "bootstrap";
 
 export default {
-    emits: ["saved"],
     data() {
         return {
             modal: null,
@@ -92,7 +91,6 @@ export default {
                 this.$root.toastRes(res);
                 if (res.ok) {
                     this.modal.hide();
-                    this.$emit("saved");
                 }
             });
         },

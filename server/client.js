@@ -235,6 +235,16 @@ async function sendMonitorTypeList(socket) {
     io.to(socket.userID).emit("monitorTypeList", Object.fromEntries(result));
 }
 
+/**
+ * Send list of users to client
+ * @param {Socket} socket Socket.io socket instance
+ * @returns {Promise<void>}
+ */
+async function sendUserList(socket) {
+    const list = await R.getAll("SELECT id, username, active FROM user");
+    io.to(socket.userID).emit("userList", list);
+}
+
 module.exports = {
     sendNotificationList,
     sendImportantHeartbeatList,
@@ -245,4 +255,5 @@ module.exports = {
     sendDockerHostList,
     sendRemoteBrowserList,
     sendMonitorTypeList,
+    sendUserList,
 };

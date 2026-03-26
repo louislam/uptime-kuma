@@ -2,6 +2,7 @@ const { checkLogin } = require("../util-server");
 const { log } = require("../../src/util");
 const { R } = require("redbean-node");
 const passwordHash = require("../password-hash");
+const { sendUserList } = require("../client");
 
 /**
  * Handlers for user management
@@ -10,14 +11,12 @@ const passwordHash = require("../password-hash");
  */
 module.exports.userSocketHandler = (socket) => {
 
-    // Get list of all users
     socket.on("getUsers", async (callback) => {
         try {
             checkLogin(socket);
-            let users = await R.getAll("SELECT id, username, active FROM user");
+            await sendUserList(socket);
             callback({
                 ok: true,
-                users: users,
             });
         } catch (e) {
             callback({
@@ -27,7 +26,6 @@ module.exports.userSocketHandler = (socket) => {
         }
     });
 
-    // Add a new user
     socket.on("addUser", async (user, callback) => {
         try {
             checkLogin(socket);
@@ -58,6 +56,8 @@ module.exports.userSocketHandler = (socket) => {
                 msg: "successAdded",
                 msgi18n: true,
             });
+
+            await sendUserList(socket);
         } catch (e) {
             callback({
                 ok: false,
@@ -66,7 +66,6 @@ module.exports.userSocketHandler = (socket) => {
         }
     });
 
-    // Edit an existing user
     socket.on("editUser", async (user, callback) => {
         try {
             checkLogin(socket);
@@ -76,12 +75,12 @@ module.exports.userSocketHandler = (socket) => {
                 throw new Error("User not found.");
             }
 
-            if (user.username && user.username.trim() !== "") {
+            if (user.username && user.username.trim() !== "" && user.username.trim() !== bean.username) {
                 let existingUser = await R.findOne("user", " username = ? AND id != ? ", [user.username, user.id]);
                 if (existingUser) {
                     throw new Error("Username already exists.");
                 }
-                bean.username = user.username;
+                bean.username = user.username.trim();
             }
 
             if (user.password && user.password.trim() !== "") {
@@ -97,6 +96,8 @@ module.exports.userSocketHandler = (socket) => {
                 msg: "successSaved",
                 msgi18n: true,
             });
+
+            await sendUserList(socket);
         } catch (e) {
             callback({
                 ok: false,
@@ -105,7 +106,6 @@ module.exports.userSocketHandler = (socket) => {
         }
     });
 
-    // Delete a user
     socket.on("deleteUser", async (userID, callback) => {
         try {
             checkLogin(socket);
@@ -137,6 +137,8 @@ module.exports.userSocketHandler = (socket) => {
                 msg: "successDeleted",
                 msgi18n: true,
             });
+
+            await sendUserList(socket);
         } catch (e) {
             callback({
                 ok: false,

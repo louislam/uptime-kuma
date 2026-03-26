@@ -23,9 +23,6 @@
                 <div class="left-part">
                     <div class="info">
                         <div class="title">{{ item.username }}</div>
-                        <div v-if="item.twofa_status" class="status">
-                            2FA
-                        </div>
                     </div>
                 </div>
 
@@ -56,8 +53,8 @@
             {{ $t("confirmDeleteUser") }}
         </Confirm>
 
-        <UserDialog ref="userDialog" @saved="loadUsers" />
-        <UserPasswordDialog ref="userPasswordDialog" @saved="loadUsers" />
+        <UserDialog ref="userDialog" />
+        <UserPasswordDialog ref="userPasswordDialog" />
     </div>
 </template>
 
@@ -74,11 +71,18 @@ export default {
     },
     data() {
         return {
-            users: [],
             selectedUserID: null,
         };
     },
     computed: {
+        /**
+         * Get user list from root
+         * @returns {Array} List of users
+         */
+        users() {
+            return this.$root.userList;
+        },
+
         /**
          * Get the current logged-in user's ID
          * @returns {number|null} Current user ID
@@ -88,23 +92,9 @@ export default {
         },
     },
     mounted() {
-        this.loadUsers();
+        this.$root.getSocket().emit("getUsers", () => {});
     },
     methods: {
-        /**
-         * Load user list from server
-         * @returns {void}
-         */
-        loadUsers() {
-            this.$root.getSocket().emit("getUsers", (res) => {
-                if (res.ok) {
-                    this.users = res.users;
-                } else {
-                    this.$root.toastError(res.msg);
-                }
-            });
-        },
-
         /**
          * Show confirmation dialog for deletion
          * @param {number} userID ID of user to delete
@@ -122,9 +112,6 @@ export default {
         deleteUser() {
             this.$root.getSocket().emit("deleteUser", this.selectedUserID, (res) => {
                 this.$root.toastRes(res);
-                if (res.ok) {
-                    this.loadUsers();
-                }
             });
         },
     },
