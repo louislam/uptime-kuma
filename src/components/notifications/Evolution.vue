@@ -82,9 +82,7 @@ export default {
     },
     computed: {
         customMessagePlaceholder() {
-            return this.$t("Example:", [
-                `[{{ name }}] [{{ status }}]\n{{ msg }}`,
-            ]);
+            return this.$t("Example:", [`[{{ name }}] [{{ status }}]\n{{ msg }}`]);
         },
     },
 };
