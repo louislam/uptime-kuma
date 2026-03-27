@@ -64,6 +64,7 @@ import TechulusPush from "./TechulusPush.vue";
 import Telegram from "./Telegram.vue";
 import Teltonika from "./Teltonika.vue";
 import Telnyx from "./Telnyx.vue";
+import TelnyxVoice from "./TelnyxVoice.vue";
 import Threema from "./Threema.vue";
 import Twilio from "./Twilio.vue";
 import Webhook from "./Webhook.vue";
@@ -161,6 +162,7 @@ const NotificationFormList = {
     telegram: Telegram,
     Teltonika: Teltonika,
     telnyx: Telnyx,
+    telnyxVoice: TelnyxVoice,
     threema: Threema,
     twilio: Twilio,
     Splunk: Splunk,
