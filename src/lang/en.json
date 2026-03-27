@@ -1528,5 +1528,12 @@
     "teltonikaModem": "Modem Id",
     "teltonikaModemHelptext": "The id of the SMS modem, must be in the format {0}. Refer to https://developers.teltonika-networks.com/reference/ for guidance.",
     "teltonikaPhoneNumber": "Phone number",
-    "teltonikaPhoneNumberHelptext": "The number must be in the international format {0}, {1}. Only one number is allowed."
+    "teltonikaPhoneNumberHelptext": "The number must be in the international format {0}, {1}. Only one number is allowed.",
+    "ntpThresholdsTitle": "NTP Thresholds",
+    "ntpStratumThreshold": "Stratum Threshold",
+    "ntpStratumThresholdHelp": "Mark as down if stratum is at or above this value. Stratum indicates time source quality (1=GPS/atomic clock, 16=unsynchronized).",
+    "ntpOffsetThreshold": "Time Offset Threshold (ms)",
+    "ntpOffsetThresholdHelp": "Mark as down if time offset exceeds this value in milliseconds.",
+    "ntpDispersionThreshold": "Root Dispersion Threshold (ms)",
+    "ntpDispersionThresholdHelp": "Mark as down if root dispersion exceeds this value. Dispersion indicates the server's clock accuracy."
 }
