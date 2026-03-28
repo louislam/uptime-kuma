@@ -70,6 +70,7 @@ if (process.env.UPTIME_KUMA_WS_ORIGIN_CHECK === "bypass") {
 }
 
 const checkVersion = require("./check-version");
+const { seedMonitorsFromEnv } = require("./monitor-seeder");
 log.info("server", "Uptime Kuma Version:", checkVersion.version);
 
 log.info("server", "Loading modules");
@@ -1748,6 +1749,7 @@ let needSetup = false;
         printServerUrls("server", port, hostname, config.isSSL);
 
         await startMonitors();
+        await seedMonitorsFromEnv(io, server);
 
         // Put this here. Start background jobs after the db and server is ready to prevent clear up during db migration.
         await initBackgroundJobs();

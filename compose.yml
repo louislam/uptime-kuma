@@ -1,0 +1,19 @@
+services:
+  uptime-kuma:
+    image: louislam/uptime-kuma:2
+    container_name: uptime-kuma
+    restart: always
+    ports:
+      - "3001:3001"
+    volumes:
+      - uptime-kuma-data:/app/data
+    # environment:
+      # UPTIME_KUMA_MONITORS: |
+      #   [
+      #     {"name": "My Website", "url": "https://example.com"},
+      #     {"name": "API",        "url": "https://api.example.com", "interval": 30},
+      #     {"name": "Blog",       "url": "https://blog.example.com", "maxretries": 3}
+      #   ]
+
+volumes:
+  uptime-kuma-data:
