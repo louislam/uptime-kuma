@@ -27,9 +27,11 @@ const DEFAULTS = {
  *
  * @param {import("socket.io").Server} io Socket.io server instance
  * @param {object} server UptimeKumaServer instance (exposes monitorList)
+ * @param {Function|null} startFn Optional override for starting a monitor — defaults to bean.start(io).
+ *                                 Inject a no-op in tests to avoid real HTTP check loops.
  * @returns {Promise<void>}
  */
-async function seedMonitorsFromEnv(io, server) {
+async function seedMonitorsFromEnv(io, server, startFn = null) {
     const raw = process.env.UPTIME_KUMA_MONITORS;
     if (!raw) {
         return;
@@ -71,7 +73,8 @@ async function seedMonitorsFromEnv(io, server) {
         await R.store(bean);
 
         server.monitorList[bean.id] = bean;
-        await bean.start(io);
+        const _start = startFn ?? ((b, ioInstance) => b.start(ioInstance));
+        await _start(bean, io);
 
         log.info("seeder", `Seeded monitor: ${spec.name} (${spec.url})`);
     }
