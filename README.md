@@ -106,6 +106,71 @@ pm2 monit
 pm2 startup && pm2 save
 ```
 
+### Pre-seeding Monitors via Environment Variable
+
+You can declare monitors directly in your `compose.yml` using the `UPTIME_KUMA_MONITORS` environment variable, so they are automatically created at startup without any UI interaction.
+
+```yaml
+services:
+  uptime-kuma:
+    image: louislam/uptime-kuma:2
+    container_name: uptime-kuma
+    restart: always
+    ports:
+      - "3001:3001"
+    volumes:
+      - uptime-kuma-data:/app/data
+    environment:
+      UPTIME_KUMA_MONITORS: |
+        [
+          {"name": "My Website", "url": "https://example.com"},
+          {"name": "API",        "url": "https://api.example.com", "interval": 30},
+          {"name": "Blog",       "url": "https://blog.example.com", "maxretries": 3}
+        ]
+
+volumes:
+  uptime-kuma-data:
+```
+
+The value must be a valid JSON array. Seeding is **idempotent** — monitors already in the database are never duplicated, and monitors added through the UI are unaffected.
+
+> [!NOTE]
+> At least one user account must exist before seeding runs. On a brand-new install, complete the initial setup (database + admin account) first, then restart the container.
+
+#### Monitor object fields
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `name` | string | **required** | Display name shown in the dashboard |
+| `url` | string | **required** | URL to monitor (or hostname for non-HTTP types) |
+| `type` | string | `"http"` | Monitor type: `http`, `keyword`, `json-query`, `tcp`, `ping`, `dns`, `push`, `steam`, `gamedig`, `mqtt`, `sqlserver`, `postgres`, `mysql`, `mongodb`, `redis`, `grpc-keyword` |
+| `interval` | int | `60` | Seconds between checks |
+| `timeout` | int | `48` | Request timeout in seconds |
+| `maxretries` | int | `1` | Failures before alerting |
+| `retryInterval` | int | `0` | Seconds between retries (0 = same as `interval`) |
+| `resendInterval` | int | `0` | Re-notify every N beats while down (0 = once) |
+| `description` | string | — | Optional notes |
+| `active` | bool | `true` | Whether to start monitoring immediately |
+| `upsideDown` | bool | `false` | Treat failure as success (inverted mode) |
+| `method` | string | `"GET"` | HTTP method: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `HEAD` |
+| `body` | string | — | HTTP request body (for POST/PUT/PATCH) |
+| `headers` | string | — | JSON object of extra HTTP headers, e.g. `"{\"Authorization\":\"Bearer token\"}"` |
+| `ignoreTls` | bool | `false` | Skip TLS certificate validation |
+| `maxredirects` | int | `10` | Max redirects to follow |
+| `accepted_statuscodes_json` | string | `'["200-299"]'` | JSON array of accepted HTTP status codes or ranges |
+| `basicAuthUser` | string | — | HTTP basic auth username |
+| `basicAuthPass` | string | — | HTTP basic auth password |
+| `keyword` | string | — | Keyword to search for in the response body (`keyword` type) |
+| `invertKeyword` | bool | `false` | Pass when keyword is **not** found |
+| `hostname` | string | — | Hostname or IP for `tcp`, `ping`, `dns` types |
+| `port` | int | — | Port number for `tcp` type |
+| `mqttTopic` | string | — | MQTT topic to subscribe to |
+| `mqttSuccessMessage` | string | — | Expected MQTT message payload |
+| `mqttUsername` | string | — | MQTT broker username |
+| `mqttPassword` | string | — | MQTT broker password |
+| `databaseConnectionString` | string | — | Connection string for database monitors |
+| `databaseQuery` | string | — | Optional query to run as the health check |
+
 ### Advanced Installation
 
 If you need more options or need to browse via a reverse proxy, please read:
