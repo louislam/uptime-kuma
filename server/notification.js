@@ -245,13 +245,17 @@ class Notification {
             bean = R.dispense("notification");
         }
 
+        // applyExisting is one time only, don't save it to database.
+        const applyExisting = notification.applyExisting || false;
+        notification.applyExisting = false;
+
         bean.name = notification.name;
         bean.user_id = userID;
         bean.config = JSON.stringify(notification);
         bean.is_default = notification.isDefault || false;
         await R.store(bean);
 
-        if (notification.applyExisting) {
+        if (applyExisting) {
             await applyNotificationEveryMonitor(bean.id, userID);
         }
 
