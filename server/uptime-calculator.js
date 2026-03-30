@@ -361,12 +361,12 @@ class UptimeCalculator {
             log.debug("uptime_calc", "Remove old data");
             await R.exec("DELETE FROM stat_minutely WHERE monitor_id = ? AND timestamp < ?", [
                 this.monitorID,
-                this.getMinutelyKey(currentDate.subtract(this.statMinutelyKeepHour, "hour")),
+                this.getMinutelyKey(currentDate.subtract(this.statMinutelyKeepHour, "hour"), false),
             ]);
 
             await R.exec("DELETE FROM stat_hourly WHERE monitor_id = ? AND timestamp < ?", [
                 this.monitorID,
-                this.getHourlyKey(currentDate.subtract(this.statHourlyKeepDay, "day")),
+                this.getHourlyKey(currentDate.subtract(this.statHourlyKeepDay, "day"), false),
             ]);
         }
 
@@ -442,16 +442,17 @@ class UptimeCalculator {
     /**
      * Convert timestamp to minutely key
      * @param {dayjs.Dayjs} date The heartbeat date
+     * @param {boolean} createIfMissing Whether to create a missing bucket, defaults to true
      * @returns {number} Timestamp
      */
-    getMinutelyKey(date) {
+    getMinutelyKey(date, createIfMissing = true) {
         // Truncate value to minutes (e.g. 2021-01-01 12:34:56 -> 2021-01-01 12:34:00)
         date = date.startOf("minute");
 
         // Convert to timestamp in second
         let divisionKey = date.unix();
 
-        if (!(divisionKey in this.minutelyUptimeDataList)) {
+        if (createIfMissing && !(divisionKey in this.minutelyUptimeDataList)) {
             this.minutelyUptimeDataList.push(divisionKey, {
                 up: 0,
                 down: 0,
@@ -467,16 +468,17 @@ class UptimeCalculator {
     /**
      * Convert timestamp to hourly key
      * @param {dayjs.Dayjs} date The heartbeat date
+     * @param {boolean} createIfMissing Whether to create a missing bucket, defaults to true
      * @returns {number} Timestamp
      */
-    getHourlyKey(date) {
+    getHourlyKey(date, createIfMissing = true) {
         // Truncate value to hours (e.g. 2021-01-01 12:34:56 -> 2021-01-01 12:00:00)
         date = date.startOf("hour");
 
         // Convert to timestamp in second
         let divisionKey = date.unix();
 
-        if (!(divisionKey in this.hourlyUptimeDataList)) {
+        if (createIfMissing && !(divisionKey in this.hourlyUptimeDataList)) {
             this.hourlyUptimeDataList.push(divisionKey, {
                 up: 0,
                 down: 0,
@@ -492,15 +494,16 @@ class UptimeCalculator {
     /**
      * Convert timestamp to daily key
      * @param {dayjs.Dayjs} date The heartbeat date
+     * @param {boolean} createIfMissing Whether to create a missing bucket, defaults to true
      * @returns {number} Timestamp
      */
-    getDailyKey(date) {
+    getDailyKey(date, createIfMissing = true) {
         // Truncate value to start of day (e.g. 2021-01-01 12:34:56 -> 2021-01-01 00:00:00)
         // Considering if the user keep changing could affect the calculation, so use UTC time to avoid this problem.
         date = date.utc().startOf("day");
         let dailyKey = date.unix();
 
-        if (!this.dailyUptimeDataList[dailyKey]) {
+        if (createIfMissing && !this.dailyUptimeDataList[dailyKey]) {
             this.dailyUptimeDataList.push(dailyKey, {
                 up: 0,
                 down: 0,
