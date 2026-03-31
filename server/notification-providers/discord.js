@@ -174,12 +174,10 @@ class Discord extends NotificationProvider {
                 await axios.post(webhookUrl.toString(), discorddowndata, config);
                 return okMsg;
             } else if (heartbeatJSON["status"] === UP) {
-                const backOnlineTimestamp = Math.floor(new Date(heartbeatJSON["time"]).getTime() / 1000);
-                let downtimeDuration = null;
+                let downtimeDuration = heartbeatJSON["downtimeDuration"] || null;
                 let wentOfflineTimestamp = null;
                 if (heartbeatJSON["lastDownTime"]) {
                     wentOfflineTimestamp = Math.floor(new Date(heartbeatJSON["lastDownTime"]).getTime() / 1000);
-                    downtimeDuration = this.formatDuration(backOnlineTimestamp - wentOfflineTimestamp);
                 }
 
                 let discordupdata = {
@@ -259,31 +257,6 @@ class Discord extends NotificationProvider {
         }
     }
 
-    /**
-     * Format duration as human-readable string (e.g., "1h 23m", "45m 30s")
-     * TODO: Update below to `Intl.DurationFormat("en", { style: "short" }).format(duration)` once we are on a newer node version
-     * @param {number} timeInSeconds The time in seconds to format a duration for
-     * @returns {string} The formatted duration
-     */
-    formatDuration(timeInSeconds) {
-        const hours = Math.floor(timeInSeconds / 3600);
-        const minutes = Math.floor((timeInSeconds % 3600) / 60);
-        const seconds = timeInSeconds % 60;
-
-        const durationParts = [];
-        if (hours > 0) {
-            durationParts.push(`${hours}h`);
-        }
-        if (minutes > 0) {
-            durationParts.push(`${minutes}m`);
-        }
-        if (seconds > 0 && hours === 0) {
-            // Only show seconds if less than an hour
-            durationParts.push(`${seconds}s`);
-        }
-
-        return durationParts.length > 0 ? durationParts.join(" ") : "0s";
-    }
 }
 
 module.exports = Discord;

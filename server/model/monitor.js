@@ -46,6 +46,7 @@ const {
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification");
+const NotificationProvider = require("../notification-providers/notification-provider");
 const { Proxy } = require("../proxy");
 const { demoMode } = require("../config");
 const version = require("../../package.json").version;
@@ -1525,6 +1526,14 @@ class Monitor extends BeanModel {
 
                     if (lastDownHeartbeat && lastDownHeartbeat.time) {
                         heartbeatJSON["lastDownTime"] = lastDownHeartbeat.time;
+
+                        const downTimeSeconds = Math.floor(
+                            (new Date(heartbeatJSON["time"]).getTime() - new Date(lastDownHeartbeat.time).getTime()) / 1000
+                        );
+                        if (downTimeSeconds >= 0) {
+                            heartbeatJSON["downtimeDuration"] = NotificationProvider.formatDuration(downTimeSeconds);
+                            msg += ` (Downtime: ${heartbeatJSON["downtimeDuration"]})`;
+                        }
                     }
                 } catch (error) {
                     // If we can't calculate downtime, just continue without it
