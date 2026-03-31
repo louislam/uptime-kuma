@@ -216,7 +216,6 @@ class Fluxer extends NotificationProvider {
             this.throwGeneralAxiosError(error);
         }
     }
-
 }
 
 module.exports = Fluxer;

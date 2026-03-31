@@ -1528,7 +1528,8 @@ class Monitor extends BeanModel {
                         heartbeatJSON["lastDownTime"] = lastDownHeartbeat.time;
 
                         const downTimeSeconds = Math.floor(
-                            (new Date(heartbeatJSON["time"]).getTime() - new Date(lastDownHeartbeat.time).getTime()) / 1000
+                            (new Date(heartbeatJSON["time"]).getTime() - new Date(lastDownHeartbeat.time).getTime()) /
+                                1000
                         );
                         if (downTimeSeconds >= 0) {
                             heartbeatJSON["downtimeDuration"] = NotificationProvider.formatDuration(downTimeSeconds);
