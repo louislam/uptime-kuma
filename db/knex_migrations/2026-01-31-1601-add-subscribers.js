@@ -22,14 +22,16 @@ exports.up = function (knex) {
             // Create status_page_subscription table (links subscribers to status pages)
             .createTable("status_page_subscription", (table) => {
                 table.increments("id").primary();
-                table.integer("subscriber_id")
+                table
+                    .integer("subscriber_id")
                     .unsigned()
                     .notNullable()
                     .references("id")
                     .inTable("status_page_subscriber")
                     .onDelete("CASCADE")
                     .onUpdate("CASCADE");
-                table.integer("status_page_id")
+                table
+                    .integer("status_page_id")
                     .unsigned()
                     .notNullable()
                     .references("id")
@@ -52,7 +54,5 @@ exports.up = function (knex) {
 };
 
 exports.down = function (knex) {
-    return knex.schema
-        .dropTableIfExists("status_page_subscription")
-        .dropTableIfExists("status_page_subscriber");
+    return knex.schema.dropTableIfExists("status_page_subscription").dropTableIfExists("status_page_subscriber");
 };
