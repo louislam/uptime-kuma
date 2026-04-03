@@ -5,6 +5,7 @@ const dayjs = require("dayjs");
 const Cron = require("croner");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const apicache = require("../modules/apicache");
+const { StatusPageNotification } = require("../status-page-notification");
 
 class Maintenance extends BeanModel {
     /**
@@ -235,6 +236,21 @@ class Maintenance extends BeanModel {
                 log.info("maintenance", "Maintenance id: " + this.id + " is under maintenance now");
                 UptimeKumaServer.getInstance().sendMaintenanceListByUserID(this.user_id);
                 apicache.clear();
+
+                this.notifyStatusPages("start").catch((e) => {
+                    log.error("status-page-notification", e.message);
+                });
+
+                if (this.end_date) {
+                    let endDelay = dayjs(this.end_date).diff(dayjs(this.start_date), "millisecond");
+                    if (endDelay > 0) {
+                        this.beanMeta.durationTimeout = setTimeout(() => {
+                            this.notifyStatusPages("end").catch((e) => {
+                                log.error("status-page-notification", e.message);
+                            });
+                        }, endDelay);
+                    }
+                }
             });
         } else if (this.cron != null) {
             let current = dayjs();
@@ -253,10 +269,18 @@ class Maintenance extends BeanModel {
 
                     UptimeKumaServer.getInstance().sendMaintenanceListByUserID(this.user_id);
 
+                    this.notifyStatusPages("start").catch((e) => {
+                        log.error("status-page-notification", e.message);
+                    });
+
                     this.beanMeta.durationTimeout = setTimeout(() => {
                         // End of maintenance for this timeslot
                         this.beanMeta.status = "scheduled";
                         UptimeKumaServer.getInstance().sendMaintenanceListByUserID(this.user_id);
+
+                        this.notifyStatusPages("end").catch((e) => {
+                            log.error("status-page-notification", e.message);
+                        });
                     }, duration);
 
                     // Set last start date to current time
@@ -499,6 +523,26 @@ class Maintenance extends BeanModel {
 
             this.cron = minute + " " + hour + " " + dayList.join(",") + " * *";
             this.duration = this.calcDuration();
+        }
+    }
+
+    /**
+     * Notify all linked status pages about maintenance start or end
+     * @param {string} event "start" or "end"
+     * @returns {Promise<void>}
+     */
+    async notifyStatusPages(event) {
+        let statusPageIds = await R.getAll(
+            "SELECT status_page_id FROM maintenance_status_page WHERE maintenance_id = ? ",
+            [this.id]
+        );
+
+        for (let row of statusPageIds) {
+            if (event === "start") {
+                await StatusPageNotification.sendMaintenanceNotification(row.status_page_id, this);
+            } else {
+                await StatusPageNotification.sendMaintenanceCompletedNotification(row.status_page_id, this);
+            }
         }
     }
 }
