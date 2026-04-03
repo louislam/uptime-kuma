@@ -29,7 +29,13 @@ exports.up = function (knex) {
                     .inTable("status_page_subscriber")
                     .onDelete("CASCADE")
                     .onUpdate("CASCADE");
-                table.integer("status_page_id").unsigned().notNullable();
+                table.integer("status_page_id")
+                    .unsigned()
+                    .notNullable()
+                    .references("id")
+                    .inTable("status_page")
+                    .onDelete("CASCADE")
+                    .onUpdate("CASCADE");
                 table.integer("group_id") // NULL means subscribe to all components on a status page
                     .unsigned()
                     .nullable()
@@ -44,7 +50,6 @@ exports.up = function (knex) {
                 table.string("verification_token", 255);
                 table.timestamps(false, true);
 
-                table.index("subscriber_id", "status_page_subscription_subscriber_id");
                 table.index("status_page_id", "status_page_subscription_status_page_id");
                 table.index("group_id", "status_page_subscription_group_id");
                 table.index("verification_token", "status_page_subscription_verification_token");
@@ -52,35 +57,11 @@ exports.up = function (knex) {
                 // Prevent duplicate subscriptions
                 table.unique(["subscriber_id", "status_page_id", "group_id"]);
             })
-            // Create notification queue table
-            .createTable("status_page_notification_queue", (table) => {
-                table.increments("id").primary();
-                table.integer("subscriber_id")
-                    .unsigned()
-                    .notNullable()
-                    .references("id")
-                    .inTable("status_page_subscriber")
-                    .onDelete("CASCADE")
-                    .onUpdate("CASCADE");
-                table.string("notification_type", 50).notNullable(); // 'incident', 'incident_update', 'maintenance', 'status_change'
-                table.string("subject", 255).notNullable();
-                table.text("data").notNullable();
-                table.string("status", 50).defaultTo("pending"); // 'pending', 'sent', 'failed'
-                table.integer("attempts").defaultTo(0);
-                table.text("last_error");
-                table.datetime("sent_at");
-                table.timestamps(false, true);
-
-                table.index("subscriber_id", "notification_queue_subscriber_id");
-                table.index("status", "notification_queue_status");
-                table.index("created_at", "notification_queue_created_at");
-            })
     );
 };
 
 exports.down = function (knex) {
     return knex.schema
-        .dropTableIfExists("status_page_notification_queue")
         .dropTableIfExists("status_page_subscription")
         .dropTableIfExists("status_page_subscriber");
 };
