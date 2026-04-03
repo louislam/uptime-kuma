@@ -4,7 +4,7 @@ const { nanoid } = require("nanoid");
 
 /**
  * StatusPageSubscription model
- * Links subscribers to status pages and components
+ * Links subscribers to status pages
  */
 class StatusPageSubscription extends BeanModel {
     /**
@@ -43,7 +43,6 @@ class StatusPageSubscription extends BeanModel {
             id: this.id,
             subscriberId: this.subscriber_id,
             statusPageId: this.status_page_id,
-            groupId: this.group_id,
             notifyIncidents: !!this.notify_incidents,
             notifyMaintenance: !!this.notify_maintenance,
             notifyStatusChanges: !!this.notify_status_changes,
@@ -64,16 +63,9 @@ class StatusPageSubscription extends BeanModel {
     /**
      * Get all subscriptions for a status page
      * @param {number} statusPageId Status Page ID
-     * @param {number|null} groupId Group ID (optional)
      * @returns {Promise<StatusPageSubscription[]>} Array of subscriptions
      */
-    static async getByStatusPage(statusPageId, groupId = null) {
-        if (groupId) {
-            return await R.find("status_page_subscription", " status_page_id = ? AND (group_id = ? OR group_id IS NULL) ", [
-                statusPageId,
-                groupId,
-            ]);
-        }
+    static async getByStatusPage(statusPageId) {
         return await R.find("status_page_subscription", " status_page_id = ? ", [statusPageId]);
     }
 
@@ -81,18 +73,10 @@ class StatusPageSubscription extends BeanModel {
      * Check if status_page_subscription exists
      * @param {number} subscriberId Subscriber ID
      * @param {number} statusPageId Status Page ID
-     * @param {number|null} groupId Group ID (optional)
      * @returns {Promise<StatusPageSubscription|null>} StatusPageSubscription or null
      */
-    static async exists(subscriberId, statusPageId, groupId = null) {
-        if (groupId) {
-            return await R.findOne("status_page_subscription", " subscriber_id = ? AND status_page_id = ? AND group_id = ? ", [
-                subscriberId,
-                statusPageId,
-                groupId,
-            ]);
-        }
-        return await R.findOne("status_page_subscription", " subscriber_id = ? AND status_page_id = ? AND group_id IS NULL ", [
+    static async exists(subscriberId, statusPageId) {
+        return await R.findOne("status_page_subscription", " subscriber_id = ? AND status_page_id = ? ", [
             subscriberId,
             statusPageId,
         ]);

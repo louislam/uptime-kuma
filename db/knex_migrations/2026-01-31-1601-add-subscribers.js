@@ -19,7 +19,7 @@ exports.up = function (knex) {
                 table.index("email", "subscriber_email");
                 table.index("unsubscribe_token", "subscriber_unsubscribe_token");
             })
-            // Create status_page_subscription table (links subscribers to status pages and components)
+            // Create status_page_subscription table (links subscribers to status pages)
             .createTable("status_page_subscription", (table) => {
                 table.increments("id").primary();
                 table.integer("subscriber_id")
@@ -36,13 +36,6 @@ exports.up = function (knex) {
                     .inTable("status_page")
                     .onDelete("CASCADE")
                     .onUpdate("CASCADE");
-                table.integer("group_id") // NULL means subscribe to all components on a status page
-                    .unsigned()
-                    .nullable()
-                    .references("id")
-                    .inTable("group")
-                    .onDelete("CASCADE")
-                    .onUpdate("CASCADE"); 
                 table.boolean("notify_incidents").defaultTo(true);
                 table.boolean("notify_maintenance").defaultTo(true);
                 table.boolean("notify_status_changes").defaultTo(false);
@@ -51,11 +44,9 @@ exports.up = function (knex) {
                 table.timestamps(false, true);
 
                 table.index("status_page_id", "status_page_subscription_status_page_id");
-                table.index("group_id", "status_page_subscription_group_id");
                 table.index("verification_token", "status_page_subscription_verification_token");
 
-                // Prevent duplicate subscriptions
-                table.unique(["subscriber_id", "status_page_id", "group_id"]);
+                table.unique(["subscriber_id", "status_page_id"]);
             })
     );
 };
