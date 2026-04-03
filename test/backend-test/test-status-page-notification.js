@@ -5,7 +5,6 @@ const { Notification } = require("../../server/notification");
 const { StatusPageNotification } = require("../../server/status-page-notification");
 
 describe("StatusPageNotification", () => {
-
     afterEach(() => {
         mock.restoreAll();
     });
@@ -41,9 +40,7 @@ describe("StatusPageNotification", () => {
             let smtpConfig = { type: "smtp", smtpHost: "mail.example.com" };
 
             mock.method(R, "findOne", async () => null);
-            mock.method(R, "findAll", async () => [
-                { config: JSON.stringify(smtpConfig) },
-            ]);
+            mock.method(R, "findAll", async () => [{ config: JSON.stringify(smtpConfig) }]);
 
             let result = await StatusPageNotification.getSMTPConfig();
             assert.deepStrictEqual(result, smtpConfig);
