@@ -113,6 +113,47 @@ describe(
             );
         });
 
+        test("check() rejects with timeout when only a retained message exists", async () => {
+            // Pre-publish a retained message before the monitor subscribes.
+            // The monitor should ignore it and time out waiting for a live message.
+            const hiveMQContainer = await new HiveMQContainer().start();
+            const connectionString = hiveMQContainer.getConnectionString();
+            const mqttMonitorType = new MqttMonitorType();
+            const monitor = {
+                jsonPath: "firstProp",
+                hostname: connectionString.split(":", 2).join(":"),
+                mqttTopic: "test",
+                port: connectionString.split(":")[2],
+                mqttUsername: null,
+                mqttPassword: null,
+                mqttWebsocketPath: null,
+                interval: 20,
+                mqttSuccessMessage: "KEYWORD",
+                expectedValue: "KEYWORD",
+                mqttCheckType: "keyword",
+                conditions: null,
+            };
+            const heartbeat = { msg: "", status: PENDING };
+
+            // Publish a retained message before the monitor starts
+            const retainedClient = mqtt.connect(hiveMQContainer.getConnectionString());
+            await new Promise((resolve) => {
+                retainedClient.on("connect", () => {
+                    retainedClient.publish("test", "-> KEYWORD <-", { retain: true }, resolve);
+                });
+            });
+            retainedClient.end();
+
+            try {
+                await assert.rejects(
+                    mqttMonitorType.check(monitor, heartbeat, {}),
+                    new Error("Timeout, Message not received")
+                );
+            } finally {
+                hiveMQContainer.stop();
+            }
+        });
+
         test("check() rejects with timeout when # wildcard is not last character", async () => {
             await assert.rejects(
                 testMqtt("", null, "# should be last character", "#/c", "a/b/c"),
