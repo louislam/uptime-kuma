@@ -183,14 +183,9 @@
                             <!-- Script -->
                             <div v-if="monitor.type === 'script'" class="my-3">
                                 <label for="script-path" class="form-label">{{ $t("Script") }}</label>
-                                <input
+                                <ScriptSelect 
                                     id="script-path"
                                     v-model="monitor.script"
-                                    type="text"
-                                    class="form-control"
-                                    required
-                                    data-testid="script-path-input"
-                                    @input="onScriptPathUpdate"
                                 />
                                 <i18n-t v-if="monitor.script" keypath="scriptLocationHint" tag="span" class="form-text">
                                     <template #scriptPath>
@@ -2899,6 +2894,7 @@ import DockerHostDialog from "../components/DockerHostDialog.vue";
 import RemoteBrowserDialog from "../components/RemoteBrowserDialog.vue";
 import ProxyDialog from "../components/ProxyDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
+import ScriptSelect from "../components/ScriptSelect.vue";
 import {
     genSecret,
     MAX_INTERVAL_SECOND,
@@ -3003,6 +2999,7 @@ export default {
         TagsManager,
         VueMultiselect,
         EditMonitorConditions,
+        ScriptSelect,
     },
 
     data() {

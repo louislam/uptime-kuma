@@ -1512,5 +1512,7 @@
     "scriptLocationInvalid": "Invalid script location",
     "scriptTimeout": "Timeout (kill script after {timeout} seconds)",
     "Script": "Script",
-    "Script Arguments": "Script Arguments"
+    "Script Arguments": "Script Arguments",
+    "Select script": "Select script",
+    "script dir": "script dir"
 }

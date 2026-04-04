@@ -191,6 +191,8 @@ const { resetChrome } = require("./monitor-types/real-browser-monitor-type");
 const { EmbeddedMariaDB } = require("./embedded-mariadb");
 const { SetupDatabase } = require("./setup-database");
 const { chartSocketHandler } = require("./socket-handlers/chart-socket-handler");
+const path = require("path");
+const fs = require("fs/promises");
 
 app.use(express.json());
 
@@ -1707,6 +1709,24 @@ let needSetup = false;
                 });
             }
         });
+
+        socket.on("getScripts", async (subdir, callback) => {
+            try {
+                subdir ??= "";
+                const dir = path.join(config.scriptDir, subdir);
+                let entries = (await fs.readdir(dir, { withFileTypes: true }))
+                    .map(dirent => ({ name: dirent.name, isDirectory: dirent.isDirectory() }));
+                callback({
+                    ok: true,
+                    entries,
+                });
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        })
 
         // Status Page Socket Handler for admin only
         statusPageSocketHandler(socket);
