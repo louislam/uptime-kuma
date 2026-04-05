@@ -5,7 +5,7 @@
         :options="entries"
         track-by="name"
         label="name"
-        :class="isLoading ? 'loading': ''"
+        :class="isLoading ? 'loading' : ''"
         :close-on-select="false"
         :clear-on-select="true"
         :preserve-search="true"
@@ -47,11 +47,11 @@ export default {
     props: {
         modelValue: {
             type: String,
-            required: true
-        }
+            required: true,
+        },
     },
     emits: {
-        'update:modelValue': null
+        "update:modelValue": null,
     },
     data() {
         return {
@@ -198,33 +198,34 @@ export default {
             const subpath = this.subpath.length > 0 ? path.posix.join(...this.subpath) : "";
             this.isLoading = true;
 
-            const entries = new Promise((resolve, reject) => this.$root.getSocket().emit("getScripts", subpath, res => res.ok ? resolve(res.entries) : reject(res.msg)))
-                .then(entries => {
-                    const collator = new Intl.Collator();
-                    entries.sort((a, b) =>
-                        // Sort order:
-                        // Directories lexicographically first
-                        // Files lexicographically after
-                        b.isDirectory !== a.isDirectory
-                            ? b.isDirectory - a.isDirectory
-                            : collator.compare(a.name, b.name)
-                    );
-                    // Add "up" navigation entry
-                    if (this.subpath.length > 0) {
-                        entries.unshift({
-                            name: "..",
-                            isDirectory: true,
-                        });
-                    }
-                    return entries;
-                });
+            const entries = new Promise((resolve, reject) =>
+                this.$root
+                    .getSocket()
+                    .emit("getScripts", subpath, (res) => (res.ok ? resolve(res.entries) : reject(res.msg)))
+            ).then((entries) => {
+                const collator = new Intl.Collator();
+                entries.sort((a, b) =>
+                    // Sort order:
+                    // Directories lexicographically first
+                    // Files lexicographically after
+                    b.isDirectory !== a.isDirectory ? b.isDirectory - a.isDirectory : collator.compare(a.name, b.name)
+                );
+                // Add "up" navigation entry
+                if (this.subpath.length > 0) {
+                    entries.unshift({
+                        name: "..",
+                        isDirectory: true,
+                    });
+                }
+                return entries;
+            });
 
-            let animations;            
+            let animations;
             if (this.$refs.select) {
                 await this.$nextTick(); // Allow DOM to catch up to isLoading = true
                 animations = Array.from(this.$refs.select.$el.querySelectorAll(".entry"))
-                    .flatMap(el => el.getAnimations())
-                    .map(anim => anim.finished);
+                    .flatMap((el) => el.getAnimations())
+                    .map((anim) => anim.finished);
             } else {
                 animations = [];
             }
@@ -232,7 +233,7 @@ export default {
             try {
                 await Promise.all(animations); // Wait for outgoing animations to finish
                 this.entries = await entries;
-            } catch(err) {
+            } catch (err) {
                 this.$root.toastError(err.message);
                 this.subpath = subpath.split(path.posix.sep).slice(0, -1);
             } finally {
@@ -332,12 +333,20 @@ ul {
 }
 
 @keyframes fadein {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 @keyframes fadeout {
-    from { opacity: 1; }
-    to { opacity: 0; }
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
 }
 </style>

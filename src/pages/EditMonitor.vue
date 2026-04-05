@@ -183,10 +183,7 @@
                             <!-- Script -->
                             <div v-if="monitor.type === 'script'" class="my-3">
                                 <label for="script-path" class="form-label">{{ $t("Script") }}</label>
-                                <ScriptSelect 
-                                    id="script-path"
-                                    v-model="monitor.script"
-                                />
+                                <ScriptSelect id="script-path" v-model="monitor.script" />
                                 <i18n-t v-if="monitor.script" keypath="scriptLocationHint" tag="span" class="form-text">
                                     <template #scriptPath>
                                         <code>

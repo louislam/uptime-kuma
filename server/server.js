@@ -1714,8 +1714,10 @@ let needSetup = false;
             try {
                 subdir ??= "";
                 const dir = path.join(config.scriptDir, subdir);
-                let entries = (await fs.readdir(dir, { withFileTypes: true }))
-                    .map(dirent => ({ name: dirent.name, isDirectory: dirent.isDirectory() }));
+                let entries = (await fs.readdir(dir, { withFileTypes: true })).map((dirent) => ({
+                    name: dirent.name,
+                    isDirectory: dirent.isDirectory(),
+                }));
                 callback({
                     ok: true,
                     entries,
@@ -1726,7 +1728,7 @@ let needSetup = false;
                     msg: e.message,
                 });
             }
-        })
+        });
 
         // Status Page Socket Handler for admin only
         statusPageSocketHandler(socket);
