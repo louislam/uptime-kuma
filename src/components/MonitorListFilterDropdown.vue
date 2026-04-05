@@ -54,7 +54,8 @@ export default {
     transition: all 0.2s;
     padding: 5px 0 !important;
     border-radius: 16px;
-    overflow: hidden;
+    overflow: auto;
+    max-height: 300px;
 
     position: absolute;
     inset: 0 auto auto 0;
@@ -66,6 +67,12 @@ export default {
     height: 0;
     opacity: 0;
     background: white;
+
+    @media (max-width: 576px) {
+        max-width: calc(100vw - 20px);
+        margin-left: 10px;
+        margin-right: 10px;
+    }
 
     &.open {
         height: unset;
