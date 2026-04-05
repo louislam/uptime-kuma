@@ -1565,5 +1565,16 @@
     "signalUseTemplateDescription": "Má tá sé cumasaithe, seolfar an teachtaireacht ag baint úsáide as teimpléad saincheaptha. Is féidir leat teimpléadú Liquid a úsáid chun formáid an fhógra a shaincheapadh.",
     "monitorTypeGameServer": "Freastalaí Cluiche",
     "monitorTypeDatabase": "Cineál Monatóra Bunachar Sonraí",
-    "monitorTypeSpecial": "Speisialta"
+    "monitorTypeSpecial": "Speisialta",
+    "fluxerMessageFormatNormal": "Gnáth (leabaithe saibhre)",
+    "fluxerMessageFormatMinimalist": "Íostach (stádas gearr)",
+    "fluxerMessageFormatCustom": "Teimpléad saincheaptha",
+    "fluxerMessageTemplate": "Teimpléad Teachtaireachta",
+    "Notification Action": "Gníomh Fógra",
+    "homeAssistantNotificationActionHelptext": "Is féidir liosta de Ghníomhartha Fógra a fháil i Home Assistant faoi \"Socruithe > Uirlisí Forbróra > Gníomhartha\". Cuardaigh \"fógra\" chun do ghníomhartha a aimsiú. Ná cuir isteach ach an chuid i ndiaidh \"fógra.\", m.sh. don ghníomh \"fógra.mobile_app_xyz\" cuir isteach \"mobile_app_xyz\". Le haghaidh fógraí soghluaiste ionsuite, lorg \"Seol fógra trí mobile_app_xyz\" (ní \"Seol fógra\").",
+    "fluxerMessageFormat": "Formáid Teachtaireachta",
+    "fluxerUseMessageTemplate": "Úsáid teimpléad teachtaireachta saincheaptha",
+    "fluxerUseMessageTemplateDescription": "Má tá sé cumasaithe, seolfar an teachtaireacht ag baint úsáide as teimpléad saincheaptha (LiquidJS). Fág bán é chun an fhormáid réamhshocraithe Uptime Kuma a úsáid.",
+    "Fluxer Webhook URL": "URL Gréasáin Fluxer",
+    "wayToGetFluxerURL": "Is féidir leat é seo a fháil trí dhul chuig socruithe an chainéil sprice > Webhooks > Cruthaigh Webhook > Cóipeáil URL Webhook."
 }
