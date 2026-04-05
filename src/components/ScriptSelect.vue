@@ -336,6 +336,7 @@ ul {
     from {
         opacity: 0;
     }
+
     to {
         opacity: 1;
     }
@@ -345,6 +346,7 @@ ul {
     from {
         opacity: 1;
     }
+
     to {
         opacity: 0;
     }
