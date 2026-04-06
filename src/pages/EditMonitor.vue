@@ -3810,7 +3810,7 @@ message HealthCheckResponse {
 
             // Validate hostname field input for various monitors
             if (
-                ["dns", "port", "ping", "steam", "gamedig", "radius", "tailscale-ping", "smtp", "snmp"].includes(
+                ["dns", "port", "ping", "steam", "gamedig", "radius", "tailscale-ping", "smtp", "snmp", "ntp"].includes(
                     this.monitor.type
                 ) &&
                 this.monitor.hostname

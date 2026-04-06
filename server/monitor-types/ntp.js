@@ -2,6 +2,7 @@ const { MonitorType } = require("./monitor-type");
 const { UP } = require("../../src/util");
 const dayjs = require("dayjs");
 const dgram = require("dgram");
+const dns = require("dns");
 
 /**
  * NTP Monitor Type
@@ -64,43 +65,60 @@ class NTPMonitorType extends MonitorType {
      */
     queryNTP(hostname, port, timeout) {
         return new Promise((resolve, reject) => {
-            const client = dgram.createSocket(hostname.includes(":") ? "udp6" : "udp4");
-            const ntpPacket = this.createNTPPacket();
+            let client = null;
+            let settled = false;
+            let timeoutHandle = null;
 
-            const NTP_EPOCH_OFFSET_MS = 2208988800000;
-            const t1 = Date.now() + NTP_EPOCH_OFFSET_MS;
+            const finish = (fn, value) => {
+                if (settled) {
+                    return;
+                }
+                settled = true;
+                clearTimeout(timeoutHandle);
+                if (client) {
+                    client.close();
+                }
+                fn(value);
+            };
 
-            const timeoutHandle = setTimeout(() => {
-                client.close();
-                reject(new Error("NTP request timed out"));
+            timeoutHandle = setTimeout(() => {
+                finish(reject, new Error("NTP request timed out"));
             }, timeout);
 
-            client.on("error", (err) => {
-                clearTimeout(timeoutHandle);
-                client.close();
-                reject(new Error(`UDP socket error: ${err.message}`));
-            });
-
-            client.on("message", (msg) => {
-                clearTimeout(timeoutHandle);
-                const t4 = Date.now() + NTP_EPOCH_OFFSET_MS;
-
-                try {
-                    const result = this.parseNTPResponse(msg, t1, t4);
-                    client.close();
-                    resolve(result);
-                } catch (err) {
-                    client.close();
-                    reject(err);
+            dns.lookup(hostname, (dnsErr, address, family) => {
+                if (settled) {
+                    return;
                 }
-            });
-
-            client.send(ntpPacket, 0, ntpPacket.length, port, hostname, (err) => {
-                if (err) {
-                    clearTimeout(timeoutHandle);
-                    client.close();
-                    reject(new Error(`Failed to send NTP request: ${err.message}`));
+                if (dnsErr) {
+                    finish(reject, new Error(`DNS lookup failed for ${hostname}: ${dnsErr.message}`));
+                    return;
                 }
+
+                client = dgram.createSocket(family === 6 ? "udp6" : "udp4");
+                const ntpPacket = this.createNTPPacket();
+
+                const NTP_EPOCH_OFFSET_MS = 2208988800000;
+                const t1 = Date.now() + NTP_EPOCH_OFFSET_MS;
+
+                client.on("error", (err) => {
+                    finish(reject, new Error(`UDP socket error: ${err.message}`));
+                });
+
+                client.on("message", (msg) => {
+                    const t4 = Date.now() + NTP_EPOCH_OFFSET_MS;
+                    try {
+                        const result = this.parseNTPResponse(msg, t1, t4);
+                        finish(resolve, result);
+                    } catch (err) {
+                        finish(reject, err);
+                    }
+                });
+
+                client.send(ntpPacket, 0, ntpPacket.length, port, address, (err) => {
+                    if (err) {
+                        finish(reject, new Error(`Failed to send NTP request: ${err.message}`));
+                    }
+                });
             });
         });
     }
