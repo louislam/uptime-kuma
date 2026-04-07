@@ -33,7 +33,7 @@ class TelnyxVoice extends NotificationProvider {
                 notification.telnyxVoiceText && notification.telnyxVoiceText.trim()
                     ? notification.telnyxVoiceText
                     : "{kumaMessage}";
-            const speechText = templateText.replace("{kumaMessage}", msg);
+            const speechText = templateText.replace(/{kumaMessage}/g, msg);
 
             const baseUrl = (notification.telnyxVoiceBaseUrl || "").replace(/\/+$/, "");
             const webhookUrl = baseUrl + "/api/telnyx-voice-callback";
@@ -97,7 +97,7 @@ class TelnyxVoice extends NotificationProvider {
             return;
         }
 
-        const headers = {
+        const requestHeaders = {
             "Content-Type": "application/json",
             Authorization: "Bearer " + pending.apiKey,
         };
@@ -105,18 +105,22 @@ class TelnyxVoice extends NotificationProvider {
         if (eventType === "call.answered") {
             // Speak the alert message via text-to-speech.
             await axios.post(
-                `https://api.telnyx.com/v2/calls/${callControlId}/actions/speak`,
+                `https://api.telnyx.com/v2/calls/${encodeURIComponent(callControlId)}/actions/speak`,
                 {
                     payload: pending.speechText,
                     payload_type: "text",
                     voice: "female",
                     language: "en-US",
                 },
-                { headers }
+                { headers: requestHeaders }
             );
         } else if (eventType === "call.speak.ended") {
             // Hang up once the message has finished.
-            await axios.post(`https://api.telnyx.com/v2/calls/${callControlId}/actions/hangup`, {}, { headers });
+            await axios.post(
+                `https://api.telnyx.com/v2/calls/${encodeURIComponent(callControlId)}/actions/hangup`,
+                {},
+                { headers: requestHeaders }
+            );
             TelnyxVoice.pendingCalls.delete(callControlId);
         }
     }
