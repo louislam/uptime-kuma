@@ -1132,6 +1132,7 @@ let needSetup = false;
 
                 // Pause the monitor itself
                 await pauseMonitor(socket.userID, monitorID);
+                await server.sendUpdateMonitorIntoList(socket, monitorID);
 
                 if (monitor && monitor.type === "group") {
                     for (const childMonitorID of childMonitorIDs) {
@@ -1160,7 +1161,6 @@ let needSetup = false;
                     msg: "successPaused",
                     msgi18n: true,
                 });
-                await server.sendUpdateMonitorIntoList(socket, monitorID);
             } catch (e) {
                 callback({
                     ok: false,
