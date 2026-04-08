@@ -1123,6 +1123,7 @@
     "successPaused": "Paused Successfully.",
     "successDeleted": "Deleted Successfully.",
     "successEdited": "Edited Successfully.",
+    "testNotificationRequested": "Test notification is requested.",
     "successAuthChangePassword": "Password has been updated successfully.",
     "successBackupRestored": "Backup successfully restored.",
     "successDisabled": "Disabled Successfully.",
