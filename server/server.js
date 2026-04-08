@@ -1104,7 +1104,7 @@ let needSetup = false;
                 // Check if this is a group monitor
                 const monitor = await R.findOne("monitor", " id = ? AND user_id = ? ", [monitorID, socket.userID]);
                 let childMonitorIDs = [];
-                
+
                 // Log with context about pausing type
                 if (monitor && monitor.type === "group") {
                     if (pauseChildren) {
@@ -1116,7 +1116,6 @@ let needSetup = false;
                     log.info("manage", `Pause Monitor: ${monitorID} User ID: ${socket.userID}`);
                 }
 
-                
                 if (monitor && monitor.type === "group") {
                     // Get all descendants before processing
                     childMonitorIDs = await Monitor.getAllChildrenIDs(monitorID);
@@ -1150,10 +1149,7 @@ let needSetup = false;
                             `Pause Monitor completed (group and children paused) in: ${endTime - startTime} ms`
                         );
                     } else {
-                        log.info(
-                            "DB",
-                            `Pause Monitor completed (group paused) in: ${endTime - startTime} ms`
-                        );
+                        log.info("DB", `Pause Monitor completed (group paused) in: ${endTime - startTime} ms`);
                     }
                 } else {
                     log.info("DB", `Pause Monitor completed in: ${endTime - startTime} ms`);

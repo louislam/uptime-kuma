@@ -376,12 +376,7 @@
                 </div>
             </div>
 
-            <Confirm 
-                ref="confirmPause" 
-                :yes-text="$t('Yes')" 
-                :no-text="$t('No')" 
-                @yes="pauseMonitor"
-            >
+            <Confirm ref="confirmPause" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="pauseMonitor">
                 <div v-if="monitor && monitor.type === 'group'">
                     <div>{{ $t("pauseGroupMsg") }}</div>
                     <div v-if="hasChildren" class="form-check">
