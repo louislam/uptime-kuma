@@ -695,6 +695,8 @@
     "resolverserverDescription": "Cloudflare is the default server. You can specify a comma delimited list of IP addresses or hostnames.",
     "rrtypeDescription": "Select the RR type you want to monitor",
     "pauseMonitorMsg": "Are you sure want to pause?",
+    "pauseGroupMsg": "Are you sure want to pause this group?",
+    "pauseChildrenMonitors": "Also pause the direct child monitors and its children if it has any | Also pause all {count} direct child monitors and their children if they have any",
     "enableDefaultNotificationDescription": "This notification will be enabled by default for new monitors. You can still disable the notification separately for each monitor.",
     "Clear All Events": "Clear All Events",
     "clearAllEventsMsg": "Are you sure you want to delete all events for all monitors? This permanently removes associated message data and cannot be undone.",
