@@ -295,11 +295,14 @@ class MqttMonitorType extends MonitorType {
                 settle(() => reject(error));
             };
 
-            const timeoutID = setTimeout(() => {
-                log.debug(this.name, "MQTT timeout triggered");
-                // Keep the connection alive — just stop waiting for this check cycle
-                settle(() => reject(new Error("Timeout, Message not received")));
-            }, interval * 1000 * 0.8);
+            const timeoutID = setTimeout(
+                () => {
+                    log.debug(this.name, "MQTT timeout triggered");
+                    // Keep the connection alive — just stop waiting for this check cycle
+                    settle(() => reject(new Error("Timeout, Message not received")));
+                },
+                interval * 1000 * 0.8
+            );
 
             // Subscribe to this topic if not already subscribed on this connection.
             // Attach the message listener only after the subscribe callback fires so that
