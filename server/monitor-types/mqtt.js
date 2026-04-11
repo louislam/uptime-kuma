@@ -12,7 +12,7 @@ const { evaluateExpressionGroup } = require("../monitor-conditions/evaluator");
  * Supports + (single-level) and # (multi-level) wildcards per the MQTT spec.
  * @param {string} filter Subscription filter (may contain wildcards)
  * @param {string} topic Received topic (concrete, no wildcards)
- * @returns {boolean}
+ * @returns {boolean} True if the topic matches the filter
  */
 function topicMatches(filter, topic) {
     const filterParts = filter.split("/");
