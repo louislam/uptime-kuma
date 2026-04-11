@@ -1247,6 +1247,10 @@ class Monitor extends BeanModel {
         this.isStop = true;
 
         this.prometheus?.remove();
+
+        if (this.type in UptimeKumaServer.monitorTypeList) {
+            UptimeKumaServer.monitorTypeList[this.type].stop(this);
+        }
     }
 
     /**

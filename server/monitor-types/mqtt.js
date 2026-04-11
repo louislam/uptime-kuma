@@ -51,10 +51,17 @@ class MqttMonitorType extends MonitorType {
     clients = new Map();
 
     /**
+     * Last-known connection key and topic for each monitor, used to detect
+     * broker/topic changes and to clean up on monitor stop.
+     * @type {Map<number, { connectionKey: string, topic: string }>}
+     */
+    monitorStates = new Map();
+
+    /**
      * @inheritdoc
      */
     async check(monitor, heartbeat, server) {
-        const [messageTopic, receivedMessage] = await this.mqttAsync(monitor.hostname, monitor.mqttTopic, {
+        const [messageTopic, receivedMessage] = await this.mqttAsync(monitor.id, monitor.hostname, monitor.mqttTopic, {
             port: monitor.port,
             username: monitor.mqttUsername,
             password: monitor.mqttPassword,
@@ -159,15 +166,50 @@ class MqttMonitorType extends MonitorType {
     }
 
     /**
+     * Unsubscribe a topic from a connection entry and close the client if it
+     * has no remaining subscribers.
+     * @param {string} connectionKey Key into this.clients
+     * @param {string} topic Topic to unsubscribe
+     * @returns {void}
+     */
+    releaseTopicSubscription(connectionKey, topic) {
+        const entry = this.clients.get(connectionKey);
+        if (!entry) {
+            return;
+        }
+        entry.subscribedTopics.delete(topic);
+        entry.client.unsubscribe(topic);
+        log.debug(this.name, `MQTT unsubscribed from topic ${topic}`);
+
+        if (entry.subscribedTopics.size === 0) {
+            log.debug(this.name, "MQTT no remaining subscribers, closing connection");
+            this.clients.delete(connectionKey);
+            entry.client.end();
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    stop(monitor) {
+        const state = this.monitorStates.get(monitor.id);
+        if (state) {
+            this.releaseTopicSubscription(state.connectionKey, state.topic);
+            this.monitorStates.delete(monitor.id);
+        }
+    }
+
+    /**
      * Wait for a live (non-retained) message on the given topic, reusing an
      * existing broker connection when one already exists for the same broker.
      * The connection is only torn down on broker errors; timeouts leave it open.
+     * @param {number} monitorId Monitor ID used to track per-monitor state
      * @param {string} hostname Hostname / address of the broker
      * @param {string} topic MQTT topic to subscribe to
      * @param {object} options MQTT options: port, username, password, websocketPath, interval
      * @returns {Promise<[string, string]>} Tuple of [messageTopic, message]
      */
-    mqttAsync(hostname, topic, options = {}) {
+    mqttAsync(monitorId, hostname, topic, options = {}) {
         return new Promise((resolve, reject) => {
             const { port, username, password, websocketPath, interval = 20 } = options;
 
@@ -190,6 +232,13 @@ class MqttMonitorType extends MonitorType {
             const connectionKey = createHash("sha256")
                 .update(`${mqttUrl}\x00${username ?? ""}\x00${password ?? ""}`)
                 .digest("hex");
+
+            // If this monitor previously used a different broker or topic, release the old subscription
+            const prevState = this.monitorStates.get(monitorId);
+            if (prevState && (prevState.connectionKey !== connectionKey || prevState.topic !== topic)) {
+                this.releaseTopicSubscription(prevState.connectionKey, prevState.topic);
+                this.monitorStates.delete(monitorId);
+            }
 
             // Get or create a persistent client for this broker
             let entry = this.clients.get(connectionKey);
@@ -228,6 +277,9 @@ class MqttMonitorType extends MonitorType {
                     }
                 });
             }
+
+            // Record the current broker + topic for this monitor so changes are detected next check
+            this.monitorStates.set(monitorId, { connectionKey, topic });
 
             // --- Per-check handlers ---
 

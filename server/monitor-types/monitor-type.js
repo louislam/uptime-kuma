@@ -33,6 +33,14 @@ class MonitorType {
     async check(monitor, heartbeat, server) {
         throw new Error("You need to override check()");
     }
+
+    /**
+     * Called when a monitor is stopped or deleted.
+     * Override to release any persistent resources held for this monitor.
+     * @param {Monitor} monitor Monitor being stopped
+     * @returns {void}
+     */
+    stop(monitor) {}
 }
 
 module.exports = {
