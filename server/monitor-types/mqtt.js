@@ -1,7 +1,6 @@
 const { MonitorType } = require("./monitor-type");
 const { log, UP } = require("../../src/util");
 const mqtt = require("mqtt");
-const { createHash } = require("crypto");
 const jsonata = require("jsonata");
 const { ConditionVariable } = require("../monitor-conditions/variables");
 const { defaultStringOperators, defaultNumberOperators } = require("../monitor-conditions/operators");
@@ -228,10 +227,7 @@ class MqttMonitorType extends MonitorType {
                 }
             }
 
-            // Key shared connections by broker URL + credentials (hashed to avoid storing plaintext credentials)
-            const connectionKey = createHash("sha256")
-                .update(`${mqttUrl}\x00${username ?? ""}\x00${password ?? ""}`)
-                .digest("hex");
+            const connectionKey = `${mqttUrl}\x00${username ?? ""}`;
 
             // If this monitor previously used a different broker or topic, release the old subscription
             const prevState = this.monitorStates.get(monitorId);
