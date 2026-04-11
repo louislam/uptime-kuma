@@ -262,18 +262,6 @@ class MqttMonitorType extends MonitorType {
 
             const { client } = entry;
 
-            // Subscribe to this topic if not already subscribed on this connection
-            if (!entry.subscribedTopics.has(topic)) {
-                entry.subscribedTopics.add(topic);
-                client.subscribe(topic, (err) => {
-                    if (err) {
-                        log.debug(this.name, `MQTT subscribe error for topic ${topic}: ${err.message}`);
-                    } else {
-                        log.debug(this.name, `MQTT subscribed to topic ${topic}`);
-                    }
-                });
-            }
-
             // Record the current broker + topic for this monitor so changes are detected next check
             this.monitorStates.set(monitorId, { connectionKey, topic });
 
@@ -313,7 +301,23 @@ class MqttMonitorType extends MonitorType {
                 settle(() => reject(new Error("Timeout, Message not received")));
             }, interval * 1000 * 0.8);
 
-            client.on("message", onMessage);
+            // Subscribe to this topic if not already subscribed on this connection.
+            // Attach the message listener only after the subscribe callback fires so that
+            // retained messages (delivered by the broker before SUBACK) are never seen.
+            if (!entry.subscribedTopics.has(topic)) {
+                entry.subscribedTopics.add(topic);
+                client.subscribe(topic, (err) => {
+                    if (err) {
+                        log.debug(this.name, `MQTT subscribe error for topic ${topic}: ${err.message}`);
+                    } else {
+                        log.debug(this.name, `MQTT subscribed to topic ${topic}`);
+                    }
+                    client.on("message", onMessage);
+                });
+            } else {
+                client.on("message", onMessage);
+            }
+
             client.once("error", onError);
         });
     }
