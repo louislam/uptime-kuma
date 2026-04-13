@@ -1751,6 +1751,9 @@
                                     :max="65500"
                                     step="1"
                                 />
+                                <div v-if="monitor.packetSize < 16" class="form-text text-warning">
+                                    {{ $t("pingPacketSizeWarning") }}
+                                </div>
                             </div>
 
                             <!-- per-request timeout -->
