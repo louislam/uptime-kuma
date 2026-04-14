@@ -1918,6 +1918,20 @@ async function pauseMonitor(userID, monitorID) {
         await server.monitorList[monitorID].stop();
         server.monitorList[monitorID].active = 0;
     }
+
+    // If pausing a group, also pause all child monitors (fixes #7242)
+    const monitor = await R.findOne("monitor", " id = ? AND user_id = ? ", [monitorID, userID]);
+    if (monitor && monitor.type === "group") {
+        const children = await R.find("monitor", " parent = ? AND user_id = ? ", [monitorID, userID]);
+        for (const child of children) {
+            log.info("manage", `Pause child monitor: ${child.id} (parent group: ${monitorID})`);
+            await R.exec("UPDATE monitor SET active = 0 WHERE id = ? AND user_id = ? ", [child.id, userID]);
+            if (child.id in server.monitorList) {
+                await server.monitorList[child.id].stop();
+                server.monitorList[child.id].active = 0;
+            }
+        }
+    }
 }
 
 /**
