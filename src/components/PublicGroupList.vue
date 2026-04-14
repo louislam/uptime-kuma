@@ -115,7 +115,10 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div :key="$root.userHeartbeatBar" class="col-3 col-xl-6">
+                                        <div :key="$root.userHeartbeatBar" class="col-3 col-xl-6 d-flex align-items-center justify-content-end">
+                                            <span v-if="pingOfLastHeartbeat(monitor.element.id)" class="badge rounded-pill bg-secondary me-2">
+                                                {{ pingOfLastHeartbeat(monitor.element.id) }} ms
+                                            </span>
                                             <HeartbeatBar size="mid" :monitor-id="monitor.element.id" />
                                         </div>
                                     </div>
@@ -293,6 +296,17 @@ export default {
             let heartbeats = this.$root.heartbeatList[monitorId] ?? [];
             let lastHeartbeat = heartbeats[heartbeats.length - 1];
             return lastHeartbeat?.status;
+        },
+
+        /**
+         * Returns the ping of the last heartbeat
+         * @param {number} monitorId Id of the monitor to get ping for
+         * @returns {number} Ping of the last heartbeat
+         */
+        pingOfLastHeartbeat(monitorId) {
+            let heartbeats = this.$root.heartbeatList[monitorId] ?? [];
+            let lastHeartbeat = heartbeats[heartbeats.length - 1];
+            return lastHeartbeat?.ping;
         },
 
         /**
