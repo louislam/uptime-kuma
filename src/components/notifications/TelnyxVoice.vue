@@ -62,18 +62,27 @@
     </div>
 
     <div class="mb-3">
-        <label for="telnyxv-text" class="form-label">{{ $t("telnyxVoiceText") }}</label>
-        <textarea
-            id="telnyxv-text"
-            v-model="$parent.notification.telnyxVoiceText"
-            class="form-control"
-            rows="3"
-            :placeholder="$t('telnyxVoiceTextPlaceholder', { kumaMessage: '{kumaMessage}' })"
-        ></textarea>
-        <i18n-t keypath="telnyxVoiceTextHelptext" tag="div" class="form-text">
-            <template #kumaMessage><code>{kumaMessage}</code></template>
-        </i18n-t>
+        <div class="form-check form-switch">
+            <input v-model="$parent.notification.telnyxVoiceUseTemplate" class="form-check-input" type="checkbox" />
+            <label class="form-check-label">{{ $t("telnyxVoiceUseTemplate") }}</label>
+        </div>
+
+        <div class="form-text">
+            {{ $t("telnyxVoiceUseTemplateDescription") }}
+        </div>
     </div>
+
+    <template v-if="$parent.notification.telnyxVoiceUseTemplate">
+        <div class="mb-3">
+            <label class="form-label" for="telnyxv-text">{{ $t("Message Template") }}</label>
+            <TemplatedTextarea
+                id="telnyxv-text"
+                v-model="$parent.notification.telnyxVoiceText"
+                :required="true"
+                :placeholder="telnyxVoiceTemplatedTextareaPlaceholder"
+            ></TemplatedTextarea>
+        </div>
+    </template>
 
     <div class="mb-3">
         <i18n-t tag="p" keypath="More info on:" style="margin-top: 8px">
@@ -86,10 +95,27 @@
 
 <script>
 import HiddenInput from "../HiddenInput.vue";
+import TemplatedTextarea from "../TemplatedTextarea.vue";
 
 export default {
     components: {
         HiddenInput,
+        TemplatedTextarea,
+    },
+    computed: {
+        /**
+         * Placeholder text for the templated textarea
+         * @returns {string} Placeholder text
+         */
+        telnyxVoiceTemplatedTextareaPlaceholder() {
+            return this.$t("Example:", [
+                `
+Uptime Kuma Alert{% if monitorJSON %} - {{ monitorJSON['name'] }}{% endif %}
+
+{{ msg }}
+                `,
+            ]);
+        },
     },
 };
 </script>

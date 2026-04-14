@@ -1037,6 +1037,8 @@
     "telnyxVoiceText": "Message Text (optional)",
     "telnyxVoiceTextHelptext": "Custom text to read when the call connects. Use the placeholder {kumaMessage} anywhere in the text and it will be replaced with the Uptime Kuma alert. Example: \"Uptime Kuma alert: {kumaMessage}. Please check your monitor.\" Leave blank to read only the Uptime Kuma alert.",
     "telnyxVoiceTextPlaceholder": "Uptime Kuma alert: {kumaMessage}",
+    "telnyxVoiceUseTemplate": "Use custom message template",
+    "telnyxVoiceUseTemplateDescription": "If enabled, the message will be sent using a custom template.",
     "twilioAccountSID": "Account SID",
     "twilioApiKey": "Api Key (optional)",
     "twilioApiKeyHelptext": "The API key is optional but recommended. You can provide either Account SID and AuthToken from the may TwilioConsole page or Account SID and the pair of Api Key and Api Key secret",
