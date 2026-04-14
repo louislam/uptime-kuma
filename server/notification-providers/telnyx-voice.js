@@ -30,7 +30,11 @@ class TelnyxVoice extends NotificationProvider {
         try {
             // Build the spoken text using either the Liquid template or the plain alert message
             let speechText;
-            if (notification.telnyxVoiceUseTemplate && notification.telnyxVoiceText && notification.telnyxVoiceText.trim()) {
+            if (
+                notification.telnyxVoiceUseTemplate &&
+                notification.telnyxVoiceText &&
+                notification.telnyxVoiceText.trim()
+            ) {
                 speechText = await this.renderTemplate(notification.telnyxVoiceText, msg, monitorJSON, heartbeatJSON);
             } else {
                 speechText = msg;
