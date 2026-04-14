@@ -55,7 +55,7 @@
         </div>
 
         <div class="form-text">
-            {{ $t("matrixUseTemplateDescription") }}
+            {{ $t("useTemplateDescription") }}
         </div>
     </div>
 

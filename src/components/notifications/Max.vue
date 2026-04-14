@@ -34,7 +34,7 @@
             <label class="form-check-label">{{ $t("maxUseTemplate") }}</label>
         </div>
         <div class="form-text">
-            {{ $t("maxUseTemplateDescription") }}
+            {{ $t("useTemplateDescription") }}
         </div>
     </div>
 

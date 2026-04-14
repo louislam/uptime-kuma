@@ -75,7 +75,7 @@
         </div>
 
         <div class="form-text">
-            {{ $t("telegramUseTemplateDescription") }}
+            {{ $t("useTemplateDescription") }}
         </div>
     </div>
 
