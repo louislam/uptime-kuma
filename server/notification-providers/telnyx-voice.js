@@ -28,12 +28,13 @@ class TelnyxVoice extends NotificationProvider {
         const okMsg = "Sent Successfully.";
 
         try {
-            // Build the spoken text, substituting {kumaMessage} with the real alert.
-            const templateText =
-                notification.telnyxVoiceText && notification.telnyxVoiceText.trim()
-                    ? notification.telnyxVoiceText
-                    : "{kumaMessage}";
-            const speechText = templateText.replace(/{kumaMessage}/g, msg);
+            // Build the spoken text using either the Liquid template or the plain alert message
+            let speechText;
+            if (notification.telnyxVoiceUseTemplate && notification.telnyxVoiceText && notification.telnyxVoiceText.trim()) {
+                speechText = await this.renderTemplate(notification.telnyxVoiceText, msg, monitorJSON, heartbeatJSON);
+            } else {
+                speechText = msg;
+            }
 
             const baseUrl = (notification.telnyxVoiceBaseUrl || "").replace(/\/+$/, "");
             const webhookUrl = baseUrl + "/api/telnyx-voice-callback";
