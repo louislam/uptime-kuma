@@ -1879,6 +1879,8 @@ async function startMonitor(userID, monitorID) {
 
     log.info("manage", `Resume Monitor: ${monitorID} User ID: ${userID}`);
 
+    const monitorRecord = await R.findOne("monitor", " id = ? ", [ monitorID ]);
+
     await R.exec("UPDATE monitor SET active = 1 WHERE id = ? AND user_id = ? ", [monitorID, userID]);
 
     let monitor = await R.findOne("monitor", " id = ? ", [monitorID]);
@@ -1889,6 +1891,14 @@ async function startMonitor(userID, monitorID) {
 
     server.monitorList[monitor.id] = monitor;
     await monitor.start(io);
+
+    // Recursive propagation for groups
+    if (monitorRecord && monitorRecord.type === "group") {
+        const children = await R.find("monitor", " parent = ? AND user_id = ? ", [monitorID, userID]);
+        for (const child of children) {
+            await startMonitor(userID, child.id);
+        }
+    }
 }
 
 /**
@@ -1912,11 +1922,21 @@ async function pauseMonitor(userID, monitorID) {
 
     log.info("manage", `Pause Monitor: ${monitorID} User ID: ${userID}`);
 
+    const monitor = await R.findOne("monitor", " id = ? ", [ monitorID ]);
+
     await R.exec("UPDATE monitor SET active = 0 WHERE id = ? AND user_id = ? ", [monitorID, userID]);
 
     if (monitorID in server.monitorList) {
         await server.monitorList[monitorID].stop();
         server.monitorList[monitorID].active = 0;
+    }
+
+    // Recursive propagation for groups
+    if (monitor && monitor.type === "group") {
+        const children = await R.find("monitor", " parent = ? AND user_id = ? ", [monitorID, userID]);
+        for (const child of children) {
+            await pauseMonitor(userID, child.id);
+        }
     }
 }
 
