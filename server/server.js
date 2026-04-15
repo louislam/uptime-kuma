@@ -1066,7 +1066,7 @@ let needSetup = false;
             try {
                 checkLogin(socket);
                 await startMonitor(socket.userID, monitorID);
-                await server.sendUpdateMonitorIntoList(socket, monitorID);
+                await server.sendMonitorList(socket);
 
                 callback({
                     ok: true,
@@ -1085,7 +1085,7 @@ let needSetup = false;
             try {
                 checkLogin(socket);
                 await pauseMonitor(socket.userID, monitorID);
-                await server.sendUpdateMonitorIntoList(socket, monitorID);
+                await server.sendMonitorList(socket);
 
                 callback({
                     ok: true,
@@ -1889,6 +1889,10 @@ async function startMonitor(userID, monitorID) {
 
     server.monitorList[monitor.id] = monitor;
     await monitor.start(io);
+
+    if (monitor.type === "group") {
+        await startChildrenMonitors(userID, monitorID);
+    }
 }
 
 /**
@@ -1918,6 +1922,10 @@ async function pauseMonitor(userID, monitorID) {
         await server.monitorList[monitorID].stop();
         server.monitorList[monitorID].active = 0;
     }
+    let monitor = await R.findOne("monitor", "id = ? AND user_id = ?", [monitorID, userID]);
+    if (monitor?.type === "group") {
+        await stopChildrenMonitors(monitorID);
+    }
 }
 
 /**
@@ -1926,6 +1934,13 @@ async function pauseMonitor(userID, monitorID) {
  */
 async function startMonitors() {
     let list = await R.find("monitor", " active = 1 ");
+    let activeList = [];
+    for (let monitor of list) {
+        if (await Monitor.isActive(monitor.id, monitor.active)) {
+            activeList.push(monitor);
+        }
+    }
+    list = activeList;
 
     for (let monitor of list) {
         server.monitorList[monitor.id] = monitor;
@@ -1996,3 +2011,40 @@ let unexpectedErrorHandler = (error, promise) => {
 };
 process.addListener("unhandledRejection", unexpectedErrorHandler);
 process.addListener("uncaughtException", unexpectedErrorHandler);
+
+/**
+ * Stop all running descendant monitors without changing their active flag.
+ * @param {number} monitorID ID of the parent monitor
+ * @returns {Promise<void>}
+ */
+async function stopChildrenMonitors(monitorID) {
+    const childrenIDs = await Monitor.getAllChildrenIDs(monitorID);
+    for (const childID of childrenIDs) {
+        if (childID in server.monitorList) {
+            await server.monitorList[childID].stop();
+        }
+    }
+}
+
+/**
+ * Start active descendants whose parent chain is active.
+ * @param {number} userID ID of user who owns monitor
+ * @param {number} monitorID ID of the parent monitor
+ * @returns {Promise<void>}
+ */
+async function startChildrenMonitors(userID, monitorID) {
+    const childrenIDs = await Monitor.getAllChildrenIDs(monitorID);
+
+    for (const childID of childrenIDs) {
+        const child = await R.findOne("monitor", " id = ? AND user_id = ? ", [childID, userID]);
+
+        if (child && await Monitor.isActive(child.id, child.active)) {
+            if (child.id in server.monitorList) {
+                await server.monitorList[child.id].stop();
+            }
+
+            server.monitorList[child.id] = child;
+            await child.start(io);
+        }
+    }
+}
