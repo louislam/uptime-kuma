@@ -15,12 +15,28 @@ class Gotify extends NotificationProvider {
             if (notification.gotifyserverurl && notification.gotifyserverurl.endsWith("/")) {
                 notification.gotifyserverurl = notification.gotifyserverurl.slice(0, -1);
             }
+
+            let title = "Uptime-Kuma";
+            let message = msg;
+
+            if (notification.gotifyUseTemplate) {
+                const customTitle = notification.gotifyTitleTemplate?.trim() || "";
+                if (customTitle !== "") {
+                    title = await this.renderTemplate(customTitle, msg, monitorJSON, heartbeatJSON);
+                }
+
+                const customMessage = notification.gotifyMessageTemplate?.trim() || "";
+                if (customMessage !== "") {
+                    message = await this.renderTemplate(customMessage, msg, monitorJSON, heartbeatJSON);
+                }
+            }
+
             await axios.post(
                 `${notification.gotifyserverurl}/message?token=${notification.gotifyapplicationToken}`,
                 {
-                    message: msg,
+                    message: message,
                     priority: notification.gotifyPriority || 8,
-                    title: "Uptime-Kuma",
+                    title: title,
                 },
                 config
             );

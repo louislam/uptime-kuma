@@ -63,4 +63,44 @@
             </i18n-t>
         </div>
     </div>
+
+    <div class="mb-3">
+        <div class="form-check form-switch">
+            <input
+                id="mattermost-use-template"
+                v-model="$parent.notification.mattermostUseTemplate"
+                class="form-check-input"
+                type="checkbox"
+            />
+            <label class="form-check-label" for="mattermost-use-template">
+                {{ $t("useTemplate") }}
+            </label>
+        </div>
+        <div class="form-text">
+            {{ $t("useTemplateDescription") }}
+        </div>
+    </div>
+
+    <div v-show="$parent.notification.mattermostUseTemplate">
+        <div class="mb-3">
+            <label for="mattermost-message-template" class="form-label">{{ $t("Message Template") }}</label>
+            <TemplatedTextarea
+                id="mattermost-message-template"
+                v-model="$parent.notification.mattermostMessageTemplate"
+                :required="false"
+                placeholder=""
+            ></TemplatedTextarea>
+            <div class="form-text">{{ $t("templateFallback") }}</div>
+        </div>
+    </div>
 </template>
+
+<script>
+import TemplatedTextarea from "../TemplatedTextarea.vue";
+
+export default {
+    components: {
+        TemplatedTextarea,
+    },
+};
+</script>

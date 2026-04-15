@@ -32,14 +32,59 @@
             step="1"
         />
     </div>
+
+    <div class="mb-3">
+        <div class="form-check form-switch">
+            <input
+                id="gotify-use-template"
+                v-model="$parent.notification.gotifyUseTemplate"
+                class="form-check-input"
+                type="checkbox"
+            />
+            <label class="form-check-label" for="gotify-use-template">
+                {{ $t("useTemplate") }}
+            </label>
+        </div>
+        <div class="form-text">
+            {{ $t("useTemplateDescription") }}
+        </div>
+    </div>
+
+    <div v-show="$parent.notification.gotifyUseTemplate">
+        <div class="mb-3">
+            <label for="gotify-title-template" class="form-label">{{ $t("Title Template") }}</label>
+            <TemplatedInput
+                id="gotify-title-template"
+                v-model="$parent.notification.gotifyTitleTemplate"
+                :required="false"
+                placeholder=""
+            ></TemplatedInput>
+            <div class="form-text">{{ $t("templateFallback") }}</div>
+        </div>
+
+        <div class="mb-3">
+            <label for="gotify-message-template" class="form-label">{{ $t("Message Template") }}</label>
+            <TemplatedTextarea
+                id="gotify-message-template"
+                v-model="$parent.notification.gotifyMessageTemplate"
+                :required="false"
+                placeholder=""
+            ></TemplatedTextarea>
+            <div class="form-text">{{ $t("templateFallback") }}</div>
+        </div>
+    </div>
 </template>
 
 <script>
 import HiddenInput from "../HiddenInput.vue";
+import TemplatedInput from "../TemplatedInput.vue";
+import TemplatedTextarea from "../TemplatedTextarea.vue";
 
 export default {
     components: {
         HiddenInput,
+        TemplatedInput,
+        TemplatedTextarea,
     },
     mounted() {
         if (typeof this.$parent.notification.gotifyPriority === "undefined") {

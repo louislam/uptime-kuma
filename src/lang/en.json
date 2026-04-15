@@ -1530,5 +1530,9 @@
     "teltonikaModem": "Modem Id",
     "teltonikaModemHelptext": "The id of the SMS modem, must be in the format {0}. Refer to https://developers.teltonika-networks.com/reference/ for guidance.",
     "teltonikaPhoneNumber": "Phone number",
-    "teltonikaPhoneNumberHelptext": "The number must be in the international format {0}, {1}. Only one number is allowed."
+    "teltonikaPhoneNumberHelptext": "The number must be in the international format {0}, {1}. Only one number is allowed.",
+    "useTemplate": "Use custom message template",
+    "useTemplateDescription": "Customize the notification message using LiquidJS templating. Available variables: name, status, hostnameOrURL, msg, monitorJSON, heartbeatJSON.",
+    "Title Template": "Title Template",
+    "templateFallback": "Leave blank to use the default Uptime Kuma format"
 }

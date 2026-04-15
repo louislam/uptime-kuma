@@ -14,13 +14,43 @@ class Mattermost extends NotificationProvider {
         try {
             let config = this.getAxiosConfigWithProxy({});
             const mattermostUserName = notification.mattermostusername || "Uptime Kuma";
+
             // If heartbeatJSON is null, assume non monitoring notification (Certificate warning) or testing.
             if (heartbeatJSON == null) {
+                let text = msg;
+                if (notification.mattermostUseTemplate) {
+                    const customMessage = notification.mattermostMessageTemplate?.trim() || "";
+                    if (customMessage !== "") {
+                        text = await this.renderTemplate(customMessage, msg, monitorJSON, heartbeatJSON);
+                    }
+                }
                 let mattermostTestData = {
                     username: mattermostUserName,
-                    text: msg,
+                    text: text,
                 };
                 await axios.post(notification.mattermostWebhookUrl, mattermostTestData, config);
+                return okMsg;
+            }
+
+            // If a custom template is configured, send a simple text message instead of the rich attachment.
+            if (notification.mattermostUseTemplate) {
+                const customMessage = notification.mattermostMessageTemplate?.trim() || "";
+                let text = msg;
+                if (customMessage !== "") {
+                    text = await this.renderTemplate(customMessage, msg, monitorJSON, heartbeatJSON);
+                }
+
+                let mattermostChannel;
+                if (typeof notification.mattermostchannel === "string") {
+                    mattermostChannel = notification.mattermostchannel.toLowerCase();
+                }
+
+                let mattermostdata = {
+                    username: mattermostUserName,
+                    channel: mattermostChannel,
+                    text: text,
+                };
+                await axios.post(notification.mattermostWebhookUrl, mattermostdata, config);
                 return okMsg;
             }
 
