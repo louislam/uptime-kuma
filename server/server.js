@@ -1907,16 +1907,39 @@ async function restartMonitor(userID, monitorID) {
  * @param {number} monitorID ID of monitor to start
  * @returns {Promise<void>}
  */
+/**
+ * Pause a monitor and, if it is a group, pause all child monitors too.
+ * Fixes: pausing a group did not propagate to its children (#7242).
+ * @param {number} userID - The ID of the user who owns the monitor.
+ * @param {number} monitorID - The ID of the monitor to pause.
+ * @returns {Promise<void>}
+ */
 async function pauseMonitor(userID, monitorID) {
     await checkOwner(userID, monitorID);
 
     log.info("manage", `Pause Monitor: ${monitorID} User ID: ${userID}`);
+
+    // Fetch the monitor record before updating so we can check its type
+    const monitor = await R.findOne("monitor", " id = ? ", [ monitorID ]);
 
     await R.exec("UPDATE monitor SET active = 0 WHERE id = ? AND user_id = ? ", [monitorID, userID]);
 
     if (monitorID in server.monitorList) {
         await server.monitorList[monitorID].stop();
         server.monitorList[monitorID].active = 0;
+    }
+
+    // If this is a group monitor, propagate the pause to all direct children
+    if (monitor && monitor.type === "group") {
+        const children = await R.find("monitor", " parent = ? AND user_id = ? ", [monitorID, userID]);
+        for (const child of children) {
+            log.info("manage", `Pause child monitor: ${child.id} (parent group: ${monitorID})`);
+            await R.exec("UPDATE monitor SET active = 0 WHERE id = ? AND user_id = ? ", [child.id, userID]);
+            if (child.id in server.monitorList) {
+                await server.monitorList[child.id].stop();
+                server.monitorList[child.id].active = 0;
+            }
+        }
     }
 }
 
