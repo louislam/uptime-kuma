@@ -2038,7 +2038,7 @@ async function startChildrenMonitors(userID, monitorID) {
     for (const childID of childrenIDs) {
         const child = await R.findOne("monitor", " id = ? AND user_id = ? ", [childID, userID]);
 
-        if (child && await Monitor.isActive(child.id, child.active)) {
+        if (child && (await Monitor.isActive(child.id, child.active))) {
             if (child.id in server.monitorList) {
                 await server.monitorList[child.id].stop();
             }
