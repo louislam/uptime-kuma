@@ -1056,7 +1056,8 @@ class Monitor extends BeanModel {
                     ) {
                         log.warn(
                             "domain_expiry",
-                            `Domain expiry unsupported for '.${error.meta.publicSuffix}' because its RDAP endpoint is not listed in the IANA database.`
+                            `Domain expiry monitoring is not supported for '.${error.meta.publicSuffix}' TLD — no RDAP endpoint is registered for it in the IANA database. ` +
+                            `Please verify this domain's expiry date manually via your registrar or https://lookup.icann.org.`
                         );
                     }
                 }
