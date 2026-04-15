@@ -312,6 +312,7 @@
                                                 max="9999-12-31T23:59"
                                                 class="form-control"
                                                 :required="maintenance.strategy === 'single'"
+                                                @input="onStartDateInput"
                                             />
                                         </div>
 
@@ -323,8 +324,15 @@
                                                 max="9999-12-31T23:59"
                                                 class="form-control"
                                                 :required="maintenance.strategy === 'single'"
+                                                @input="onEndDateInput"
                                             />
                                         </div>
+                                    </div>
+                                    <div
+                                        v-if="endDatePredatesStart"
+                                        class="form-text text-warning mt-2"
+                                    >
+                                        {{ $t("End datetime is before start datetime") }}
                                     </div>
                                 </div>
                             </template>
@@ -467,6 +475,8 @@ export default {
             selectedStatusPages: [],
             dark: this.$root.theme === "dark",
             neverEnd: false,
+            endDateManuallyEdited: false,
+            previousStartDate: null,
             lastDays: [
                 {
                     langKey: "lastDay1",
@@ -620,6 +630,18 @@ export default {
             }
             return Math.round((end.getTime() - start.getTime()) / 60000);
         },
+
+        endDatePredatesStart() {
+            if (!this.maintenance.dateRange?.[0] || !this.maintenance.dateRange?.[1]) {
+                return false;
+            }
+            const start = new Date(this.maintenance.dateRange[0]);
+            const end = new Date(this.maintenance.dateRange[1]);
+            if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+                return false;
+            }
+            return end.getTime() <= start.getTime();
+        },
     },
     watch: {
         "$route.fullPath"() {
@@ -715,10 +737,14 @@ export default {
                     daysOfMonth: [],
                     timezoneOption: "SAME_AS_SERVER",
                 };
+                this.previousStartDate = formatDateTime(now);
+                this.endDateManuallyEdited = false;
             } else if (this.isEdit || this.isClone) {
                 this.$root.getSocket().emit("getMaintenance", this.$route.params.id, (res) => {
                     if (res.ok) {
                         this.maintenance = res.maintenance;
+                        this.previousStartDate = this.maintenance.dateRange?.[0] || null;
+                        this.endDateManuallyEdited = true;
 
                         if (this.isClone) {
                             this.maintenance.id = undefined; // Remove id when cloning as we want a new id
@@ -777,12 +803,43 @@ export default {
             }
         },
 
-        /**
-         * Set quick duration for single maintenance
-         * Calculates end time based on start time + duration in minutes
-         * @param {number} minutes Duration in minutes
-         * @returns {void}
-         */
+        formatDateTimeLocal(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, "0");
+            const day = String(date.getDate()).padStart(2, "0");
+            const hours = String(date.getHours()).padStart(2, "0");
+            const mins = String(date.getMinutes()).padStart(2, "0");
+            return `${year}-${month}-${day}T${hours}:${mins}`;
+        },
+
+        onStartDateInput() {
+            if (!this.maintenance.dateRange[0] || this.endDateManuallyEdited) {
+                this.previousStartDate = this.maintenance.dateRange[0];
+                return;
+            }
+
+            const prevStart = this.previousStartDate ? new Date(this.previousStartDate) : null;
+            const newStart = new Date(this.maintenance.dateRange[0]);
+            if (isNaN(newStart.getTime())) {
+                return;
+            }
+
+            const end = this.maintenance.dateRange[1] ? new Date(this.maintenance.dateRange[1]) : null;
+            if (prevStart && end && !isNaN(prevStart.getTime()) && !isNaN(end.getTime())) {
+                const duration = end.getTime() - prevStart.getTime();
+                if (duration > 0) {
+                    const newEnd = new Date(newStart.getTime() + duration);
+                    this.maintenance.dateRange[1] = this.formatDateTimeLocal(newEnd);
+                }
+            }
+
+            this.previousStartDate = this.maintenance.dateRange[0];
+        },
+
+        onEndDateInput() {
+            this.endDateManuallyEdited = true;
+        },
+
         setQuickDuration(minutes) {
             if (!this.maintenance.dateRange[0]) {
                 this.$root.toastError(this.$t("Please set start time first"));
@@ -792,13 +849,8 @@ export default {
             const startDate = new Date(this.maintenance.dateRange[0]);
             const endDate = new Date(startDate.getTime() + minutes * 60000);
 
-            const year = endDate.getFullYear();
-            const month = String(endDate.getMonth() + 1).padStart(2, "0");
-            const day = String(endDate.getDate()).padStart(2, "0");
-            const hours = String(endDate.getHours()).padStart(2, "0");
-            const mins = String(endDate.getMinutes()).padStart(2, "0");
-
-            this.maintenance.dateRange[1] = `${year}-${month}-${day}T${hours}:${mins}`;
+            this.endDateManuallyEdited = false;
+            this.maintenance.dateRange[1] = this.formatDateTimeLocal(endDate);
         },
 
         /**
@@ -823,6 +875,12 @@ export default {
 
             if (!this.hasMonitors && !this.hasStatusPages) {
                 this.$root.toastError(this.$t("noMonitorsOrStatusPagesSelectedError"));
+                this.processing = false;
+                return;
+            }
+
+            if (this.endDatePredatesStart) {
+                this.$root.toastError(this.$t("End datetime is before start datetime"));
                 this.processing = false;
                 return;
             }
