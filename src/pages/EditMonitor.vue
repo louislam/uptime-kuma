@@ -486,7 +486,7 @@
                                 <div v-if="monitor.type === 'mqtt'" class="form-text">
                                     <i18n-t tag="p" keypath="mqttHostnameTip">
                                         <template #hostnameFormat>
-                                            <code>[mqtt,ws,wss]://hostname</code>
+                                            <code>[mqtt,mqtts,ws,wss]://hostname</code>
                                         </template>
                                     </i18n-t>
                                 </div>
@@ -1028,7 +1028,7 @@
                                         {{ $t("mqttWebSocketPath") }}
                                     </label>
                                     <input
-                                        v-if="/wss?:\/\/.+/.test(monitor.hostname)"
+                                        v-if="/(mqtts?|wss?):\/\/.+/.test(monitor.hostname)"
                                         id="mqttWebsocketPath"
                                         v-model="monitor.mqttWebsocketPath"
                                         type="text"
