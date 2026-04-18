@@ -1637,7 +1637,7 @@
     "Fluxer Webhook URL": "URL вебхука Fluxer",
     "evolutionCustomMessageTitle": "Пользовательское сообщение (необязательно)",
     "evolutionCustomMessageDesc": "Оставьте поле пустым, чтобы использовать сообщение по умолчанию.",
-    "homeAssistantNotificationActionHelptext": "писок действий уведомлений можно найти в Home Assistant в разделе «Settings > Developer Tools > Actions». Чтобы найти нужные действия, выполните поиск по слову «notify». Введите только часть после «notify.», например для действия «notify.mobile_app_xyz» введите «mobile_app_xyz». Для встроенных мобильных уведомлений ищите «Send a notification via mobile_app_xyz», а не «Send a notification».",
+    "homeAssistantNotificationActionHelptext": "Список действий уведомлений можно найти в Home Assistant в разделе «Настройки > Инструменты разработчика > Действия». Чтобы найти нужные действия, выполните поиск по слову «notify». Введите только часть после «notify.», например для действия «notify.mobile_app_xyz» введите «mobile_app_xyz». Для встроенных мобильных уведомлений ищите «Send a notification via mobile_app_xyz», а не «Send a notification».",
     "telnyxMessagingProfileIdHelptext": "При необходимости можно связать профиль сообщений Telnyx для управления настройками и возможностями отправителя",
     "maxMessenger": "Мессенджер MAX",
     "fluxerMessageFormat": "Формат сообщения",
