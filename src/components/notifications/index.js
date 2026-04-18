@@ -63,6 +63,7 @@ import Teams from "./Teams.vue";
 import TechulusPush from "./TechulusPush.vue";
 import Telegram from "./Telegram.vue";
 import Teltonika from "./Teltonika.vue";
+import Telnyx from "./Telnyx.vue";
 import Threema from "./Threema.vue";
 import Twilio from "./Twilio.vue";
 import Webhook from "./Webhook.vue";
@@ -87,6 +88,8 @@ import SMSIR from "./SMSIR.vue";
 import Webpush from "./Webpush.vue";
 import HaloPSA from "./HaloPSA.vue";
 import Resend from "./Resend.vue";
+import Max from "./Max.vue";
+import VK from "./VK.vue";
 
 /**
  * Manage all notification form.
@@ -157,6 +160,7 @@ const NotificationFormList = {
     teams: Teams,
     telegram: Telegram,
     Teltonika: Teltonika,
+    telnyx: Telnyx,
     threema: Threema,
     twilio: Twilio,
     Splunk: Splunk,
@@ -182,6 +186,8 @@ const NotificationFormList = {
     SMSPlanet: SMSPlanet,
     Webpush: Webpush,
     HaloPSA: HaloPSA,
+    max: Max,
+    VK: VK,
 };
 
 export default NotificationFormList;

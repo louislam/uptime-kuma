@@ -1620,5 +1620,21 @@
     "fluxerMessageFormatCustom": "Modèle personnalisé",
     "fluxerMessageTemplate": "Modèle de message",
     "fluxerMessageFormatMinimalist": "Minimalist (statut court",
-    "fluxerUseMessageTemplateDescription": "Si activé, le message sera envoyé en utilisant un modèle personnalisé (LiquidJS). Laissez vide pour utiliser le format Uptime Kuma par défaut."
+    "fluxerUseMessageTemplateDescription": "Si activé, le message sera envoyé en utilisant un modèle personnalisé (LiquidJS). Laissez vide pour utiliser le format Uptime Kuma par défaut.",
+    "Notification Action": "Action de notification",
+    "homeAssistantNotificationActionHelptext": "Une liste des actions de notification peut être trouvée dans l’assistant familial sous « Paramètres > Outils de développement > Actions ». Recherchez « notifier » pour trouver vos actions. Entrez uniquement la partie après \"notify.\", par exemple pour l’action \"notify.mobile_app_xyz\" entrez \"mobile_app_xyz\". Pour les notifications mobiles intégrées, recherchez \"Envoyer une notification via mobile_app_xyz\" (et non \"Envoyer une notification\").",
+    "wayToGetMaxToken": "Vous pouvez obtenir un jeton de bot MAX et d’autres détails auprès de {0}.",
+    "maxApiUrlDescription": "URL de l'API de base pour MAX Messenger. Par défaut : https://platform-api.max.ru",
+    "maxTemplateFormatDescription": "MAX messenger prend en charge le texte brut, le Markdown et le formatage HTML.",
+    "maxMessenger": "MAX messenger",
+    "wayToGetMaxChatID": "Spécifiez l’identifiant de chat dans MAX où les messages doivent être livrés.",
+    "maxUseTemplate": "Utiliser un modèle de message personnalisé",
+    "maxUseTemplateDescription": "Si activé, le message sera envoyé en utilisant un modèle personnalisé.",
+    "oracledbConnectionString": "Base de données Oracle : {connectionString}",
+    "API Version": "version de l'API",
+    "Peer ID": "ID de pair",
+    "vkApiVersionDescription": "Version de l’API VK utilisée pour les demandes. Laissez la valeur par défaut sauf si vous avez spécifiquement besoin d’une autre version de l’API VK pour la compatibilité.",
+    "vkDontParseLinks": "Désactiver les extraits de lien",
+    "vkDontParseLinksDescription": "Si activé, VK ne générera pas d’aperçus/extraits de liens.",
+    "vkPeerIdDescription": "Entrez le peer_id de la cible VK. Cette valeur est envoyée à l’API telle quelle."
 }

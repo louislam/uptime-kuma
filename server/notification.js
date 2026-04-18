@@ -62,6 +62,7 @@ const Teams = require("./notification-providers/teams");
 const TechulusPush = require("./notification-providers/techulus-push");
 const Telegram = require("./notification-providers/telegram");
 const Teltonika = require("./notification-providers/teltonika");
+const Telnyx = require("./notification-providers/telnyx");
 const Threema = require("./notification-providers/threema");
 const Twilio = require("./notification-providers/twilio");
 const Splunk = require("./notification-providers/splunk");
@@ -90,6 +91,8 @@ const { commandExists } = require("./util-server");
 const Whatsapp360messenger = require("./notification-providers/360messenger");
 const Webpush = require("./notification-providers/Webpush");
 const HaloPSA = require("./notification-providers/HaloPSA");
+const Max = require("./notification-providers/max");
+const VK = require("./notification-providers/vk");
 
 class Notification {
     providerList = {};
@@ -170,6 +173,7 @@ class Notification {
             new TechulusPush(),
             new Telegram(),
             new Teltonika(),
+            new Telnyx(),
             new Threema(),
             new Twilio(),
             new Splunk(),
@@ -195,6 +199,8 @@ class Notification {
             new Whatsapp360messenger(),
             new Webpush(),
             new HaloPSA(),
+            new Max(),
+            new VK(),
         ];
         for (let item of list) {
             if (!item.name) {
@@ -245,13 +251,17 @@ class Notification {
             bean = R.dispense("notification");
         }
 
+        // applyExisting is one time only, don't save it to database.
+        const applyExisting = notification.applyExisting || false;
+        notification.applyExisting = false;
+
         bean.name = notification.name;
         bean.user_id = userID;
         bean.config = JSON.stringify(notification);
         bean.is_default = notification.isDefault || false;
         await R.store(bean);
 
-        if (notification.applyExisting) {
+        if (applyExisting) {
             await applyNotificationEveryMonitor(bean.id, userID);
         }
 

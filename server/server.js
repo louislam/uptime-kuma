@@ -1775,7 +1775,8 @@ let needSetup = false;
     await server.start();
 
     server.httpServer.listen(port, hostname, async () => {
-        printServerUrls("server", port, hostname);
+        printServerUrls("server", port, hostname, config.isSSL);
+
         await startMonitors();
 
         // Put this here. Start background jobs after the db and server is ready to prevent clear up during db migration.

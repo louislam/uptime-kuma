@@ -25,7 +25,8 @@ class Stackfield extends NotificationProvider {
 
             const baseURL = await Settings.get("primaryBaseURL");
             if (baseURL) {
-                textMsg += `\n${baseURL + getMonitorRelativeURL(monitorJSON.id)}`;
+                const urlPath = monitorJSON ? getMonitorRelativeURL(monitorJSON.id) : "/";
+                textMsg += `\n${baseURL + urlPath}`;
             }
 
             const data = {
