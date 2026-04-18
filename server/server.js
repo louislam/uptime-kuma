@@ -1713,8 +1713,8 @@ let needSetup = false;
         socket.on("getScripts", async (subdir, callback) => {
             try {
                 subdir ??= "";
-                const dir = path.posix.resolve(config.scriptDir, subdir);
-                if (path.posix.relative(config.scriptDir, dir).startsWith("../")) {
+                const dir = path.resolve(config.scriptDir, subdir);
+                if (path.relative(config.scriptDir, dir).startsWith(".." + path.sep)) {
                     throw new Error(
                         "Enumeration location " + dir + " is outside of scripts directory " + config.scriptDir
                     );
