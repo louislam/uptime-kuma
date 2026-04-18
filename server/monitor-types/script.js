@@ -4,6 +4,7 @@ const fs = require("fs/promises");
 const childProcessAsync = require("promisify-child-process");
 const path = require("path");
 const { parseArgsStringToArgv } = require("string-argv");
+const { log } = require("../../src/util.js");
 
 class SecurityError extends Error {}
 
@@ -26,10 +27,12 @@ class ScriptMonitorType extends MonitorType {
 
     /**
      * Execute security checks:
-     * - not running as root
+     * - script path is inside scripts directory
+     * If not running as root (Unixoid) or 
+     * having privileges SeTakeOwnershipPrivilege, SeRestorePrivilege, or SeImpersonatePrivilege (Windows), 
+     * also check:
      * - scripts directory is not writable
      * - script file is not writable
-     * - script path is inside scripts directory
      * Returned promise will reject if any security checks fail
      * @param {string} script path to the script intended to be run
      * @returns {Promise<void>}
@@ -41,6 +44,18 @@ class ScriptMonitorType extends MonitorType {
             throw new SecurityError(
                 "Script execution has been denied for security reasons: script path is outside script location"
             );
+        }
+
+        // Don't care about writability checks if root on Unixoid, or
+        // having SeTakeOwnershipPrivilege, SeRestorePrivilege, or SeImpersonatePrivilege on Windows
+        if (process.platform !== "win32" && process.getuid() === 0) {
+            return;
+        }
+        if (process.platform === "win32") {
+            const { hasEnabledPrivilege, Privilege } = require("win32-privilege");
+            if (hasEnabledPrivilege(Privilege.SE_TAKEOWNERSHIP_PRIVILEGE) || hasEnabledPrivilege(Privilege.SE_RESTORE_PRIVILEGE) || hasEnabledPrivilege(Privilege.SE_IMPERSONATE_PRIVILEGE)) {
+                return;
+            }
         }
 
         // If scripts directory is writable for current user, refuse to execute script for security reasons

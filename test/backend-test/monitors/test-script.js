@@ -61,6 +61,22 @@ describe("Script Monitor", () => {
         });
     }
 
+    test("check() sets status to PENDING when script path is outside scripts directory", async (t) => {
+        setup(t);
+
+        const scriptMonitor = new ScriptMonitorType(SCRIPT_DIR);
+        const monitor = { script: "/absolute/path/script.sh" };
+        const heartbeat = { status: null, msg: "" };
+
+        await scriptMonitor.check(monitor, heartbeat, {});
+
+        assert.strictEqual(heartbeat.status, PENDING);
+        assert.strictEqual(
+            heartbeat.msg,
+            "Script execution has been denied for security reasons: script path is outside script location"
+        );
+    });
+
     test("check() sets status to PENDING when scripts directory is writable", async (t) => {
         setup(t, { dirWritable: true });
 
@@ -90,20 +106,57 @@ describe("Script Monitor", () => {
         assert.strictEqual(heartbeat.msg, "Script execution has been denied for security reasons: script is writable");
     });
 
-    test("check() sets status to PENDING when script path is outside scripts directory", async (t) => {
-        setup(t);
+    test("check() does not care about writability when root (uid===0) in Unix-like", async (t) => {
+        if (process.platform.toLowerCase() === 'win32') {
+            t.skip("This test is only run on aix, darwin, freebsd, linux, openbsd, or sunos");
+            return;
+        }
 
-        const scriptMonitor = new ScriptMonitorType(SCRIPT_DIR);
-        const monitor = { script: "/absolute/path/script.sh" };
-        const heartbeat = { status: null, msg: "" };
+        setup(t, { dirWritable: true, scriptWritable: true });
+        
+        
+        const method = t.mock.method(process, "getuid", () => 0);
+        try {
+            const scriptMonitor = new ScriptMonitorType(SCRIPT_DIR);
+            const monitor = { script: SCRIPT_NAME };
+            const heartbeat = { status: null, msg: "" };
 
-        await scriptMonitor.check(monitor, heartbeat, {});
+            await scriptMonitor.check(monitor, heartbeat, {});
 
-        assert.strictEqual(heartbeat.status, PENDING);
-        assert.strictEqual(
-            heartbeat.msg,
-            "Script execution has been denied for security reasons: script path is outside script location"
-        );
+            assert.notStrictEqual(heartbeat.status, PENDING);
+        } finally {
+            method.mock.restore();
+        }
+    });
+
+    test("check() does not care about writability when SeTakeOwnershipPrivilege, SeRestorePrivilege, or SeImpersonatePrivilege are present in Windows", async (t) => {
+        if (process.platform.toLowerCase() !== "win32") {
+            t.skip("This test is only run on win32");
+            return;
+        }
+
+        const privilegeModule = require("win32-privilege");
+        const Privilege = privilegeModule.Privilege;
+        const RELEVANT_PRIVILEGES = [
+            Privilege.SE_TAKEOWNERSHIP_PRIVILEGE,
+            Privilege.SE_RESTORE_PRIVILEGE,
+            Privilege.SE_IMPERSONATE_PRIVILEGE
+        ]
+
+        for (const privilege of RELEVANT_PRIVILEGES) {
+            const method = t.mock.method(privilegeModule, "hasEnabledPrivilege", priv => priv === privilege);
+            try {
+                const scriptMonitor = new ScriptMonitorType(SCRIPT_DIR);
+                const monitor = { script: SCRIPT_NAME };
+                const heartbeat = { status: null, msg: "" };
+
+                await scriptMonitor.check(monitor, heartbeat, {});
+
+                assert.notStrictEqual(heartbeat.status, PENDING);
+            } finally {
+                method.mock.restore();
+            }        
+        }
     });
 
     test("check() sets status to PENDING when script does not exist", async (t) => {
