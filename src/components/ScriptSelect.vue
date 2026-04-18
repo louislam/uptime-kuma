@@ -6,7 +6,9 @@
         track-by="name"
         label="name"
         :class="isLoading ? 'loading' : ''"
-        :aria-activedescendant="$refs.select?.id + '-' + (pointer >= 0 ? pointer?.toString() : '(' + pointer?.toString() + ')')"
+        :aria-activedescendant="
+            $refs.select?.id + '-' + (pointer >= 0 ? pointer?.toString() : '(' + pointer?.toString() + ')')
+        "
         :close-on-select="false"
         :clear-on-select="true"
         :preserve-search="true"
@@ -26,25 +28,32 @@
             <div class="sr-only" aria-live="polite">
                 {{ pointer >= 0 ? $t("Navigating file list") : $t("Navigating path") }}
             </div>
-            <ul ref="breadcrumbs" role="listbox" aria-label="Navigation path" aria-roledescription="breadcrumb navigation">
-                <li 
-                    :id="$refs.select?.id + '-(' + (-subpath.length - 1).toString() + ')'" 
-                    :class="['breadcrumb', pointer === -subpath.length - 1 ? 'focused' : '']" 
-                    :data-index="-subpath.length - 1" 
-                    role="option" 
-                    :aria-selected="pointer === -subpath.length - 1">
+            <ul
+                ref="breadcrumbs"
+                role="listbox"
+                aria-label="Navigation path"
+                aria-roledescription="breadcrumb navigation"
+            >
+                <li
+                    :id="$refs.select?.id + '-(' + (-subpath.length - 1).toString() + ')'"
+                    :class="['breadcrumb', pointer === -subpath.length - 1 ? 'focused' : '']"
+                    :data-index="-subpath.length - 1"
+                    role="option"
+                    :aria-selected="pointer === -subpath.length - 1"
+                >
                     <a role="button" tabindex="-1" @click="onBreadcrumbClick">
                         {{ $t("script dir") }}
                     </a>
                 </li>
-                <li 
-                    v-for="(dir, index) in subpath" 
-                    :id="$refs.select?.id + '-(' + (index - subpath.length).toString() + ')'" 
-                    :key="index - subpath.length" 
-                    :class="['breadcrumb', pointer === index - subpath.length ? 'focused' : '']" 
-                    :data-index="index - subpath.length" 
-                    role="option" 
-                    :aria-selected="pointer === index - subpath.length">
+                <li
+                    v-for="(dir, index) in subpath"
+                    :id="$refs.select?.id + '-(' + (index - subpath.length).toString() + ')'"
+                    :key="index - subpath.length"
+                    :class="['breadcrumb', pointer === index - subpath.length ? 'focused' : '']"
+                    :data-index="index - subpath.length"
+                    role="option"
+                    :aria-selected="pointer === index - subpath.length"
+                >
                     <a role="button" tabindex="-1" @click="onBreadcrumbClick">
                         {{ dir }}
                     </a>
@@ -215,11 +224,14 @@ export default {
         // Watch multiselect highlighted item for change
         // When it changes, update internal navigation state
         // (This makes mouse highlighting switch out of breadcrumb navigation)
-        this._pointerWatcher = this.$watch(() => this.$refs.select?.pointer, pointer => {
-            if (pointer >= 0) {
-                this.pointer = pointer;
+        this._pointerWatcher = this.$watch(
+            () => this.$refs.select?.pointer,
+            (pointer) => {
+                if (pointer >= 0) {
+                    this.pointer = pointer;
+                }
             }
-        });
+        );
 
         window.vue = this;
     },
@@ -293,49 +305,54 @@ export default {
         },
         onKeyDown(e) {
             switch (e.key) {
-            case "ArrowUp": 
-                if (this.pointer === 0) {
-                    this.pointer = -1;
-                    e.preventDefault();
-                    e.stopPropagation();
-                }
-                break;
-            case "ArrowDown":
-                if (this.pointer < 0) {
-                    this.pointer = 0;
-                    e.preventDefault();
-                    e.stopPropagation();
-                }
-                break;
-            case "ArrowLeft": 
-                if (this.pointer < 0) {
-                    const breadcrumbs = Array.from(this.$el.querySelectorAll(".breadcrumb:not(.ellipsized)"));
-                    let idx = breadcrumbs.findIndex(breadcrumb => breadcrumb.dataset.index === this.pointer.toString());
-                    idx = Math.max(idx - 1, 0);
-                    this.pointer = Number(breadcrumbs[idx].dataset.index);
-                    e.preventDefault();
-                    e.stopPropagation();
-                }
-                break;
-            case "ArrowRight":
-                if (this.pointer < 0) {
-                    const breadcrumbs = Array.from(this.$el.querySelectorAll(".breadcrumb:not(.ellipsized)"));
-                    let idx = breadcrumbs.findIndex(breadcrumb => breadcrumb.dataset.index === this.pointer.toString());
-                    idx = Math.min(idx + 1, breadcrumbs.length - 1);
-                    this.pointer = Number(breadcrumbs[idx].dataset.index);
-                    e.preventDefault();
-                    e.stopPropagation();
-                }
-                break;
-            case "Enter": 
-                if (this.pointer < 0) {
-                    const breadcrumb = this.$el.querySelector(".breadcrumb.focused > a");
-                    breadcrumb?.click();
-                    e.preventDefault();
-                    e.stopPropagation();
-                }
-                break;
-            default: return;
+                case "ArrowUp":
+                    if (this.pointer === 0) {
+                        this.pointer = -1;
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                    break;
+                case "ArrowDown":
+                    if (this.pointer < 0) {
+                        this.pointer = 0;
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                    break;
+                case "ArrowLeft":
+                    if (this.pointer < 0) {
+                        const breadcrumbs = Array.from(this.$el.querySelectorAll(".breadcrumb:not(.ellipsized)"));
+                        let idx = breadcrumbs.findIndex(
+                            (breadcrumb) => breadcrumb.dataset.index === this.pointer.toString()
+                        );
+                        idx = Math.max(idx - 1, 0);
+                        this.pointer = Number(breadcrumbs[idx].dataset.index);
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                    break;
+                case "ArrowRight":
+                    if (this.pointer < 0) {
+                        const breadcrumbs = Array.from(this.$el.querySelectorAll(".breadcrumb:not(.ellipsized)"));
+                        let idx = breadcrumbs.findIndex(
+                            (breadcrumb) => breadcrumb.dataset.index === this.pointer.toString()
+                        );
+                        idx = Math.min(idx + 1, breadcrumbs.length - 1);
+                        this.pointer = Number(breadcrumbs[idx].dataset.index);
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                    break;
+                case "Enter":
+                    if (this.pointer < 0) {
+                        const breadcrumb = this.$el.querySelector(".breadcrumb.focused > a");
+                        breadcrumb?.click();
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                    break;
+                default:
+                    return;
             }
             this.syncPointer();
         },
@@ -353,13 +370,13 @@ export default {
             this.internalValue = null;
         },
         onBreadcrumbClick(e) {
-            const breadcrumb = e.target.closest('.breadcrumb');
+            const breadcrumb = e.target.closest(".breadcrumb");
             const index = this.subpath.length + Number(breadcrumb.dataset.index);
             // Script dir now has index===-1
             if (index < 0) {
                 this.subpath = [];
             } else {
-                this.subpath = this.subpath.slice(0, index+1); // +1 because end index is exclusive
+                this.subpath = this.subpath.slice(0, index + 1); // +1 because end index is exclusive
             }
         },
         onOpen(e) {
@@ -367,8 +384,8 @@ export default {
             if (this.pointer < 0) {
                 this.pointer = 0;
                 this.syncPointer();
-            }           
-        }
+            }
+        },
     },
 };
 </script>
