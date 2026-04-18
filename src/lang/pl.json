@@ -1496,5 +1496,20 @@
     "Collapse All Groups": "Zwiń wszystkie grupy",
     "GlobalpingHostname": "Publicznie dostępny cel pomiaru. Zazwyczaj jest to nazwa hosta lub adres IPv4/IPv6, w zależności od typu pomiaru.",
     "Template ID": "ID szablonu",
-    "halopsa_password_desc": "Hasło do uwierzytelniania za pomocą webhooka Halo PSA"
+    "halopsa_password_desc": "Hasło do uwierzytelniania za pomocą webhooka Halo PSA",
+    "monitorTypeGameServer": "Serwer Gier",
+    "monitorTypeDatabase": "Typ monitora bazy danych",
+    "monitorTypeSpecial": "Specjalny",
+    "oracledbConnectionString": "Baza danych Oracle: {connectionString}",
+    "slug is not found": "Nie znaleziono symbolu",
+    "maxTemplateFormatDescription": "Messenger MAX wspiera zwykły tekst, Markdown i formatowanie HTML.",
+    "wayToGetMaxToken": "Możesz otrzymać token MAX i inne szczegóły z {0}.",
+    "maxUseTemplate": "Użyj customowego szablonu wiadomości",
+    "maxUseTemplateDescription": "Jeżeli włączone, wiadomość zostanie wysłana z użyciem customowego szablonu.",
+    "Notification Action": "Akcja powiadomień",
+    "certificateExpiryNotificationHelp": "Liczba dni wyprzedzenia może zostać skonfigurowana w ustawieniach.",
+    "notificationUniversal": "Uniwersalny",
+    "Cloud ID": "ID Chmury",
+    "matrixUseTemplateDescription": "Jeżeli włączone, wiadomość zostanie wysłana z użyciem customowego szablonu.",
+    "Certificate Chain:": "Łańcuch certyfikatu:"
 }
