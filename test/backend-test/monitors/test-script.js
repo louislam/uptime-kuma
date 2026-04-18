@@ -107,14 +107,13 @@ describe("Script Monitor", () => {
     });
 
     test("check() does not care about writability when root (uid===0) in Unix-like", async (t) => {
-        if (process.platform.toLowerCase() === 'win32') {
+        if (process.platform.toLowerCase() === "win32") {
             t.skip("This test is only run on aix, darwin, freebsd, linux, openbsd, or sunos");
             return;
         }
 
         setup(t, { dirWritable: true, scriptWritable: true });
-        
-        
+
         const method = t.mock.method(process, "getuid", () => 0);
         try {
             const scriptMonitor = new ScriptMonitorType(SCRIPT_DIR);
@@ -140,11 +139,11 @@ describe("Script Monitor", () => {
         const RELEVANT_PRIVILEGES = [
             Privilege.SE_TAKEOWNERSHIP_PRIVILEGE,
             Privilege.SE_RESTORE_PRIVILEGE,
-            Privilege.SE_IMPERSONATE_PRIVILEGE
-        ]
+            Privilege.SE_IMPERSONATE_PRIVILEGE,
+        ];
 
         for (const privilege of RELEVANT_PRIVILEGES) {
-            const method = t.mock.method(privilegeModule, "hasEnabledPrivilege", priv => priv === privilege);
+            const method = t.mock.method(privilegeModule, "hasEnabledPrivilege", (priv) => priv === privilege);
             try {
                 const scriptMonitor = new ScriptMonitorType(SCRIPT_DIR);
                 const monitor = { script: SCRIPT_NAME };
@@ -155,7 +154,7 @@ describe("Script Monitor", () => {
                 assert.notStrictEqual(heartbeat.status, PENDING);
             } finally {
                 method.mock.restore();
-            }        
+            }
         }
     });
 

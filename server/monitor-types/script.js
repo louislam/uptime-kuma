@@ -28,8 +28,8 @@ class ScriptMonitorType extends MonitorType {
     /**
      * Execute security checks:
      * - script path is inside scripts directory
-     * If not running as root (Unixoid) or 
-     * having privileges SeTakeOwnershipPrivilege, SeRestorePrivilege, or SeImpersonatePrivilege (Windows), 
+     * If not running as root (Unixoid) or
+     * having privileges SeTakeOwnershipPrivilege, SeRestorePrivilege, or SeImpersonatePrivilege (Windows),
      * also check:
      * - scripts directory is not writable
      * - script file is not writable
@@ -53,7 +53,11 @@ class ScriptMonitorType extends MonitorType {
         }
         if (process.platform === "win32") {
             const { hasEnabledPrivilege, Privilege } = require("win32-privilege");
-            if (hasEnabledPrivilege(Privilege.SE_TAKEOWNERSHIP_PRIVILEGE) || hasEnabledPrivilege(Privilege.SE_RESTORE_PRIVILEGE) || hasEnabledPrivilege(Privilege.SE_IMPERSONATE_PRIVILEGE)) {
+            if (
+                hasEnabledPrivilege(Privilege.SE_TAKEOWNERSHIP_PRIVILEGE) ||
+                hasEnabledPrivilege(Privilege.SE_RESTORE_PRIVILEGE) ||
+                hasEnabledPrivilege(Privilege.SE_IMPERSONATE_PRIVILEGE)
+            ) {
                 return;
             }
         }
