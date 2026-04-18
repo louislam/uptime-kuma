@@ -1636,5 +1636,15 @@
     "vkApiVersionDescription": "Version de l’API VK utilisée pour les demandes. Laissez la valeur par défaut sauf si vous avez spécifiquement besoin d’une autre version de l’API VK pour la compatibilité.",
     "vkDontParseLinks": "Désactiver les extraits de lien",
     "vkDontParseLinksDescription": "Si activé, VK ne générera pas d’aperçus/extraits de liens.",
-    "vkPeerIdDescription": "Entrez le peer_id de la cible VK. Cette valeur est envoyée à l’API telle quelle."
+    "vkPeerIdDescription": "Entrez le peer_id de la cible VK. Cette valeur est envoyée à l’API telle quelle.",
+    "telnyxApiKey": "Clé API (V2)",
+    "telnyxApiKeyHelptext": "Votre clé API Telnyx V2 du portail Telnyx sous Clés API",
+    "telnyxPhoneNumber": "Du numéro",
+    "telnyxPhoneNumberHelptext": "Votre numéro de téléphone Telnyx à envoyer depuis (doit être enregistré dans votre compte Telnyx, par exemple +15551234567",
+    "telnyxToNumber": "Au numéro",
+    "telnyxToNumberHelptext": "Le numéro de téléphone de destination pour recevoir des notifications par SMS (par exemple, +15559876543",
+    "telnyxMessagingProfileId": "ID de profil de messagerie (facultatif)",
+    "telnyxMessagingProfileIdHelptext": "Associez facultativement un profil de messagerie Telnyx pour contrôler les paramètres et les fonctionnalités de l’expéditeur",
+    "evolutionCustomMessageTitle": "Message personnalisé (facultatif)",
+    "evolutionCustomMessageDesc": "Laissez vide pour utiliser le message par défaut."
 }
