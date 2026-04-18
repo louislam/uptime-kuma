@@ -135,7 +135,7 @@ describe("Script Monitor", () => {
         }
 
         setup(t, { dirWritable: true, scriptWritable: true });
-        
+
         const privilegeModule = require("win32-privileges");
         const Privilege = privilegeModule.Privilege;
         const RELEVANT_PRIVILEGES = [Privilege.SE_TAKE_OWNERSHIP, Privilege.SE_RESTORE, Privilege.SE_IMPERSONATE];
