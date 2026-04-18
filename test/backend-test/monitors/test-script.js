@@ -137,9 +137,9 @@ describe("Script Monitor", () => {
         const privilegeModule = require("win32-privileges");
         const Privilege = privilegeModule.Privilege;
         const RELEVANT_PRIVILEGES = [
-            Privilege.SE_TAKEOWNERSHIP_PRIVILEGE,
-            Privilege.SE_RESTORE_PRIVILEGE,
-            Privilege.SE_IMPERSONATE_PRIVILEGE,
+            Privilege.SE_TAKE_OWNERSHIP,
+            Privilege.SE_RESTORE,
+            Privilege.SE_IMPERSONATE,
         ];
 
         for (const privilege of RELEVANT_PRIVILEGES) {
