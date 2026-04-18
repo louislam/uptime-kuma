@@ -13,20 +13,22 @@
         :loading="isLoading"
         :multiple="false"
         required
+        @keydown.capture="onKeyDown"
         @select="onSelect"
+        @close="onClose"
     >
         <template #option="props">
             <span class="entry">{{ (props.option.isDirectory ? "📁 " : "") + props.option.name }}</span>
         </template>
         <template #beforeList>
             <ul ref="breadcrumbs">
-                <li class="breadcrumb">
-                    <a data-index="0" @click="onBreadcrumbClick">
+                <li :class="['breadcrumb', pointer === -subpath.length - 1 ? 'focused' : '']" :data-index="-subpath.length - 1">
+                    <a @click="onBreadcrumbClick">
                         {{ $t("script dir") }}
                     </a>
                 </li>
-                <li v-for="(dir, index) in subpath" :key="index + 1" class="breadcrumb">
-                    <a :data-index="index + 1" @click="onBreadcrumbClick">
+                <li v-for="(dir, index) in subpath" :key="index - subpath.length" :class="['breadcrumb', pointer === index - subpath.length ? 'focused' : '']" :data-index="index - subpath.length">
+                    <a @click="onBreadcrumbClick">
                         {{ dir }}
                     </a>
                 </li>
@@ -55,9 +57,16 @@ export default {
     },
     data() {
         return {
+            // The entries to show - i.e. the contents of the current subdirectory
             entries: [],
+            // The subpath we are in - i.e. sequence of subdirectories navigated to (excluding the script dir itself)
             subpath: [],
+            // Whether currently fetching directory contents from the server
             isLoading: false,
+            // The navigation entry we are currently on (needed for keyboard navigation)
+            // 0...entries.length-1: currently on an entry (will sync with multiselect)
+            // -subpath.length...-1: currently in breadcrumbs navigation. -1 corresponds to last subpath item etc.
+            pointer: 0,
         };
     },
     computed: {
@@ -185,10 +194,23 @@ export default {
             }
         });
         this._observer.observe(this.$refs.breadcrumbs);
+
+        // Watch multiselect highlighted item for change
+        // When it changes, update internal navigation state
+        // (This makes mouse highlighting switch out of breadcrumb navigation)
+        this._pointerWatcher = this.$watch(() => this.$refs.select?.pointer, pointer => {
+            if (pointer >= 0) {
+                this.pointer = pointer;
+            }
+        });
+
         window.vue = this;
     },
     beforeUnmount() {
         this._observer.disconnect();
+        if (this._pointerWatcher) {
+            this._pointerWatcher();
+        }
     },
     created() {
         this.loadEntries();
@@ -240,6 +262,66 @@ export default {
                 this.isLoading = false;
             }
         },
+        syncPointer() {
+            const select = this.$refs.select;
+            if (!select) {
+                return;
+            }
+
+            if (this.pointer >= 0) {
+                select.pointer = this.pointer;
+            } else {
+                select.pointer = -1;
+            }
+        },
+        onKeyDown(e) {
+            switch (e.key) {
+            case "ArrowUp": 
+                if (this.pointer === 0) {
+                    this.pointer = -1;
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                break;
+            case "ArrowDown":
+                if (this.pointer < 0) {
+                    this.pointer = 0;
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                break;
+            case "ArrowLeft": 
+                if (this.pointer < 0) {
+                    const breadcrumbs = Array.from(this.$el.querySelectorAll(".breadcrumb:not(.ellipsized)"));
+                    let idx = breadcrumbs.findIndex(breadcrumb => breadcrumb.dataset.index === this.pointer.toString());
+                    idx = Math.max(idx - 1, 0);
+                    this.pointer = Number(breadcrumbs[idx].dataset.index);
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                break;
+            case "ArrowRight":
+                if (this.pointer < 0) {
+                    const breadcrumbs = Array.from(this.$el.querySelectorAll(".breadcrumb:not(.ellipsized)"));
+                    let idx = breadcrumbs.findIndex(breadcrumb => breadcrumb.dataset.index === this.pointer.toString());
+                    idx = Math.min(idx + 1, breadcrumbs.length - 1);
+                    this.pointer = Number(breadcrumbs[idx].dataset.index);
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                break;
+            case "Enter": 
+                if (this.pointer < 0) {
+                    const breadcrumb = this.$el.querySelector(".breadcrumb.focused > a");
+                    breadcrumb?.click();
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                break;
+            default: return;
+            }
+            this.syncPointer();
+        },
         onSelect(entry) {
             if (!entry.isDirectory) {
                 // A selection has been made - close the dropdown
@@ -254,9 +336,22 @@ export default {
             this.internalValue = null;
         },
         onBreadcrumbClick(e) {
-            const index = e.target.dataset.index;
-            this.subpath = this.subpath.slice(0, index);
+            const breadcrumb = e.target.closest('.breadcrumb');
+            const index = this.subpath.length + Number(breadcrumb.dataset.index);
+            // Script dir now has index===-1
+            if (index < 0) {
+                this.subpath = [];
+            } else {
+                this.subpath = this.subpath.slice(0, index+1); // +1 because end index is exclusive
+            }
         },
+        onOpen(e) {
+            // Exit out of breadcrumbs on open
+            if (this.pointer < 0) {
+                this.pointer = 0;
+                this.syncPointer();
+            }           
+        }
     },
 };
 </script>
@@ -273,7 +368,7 @@ ul {
     gap: 1rem;
     font-size: 75%;
     margin: 0.5rem;
-    padding-left: 12px;
+    padding-left: 0;
     padding-right: 12px;
     color: $secondary-text;
 }
@@ -300,7 +395,14 @@ ul {
         cursor: pointer;
         margin-bottom: 0;
         color: inherit;
+        padding: 2px 4px;
+        border: 1px solid transparent;
+        border-radius: 4px;
     }
+}
+
+.breadcrumb.focused > a {
+    border-color: $primary;
 }
 
 // Hide all ellipsized breadcrumbs except the first one
