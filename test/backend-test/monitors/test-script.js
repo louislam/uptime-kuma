@@ -20,6 +20,8 @@ describe("Script Monitor", () => {
         options = {
             dirWritable: false,
             scriptWritable: false,
+            uid: 1000,
+            privileges: [],
             exitCode: 0,
             stdout: "",
             stderr: "",
@@ -59,6 +61,13 @@ describe("Script Monitor", () => {
                 return Promise.reject(result);
             }
         });
+        if (process.platform === "win32") {
+            const mdl = require("win32-privileges");
+            t.mock.method(mdl, "hasEnabledPrivilege", priv => options.privileges.includes(priv));
+        } else {
+            t.mock.method(process, "getuid", () => options.uid)
+        }
+
     }
 
     test("check() sets status to PENDING when script path is outside scripts directory", async (t) => {
@@ -112,20 +121,15 @@ describe("Script Monitor", () => {
             return;
         }
 
-        setup(t, { dirWritable: true, scriptWritable: true });
+        setup(t, { dirWritable: true, scriptWritable: true, uid: 0 });
 
-        const method = t.mock.method(process, "getuid", () => 0);
-        try {
-            const scriptMonitor = new ScriptMonitorType(SCRIPT_DIR);
-            const monitor = { script: SCRIPT_NAME };
-            const heartbeat = { status: null, msg: "" };
+        const scriptMonitor = new ScriptMonitorType(SCRIPT_DIR);
+        const monitor = { script: SCRIPT_NAME };
+        const heartbeat = { status: null, msg: "" };
 
-            await scriptMonitor.check(monitor, heartbeat, {});
+        await scriptMonitor.check(monitor, heartbeat, {});
 
-            assert.notStrictEqual(heartbeat.status, PENDING);
-        } finally {
-            method.mock.restore();
-        }
+        assert.notStrictEqual(heartbeat.status, PENDING);
     });
 
     test("check() does not care about writability when SeTakeOwnershipPrivilege, SeRestorePrivilege, or SeImpersonatePrivilege are present in Windows", async (t) => {
@@ -134,25 +138,19 @@ describe("Script Monitor", () => {
             return;
         }
 
-        setup(t, { dirWritable: true, scriptWritable: true });
-
-        const privilegeModule = require("win32-privileges");
-        const Privilege = privilegeModule.Privilege;
+        const { Privilege } = require("win32-privileges");
         const RELEVANT_PRIVILEGES = [Privilege.SE_TAKE_OWNERSHIP, Privilege.SE_RESTORE, Privilege.SE_IMPERSONATE];
 
         for (const privilege of RELEVANT_PRIVILEGES) {
-            const method = t.mock.method(privilegeModule, "hasEnabledPrivilege", (priv) => priv === privilege);
-            try {
-                const scriptMonitor = new ScriptMonitorType(SCRIPT_DIR);
-                const monitor = { script: SCRIPT_NAME };
-                const heartbeat = { status: null, msg: "" };
+            setup(t, { dirWritable: true, scriptWritable: true, privileges: [ privilege ] });
+    
+            const scriptMonitor = new ScriptMonitorType(SCRIPT_DIR);
+            const monitor = { script: SCRIPT_NAME };
+            const heartbeat = { status: null, msg: "" };
 
-                await scriptMonitor.check(monitor, heartbeat, {});
+            await scriptMonitor.check(monitor, heartbeat, {});
 
-                assert.notStrictEqual(heartbeat.status, PENDING);
-            } finally {
-                method.mock.restore();
-            }
+            assert.notStrictEqual(heartbeat.status, PENDING);
         }
     });
 
