@@ -136,11 +136,7 @@ describe("Script Monitor", () => {
 
         const privilegeModule = require("win32-privileges");
         const Privilege = privilegeModule.Privilege;
-        const RELEVANT_PRIVILEGES = [
-            Privilege.SE_TAKE_OWNERSHIP,
-            Privilege.SE_RESTORE,
-            Privilege.SE_IMPERSONATE,
-        ];
+        const RELEVANT_PRIVILEGES = [Privilege.SE_TAKE_OWNERSHIP, Privilege.SE_RESTORE, Privilege.SE_IMPERSONATE];
 
         for (const privilege of RELEVANT_PRIVILEGES) {
             const method = t.mock.method(privilegeModule, "hasEnabledPrivilege", (priv) => priv === privilege);
