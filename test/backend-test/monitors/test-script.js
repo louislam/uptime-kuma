@@ -134,7 +134,7 @@ describe("Script Monitor", () => {
             return;
         }
 
-        const privilegeModule = require("win32-privilege");
+        const privilegeModule = require("win32-privileges");
         const Privilege = privilegeModule.Privilege;
         const RELEVANT_PRIVILEGES = [
             Privilege.SE_TAKEOWNERSHIP_PRIVILEGE,

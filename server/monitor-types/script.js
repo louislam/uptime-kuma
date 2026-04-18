@@ -52,7 +52,7 @@ class ScriptMonitorType extends MonitorType {
             return;
         }
         if (process.platform === "win32") {
-            const { hasEnabledPrivilege, Privilege } = require("win32-privilege");
+            const { hasEnabledPrivilege, Privilege } = require("win32-privileges");
             if (
                 hasEnabledPrivilege(Privilege.SE_TAKEOWNERSHIP_PRIVILEGE) ||
                 hasEnabledPrivilege(Privilege.SE_RESTORE_PRIVILEGE) ||
