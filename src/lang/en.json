@@ -1537,5 +1537,7 @@
     "Script": "Script",
     "Script Arguments": "Script Arguments",
     "Select script": "Select script",
-    "script dir": "script dir"
+    "script dir": "script dir",
+    "Navigating file list": "Now navigating file list",
+    "Navigating path": "Now navigating path"
 }

@@ -6,6 +6,7 @@
         track-by="name"
         label="name"
         :class="isLoading ? 'loading' : ''"
+        :aria-activedescendant="$refs.select?.id + '-' + (pointer >= 0 ? pointer?.toString() : '(' + pointer?.toString() + ')')"
         :close-on-select="false"
         :clear-on-select="true"
         :preserve-search="true"
@@ -21,14 +22,30 @@
             <span class="entry">{{ (props.option.isDirectory ? "📁 " : "") + props.option.name }}</span>
         </template>
         <template #beforeList>
-            <ul ref="breadcrumbs">
-                <li :class="['breadcrumb', pointer === -subpath.length - 1 ? 'focused' : '']" :data-index="-subpath.length - 1">
-                    <a @click="onBreadcrumbClick">
+            <!-- Make screen readers announce when changing navigation modes (file list <-> breadcrumbs) -->
+            <div class="sr-only" aria-live="polite">
+                {{ pointer >= 0 ? $t("Navigating file list") : $t("Navigating path") }}
+            </div>
+            <ul ref="breadcrumbs" role="listbox" aria-label="Navigation path" aria-roledescription="breadcrumb navigation">
+                <li 
+                    :id="$refs.select?.id + '-(' + (-subpath.length - 1).toString() + ')'" 
+                    :class="['breadcrumb', pointer === -subpath.length - 1 ? 'focused' : '']" 
+                    :data-index="-subpath.length - 1" 
+                    role="option" 
+                    :aria-selected="pointer === -subpath.length - 1">
+                    <a role="button" tabindex="-1" @click="onBreadcrumbClick">
                         {{ $t("script dir") }}
                     </a>
                 </li>
-                <li v-for="(dir, index) in subpath" :key="index - subpath.length" :class="['breadcrumb', pointer === index - subpath.length ? 'focused' : '']" :data-index="index - subpath.length">
-                    <a @click="onBreadcrumbClick">
+                <li 
+                    v-for="(dir, index) in subpath" 
+                    :id="$refs.select?.id + '-(' + (index - subpath.length).toString() + ')'" 
+                    :key="index - subpath.length" 
+                    :class="['breadcrumb', pointer === index - subpath.length ? 'focused' : '']" 
+                    :data-index="index - subpath.length" 
+                    role="option" 
+                    :aria-selected="pointer === index - subpath.length">
+                    <a role="button" tabindex="-1" @click="onBreadcrumbClick">
                         {{ dir }}
                     </a>
                 </li>
