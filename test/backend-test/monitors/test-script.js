@@ -63,11 +63,10 @@ describe("Script Monitor", () => {
         });
         if (process.platform === "win32") {
             const mdl = require("win32-privileges");
-            t.mock.method(mdl, "hasEnabledPrivilege", priv => options.privileges.includes(priv));
+            t.mock.method(mdl, "hasEnabledPrivilege", (priv) => options.privileges.includes(priv));
         } else {
-            t.mock.method(process, "getuid", () => options.uid)
+            t.mock.method(process, "getuid", () => options.uid);
         }
-
     }
 
     test("check() sets status to PENDING when script path is outside scripts directory", async (t) => {
@@ -142,8 +141,8 @@ describe("Script Monitor", () => {
         const RELEVANT_PRIVILEGES = [Privilege.SE_TAKE_OWNERSHIP, Privilege.SE_RESTORE, Privilege.SE_IMPERSONATE];
 
         for (const privilege of RELEVANT_PRIVILEGES) {
-            setup(t, { dirWritable: true, scriptWritable: true, privileges: [ privilege ] });
-    
+            setup(t, { dirWritable: true, scriptWritable: true, privileges: [privilege] });
+
             const scriptMonitor = new ScriptMonitorType(SCRIPT_DIR);
             const monitor = { script: SCRIPT_NAME };
             const heartbeat = { status: null, msg: "" };
