@@ -100,15 +100,10 @@
             </div>
         </div>
     </transition>
-    <Confirm
-        ref="confirmClearEvents"
-        btn-style="btn-danger"
-        :yes-text="$t('Yes')"
-        :no-text="$t('No')"
+    <ClearEventsConfirm
+        ref="clearEventsConfirm"
         @yes="clearAllEvents"
-    >
-        {{ $t("clearAllEventsMsg") }}
-    </Confirm>
+    />
     <router-view ref="child" />
 </template>
 
@@ -116,14 +111,14 @@
 import Status from "../components/Status.vue";
 import Datetime from "../components/Datetime.vue";
 import Pagination from "v-pagination-3";
-import Confirm from "../components/Confirm.vue";
+import ClearEventsConfirm from "../components/ClearEventsConfirm.vue";
 
 export default {
     components: {
         Datetime,
         Status,
         Pagination,
-        Confirm,
+        ClearEventsConfirm,
     },
     props: {
         calculatedHeight: {
@@ -266,13 +261,14 @@ export default {
         },
 
         clearAllEventsDialog() {
-            this.$refs.confirmClearEvents.show();
+            this.$refs.clearEventsConfirm.show();
         },
-        clearAllEvents() {
+        clearAllEvents(params) {
             this.clearingAllEvents = true;
             const monitorIDs = Object.keys(this.$root.monitorList);
             let failed = 0;
             const total = monitorIDs.length;
+            const clearMsg = params?.clearMsg ?? false;
 
             if (total === 0) {
                 this.clearingAllEvents = false;
@@ -281,7 +277,7 @@ export default {
             }
 
             monitorIDs.forEach((monitorID) => {
-                this.$root.getSocket().emit("clearEvents", monitorID, (res) => {
+                this.$root.getSocket().emit("clearEvents", monitorID, clearMsg, (res) => {
                     if (!res || !res.ok) {
                         failed++;
                     }
