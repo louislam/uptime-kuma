@@ -1631,13 +1631,19 @@ let needSetup = false;
             }
         });
 
-        socket.on("clearEvents", async (monitorID, callback) => {
+        socket.on("clearEvents", async (monitorID, clearMsg, callback) => {
             try {
                 checkLogin(socket);
 
                 log.info("manage", `Clear Events Monitor: ${monitorID} User ID: ${socket.userID}`);
 
-                await R.exec("UPDATE heartbeat SET msg = ?, important = ? WHERE monitor_id = ? ", ["", "0", monitorID]);
+                if (clearMsg) {
+                    // Clear both msg and important flag (original behavior)
+                    await R.exec("UPDATE heartbeat SET msg = ?, important = ? WHERE monitor_id = ?", ["", "0", monitorID]);
+                } else {
+                    // Only clear the important flag, keep msg intact (timeline cleanup only)
+                    await R.exec("UPDATE heartbeat SET important = ? WHERE monitor_id = ?", ["0", monitorID]);
+                }
 
                 callback({
                     ok: true,
