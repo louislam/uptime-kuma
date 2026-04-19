@@ -100,10 +100,7 @@
             </div>
         </div>
     </transition>
-    <ClearEventsConfirm
-        ref="clearEventsConfirm"
-        @yes="clearAllEvents"
-    />
+    <ClearEventsConfirm ref="clearEventsConfirm" @yes="clearAllEvents" />
     <router-view ref="child" />
 </template>
 

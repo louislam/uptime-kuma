@@ -29,12 +29,7 @@
                         {{ $t("clearAllEventsMsgTimelineOnly") }}
                     </p>
                     <div class="form-check border rounded p-3">
-                        <input
-                            id="clearMsgCheckbox"
-                            v-model="clearMsg"
-                            type="checkbox"
-                            class="form-check-input"
-                        />
+                        <input id="clearMsgCheckbox" v-model="clearMsg" type="checkbox" class="form-check-input" />
                         <label for="clearMsgCheckbox" class="form-check-label">
                             <span class="fw-medium">{{ $t("Also clear historical event data") }}</span>
                             <small class="d-block text-body-secondary">
@@ -47,12 +42,7 @@
                     <button type="button" class="btn btn-secondary" @click="close">
                         {{ $t("Cancel") }}
                     </button>
-                    <button
-                        type="button"
-                        class="btn"
-                        :class="clearMsg ? 'btn-danger' : 'btn-primary'"
-                        @click="confirm"
-                    >
+                    <button type="button" class="btn" :class="clearMsg ? 'btn-danger' : 'btn-primary'" @click="confirm">
                         {{ $t("Confirm") }}
                     </button>
                 </div>
@@ -65,6 +55,7 @@
 import { Modal } from "bootstrap";
 
 export default {
+    emits: ["yes"],
     data() {
         return {
             modal: null,
@@ -72,7 +63,6 @@ export default {
             clearMsg: false,
         };
     },
-    emits: [ "yes" ],
     mounted() {
         this.modal = new Modal(this.$refs.modalElement);
         this.hiddenHandler = () => {

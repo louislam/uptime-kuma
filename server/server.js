@@ -1639,7 +1639,11 @@ let needSetup = false;
 
                 if (clearMsg) {
                     // Clear both msg and important flag (original behavior)
-                    await R.exec("UPDATE heartbeat SET msg = ?, important = ? WHERE monitor_id = ?", ["", "0", monitorID]);
+                    await R.exec("UPDATE heartbeat SET msg = ?, important = ? WHERE monitor_id = ?", [
+                        "",
+                        "0",
+                        monitorID,
+                    ]);
                 } else {
                     // Only clear the important flag, keep msg intact (timeline cleanup only)
                     await R.exec("UPDATE heartbeat SET important = ? WHERE monitor_id = ?", ["0", monitorID]);
