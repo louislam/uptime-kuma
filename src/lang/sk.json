@@ -1594,5 +1594,6 @@
     "vkApiVersionDescription": "Verzia rozhrania VK API používaná pre požiadavky. Nechajte predvolené nastavenie, pokiaľ z dôvodu kompatibility nevyžadujete inú verziu rozhrania VK API.",
     "vkDontParseLinks": "Zakázať ukážky odkazov",
     "vkDontParseLinksDescription": "Ak je táto funkcia zapnutá, VK nebude generovať náhľady odkazov ani ukážky.",
-    "vkPeerIdDescription": "Zadajte cieľové peer_id VK. Táto hodnota sa odošle do API v nezmenenej podobe."
+    "vkPeerIdDescription": "Zadajte cieľové peer_id VK. Táto hodnota sa odošle do API v nezmenenej podobe.",
+    "telnyxApiKey": "API kľúč (V2)"
 }

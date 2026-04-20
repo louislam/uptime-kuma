@@ -1372,5 +1372,7 @@
     "Screenshot Delay": "Retraso de captura de pantalla (espera {milliseconds})",
     "milliseconds": "{n} milisegundos | {n} milisegundos",
     "snmpV3Username": "Nombre de usuario SNMPv3",
-    "ntfyUseTemplate": "Personalizar plantillas de notificación"
+    "ntfyUseTemplate": "Personalizar plantillas de notificación",
+    "Monitors": "{n} Monitor | {n} Monitores",
+    "oracledbConnectionString": "Base de datos Oracle: {connectionString}"
 }

@@ -1594,5 +1594,15 @@
     "vkApiVersionDescription": "Verzija VK API-ja koja se koristi za zahtjeve. Ostavite zadanu vrijednost osim ako vam nije nužna druga verzija VK API-ja radi kompatibilnosti.",
     "vkDontParseLinks": "Onemogući prikazivanje isječaka iz poveznica",
     "vkDontParseLinksDescription": "Ako je omogućeno, VK neće generirati pretpreglede/isječke poveznica.",
-    "vkPeerIdDescription": "Unesite VK peer_id krajnjeg odredišta. Ova vrijednost se nepromjenjena šalje API-ju."
+    "vkPeerIdDescription": "Unesite VK peer_id krajnjeg odredišta. Ova vrijednost se nepromjenjena šalje API-ju.",
+    "telnyxApiKey": "API ključ (V2)",
+    "telnyxApiKeyHelptext": "Vaš Telnyx V2 API ključ s Telnyx portala",
+    "telnyxPhoneNumber": "Broj pošiljatelja",
+    "telnyxPhoneNumberHelptext": "Vaš Telnyx telefonski broj za slanje (mora biti registriran na vašem Telnyx računu, npr. +15551234567)",
+    "telnyxToNumber": "Broj primatelja",
+    "telnyxToNumberHelptext": "Odredišni telefonski broj za primanje SMS obavijesti (npr. +15559876543)",
+    "telnyxMessagingProfileId": "ID profila za poruke (neobavezno)",
+    "telnyxMessagingProfileIdHelptext": "Po želji povežite Telnyx profil za kontrolu postavki i značajki pošiljatelja",
+    "evolutionCustomMessageTitle": "Prilagođena poruka (neobvezno)",
+    "evolutionCustomMessageDesc": "Ostavite prazno za korištenje zadane poruke."
 }
