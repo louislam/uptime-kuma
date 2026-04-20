@@ -141,8 +141,10 @@ class UptimeKumaServer {
             };
         }
 
+        const basePath = process.env.UPTIME_KUMA_BASE_PATH || "";
         this.io = new Server(this.httpServer, {
             cors,
+            path: basePath ? basePath + "/socket.io" : "/socket.io",
             allowRequest: async (req, callback) => {
                 let transport;
                 // It should be always true, but just in case, because this property is not documented

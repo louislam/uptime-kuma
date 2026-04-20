@@ -117,7 +117,9 @@ export default {
                 url = undefined;
             }
 
-            socket = io(url);
+            socket = io(url, {
+                path: (import.meta.env.BASE_URL || "/").replace(/\/$/, "") + "/socket.io/",
+            });
 
             socket.on("info", (info) => {
                 this.info = info;
