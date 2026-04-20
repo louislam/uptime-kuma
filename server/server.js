@@ -362,10 +362,16 @@ let needSetup = false;
     // API Router
     const apiRouter = require("./routers/api-router");
     app.use(apiRouter);
+    if (basePath) {
+        app.use(basePath, apiRouter);
+    }
 
     // Status Page Router
     const statusPageRouter = require("./routers/status-page-router");
     app.use(statusPageRouter);
+    if (basePath) {
+        app.use(basePath, statusPageRouter);
+    }
 
     // Universal Route Handler, must be at the end of all express routes.
     app.get("*", async (_request, response) => {

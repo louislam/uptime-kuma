@@ -8,6 +8,12 @@ if (env === "development" && isDevContainer()) {
     axios.defaults.baseURL = location.protocol + "//" + getDevContainerServerHostname();
 } else if (env === "development" || localStorage.dev === "dev") {
     axios.defaults.baseURL = location.protocol + "//" + location.hostname + ":3001";
+} else {
+    // In production, use the base path so API calls go to /uptime/api/... instead of /api/...
+    const basePath = (import.meta.env.BASE_URL || "/").replace(/\/$/, "");
+    if (basePath) {
+        axios.defaults.baseURL = basePath;
+    }
 }
 
 export default {
