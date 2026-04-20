@@ -336,12 +336,21 @@ let needSetup = false;
     // With Basic Auth using the first user's username/password
     app.get("/metrics", apiAuth, prometheusAPIMetrics());
 
+    const basePath = process.env.UPTIME_KUMA_BASE_PATH || "";
+
     app.use(
-        "/",
+        basePath + "/",
         expressStaticGzip("dist", {
             enableBrotli: true,
         })
     );
+
+    // Redirect root to base path if base path is set
+    if (basePath) {
+        app.get("/", (req, res) => {
+            res.redirect(basePath + "/dashboard");
+        });
+    }
 
     // ./data/upload
     app.use("/upload", express.static(Database.uploadDir));
@@ -362,6 +371,9 @@ let needSetup = false;
     app.get("*", async (_request, response) => {
         if (_request.originalUrl.startsWith("/upload/")) {
             response.status(404).send("File not found.");
+        } else if (basePath && !_request.originalUrl.startsWith(basePath + "/") && _request.originalUrl !== basePath) {
+            // If base path is set, redirect unknown paths to base path
+            response.redirect(basePath + "/dashboard");
         } else {
             response.send(server.indexHTML);
         }
