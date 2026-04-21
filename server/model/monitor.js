@@ -162,6 +162,7 @@ class Monitor extends BeanModel {
             accepted_statuscodes: this.getAcceptedStatuscodes(),
             dns_resolve_type: this.dns_resolve_type,
             dns_resolve_server: this.dns_resolve_server,
+            dns_resolve_ip: this.dns_resolve_ip,
             dns_last_result: this.dns_last_result,
             docker_container: this.docker_container,
             docker_host: this.docker_host,
@@ -559,6 +560,34 @@ class Monitor extends BeanModel {
                         },
                         signal: axiosAbortSignal((this.timeout + 10) * 1000),
                     };
+
+                    // If dns_resolve_ip is set, use custom IP for connection (like curl --resolve)
+                    // This replaces the hostname in the URL with the custom IP for connection,
+                    // but preserves the original hostname in the Host header for proper routing
+                    if (this.dns_resolve_ip && typeof this.dns_resolve_ip === "string") {
+                        const resolvedIp = this.dns_resolve_ip.trim();
+                        if (resolvedIp && resolvedIp.length > 0) {
+                            // Parse the URL and replace hostname with the custom IP
+                            try {
+                                const url = new URL(this.url);
+                                const originalHostname = url.hostname;
+
+                                // Replace hostname with custom IP in the URL
+                                url.hostname = resolvedIp;
+
+                                // Update the options.url with the new IP-based URL
+                                options.url = url.toString();
+
+                                // Set the Host header to the original hostname for proper routing
+                                options.headers = {
+                                    ...options.headers,
+                                    "Host": originalHostname,
+                                };
+                            } catch (e) {
+                                log.error("monitor", `Failed to parse URL: ${e.message}`);
+                            }
+                        }
+                    }
 
                     if (bodyValue) {
                         options.data = bodyValue;

@@ -574,7 +574,7 @@
                                     </div>
                                 </div>
 
-                                <div v-if="monitor.subtype === 'http' || monitor.subtype === 'dns'" class="my-3">
+                                <div v-if="monitor.type === 'http' || monitor.type === 'dns' || (monitor.type === 'globalping' && (monitor.subtype === 'http' || monitor.subtype === 'dns'))" class="my-3">
                                     <label for="dns_resolve_server" class="form-label">
                                         {{ $t("Resolver Server") }}
                                     </label>
@@ -1990,6 +1990,40 @@
                                 </div>
                             </div>
 
+                            <!-- Manual DNS Resolve IP for HTTP -->
+                            <div v-if="monitor.type === 'http'" class="my-3">
+                                <label for="dns_resolve_ip" class="form-label">
+                                    {{ $t("DNS Resolve IP") }}
+                                </label>
+                                <input
+                                    id="dns_resolve_ip"
+                                    v-model="monitor.dns_resolve_ip"
+                                    type="text"
+                                    class="form-control"
+                                    placeholder="e.g. 1.2.3.4"
+                                />
+                                <div class="form-text">
+                                    {{ $t("DNSResolveIpDescription") }}
+                                </div>
+                            </div>
+
+                            <!-- Manual DNS Resolve IP for Globalping HTTP -->
+                            <div v-if="monitor.type === 'globalping' && monitor.subtype === 'http'" class="my-3">
+                                <label for="dns_resolve_ip_gp" class="form-label">
+                                    {{ $t("DNS Resolve IP") }}
+                                </label>
+                                <input
+                                    id="dns_resolve_ip_gp"
+                                    v-model="monitor.dns_resolve_ip"
+                                    type="text"
+                                    class="form-control"
+                                    placeholder="e.g. 1.2.3.4"
+                                />
+                                <div class="form-text">
+                                    {{ $t("DNSResolveIpDescription") }}
+                                </div>
+                            </div>
+
                             <!-- Parent Monitor -->
                             <div class="my-3">
                                 <label for="monitorGroupSelector" class="form-label">{{ $t("Monitor Group") }}</label>
@@ -2907,6 +2941,7 @@ const monitorDefaults = {
     responseMaxLength: 1024,
     dns_resolve_type: "A",
     dns_resolve_server: "",
+    dns_resolve_ip: "",
     docker_container: "",
     docker_host: null,
     proxyId: null,

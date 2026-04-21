@@ -141,6 +141,8 @@
     "Test": "测试",
     "Certificate Info": "证书信息",
     "Resolver Server": "解析服务器",
+    "DNS Resolve IP": "DNS 解析 IP",
+    "DNSResolveIpDescription": "手动指定HTTP监控的解析IP地址。请求将连接到此IP，而Host头仍使用原始域名。",
     "Resource Record Type": "资源记录类型",
     "Last Result": "上次结果",
     "Create your admin account": "创建管理员账户",

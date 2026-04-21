@@ -878,6 +878,7 @@ let needSetup = false;
                 bean.response_max_length = monitor.responseMaxLength;
                 bean.dns_resolve_type = monitor.dns_resolve_type;
                 bean.dns_resolve_server = monitor.dns_resolve_server;
+                bean.dns_resolve_ip = monitor.dns_resolve_ip;
                 bean.pushToken = monitor.pushToken;
                 bean.docker_container = monitor.docker_container;
                 bean.docker_host = monitor.docker_host;

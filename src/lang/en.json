@@ -1418,6 +1418,8 @@
     "RecordMatch": "Record value match",
     "RegexMatch": "Enter a regex to match the record value",
     "Resolver Server": "Resolver Server",
+    "DNS Resolve IP": "DNS Resolve IP",
+    "DNSResolveIpDescription": "Manually specify the resolved IP address for HTTP monitoring. The request will connect to this IP while the Host header still uses the original domain name.",
     "Protocol": "Protocol",
     "account settings": "account settings",
     "Location": "Location",
