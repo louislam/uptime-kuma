@@ -59,6 +59,9 @@ class WebSocketMonitorType extends MonitorType {
     async buildWsOptions(monitor) {
         const options = {};
 
+        const timeoutMs = (monitor.timeout ?? 20) * 1000;
+        options.handshakeTimeout = timeoutMs;
+
         // Parse custom headers if provided
         if (monitor.headers) {
             try {
@@ -115,10 +118,9 @@ class WebSocketMonitorType extends MonitorType {
         const authOptions = await this.buildWsOptions(monitor);
 
         return new Promise((resolve) => {
-            const timeoutMs = (monitor.timeout ?? 20) * 1000;
             // If user inputs subprotocol(s), convert to array, set Sec-WebSocket-Protocol header, timeout in ms. Subprotocol Identifier column: https://www.iana.org/assignments/websocket/websocket.xml#subprotocol-name
             const subprotocol = monitor.wsSubprotocol ? monitor.wsSubprotocol.replace(/\s/g, "").split(",") : undefined;
-            const ws = new WebSocket(monitor.url, subprotocol, { handshakeTimeout: timeoutMs, ...authOptions });
+            const ws = new WebSocket(monitor.url, subprotocol, authOptions);
 
             ws.addEventListener("open", (event) => {
                 // Immediately close the connection
