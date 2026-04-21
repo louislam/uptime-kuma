@@ -48,8 +48,8 @@
                                 type="checkbox"
                                 :checked="monitor.active"
                                 :disabled="monitor.forceInactive"
-                                @click.stop="toggleActive"
                                 :aria-label="monitor.active ? $t('Pause') : $t('Resume')"
+                                @click.stop="toggleActive"
                             />
                         </div>
                     </div>
