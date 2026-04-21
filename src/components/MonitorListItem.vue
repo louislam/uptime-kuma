@@ -42,6 +42,16 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="form-check form-switch m-0 p-0" style="z-index: 10">
+                            <input
+                                class="form-check-input m-0"
+                                type="checkbox"
+                                :checked="monitor.active"
+                                :disabled="monitor.forceInactive"
+                                @click.stop="toggleActive"
+                                :aria-label="monitor.active ? $t('Pause') : $t('Resume')"
+                            />
+                        </div>
                     </div>
                     <div
                         v-show="$root.userHeartbeatBar == 'normal'"
@@ -319,6 +329,46 @@ export default {
                 this.deselect(this.monitor.id);
             } else {
                 this.select(this.monitor.id);
+            }
+        },
+        /**
+         * Toggle monitor active/pause state
+         * @param {Event} event - The click event
+         * @returns {void}
+         */
+        toggleActive(event) {
+            const isCurrentlyActive = this.monitor.active;
+            const newActiveState = !isCurrentlyActive;
+
+            const originalActive = this.monitor.active;
+            this.$root.monitorList[this.monitor.id].active = newActiveState;
+
+            if (newActiveState) {
+                this.$root.getSocket().emit("resumeMonitor", this.monitor.id, (res) => {
+                    if (!res || !res.ok) {
+                        if (this.$root.monitorList[this.monitor.id]) {
+                            this.$root.monitorList[this.monitor.id].active = originalActive;
+                        }
+                        if (res && res.msg) {
+                            this.$root.toastError(res.msg);
+                        }
+                    } else {
+                        this.$root.toastRes(res);
+                    }
+                });
+            } else {
+                this.$root.getSocket().emit("pauseMonitor", this.monitor.id, (res) => {
+                    if (!res || !res.ok) {
+                        if (this.$root.monitorList[this.monitor.id]) {
+                            this.$root.monitorList[this.monitor.id].active = originalActive;
+                        }
+                        if (res && res.msg) {
+                            this.$root.toastError(res.msg);
+                        }
+                    } else {
+                        this.$root.toastRes(res);
+                    }
+                });
             }
         },
     },
