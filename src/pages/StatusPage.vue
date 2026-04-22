@@ -1113,6 +1113,9 @@ export default {
                 document.head.appendChild(script);
 
                 window.dataLayer = window.dataLayer || [];
+                /**
+                 *
+                 */
                 function gtag() {
                     window.dataLayer.push(arguments);
                 }
@@ -1122,7 +1125,9 @@ export default {
         },
 
         initAnalytics() {
-            if (this.config.analyticsType !== "google") return;
+            if (this.config.analyticsType !== "google") {
+                return;
+            }
 
             const consent = localStorage.getItem("cookie-consent");
             if (this.config.showCookieConsent) {
@@ -1863,6 +1868,7 @@ footer {
         padding: 0;
     }
 }
+
 .cookie-consent-banner {
     position: fixed;
     bottom: 20px;
