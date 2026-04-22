@@ -174,3 +174,50 @@ exports.apiAuth = async function (req, res, next) {
         next();
     }
 };
+
+/**
+ * Resolve the authenticated user's ID and attach it to req.userID.
+ * Must run after apiAuth so that req.auth is populated.
+ * @param {express.Request} req Express request object
+ * @param {express.Response} res Express response object
+ * @param {express.NextFunction} next Next handler in chain
+ * @returns {Promise<void>}
+ */
+exports.resolveUserFromApi = async function (req, res, next) {
+    try {
+        if (await Settings.get("disableAuth")) {
+            // Auth disabled — use the single user
+            let user = await R.findOne("user", " active = 1 ");
+            if (!user) {
+                return res.status(401).json({ ok: false, msg: "No active user found." });
+            }
+            req.userID = user.id;
+            return next();
+        }
+
+        let usingAPIKeys = await Settings.get("apiKeysEnabled");
+        if (usingAPIKeys && req.auth && req.auth.password) {
+            // API key path: extract user_id from the api_key record
+            let key = req.auth.password;
+            let index = key.substring(2, key.indexOf("_"));
+            let apiKey = await R.findOne("api_key", " id = ? AND active = 1 ", [index]);
+            if (!apiKey) {
+                return res.status(401).json({ ok: false, msg: "Invalid API key." });
+            }
+            req.userID = apiKey.user_id;
+        } else if (req.auth && req.auth.user) {
+            // Username/password fallback path
+            let user = await R.findOne("user", " TRIM(username) = ? AND active = 1 ", [req.auth.user.trim()]);
+            if (!user) {
+                return res.status(401).json({ ok: false, msg: "User not found." });
+            }
+            req.userID = user.id;
+        } else {
+            return res.status(401).json({ ok: false, msg: "Authentication required." });
+        }
+
+        next();
+    } catch (e) {
+        return res.status(500).json({ ok: false, msg: e.message });
+    }
+};
