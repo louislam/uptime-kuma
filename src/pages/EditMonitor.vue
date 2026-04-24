@@ -87,6 +87,7 @@
                                         </option>
                                         <option value="smtp">SMTP</option>
                                         <option value="snmp">SNMP</option>
+                                        <option value="syncthing">Syncthing</option>
                                         <option v-if="!$root.info.isContainer" value="tailscale-ping">
                                             Tailscale Ping
                                         </option>
@@ -469,6 +470,128 @@
                                         required="true"
                                     ></HiddenInput>
                                 </div>
+                            </template>
+
+                            <!-- Syncthing -->
+                            <template v-if="monitor.type === 'syncthing'">
+                                <div class="my-3">
+                                    <i18n-t tag="p" class="form-text" keypath="syncthingDescription">
+                                        <template #docs>
+                                            <a
+                                                href="https://docs.syncthing.net/dev/rest.html"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                {{ $t("documentation") }}
+                                            </a>
+                                        </template>
+                                    </i18n-t>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="syncthingUrl" class="form-label">
+                                        {{ $t("syncthingUrl") }}
+                                    </label>
+                                    <input
+                                        id="syncthingUrl"
+                                        v-model="monitor.syncthingUrl"
+                                        type="url"
+                                        class="form-control"
+                                        placeholder="http://localhost:8384"
+                                        required
+                                    />
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="syncthingApiKey" class="form-label">
+                                        {{ $t("syncthingApiKey") }}
+                                    </label>
+                                    <HiddenInput
+                                        id="syncthingApiKey"
+                                        v-model="monitor.syncthingApiKey"
+                                        autocomplete="false"
+                                        :placeholder="monitor.id ? $t('syncthingApiKeyPlaceholder') : ''"
+                                        :required="!monitor.id"
+                                    ></HiddenInput>
+                                    <div class="form-text">{{ $t("syncthingApiKeyHelp") }}</div>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="syncthingCheckType" class="form-label">
+                                        {{ $t("syncthingCheckType") }}
+                                    </label>
+                                    <select
+                                        id="syncthingCheckType"
+                                        v-model="monitor.syncthingCheckType"
+                                        class="form-select"
+                                        required
+                                    >
+                                        <option value="health">{{ $t("syncthingCheckTypeHealth") }}</option>
+                                        <option value="peers">{{ $t("syncthingCheckTypePeers") }}</option>
+                                    </select>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="syncthingFilterMode" class="form-label">
+                                        {{ $t("syncthingFilterMode") }}
+                                    </label>
+                                    <select
+                                        id="syncthingFilterMode"
+                                        v-model="monitor.syncthingFilterMode"
+                                        class="form-select"
+                                    >
+                                        <option value="exclude">{{ $t("syncthingFilterModeExclude") }}</option>
+                                        <option value="include">{{ $t("syncthingFilterModeInclude") }}</option>
+                                    </select>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="syncthingFilter" class="form-label">
+                                        {{ $t("syncthingFilter") }}
+                                    </label>
+                                    <input
+                                        id="syncthingFilter"
+                                        v-model="monitor.syncthingFilter"
+                                        type="text"
+                                        class="form-control"
+                                        :placeholder="$t('syncthingFilterPlaceholder')"
+                                    />
+                                    <div class="form-text">{{ $t("syncthingFilterHelp") }}</div>
+                                </div>
+
+                                <template v-if="monitor.syncthingCheckType === 'peers'">
+                                    <div class="my-3">
+                                        <label for="syncthingPeerTimeout" class="form-label">
+                                            {{ $t("syncthingPeerTimeout") }}
+                                        </label>
+                                        <input
+                                            id="syncthingPeerTimeout"
+                                            v-model.number="monitor.syncthingPeerTimeout"
+                                            type="number"
+                                            class="form-control"
+                                            min="1"
+                                            step="1"
+                                        />
+                                        <div class="form-text">{{ $t("syncthingPeerTimeoutHelp") }}</div>
+                                    </div>
+                                </template>
+
+                                <template v-if="monitor.syncthingCheckType === 'health'">
+                                    <div class="my-3">
+                                        <label for="syncthingFolderSyncThreshold" class="form-label">
+                                            {{ $t("syncthingFolderSyncThreshold") }}
+                                        </label>
+                                        <input
+                                            id="syncthingFolderSyncThreshold"
+                                            v-model.number="monitor.syncthingFolderSyncThreshold"
+                                            type="number"
+                                            class="form-control"
+                                            min="1"
+                                            step="1"
+                                        />
+                                        <div class="form-text">{{ $t("syncthingFolderSyncThresholdHelp") }}</div>
+                                    </div>
+                                </template>
                             </template>
 
                             <!-- Hostname -->
@@ -1633,6 +1756,7 @@
                                     monitor.type === 'keyword' ||
                                     monitor.type === 'json-query' ||
                                     monitor.type === 'redis' ||
+                                    monitor.type === 'syncthing' ||
                                     (monitor.type === 'globalping' && monitor.subtype === 'http')
                                 "
                                 class="my-3 form-check"
