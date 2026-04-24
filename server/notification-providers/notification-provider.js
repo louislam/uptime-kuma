@@ -173,6 +173,10 @@ class NotificationProvider {
      * @returns {object} Axios config
      */
     getAxiosConfigWithProxy(axiosConfig = {}) {
+        if (!axiosConfig.timeout) {
+            axiosConfig.timeout = 30_000;
+        }
+
         const proxyEnv = process.env.notification_proxy || process.env.NOTIFICATION_PROXY;
         if (proxyEnv) {
             const proxyUrl = new URL(proxyEnv);
