@@ -385,7 +385,7 @@ router.get("/api/badge/:id/avg-response/:duration?", cache("5 minutes"), async (
             AND public = 1
             AND heartbeat.monitor_id = ?
             `,
-                [-requestedDuration, requestedMonitorId]
+                [-requestedDuration, -requestedDuration, requestedMonitorId]
             )
         );
 

@@ -40,8 +40,9 @@ const clearOldData = async () => {
         const sqlHourOffset = Database.sqlHourOffset();
 
         try {
-            // Heartbeat
-            await R.exec("DELETE FROM heartbeat WHERE time < " + sqlHourOffset, [parsedPeriod * -24]);
+            // Heartbeat: bind sqlHourOffset template parameter, then parsedPeriod days
+            const hourOffset = parsedPeriod * -24;
+            await R.exec(`DELETE FROM heartbeat WHERE time < ${sqlHourOffset}`, [hourOffset, hourOffset]);
 
             let timestamp = dayjs().subtract(parsedPeriod, "day").utc().startOf("day").unix();
 
