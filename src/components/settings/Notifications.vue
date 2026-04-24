@@ -283,13 +283,6 @@ export default {
     padding-right: 11px;
 }
 
-.dark {
-    .list-group-item {
-        background-color: $dark-bg2;
-        color: $dark-font-color;
-    }
-}
-
 .cert-exp-days .cert-exp-day-row {
     border-bottom: 1px solid rgba(0, 0, 0, 0.125);
 
