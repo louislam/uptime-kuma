@@ -272,7 +272,7 @@ class Database {
 
             // However, for unknown reason, it is not working probably on Raspberry Pi, it causes "SQLITE_BUSY: database is locked" error.
             // See: https://github.com/louislam/uptime-kuma/issues/7289
-            // Provide an environment vairable to switch back to a single connection.
+            // Provide an environment variable to switch back to a single connection.
             if (process.env.UPTIME_KUMA_SQLITE_SINGLE_CONNECTION === "true") {
                 log.info("db", "Using single connection for SQLite");
                 poolConfig = {
