@@ -139,16 +139,4 @@ export default {
         }
     }
 }
-
-.dark {
-    .incident-group {
-        .incident-list {
-            .incident-item {
-                &:hover {
-                    background-color: $dark-bg2;
-                }
-            }
-        }
-    }
-}
 </style>

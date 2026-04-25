@@ -1046,7 +1046,7 @@ let needSetup = false;
                       AND time > ${sqlHourOffset}
                     ORDER BY time ASC
                 `,
-                    [monitorID, -period]
+                    [monitorID, -period, -period]
                 );
 
                 callback({
