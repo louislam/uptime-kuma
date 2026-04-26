@@ -203,11 +203,15 @@ class Monitor extends BeanModel {
             conditions: JSON.parse(this.conditions),
             ipFamily: this.ipFamily,
             expectedTlsAlert: this.expected_tls_alert,
+            script: this.script,
 
             // ping advanced options
             ping_numeric: this.isPingNumeric(),
             ping_count: this.ping_count,
             ping_per_request_timeout: this.ping_per_request_timeout,
+
+            // script advanced options
+            args: this.args,
 
             // response saving options
             saveResponse: this.getSaveResponse(),

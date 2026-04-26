@@ -128,6 +128,7 @@
         "openid-client": "~5.7.1",
         "oracledb": "~6.10.0",
         "password-hash": "~1.2.2",
+        "path-browserify": "~1.0.1",
         "pg": "~8.11.6",
         "pg-connection-string": "~2.6.4",
         "playwright-core": "~1.39.0",
@@ -144,6 +145,7 @@
         "socket.io-client": "~4.8.3",
         "socks-proxy-agent": "~8.0.5",
         "sqlstring": "~2.3.3",
+        "string-argv": "~0.3.2",
         "tar": "~6.2.1",
         "tcp-ping": "~0.1.1",
         "thirty-two": "~1.0.2",
@@ -225,5 +227,8 @@
         "vuedraggable": "~4.1.0",
         "wait-on": "^7.2.0",
         "whatwg-url": "~12.0.1"
+    },
+    "optionalDependencies": {
+        "win32-privileges": "^2.0.0"
     }
 }

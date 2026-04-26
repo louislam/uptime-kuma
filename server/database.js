@@ -13,6 +13,8 @@ const dayjs = require("dayjs");
 const { SimpleMigrationServer } = require("./utils/simple-migration-server");
 const KumaColumnCompiler = require("./utils/knex/lib/dialects/mysql2/schema/mysql2-columncompiler");
 const SqlString = require("sqlstring");
+const { dataDir } = require("./config");
+const { execSync } = require("child_process");
 
 /**
  * Database & App Data Folder
@@ -53,6 +55,12 @@ class Database {
      * @type {string}
      */
     static dockerTLSDir;
+
+    /**
+     * Default directory for script monitor scripts.
+     * @type {string}
+     */
+    static scriptDir;
 
     /**
      * @type {boolean}
@@ -133,8 +141,7 @@ class Database {
      * @returns {void}
      */
     static initDataDir(args) {
-        // Data Directory (must be end with "/")
-        Database.dataDir = process.env.DATA_DIR || args["data-dir"] || "./data/";
+        Database.dataDir = dataDir;
 
         Database.sqlitePath = path.join(Database.dataDir, "kuma.db");
         if (!fs.existsSync(Database.dataDir)) {
@@ -156,6 +163,19 @@ class Database {
         Database.dockerTLSDir = path.join(Database.dataDir, "docker-tls/");
         if (!fs.existsSync(Database.dockerTLSDir)) {
             fs.mkdirSync(Database.dockerTLSDir, { recursive: true });
+        }
+
+        // This path MUST NOT end with a trailing slash
+        // It throws off icacls, because the slash will get converted to a backslash by path.join in win32
+        // Thus it passes \" to cmd (an escaped double quote), which then is interpreted as part of the path
+        Database.scriptDir = path.join(Database.dataDir, "scripts");
+        if (!fs.existsSync(Database.scriptDir)) {
+            fs.mkdirSync(Database.scriptDir, { recursive: true });
+            if (process.platform === "win32") {
+                execSync(`icacls "${Database.scriptDir}" /deny Users:(OI)(CI)W`);
+            } else {
+                fs.chmodSync(Database.scriptDir, 0o555);
+            }
         }
 
         log.info("server", `Data Dir: ${Database.dataDir}`);

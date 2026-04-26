@@ -191,6 +191,8 @@ const { resetChrome } = require("./monitor-types/real-browser-monitor-type");
 const { EmbeddedMariaDB } = require("./embedded-mariadb");
 const { SetupDatabase } = require("./setup-database");
 const { chartSocketHandler } = require("./socket-handlers/chart-socket-handler");
+const path = require("path");
+const fs = require("fs/promises");
 
 app.use(express.json());
 
@@ -936,6 +938,9 @@ let needSetup = false;
                 bean.ping_numeric = monitor.ping_numeric;
                 bean.ping_count = monitor.ping_count;
                 bean.ping_per_request_timeout = monitor.ping_per_request_timeout;
+
+                // script advanced options
+                bean.args = monitor.args;
 
                 bean.validate();
 
@@ -1696,6 +1701,31 @@ let needSetup = false;
 
                 callback({
                     ok: true,
+                });
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("getScripts", async (subdir, callback) => {
+            try {
+                subdir ??= "";
+                const dir = path.resolve(config.scriptDir, subdir);
+                if (path.relative(config.scriptDir, dir).startsWith(".." + path.sep)) {
+                    throw new Error(
+                        "Enumeration location " + dir + " is outside of scripts directory " + config.scriptDir
+                    );
+                }
+                let entries = (await fs.readdir(dir, { withFileTypes: true })).map((dirent) => ({
+                    name: dirent.name,
+                    isDirectory: dirent.isDirectory(),
+                }));
+                callback({
+                    ok: true,
+                    entries,
                 });
             } catch (e) {
                 callback({

@@ -57,6 +57,7 @@
                                         <option value="real-browser">
                                             HTTP(s) - Browser Engine (Chrome/Chromium) (Beta)
                                         </option>
+                                        <option value="script">Custom Script</option>
                                     </optgroup>
 
                                     <optgroup :label="$t('monitorTypeSpecial')">
@@ -177,6 +178,20 @@
                                         {{ $t("Down") }}
                                     </button>
                                 </div>
+                            </div>
+
+                            <!-- Script -->
+                            <div v-if="monitor.type === 'script'" class="my-3">
+                                <label for="script-path" class="form-label">{{ $t("Script") }}</label>
+                                <ScriptSelect id="script-path" v-model="monitor.script" />
+                                <i18n-t v-if="monitor.script" keypath="scriptLocationHint" tag="span" class="form-text">
+                                    <template #scriptPath>
+                                        <code>
+                                            {{ resolvedScriptPath }}
+                                            <span v-if="monitor.script && monitor.args">{{ monitor.args }}</span>
+                                        </code>
+                                    </template>
+                                </i18n-t>
                             </div>
 
                             <!-- URL -->
@@ -1695,6 +1710,31 @@
                                 </div>
                             </div>
 
+                            <div v-if="monitor.type === 'script'" class="my-3">
+                                <label for="script-arguments" class="form-label">{{ $t("Script Arguments") }}</label>
+                                <input
+                                    id="script-arguments"
+                                    v-model="monitor.args"
+                                    type="text"
+                                    class="form-control"
+                                    data-testid="script-arguments-input"
+                                />
+                                <i18n-t keypath="scriptTimeout" tag="label" for="script-timeout" class="form-label">
+                                    <template #timeout>
+                                        {{ monitor.timeout }}
+                                    </template>
+                                </i18n-t>
+                                <input
+                                    id="script-timeout"
+                                    v-model.number="monitor.timeout"
+                                    :min="timeoutMin"
+                                    :max="timeoutMax"
+                                    :step="timeoutStep"
+                                    type="number"
+                                    class="form-control"
+                                />
+                            </div>
+
                             <div v-if="monitor.type === 'gamedig'" class="my-3 form-check">
                                 <input
                                     id="gamedig-guess-port"
@@ -3036,6 +3076,7 @@ import DockerHostDialog from "../components/DockerHostDialog.vue";
 import RemoteBrowserDialog from "../components/RemoteBrowserDialog.vue";
 import ProxyDialog from "../components/ProxyDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
+import ScriptSelect from "../components/ScriptSelect.vue";
 import {
     genSecret,
     MAX_INTERVAL_SECOND,
@@ -3048,6 +3089,9 @@ import isFQDN from "validator/lib/isFQDN";
 import isIP from "validator/lib/isIP";
 import HiddenInput from "../components/HiddenInput.vue";
 import EditMonitorConditions from "../components/EditMonitorConditions.vue";
+import path from "path-browserify";
+
+const isValidScriptPath = (script) => !path.posix.normalize(script).startsWith("../");
 
 const toast = useToast();
 
@@ -3137,6 +3181,7 @@ export default {
         TagsManager,
         VueMultiselect,
         EditMonitorConditions,
+        ScriptSelect,
     },
 
     data() {
@@ -3445,6 +3490,10 @@ message HealthCheckResponse {
             }
         },
 
+        resolvedScriptPath() {
+            return path.normalize(this.monitor.script ?? "");
+        },
+
         supportsConditions() {
             return this.$root.monitorTypeList[this.monitor.type]?.supportsConditions || false;
         },
@@ -3591,6 +3640,8 @@ message HealthCheckResponse {
                     this.monitor.timeout = 5;
                 } else if (this.monitor.type === "ping") {
                     this.monitor.timeout = 10;
+                } else if (this.monitor.type === "script") {
+                    this.monitor.timeout = 30;
                 } else {
                     this.monitor.timeout = 48;
                 }
@@ -3858,6 +3909,15 @@ message HealthCheckResponse {
             this.monitor.rabbitmqNodes.push(newNode);
         },
 
+        onScriptPathUpdate(event) {
+            const input = event.target;
+
+            input.setCustomValidity("");
+            if (!isValidScriptPath(input.value)) {
+                input.setCustomValidity(this.$t("scriptLocationInvalid"));
+            }
+        },
+
         /**
          * Validate form input
          * @returns {boolean} Is the form input valid?
@@ -3882,6 +3942,13 @@ message HealthCheckResponse {
             if (this.monitor.type === "docker") {
                 if (this.monitor.docker_host == null) {
                     toast.error(this.$t("DockerHostRequired"));
+                    return false;
+                }
+            }
+
+            if (this.monitor.type === "script") {
+                if (!isValidScriptPath(this.monitor.script)) {
+                    toast.error(this.$t("scriptLocationInvalid"));
                     return false;
                 }
             }
@@ -4060,6 +4127,9 @@ message HealthCheckResponse {
                 this.monitor.url = this.monitor.url.trim();
             }
 
+            if (this.monitor.script) {
+                this.monitor.script = this.monitor.script.trim();
+            }
             if (this.monitor.databaseConnectionString) {
                 this.monitor.databaseConnectionString = this.monitor.databaseConnectionString.trim();
             }

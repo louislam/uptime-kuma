@@ -1,3 +1,5 @@
+const path = require("path");
+
 const isFreeBSD = /^freebsd/.test(process.platform);
 
 // Interop with browser
@@ -37,6 +39,12 @@ const localWebSocketURL = getLocalWebSocketURL();
 
 const demoMode = args["demo"] || false;
 
+const dataDir = typeof process !== "undefined" ? process.env.DATA_DIR || args["data-dir"] || "./data/" : null;
+const scriptDir =
+    typeof process !== "undefined"
+        ? args["script-dir"] || process.env.UPTIME_KUMA_SCRIPT_DIR || path.join(dataDir, "scripts")
+        : null;
+
 module.exports = {
     args,
     hostname,
@@ -47,4 +55,6 @@ module.exports = {
     isSSL,
     localWebSocketURL,
     demoMode,
+    dataDir,
+    scriptDir,
 };

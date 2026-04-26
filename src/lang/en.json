@@ -1531,5 +1531,14 @@
     "teltonikaModem": "Modem Id",
     "teltonikaModemHelptext": "The id of the SMS modem, must be in the format {0}. Refer to https://developers.teltonika-networks.com/reference/ for guidance.",
     "teltonikaPhoneNumber": "Phone number",
-    "teltonikaPhoneNumberHelptext": "The number must be in the international format {0}, {1}. Only one number is allowed."
+    "teltonikaPhoneNumberHelptext": "The number must be in the international format {0}, {1}. Only one number is allowed.",
+    "scriptLocationHint": "Will attempt to execute: {scriptPath}",
+    "scriptLocationInvalid": "Invalid script location",
+    "scriptTimeout": "Timeout (kill script after {timeout} seconds)",
+    "Script": "Script",
+    "Script Arguments": "Script Arguments",
+    "Select script": "Select script",
+    "script dir": "script dir",
+    "Navigating file list": "Now navigating file list",
+    "Navigating path": "Now navigating path"
 }
