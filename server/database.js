@@ -165,9 +165,9 @@ class Database {
             fs.mkdirSync(Database.dockerTLSDir, { recursive: true });
         }
 
-        // This path MUST NOT end with a trailing backslash
-        // It throws off icacls, because the slash will get converted to a backslash in win32
-        // Thus it passes \" to cmd - an escaped quote - so the the path becomes illegal
+        // This path MUST NOT end with a trailing slash
+        // It throws off icacls, because the slash will get converted to a backslash by path.join in win32
+        // Thus it passes \" to cmd (an escaped double quote), which then is interpreted as part of the path
         Database.scriptDir = path.join(Database.dataDir, "scripts");
         if (!fs.existsSync(Database.scriptDir)) {
             fs.mkdirSync(Database.scriptDir, { recursive: true });
