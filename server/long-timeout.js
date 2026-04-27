@@ -9,7 +9,7 @@ const SAFE_MAX_MS = 2147483647;
 /**
  * @param {() => void} callback
  * @param {number} delayMs
- * @param {number} [chunkMs] Per-chunk cap; exposed for tests.
+ * @param {number} chunkMs Per-chunk cap; exposed for tests.
  * @returns {{ cancel: () => void }} Handle accepted by clearLongTimeout.
  */
 function setLongTimeout(callback, delayMs, chunkMs = SAFE_MAX_MS) {

@@ -62,7 +62,7 @@ describe("long-timeout (chained paths, real timers)", () => {
             let fired = 0;
             await new Promise((resolve) => setLongTimeout(() => (fired++, resolve()), 175, 50));
             assert.strictEqual(fired, 1);
-            assert.deepStrictEqual(calls.slice(0, 4), [ 50, 50, 50, 25 ]);
+            assert.deepStrictEqual(calls.slice(0, 4), [50, 50, 50, 25]);
         } finally {
             global.setTimeout = realSetTimeout;
         }
