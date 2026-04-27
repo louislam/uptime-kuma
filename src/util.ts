@@ -43,12 +43,10 @@ export const SQL_DATE_FORMAT = "YYYY-MM-DD";
 export const SQL_DATETIME_FORMAT = "YYYY-MM-DD HH:mm:ss";
 export const SQL_DATETIME_FORMAT_WITHOUT_SECOND = "YYYY-MM-DD HH:mm";
 
-// Native setTimeout caps delays at 2^31 - 1 ms (~24.86 days). The heartbeat
-// scheduler in server/model/monitor.js wraps long delays with chained
-// setTimeout calls (server/long-timeout.js), so the user-facing cap can sit
-// well above that limit. 365 days covers monthly and quarterly cron-style
-// monitors with headroom; chunked drift across the chain is sub-second.
-export const MAX_INTERVAL_SECOND = 31536000; // 365 days
+// 365 days. The heartbeat scheduler chains setTimeout calls (see
+// server/long-timeout.js) so the cap can sit above setTimeout's 24.86-day
+// 32-bit limit.
+export const MAX_INTERVAL_SECOND = 31536000;
 export const MIN_INTERVAL_SECOND = 1; // 1 second
 
 export const INCIDENT_PAGE_SIZE = 10;
