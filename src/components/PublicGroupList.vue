@@ -70,11 +70,13 @@
                                                     data-testid="monitor-settings"
                                                     @click="$refs.monitorSettingDialog.show(group, monitor)"
                                                 />
-                                                <Status
-                                                    v-if="showOnlyLastHeartbeat"
-                                                    :status="statusOfLastHeartbeat(monitor.element.id)"
-                                                />
-                                                <Uptime v-else :monitor="monitor.element" type="24" :pill="true" />
+                                                <template v-if="!editMode">
+                                                    <Status
+                                                        v-if="showOnlyLastHeartbeat"
+                                                        :status="statusOfLastHeartbeat(monitor.element.id)"
+                                                    />
+                                                    <Uptime v-else :monitor="monitor.element" type="24" :pill="true" />
+                                                </template>
                                                 <a
                                                     v-if="showLink(monitor)"
                                                     :href="monitor.element.url"
@@ -89,7 +91,7 @@
                                                     {{ monitor.element.name }}
                                                 </p>
                                             </div>
-                                            <div class="extra-info">
+                                            <div v-if="!editMode" class="extra-info">
                                                 <div
                                                     v-if="
                                                         showCertificateExpiry && monitor.element.certExpiryDaysRemaining
@@ -115,7 +117,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div :key="$root.userHeartbeatBar" class="col-3 col-xl-6">
+                                        <div v-if="!editMode" :key="$root.userHeartbeatBar" class="col-3 col-xl-6">
                                             <HeartbeatBar size="mid" :monitor-id="monitor.element.id" />
                                         </div>
                                     </div>
