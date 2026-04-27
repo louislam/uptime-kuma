@@ -115,23 +115,27 @@ describe("long-timeout (real timers, chained paths)", () => {
         try {
             let calls = 0;
             await new Promise((resolve, reject) => {
-                setLongTimeout(() => {
-                    calls++;
-                    // Wait one more tick to confirm no extra fire.
-                    realSetTimeout(() => {
-                        try {
-                            assert.strictEqual(calls, 1);
-                            // Helper-scheduled chunks: [50, 50, 50, 25].
-                            // The trailing realSetTimeout above is excluded
-                            // because we're checking calls captured BEFORE it.
-                            const helperChunks = setTimeoutCalls.slice(0, 4);
-                            assert.deepStrictEqual(helperChunks, [ 50, 50, 50, 25 ]);
-                            resolve();
-                        } catch (err) {
-                            reject(err);
-                        }
-                    }, 50);
-                }, 175, 50);
+                setLongTimeout(
+                    () => {
+                        calls++;
+                        // Wait one more tick to confirm no extra fire.
+                        realSetTimeout(() => {
+                            try {
+                                assert.strictEqual(calls, 1);
+                                // Helper-scheduled chunks: [50, 50, 50, 25].
+                                // The trailing realSetTimeout above is excluded
+                                // because we're checking calls captured BEFORE it.
+                                const helperChunks = setTimeoutCalls.slice(0, 4);
+                                assert.deepStrictEqual(helperChunks, [50, 50, 50, 25]);
+                                resolve();
+                            } catch (err) {
+                                reject(err);
+                            }
+                        }, 50);
+                    },
+                    175,
+                    50
+                );
             });
         } finally {
             global.setTimeout = realSetTimeout;
@@ -150,17 +154,21 @@ describe("long-timeout (real timers, chained paths)", () => {
     test("chain completes when delay is an exact multiple of chunk size", async () => {
         let calls = 0;
         await new Promise((resolve, reject) => {
-            setLongTimeout(() => {
-                calls++;
-                setTimeout(() => {
-                    try {
-                        assert.strictEqual(calls, 1);
-                        resolve();
-                    } catch (err) {
-                        reject(err);
-                    }
-                }, 30);
-            }, 150, 50);
+            setLongTimeout(
+                () => {
+                    calls++;
+                    setTimeout(() => {
+                        try {
+                            assert.strictEqual(calls, 1);
+                            resolve();
+                        } catch (err) {
+                            reject(err);
+                        }
+                    }, 30);
+                },
+                150,
+                50
+            );
         });
     });
 });
