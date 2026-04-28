@@ -418,6 +418,13 @@ class Monitor extends BeanModel {
             log.error("prometheus", "Please submit an issue to our GitHub repo. Prometheus update error: ", e.message);
         }
 
+        if (this.type === "push") {
+            previousBeat = await R.findOne("heartbeat", " monitor_id = ? ORDER BY time DESC", [this.id]);
+            if (previousBeat) {
+                retries = previousBeat.retries;
+            }
+        }
+
         const beat = async () => {
             let beatInterval = this.interval;
 
@@ -1140,9 +1147,11 @@ class Monitor extends BeanModel {
 
         // Delay Push Type
         if (this.type === "push") {
-            setTimeout(() => {
+            if (previousBeat) {
                 safeBeat();
-            }, this.interval * 1000);
+            } else {
+                this.heartbeatInterval = setTimeout(safeBeat, this.interval * 1000);
+            }
         } else {
             safeBeat();
         }
