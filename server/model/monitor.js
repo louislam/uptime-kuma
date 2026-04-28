@@ -1730,6 +1730,22 @@ class Monitor extends BeanModel {
             }
         }
 
+        if (["system-service", "pm2"].includes(this.type)) {
+            this.system_service_name = (this.system_service_name || "").trim();
+
+            if (!this.system_service_name) {
+                throw new Error(this.type === "pm2" ? "PM2 process name is required." : "Service Name is required.");
+            }
+        }
+
+        if (this.type === "system-service" && !/^[a-zA-Z0-9._\-@]+$/.test(this.system_service_name)) {
+            throw new Error("Invalid service name. Please use the internal Service Name (no spaces).");
+        }
+
+        if (this.type === "pm2" && /[\u0000-\u001F\u007F]/.test(this.system_service_name)) {
+            throw new Error("Invalid PM2 process name.");
+        }
+
         if (this.type === "ping") {
             // ping parameters validation
             if (this.packetSize && (this.packetSize < PING_PACKET_SIZE_MIN || this.packetSize > PING_PACKET_SIZE_MAX)) {

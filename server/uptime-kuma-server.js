@@ -128,6 +128,7 @@ class UptimeKumaServer {
         UptimeKumaServer.monitorTypeList["manual"] = new ManualMonitorType();
         UptimeKumaServer.monitorTypeList["globalping"] = new GlobalpingMonitorType(this.getUserAgent());
         UptimeKumaServer.monitorTypeList["redis"] = new RedisMonitorType();
+        UptimeKumaServer.monitorTypeList["pm2"] = new PM2MonitorType();
         UptimeKumaServer.monitorTypeList["system-service"] = new SystemServiceMonitorType();
         UptimeKumaServer.monitorTypeList["sqlserver"] = new MssqlMonitorType();
         UptimeKumaServer.monitorTypeList["mysql"] = new MysqlMonitorType();
@@ -580,6 +581,7 @@ const { TCPMonitorType } = require("./monitor-types/tcp.js");
 const { ManualMonitorType } = require("./monitor-types/manual");
 const { GlobalpingMonitorType } = require("./monitor-types/globalping");
 const { RedisMonitorType } = require("./monitor-types/redis");
+const { PM2MonitorType } = require("./monitor-types/pm2");
 const { SystemServiceMonitorType } = require("./monitor-types/system-service");
 const { MssqlMonitorType } = require("./monitor-types/mssql");
 const { MysqlMonitorType } = require("./monitor-types/mysql");

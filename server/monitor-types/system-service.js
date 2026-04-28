@@ -15,17 +15,19 @@ class SystemServiceMonitorType extends MonitorType {
      * @returns {Promise<void>} Resolves when check is complete.
      */
     async check(monitor, heartbeat) {
-        if (!monitor.system_service_name) {
+        const serviceName = (monitor.system_service_name || "").trim();
+
+        if (!serviceName) {
             throw new Error("Service Name is required.");
         }
 
         if (process.platform === "win32") {
-            return this.checkWindows(monitor.system_service_name, heartbeat);
+            return this.checkWindows(serviceName, heartbeat);
         } else if (process.platform === "linux") {
-            return this.checkLinux(monitor.system_service_name, heartbeat);
-        } else {
-            throw new Error(`System Service monitoring is not supported on ${process.platform}`);
+            return this.checkLinux(serviceName, heartbeat);
         }
+
+        throw new Error(`System Service monitoring is not supported on ${process.platform}`);
     }
 
     /**
@@ -80,7 +82,6 @@ class SystemServiceMonitorType extends MonitorType {
                 "-NoProfile",
                 "-NonInteractive",
                 "-Command",
-                // Single quotes around the service name
                 `(Get-Service -Name '${serviceName.replaceAll("'", "''")}').Status`,
             ];
 
