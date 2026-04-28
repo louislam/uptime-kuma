@@ -43,6 +43,7 @@ import {
     Legend,
 } from "chart.js";
 import "chartjs-adapter-dayjs-4";
+import annotationPlugin from "chartjs-plugin-annotation";
 import { Line } from "vue-chartjs";
 import { UP, DOWN, PENDING, MAINTENANCE } from "../util.ts";
 
@@ -56,7 +57,8 @@ Chart.register(
     LinearScale,
     Tooltip,
     Filler,
-    Legend
+    Legend,
+    annotationPlugin
 );
 
 export default {
@@ -89,6 +91,18 @@ export default {
         };
     },
     computed: {
+        threshold() {
+            let heartbeatList =
+                (this.monitorId in this.$root.heartbeatList && this.$root.heartbeatList[this.monitorId]) || [];
+
+            let lastBeat = heartbeatList.at(-1);
+
+            if (lastBeat) {
+                return lastBeat.pingThreshold;
+            } else {
+                return undefined;
+            }
+        },
         chartOptions() {
             return {
                 responsive: true,
@@ -208,6 +222,22 @@ export default {
                             filter: function (legendItem, data) {
                                 const ds = data.datasets[legendItem.datasetIndex];
                                 return ds && ds.type !== "bar";
+                            },
+                        },
+                    },
+                    annotation: {
+                        annotations: {
+                            line1: {
+                                type: "line",
+                                mode: "horizontal",
+                                scaleID: "y",
+                                value: this.threshold,
+                                endValue: this.threshold,
+                                borderColor: "rgba(248,163,6,1.0)",
+                                borderWith: 2,
+                                borderDash: [1, 3],
+                                adjustScaleRange: false,
+                                display: this.threshold !== undefined,
                             },
                         },
                     },

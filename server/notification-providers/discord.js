@@ -1,9 +1,10 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
-const { DOWN, UP } = require("../../src/util");
+const { DOWN, UP, SLOW, NOMINAL } = require("../../src/util");
 
 class Discord extends NotificationProvider {
     name = "discord";
+    supportSlowNotifications = true;
 
     /**
      * @inheritdoc
@@ -253,6 +254,94 @@ class Discord extends NotificationProvider {
 
                 await axios.post(webhookUrl.toString(), discordupdata, config);
                 return okMsg;
+            } else if (heartbeatJSON["status"] === SLOW) {
+                let discordslowdata = {
+                    username: discordDisplayName,
+                    embeds: [
+                        {
+                            title: "🐌 Your service " + monitorJSON["name"] + " responded slow. 🐌",
+                            color: 16761095,
+                            timestamp: heartbeatJSON["time"],
+                            fields: [
+                                {
+                                    name: "Service Name",
+                                    value: monitorJSON["name"],
+                                },
+                                {
+                                    name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
+                                    value:
+                                        monitorJSON["type"] === "push" ? "Heartbeat" : this.extractAddress(monitorJSON),
+                                },
+                                {
+                                    name: `Time (${heartbeatJSON["timezone"]})`,
+                                    value: heartbeatJSON["localDateTime"],
+                                },
+                                {
+                                    name: "Ping",
+                                    value: heartbeatJSON["calculatedResponse"],
+                                },
+                                {
+                                    name: "Threshold",
+                                    value: heartbeatJSON["calculatedThreshold"],
+                                },
+                            ],
+                        },
+                    ],
+                };
+
+                if (notification.discordPrefixMessage) {
+                    discordslowdata.content = notification.discordPrefixMessage;
+                }
+
+                await axios.post(notification.discordWebhookUrl, discordslowdata);
+                return okMsg;
+            } else if (heartbeatJSON["status"] === NOMINAL) {
+                let discordnominaldata = {
+                    username: discordDisplayName,
+                    embeds: [
+                        {
+                            title: "🚀 Your service " + monitorJSON["name"] + " is responding normally! 🚀",
+                            color: 65280,
+                            timestamp: heartbeatJSON["time"],
+                            fields: [
+                                {
+                                    name: "Service Name",
+                                    value: monitorJSON["name"],
+                                },
+                                {
+                                    name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
+                                    value:
+                                        monitorJSON["type"] === "push" ? "Heartbeat" : this.extractAddress(monitorJSON),
+                                },
+                                {
+                                    name: `Time (${heartbeatJSON["timezone"]})`,
+                                    value: heartbeatJSON["localDateTime"],
+                                },
+                                {
+                                    name: "Ping",
+                                    value: heartbeatJSON["calculatedResponse"],
+                                },
+                                {
+                                    name: "Threshold",
+                                    value: heartbeatJSON["calculatedThreshold"],
+                                },
+                                {
+                                    name: "Slow For",
+                                    value: heartbeatJSON["slowFor"],
+                                },
+                            ],
+                        },
+                    ],
+                };
+
+                if (notification.discordPrefixMessage) {
+                    discordnominaldata.content = notification.discordPrefixMessage;
+                }
+
+                await axios.post(notification.discordWebhookUrl, discordnominaldata);
+                return okMsg;
+            } else {
+                this.throwGeneralAxiosError("Not sure why we're here");
             }
         } catch (error) {
             this.throwGeneralAxiosError(error);
