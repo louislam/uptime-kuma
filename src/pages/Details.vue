@@ -123,6 +123,18 @@
                         <font-awesome-icon icon="play" />
                         {{ $t("Resume") }}
                     </button>
+                    <button
+                        v-if="monitor.active && !monitor.maintenance"
+                        class="btn btn-normal"
+                        @click="startQuickMaintenance"
+                    >
+                        <font-awesome-icon icon="wrench" />
+                        {{ $t("quickMaintenance") }}
+                    </button>
+                    <button v-if="monitor.maintenance" class="btn btn-warning" @click="endMaintenance">
+                        <font-awesome-icon icon="wrench" />
+                        {{ $t("endMaintenance") }}
+                    </button>
                     <router-link :to="'/edit/' + monitor.id" class="btn btn-normal">
                         <font-awesome-icon icon="edit" />
                         {{ $t("Edit") }}
@@ -657,6 +669,26 @@ export default {
          */
         resumeMonitor() {
             this.$root.getSocket().emit("resumeMonitor", this.monitor.id, (res) => {
+                this.$root.toastRes(res);
+            });
+        },
+
+        /**
+         * Start quick maintenance for this monitor
+         * @returns {void}
+         */
+        startQuickMaintenance() {
+            this.$root.getSocket().emit("quickMaintenance", this.monitor.id, (res) => {
+                this.$root.toastRes(res);
+            });
+        },
+
+        /**
+         * End maintenance for this monitor
+         * @returns {void}
+         */
+        endMaintenance() {
+            this.$root.getSocket().emit("endMaintenance", this.monitor.id, (res) => {
                 this.$root.toastRes(res);
             });
         },

@@ -409,6 +409,7 @@ class Monitor extends BeanModel {
     async start(io) {
         let previousBeat = null;
         let retries = 0;
+        let lastActualStatus = null;
 
         this.rootCertificates = rootCertificates;
 
@@ -419,6 +420,7 @@ class Monitor extends BeanModel {
         }
 
         const beat = async () => {
+            let pendingAutoDisable = null;
             let beatInterval = this.interval;
 
             if (!beatInterval) {
@@ -463,8 +465,19 @@ class Monitor extends BeanModel {
 
             try {
                 if (await Monitor.isUnderMaintenance(this.id)) {
-                    bean.msg = "Monitor under maintenance";
-                    bean.status = MAINTENANCE;
+                    const autoDisableMaintenances = await Monitor.getAutoDisableMaintenances(this.id);
+
+                    if (autoDisableMaintenances.length > 0) {
+                        // Auto-disable maintenance: skip the maintenance block and let the actual check run below
+                        pendingAutoDisable = autoDisableMaintenances;
+                    } else {
+                        bean.msg = "Monitor under maintenance";
+                        bean.status = MAINTENANCE;
+                    }
+                }
+
+                if (bean.status === MAINTENANCE) {
+                    // Regular maintenance — skip all checks
                 } else if (this.type === "http" || this.type === "keyword" || this.type === "json-query") {
                     // Do not do any queries/high loading things before the "bean.ping"
                     let startTime = dayjs().valueOf();
@@ -991,6 +1004,54 @@ class Monitor extends BeanModel {
             }
 
             bean.retries = retries;
+
+            // Auto-disable maintenance: end when service recovers (DOWN → UP).
+            // Requires at least one DOWN beat before auto-disabling, so maintenance
+            // stays active if the service was never actually down.
+            if (pendingAutoDisable && pendingAutoDisable.length > 0) {
+                if (bean.status === UP && lastActualStatus !== null && lastActualStatus !== UP) {
+                    const server = UptimeKumaServer.getInstance();
+                    for (const maintenance of pendingAutoDisable) {
+                        log.info(
+                            "maintenance",
+                            `Auto-disabling maintenance "${maintenance.title}" for monitor ${this.name} — service is UP`
+                        );
+
+                        // Update the in-memory bean (same reference used by isUnderMaintenance)
+                        let inMemoryMaintenance = server.getMaintenance(maintenance.id);
+                        if (inMemoryMaintenance) {
+                            inMemoryMaintenance.active = false;
+                            await R.store(inMemoryMaintenance);
+                            inMemoryMaintenance.stop();
+                        } else {
+                            maintenance.active = false;
+                            await R.store(maintenance);
+                        }
+                    }
+                    lastActualStatus = null;
+                    await server.sendMaintenanceListByUserID(this.user_id);
+
+                    // Update monitor list so frontend sees maintenance status change
+                    let list = await server.getMonitorJSONList(this.user_id, this.id);
+                    if (list && list[this.id]) {
+                        io.to(this.user_id).emit("updateMonitorIntoList", list);
+                    }
+
+                    apicache.clear();
+
+                    // Re-check: monitor may still be under other (non-auto-disable) maintenances
+                    if (await Monitor.isUnderMaintenance(this.id)) {
+                        bean.msg = "Monitor under maintenance";
+                        bean.status = MAINTENANCE;
+                    }
+                } else {
+                    lastActualStatus = bean.status;
+                    bean.msg = "Monitor under maintenance";
+                    bean.status = MAINTENANCE;
+                }
+            } else {
+                lastActualStatus = null;
+            }
 
             log.debug("monitor", `[${this.name}] Check isImportant`);
             let isImportant = Monitor.isImportantBeat(isFirstBeat, previousBeat?.status, bean.status);
@@ -1649,6 +1710,46 @@ class Monitor extends BeanModel {
         }
 
         return false;
+    }
+
+    /**
+     * Get any active maintenance linked to a monitor
+     * @param {number} monitorID The monitor ID
+     * @returns {Promise<object|null>} The maintenance bean or null
+     */
+    static async getActiveMaintenance(monitorID) {
+        return await R.findOne(
+            "maintenance",
+            `
+            id IN (
+                SELECT maintenance_id FROM monitor_maintenance
+                WHERE monitor_id = ?
+            )
+            AND active = 1
+        `,
+            [monitorID]
+        );
+    }
+
+    /**
+     * Get active auto-disable maintenances for a monitor
+     * @param {number} monitorID The monitor ID
+     * @returns {Promise<Array>} Array of maintenance beans
+     */
+    static async getAutoDisableMaintenances(monitorID) {
+        return await R.find(
+            "maintenance",
+            `
+            id IN (
+                SELECT maintenance_id FROM monitor_maintenance
+                WHERE monitor_id = ?
+            )
+            AND strategy = 'manual'
+            AND auto_disable_on_up = 1
+            AND active = 1
+        `,
+            [monitorID]
+        );
     }
 
     /**
