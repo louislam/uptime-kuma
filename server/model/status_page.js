@@ -448,6 +448,7 @@ class StatusPage extends BeanModel {
             analyticsId: this.analytics_id,
             analyticsScriptUrl: this.analytics_script_url,
             analyticsType: this.analytics_type,
+            showCookieConsent: !!this.show_cookie_consent, // ← ADD THIS
             showCertificateExpiry: !!this.show_certificate_expiry,
             showOnlyLastHeartbeat: !!this.show_only_last_heartbeat,
             rssTitle: this.rss_title,
@@ -475,6 +476,7 @@ class StatusPage extends BeanModel {
             analyticsId: this.analytics_id,
             analyticsScriptUrl: this.analytics_script_url,
             analyticsType: this.analytics_type,
+            showCookieConsent: !!this.show_cookie_consent, // ← ADD THIS
             showCertificateExpiry: !!this.show_certificate_expiry,
             showOnlyLastHeartbeat: !!this.show_only_last_heartbeat,
             rssTitle: this.rss_title,
