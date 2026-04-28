@@ -1751,7 +1751,7 @@
                                     :max="65500"
                                     step="1"
                                 />
-                                <div v-if="monitor.packetSize < 16" class="form-text text-warning">
+                                <div v-if="$root.info.runtime.platform === 'linux' && monitor.packetSize < 16" class="form-text text-warning">
                                     {{ $t("pingPacketSizeWarning") }}
                                 </div>
                             </div>
