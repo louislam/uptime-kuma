@@ -380,4 +380,47 @@ describe("WebSocket Monitor", {}, () => {
         await websocketMonitor.check(monitor, heartbeat, {});
         assert.deepStrictEqual(heartbeat, expected);
     });
+
+    test("buildWsOptions() includes custom headers", async () => {
+        const websocketMonitor = new WebSocketMonitorType();
+
+        const options = await websocketMonitor.buildWsOptions({
+            headers: JSON.stringify({
+                "X-Test": "test-value",
+            }),
+        });
+
+        assert.deepStrictEqual(options.headers, {
+            "X-Test": "test-value",
+        });
+    });
+
+    test("buildWsOptions() ignores invalid custom headers JSON", async () => {
+        const websocketMonitor = new WebSocketMonitorType();
+
+        const options = await websocketMonitor.buildWsOptions({
+            headers: "{ invalid-json",
+        });
+
+        assert.deepStrictEqual(options.headers, {});
+    });
+
+    test("buildWsOptions() authentication header overrides custom Authorization header", async () => {
+        const websocketMonitor = new WebSocketMonitorType();
+
+        const options = await websocketMonitor.buildWsOptions({
+            headers: JSON.stringify({
+                Authorization: "Bearer custom-token",
+                "X-Test": "test-value",
+            }),
+            authMethod: "basic",
+            basic_auth_user: "user",
+            basic_auth_pass: "pass",
+        });
+
+        assert.deepStrictEqual(options.headers, {
+            Authorization: "Basic dXNlcjpwYXNz",
+            "X-Test": "test-value",
+        });
+    });
 });
