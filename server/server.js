@@ -1068,6 +1068,14 @@ let needSetup = false;
                 await startMonitor(socket.userID, monitorID);
                 await server.sendUpdateMonitorIntoList(socket, monitorID);
 
+                const monitor = await R.findOne("monitor", " id = ? AND user_id = ? ", [monitorID, socket.userID]);
+                if (monitor && monitor.type === "group") {
+                    const childMonitorIDs = await Monitor.getAllChildrenIDs(monitorID);
+                    for (const childMonitorID of childMonitorIDs) {
+                        await server.sendUpdateMonitorIntoList(socket, childMonitorID);
+                    }
+                }
+
                 callback({
                     ok: true,
                     msg: "successResumed",
@@ -1081,11 +1089,72 @@ let needSetup = false;
             }
         });
 
-        socket.on("pauseMonitor", async (monitorID, callback) => {
+        socket.on("pauseMonitor", async (monitorID, pauseChildren, callback) => {
             try {
+                // Backward compatibility: if pauseChildren is omitted, the second parameter is the callback
+                if (typeof pauseChildren === "function") {
+                    callback = pauseChildren;
+                    pauseChildren = false;
+                }
+
                 checkLogin(socket);
+
+                const startTime = Date.now();
+
+                // Check if this is a group monitor
+                const monitor = await R.findOne("monitor", " id = ? AND user_id = ? ", [monitorID, socket.userID]);
+                let childMonitorIDs = [];
+
+                // Log with context about pausing type
+                if (monitor && monitor.type === "group") {
+                    if (pauseChildren) {
+                        log.info("manage", `Pause Group and Children: ${monitorID} User ID: ${socket.userID}`);
+                    } else {
+                        log.info("manage", `Pause Group only: ${monitorID} User ID: ${socket.userID}`);
+                    }
+                } else {
+                    log.info("manage", `Pause Monitor: ${monitorID} User ID: ${socket.userID}`);
+                }
+
+                if (monitor && monitor.type === "group") {
+                    // Get all descendants before processing
+                    childMonitorIDs = await Monitor.getAllChildrenIDs(monitorID);
+
+                    if (pauseChildren) {
+                        // Pause all descendants
+                        if (childMonitorIDs.length > 0) {
+                            for (const childMonitorID of childMonitorIDs) {
+                                await pauseMonitor(socket.userID, childMonitorID);
+                            }
+                        }
+                    }
+                }
+
+                // Pause the monitor itself
                 await pauseMonitor(socket.userID, monitorID);
                 await server.sendUpdateMonitorIntoList(socket, monitorID);
+
+                if (monitor && monitor.type === "group") {
+                    for (const childMonitorID of childMonitorIDs) {
+                        await server.sendUpdateMonitorIntoList(socket, childMonitorID);
+                    }
+                }
+
+                const endTime = Date.now();
+
+                // Log completion with context about children handling
+                if (monitor && monitor.type === "group") {
+                    if (pauseChildren) {
+                        log.info(
+                            "DB",
+                            `Pause Monitor completed (group and children paused) in: ${endTime - startTime} ms`
+                        );
+                    } else {
+                        log.info("DB", `Pause Monitor completed (group paused) in: ${endTime - startTime} ms`);
+                    }
+                } else {
+                    log.info("DB", `Pause Monitor completed in: ${endTime - startTime} ms`);
+                }
 
                 callback({
                     ok: true,
