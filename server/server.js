@@ -932,6 +932,26 @@ let needSetup = false;
                 bean.system_service_name = monitor.system_service_name;
                 bean.expected_tls_alert = monitor.expectedTlsAlert;
 
+                // syncthing
+                bean.syncthingUrl = monitor.syncthingUrl;
+                if (monitor.syncthingApiKey) {
+                    // The Syncthing API key always grants **full, unrestricted access** to the Syncthing
+                    //  instance — there is no read-only scope or per-capability restriction. Returning it
+                    //  to the frontend would mean that anyone who gains access to an Uptime Kuma session
+                    //  also obtains credentials capable of reconfiguring or disrupting Syncthing entirely.
+                    //
+                    // For this reason the key is excluded from `toJSON()` under all circumstances and is
+                    //  never sent to the browser. The edit form shows a placeholder when a key is already
+                    //  stored, and omits the `required` validation in that case. Submitting the form
+                    //  without changing the field leaves the existing key untouched in the database.
+                    bean.syncthingApiKey = monitor.syncthingApiKey;
+                }
+                bean.syncthingCheckType = monitor.syncthingCheckType;
+                bean.syncthingFilter = monitor.syncthingFilter;
+                bean.syncthingFilterMode = monitor.syncthingFilterMode;
+                bean.syncthingPeerTimeout = monitor.syncthingPeerTimeout;
+                bean.syncthingFolderSyncThreshold = monitor.syncthingFolderSyncThreshold;
+
                 // ping advanced options
                 bean.ping_numeric = monitor.ping_numeric;
                 bean.ping_count = monitor.ping_count;
