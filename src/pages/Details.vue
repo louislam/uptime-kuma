@@ -640,7 +640,7 @@ export default {
          */
         testNotification() {
             this.$root.getSocket().emit("testNotification", this.monitor.id);
-            this.$root.toastSuccess("Test notification is requested.");
+            this.$root.toastSuccess("testNotificationRequested");
         },
 
         /**
