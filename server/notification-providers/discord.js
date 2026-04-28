@@ -68,6 +68,9 @@ class Discord extends NotificationProvider {
             // If heartbeatJSON is not null, we go into the normal alerting loop.
             let addess = this.extractAddress(monitorJSON);
 
+            // Append "Z" to heartbeatJSON["time"] so that `new Date()` treats it as UTC and not local time
+            heartbeatJSON["time"] += "Z";
+
             // Minimalist: status + name only (is down / is up; no "back up" — may be first trigger)
             if (messageFormat === "minimalist") {
                 const content =
@@ -178,6 +181,8 @@ class Discord extends NotificationProvider {
                 let downtimeDuration = null;
                 let wentOfflineTimestamp = null;
                 if (heartbeatJSON["lastDownTime"]) {
+                    // Append "Z" to heartbeatJSON["lastDownTime"] so it's treated as UTC
+                    heartbeatJSON["lastDownTime"] += "Z";
                     wentOfflineTimestamp = Math.floor(new Date(heartbeatJSON["lastDownTime"]).getTime() / 1000);
                     downtimeDuration = this.formatDuration(backOnlineTimestamp - wentOfflineTimestamp);
                 }
