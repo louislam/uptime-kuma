@@ -18,6 +18,8 @@ class Matrix extends NotificationProvider {
         log.debug("notification", "Random String: " + randomString);
 
         const roomId = encodeURIComponent(notification.internalRoomId);
+        // normalize URL: trim whitespace and strip trailing /
+        const baseUrl = notification.homeserverUrl.trim().replace(/\/+$/, "");
 
         log.debug("notification", "Matrix Room ID: " + roomId);
 
@@ -38,7 +40,7 @@ class Matrix extends NotificationProvider {
 
             config = this.getAxiosConfigWithProxy(config);
             await axios.put(
-                `${notification.homeserverUrl}/_matrix/client/r0/rooms/${roomId}/send/m.room.message/${randomString}`,
+                `${baseUrl}/_matrix/client/v3/rooms/${roomId}/send/m.room.message/${randomString}`,
                 data,
                 config
             );
