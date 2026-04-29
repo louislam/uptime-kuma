@@ -1113,15 +1113,17 @@ export default {
          */
         updateHeartbeatList() {
             axios.get("/api/status-page/heartbeat/" + this.slug).then((res) => {
-                const { heartbeatList, uptimeList } = res.data;
+                const { heartbeatList, uptimeList, latestHeartbeat } = res.data;
 
                 if (!this.editMode) {
                     this.$root.heartbeatList = heartbeatList;
+                    this.$root.latestHeartbeatList = latestHeartbeat || {};
 
                     const heartbeatIds = Object.keys(heartbeatList);
                     const downMonitors = heartbeatIds.reduce((downMonitorsAmount, currentId) => {
                         const monitorHeartbeats = heartbeatList[currentId];
-                        const lastHeartbeat = monitorHeartbeats.at(-1);
+                        const lastHeartbeat =
+                            (latestHeartbeat && latestHeartbeat[currentId]) || monitorHeartbeats.at(-1);
 
                         if (lastHeartbeat) {
                             return lastHeartbeat.status === 0 ? downMonitorsAmount + 1 : downMonitorsAmount;

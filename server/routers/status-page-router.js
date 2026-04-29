@@ -7,6 +7,7 @@ const { R } = require("redbean-node");
 const { badgeConstants } = require("../../src/util");
 const { makeBadge } = require("badge-maker");
 const { UptimeCalculator } = require("../uptime-calculator");
+const { buildPublicStatusBarSegmentList } = require("../util-status-page-bar");
 
 let router = express.Router();
 
@@ -67,6 +68,7 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
     try {
         let heartbeatList = {};
         let uptimeList = {};
+        let latestHeartbeat = {};
 
         let slug = request.params.slug;
         slug = slug.toLowerCase();
@@ -85,21 +87,35 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
             [statusPageID]
         );
 
-        for (let monitorID of monitorIDList) {
-            let list = await R.getAll(
+        if (monitorIDList.length > 0) {
+            const placeholders = monitorIDList.map(() => "?").join(",");
+            let latestRows = await R.getAll(
                 `
-                    SELECT * FROM heartbeat
-                    WHERE monitor_id = ?
-                    ORDER BY time DESC
-                    LIMIT 100
+                SELECT h.monitor_id, h.status, h.time, h.ping
+                FROM heartbeat h
+                INNER JOIN (
+                    SELECT monitor_id, MAX(time) AS max_time
+                    FROM heartbeat
+                    WHERE monitor_id IN (${placeholders})
+                    GROUP BY monitor_id
+                ) t ON h.monitor_id = t.monitor_id AND h.time = t.max_time
             `,
-                [monitorID]
+                monitorIDList
             );
+            for (let row of latestRows) {
+                latestHeartbeat[row.monitor_id] = {
+                    status: row.status,
+                    time: row.time,
+                    msg: "",
+                    ping: row.ping,
+                };
+            }
+        }
 
-            list = R.convertToBeans("heartbeat", list);
-            heartbeatList[monitorID] = list.reverse().map((row) => row.toPublicJSON());
-
+        for (let monitorID of monitorIDList) {
             const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);
+            heartbeatList[monitorID] = buildPublicStatusBarSegmentList(uptimeCalculator, uptimeWindow);
+
             let uptimeValue;
             if (uptimeWindow === "7d") {
                 uptimeValue = uptimeCalculator.get7Day().uptime;
@@ -114,6 +130,7 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
         response.json({
             heartbeatList,
             uptimeList,
+            latestHeartbeat,
         });
     } catch (error) {
         sendHttpError(response, error.message);

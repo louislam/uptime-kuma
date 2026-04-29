@@ -46,6 +46,7 @@ export default {
             maintenanceList: {},
             apiKeyList: {},
             heartbeatList: {},
+            latestHeartbeatList: {},
             avgPingList: {},
             uptimeList: {},
             tlsInfoList: {},
@@ -666,6 +667,7 @@ export default {
         clearData() {
             console.log("reset heartbeat list");
             this.heartbeatList = {};
+            this.latestHeartbeatList = {};
         },
 
         /**

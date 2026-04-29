@@ -121,7 +121,11 @@
                                             </div>
                                         </div>
                                         <div :key="$root.userHeartbeatBar" class="col-3 col-xl-6">
-                                            <HeartbeatBar size="mid" :monitor-id="monitor.element.id" />
+                                            <HeartbeatBar
+                                                size="mid"
+                                                :monitor-id="monitor.element.id"
+                                                :heartbeat-bar-days="publicHeartbeatBarDays"
+                                            />
                                         </div>
                                     </div>
                                 </div>
@@ -179,7 +183,25 @@ export default {
     data() {
         return {};
     },
+
     computed: {
+        /**
+         * maps uptime window to HeartbeatBar label mode (24h / Nd); 0 in edit mode (raw socket list)
+         * @returns {number} days hint for HeartbeatBar (0 = auto)
+         */
+        publicHeartbeatBarDays() {
+            if (this.editMode) {
+                return 0;
+            }
+            if (this.uptimeDisplayWindow === "7d") {
+                return 7;
+            }
+            if (this.uptimeDisplayWindow === "30d") {
+                return 30;
+            }
+            return 1;
+        },
+
         showGroupDrag() {
             return this.$root.publicGroupList.length >= 2;
         },
@@ -300,6 +322,12 @@ export default {
          * @returns {number} Status of the last heartbeat
          */
         statusOfLastHeartbeat(monitorId) {
+            if (!this.editMode) {
+                const latest = this.$root.latestHeartbeatList[monitorId];
+                if (latest) {
+                    return latest.status;
+                }
+            }
             let heartbeats = this.$root.heartbeatList[monitorId] ?? [];
             let lastHeartbeat = heartbeats[heartbeats.length - 1];
             return lastHeartbeat?.status;
