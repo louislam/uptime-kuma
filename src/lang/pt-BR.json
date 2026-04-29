@@ -17,7 +17,7 @@
     "rrtypeDescription": "Selecione o RR-Type que você deseja monitorar",
     "pauseMonitorMsg": "Tem certeza que deseja fazer uma pausa?",
     "enableDefaultNotificationDescription": "Para cada novo monitor, esta notificação será habilitada por padrão. Você ainda pode desativar a notificação separadamente para cada monitor.",
-    "clearEventsMsg": "Tem certeza de que deseja excluir todos os eventos deste monitor?",
+    "clearEventsMsg": "Tem certeza de que deseja excluir todos os eventos deste monitor? Isso remove permanentemente os dados de mensagens associados e não pode ser desfeito.",
     "clearHeartbeatsMsg": "Tem certeza de que deseja excluir todos os heartbeats deste monitor? Isso removerá permanentemente todos os dados de heartbeats e não poderá ser desfeito.",
     "confirmClearStatisticsMsg": "Tem certeza que deseja excluir TODAS as estatísticas?",
     "importHandleDescription": "Escolha 'Ignorar existente' se quiser ignorar todos os monitores ou notificações com o mesmo nome. 'Substituir' excluirá todos os monitores e notificações existentes.",
@@ -1151,7 +1151,7 @@
     "Events cleared successfully": "Eventos limpos com sucesso.",
     "No monitors found": "Nenhum monitor encontrado.",
     "Could not clear events": "Não foi possível limpar {failed}/{total} eventos",
-    "clearAllEventsMsg": "Tem certeza de que deseja excluir todos os eventos?",
+    "clearAllEventsMsg": "Tem certeza de que deseja excluir todos os eventos de todos os monitores? Isso remove permanentemente os dados de mensagens associados e não pode ser desfeito.",
     "wayToWriteEvolutionRecipient": "O número de telefone com o prefixo internacional, mas sem o sinal de mais no início ({0}), o ID de contato ({1}) ou o ID de grupo ({2}).",
     "wayToGetEvolutionUrlAndToken": "Você pode obter a URL da API e o token acessando o canal desejado em {0}",
     "evolutionRecipient": "Número de Telefone / ID de Contato / ID do Grupo",
@@ -1613,5 +1613,6 @@
     "telnyxApiKeyHelptext": "Sua chave de API V2 da Telnyx, obtida no Portal da Telnyx em Chaves de API",
     "telnyxToNumberHelptext": "O número de telefone de destino para receber notificações por SMS (ex.: +15559876543)",
     "evolutionCustomMessageTitle": "Mensagem personalizada (opcional)",
-    "evolutionCustomMessageDesc": "Deixe em branco para usar a mensagem padrão."
+    "evolutionCustomMessageDesc": "Deixe em branco para usar a mensagem padrão.",
+    "WebSocket Options": "Opções do WebSocket"
 }
