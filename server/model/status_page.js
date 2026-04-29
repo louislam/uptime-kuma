@@ -22,11 +22,25 @@ const {
 } = require("../../src/util");
 
 class StatusPage extends BeanModel {
+    /** @type {Readonly<string[]>} */
+    static UPTIME_DISPLAY_WINDOWS = Object.freeze(["24h", "7d", "30d"]);
+
     /**
      * Like this: { "test-uptime.kuma.pet": "default" }
      * @type {{}}
      */
     static domainMappingList = {};
+
+    /**
+     * @param {string|null|undefined} value raw db or api value
+     * @returns {"24h"|"7d"|"30d"}
+     */
+    static normalizeUptimeDisplayWindow(value) {
+        if (StatusPage.UPTIME_DISPLAY_WINDOWS.includes(value)) {
+            return value;
+        }
+        return "24h";
+    }
 
     /**
      * Handle responses to RSS pages
@@ -451,6 +465,7 @@ class StatusPage extends BeanModel {
             showCertificateExpiry: !!this.show_certificate_expiry,
             showOnlyLastHeartbeat: !!this.show_only_last_heartbeat,
             rssTitle: this.rss_title,
+            uptimeDisplayWindow: StatusPage.normalizeUptimeDisplayWindow(this.uptime_display_window),
         };
     }
 
@@ -478,6 +493,7 @@ class StatusPage extends BeanModel {
             showCertificateExpiry: !!this.show_certificate_expiry,
             showOnlyLastHeartbeat: !!this.show_only_last_heartbeat,
             rssTitle: this.rss_title,
+            uptimeDisplayWindow: StatusPage.normalizeUptimeDisplayWindow(this.uptime_display_window),
         };
     }
 

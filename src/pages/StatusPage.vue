@@ -114,6 +114,20 @@
                     </label>
                 </div>
 
+                <div class="my-3">
+                    <label for="uptime-display-window" class="form-label">{{ $t("statusPageUptimePeriod") }}</label>
+                    <select
+                        id="uptime-display-window"
+                        v-model="config.uptimeDisplayWindow"
+                        class="form-select"
+                        data-testid="uptime-window-select"
+                    >
+                        <option value="24h">{{ $t("statusPageUptimeLast24h") }}</option>
+                        <option value="7d">{{ $t("statusPageUptimeLast7d") }}</option>
+                        <option value="30d">{{ $t("statusPageUptimeLast30d") }}</option>
+                    </select>
+                </div>
+
                 <!-- Domain Name List -->
                 <div class="my-3">
                     <label class="form-label">
@@ -493,6 +507,7 @@
                     :show-tags="config.showTags"
                     :show-certificate-expiry="config.showCertificateExpiry"
                     :show-only-last-heartbeat="config.showOnlyLastHeartbeat"
+                    :uptime-display-window="effectiveUptimeDisplayWindow"
                 />
             </div>
 
@@ -773,6 +788,18 @@ export default {
             return this.config.published;
         },
 
+        /**
+         * public uptime % window; keys match heartbeat API suffix (24h, 7d, 30d)
+         * @returns {"24h"|"7d"|"30d"}
+         */
+        effectiveUptimeDisplayWindow() {
+            const w = this.config.uptimeDisplayWindow;
+            if (w === "7d" || w === "30d" || w === "24h") {
+                return w;
+            }
+            return "24h";
+        },
+
         logoClass() {
             if (this.editMode) {
                 return {
@@ -906,6 +933,7 @@ export default {
                 this.$root.getSocket().emit("getStatusPage", this.slug, (res) => {
                     if (res.ok) {
                         this.config = res.config;
+                        this.ensureUptimeDisplayWindowInConfig();
 
                         if (!this.config.customCSS) {
                             this.config.customCSS = "body {\n" + "  \n" + "}\n";
@@ -991,6 +1019,7 @@ export default {
                 if (!this.config.domainNameList) {
                     this.config.domainNameList = [];
                 }
+                this.ensureUptimeDisplayWindowInConfig();
 
                 if (this.config.icon) {
                     this.imgDataUrl = this.config.icon;
@@ -1059,6 +1088,17 @@ export default {
         },
 
         /**
+         * default uptime window when config predates the field
+         * @returns {void}
+         */
+        ensureUptimeDisplayWindowInConfig() {
+            const w = this.config.uptimeDisplayWindow;
+            if (w !== "24h" && w !== "7d" && w !== "30d") {
+                this.config.uptimeDisplayWindow = "24h";
+            }
+        },
+
+        /**
          * Provide syntax highlighting for CSS
          * @param {string} code Text to highlight
          * @returns {string} Highlighted CSS
@@ -1072,13 +1112,11 @@ export default {
          * @returns {void}
          */
         updateHeartbeatList() {
-            // If editMode, it will use the data from websocket.
-            if (!this.editMode) {
-                axios.get("/api/status-page/heartbeat/" + this.slug).then((res) => {
-                    const { heartbeatList, uptimeList } = res.data;
+            axios.get("/api/status-page/heartbeat/" + this.slug).then((res) => {
+                const { heartbeatList, uptimeList } = res.data;
 
+                if (!this.editMode) {
                     this.$root.heartbeatList = heartbeatList;
-                    this.$root.uptimeList = uptimeList;
 
                     const heartbeatIds = Object.keys(heartbeatList);
                     const downMonitors = heartbeatIds.reduce((downMonitorsAmount, currentId) => {
@@ -1097,8 +1135,10 @@ export default {
                     this.loadedData = true;
                     this.lastUpdateTime = dayjs();
                     this.updateUpdateTimer();
-                });
-            }
+                }
+
+                this.$root.uptimeList = uptimeList;
+            });
         },
 
         /**

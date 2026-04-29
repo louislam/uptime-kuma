@@ -336,6 +336,13 @@ module.exports.statusPageSocketHandler = (socket) => {
             statusPage.rss_title = config.rssTitle;
             statusPage.show_only_last_heartbeat = config.showOnlyLastHeartbeat;
             statusPage.show_certificate_expiry = config.showCertificateExpiry;
+            let uptimeWindow = config.uptimeDisplayWindow;
+            if (uptimeWindow === undefined || uptimeWindow === null || uptimeWindow === "") {
+                uptimeWindow = StatusPage.normalizeUptimeDisplayWindow(statusPage.uptime_display_window);
+            } else if (!StatusPage.UPTIME_DISPLAY_WINDOWS.includes(uptimeWindow)) {
+                throw new Error("Invalid uptime display window");
+            }
+            statusPage.uptime_display_window = uptimeWindow;
             statusPage.modified_date = R.isoDateTime();
             statusPage.analytics_id = config.analyticsId;
             statusPage.analytics_script_url = config.analyticsScriptUrl;

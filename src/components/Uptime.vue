@@ -90,6 +90,15 @@ export default {
             if (this.type === "720") {
                 return this.$t("days", 30);
             }
+            if (this.type === "24h") {
+                return this.$t("statusPageUptimeLast24h");
+            }
+            if (this.type === "7d") {
+                return this.$t("statusPageUptimeLast7d");
+            }
+            if (this.type === "30d") {
+                return this.$t("statusPageUptimeLast30d");
+            }
             return this.$t("hours", 24);
         },
     },

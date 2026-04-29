@@ -72,6 +72,9 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
         slug = slug.toLowerCase();
         let statusPageID = await StatusPage.slugToID(slug);
 
+        let statusPage = await R.findOne("status_page", " slug = ? ", [slug]);
+        const uptimeWindow = StatusPage.normalizeUptimeDisplayWindow(statusPage?.uptime_display_window);
+
         let monitorIDList = await R.getCol(
             `
             SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
@@ -97,7 +100,15 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
             heartbeatList[monitorID] = list.reverse().map((row) => row.toPublicJSON());
 
             const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);
-            uptimeList[`${monitorID}_24`] = uptimeCalculator.get24Hour().uptime;
+            let uptimeValue;
+            if (uptimeWindow === "7d") {
+                uptimeValue = uptimeCalculator.get7Day().uptime;
+            } else if (uptimeWindow === "30d") {
+                uptimeValue = uptimeCalculator.get30Day().uptime;
+            } else {
+                uptimeValue = uptimeCalculator.get24Hour().uptime;
+            }
+            uptimeList[`${monitorID}_${uptimeWindow}`] = uptimeValue;
         }
 
         response.json({
