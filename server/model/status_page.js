@@ -33,7 +33,7 @@ class StatusPage extends BeanModel {
 
     /**
      * @param {string|null|undefined} value raw db or api value
-     * @returns {"24h"|"7d"|"30d"}
+     * @returns {"24h"|"7d"|"30d"} allowed window token
      */
     static normalizeUptimeDisplayWindow(value) {
         if (StatusPage.UPTIME_DISPLAY_WINDOWS.includes(value)) {
