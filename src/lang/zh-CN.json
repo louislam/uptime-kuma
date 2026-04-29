@@ -1648,5 +1648,7 @@
     "telnyxToNumber": "收件人号码",
     "evolutionCustomMessageDesc": "留空以使用默认消息。",
     "evolutionCustomMessageTitle": "自定义消息（可选）",
-    "telnyxPhoneNumberHelptext": "发件人 Telnyx 手机号码（必须注册在 Telnyx 账户上，例如：+15551234567）"
+    "telnyxPhoneNumberHelptext": "发件人 Telnyx 手机号码（必须注册在 Telnyx 账户上，例如：+15551234567）",
+    "pingPacketSizeWarning": "在 Linux 系统上，小于 16 字节的数据包大小无法计算往返时间（rtt）",
+    "WebSocket Options": "WebSocket 选项"
 }

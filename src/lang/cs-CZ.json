@@ -35,8 +35,8 @@
     "rrtypeDescription": "Vyberte typ záznamu o prostředku, který chcete monitorovat",
     "pauseMonitorMsg": "Opravdu chcete dohled pozastavit?",
     "enableDefaultNotificationDescription": "Toto oznámení bude standardně aktivní pro nové dohledy. V případě potřeby můžete oznámení stále zakázat na úrovni jednotlivých dohledů.",
-    "clearEventsMsg": "Opravdu chcete odstranit všechny události pro tento dohled?",
-    "clearHeartbeatsMsg": "Opravdu chcete odstranit všechny heartbeaty pro tento dohled?",
+    "clearEventsMsg": "Opravdu chcete odstranit všechny události tohoto dohledu? Tím dojde k trvalému odstranění souvisejících dat zpráv a tento úkon nelze vrátit zpět.",
+    "clearHeartbeatsMsg": "Opravdu chcete smazat všechny záznamy životních signálů z tohoto dohledu? Tímto krokem dojde k trvalému odstranění všech údajů o životních signálech a nelze jej vrátit zpět.",
     "confirmClearStatisticsMsg": "Opravdu chcete smazat VŠECHNY statistiky?",
     "importHandleDescription": "Možnost 'Přeskočit existující' vyberte v případě, že chcete přeskočit všechny dohledy nebo oznámení se stejným názvem. Vybráním možnosti 'Přepsat' dojde k odstranění všech existujících dohledů a oznámení.",
     "confirmImportMsg": "Opravdu chcete importovat zálohu? Prosím ověřte, zda jste vybrali správnou možnost importu.",
@@ -1176,7 +1176,7 @@
     "mqttWebsocketPathExplanation": "WebSocket cesta pro MQTT prostřednictvím WebSocket spojení (např. /mqtt)",
     "Template plain text instead of using cards": "Šablona prostého textu namísto použití karet",
     "issueWithGoogleChatOnAndroidHelptext": "Tím se můžete rovněž vyhnout chybám v upstreamu jako je {issuetackerURL}",
-    "clearAllEventsMsg": "Opravdu chcete odstranit všechny události?",
+    "clearAllEventsMsg": "Opravdu chcete odstranit všechny události ze všech dohledů? Tím dojde k trvalému smazání souvisejících dat zpráv a tento úkon nelze vrátit zpět.",
     "Events cleared successfully": "Události byly vymazány.",
     "No monitors found": "Nebyl nalezen žádný dohled.",
     "brevoApiHelp": "API klíč vytvoříte na: {0}",
@@ -1602,5 +1602,7 @@
     "telnyxMessagingProfileId": "ID profilu pro zasílání zpráv (volitelné)",
     "telnyxMessagingProfileIdHelptext": "Volitelně můžete přiřadit profil zasílání zpráv Telnyx, abyste mohli spravovat nastavení a funkce odesílatele",
     "evolutionCustomMessageDesc": "Nechte pole prázdné, chcete-li použít výchozí zprávu.",
-    "evolutionCustomMessageTitle": "Vlastní zpráva (volitelné)"
+    "evolutionCustomMessageTitle": "Vlastní zpráva (volitelné)",
+    "WebSocket Options": "Možnosti WebSocketu",
+    "pingPacketSizeWarning": "Velikost paketu menší než 16 nevyvolává v systému Linux měření doby přenosu tam a zpět"
 }
