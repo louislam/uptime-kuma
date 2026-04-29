@@ -18,7 +18,7 @@
     "pauseMonitorMsg": "Tem certeza que deseja fazer uma pausa?",
     "enableDefaultNotificationDescription": "Para cada novo monitor, esta notificação será habilitada por padrão. Você ainda pode desativar a notificação separadamente para cada monitor.",
     "clearEventsMsg": "Tem certeza de que deseja excluir todos os eventos deste monitor?",
-    "clearHeartbeatsMsg": "Tem certeza de que deseja excluir todos os heartbeats deste monitor?",
+    "clearHeartbeatsMsg": "Tem certeza de que deseja excluir todos os heartbeats deste monitor? Isso removerá permanentemente todos os dados de heartbeats e não poderá ser desfeito.",
     "confirmClearStatisticsMsg": "Tem certeza que deseja excluir TODAS as estatísticas?",
     "importHandleDescription": "Escolha 'Ignorar existente' se quiser ignorar todos os monitores ou notificações com o mesmo nome. 'Substituir' excluirá todos os monitores e notificações existentes.",
     "confirmImportMsg": "Tem certeza que deseja importar o backup? Certifique-se de que selecionou a opção de importação correta.",
