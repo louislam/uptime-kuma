@@ -15,6 +15,16 @@ Uptime Kuma is an easy-to-use self-hosted monitoring tool.
 
 ## 🥔 Live Demo
 
+## OpenClaw Monitor
+
+> Real-time AI Agent Monitoring Dashboard for OpenClaw
+
+**GitHub:** [flik2002/openclaw-monitor](https://github.com/flik2002/openclaw-monitor) ⭐
+
+![Dashboard](https://raw.githubusercontent.com/flik2002/openclaw-monitor/main/Openclaw%20Monitor.jpg)
+
+
+
 Try it!
 
 Demo Server (Location: Frankfurt - Germany): <https://demo.kuma.pet/start-demo>
