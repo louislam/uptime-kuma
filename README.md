@@ -48,6 +48,15 @@ docker compose up -d
 
 Uptime Kuma is now running on all network interfaces (e.g. http://localhost:3001 or http://your-ip:3001).
 
+> [!TIP]
+> To serve Uptime Kuma over HTTPS, the bundled `caddy` profile fronts it with [Caddy](https://caddyserver.com/) and obtains a Let's Encrypt certificate automatically. Point a public hostname at the host, then:
+>
+> ```bash
+> DOMAIN=status.example.com docker compose --profile caddy up -d
+> ```
+>
+> See [`docker/caddy/README.md`](./docker/caddy/README.md) for prerequisites (DNS, ports) and the proxy config.
+
 > [!WARNING]
 > File Systems like **NFS** (Network File System) are **NOT** supported. Please map to a local directory or volume.
 

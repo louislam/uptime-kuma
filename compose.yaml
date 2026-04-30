@@ -5,5 +5,29 @@ services:
     volumes:
       - ./data:/app/data
     ports:
-      # <Host Port>:<Container Port>
       - "3001:3001"
+
+  # Reference reverse-proxy setup with automatic Let's Encrypt SSL.
+  # Disabled by default. enable with:
+  #   docker compose --profile caddy up -d
+  caddy:
+    image: caddy:2-alpine
+    profiles: ["caddy"]
+    restart: unless-stopped
+    depends_on:
+      - uptime-kuma
+    environment:
+      # Set this to the public hostname pointed at this server (e.g. status.example.com).
+      # Caddy will automatically obtain and renew a Let's Encrypt certificate for it.
+      - DOMAIN=${DOMAIN:?set DOMAIN to your public hostname, e.g. status.example.com}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:

@@ -1,0 +1,37 @@
+# See ./README.md for prerequisites (DNS record, ports 80/443) and setup steps.
+
+# The site address. Caddy listens on 80/443 for this hostname, redirects
+# HTTP to HTTPS, and obtains/renews a Let's Encrypt certificate for it.
+# The {$DOMAIN} placeholder is substituted from the DOMAIN environment
+# variable set in compose.yaml.
+{$DOMAIN} {
+	# Compress responses on the fly. zstd is preferred when the client
+	# supports it; gzip is the universal fallback. Caddy skips compression
+	# for already-compressed content types (images, video, etc.).
+	encode zstd gzip
+
+	header {
+		# HSTS - once a browser sees this, it will refuse plain HTTP to this
+		# hostname for the next year. Safe for a domain you intend to keep on
+		# HTTPS;
+		# includeSubDomains/preload are intentionally omitted to avoid
+		# affecting sibling subdomains.
+		Strict-Transport-Security "max-age=31536000"
+
+		# Stops browsers from MIME-sniffing responses away from the declared
+		# Content-Type. Cheap defense against a class of XSS tricks.
+		X-Content-Type-Options "nosniff"
+
+		# Send the full Referer on same-origin navigations, but only the
+		# origin (no path/query) when leaving the site over HTTPS, and
+		# nothing when downgrading to HTTP.
+		Referrer-Policy "strict-origin-when-cross-origin"
+	}
+
+	# Forward all traffic to the uptime-kuma container on the internal
+	# Docker network. WebSocket / Socket.IO upgrades are handled
+	# transparently. Uptime Kuma relies on them for live updates.
+	# Caddy also overwrites any client-supplied X-Forwarded-* headers
+	# by default, so spoofed client IPs don't leak through.
+	reverse_proxy uptime-kuma:3001
+}
