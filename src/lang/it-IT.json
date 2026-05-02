@@ -17,8 +17,8 @@
     "rrtypeDescription": "Sceglie il tipo di RR che si vuole monitorare",
     "pauseMonitorMsg": "Sei sicuro di voler mettere in pausa?",
     "enableDefaultNotificationDescription": "Per ogni nuovo monitoraggio questa notifica sarà abilitata in modo predefinito. È comunque possibile disabilitare la notifica singolarmente.",
-    "clearEventsMsg": "Sei sicuro di voler eliminare tutti gli eventi per questo monitoraggio?",
-    "clearHeartbeatsMsg": "Sei sicuro di voler eliminare tutti gli intervalli di controllo per questo monitoraggio?",
+    "clearEventsMsg": "Sei sicuro di voler eliminare tutti gli eventi per questo monitoraggio? Questa operazione rimuove definitivamente i dati dei messaggi associati e non può essere annullata.",
+    "clearHeartbeatsMsg": "Sei sicuro di voler eliminare tutti i dati relativi ai battiti cardiaci di questo monitoraggio? Questa operazione elimina definitivamente tutti i dati relativi ai battiti cardiaci e non può essere annullata.",
     "confirmClearStatisticsMsg": "Sei sicuro di voler eliminare TUTTE le statistiche?",
     "importHandleDescription": "Seleziona \"Ignora esistenti\" se vuoi ignorare tutti i monitoraggi o le notifiche con lo stesso nome. \"Sovrascrivi\" eliminerà tutti i monitoraggi e le notifiche esistenti.",
     "confirmImportMsg": "Sei sicuro di voler importare il backup? Controlla di aver selezionato l'opzione corretta di importazione.",
@@ -783,7 +783,7 @@
     "Add Tags": "Aggiungi Etichette",
     "Mentioning": "Menzione",
     "Clear All Events": "Cancella tutti gli eventi",
-    "clearAllEventsMsg": "Sei sicuro di eliminare tutti gli eventi?",
+    "clearAllEventsMsg": "Sei sicuro di voler eliminare tutti gli eventi per tutti i monitoraggio? Questa operazione rimuove definitivamente i dati dei messaggi associati e non può essere annullata.",
     "Events cleared successfully": "Eventi cancellati con successo.",
     "No monitors found": "Nessun monitoraggio trovato.",
     "Could not clear events": "Impossibile cancellare {falliti} di {totali} eventi",
@@ -1619,5 +1619,6 @@
     "vkDontParseLinks": "Disabilita anteprime dei link",
     "vkDontParseLinksDescription": "Se abilitato, VK non genererà anteprime/link snippet.",
     "vkPeerIdDescription": "Inserisci il peer_id di destinazione di VK. Questo valore viene inviato all’API così com’è.",
-    "oracledbConnectionString": "Database Oracle: {connectionString}"
+    "oracledbConnectionString": "Database Oracle: {connectionString}",
+    "WebSocket Options": "Opzioni WebSocket"
 }

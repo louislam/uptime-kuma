@@ -56,12 +56,12 @@
     "Specific Monitor Type": "Tipo Específico de Monitoramento",
     "markdownSupported": "Sintaxe Markdown suportada. Se estiver usando HTML, evite espaços iniciais para evitar problemas de formatação.",
     "DateTime": "Data e Hora",
-    "Cert Exp.": "Expiração do Certificado",
+    "Cert Exp.": "Expiração do Certificado.",
     "Monitor Type": "Tipo de Monitoramento",
     "Keyword": "Palavra-chave",
     "Invert Keyword": "Inverter Palavra-chave",
     "Expected Value": "Valor Esperado",
-    "Json Query": "Json Query",
+    "Json Query": "Consulta JSON",
     "Friendly Name": "Nome Amigável",
     "Hostname": "Hostname",
     "Heartbeat Interval": "Intervalo de verificação",
@@ -235,5 +235,7 @@
     "minutes": "{n} minutos | {n} minutos",
     "minuteShort": "{n} min | {n} min",
     "days": "{n} dia | {n} dias",
-    "versionIs": "Versão: {version}"
+    "versionIs": "Versão: {version}",
+    "oracledbConnectionString": "Banco de dados Oracle: {connectionString}",
+    "enableSSL": "Ativar SSL/TLS"
 }
