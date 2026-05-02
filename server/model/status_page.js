@@ -450,6 +450,7 @@ class StatusPage extends BeanModel {
             analyticsType: this.analytics_type,
             showCertificateExpiry: !!this.show_certificate_expiry,
             showOnlyLastHeartbeat: !!this.show_only_last_heartbeat,
+            show24hUptimeGrid: !!this.show_24h_uptime_grid,
             rssTitle: this.rss_title,
         };
     }
@@ -477,6 +478,7 @@ class StatusPage extends BeanModel {
             analyticsType: this.analytics_type,
             showCertificateExpiry: !!this.show_certificate_expiry,
             showOnlyLastHeartbeat: !!this.show_only_last_heartbeat,
+            show24hUptimeGrid: !!this.show_24h_uptime_grid,
             rssTitle: this.rss_title,
         };
     }

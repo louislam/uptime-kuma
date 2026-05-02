@@ -117,6 +117,12 @@
                                         </div>
                                         <div :key="$root.userHeartbeatBar" class="col-3 col-xl-6">
                                             <HeartbeatBar size="mid" :monitor-id="monitor.element.id" />
+                                            <UptimeGrid24h
+                                                v-if="show24hUptimeGrid && $root.hourlyUptimeData"
+                                                :monitor-id="monitor.element.id"
+                                                :hourly-data="getHourlyData(monitor.element.id)"
+                                                class="mt-2"
+                                            />
                                         </div>
                                     </div>
                                 </div>
@@ -137,6 +143,7 @@ import HeartbeatBar from "./HeartbeatBar.vue";
 import Uptime from "./Uptime.vue";
 import Tag from "./Tag.vue";
 import Status from "./Status.vue";
+import UptimeGrid24h from "./UptimeGrid24h.vue";
 
 export default {
     components: {
@@ -146,6 +153,7 @@ export default {
         Uptime,
         Tag,
         Status,
+        UptimeGrid24h,
     },
     props: {
         /** Are we in edit mode? */
@@ -163,6 +171,10 @@ export default {
         },
         /** Should only the last heartbeat be shown? */
         showOnlyLastHeartbeat: {
+            type: Boolean,
+        },
+        /** Should 24h uptime grid be shown? */
+        show24hUptimeGrid: {
             type: Boolean,
         },
     },

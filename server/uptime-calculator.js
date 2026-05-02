@@ -546,9 +546,9 @@ class UptimeCalculator {
         switch (status) {
             case UP:
             case MAINTENANCE:
+            case PENDING:
                 return UP;
             case DOWN:
-            case PENDING:
                 return DOWN;
         }
         throw new Error("Invalid status");

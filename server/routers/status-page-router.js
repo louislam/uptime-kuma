@@ -67,6 +67,7 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
     try {
         let heartbeatList = {};
         let uptimeList = {};
+        let hourlyUptimeData = {};
 
         let slug = request.params.slug;
         slug = slug.toLowerCase();
@@ -98,11 +99,13 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
 
             const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);
             uptimeList[`${monitorID}_24`] = uptimeCalculator.get24Hour().uptime;
+            hourlyUptimeData[monitorID] = uptimeCalculator.getDataArray(24, "hour");
         }
 
         response.json({
             heartbeatList,
             uptimeList,
+            hourlyUptimeData,
         });
     } catch (error) {
         sendHttpError(response, error.message);

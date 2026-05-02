@@ -114,6 +114,19 @@
                     </label>
                 </div>
 
+                <!-- Show 24h Uptime Grid -->
+                <div class="my-3 form-check form-switch">
+                    <input
+                        id="show-24h-uptime-grid"
+                        v-model="config.show24hUptimeGrid"
+                        class="form-check-input"
+                        type="checkbox"
+                    />
+                    <label class="form-check-label" for="show-24h-uptime-grid">
+                        {{ $t("show24hUptimeGrid") }}
+                    </label>
+                </div>
+
                 <!-- Domain Name List -->
                 <div class="my-3">
                     <label class="form-label">
@@ -1075,10 +1088,11 @@ export default {
             // If editMode, it will use the data from websocket.
             if (!this.editMode) {
                 axios.get("/api/status-page/heartbeat/" + this.slug).then((res) => {
-                    const { heartbeatList, uptimeList } = res.data;
+                    const { heartbeatList, uptimeList, hourlyUptimeData } = res.data;
 
                     this.$root.heartbeatList = heartbeatList;
                     this.$root.uptimeList = uptimeList;
+                    this.$root.hourlyUptimeData = hourlyUptimeData;
 
                     const heartbeatIds = Object.keys(heartbeatList);
                     const downMonitors = heartbeatIds.reduce((downMonitorsAmount, currentId) => {
