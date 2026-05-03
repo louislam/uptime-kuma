@@ -263,6 +263,23 @@ class Database {
             const Dialect = require("knex/lib/dialects/sqlite3/index.js");
             Dialect.prototype._driver = () => require("@louislam/sqlite3");
 
+            // SQLite is actually multiple connections for WAL mode, so we can set it to a higher number.
+            // See: https://github.com/knex/knex/issues/3176#issuecomment-3389054899
+            let poolConfig = {
+                min: 0,
+                max: 20,
+            };
+
+            // Default is still single connection.
+            // Multiple connection could run into "SQLITE_BUSY: database is locked" error.
+            if (process.env.UPTIME_KUMA_SQLITE_SINGLE_CONNECTION === "false") {
+                log.info("db", "Using single connection for SQLite");
+                poolConfig = {
+                    min: 1,
+                    max: 1,
+                };
+            }
+
             config = {
                 client: Dialect,
                 connection: {
@@ -271,10 +288,7 @@ class Database {
                 },
                 useNullAsDefault: true,
                 pool: {
-                    // SQLite is actually multiple connections for WAL mode, so we can set it to a higher number.
-                    // See: https://github.com/knex/knex/issues/3176#issuecomment-3389054899
-                    min: 0,
-                    max: 20,
+                    ...poolConfig,
                     acquireTimeoutMillis: acquireConnectionTimeout,
                     afterCreate: (rawConn, done) => {
                         this.initSQLite(rawConn, testMode)
