@@ -272,7 +272,7 @@ class Database {
 
             // Default is still single connection.
             // Multiple connection could run into "SQLITE_BUSY: database is locked" error.
-            if (process.env.UPTIME_KUMA_SQLITE_SINGLE_CONNECTION === "false") {
+            if (process.env.UPTIME_KUMA_SQLITE_SINGLE_CONNECTION !== "false") {
                 log.info("db", "Using single connection for SQLite");
                 poolConfig = {
                     min: 1,
