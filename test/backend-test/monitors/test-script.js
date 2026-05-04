@@ -1,7 +1,7 @@
 const { describe, test } = require("node:test");
 const assert = require("node:assert");
 const { ScriptMonitorType } = require("../../../server/monitor-types/script");
-const { UP, DOWN, PENDING } = require("../../../src/util");
+const { UP, PENDING } = require("../../../src/util");
 const fs = require("fs/promises");
 const path = require("path");
 const childProcessAsync = require("promisify-child-process");
@@ -30,8 +30,12 @@ describe("Script Monitor", () => {
 
         const EACCES = Object.assign(new Error(), { code: "EACCES" });
         const _access = fs.access;
+        const _open = fs.open;
+        const _stat = fs.stat;
+        const _rm = fs.rm;
 
         t.mock.method(fs, "access", async (f, mode) => {
+            console.log(f, mode, options)
             if (f === SCRIPT_DIR && (mode & fs.constants.W_OK) !== 0) {
                 if (options.dirWritable) {
                     return;
@@ -49,6 +53,38 @@ describe("Script Monitor", () => {
 
             return _access(f, mode);
         });
+        t.mock.method(fs, "stat", async f => {
+            switch (f) {
+            case SCRIPT_DIR: return { isDirectory() { return true; } }
+            case path.resolve(SCRIPT_DIR, SCRIPT_NAME): return { isDirectory() { return false; } }
+            default: return _stat(f);
+            }
+        });
+        t.mock.method(fs, "open", async (f, flags, mode) => {
+            if (path.relative(path.dirname(f), SCRIPT_DIR) === "" && path.basename(f).match(/^[a-f0-9]{16}-[a-f0-9]{4}$/i) && flags.includes("w")) {
+                if (options.dirWritable) {
+                    return { async close() {} };
+                } else {
+                    throw EACCES;
+                }
+            }
+            if (path.relative(f, path.resolve(SCRIPT_DIR, SCRIPT_NAME)) === "" && flags.includes("w")) {
+                if (options.scriptWritable) {
+                    return { async close() {} };
+                } else {
+                    throw EACCES;
+                }
+            }
+
+            return _open(f, mode);
+        });
+        t.mock.method(fs, "rm", async (f, options) => {
+            if (f === SCRIPT_DIR || f === path.resolve(SCRIPT_DIR, SCRIPT_NAME)) {
+                return;
+            }
+            return _rm(f, options);
+        });
+
         t.mock.method(childProcessAsync, "spawn", () => {
             const result = {
                 code: options.exitCode,
@@ -111,7 +147,7 @@ describe("Script Monitor", () => {
         await scriptMonitor.check(monitor, heartbeat, {});
 
         assert.strictEqual(heartbeat.status, PENDING);
-        assert.strictEqual(heartbeat.msg, "Script execution has been denied for security reasons: script is writable");
+        assert.strictEqual(heartbeat.msg, "Script execution has been denied for security reasons: script file is writable");
     });
 
     test("check() does not care about writability when root (uid===0) in Unix-like", async (t) => {
