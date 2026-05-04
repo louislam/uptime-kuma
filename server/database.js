@@ -174,19 +174,21 @@ class Database {
             if (process.platform === "win32") {
                 // Unfortunately, we can't simply add a single DENY rule here
                 // As per the Windows docs (https://learn.microsoft.com/en-us/windows/win32/fileio/file-security-and-access-rights):
-                // > Note that you cannot use an access-denied ACE to deny only GENERIC_READ or only GENERIC_WRITE access to a file. 
-                // > This is because for file objects, the generic mappings for both GENERIC_READ or GENERIC_WRITE include the SYNCHRONIZE access right. 
-                // > If an ACE denies GENERIC_WRITE access to a trustee, and the trustee requests GENERIC_READ access, 
-                // > the request will fail because the request implicitly includes SYNCHRONIZE access which is implicitly denied by the ACE, and vice versa. 
+                // > Note that you cannot use an access-denied ACE to deny only GENERIC_READ or only GENERIC_WRITE access to a file.
+                // > This is because for file objects, the generic mappings for both GENERIC_READ or GENERIC_WRITE include the SYNCHRONIZE access right.
+                // > If an ACE denies GENERIC_WRITE access to a trustee, and the trustee requests GENERIC_READ access,
+                // > the request will fail because the request implicitly includes SYNCHRONIZE access which is implicitly denied by the ACE, and vice versa.
                 // > Instead of using access-denied ACEs, use access-allowed ACEs to explicitly allow the permitted access rights.
-                // 
+                //
                 // So instead, we will
                 // 1. turn off inheritance and delete inherited rules
                 // 2. grant read access to authenticated users
                 // 3. grant write access to administators (users that are administators but currently not "elevated" will still not have write access.)
                 const AUTHENTICATED_USERS = "S-1-5-11";
-                const ADMINISTRATORS = "S-1-5-32-544";                
-                execSync(`icacls "${Database.scriptDir}" /inheritance:r && icacls "${Database.scriptDir}" /grant *${AUTHENTICATED_USERS}:(OI)(CI)RX && icacls "${Database.scriptDir}" /grant *${ADMINISTRATORS}:(OI)(CI)F`);
+                const ADMINISTRATORS = "S-1-5-32-544";
+                execSync(
+                    `icacls "${Database.scriptDir}" /inheritance:r && icacls "${Database.scriptDir}" /grant *${AUTHENTICATED_USERS}:(OI)(CI)RX && icacls "${Database.scriptDir}" /grant *${ADMINISTRATORS}:(OI)(CI)F`
+                );
             } else {
                 fs.chmodSync(Database.scriptDir, 0o555);
             }

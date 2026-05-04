@@ -35,7 +35,7 @@ describe("Script Monitor", () => {
         const _rm = fs.rm;
 
         t.mock.method(fs, "access", async (f, mode) => {
-            console.log(f, mode, options)
+            console.log(f, mode, options);
             if (f === SCRIPT_DIR && (mode & fs.constants.W_OK) !== 0) {
                 if (options.dirWritable) {
                     return;
@@ -53,15 +53,30 @@ describe("Script Monitor", () => {
 
             return _access(f, mode);
         });
-        t.mock.method(fs, "stat", async f => {
+        t.mock.method(fs, "stat", async (f) => {
             switch (f) {
-            case SCRIPT_DIR: return { isDirectory() { return true; } }
-            case path.resolve(SCRIPT_DIR, SCRIPT_NAME): return { isDirectory() { return false; } }
-            default: return _stat(f);
+                case SCRIPT_DIR:
+                    return {
+                        isDirectory() {
+                            return true;
+                        },
+                    };
+                case path.resolve(SCRIPT_DIR, SCRIPT_NAME):
+                    return {
+                        isDirectory() {
+                            return false;
+                        },
+                    };
+                default:
+                    return _stat(f);
             }
         });
         t.mock.method(fs, "open", async (f, flags, mode) => {
-            if (path.relative(path.dirname(f), SCRIPT_DIR) === "" && path.basename(f).match(/^[a-f0-9]{16}-[a-f0-9]{4}$/i) && flags.includes("w")) {
+            if (
+                path.relative(path.dirname(f), SCRIPT_DIR) === "" &&
+                path.basename(f).match(/^[a-f0-9]{16}-[a-f0-9]{4}$/i) &&
+                flags.includes("w")
+            ) {
                 if (options.dirWritable) {
                     return { async close() {} };
                 } else {
@@ -147,7 +162,10 @@ describe("Script Monitor", () => {
         await scriptMonitor.check(monitor, heartbeat, {});
 
         assert.strictEqual(heartbeat.status, PENDING);
-        assert.strictEqual(heartbeat.msg, "Script execution has been denied for security reasons: script file is writable");
+        assert.strictEqual(
+            heartbeat.msg,
+            "Script execution has been denied for security reasons: script file is writable"
+        );
     });
 
     test("check() does not care about writability when root (uid===0) in Unix-like", async (t) => {

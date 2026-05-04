@@ -11,15 +11,16 @@ class SecurityError extends Error {}
 /**
  * Helper function that checks if the process has write access to the provided target.
  * On Linux, this function passes off to `fs.access`.
- * On Windows, where `fs.access` does not evaluate ACLs, this function attempts to open the target for writing. 
+ * On Windows, where `fs.access` does not evaluate ACLs, this function attempts to open the target for writing.
  * If the target is a directory, it will be changed to a new random but unique file inside that directory.
+ * @param target
  */
 async function writable(target) {
     if (process.platform !== "win32") {
         try {
             await fs.access(target, fs.constants.W_OK);
             return true;
-        } catch(err) {
+        } catch (err) {
             if (err.code === "EACCES") {
                 return false;
             }
@@ -34,27 +35,26 @@ async function writable(target) {
     // - Monitor 1 opens the probe
     // - Monitor 2 opens the probe
     // - Monitor 1 closes the probe and attempts to delete it, while monitor 2 still has it open
-    // This results in an error on Windows. 
-    // 
+    // This results in an error on Windows.
+    //
     // Therefore, a random 2 byte hexadecimal is suffixed to the timestamp.
     let probe;
     if ((await fs.stat(target)).isDirectory()) {
-        probe = Date.now()
-                .toString(16)
-                .padStart(16, "0")
-            + "-" 
-            + Math.trunc(Math.random() * 0xffff)
+        probe =
+            Date.now().toString(16).padStart(16, "0") +
+            "-" +
+            Math.trunc(Math.random() * 0xffff)
                 .toString(16)
                 .padStart(4, "0");
 
         target = path.join(target, probe);
     }
-    
+
     let handle;
     try {
         handle = await fs.open(target, "w");
         return true;
-    } catch(err) {
+    } catch (err) {
         if (err.code === "EACCES") {
             return false;
         }
@@ -103,7 +103,7 @@ class ScriptMonitorType extends MonitorType {
             throw new SecurityError(
                 "Script execution has been denied for security reasons: script path is outside script location"
             );
-        }    
+        }
 
         // Don't care about writability checks if root on Unixoid, or
         // having SeTakeOwnershipPrivilege, SeRestorePrivilege, or SeImpersonatePrivilege on Windows
@@ -125,7 +125,7 @@ class ScriptMonitorType extends MonitorType {
         if (await writable(this.dir)) {
             throw new SecurityError(
                 "Script execution has been denied for security reasons: script directory is writable"
-            );        
+            );
         }
 
         // If requested script is writable for current user, refuse to execute script for security reasons
