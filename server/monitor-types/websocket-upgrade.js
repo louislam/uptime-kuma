@@ -1,7 +1,7 @@
 const { MonitorType } = require("./monitor-type");
 const WebSocket = require("ws");
 const { UP } = require("../../src/util");
-const { checkStatusCode } = require("../util-server");
+const { checkStatusCode, getOidcTokenClientCredentials } = require("../util-server");
 // Define closing error codes https://www.iana.org/assignments/websocket/websocket.xml#close-code-number
 const WS_ERR_CODE = {
     1002: "Protocol error",
@@ -51,16 +51,76 @@ class WebSocketMonitorType extends MonitorType {
     }
 
     /**
+     * Builds the WebSocket options object for authentication and TLS.
+     * Supports basic auth, OAuth2 client credentials, and mTLS.
+     * @param {object} monitor The monitor object for input parameters.
+     * @returns {Promise<object>} The options object to pass to the WebSocket constructor.
+     */
+    async buildWsOptions(monitor) {
+        const options = {};
+
+        const timeoutMs = (monitor.timeout ?? 20) * 1000;
+        options.handshakeTimeout = timeoutMs;
+
+        // Parse custom headers if provided
+        if (monitor.headers) {
+            try {
+                options.headers = JSON.parse(monitor.headers);
+            } catch (e) {
+                // If headers is not valid JSON, ignore it
+                options.headers = {};
+            }
+        } else {
+            options.headers = {};
+        }
+
+        if (monitor.authMethod === "basic") {
+            if (monitor.basic_auth_user || monitor.basic_auth_pass) {
+                const credentials = Buffer.from(
+                    `${monitor.basic_auth_user ?? ""}:${monitor.basic_auth_pass ?? ""}`
+                ).toString("base64");
+                options.headers.Authorization = `Basic ${credentials}`;
+            }
+        } else if (monitor.authMethod === "oauth2-cc") {
+            if (new Date((monitor.oauthAccessToken?.expires_at || 0) * 1000) <= new Date()) {
+                monitor.oauthAccessToken = await getOidcTokenClientCredentials(
+                    monitor.oauth_token_url,
+                    monitor.oauth_client_id,
+                    monitor.oauth_client_secret,
+                    monitor.oauth_scopes,
+                    monitor.oauth_audience,
+                    monitor.oauth_auth_method
+                );
+            }
+            options.headers.Authorization = `${monitor.oauthAccessToken.token_type} ${monitor.oauthAccessToken.access_token}`;
+        } else if (monitor.authMethod === "mtls") {
+            if (monitor.tlsCert) {
+                options.cert = monitor.tlsCert;
+            }
+            if (monitor.tlsKey) {
+                options.key = monitor.tlsKey;
+            }
+            if (monitor.tlsCa) {
+                options.ca = monitor.tlsCa;
+            }
+            options.rejectUnauthorized = !monitor.getIgnoreTls();
+        }
+
+        return options;
+    }
+
+    /**
      * Uses the ws Node.js library to establish a connection to target server
      * @param {object} monitor The monitor object for input parameters.
      * @returns {Promise<[ string, int ]>} Array containing a status message and response code
      */
     async attemptUpgrade(monitor) {
+        const authOptions = await this.buildWsOptions(monitor);
+
         return new Promise((resolve) => {
-            const timeoutMs = (monitor.timeout ?? 20) * 1000;
             // If user inputs subprotocol(s), convert to array, set Sec-WebSocket-Protocol header, timeout in ms. Subprotocol Identifier column: https://www.iana.org/assignments/websocket/websocket.xml#subprotocol-name
             const subprotocol = monitor.wsSubprotocol ? monitor.wsSubprotocol.replace(/\s/g, "").split(",") : undefined;
-            const ws = new WebSocket(monitor.url, subprotocol, { handshakeTimeout: timeoutMs });
+            const ws = new WebSocket(monitor.url, subprotocol, authOptions);
 
             ws.addEventListener("open", (event) => {
                 // Immediately close the connection
