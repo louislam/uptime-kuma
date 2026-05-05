@@ -1318,7 +1318,11 @@
                                     >
                                         <option disabled value="">{{ $t("Select PM2 process") }}</option>
                                         <!-- Save the PM2 name because PM2 can reassign numeric IDs after delete/recreate. -->
-                                        <option v-for="item in pm2ProcessOptions" :key="`${item.name}-${item.id}`" :value="item.name">
+                                        <option
+                                            v-for="item in pm2ProcessOptions"
+                                            :key="`${item.name}-${item.id}`"
+                                            :value="item.name"
+                                        >
                                             {{ item.name }} (#{{ item.id }}) - {{ item.status }}
                                         </option>
                                     </select>
