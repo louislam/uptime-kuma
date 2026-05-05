@@ -36,7 +36,6 @@ describe("Script Monitor", () => {
         const _rm = fs.rm;
 
         t.mock.method(fs, "access", async (f, mode) => {
-            console.log(f, mode, options);
             if (f === SCRIPT_DIR && (mode & fs.constants.W_OK) !== 0) {
                 if (options.dirWritable) {
                     return;
