@@ -29,6 +29,7 @@ describe("Script Monitor", () => {
         };
 
         const EACCES = Object.assign(new Error(), { code: "EACCES" });
+        const EPERM = Object.assign(new Error(), { code: "EPERM" });
         const _access = fs.access;
         const _open = fs.open;
         const _stat = fs.stat;
@@ -80,14 +81,14 @@ describe("Script Monitor", () => {
                 if (options.dirWritable) {
                     return { async close() {} };
                 } else {
-                    throw EACCES;
+                    throw EPERM;
                 }
             }
             if (path.relative(f, path.resolve(SCRIPT_DIR, SCRIPT_NAME)) === "" && flags.includes("w")) {
                 if (options.scriptWritable) {
                     return { async close() {} };
                 } else {
-                    throw EACCES;
+                    throw EPERM;
                 }
             }
 
