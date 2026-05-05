@@ -56,7 +56,7 @@ async function writable(target) {
         return true;
     } catch (err) {
         // Technically, EACCES is the correct error to throw here
-        // However, on Windows, there is a long-standing inconsistency 
+        // However, on Windows, there is a long-standing inconsistency
         // where EPERM is thrown instead
         // (see https://github.com/nodejs/node/issues/16596)
         // We will catch both here in case it ever gets fixed
