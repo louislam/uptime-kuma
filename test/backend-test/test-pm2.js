@@ -62,6 +62,31 @@ describe("PM2MonitorType", () => {
         assert.ok(heartbeat.msg.includes("online"));
     });
 
+    test("check() matches PM2 process by name when pm_id changes", async () => {
+        monitorType = createMonitorType((command, args, options, callback) => {
+            callback(null, JSON.stringify([
+                {
+                    // PM2 may assign a different id when a process is deleted and recreated.
+                    pm_id: 7,
+                    name: "api",
+                    pm2_env: {
+                        status: "online",
+                    },
+                },
+            ]), "");
+        });
+
+        await monitorType.check(
+            {
+                system_service_name: "api",
+            },
+            heartbeat
+        );
+
+        assert.strictEqual(heartbeat.status, UP);
+        assert.ok(heartbeat.msg.includes("online"));
+    });
+
     test("check() returns DOWN for a stopped PM2 process", async () => {
         monitorType = createMonitorType((command, args, options, callback) => {
             callback(

@@ -1317,7 +1317,8 @@
                                         required
                                     >
                                         <option disabled value="">{{ $t("Select PM2 process") }}</option>
-                                        <option v-for="item in pm2ProcessOptions" :key="item.id" :value="item.id">
+                                        <!-- Save the PM2 name because PM2 can reassign numeric IDs after delete/recreate. -->
+                                        <option v-for="item in pm2ProcessOptions" :key="`${item.name}-${item.id}`" :value="item.name">
                                             {{ item.name }} (#{{ item.id }}) - {{ item.status }}
                                         </option>
                                     </select>
@@ -3664,10 +3665,11 @@ message HealthCheckResponse {
                         item.id === this.monitor.system_service_name || item.name === this.monitor.system_service_name
                 );
 
+                // Keep compatibility with monitors previously saved with a numeric PM2 id.
                 if (selectedProcess) {
-                    this.monitor.system_service_name = selectedProcess.id;
+                    this.monitor.system_service_name = selectedProcess.name;
                 } else if (this.pm2ProcessOptions.length > 0) {
-                    this.monitor.system_service_name = this.pm2ProcessOptions[0].id;
+                    this.monitor.system_service_name = this.pm2ProcessOptions[0].name;
                 }
             });
         },
