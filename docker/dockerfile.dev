@@ -9,27 +9,31 @@
 #   - `npm ci` (NOT --omit=dev) — needs vite to build the frontend.
 #   - Runs `npm run build` to produce dist/.
 #   - Single stage; no healthcheck binary; no rootless variants.
-#   - No chromium / cloudflared / mariadb-server / apprise. The dev image
-#     targets the database layer; the screenshot, Cloudflare-tunnel,
-#     embedded-mariadb and apprise notification features need the full
-#     production base.
+#   - No chromium / cloudflared / apprise. Those are for the screenshot,
+#     Cloudflare-tunnel and Apprise-notification features. Add them in the
+#     production dockerfile / base image when needed.
 
 FROM node:24-bookworm-slim AS dev
 
 # dumb-init: zombie reaping for the entrypoint
 # ca-certificates: TLS roots for outbound HTTP
-# curl: practical for in-container debugging
+# curl: in-container debugging
+# mariadb-server: required for the embedded MariaDB option in the setup
+#   wizard. Gated at runtime by UPTIME_KUMA_ENABLE_EMBEDDED_MARIADB.
 RUN apt-get update \
     && apt-get install --yes --no-install-recommends \
         dumb-init \
         ca-certificates \
         curl \
-    && rm -rf /var/lib/apt/lists/*
+        mariadb-server \
+    && rm -rf /var/lib/apt/lists/* \
+    && chown -R node:node /var/lib/mysql
 
 USER node
 WORKDIR /app
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1
+ENV UPTIME_KUMA_ENABLE_EMBEDDED_MARIADB=1
 
 COPY --chown=node:node .npmrc .npmrc
 COPY --chown=node:node package.json package.json
