@@ -788,6 +788,7 @@ let needSetup = false;
                 });
             } catch (e) {
                 log.error("monitor", `Error adding Monitor: ${monitor.id} User ID: ${socket.userID}`);
+                log.error("monitor", e.stack || e);
 
                 callback({
                     ok: false,

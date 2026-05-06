@@ -458,7 +458,7 @@ class Monitor extends BaseModel {
             bean.monitor_id = this.id;
             bean.time = isoDateTimeMillis(dayjs.utc());
             bean.status = DOWN;
-            bean.downCount = previousBeat?.downCount || 0;
+            bean.down_count = previousBeat?.down_count || 0;
 
             if (this.isUpsideDown()) {
                 bean.status = flipStatus(bean.status);
@@ -1020,7 +1020,7 @@ class Monitor extends BaseModel {
                 }
 
                 // Reset down count
-                bean.downCount = 0;
+                bean.down_count = 0;
 
                 // Clear Status Page Cache
                 log.debug("monitor", `[${this.name}] apicache clear`);
@@ -1031,17 +1031,17 @@ class Monitor extends BaseModel {
                 bean.important = false;
 
                 if (bean.status === DOWN && this.resend_interval > 0) {
-                    ++bean.downCount;
-                    if (bean.downCount >= this.resend_interval) {
+                    ++bean.down_count;
+                    if (bean.down_count >= this.resend_interval) {
                         // Send notification again, because we are still DOWN
                         log.debug(
                             "monitor",
-                            `[${this.name}] sendNotification again: Down Count: ${bean.downCount} | Resend Interval: ${this.resend_interval}`
+                            `[${this.name}] sendNotification again: Down Count: ${bean.down_count} | Resend Interval: ${this.resend_interval}`
                         );
                         await Monitor.sendNotification(isFirstBeat, this, bean);
 
                         // Reset down count
-                        bean.downCount = 0;
+                        bean.down_count = 0;
                     }
                 }
             }
@@ -1089,7 +1089,7 @@ class Monitor extends BaseModel {
             } else {
                 log.warn(
                     "monitor",
-                    `Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Interval: ${beatInterval} seconds | Type: ${this.type} | Down Count: ${bean.downCount} | Resend Interval: ${this.resend_interval}`
+                    `Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Interval: ${beatInterval} seconds | Type: ${this.type} | Down Count: ${bean.down_count} | Resend Interval: ${this.resend_interval}`
                 );
             }
 
@@ -1928,10 +1928,13 @@ class Monitor extends BaseModel {
      * @returns {Promise<LooseObject<any>>} Parent
      */
     static async getParent(monitorID) {
-        return getKnex()({ parent: "monitor" })
+        // .first() returns undefined when there is no parent row; normalise
+        // to null so callers can use the historical `parent === null` check.
+        const row = await getKnex()({ parent: "monitor" })
             .leftJoin({ child: "monitor" }, "child.parent", "parent.id")
             .where("child.id", monitorID)
             .first("parent.*");
+        return row ?? null;
     }
 
     /**
@@ -1952,12 +1955,8 @@ class Monitor extends BaseModel {
     static async getAllPath(monitorID, name) {
         const path = [name];
 
-        if (this.parent === null) {
-            return path;
-        }
-
         let parent = await Monitor.getParent(monitorID);
-        while (parent !== null) {
+        while (parent != null && parent.id != null) {
             path.unshift(parent.name);
             parent = await Monitor.getParent(parent.id);
         }
@@ -2049,7 +2048,9 @@ class Monitor extends BaseModel {
     static async isParentActive(monitorID) {
         const parent = await Monitor.getParent(monitorID);
 
-        if (parent === null) {
+        // Knex `.first()` returns undefined when there is no parent row;
+        // also bail out if the LEFT JOIN gave us a stub with no id.
+        if (parent == null || parent.id == null) {
             return true;
         }
 

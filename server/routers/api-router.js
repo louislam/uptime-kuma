@@ -77,7 +77,7 @@ router.all("/api/push/:pushToken", async (request, response) => {
         bean.monitor_id = monitor.id;
         bean.ping = ping;
         bean.msg = msg;
-        bean.downCount = previousHeartbeat?.down_count || 0;
+        bean.down_count = previousHeartbeat?.down_count || 0;
 
         if (previousHeartbeat) {
             isFirstBeat = false;
@@ -104,7 +104,7 @@ router.all("/api/push/:pushToken", async (request, response) => {
 
         if (Monitor.isImportantForNotification(isFirstBeat, previousHeartbeat?.status, bean.status)) {
             // Reset down count
-            bean.downCount = 0;
+            bean.down_count = 0;
 
             log.debug("monitor", `[${monitor.name}] sendNotification`);
             await Monitor.sendNotification(isFirstBeat, monitor, bean);
@@ -120,7 +120,7 @@ router.all("/api/push/:pushToken", async (request, response) => {
                     await Monitor.sendNotification(isFirstBeat, monitor, bean);
 
                     // Reset down count
-                    bean.downCount = 0;
+                    bean.down_count = 0;
                 }
             }
         }
