@@ -148,22 +148,26 @@ class Dialect {
     }
 
     /**
-     * Bootstrap base tables on first run. Called from `postConnect` of any
-     * dialect that uses an external schema (subclasses with `requiresExternal`).
+     * Bootstrap base tables on first run. Idempotent — runs `createTables`
+     * from `db/knex_init_db.js` only if the schema is empty. Called from
+     * `postConnect` of any dialect that uses the MariaDB/Postgres schema
+     * (external MariaDB, embedded MariaDB, Postgres). SQLite has its own
+     * bootstrap path via the kuma.db template and does not call this.
+     *
+     * Note: kept independent of `requiresExternal`, which gates *credential*
+     * validation in `validateSetupConfig`. Embedded MariaDB has no external
+     * credentials but still needs the base-table bootstrap.
      * @param {import("knex").Knex} knex Active Knex instance
      * @returns {Promise<void>}
      */
     async _initExternalDB(knex) {
-        if (!this.constructor.requiresExternal) {
-            return;
-        }
-        log.debug("db", "Checking if external database is initialized...");
+        log.debug("db", "Checking if base tables are initialized...");
         const hasTable = await knex.schema.hasTable("docker_host");
         if (!hasTable) {
             const { createTables } = require("../../db/knex_init_db");
             await createTables();
         } else {
-            log.debug("db", "External database already initialized");
+            log.debug("db", "Base tables already initialized");
         }
     }
 }
