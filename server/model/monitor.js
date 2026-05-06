@@ -204,6 +204,14 @@ class Monitor extends BeanModel {
             ipFamily: this.ipFamily,
             expectedTlsAlert: this.expected_tls_alert,
 
+            // syncthing
+            syncthingUrl: this.syncthingUrl,
+            syncthingCheckType: this.syncthingCheckType,
+            syncthingFilter: this.syncthingFilter,
+            syncthingFilterMode: this.syncthingFilterMode,
+            syncthingPeerTimeout: this.syncthingPeerTimeout,
+            syncthingFolderSyncThreshold: this.syncthingFolderSyncThreshold,
+
             // ping advanced options
             ping_numeric: this.isPingNumeric(),
             ping_count: this.ping_count,

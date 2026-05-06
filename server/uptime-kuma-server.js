@@ -132,6 +132,7 @@ class UptimeKumaServer {
         UptimeKumaServer.monitorTypeList["sqlserver"] = new MssqlMonitorType();
         UptimeKumaServer.monitorTypeList["mysql"] = new MysqlMonitorType();
         UptimeKumaServer.monitorTypeList["oracledb"] = new OracleDbMonitorType();
+        UptimeKumaServer.monitorTypeList["syncthing"] = new SyncthingMonitorType();
 
         // Allow all CORS origins (polling) in development
         let cors = undefined;
@@ -584,4 +585,5 @@ const { SystemServiceMonitorType } = require("./monitor-types/system-service");
 const { MssqlMonitorType } = require("./monitor-types/mssql");
 const { MysqlMonitorType } = require("./monitor-types/mysql");
 const { OracleDbMonitorType } = require("./monitor-types/oracledb");
+const { SyncthingMonitorType } = require("./monitor-types/syncthing");
 const Monitor = require("./model/monitor");
