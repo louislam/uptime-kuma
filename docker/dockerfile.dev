@@ -1,12 +1,30 @@
 # Dev image — builds dist/ inside the image so compose users don't need to
 # remember `npm run build` on the host.
 #
+# Built directly from the official Node 24 LTS slim image; no dependency on
+# upstream's `louislam/uptime-kuma:base2` so this fork's CI/dev flow doesn't
+# break when upstream rebuilds their base.
+#
 # Differences from docker/dockerfile (production):
 #   - `npm ci` (NOT --omit=dev) — needs vite to build the frontend.
 #   - Runs `npm run build` to produce dist/.
 #   - Single stage; no healthcheck binary; no rootless variants.
+#   - No chromium / cloudflared / mariadb-server / apprise. The dev image
+#     targets the database layer; the screenshot, Cloudflare-tunnel,
+#     embedded-mariadb and apprise notification features need the full
+#     production base.
 
-FROM louislam/uptime-kuma:base2 AS dev
+FROM node:24-bookworm-slim AS dev
+
+# dumb-init: zombie reaping for the entrypoint
+# ca-certificates: TLS roots for outbound HTTP
+# curl: practical for in-container debugging
+RUN apt-get update \
+    && apt-get install --yes --no-install-recommends \
+        dumb-init \
+        ca-certificates \
+        curl \
+    && rm -rf /var/lib/apt/lists/*
 
 USER node
 WORKDIR /app
