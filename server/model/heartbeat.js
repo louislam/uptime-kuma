@@ -14,6 +14,36 @@ class Heartbeat extends BaseModel {
     static tableName = "heartbeat";
 
     /**
+     * Coerce numeric fields whose JS values may be fractional into the
+     * integer types the heartbeat schema declares. PostgreSQL rejects
+     * `INSERT INTO heartbeat (ping) VALUES (3.208)` against an INTEGER
+     * column with `invalid input syntax for type bigint: "3.208"`,
+     * whereas SQLite accepts it (loose typing) and MariaDB silently
+     * rounds. Round here so all three dialects see the same value.
+     * @returns {void}
+     */
+    $beforeInsert() {
+        if (this.ping != null) {
+            this.ping = Math.round(this.ping);
+        }
+        if (this.duration != null) {
+            this.duration = Math.round(this.duration);
+        }
+    }
+
+    /**
+     * @returns {void}
+     */
+    $beforeUpdate() {
+        if (this.ping != null) {
+            this.ping = Math.round(this.ping);
+        }
+        if (this.duration != null) {
+            this.duration = Math.round(this.duration);
+        }
+    }
+
+    /**
      * Return an object that ready to parse to JSON for public
      * Only show necessary data to public
      * @returns {object} Object ready to parse

@@ -227,7 +227,7 @@ exports.kafkaProducerAsync = function (brokers, topic, message, options = {}, sa
             interval * 1000 * 0.8
         );
 
-        if (saslOptions.mechanism === "None") {
+        if (!saslOptions || saslOptions.mechanism === "None") {
             saslOptions = undefined;
         }
 
