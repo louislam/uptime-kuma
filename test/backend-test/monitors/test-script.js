@@ -18,6 +18,7 @@ describe("Script Monitor", () => {
      */
     function setup(t, options) {
         options = {
+            script: SCRIPT_NAME,
             dirWritable: false,
             scriptWritable: false,
             uid: 1000,
@@ -43,7 +44,7 @@ describe("Script Monitor", () => {
                     throw EACCES;
                 }
             }
-            if (f === path.resolve(SCRIPT_DIR, SCRIPT_NAME)) {
+            if (f === path.resolve(SCRIPT_DIR, options.script)) {
                 if (options.scriptWritable) {
                     return;
                 } else {
@@ -61,7 +62,7 @@ describe("Script Monitor", () => {
                             return true;
                         },
                     };
-                case path.resolve(SCRIPT_DIR, SCRIPT_NAME):
+                case path.resolve(SCRIPT_DIR, options.script):
                     return {
                         isDirectory() {
                             return false;
@@ -83,7 +84,7 @@ describe("Script Monitor", () => {
                     throw EPERM;
                 }
             }
-            if (path.relative(f, path.resolve(SCRIPT_DIR, SCRIPT_NAME)) === "" && flags.includes("w")) {
+            if (path.relative(f, path.resolve(SCRIPT_DIR, options.script)) === "" && flags.includes("w")) {
                 if (options.scriptWritable) {
                     return { async close() {} };
                 } else {
@@ -93,11 +94,11 @@ describe("Script Monitor", () => {
 
             return _open(f, mode);
         });
-        t.mock.method(fs, "rm", async (f, options) => {
-            if (f === SCRIPT_DIR || f === path.resolve(SCRIPT_DIR, SCRIPT_NAME)) {
+        t.mock.method(fs, "rm", async (f, opts) => {
+            if (f === SCRIPT_DIR || f === path.resolve(SCRIPT_DIR, options.script)) {
                 return;
             }
-            return _rm(f, options);
+            return _rm(f, opts);
         });
 
         t.mock.method(childProcessAsync, "spawn", () => {
@@ -218,6 +219,62 @@ describe("Script Monitor", () => {
 
         assert.strictEqual(heartbeat.status, PENDING);
         assert.strictEqual(heartbeat.msg, "Script does not exist: does_not_exist.sh");
+    });
+
+    test("check() always calls the specified script directly on Unix-like", async (t) => {
+        // We can't just mock process.platform because otherwise we will run into 
+        // win32-privileges being a missing dependency on Linux
+        if (process.platform.toLowerCase() === "win32") {
+            t.skip("This test is only run on aix, darwin, freebsd, linux, openbsd, or sunos");
+            return;
+        }
+
+        for (const ext of Object.keys(ScriptMonitorType.EXTENSIONS)) {
+            try {
+                setup(t, { script: SCRIPT_NAME + ext });
+                const scriptMonitor = new ScriptMonitorType(SCRIPT_DIR);
+        
+                const monitor = { script: SCRIPT_NAME + ext };
+                const heartbeat = { status: null, msg: "" };
+
+                await scriptMonitor.check(monitor, heartbeat, {});
+
+                const call = childProcessAsync.spawn.mock.calls[0];
+                assert.strictEqual(call.arguments[0], path.join(SCRIPT_DIR, monitor.script));
+            } finally {
+                t.mock.reset();
+            }
+        }
+    });
+
+    test("check() calls the relevant interpreter by extension on Windows", async(t) => {
+        // We can't just mock process.platform because otherwise we will run into 
+        // win32-privileges being a missing dependency on Linux
+        if (process.platform.toLowerCase() !== "win32") {
+            t.skip("This test is only run on win32");
+            return;
+        }
+
+        for (const ext of Object.keys(ScriptMonitorType.EXTENSIONS)) {
+            try {
+                setup(t, { script: SCRIPT_NAME + ext });
+                const scriptMonitor = new ScriptMonitorType(SCRIPT_DIR);
+        
+                const monitor = { script: SCRIPT_NAME + ext };
+                const heartbeat = { status: null, msg: "" };
+
+                await scriptMonitor.check(monitor, heartbeat, {});
+
+                const command = childProcessAsync.spawn.mock.calls[0].arguments[0];
+                const args = childProcessAsync.spawn.mock.calls[0].arguments[1];
+                const expectedCommand = ScriptMonitorType.EXTENSIONS[ext];
+                assert.strictEqual(command, Array.isArray(expectedCommand) ? expectedCommand[0] : expectedCommand);
+                // Since we didn't supply any arguments, the script should be the last argument that was passed to spawn()
+                assert.strictEqual(args[args.length - 1], path.join(SCRIPT_DIR, monitor.script));
+            } finally {
+                t.mock.reset();
+            }
+        }
     });
 
     test("check() calls the specified script with the specified args", async (t) => {

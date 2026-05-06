@@ -81,6 +81,32 @@ class ScriptMonitorType extends MonitorType {
 
     allowCustomStatus = true;
 
+    /** Maps extensions to their associated interpreters for Windows */
+    static EXTENSIONS = {
+        /* 
+           ".bat": [ "cmd", "/c" ], 
+           ".cmd": [ "cmd", "/c" ],
+           .bat and .cmd are deliberately disabled because there is no secure way to call them.
+           These script formats are interpreted by cmd.exe, and the only way to pass them in is
+           by using the /c switch. This however opens up an attack vector through maliciously 
+           constructed script names/arguments. Consider e.g. someone forcing the script name
+           to "script.bat && format c:", or setting script name to "script.bat" but arguments
+           to [ "&& format c:" ].
+        */
+        ".ps1": [ "powershell", "-File" ],
+        ".py":  "python",
+        ".js":  "node",
+        ".mjs": "node",
+        ".cjs": "node",
+        ".rb":  "ruby",
+        ".vbs": [ "cscript", "//nologo" ],
+        ".vbe": [ "cscript", "//nologo" ],
+        ".jscript": [ "cscript", "//nologo" ],
+        ".jse": [ "cscript", "//nologo" ],
+        ".wsf": [ "cscript", "//nologo" ],
+        ".wsh": [ "cscript", "//nologo" ]
+    }
+
     /**
      * @param {string} dir path to the scripts directory to execute from
      */
@@ -159,15 +185,25 @@ class ScriptMonitorType extends MonitorType {
             }
         }
 
-        const args = parseArgsStringToArgv(monitor.args ?? "");
-
+        // Windows doesn't understand hashbangs.
+        // So we need to specifically map script extensions to known interpreters
+        let command = path.join(this.dir, monitor.script);
+        let args = parseArgsStringToArgv(monitor.args ?? "");
+        if (process.platform === "win32" && ScriptMonitorType.EXTENSIONS[path.extname(monitor.script)]) {
+            let interpreter = ScriptMonitorType.EXTENSIONS[path.extname(monitor.script)];
+            if (typeof interpreter === "string") {
+                interpreter = [ interpreter ];
+            }
+            args = [ ...interpreter, command, ...args ];
+            command = args.shift();
+        }
         try {
             // Security checks completed - run the script
             //
             // Note: spawn() will expose process.env to the child process by default
             // It enables user scripts to access secrets from environment variables.
             // This is safe, because scripts are trusted by design.
-            const child = childProcessAsync.spawn(path.join(this.dir, monitor.script), args, {
+            const child = childProcessAsync.spawn(command, args, {
                 shell: false, // Security: Prevent command chaining etc.
                 detached: true, // Needed so we can reliably kill any subprocesses (grandchildren)
                 encoding: "utf8", // Needed to capture stdout & stderr
