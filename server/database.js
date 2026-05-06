@@ -171,7 +171,7 @@ class Database {
             if (process.platform === "win32") {
                 // Unfortunately, we can't simply add a single DENY rule here
                 // As per the Windows docs (https://learn.microsoft.com/en-us/windows/win32/fileio/file-security-and-access-rights):
-                // 
+                //
                 // > Note that you cannot use an access-denied ACE to deny only GENERIC_READ or only GENERIC_WRITE access to a file.
                 // > This is because for file objects, the generic mappings for both GENERIC_READ or GENERIC_WRITE include the SYNCHRONIZE access right.
                 // > If an ACE denies GENERIC_WRITE access to a trustee, and the trustee requests GENERIC_READ access,
@@ -182,18 +182,20 @@ class Database {
                 // 1. turn off inheritance and delete inherited rules
                 // 2. grant read+execute access to authenticated users
                 // 3. grant write access to administators (users that are administators but currently not "elevated" will still not have write access.)
-                // 4. remove the grant rule that was auto-generated for ourselves (since we are creator-owner). 
+                // 4. remove the grant rule that was auto-generated for ourselves (since we are creator-owner).
                 //    This step will come last so we don't lock ourselves out inadvertently.
                 const AUTHENTICATED_USERS = "S-1-5-11";
                 const ADMINISTRATORS = "S-1-5-32-544";
                 try {
                     [
-                        [ "/inheritance:r" ],
-                        [ "/grant", `*${AUTHENTICATED_USERS}:(OI)(CI)RX` ],
-                        [ "/grant", `*${ADMINISTRATORS}:(OI)(CI)F` ],
-                        [ "/remove", execFileSync("whoami", [], { windowsHide: true, encoding: "utf-8" }).trim() ]                        
-                    ].forEach(args => execFileSync("icacls", [ Database.scriptDir, ...args ], { windowsHide: true, encoding: "utf-8" }));
-                } catch(err) {
+                        ["/inheritance:r"],
+                        ["/grant", `*${AUTHENTICATED_USERS}:(OI)(CI)RX`],
+                        ["/grant", `*${ADMINISTRATORS}:(OI)(CI)F`],
+                        ["/remove", execFileSync("whoami", [], { windowsHide: true, encoding: "utf-8" }).trim()],
+                    ].forEach((args) =>
+                        execFileSync("icacls", [Database.scriptDir, ...args], { windowsHide: true, encoding: "utf-8" })
+                    );
+                } catch (err) {
                     log.error("server", "Script dir creation failed: " + err.stderr?.toString("utf-8") || err.message);
                 }
             } else {
