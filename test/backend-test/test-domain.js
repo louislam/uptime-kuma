@@ -5,7 +5,6 @@ const assert = require("node:assert");
 const DomainExpiry = require("../../server/model/domain_expiry");
 const mockWebhook = require("./notification-providers/mock-webhook");
 const TestDB = require("../mock-testdb");
-const { R } = require("redbean-node");
 const { Notification } = require("../../server/notification");
 const { Settings } = require("../../server/settings");
 const { setSetting } = require("../../server/util-server");
@@ -191,7 +190,7 @@ describe("Domain Expiry", () => {
         };
         const manyDays = 3650;
         await setSetting("domainExpiryNotifyDays", [manyDays], "general");
-        const notif = R.convertToBean("notification", {
+        const notif = {
             config: JSON.stringify({
                 type: "webhook",
                 httpMethod: "post",
@@ -201,7 +200,7 @@ describe("Domain Expiry", () => {
             active: 1,
             user_id: 1,
             name: "Testhook",
-        });
+        };
         const [, data] = await Promise.all([
             DomainExpiry.sendNotifications("google.com", [notif]),
             mockWebhook(hook.port, hook.url),

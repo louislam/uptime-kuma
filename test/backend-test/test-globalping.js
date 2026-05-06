@@ -1,4 +1,6 @@
-const { describe, test, mock } = require("node:test");
+process.env.UPTIME_KUMA_HIDE_LOG = ["info_db", "info_server"].join(",");
+
+const { describe, test, mock, before, after } = require("node:test");
 const assert = require("node:assert");
 const { encodeBase64 } = require("../../server/util-server");
 const { UP, PENDING } = require("../../src/util");
@@ -713,7 +715,43 @@ describe("GlobalpingMonitorType", () => {
     });
 
     describe("dns", () => {
-        test("should handle successful dns", async () => {
+        // The dns() method writes the resolved value back to the monitor row via
+        // `getKnex()("monitor").update(...)`. Tests that need that path must run
+        // against a real Knex; we set up a TestDB once for the whole describe block.
+        // The previous test version passed a `redbeanMock` 5th arg and asserted
+        // on its mock.calls; the production signature is `dns(client, monitor, heartbeat, hasAPIToken)`,
+        // so the extra arg was silently ignored and the assertions tested nothing.
+        const TestDB = require("../mock-testdb");
+        const { Settings } = require("../../server/settings");
+        const { getKnex } = require("../../server/db");
+        const dnsTestDb = new TestDB("./data/test-globalping-dns");
+
+        before(async () => {
+            await dnsTestDb.create();
+        });
+        after(async () => {
+            Settings.stopCacheCleaner();
+            await dnsTestDb.destroy();
+        });
+
+        /**
+         * Insert a fresh monitor row and return its database id.
+         * The `dns_last_result` column starts NULL.
+         * @param {object} extra Extra column overrides
+         * @returns {Promise<number>} New monitor id
+         */
+        async function insertMonitor(extra = {}) {
+            const knex = getKnex();
+            const [ idMaybe ] = await knex("monitor").insert({
+                name: "globalping-dns-fixture",
+                type: "dns",
+                interval: 60,
+                ...extra,
+            }).returning("id");
+            return typeof idMaybe === "object" ? idMaybe.id : idMaybe;
+        }
+
+        test("should handle successful dns and persist dns_last_result", async () => {
             const monitorType = new GlobalpingMonitorType("test-agent/1.0");
             const mockClient = createGlobalpingClientMock();
             const createResponse = createMockResponse({
@@ -725,11 +763,9 @@ describe("GlobalpingMonitorType", () => {
             mockClient.createMeasurement.mock.mockImplementation(() => createMockResponse(createResponse));
             mockClient.awaitMeasurement.mock.mockImplementation(() => awaitResponse);
 
-            const redbeanMock = createRedbeanMock();
-            redbeanMock.exec.mock.mockImplementation(() => Promise.resolve());
-
+            const monitorId = await insertMonitor();
             const monitor = {
-                id: "1",
+                id: monitorId,
                 hostname: "example.com",
                 location: "us-east-1",
                 dns_resolve_type: "A",
@@ -743,7 +779,7 @@ describe("GlobalpingMonitorType", () => {
                 ping: null,
             };
 
-            await monitorType.dns(mockClient, monitor, heartbeat, false, redbeanMock);
+            await monitorType.dns(mockClient, monitor, heartbeat, false);
 
             assert.strictEqual(mockClient.createMeasurement.mock.calls.length, 1);
             assert.deepStrictEqual(mockClient.createMeasurement.mock.calls[0].arguments[0], {
@@ -765,11 +801,10 @@ describe("GlobalpingMonitorType", () => {
                 ping: 25,
             });
 
-            assert.strictEqual(redbeanMock.exec.mock.calls.length, 1);
-            assert.deepStrictEqual(redbeanMock.exec.mock.calls[0].arguments, [
-                "UPDATE `monitor` SET dns_last_result = ? WHERE id = ? ",
-                ["93.184.216.34", "1"],
-            ]);
+            // The new code path: getKnex()("monitor").update({ dns_last_result }).
+            // Verify the value made it into the actual row, not just into a mock.
+            const row = await getKnex()("monitor").where("id", monitorId).first();
+            assert.strictEqual(row.dns_last_result, "93.184.216.34", "dns_last_result was persisted to the monitor row");
         });
 
         test("should handle failed dns with status failed", async () => {
@@ -887,7 +922,7 @@ describe("GlobalpingMonitorType", () => {
             });
         });
 
-        test("should handle regex matched", async () => {
+        test("should handle regex matched and persist dns_last_result", async () => {
             const monitorType = new GlobalpingMonitorType("test-agent/1.0");
             const mockClient = createGlobalpingClientMock();
             const createResponse = {
@@ -899,11 +934,9 @@ describe("GlobalpingMonitorType", () => {
             mockClient.createMeasurement.mock.mockImplementation(() => createMockResponse(createResponse));
             mockClient.awaitMeasurement.mock.mockImplementation(() => awaitResponse);
 
-            const redbeanMock = createRedbeanMock();
-            redbeanMock.exec.mock.mockImplementation(() => Promise.resolve());
-
+            const monitorId = await insertMonitor();
             const monitor = {
-                id: "1",
+                id: monitorId,
                 hostname: "example.com",
                 location: "us-east-1",
                 dns_resolve_type: "A",
@@ -918,7 +951,7 @@ describe("GlobalpingMonitorType", () => {
                 ping: null,
             };
 
-            await monitorType.dns(mockClient, monitor, heartbeat, false, redbeanMock);
+            await monitorType.dns(mockClient, monitor, heartbeat, false);
 
             assert.deepStrictEqual(heartbeat, {
                 status: UP,
@@ -926,13 +959,11 @@ describe("GlobalpingMonitorType", () => {
                 ping: 25,
             });
 
-            assert.deepStrictEqual(redbeanMock.exec.mock.calls[0].arguments, [
-                "UPDATE `monitor` SET dns_last_result = ? WHERE id = ? ",
-                ["93.184.216.34", "1"],
-            ]);
+            const row = await getKnex()("monitor").where("id", monitorId).first();
+            assert.strictEqual(row.dns_last_result, "93.184.216.34", "dns_last_result was persisted to the monitor row");
         });
 
-        test("should handle regex not matched", async () => {
+        test("should handle regex not matched (still persists dns_last_result)", async () => {
             const monitorType = new GlobalpingMonitorType("test-agent/1.0");
             const mockClient = createGlobalpingClientMock();
             const createResponse = {
@@ -944,11 +975,9 @@ describe("GlobalpingMonitorType", () => {
             mockClient.createMeasurement.mock.mockImplementation(() => createMockResponse(createResponse));
             mockClient.awaitMeasurement.mock.mockImplementation(() => awaitResponse);
 
-            const redbeanMock = createRedbeanMock();
-            redbeanMock.exec.mock.mockImplementation(() => Promise.resolve());
-
+            const monitorId = await insertMonitor();
             const monitor = {
-                id: "1",
+                id: monitorId,
                 hostname: "example.com",
                 location: "us-east-1",
                 dns_resolve_type: "A",
@@ -962,7 +991,7 @@ describe("GlobalpingMonitorType", () => {
                 msg: "",
             };
 
-            await assert.rejects(monitorType.dns(mockClient, monitor, heartbeat, false, redbeanMock), (error) => {
+            await assert.rejects(monitorType.dns(mockClient, monitor, heartbeat, false), (error) => {
                 assert.deepStrictEqual(
                     error,
                     new Error("New York (NY), US, NA, MASSIVEGRID (AS49683) : No record matched. 93.184.216.34")
@@ -970,10 +999,10 @@ describe("GlobalpingMonitorType", () => {
                 return true;
             });
 
-            assert.deepStrictEqual(redbeanMock.exec.mock.calls[0].arguments, [
-                "UPDATE `monitor` SET dns_last_result = ? WHERE id = ? ",
-                ["93.184.216.34", "1"],
-            ]);
+            // dns() updates dns_last_result before evaluating the keyword regex,
+            // so even on regex mismatch the value should be persisted.
+            const row = await getKnex()("monitor").where("id", monitorId).first();
+            assert.strictEqual(row.dns_last_result, "93.184.216.34");
         });
 
         test("should retry create measurement on status 500", async () => {
@@ -994,11 +1023,9 @@ describe("GlobalpingMonitorType", () => {
             mockClient.createMeasurement.mock.mockImplementation(() => createMockResponse(createResponse));
             mockClient.awaitMeasurement.mock.mockImplementation(() => awaitResponse);
 
-            const redbeanMock = createRedbeanMock();
-            redbeanMock.exec.mock.mockImplementation(() => Promise.resolve());
-
+            const monitorId = await insertMonitor();
             const monitor = {
-                id: "1",
+                id: monitorId,
                 hostname: "example.com",
                 location: "us-east-1",
                 dns_resolve_type: "A",
@@ -1012,7 +1039,7 @@ describe("GlobalpingMonitorType", () => {
                 ping: null,
             };
 
-            await monitorType.dns(mockClient, monitor, heartbeat, false, redbeanMock);
+            await monitorType.dns(mockClient, monitor, heartbeat, false);
 
             const expectedCreateMeasurement = {
                 type: "dns",
@@ -1036,11 +1063,8 @@ describe("GlobalpingMonitorType", () => {
                 ping: 25,
             });
 
-            assert.strictEqual(redbeanMock.exec.mock.calls.length, 1);
-            assert.deepStrictEqual(redbeanMock.exec.mock.calls[0].arguments, [
-                "UPDATE `monitor` SET dns_last_result = ? WHERE id = ? ",
-                ["93.184.216.34", "1"],
-            ]);
+            const row = await getKnex()("monitor").where("id", monitorId).first();
+            assert.strictEqual(row.dns_last_result, "93.184.216.34");
         });
     });
 
@@ -1189,16 +1213,6 @@ function createGlobalpingClientMock() {
     return {
         createMeasurement: mock.fn(),
         awaitMeasurement: mock.fn(),
-    };
-}
-
-/**
- * Reusable mock factory for RedBean
- * @returns {object} Mocked RedBean
- */
-function createRedbeanMock() {
-    return {
-        exec: mock.fn(),
     };
 }
 

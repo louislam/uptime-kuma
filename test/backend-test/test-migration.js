@@ -1,25 +1,65 @@
 const { describe, test } = require("node:test");
+const assert = require("node:assert");
 const fs = require("fs");
 const path = require("path");
 const { GenericContainer, Wait } = require("testcontainers");
 const { MySqlContainer } = require("@testcontainers/mysql");
+const { PostgreSqlContainer } = require("@testcontainers/postgresql");
+
+/**
+ * Assert that the post-migration schema looks healthy. Replaces the previous
+ * "no error thrown" smoke check with explicit table/column/migration-log
+ * assertions so a regression in the migration set actually fails the test.
+ * @param {import("knex").Knex} knex Bound knex instance
+ * @param {string} dialectLabel Human-readable label for assertion messages
+ * @returns {Promise<void>}
+ */
+async function assertMigratedSchema(knex, dialectLabel) {
+    // Critical core tables must exist.
+    for (const table of [ "monitor", "heartbeat", "status_page", "setting" ]) {
+        const exists = await knex.schema.hasTable(table);
+        assert.strictEqual(exists, true, `${dialectLabel}: table ${table} should exist after migrations`);
+    }
+
+    // Critical column from the snake_case schema must exist.
+    const hasRetryInterval = await knex.schema.hasColumn("monitor", "retry_interval");
+    assert.strictEqual(
+        hasRetryInterval,
+        true,
+        `${dialectLabel}: monitor.retry_interval column should exist after migrations`
+    );
+
+    // Migration log row exists and points at the most recent migration on disk.
+    const migrationsDir = path.join(__dirname, "../../db/knex_migrations");
+    const lastDiskFile = fs
+        .readdirSync(migrationsDir)
+        .filter((f) => f.endsWith(".js"))
+        .sort()
+        .pop();
+    assert.ok(lastDiskFile, `${dialectLabel}: migrations directory must contain at least one .js file`);
+
+    const lastLogged = await knex("knex_migrations").orderBy("id", "desc").first();
+    assert.ok(lastLogged, `${dialectLabel}: knex_migrations log must contain at least one row`);
+    assert.strictEqual(
+        lastLogged.name,
+        lastDiskFile,
+        `${dialectLabel}: most recent migration log entry must match latest file on disk`
+    );
+}
 
 describe("Database Migration", () => {
     test("SQLite migrations run successfully from fresh database", async () => {
         const testDbPath = path.join(__dirname, "../../data/test-migration.db");
         const testDbDir = path.dirname(testDbPath);
 
-        // Ensure data directory exists
         if (!fs.existsSync(testDbDir)) {
             fs.mkdirSync(testDbDir, { recursive: true });
         }
 
-        // Clean up any existing test database
         if (fs.existsSync(testDbPath)) {
             fs.unlinkSync(testDbPath);
         }
 
-        // Use the same SQLite driver as the project
         const Dialect = require("knex/lib/dialects/sqlite3/index.js");
         Dialect.prototype._driver = () => require("@louislam/sqlite3");
 
@@ -32,24 +72,22 @@ describe("Database Migration", () => {
             useNullAsDefault: true,
         });
 
-        // Setup R (redbean) with knex instance like production code does
-        const { R } = require("redbean-node");
-        R.setup(db);
+        // Reset and bind shared Knex singleton (no redbean-node)
+        delete require.cache[require.resolve("../../server/db")];
+        const { setupKnex } = require("../../server/db");
+        setupKnex(db);
 
         try {
-            // Use production code to initialize SQLite tables (like first run)
             const { createTables } = require("../../db/knex_init_db.js");
             await createTables();
 
-            // Run all migrations like production code does
-            await R.knex.migrate.latest({
+            await db.migrate.latest({
                 directory: path.join(__dirname, "../../db/knex_migrations"),
             });
 
-            // Test passes if migrations complete successfully without errors
+            await assertMigratedSchema(db, "SQLite");
         } finally {
-            // Clean up
-            await R.knex.destroy();
+            await db.destroy();
             if (fs.existsSync(testDbPath)) {
                 fs.unlinkSync(testDbPath);
             }
@@ -62,7 +100,6 @@ describe("Database Migration", () => {
             skip: !!process.env.CI && (process.platform !== "linux" || process.arch !== "x64"),
         },
         async () => {
-            // Start MariaDB container (using MariaDB 12 to match current production)
             const mariadbContainer = await new GenericContainer("mariadb:12")
                 .withEnvironment({
                     MYSQL_ROOT_PASSWORD: "root",
@@ -75,7 +112,6 @@ describe("Database Migration", () => {
                 .withStartupTimeout(120000)
                 .start();
 
-            // Wait a bit more to ensure MariaDB is fully ready
             await new Promise((resolve) => setTimeout(resolve, 2000));
 
             const knex = require("knex");
@@ -97,25 +133,23 @@ describe("Database Migration", () => {
                 },
             });
 
-            // Setup R (redbean) with knex instance like production code does
-            const { R } = require("redbean-node");
-            R.setup(knexInstance);
+            delete require.cache[require.resolve("../../server/db")];
+            delete require.cache[require.resolve("../../db/knex_init_db")];
+            const { setupKnex } = require("../../server/db");
+            setupKnex(knexInstance);
 
             try {
-                // Use production code to initialize MariaDB tables
                 const { createTables } = require("../../db/knex_init_db.js");
                 await createTables();
 
-                // Run all migrations like production code does
-                await R.knex.migrate.latest({
+                await knexInstance.migrate.latest({
                     directory: path.join(__dirname, "../../db/knex_migrations"),
                 });
 
-                // Test passes if migrations complete successfully without errors
+                await assertMigratedSchema(knexInstance, "MariaDB");
             } finally {
-                // Clean up
                 try {
-                    await R.knex.destroy();
+                    await knexInstance.destroy();
                 } catch (e) {
                     // Ignore cleanup errors
                 }
@@ -134,7 +168,6 @@ describe("Database Migration", () => {
             skip: !!process.env.CI && (process.platform !== "linux" || process.arch !== "x64"),
         },
         async () => {
-            // Start MySQL 8.0 container (the version mentioned in the issue)
             const mysqlContainer = await new MySqlContainer("mysql:8.0").withStartupTimeout(120000).start();
 
             const knex = require("knex");
@@ -156,30 +189,85 @@ describe("Database Migration", () => {
                 },
             });
 
-            // Setup R (redbean) with knex instance like production code does
-            const { R } = require("redbean-node");
-            R.setup(knexInstance);
+            delete require.cache[require.resolve("../../server/db")];
+            delete require.cache[require.resolve("../../db/knex_init_db")];
+            const { setupKnex } = require("../../server/db");
+            setupKnex(knexInstance);
 
             try {
-                // Use production code to initialize MySQL tables
                 const { createTables } = require("../../db/knex_init_db.js");
                 await createTables();
 
-                // Run all migrations like production code does
-                await R.knex.migrate.latest({
+                await knexInstance.migrate.latest({
                     directory: path.join(__dirname, "../../db/knex_migrations"),
                 });
 
-                // Test passes if migrations complete successfully without errors
+                await assertMigratedSchema(knexInstance, "MySQL");
             } finally {
-                // Clean up
                 try {
-                    await R.knex.destroy();
+                    await knexInstance.destroy();
                 } catch (e) {
                     // Ignore cleanup errors
                 }
                 try {
                     await mysqlContainer.stop();
+                } catch (e) {
+                    // Ignore cleanup errors
+                }
+            }
+        }
+    );
+
+    test(
+        "PostgreSQL migrations run successfully from fresh database",
+        {
+            skip: !!process.env.CI && (process.platform !== "linux" || process.arch !== "x64"),
+        },
+        async () => {
+            const pgContainer = await new PostgreSqlContainer("postgres:16-alpine")
+                .withStartupTimeout(120000)
+                .start();
+
+            const knex = require("knex");
+            const knexInstance = knex({
+                client: "pg",
+                connection: {
+                    host: pgContainer.getHost(),
+                    port: pgContainer.getPort(),
+                    user: pgContainer.getUsername(),
+                    password: pgContainer.getPassword(),
+                    database: pgContainer.getDatabase(),
+                },
+                pool: {
+                    min: 0,
+                    max: 10,
+                    acquireTimeoutMillis: 60000,
+                    idleTimeoutMillis: 60000,
+                },
+            });
+
+            delete require.cache[require.resolve("../../server/db")];
+            delete require.cache[require.resolve("../../db/knex_init_db")];
+            const { setupKnex } = require("../../server/db");
+            setupKnex(knexInstance);
+
+            try {
+                const { createTables } = require("../../db/knex_init_db.js");
+                await createTables();
+
+                await knexInstance.migrate.latest({
+                    directory: path.join(__dirname, "../../db/knex_migrations"),
+                });
+
+                await assertMigratedSchema(knexInstance, "PostgreSQL");
+            } finally {
+                try {
+                    await knexInstance.destroy();
+                } catch (e) {
+                    // Ignore cleanup errors
+                }
+                try {
+                    await pgContainer.stop();
                 } catch (e) {
                     // Ignore cleanup errors
                 }
