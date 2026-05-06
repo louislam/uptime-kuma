@@ -18,6 +18,7 @@ FROM node:24-bookworm-slim AS dev
 # dumb-init: zombie reaping for the entrypoint
 # ca-certificates: TLS roots for outbound HTTP
 # curl: in-container debugging
+# iputils-ping: ping monitor type shells out to /bin/ping
 # mariadb-server: required for the embedded MariaDB option in the setup
 #   wizard. Gated at runtime by UPTIME_KUMA_ENABLE_EMBEDDED_MARIADB.
 RUN apt-get update \
@@ -25,6 +26,7 @@ RUN apt-get update \
         dumb-init \
         ca-certificates \
         curl \
+        iputils-ping \
         mariadb-server \
     && rm -rf /var/lib/apt/lists/* \
     && chown -R node:node /var/lib/mysql
