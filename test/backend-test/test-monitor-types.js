@@ -441,15 +441,15 @@ describe("Monitor type integration tests", { concurrency: false }, () => {
                         `SNMP_TEST_HOST/SNMP_TEST_PORT to point at a working agent.`;
                 }
             } else {
+                // polinux/snmpd listens on UDP 161 inside the container;
+                // expose that and ask for the UDP host mapping explicitly
+                // (getMappedPort defaults to TCP and throws otherwise).
                 container = await new GenericContainer("polinux/snmpd")
-                    .withExposedPorts({ container: 1161, host: undefined, protocol: "udp" })
+                    .withExposedPorts({ container: 161, host: undefined, protocol: "udp" })
                     .withWaitStrategy(Wait.forLogMessage(/snmpd -f/))
                     .start();
                 snmpHost = container.getHost();
-                // The container exposes UDP 1161; ask for the UDP mapping
-                // explicitly. The default getMappedPort(1161) looks up TCP
-                // and throws "No port binding found for :1161/tcp" on Linux.
-                snmpPort = container.getMappedPort("1161/udp");
+                snmpPort = container.getMappedPort("161/udp");
             }
         });
 
