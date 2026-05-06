@@ -64,7 +64,7 @@ describe("WebSocket Monitor", {}, () => {
 
         const monitor = {
             url: `ws://localhost:${port}`,
-            wsIgnoreSecWebsocketAcceptHeader: false,
+            ws_ignore_sec_websocket_accept_header: false,
             timeout: 30,
         };
 
@@ -86,7 +86,7 @@ describe("WebSocket Monitor", {}, () => {
 
         const monitor = {
             url: `ws://localhost:${port}`,
-            wsIgnoreSecWebsocketAcceptHeader: false,
+            ws_ignore_sec_websocket_accept_header: false,
             accepted_statuscodes_json: JSON.stringify(["1000"]),
             timeout: 30,
         };
@@ -112,7 +112,7 @@ describe("WebSocket Monitor", {}, () => {
 
         const monitor = {
             url: `ws://localhost:${port}`,
-            wsIgnoreSecWebsocketAcceptHeader: false,
+            ws_ignore_sec_websocket_accept_header: false,
             accepted_statuscodes_json: JSON.stringify(["1000"]),
             timeout: 30,
         };
@@ -138,7 +138,7 @@ describe("WebSocket Monitor", {}, () => {
 
         const monitor = {
             url: `ws://localhost:${port}`,
-            wsIgnoreSecWebsocketAcceptHeader: false,
+            ws_ignore_sec_websocket_accept_header: false,
             accepted_statuscodes_json: JSON.stringify(["1001"]),
             timeout: 30,
         };
@@ -158,7 +158,7 @@ describe("WebSocket Monitor", {}, () => {
 
         const monitor = {
             url: `ws://localhost:${port}`,
-            wsIgnoreSecWebsocketAcceptHeader: false,
+            ws_ignore_sec_websocket_accept_header: false,
             accepted_statuscodes_json: JSON.stringify([""]),
             timeout: 30,
         };
@@ -178,7 +178,7 @@ describe("WebSocket Monitor", {}, () => {
 
         const monitor = {
             url: `ws://localhost:${port}`,
-            wsIgnoreSecWebsocketAcceptHeader: false,
+            ws_ignore_sec_websocket_accept_header: false,
             accepted_statuscodes_json: JSON.stringify(["1000"]),
             timeout: 30,
         };
@@ -201,7 +201,7 @@ describe("WebSocket Monitor", {}, () => {
 
         const monitor = {
             url: `ws://localhost:${port}`,
-            wsIgnoreSecWebsocketAcceptHeader: true,
+            ws_ignore_sec_websocket_accept_header: true,
             accepted_statuscodes_json: JSON.stringify(["1000"]),
             timeout: 30,
         };
@@ -227,7 +227,7 @@ describe("WebSocket Monitor", {}, () => {
 
         const monitor = {
             url: `ws://localhost:${port}`,
-            wsIgnoreSecWebsocketAcceptHeader: true,
+            ws_ignore_sec_websocket_accept_header: true,
             accepted_statuscodes_json: JSON.stringify(["1000"]),
             timeout: 30,
         };
@@ -253,7 +253,7 @@ describe("WebSocket Monitor", {}, () => {
 
         const monitor = {
             url: `ws://localhost:${port}`,
-            wsIgnoreSecWebsocketAcceptHeader: true,
+            ws_ignore_sec_websocket_accept_header: true,
             accepted_statuscodes_json: JSON.stringify(["1000"]),
             timeout: 30,
         };
@@ -281,8 +281,8 @@ describe("WebSocket Monitor", {}, () => {
 
         const monitor = {
             url: `ws://localhost:${port}`,
-            wsIgnoreSecWebsocketAcceptHeader: false,
-            wsSubprotocol: "ocpp1.6",
+            ws_ignore_sec_websocket_accept_header: false,
+            ws_subprotocol: "ocpp1.6",
             accepted_statuscodes_json: JSON.stringify(["1000"]),
             timeout: 30,
         };
@@ -302,8 +302,8 @@ describe("WebSocket Monitor", {}, () => {
 
         const monitor = {
             url: `ws://localhost:${port}`,
-            wsIgnoreSecWebsocketAcceptHeader: false,
-            wsSubprotocol: "  # &  ,ocpp2.0   []  ,     ocpp1.6 ,  ,,     ;      ",
+            ws_ignore_sec_websocket_accept_header: false,
+            ws_subprotocol: "  # &  ,ocpp2.0   []  ,     ocpp1.6 ,  ,,     ;      ",
             accepted_statuscodes_json: JSON.stringify(["1000"]),
             timeout: 30,
         };
@@ -330,8 +330,8 @@ describe("WebSocket Monitor", {}, () => {
 
         const monitor = {
             url: `ws://localhost:${port}`,
-            wsIgnoreSecWebsocketAcceptHeader: false,
-            wsSubprotocol: "invalid                        ,              test  ",
+            ws_ignore_sec_websocket_accept_header: false,
+            ws_subprotocol: "invalid                        ,              test  ",
             accepted_statuscodes_json: JSON.stringify(["1000"]),
             timeout: 30,
         };
@@ -361,8 +361,8 @@ describe("WebSocket Monitor", {}, () => {
 
         const monitor = {
             url: `ws://localhost:${port}`,
-            wsIgnoreSecWebsocketAcceptHeader: false,
-            wsSubprotocol: "invalid,test",
+            ws_ignore_sec_websocket_accept_header: false,
+            ws_subprotocol: "invalid,test",
             accepted_statuscodes_json: JSON.stringify(["1000"]),
             timeout: 30,
         };
@@ -413,7 +413,7 @@ describe("WebSocket Monitor", {}, () => {
                 Authorization: "Bearer custom-token",
                 "X-Test": "test-value",
             }),
-            authMethod: "basic",
+            auth_method: "basic",
             basic_auth_user: "user",
             basic_auth_pass: "pass",
         });

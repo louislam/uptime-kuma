@@ -32,7 +32,7 @@ describe(
 
             const mssqlMonitor = new MssqlMonitorType();
             const monitor = {
-                databaseConnectionString: connectionString,
+                database_connection_string: connectionString,
                 conditions: "[]",
             };
 
@@ -52,7 +52,7 @@ describe(
         test("check() rejects when MSSQL server is not reachable", async () => {
             const mssqlMonitor = new MssqlMonitorType();
             const monitor = {
-                databaseConnectionString:
+                database_connection_string:
                     "Server=localhost,15433;Database=master;User Id=Fail;Password=Fail;Encrypt=false",
                 conditions: "[]",
             };
@@ -76,8 +76,8 @@ describe(
 
             const mssqlMonitor = new MssqlMonitorType();
             const monitor = {
-                databaseConnectionString: connectionString,
-                databaseQuery: "SELECT 42",
+                database_connection_string: connectionString,
+                database_query: "SELECT 42",
                 conditions: "[]",
             };
 
@@ -99,8 +99,8 @@ describe(
 
             const mssqlMonitor = new MssqlMonitorType();
             const monitor = {
-                databaseConnectionString: connectionString,
-                databaseQuery: "SELECT 42 AS value",
+                database_connection_string: connectionString,
+                database_query: "SELECT 42 AS value",
                 conditions: JSON.stringify([
                     {
                         type: "expression",
@@ -130,8 +130,8 @@ describe(
 
             const mssqlMonitor = new MssqlMonitorType();
             const monitor = {
-                databaseConnectionString: connectionString,
-                databaseQuery: "SELECT 99 AS value",
+                database_connection_string: connectionString,
+                database_query: "SELECT 99 AS value",
                 conditions: JSON.stringify([
                     {
                         type: "expression",
@@ -164,8 +164,8 @@ describe(
 
             const mssqlMonitor = new MssqlMonitorType();
             const monitor = {
-                databaseConnectionString: connectionString,
-                databaseQuery: "SELECT 1 WHERE 1 = 0",
+                database_connection_string: connectionString,
+                database_query: "SELECT 1 WHERE 1 = 0",
                 conditions: JSON.stringify([
                     {
                         type: "expression",
@@ -198,8 +198,8 @@ describe(
 
             const mssqlMonitor = new MssqlMonitorType();
             const monitor = {
-                databaseConnectionString: connectionString,
-                databaseQuery: "SELECT 1 UNION ALL SELECT 2",
+                database_connection_string: connectionString,
+                database_query: "SELECT 1 UNION ALL SELECT 2",
                 conditions: JSON.stringify([
                     {
                         type: "expression",
@@ -232,8 +232,8 @@ describe(
 
             const mssqlMonitor = new MssqlMonitorType();
             const monitor = {
-                databaseConnectionString: connectionString,
-                databaseQuery: "SELECT 1 AS col1, 2 AS col2",
+                database_connection_string: connectionString,
+                database_query: "SELECT 1 AS col1, 2 AS col2",
                 conditions: JSON.stringify([
                     {
                         type: "expression",

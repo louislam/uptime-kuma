@@ -26,14 +26,14 @@ describe("SNMPMonitorType", () => {
                     type: "snmp",
                     hostname: hostIp,
                     port: hostPort,
-                    snmpVersion: "2c",
-                    radiusPassword: "public",
-                    snmpOid: "1.3.6.1.2.1.1.1.0",
+                    snmp_version: "2c",
+                    radius_password: "public",
+                    snmp_oid: "1.3.6.1.2.1.1.1.0",
                     timeout: 5,
                     maxretries: 1,
-                    jsonPath: "$",
-                    jsonPathOperator: "!=",
-                    expectedValue: "",
+                    json_path: "$",
+                    json_path_operator: "!=",
+                    expected_value: "",
                 };
 
                 const snmpMonitor = new SNMPMonitorType();
@@ -59,9 +59,9 @@ describe("SNMPMonitorType", () => {
                 type: "snmp",
                 hostname: "127.0.0.1",
                 port: 65530, // Assuming no SNMP agent is running here
-                snmpVersion: "2c",
-                radiusPassword: "public",
-                snmpOid: "1.3.6.1.2.1.1.1.0",
+                snmp_version: "2c",
+                radius_password: "public",
+                snmp_oid: "1.3.6.1.2.1.1.1.0",
                 timeout: 1,
                 maxretries: 1,
             };
@@ -106,9 +106,9 @@ describe("SNMPMonitorType", () => {
             port: 161,
             timeout: 5,
             maxretries: 1,
-            snmpVersion: "3",
+            snmp_version: "3",
             snmp_v3_username: "testuser",
-            snmpOid: "1.3.6.1.2.1.1.1.0",
+            snmp_oid: "1.3.6.1.2.1.1.1.0",
         };
 
         const snmpMonitor = new SNMPMonitorType();

@@ -20,7 +20,7 @@ describe("GameDig Monitor", () => {
             hostname: "127.0.0.1",
             port: 25565,
             game: "minecraft",
-            gamedigGivenPortOnly: true,
+            gamedig_given_port_only: true,
         };
 
         const heartbeat = {
@@ -56,7 +56,7 @@ describe("GameDig Monitor", () => {
             hostname: "localhost",
             port: 25565,
             game: "minecraft",
-            gamedigGivenPortOnly: false,
+            gamedig_given_port_only: false,
         };
 
         const heartbeat = {
@@ -93,7 +93,7 @@ describe("GameDig Monitor", () => {
             hostname: "192.168.1.100",
             port: 27015,
             game: "valve",
-            gamedigGivenPortOnly: true,
+            gamedig_given_port_only: true,
         };
 
         const heartbeat = {
@@ -128,7 +128,7 @@ describe("GameDig Monitor", () => {
             hostname: "::1",
             port: 27015,
             game: "valve",
-            gamedigGivenPortOnly: true,
+            gamedig_given_port_only: true,
         };
 
         const heartbeat = {
@@ -163,7 +163,7 @@ describe("GameDig Monitor", () => {
             hostname: "192.168.1.100",
             port: 27015,
             game: "valve",
-            gamedigGivenPortOnly: true,
+            gamedig_given_port_only: true,
         };
 
         const heartbeat = {
@@ -200,7 +200,7 @@ describe("GameDig Monitor", () => {
             hostname: "127.0.0.1",
             port: 25565,
             game: "minecraft",
-            gamedigGivenPortOnly: 1,
+            gamedig_given_port_only: 1,
         };
 
         const heartbeat = {
@@ -225,7 +225,7 @@ describe("GameDig Monitor", () => {
             hostname: "127.0.0.1",
             port: 54321,
             game: "minecraft",
-            gamedigGivenPortOnly: true,
+            gamedig_given_port_only: true,
         };
 
         const heartbeat = {

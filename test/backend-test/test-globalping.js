@@ -26,7 +26,7 @@ describe("GlobalpingMonitorType", () => {
                 location: "North America",
                 ping_count: 3,
                 protocol: "ICMP",
-                ipFamily: "ipv4",
+                ip_family: "ipv4",
             };
 
             const heartbeat = {
@@ -191,7 +191,7 @@ describe("GlobalpingMonitorType", () => {
                 location: "North America",
                 ping_count: 3,
                 protocol: "ICMP",
-                ipFamily: "ipv4",
+                ip_family: "ipv4",
             };
 
             const heartbeat = {
@@ -245,7 +245,7 @@ describe("GlobalpingMonitorType", () => {
                 method: "GET",
                 accepted_statuscodes_json: JSON.stringify(["200-299", "300-399"]),
                 headers: '{"Test-Header": "Test-Value"}',
-                ipFamily: "ipv4",
+                ip_family: "ipv4",
                 dns_resolve_server: "8.8.8.8",
                 auth_method: "basic",
                 basic_auth_user: "username",
@@ -466,7 +466,7 @@ describe("GlobalpingMonitorType", () => {
                 protocol: "HTTPS",
                 accepted_statuscodes_json: JSON.stringify(["300-399"]),
                 keyword: "KEYWORD",
-                invertKeyword: false,
+                invert_keyword: false,
             };
 
             const heartbeat = {
@@ -502,7 +502,7 @@ describe("GlobalpingMonitorType", () => {
                 protocol: "HTTPS",
                 accepted_statuscodes_json: JSON.stringify(["300-399"]),
                 keyword: "MISSING_KEYWORD",
-                invertKeyword: false,
+                invert_keyword: false,
             };
 
             const heartbeat = {
@@ -540,7 +540,7 @@ describe("GlobalpingMonitorType", () => {
                 protocol: "HTTPS",
                 accepted_statuscodes_json: JSON.stringify(["300-399"]),
                 keyword: "ERROR",
-                invertKeyword: true,
+                invert_keyword: true,
             };
 
             const heartbeat = {
@@ -578,9 +578,9 @@ describe("GlobalpingMonitorType", () => {
                 location: "North America",
                 protocol: "HTTPS",
                 accepted_statuscodes_json: JSON.stringify(["300-399"]),
-                jsonPath: "$.status",
-                jsonPathOperator: "==",
-                expectedValue: "success",
+                json_path: "$.status",
+                json_path_operator: "==",
+                expected_value: "success",
             };
 
             const heartbeat = {
@@ -618,9 +618,9 @@ describe("GlobalpingMonitorType", () => {
                 location: "North America",
                 protocol: "HTTPS",
                 accepted_statuscodes_json: JSON.stringify(["300-399"]),
-                jsonPath: "$.status",
-                jsonPathOperator: "==",
-                expectedValue: "success",
+                json_path: "$.status",
+                json_path_operator: "==",
+                expected_value: "success",
             };
 
             const heartbeat = {
@@ -663,7 +663,7 @@ describe("GlobalpingMonitorType", () => {
                 method: "GET",
                 accepted_statuscodes_json: JSON.stringify(["200-299", "300-399"]),
                 headers: '{"Test-Header": "Test-Value"}',
-                ipFamily: "ipv4",
+                ip_family: "ipv4",
                 dns_resolve_server: "8.8.8.8",
                 auth_method: "basic",
                 basic_auth_user: "username",

@@ -105,7 +105,11 @@ function probeSnmp(host, port, community) {
             retries: 0,
         });
         const done = (ok) => {
-            try { session.close(); } catch { /* noop */ }
+            try {
+                session.close();
+            } catch {
+                /* noop */
+            }
             resolve(ok);
         };
         session.on("error", () => done(false));
@@ -196,7 +200,11 @@ describe("Monitor type integration tests", { concurrency: false }, () => {
     });
 
     describe("MQTT", () => {
-        let container, port, host, pub, publishInterval;
+        let container;
+        let port;
+        let host;
+        let pub;
+        let publishInterval;
 
         before(async () => {
             container = await new GenericContainer("eclipse-mosquitto:2")
@@ -222,9 +230,15 @@ describe("Monitor type integration tests", { concurrency: false }, () => {
         });
 
         after(async () => {
-            if (publishInterval) clearInterval(publishInterval);
-            if (pub) pub.end(true);
-            if (container) await container.stop();
+            if (publishInterval) {
+                clearInterval(publishInterval);
+            }
+            if (pub) {
+                pub.end(true);
+            }
+            if (container) {
+                await container.stop();
+            }
         });
 
         test("UP when broker delivers a matching message", async () => {
@@ -497,7 +511,9 @@ describe("Monitor type integration tests", { concurrency: false }, () => {
         });
 
         after(async () => {
-            if (listener) await new Promise((resolve) => listener.close(resolve));
+            if (listener) {
+                await new Promise((resolve) => listener.close(resolve));
+            }
         });
 
         test("UP for an open local port", async () => {

@@ -17,9 +17,9 @@ describe(
             const connectionString = `http://${rabbitMQContainer.getHost()}:${rabbitMQContainer.getMappedPort(15672)}`;
 
             const monitor = {
-                rabbitmqNodes: JSON.stringify([connectionString]),
-                rabbitmqUsername: "guest",
-                rabbitmqPassword: "guest",
+                rabbitmq_nodes: JSON.stringify([connectionString]),
+                rabbitmq_username: "guest",
+                rabbitmq_password: "guest",
                 timeout: 10,
             };
 
@@ -40,9 +40,9 @@ describe(
         test("check() rejects when RabbitMQ server is not reachable", async () => {
             const rabbitMQMonitor = new RabbitMqMonitorType();
             const monitor = {
-                rabbitmqNodes: JSON.stringify(["http://localhost:15672"]),
-                rabbitmqUsername: "rabbitmqUser",
-                rabbitmqPassword: "rabbitmqPass",
+                rabbitmq_nodes: JSON.stringify(["http://localhost:15672"]),
+                rabbitmq_username: "rabbitmqUser",
+                rabbitmq_password: "rabbitmqPass",
                 timeout: 10,
             };
 
@@ -64,8 +64,8 @@ describe(
 
             const monitor = {
                 name: "Test Monitor",
-                rabbitmqUsername: "guest",
-                rabbitmqPassword: "guest",
+                rabbitmq_username: "guest",
+                rabbitmq_password: "guest",
                 timeout: 10,
             };
 
@@ -81,8 +81,8 @@ describe(
             const rabbitMQMonitor = new RabbitMqMonitorType();
             const monitor = {
                 name: "Test Monitor",
-                rabbitmqUsername: "guest",
-                rabbitmqPassword: "guest",
+                rabbitmq_username: "guest",
+                rabbitmq_password: "guest",
                 timeout: 10,
             };
 
@@ -96,9 +96,9 @@ describe("RabbitMQ Multi-Node (Mocked)", () => {
     test("check() succeeds when first node is healthy", async () => {
         const rabbitMQMonitor = new RabbitMqMonitorType();
         const monitor = {
-            rabbitmqNodes: JSON.stringify(["http://node1:15672", "http://node2:15672"]),
-            rabbitmqUsername: "guest",
-            rabbitmqPassword: "guest",
+            rabbitmq_nodes: JSON.stringify(["http://node1:15672", "http://node2:15672"]),
+            rabbitmq_username: "guest",
+            rabbitmq_password: "guest",
             timeout: 10,
         };
 
@@ -123,9 +123,9 @@ describe("RabbitMQ Multi-Node (Mocked)", () => {
     test("check() succeeds when second node is healthy after first fails", async () => {
         const rabbitMQMonitor = new RabbitMqMonitorType();
         const monitor = {
-            rabbitmqNodes: JSON.stringify(["http://node1:15672", "http://node2:15672"]),
-            rabbitmqUsername: "guest",
-            rabbitmqPassword: "guest",
+            rabbitmq_nodes: JSON.stringify(["http://node1:15672", "http://node2:15672"]),
+            rabbitmq_username: "guest",
+            rabbitmq_password: "guest",
             timeout: 10,
         };
 
@@ -153,9 +153,9 @@ describe("RabbitMQ Multi-Node (Mocked)", () => {
     test("check() fails with consolidated error when all nodes are down", async () => {
         const rabbitMQMonitor = new RabbitMqMonitorType();
         const monitor = {
-            rabbitmqNodes: JSON.stringify(["http://node1:15672", "http://node2:15672", "http://node3:15672"]),
-            rabbitmqUsername: "guest",
-            rabbitmqPassword: "guest",
+            rabbitmq_nodes: JSON.stringify(["http://node1:15672", "http://node2:15672", "http://node3:15672"]),
+            rabbitmq_username: "guest",
+            rabbitmq_password: "guest",
             timeout: 10,
         };
 
@@ -184,9 +184,9 @@ describe("RabbitMQ Multi-Node (Mocked)", () => {
     test("check() fails when no nodes are configured", async () => {
         const rabbitMQMonitor = new RabbitMqMonitorType();
         const monitor = {
-            rabbitmqNodes: JSON.stringify([]),
-            rabbitmqUsername: "guest",
-            rabbitmqPassword: "guest",
+            rabbitmq_nodes: JSON.stringify([]),
+            rabbitmq_username: "guest",
+            rabbitmq_password: "guest",
             timeout: 10,
         };
 
@@ -201,14 +201,14 @@ describe("RabbitMQ Multi-Node (Mocked)", () => {
     test("check() tries all nodes before failing", async () => {
         const rabbitMQMonitor = new RabbitMqMonitorType();
         const monitor = {
-            rabbitmqNodes: JSON.stringify([
+            rabbitmq_nodes: JSON.stringify([
                 "http://node1:15672",
                 "http://node2:15672",
                 "http://node3:15672",
                 "http://node4:15672",
             ]),
-            rabbitmqUsername: "guest",
-            rabbitmqPassword: "guest",
+            rabbitmq_username: "guest",
+            rabbitmq_password: "guest",
             timeout: 10,
         };
 

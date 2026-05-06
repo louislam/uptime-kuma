@@ -30,7 +30,7 @@ describe(
 
             const mysqlMonitor = new MysqlMonitorType();
             const monitor = {
-                databaseConnectionString: connectionString,
+                database_connection_string: connectionString,
                 conditions: "[]",
             };
 
@@ -50,7 +50,7 @@ describe(
         test("check() rejects when MariaDB server is not reachable", async () => {
             const mysqlMonitor = new MysqlMonitorType();
             const monitor = {
-                databaseConnectionString: "mysql://invalid:invalid@localhost:13306/test",
+                database_connection_string: "mysql://invalid:invalid@localhost:13306/test",
                 conditions: "[]",
             };
 
@@ -74,8 +74,8 @@ describe(
 
             const mysqlMonitor = new MysqlMonitorType();
             const monitor = {
-                databaseConnectionString: connectionString,
-                databaseQuery: "SELECT 42 AS value",
+                database_connection_string: connectionString,
+                database_query: "SELECT 42 AS value",
                 conditions: JSON.stringify([
                     {
                         type: "expression",
@@ -105,8 +105,8 @@ describe(
 
             const mysqlMonitor = new MysqlMonitorType();
             const monitor = {
-                databaseConnectionString: connectionString,
-                databaseQuery: "SELECT 99 AS value",
+                database_connection_string: connectionString,
+                database_query: "SELECT 99 AS value",
                 conditions: JSON.stringify([
                     {
                         type: "expression",

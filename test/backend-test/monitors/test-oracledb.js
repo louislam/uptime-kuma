@@ -75,7 +75,7 @@ describe(
         test("check() sets status to UP when Oracle server is reachable", async () => {
             const oracleMonitor = new OracleDbMonitorType();
             const monitor = createMonitor({
-                databaseConnectionString: connectString,
+                database_connection_string: connectString,
             });
             const heartbeat = createHeartbeat();
 
@@ -86,7 +86,7 @@ describe(
         test("check() rejects when Oracle server is not reachable", async () => {
             const oracleMonitor = new OracleDbMonitorType();
             const monitor = createMonitor({
-                databaseConnectionString: "localhost:1/FREEPDB1",
+                database_connection_string: "localhost:1/FREEPDB1",
             });
             const heartbeat = createHeartbeat();
 
@@ -103,8 +103,8 @@ describe(
         test("check() sets status to UP when custom query returns single value", async () => {
             const oracleMonitor = new OracleDbMonitorType();
             const monitor = createMonitor({
-                databaseConnectionString: connectString,
-                databaseQuery: "SELECT 42 FROM DUAL",
+                database_connection_string: connectString,
+                database_query: "SELECT 42 FROM DUAL",
             });
             const heartbeat = createHeartbeat();
 
@@ -115,8 +115,8 @@ describe(
         test("check() sets status to UP when custom query result meets condition", async () => {
             const oracleMonitor = new OracleDbMonitorType();
             const monitor = createMonitor({
-                databaseConnectionString: connectString,
-                databaseQuery: "SELECT 42 AS value FROM DUAL",
+                database_connection_string: connectString,
+                database_query: "SELECT 42 AS value FROM DUAL",
                 conditions: JSON.stringify([
                     {
                         type: "expression",
@@ -136,8 +136,8 @@ describe(
         test("check() rejects when custom query result does not meet condition", async () => {
             const oracleMonitor = new OracleDbMonitorType();
             const monitor = createMonitor({
-                databaseConnectionString: connectString,
-                databaseQuery: "SELECT 99 AS value FROM DUAL",
+                database_connection_string: connectString,
+                database_query: "SELECT 99 AS value FROM DUAL",
                 conditions: JSON.stringify([
                     {
                         type: "expression",
@@ -160,8 +160,8 @@ describe(
         test("check() rejects when query returns no results with conditions", async () => {
             const oracleMonitor = new OracleDbMonitorType();
             const monitor = createMonitor({
-                databaseConnectionString: connectString,
-                databaseQuery: "SELECT 1 AS value FROM DUAL WHERE 1 = 0",
+                database_connection_string: connectString,
+                database_query: "SELECT 1 AS value FROM DUAL WHERE 1 = 0",
                 conditions: JSON.stringify([
                     {
                         type: "expression",
@@ -184,8 +184,8 @@ describe(
         test("check() rejects when query returns multiple rows with conditions", async () => {
             const oracleMonitor = new OracleDbMonitorType();
             const monitor = createMonitor({
-                databaseConnectionString: connectString,
-                databaseQuery: "SELECT 1 AS value FROM DUAL UNION ALL SELECT 2 AS value FROM DUAL",
+                database_connection_string: connectString,
+                database_query: "SELECT 1 AS value FROM DUAL UNION ALL SELECT 2 AS value FROM DUAL",
                 conditions: JSON.stringify([
                     {
                         type: "expression",
@@ -208,8 +208,8 @@ describe(
         test("check() rejects when query returns multiple columns with conditions", async () => {
             const oracleMonitor = new OracleDbMonitorType();
             const monitor = createMonitor({
-                databaseConnectionString: connectString,
-                databaseQuery: "SELECT 1 AS col1, 2 AS col2 FROM DUAL",
+                database_connection_string: connectString,
+                database_query: "SELECT 1 AS col1, 2 AS col2 FROM DUAL",
                 conditions: JSON.stringify([
                     {
                         type: "expression",
