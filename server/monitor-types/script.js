@@ -93,19 +93,19 @@ class ScriptMonitorType extends MonitorType {
            to "script.bat && format c:", or setting script name to "script.bat" but arguments
            to [ "&& format c:" ].
         */
-        ".ps1": [ "powershell", "-File" ],
-        ".py":  "python",
-        ".js":  "node",
+        ".ps1": ["powershell", "-File"],
+        ".py": "python",
+        ".js": "node",
         ".mjs": "node",
         ".cjs": "node",
-        ".rb":  "ruby",
-        ".vbs": [ "cscript", "//nologo" ],
-        ".vbe": [ "cscript", "//nologo" ],
-        ".jscript": [ "cscript", "//nologo" ],
-        ".jse": [ "cscript", "//nologo" ],
-        ".wsf": [ "cscript", "//nologo" ],
-        ".wsh": [ "cscript", "//nologo" ]
-    }
+        ".rb": "ruby",
+        ".vbs": ["cscript", "//nologo"],
+        ".vbe": ["cscript", "//nologo"],
+        ".jscript": ["cscript", "//nologo"],
+        ".jse": ["cscript", "//nologo"],
+        ".wsf": ["cscript", "//nologo"],
+        ".wsh": ["cscript", "//nologo"],
+    };
 
     /**
      * @param {string} dir path to the scripts directory to execute from
@@ -192,9 +192,9 @@ class ScriptMonitorType extends MonitorType {
         if (process.platform === "win32" && ScriptMonitorType.EXTENSIONS[path.extname(monitor.script)]) {
             let interpreter = ScriptMonitorType.EXTENSIONS[path.extname(monitor.script)];
             if (typeof interpreter === "string") {
-                interpreter = [ interpreter ];
+                interpreter = [interpreter];
             }
-            args = [ ...interpreter, command, ...args ];
+            args = [...interpreter, command, ...args];
             command = args.shift();
         }
         try {

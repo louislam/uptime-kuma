@@ -222,7 +222,7 @@ describe("Script Monitor", () => {
     });
 
     test("check() always calls the specified script directly on Unix-like", async (t) => {
-        // We can't just mock process.platform because otherwise we will run into 
+        // We can't just mock process.platform because otherwise we will run into
         // win32-privileges being a missing dependency on Linux
         if (process.platform.toLowerCase() === "win32") {
             t.skip("This test is only run on aix, darwin, freebsd, linux, openbsd, or sunos");
@@ -233,7 +233,7 @@ describe("Script Monitor", () => {
             try {
                 setup(t, { script: SCRIPT_NAME + ext });
                 const scriptMonitor = new ScriptMonitorType(SCRIPT_DIR);
-        
+
                 const monitor = { script: SCRIPT_NAME + ext };
                 const heartbeat = { status: null, msg: "" };
 
@@ -247,8 +247,8 @@ describe("Script Monitor", () => {
         }
     });
 
-    test("check() calls the relevant interpreter by extension on Windows", async(t) => {
-        // We can't just mock process.platform because otherwise we will run into 
+    test("check() calls the relevant interpreter by extension on Windows", async (t) => {
+        // We can't just mock process.platform because otherwise we will run into
         // win32-privileges being a missing dependency on Linux
         if (process.platform.toLowerCase() !== "win32") {
             t.skip("This test is only run on win32");
@@ -259,7 +259,7 @@ describe("Script Monitor", () => {
             try {
                 setup(t, { script: SCRIPT_NAME + ext });
                 const scriptMonitor = new ScriptMonitorType(SCRIPT_DIR);
-        
+
                 const monitor = { script: SCRIPT_NAME + ext };
                 const heartbeat = { status: null, msg: "" };
 
