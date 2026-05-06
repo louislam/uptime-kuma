@@ -31,7 +31,7 @@ class MqttMonitorType extends MonitorType {
         });
 
         if (monitor.mqtt_check_type == null || monitor.mqtt_check_type === "") {
-            monitor.mqttCheckType = "keyword";
+            monitor.mqtt_check_type = "keyword";
         }
 
         // Check if conditions are defined
