@@ -446,7 +446,10 @@ describe("Monitor type integration tests", { concurrency: false }, () => {
                     .withWaitStrategy(Wait.forLogMessage(/snmpd -f/))
                     .start();
                 snmpHost = container.getHost();
-                snmpPort = container.getMappedPort(1161);
+                // The container exposes UDP 1161; ask for the UDP mapping
+                // explicitly. The default getMappedPort(1161) looks up TCP
+                // and throws "No port binding found for :1161/tcp" on Linux.
+                snmpPort = container.getMappedPort("1161/udp");
             }
         });
 
