@@ -11,3 +11,41 @@ services:
     ports:
       - "3001:3001" # <Host Port>:<Container Port>
       - "3307:3306"
+
+  # Optional: PostgreSQL backend for testing
+  # Set on uptime-kuma:
+  #   UPTIME_KUMA_DB_TYPE=postgres
+  #   UPTIME_KUMA_DB_HOSTNAME=postgres-dev
+  #   UPTIME_KUMA_DB_PORT=5432
+  #   UPTIME_KUMA_DB_NAME=kuma
+  #   UPTIME_KUMA_DB_USERNAME=kuma
+  #   UPTIME_KUMA_DB_PASSWORD=kuma
+  postgres-dev:
+    image: postgres:16-alpine
+    container_name: uptime-kuma-postgres-dev
+    environment:
+      POSTGRES_USER: kuma
+      POSTGRES_PASSWORD: kuma
+      POSTGRES_DB: kuma
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres-dev-data:/var/lib/postgresql/data
+
+  # Optional: MariaDB backend for testing
+  mariadb-dev:
+    image: mariadb:11
+    container_name: uptime-kuma-mariadb-dev
+    environment:
+      MARIADB_ROOT_PASSWORD: rootpw
+      MARIADB_USER: kuma
+      MARIADB_PASSWORD: kuma
+      MARIADB_DATABASE: kuma
+    ports:
+      - "3308:3306"
+    volumes:
+      - mariadb-dev-data:/var/lib/mysql
+
+volumes:
+  postgres-dev-data:
+  mariadb-dev-data:

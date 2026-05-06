@@ -1,0 +1,28 @@
+# Dev image — builds dist/ inside the image so compose users don't need to
+# remember `npm run build` on the host.
+#
+# Differences from docker/dockerfile (production):
+#   - `npm ci` (NOT --omit=dev) — needs vite to build the frontend.
+#   - Runs `npm run build` to produce dist/.
+#   - Single stage; no healthcheck binary; no rootless variants.
+
+FROM louislam/uptime-kuma:base2 AS dev
+
+USER node
+WORKDIR /app
+
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1
+
+COPY --chown=node:node .npmrc .npmrc
+COPY --chown=node:node package.json package.json
+COPY --chown=node:node package-lock.json package-lock.json
+RUN npm ci
+
+COPY --chown=node:node . .
+RUN npm run build
+
+EXPOSE 3001
+
+ENV UPTIME_KUMA_IS_CONTAINER=1
+ENTRYPOINT ["/usr/bin/dumb-init", "--"]
+CMD ["node", "server/server.js"]

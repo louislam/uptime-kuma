@@ -1,0 +1,91 @@
+# Development compose — builds Uptime Kuma from the LOCAL source tree.
+#
+# Use cases:
+#   - Test changes in production image form before pushing.
+#   - Reproduce a PG/MariaDB-only bug locally.
+#
+# Quick start:
+#   docker compose -f compose.dev.yaml up --build
+#   Open http://localhost:3001 — pick a DB in the setup wizard.
+#
+# The image runs `npm run build` inside its own build stage, so you do NOT
+# need to run `npm run build` on the host first.
+#
+# Choosing a DB:
+#   - First run with no UPTIME_KUMA_DB_* env vars → setup wizard appears.
+#     Pick PostgreSQL with: hostname=postgres, port=5432, db=kuma, user=kuma, password=kuma.
+#   - To skip the wizard, uncomment the UPTIME_KUMA_DB_* block under the
+#     uptime-kuma service.
+#   - For MariaDB, uncomment the `mariadb` service block at the bottom.
+#
+# Reset state: `docker compose -f compose.dev.yaml down -v && rm -rf data/dev/`
+#
+# For frontend hot-reload, run `npm run dev` on the host instead of using this compose.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: uptime-kuma-dev-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: kuma
+      POSTGRES_PASSWORD: kuma
+      POSTGRES_DB: kuma
+    volumes:
+      - ./data/dev/postgres:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"   # exposed so you can connect with psql for debugging
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U kuma -d kuma" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  uptime-kuma:
+    build:
+      context: .
+      dockerfile: docker/dockerfile.dev
+    container_name: uptime-kuma-dev
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      # Uncomment to skip the setup wizard and use PostgreSQL automatically.
+      # Hostname is the service name on the compose network ("postgres"),
+      # NOT "localhost" — the app runs in its own container.
+      # UPTIME_KUMA_DB_TYPE: postgres
+      # UPTIME_KUMA_DB_HOSTNAME: postgres
+      # UPTIME_KUMA_DB_PORT: 5432
+      # UPTIME_KUMA_DB_NAME: kuma
+      # UPTIME_KUMA_DB_USERNAME: kuma
+      # UPTIME_KUMA_DB_PASSWORD: kuma
+      # Uncomment to log every SQL statement
+      # SQL_LOG: "1"
+    volumes:
+      - ./data/dev/kuma:/app/data
+    ports:
+      - "3001:3001"
+
+  # Uncomment to also run MariaDB. Pick it in the setup wizard with:
+  #   hostname=mariadb, port=3306, db=kuma, user=kuma, password=kuma
+  #
+  # mariadb:
+  #   image: mariadb:11
+  #   container_name: uptime-kuma-dev-mariadb
+  #   restart: unless-stopped
+  #   environment:
+  #     MARIADB_ROOT_PASSWORD: rootpw
+  #     MARIADB_USER: kuma
+  #     MARIADB_PASSWORD: kuma
+  #     MARIADB_DATABASE: kuma
+  #   volumes:
+  #     - ./data/dev/mariadb:/var/lib/mysql
+  #   ports:
+  #     - "3308:3306"
+  #   healthcheck:
+  #     test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
+  #     interval: 5s
+  #     timeout: 5s
+  #     retries: 10
