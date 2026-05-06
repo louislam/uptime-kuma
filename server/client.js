@@ -2,8 +2,12 @@
  * For Client Socket
  */
 const { TimeLogger } = require("../src/util");
-const { R } = require("redbean-node");
+const { getKnex } = require("./db");
 const { UptimeKumaServer } = require("./uptime-kuma-server");
+const APIKey = require("./model/api_key");
+const DockerHostModel = require("./model/docker_host");
+const ProxyModel = require("./model/proxy");
+const RemoteBrowserModel = require("./model/remote_browser");
 const server = UptimeKumaServer.getInstance();
 const io = server.io;
 const { setting } = require("./util-server");
@@ -13,18 +17,18 @@ const Database = require("./database");
 /**
  * Send list of notification providers to client
  * @param {Socket} socket Socket.io socket instance
- * @returns {Promise<Bean[]>} List of notifications
+ * @returns {Promise<object[]>} List of notifications
  */
 async function sendNotificationList(socket) {
     const timeLogger = new TimeLogger();
 
     let result = [];
-    let list = await R.find("notification", " user_id = ? ", [socket.userID]);
+    let list = await getKnex()("notification").where("user_id", socket.userID);
 
-    for (let bean of list) {
-        let notificationObject = bean.export();
-        notificationObject.isDefault = notificationObject.isDefault === 1;
-        notificationObject.active = notificationObject.active === 1;
+    for (let row of list) {
+        const notificationObject = { ...row };
+        notificationObject.isDefault = Boolean(notificationObject.is_default);
+        notificationObject.active = Boolean(notificationObject.active);
         result.push(notificationObject);
     }
 
@@ -44,15 +48,10 @@ async function sendNotificationList(socket) {
  * @returns {Promise<void>}
  */
 async function sendHeartbeatList(socket, monitorID, toUser = false, overwrite = false) {
-    let list = await R.getAll(
-        `
-        SELECT * FROM heartbeat
-        WHERE monitor_id = ?
-        ORDER BY time DESC
-        LIMIT 100
-    `,
-        [monitorID]
-    );
+    let list = await getKnex()("heartbeat")
+        .where("monitor_id", monitorID)
+        .orderBy("time", "desc")
+        .limit(100);
 
     let result = list.reverse();
 
@@ -74,16 +73,12 @@ async function sendHeartbeatList(socket, monitorID, toUser = false, overwrite = 
 async function sendImportantHeartbeatList(socket, monitorID, toUser = false, overwrite = false) {
     const timeLogger = new TimeLogger();
 
-    let list = await R.find(
-        "heartbeat",
-        `
-        monitor_id = ?
-        AND important = 1
-        ORDER BY time DESC
-        LIMIT 500
-    `,
-        [monitorID]
-    );
+    const Heartbeat = require("./model/heartbeat");
+    let list = await Heartbeat.query()
+        .where({ monitor_id: monitorID,
+            important: true })
+        .orderBy("time", "desc")
+        .limit(500);
 
     timeLogger.print(`[Monitor: ${monitorID}] sendImportantHeartbeatList`);
 
@@ -99,15 +94,15 @@ async function sendImportantHeartbeatList(socket, monitorID, toUser = false, ove
 /**
  * Emit proxy list to client
  * @param {Socket} socket Socket.io socket instance
- * @returns {Promise<Bean[]>} List of proxies
+ * @returns {Promise<import("./model/proxy")[]>} List of proxies
  */
 async function sendProxyList(socket) {
     const timeLogger = new TimeLogger();
 
-    const list = await R.find("proxy", " user_id = ? ", [socket.userID]);
+    const list = await ProxyModel.query().where("user_id", socket.userID);
     io.to(socket.userID).emit(
         "proxyList",
-        list.map((bean) => bean.export())
+        list.map((bean) => ({ ...bean }))
     );
 
     timeLogger.print("Send Proxy List");
@@ -124,7 +119,7 @@ async function sendAPIKeyList(socket) {
     const timeLogger = new TimeLogger();
 
     let result = [];
-    const list = await R.find("api_key", "user_id=?", [socket.userID]);
+    const list = await APIKey.query().where("user_id", socket.userID);
 
     for (let bean of list) {
         result.push(bean.toPublicJSON());
@@ -165,13 +160,13 @@ async function sendInfo(socket, hideVersion = false) {
 /**
  * Send list of docker hosts to client
  * @param {Socket} socket Socket.io socket instance
- * @returns {Promise<Bean[]>} List of docker hosts
+ * @returns {Promise<import("./model/docker_host")[]>} List of docker hosts
  */
 async function sendDockerHostList(socket) {
     const timeLogger = new TimeLogger();
 
     let result = [];
-    let list = await R.find("docker_host", " user_id = ? ", [socket.userID]);
+    let list = await DockerHostModel.query().where("user_id", socket.userID);
 
     for (let bean of list) {
         result.push(bean.toJSON());
@@ -185,15 +180,15 @@ async function sendDockerHostList(socket) {
 }
 
 /**
- * Send list of docker hosts to client
+ * Send list of remote browsers to client
  * @param {Socket} socket Socket.io socket instance
- * @returns {Promise<Bean[]>} List of docker hosts
+ * @returns {Promise<import("./model/remote_browser")[]>} List of remote browsers
  */
 async function sendRemoteBrowserList(socket) {
     const timeLogger = new TimeLogger();
 
     let result = [];
-    let list = await R.find("remote_browser", " user_id = ? ", [socket.userID]);
+    let list = await RemoteBrowserModel.query().where("user_id", socket.userID);
 
     for (let bean of list) {
         result.push(bean.toJSON());

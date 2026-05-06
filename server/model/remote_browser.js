@@ -1,6 +1,8 @@
-const { BeanModel } = require("redbean-node/dist/bean-model");
+const { BaseModel } = require("./base-model");
 
-class RemoteBrowser extends BeanModel {
+class RemoteBrowser extends BaseModel {
+    static tableName = "remote_browser";
+
     /**
      * Returns an object that ready to parse to JSON
      * @returns {object} Object ready to parse

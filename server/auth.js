@@ -1,6 +1,6 @@
 const basicAuth = require("express-basic-auth");
 const passwordHash = require("./password-hash");
-const { R } = require("redbean-node");
+const { getKnex } = require("./db");
 const { log } = require("../src/util");
 const { loginRateLimiter, apiRateLimiter } = require("./rate-limiter");
 const { Settings } = require("./settings");
@@ -10,22 +10,22 @@ const dayjs = require("dayjs");
  * Login to web app
  * @param {string} username Username to login with
  * @param {string} password Password to login with
- * @returns {Promise<(Bean|null)>} User or null if login failed
+ * @returns {Promise<(import("./model/user")|null)>} User or null if login failed
  */
 exports.login = async function (username, password) {
     if (typeof username !== "string" || typeof password !== "string") {
         return null;
     }
 
-    let user = await R.findOne("user", "TRIM(username) = ? AND active = 1 ", [username.trim()]);
+    const User = require("./model/user");
+    let user = await User.query().whereRaw("TRIM(username) = ?", [username.trim()]).andWhere("active", true).first();
 
     if (user && passwordHash.verify(password, user.password)) {
         // Upgrade the hash to bcrypt
         if (passwordHash.needRehash(user.password)) {
-            await R.exec("UPDATE `user` SET password = ? WHERE id = ? ", [
-                await passwordHash.generate(password),
-                user.id,
-            ]);
+            await getKnex()("user").where("id", user.id).update({
+                password: await passwordHash.generate(password),
+            });
         }
         return user;
     }
@@ -47,9 +47,9 @@ async function verifyAPIKey(key) {
     let index = key.substring(2, key.indexOf("_"));
     let clear = key.substring(key.indexOf("_") + 1, key.length);
 
-    let hash = await R.findOne("api_key", " id=? ", [index]);
+    let hash = await getKnex()("api_key").where("id", index).first();
 
-    if (hash === null) {
+    if (!hash) {
         return false;
     }
 

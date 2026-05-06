@@ -1,4 +1,4 @@
-const { R } = require("redbean-node");
+const { getKnex } = require("./db");
 const { log } = require("../src/util");
 const Alerta = require("./notification-providers/alerta");
 const AlertNow = require("./notification-providers/alertnow");
@@ -216,7 +216,7 @@ class Notification {
 
     /**
      * Send a notification
-     * @param {BeanModel} notification Notification to send
+     * @param {object} notification Notification to send
      * @param {string} msg General Message
      * @param {object} monitorJSON Monitor details (For Up/Down only)
      * @param {object} heartbeatJSON Heartbeat details (For Up/Down only)
@@ -224,11 +224,11 @@ class Notification {
      * @throws Error with fail msg
      */
     static async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        if (this.providerList[notification.type]) {
-            return this.providerList[notification.type].send(notification, msg, monitorJSON, heartbeatJSON);
-        } else {
+        const provider = this.providerList[notification.type];
+        if (!provider) {
             throw new Error("Notification type is not supported");
         }
+        return provider.send(notification, msg, monitorJSON, heartbeatJSON);
     }
 
     /**
@@ -236,30 +236,40 @@ class Notification {
      * @param {object} notification Notification to save
      * @param {?number} notificationID ID of notification to update
      * @param {number} userID ID of user who adds notification
-     * @returns {Promise<Bean>} Notification that was saved
+     * @returns {Promise<object>} Notification that was saved
      */
     static async save(notification, notificationID, userID) {
+        const knex = getKnex();
         let bean;
 
         if (notificationID) {
-            bean = await R.findOne("notification", " id = ? AND user_id = ? ", [notificationID, userID]);
+            bean = await knex("notification").where({ id: notificationID,
+                user_id: userID }).first();
 
             if (!bean) {
                 throw new Error("notification not found");
             }
-        } else {
-            bean = R.dispense("notification");
         }
 
         // applyExisting is one time only, don't save it to database.
         const applyExisting = notification.applyExisting || false;
         notification.applyExisting = false;
 
-        bean.name = notification.name;
-        bean.user_id = userID;
-        bean.config = JSON.stringify(notification);
-        bean.is_default = notification.isDefault || false;
-        await R.store(bean);
+        const payload = {
+            name: notification.name,
+            user_id: userID,
+            config: JSON.stringify(notification),
+            is_default: notification.isDefault || false,
+        };
+
+        if (bean) {
+            await knex("notification").where("id", bean.id).update(payload);
+            Object.assign(bean, payload);
+        } else {
+            const [inserted] = await knex("notification").insert(payload).returning("id");
+            const newId = inserted?.id ?? inserted;
+            bean = { id: newId, ...payload };
+        }
 
         if (applyExisting) {
             await applyNotificationEveryMonitor(bean.id, userID);
@@ -275,13 +285,12 @@ class Notification {
      * @returns {Promise<void>}
      */
     static async delete(notificationID, userID) {
-        let bean = await R.findOne("notification", " id = ? AND user_id = ? ", [notificationID, userID]);
-
-        if (!bean) {
+        const knex = getKnex();
+        const deleted = await knex("notification").where({ id: notificationID,
+            user_id: userID }).delete();
+        if (deleted === 0) {
             throw new Error("notification not found");
         }
-
-        await R.trash(bean);
     }
 
     /**
@@ -300,19 +309,20 @@ class Notification {
  * @returns {Promise<void>}
  */
 async function applyNotificationEveryMonitor(notificationID, userID) {
-    let monitors = await R.getAll("SELECT id FROM monitor WHERE user_id = ?", [userID]);
+    const knex = getKnex();
+    const monitors = await knex("monitor").where("user_id", userID).select("id");
 
     for (let i = 0; i < monitors.length; i++) {
-        let checkNotification = await R.findOne("monitor_notification", " monitor_id = ? AND notification_id = ? ", [
-            monitors[i].id,
-            notificationID,
-        ]);
+        const checkNotification = await knex("monitor_notification")
+            .where({ monitor_id: monitors[i].id,
+                notification_id: notificationID })
+            .first();
 
         if (!checkNotification) {
-            let relation = R.dispense("monitor_notification");
-            relation.monitor_id = monitors[i].id;
-            relation.notification_id = notificationID;
-            await R.store(relation);
+            await knex("monitor_notification").insert({
+                monitor_id: monitors[i].id,
+                notification_id: notificationID,
+            });
         }
     }
 }

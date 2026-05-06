@@ -1,5 +1,8 @@
-const { BeanModel } = require("redbean-node/dist/bean-model");
-const { R } = require("redbean-node");
+const { BaseModel } = require("./base-model");
+const { getKnex } = require("../db");
+const Group = require("./group");
+const Heartbeat = require("./heartbeat");
+const Incident = require("./incident");
 const cheerio = require("cheerio");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const jsesc = require("jsesc");
@@ -21,7 +24,9 @@ const {
     INCIDENT_PAGE_SIZE,
 } = require("../../src/util");
 
-class StatusPage extends BeanModel {
+class StatusPage extends BaseModel {
+    static tableName = "status_page";
+
     /**
      * Like this: { "test-uptime.kuma.pet": "default" }
      * @type {{}}
@@ -36,7 +41,7 @@ class StatusPage extends BeanModel {
      * @returns {Promise<void>}
      */
     static async handleStatusPageRSSResponse(response, slug, request) {
-        let statusPage = await R.findOne("status_page", " slug = ? ", [slug]);
+        let statusPage = await StatusPage.query().where("slug", slug).first();
 
         if (statusPage) {
             const feedUrl = await StatusPage.buildRSSUrl(slug, request);
@@ -61,7 +66,7 @@ class StatusPage extends BeanModel {
             slug = "default";
         }
 
-        let statusPage = await R.findOne("status_page", " slug = ? ", [slug]);
+        let statusPage = await StatusPage.query().where("slug", slug).first();
 
         if (statusPage) {
             response.send(await StatusPage.renderHTML(indexHTML, statusPage));
@@ -270,14 +275,20 @@ class StatusPage extends BeanModel {
         // Public Group List
         const showTags = !!statusPage.show_tags;
 
-        const list = await R.find("group", " public = 1 AND status_page_id = ? ORDER BY weight ", [statusPage.id]);
+        const list = await Group.query()
+            .where({ public: true,
+                status_page_id: statusPage.id })
+            .orderBy("weight");
 
         let heartbeats = [];
 
         for (let groupBean of list) {
             let monitorGroup = await groupBean.toPublicJSON(showTags, config?.showCertificateExpiry);
             for (const monitor of monitorGroup.monitorList) {
-                const heartbeat = await R.findOne("heartbeat", "monitor_id = ? ORDER BY time DESC", [monitor.id]);
+                const heartbeat = await Heartbeat.query()
+                    .where("monitor_id", monitor.id)
+                    .orderBy("time", "desc")
+                    .first();
                 if (heartbeat) {
                     heartbeats.push({
                         ...monitor,
@@ -310,11 +321,11 @@ class StatusPage extends BeanModel {
         const config = await statusPage.toPublicJSON();
 
         // All active incidents
-        let incidents = await R.find(
-            "incident",
-            " pin = 1 AND active = 1 AND status_page_id = ? ORDER BY created_date DESC",
-            [statusPage.id]
-        );
+        let incidents = await Incident.query()
+            .where({ pin: true,
+                active: true,
+                status_page_id: statusPage.id })
+            .orderBy("created_date", "desc");
         incidents = incidents.map((i) => i.toPublicJSON());
 
         let maintenanceList = await StatusPage.getMaintenanceList(statusPage.id);
@@ -323,7 +334,10 @@ class StatusPage extends BeanModel {
         const publicGroupList = [];
         const showTags = !!statusPage.show_tags;
 
-        const list = await R.find("group", " public = 1 AND status_page_id = ? ORDER BY weight ", [statusPage.id]);
+        const list = await Group.query()
+            .where({ public: true,
+                status_page_id: statusPage.id })
+            .orderBy("weight");
 
         for (let groupBean of list) {
             let monitorGroup = await groupBean.toPublicJSON(showTags, config?.showCertificateExpiry);
@@ -345,23 +359,26 @@ class StatusPage extends BeanModel {
      * @returns {Promise<void>}
      */
     static async loadDomainMappingList() {
-        StatusPage.domainMappingList = await R.getAssoc(`
-            SELECT domain, slug
-            FROM status_page, status_page_cname
-            WHERE status_page.id = status_page_cname.status_page_id
-        `);
+        const rows = await getKnex()("status_page")
+            .join("status_page_cname", "status_page.id", "status_page_cname.status_page_id")
+            .select("status_page_cname.domain", "status_page.slug");
+        const map = {};
+        for (const row of rows) {
+            map[row.domain] = row.slug;
+        }
+        StatusPage.domainMappingList = map;
     }
 
     /**
      * Send status page list to client
      * @param {Server} io io Socket server instance
      * @param {Socket} socket Socket.io instance
-     * @returns {Promise<Bean[]>} Status page list
+     * @returns {Promise<StatusPage[]>} Status page list
      */
     static async sendStatusPageList(io, socket) {
         let result = {};
 
-        let list = await R.findAll("status_page", " ORDER BY title ");
+        let list = await StatusPage.query().orderBy("title");
 
         for (let item of list) {
             result[item.id] = await item.toJSON();
@@ -381,11 +398,9 @@ class StatusPage extends BeanModel {
             throw new Error("Invalid array");
         }
 
-        let trx = await R.begin();
+        await getKnex().transaction(async (trx) => {
+            await trx("status_page_cname").where("status_page_id", this.id).delete();
 
-        await trx.exec("DELETE FROM status_page_cname WHERE status_page_id = ?", [this.id]);
-
-        try {
             for (let domain of domainNameList) {
                 if (typeof domain !== "string") {
                     throw new Error("Invalid domain");
@@ -396,18 +411,14 @@ class StatusPage extends BeanModel {
                 }
 
                 // If the domain name is used in another status page, delete it
-                await trx.exec("DELETE FROM status_page_cname WHERE domain = ?", [domain]);
+                await trx("status_page_cname").where("domain", domain).delete();
 
-                let mapping = trx.dispense("status_page_cname");
-                mapping.status_page_id = this.id;
-                mapping.domain = domain;
-                await trx.store(mapping);
+                await trx("status_page_cname").insert({
+                    status_page_id: this.id,
+                    domain,
+                });
             }
-            await trx.commit();
-        } catch (error) {
-            await trx.rollback();
-            throw error;
-        }
+        });
     }
 
     /**
@@ -487,7 +498,8 @@ class StatusPage extends BeanModel {
      * @returns {Promise<number>} ID of status page
      */
     static async slugToID(slug) {
-        return await R.getCell("SELECT id FROM status_page WHERE slug = ? ", [slug]);
+        const row = await getKnex()("status_page").where("slug", slug).first("id");
+        return row?.id ?? null;
     }
 
     /**
@@ -512,30 +524,29 @@ class StatusPage extends BeanModel {
     static async getIncidentHistory(statusPageId, cursor = null, isPublic = true) {
         let incidents;
 
+        let q = Incident.query()
+            .where("status_page_id", statusPageId)
+            .orderBy("created_date", "desc")
+            .limit(INCIDENT_PAGE_SIZE);
         if (cursor) {
-            incidents = await R.find(
-                "incident",
-                " status_page_id = ? AND created_date < ? ORDER BY created_date DESC LIMIT ? ",
-                [statusPageId, cursor, INCIDENT_PAGE_SIZE]
-            );
-        } else {
-            incidents = await R.find("incident", " status_page_id = ? ORDER BY created_date DESC LIMIT ? ", [
-                statusPageId,
-                INCIDENT_PAGE_SIZE,
-            ]);
+            q = q.andWhere("created_date", "<", cursor);
         }
+        incidents = await q;
 
-        const total = await R.count("incident", " status_page_id = ? ", [statusPageId]);
+        const totalRow = await Incident.query().where("status_page_id", statusPageId).count({ c: "*" }).first();
+        const total = Number(totalRow?.c ?? 0);
 
         const lastIncident = incidents[incidents.length - 1];
         let nextCursor = null;
         let hasMore = false;
 
         if (lastIncident) {
-            const moreCount = await R.count("incident", " status_page_id = ? AND created_date < ? ", [
-                statusPageId,
-                lastIncident.created_date,
-            ]);
+            const moreRow = await Incident.query()
+                .where("status_page_id", statusPageId)
+                .andWhere("created_date", "<", lastIncident.created_date)
+                .count({ c: "*" })
+                .first();
+            const moreCount = Number(moreRow?.c ?? 0);
             hasMore = moreCount > 0;
             if (hasMore) {
                 nextCursor = lastIncident.created_date;
@@ -559,14 +570,10 @@ class StatusPage extends BeanModel {
         try {
             const publicMaintenanceList = [];
 
-            let maintenanceIDList = await R.getCol(
-                `
-                SELECT DISTINCT maintenance_id
-                FROM maintenance_status_page
-                WHERE status_page_id = ?
-            `,
-                [statusPageId]
-            );
+            const maintenanceIDList = await getKnex()("maintenance_status_page")
+                .where("status_page_id", statusPageId)
+                .distinct("maintenance_id")
+                .pluck("maintenance_id");
 
             for (const maintenanceID of maintenanceIDList) {
                 let maintenance = UptimeKumaServer.getInstance().getMaintenance(maintenanceID);

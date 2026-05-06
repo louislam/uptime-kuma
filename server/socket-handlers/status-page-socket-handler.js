@@ -1,4 +1,7 @@
-const { R } = require("redbean-node");
+const { getKnex } = require("../db");
+const { isoDateTime } = require("../utils/iso-datetime");
+const Incident = require("../model/incident");
+const Group = require("../model/group");
 const { checkLogin } = require("../util-server");
 const dayjs = require("dayjs");
 const { log } = require("../../src/util");
@@ -41,33 +44,28 @@ module.exports.statusPageSocketHandler = (socket) => {
                 throw new Error("slug is not found");
             }
 
-            let incidentBean;
-
+            let incidentBean = null;
             if (incident.id) {
-                incidentBean = await R.findOne("incident", " id = ? AND status_page_id = ? ", [
-                    incident.id,
-                    statusPageID,
-                ]);
+                incidentBean = await Incident.query().where({ id: incident.id,
+                    status_page_id: statusPageID }).first();
             }
 
-            if (incidentBean == null) {
-                incidentBean = R.dispense("incident");
-            }
+            const payload = {
+                title: incident.title,
+                content: incident.content,
+                style: incident.style,
+                pin: true,
+                active: true,
+                status_page_id: statusPageID,
+            };
 
-            incidentBean.title = incident.title;
-            incidentBean.content = incident.content;
-            incidentBean.style = incident.style;
-            incidentBean.pin = true;
-            incidentBean.active = true;
-            incidentBean.status_page_id = statusPageID;
-
-            if (incident.id) {
-                incidentBean.last_updated_date = R.isoDateTime(dayjs.utc());
+            if (incidentBean) {
+                payload.last_updated_date = isoDateTime(dayjs.utc());
+                incidentBean = await incidentBean.$query().patchAndFetch(payload);
             } else {
-                incidentBean.created_date = R.isoDateTime(dayjs.utc());
+                payload.created_date = isoDateTime(dayjs.utc());
+                incidentBean = await Incident.query().insertAndFetch(payload);
             }
-
-            await R.store(incidentBean);
 
             callback({
                 ok: true,
@@ -87,7 +85,8 @@ module.exports.statusPageSocketHandler = (socket) => {
 
             let statusPageID = await StatusPage.slugToID(slug);
 
-            await R.exec("UPDATE incident SET pin = 0 WHERE pin = 1 AND status_page_id = ? ", [statusPageID]);
+            await getKnex()("incident").where({ pin: true,
+                status_page_id: statusPageID }).update({ pin: false });
 
             callback({
                 ok: true,
@@ -135,7 +134,8 @@ module.exports.statusPageSocketHandler = (socket) => {
                 return;
             }
 
-            let bean = await R.findOne("incident", " id = ? AND status_page_id = ? ", [incidentID, statusPageID]);
+            let bean = await Incident.query().where({ id: incidentID,
+                status_page_id: statusPageID }).first();
             if (!bean) {
                 callback({
                     ok: false,
@@ -161,13 +161,13 @@ module.exports.statusPageSocketHandler = (socket) => {
                 incident.style = "warning";
             }
 
-            bean.title = incident.title;
-            bean.content = incident.content;
-            bean.style = incident.style;
-            bean.pin = incident.pin !== false;
-            bean.lastUpdatedDate = R.isoDateTime(dayjs.utc());
-
-            await R.store(bean);
+            bean = await bean.$query().patchAndFetch({
+                title: incident.title,
+                content: incident.content,
+                style: incident.style,
+                pin: incident.pin !== false,
+                last_updated_date: isoDateTime(dayjs.utc()),
+            });
 
             callback({
                 ok: true,
@@ -198,8 +198,9 @@ module.exports.statusPageSocketHandler = (socket) => {
                 return;
             }
 
-            let bean = await R.findOne("incident", " id = ? AND status_page_id = ? ", [incidentID, statusPageID]);
-            if (!bean) {
+            const deleted = await Incident.query().where({ id: incidentID,
+                status_page_id: statusPageID }).delete();
+            if (deleted === 0) {
                 callback({
                     ok: false,
                     msg: "Incident not found or access denied",
@@ -207,8 +208,6 @@ module.exports.statusPageSocketHandler = (socket) => {
                 });
                 return;
             }
-
-            await R.trash(bean);
 
             callback({
                 ok: true,
@@ -238,7 +237,8 @@ module.exports.statusPageSocketHandler = (socket) => {
                 return;
             }
 
-            let bean = await R.findOne("incident", " id = ? AND status_page_id = ? ", [incidentID, statusPageID]);
+            let bean = await Incident.query().where({ id: incidentID,
+                status_page_id: statusPageID }).first();
             if (!bean) {
                 callback({
                     ok: false,
@@ -269,7 +269,7 @@ module.exports.statusPageSocketHandler = (socket) => {
         try {
             checkLogin(socket);
 
-            let statusPage = await R.findOne("status_page", " slug = ? ", [slug]);
+            let statusPage = await StatusPage.query().where("slug", slug).first();
 
             if (!statusPage) {
                 throw new Error("No slug?");
@@ -294,7 +294,7 @@ module.exports.statusPageSocketHandler = (socket) => {
             checkLogin(socket);
 
             // Save Config
-            let statusPage = await R.findOne("status_page", " slug = ? ", [slug]);
+            let statusPage = await StatusPage.query().where("slug", slug).first();
 
             if (!statusPage) {
                 throw new Error("No slug?");
@@ -321,31 +321,34 @@ module.exports.statusPageSocketHandler = (socket) => {
                 config.logo = imgDataUrl;
             }
 
-            statusPage.slug = config.slug;
-            statusPage.title = config.title;
-            statusPage.description = config.description;
-            statusPage.icon = config.logo;
-            ((statusPage.autoRefreshInterval = config.autoRefreshInterval), (statusPage.theme = config.theme));
-            //statusPage.published = ;
-            //statusPage.search_engine_index = ;
-            statusPage.show_tags = config.showTags;
-            //statusPage.password = null;
-            statusPage.footer_text = config.footerText;
-            statusPage.custom_css = config.customCSS;
-            statusPage.show_powered_by = config.showPoweredBy;
-            statusPage.rss_title = config.rssTitle;
-            statusPage.show_only_last_heartbeat = config.showOnlyLastHeartbeat;
-            statusPage.show_certificate_expiry = config.showCertificateExpiry;
-            statusPage.modified_date = R.isoDateTime();
-            statusPage.analytics_id = config.analyticsId;
-            statusPage.analytics_script_url = config.analyticsScriptUrl;
             const validAnalyticsTypes = ["google", "umami", "plausible", "matomo"];
             if (config.analyticsType !== null && !validAnalyticsTypes.includes(config.analyticsType)) {
                 throw new Error("Invalid analytics type");
             }
-            statusPage.analytics_type = config.analyticsType;
 
-            await R.store(statusPage);
+            const statusPagePayload = {
+                slug: config.slug,
+                title: config.title,
+                description: config.description,
+                icon: config.logo,
+                autoRefreshInterval: config.autoRefreshInterval,
+                theme: config.theme,
+                show_tags: config.showTags,
+                footer_text: config.footerText,
+                custom_css: config.customCSS,
+                show_powered_by: config.showPoweredBy,
+                rss_title: config.rssTitle,
+                show_only_last_heartbeat: config.showOnlyLastHeartbeat,
+                show_certificate_expiry: config.showCertificateExpiry,
+                modified_date: isoDateTime(),
+                analytics_id: config.analyticsId,
+                analytics_script_url: config.analyticsScriptUrl,
+                analytics_type: config.analyticsType,
+            };
+
+            Object.assign(statusPage, statusPagePayload);
+
+            await statusPage.$query().patchAndFetch(statusPagePayload);
 
             await statusPage.updateDomainNameList(config.domainNameList);
             await StatusPage.loadDomainMappingList();
@@ -354,43 +357,45 @@ module.exports.statusPageSocketHandler = (socket) => {
             const groupIDList = [];
             let groupOrder = 1;
 
+            const knex = getKnex();
             for (let group of publicGroupList) {
+                const payload = {
+                    status_page_id: statusPage.id,
+                    name: group.name,
+                    public: true,
+                    weight: groupOrder++,
+                };
+
                 let groupBean;
                 if (group.id) {
-                    groupBean = await R.findOne("group", " id = ? AND public = 1 AND status_page_id = ? ", [
-                        group.id,
-                        statusPage.id,
-                    ]);
-                } else {
-                    groupBean = R.dispense("group");
+                    groupBean = await Group.query().where({ id: group.id,
+                        public: true,
+                        status_page_id: statusPage.id }).first();
                 }
 
-                groupBean.status_page_id = statusPage.id;
-                groupBean.name = group.name;
-                groupBean.public = true;
-                groupBean.weight = groupOrder++;
+                if (groupBean) {
+                    groupBean = await groupBean.$query().patchAndFetch(payload);
+                } else {
+                    groupBean = await Group.query().insertAndFetch(payload);
+                }
 
-                await R.store(groupBean);
-
-                await R.exec("DELETE FROM monitor_group WHERE group_id = ? ", [groupBean.id]);
+                await knex("monitor_group").where("group_id", groupBean.id).delete();
 
                 let monitorOrder = 1;
 
                 for (let monitor of group.monitorList) {
-                    let relationBean = R.dispense("monitor_group");
-                    relationBean.weight = monitorOrder++;
-                    relationBean.group_id = groupBean.id;
-                    relationBean.monitor_id = monitor.id;
-
+                    const relationPayload = {
+                        weight: monitorOrder++,
+                        group_id: groupBean.id,
+                        monitor_id: monitor.id,
+                    };
                     if (monitor.sendUrl !== undefined) {
-                        relationBean.send_url = monitor.sendUrl;
+                        relationPayload.send_url = monitor.sendUrl;
                     }
-
                     if (monitor.url !== undefined) {
-                        relationBean.custom_url = monitor.url;
+                        relationPayload.custom_url = monitor.url;
                     }
-
-                    await R.store(relationBean);
+                    await knex("monitor_group").insert(relationPayload);
                 }
 
                 groupIDList.push(groupBean.id);
@@ -400,12 +405,12 @@ module.exports.statusPageSocketHandler = (socket) => {
             // Delete groups that are not in the list
             log.debug("socket", "Delete groups that are not in the list");
             if (groupIDList.length === 0) {
-                await R.exec("DELETE FROM `group` WHERE status_page_id = ?", [statusPage.id]);
+                await knex("group").where("status_page_id", statusPage.id).delete();
             } else {
-                const slots = groupIDList.map(() => "?").join(",");
-
-                const data = [...groupIDList, statusPage.id];
-                await R.exec(`DELETE FROM \`group\` WHERE id NOT IN (${slots}) AND status_page_id = ?`, data);
+                await knex("group")
+                    .where("status_page_id", statusPage.id)
+                    .whereNotIn("id", groupIDList)
+                    .delete();
             }
 
             const server = UptimeKumaServer.getInstance();
@@ -455,13 +460,13 @@ module.exports.statusPageSocketHandler = (socket) => {
 
             checkSlug(slug);
 
-            let statusPage = R.dispense("status_page");
-            statusPage.slug = slug;
-            statusPage.title = title;
-            statusPage.theme = "auto";
-            statusPage.icon = "";
-            statusPage.autoRefreshInterval = 300;
-            await R.store(statusPage);
+            await StatusPage.query().insert({
+                slug,
+                title,
+                theme: "auto",
+                icon: "",
+                auto_refresh_interval: 300,
+            });
 
             callback({
                 ok: true,
@@ -497,14 +502,13 @@ module.exports.statusPageSocketHandler = (socket) => {
                 // No need to delete records from `status_page_cname`, because it has cascade foreign key.
                 // But for incident & group, it is hard to add cascade foreign key during migration, so they have to be deleted manually.
 
+                const knex = getKnex();
                 // Delete incident
-                await R.exec("DELETE FROM incident WHERE status_page_id = ? ", [statusPageID]);
-
+                await knex("incident").where("status_page_id", statusPageID).delete();
                 // Delete group
-                await R.exec("DELETE FROM `group` WHERE status_page_id = ? ", [statusPageID]);
-
+                await knex("group").where("status_page_id", statusPageID).delete();
                 // Delete status_page
-                await R.exec("DELETE FROM status_page WHERE id = ? ", [statusPageID]);
+                await knex("status_page").where("id", statusPageID).delete();
 
                 apicache.clear();
             } else {

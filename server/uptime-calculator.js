@@ -2,7 +2,7 @@ const dayjs = require("dayjs");
 const { UP, MAINTENANCE, DOWN, PENDING } = require("../src/util");
 const { LimitQueue } = require("./utils/limit-queue");
 const { log } = require("../src/util");
-const { R } = require("redbean-node");
+const { getKnex } = require("./db");
 
 /**
  * Calculates the uptime of a monitor.
@@ -125,80 +125,81 @@ class UptimeCalculator {
 
         let now = this.getCurrentDate();
 
-        // Load minutely data from database (recent 24 hours only)
-        let minutelyStatBeans = await R.find("stat_minutely", " monitor_id = ? AND timestamp > ? ORDER BY timestamp", [
-            monitorID,
-            this.getMinutelyKey(now.subtract(24, "hour")),
-        ]);
+        const knex = getKnex();
 
-        for (let bean of minutelyStatBeans) {
+        // Load minutely data from database (recent 24 hours only)
+        const minutelyRows = await knex("stat_minutely")
+            .where("monitor_id", monitorID)
+            .andWhere("timestamp", ">", this.getMinutelyKey(now.subtract(24, "hour")))
+            .orderBy("timestamp");
+
+        for (let row of minutelyRows) {
             let data = {
-                up: bean.up,
-                down: bean.down,
-                avgPing: bean.ping,
-                minPing: bean.pingMin,
-                maxPing: bean.pingMax,
+                up: row.up,
+                down: row.down,
+                avgPing: row.ping,
+                minPing: row.ping_min,
+                maxPing: row.ping_max,
             };
 
-            if (bean.extras != null) {
+            if (row.extras != null) {
                 data = {
                     ...data,
-                    ...JSON.parse(bean.extras),
+                    ...JSON.parse(row.extras),
                 };
             }
 
-            let key = bean.timestamp;
-            this.minutelyUptimeDataList.push(key, data);
+            this.minutelyUptimeDataList.push(row.timestamp, data);
         }
 
         // Load hourly data from database (recent 30 days only)
-        let hourlyStatBeans = await R.find("stat_hourly", " monitor_id = ? AND timestamp > ? ORDER BY timestamp", [
-            monitorID,
-            this.getHourlyKey(now.subtract(30, "day")),
-        ]);
+        const hourlyRows = await knex("stat_hourly")
+            .where("monitor_id", monitorID)
+            .andWhere("timestamp", ">", this.getHourlyKey(now.subtract(30, "day")))
+            .orderBy("timestamp");
 
-        for (let bean of hourlyStatBeans) {
+        for (let row of hourlyRows) {
             let data = {
-                up: bean.up,
-                down: bean.down,
-                avgPing: bean.ping,
-                minPing: bean.pingMin,
-                maxPing: bean.pingMax,
+                up: row.up,
+                down: row.down,
+                avgPing: row.ping,
+                minPing: row.ping_min,
+                maxPing: row.ping_max,
             };
 
-            if (bean.extras != null) {
+            if (row.extras != null) {
                 data = {
                     ...data,
-                    ...JSON.parse(bean.extras),
+                    ...JSON.parse(row.extras),
                 };
             }
 
-            this.hourlyUptimeDataList.push(bean.timestamp, data);
+            this.hourlyUptimeDataList.push(row.timestamp, data);
         }
 
         // Load daily data from database (recent 365 days only)
-        let dailyStatBeans = await R.find("stat_daily", " monitor_id = ? AND timestamp > ? ORDER BY timestamp", [
-            monitorID,
-            this.getDailyKey(now.subtract(365, "day")),
-        ]);
+        const dailyRows = await knex("stat_daily")
+            .where("monitor_id", monitorID)
+            .andWhere("timestamp", ">", this.getDailyKey(now.subtract(365, "day")))
+            .orderBy("timestamp");
 
-        for (let bean of dailyStatBeans) {
+        for (let row of dailyRows) {
             let data = {
-                up: bean.up,
-                down: bean.down,
-                avgPing: bean.ping,
-                minPing: bean.pingMin,
-                maxPing: bean.pingMax,
+                up: row.up,
+                down: row.down,
+                avgPing: row.ping,
+                minPing: row.ping_min,
+                maxPing: row.ping_max,
             };
 
-            if (bean.extras != null) {
+            if (row.extras != null) {
                 data = {
                     ...data,
-                    ...JSON.parse(bean.extras),
+                    ...JSON.parse(row.extras),
                 };
             }
 
-            this.dailyUptimeDataList.push(bean.timestamp, data);
+            this.dailyUptimeDataList.push(row.timestamp, data);
         }
     }
 
@@ -299,12 +300,14 @@ class UptimeCalculator {
             return date;
         }
 
+        const knex = getKnex();
+
         let dailyStatBean = await this.getDailyStatBean(dailyKey);
         dailyStatBean.up = dailyData.up;
         dailyStatBean.down = dailyData.down;
         dailyStatBean.ping = dailyData.avgPing;
-        dailyStatBean.pingMin = dailyData.minPing;
-        dailyStatBean.pingMax = dailyData.maxPing;
+        dailyStatBean.ping_min = dailyData.minPing;
+        dailyStatBean.ping_max = dailyData.maxPing;
         {
             // eslint-disable-next-line no-unused-vars
             const { up, down, avgPing, minPing, maxPing, timestamp, ...extras } = dailyData;
@@ -312,7 +315,7 @@ class UptimeCalculator {
                 dailyStatBean.extras = JSON.stringify(extras);
             }
         }
-        await R.store(dailyStatBean);
+        await this.upsertStatRow("stat_daily", dailyStatBean);
 
         let currentDate = this.getCurrentDate();
 
@@ -323,8 +326,8 @@ class UptimeCalculator {
             hourlyStatBean.up = hourlyData.up;
             hourlyStatBean.down = hourlyData.down;
             hourlyStatBean.ping = hourlyData.avgPing;
-            hourlyStatBean.pingMin = hourlyData.minPing;
-            hourlyStatBean.pingMax = hourlyData.maxPing;
+            hourlyStatBean.ping_min = hourlyData.minPing;
+            hourlyStatBean.ping_max = hourlyData.maxPing;
             {
                 // eslint-disable-next-line no-unused-vars
                 const { up, down, avgPing, minPing, maxPing, timestamp, ...extras } = hourlyData;
@@ -332,7 +335,7 @@ class UptimeCalculator {
                     hourlyStatBean.extras = JSON.stringify(extras);
                 }
             }
-            await R.store(hourlyStatBean);
+            await this.upsertStatRow("stat_hourly", hourlyStatBean);
         }
 
         // For migration mode, we don't need to store old hourly and minutely data, but we need 24-hour's minutely data
@@ -342,8 +345,8 @@ class UptimeCalculator {
             minutelyStatBean.up = minutelyData.up;
             minutelyStatBean.down = minutelyData.down;
             minutelyStatBean.ping = minutelyData.avgPing;
-            minutelyStatBean.pingMin = minutelyData.minPing;
-            minutelyStatBean.pingMax = minutelyData.maxPing;
+            minutelyStatBean.ping_min = minutelyData.minPing;
+            minutelyStatBean.ping_max = minutelyData.maxPing;
             {
                 // eslint-disable-next-line no-unused-vars
                 const { up, down, avgPing, minPing, maxPing, timestamp, ...extras } = minutelyData;
@@ -351,7 +354,7 @@ class UptimeCalculator {
                     minutelyStatBean.extras = JSON.stringify(extras);
                 }
             }
-            await R.store(minutelyStatBean);
+            await this.upsertStatRow("stat_minutely", minutelyStatBean);
         }
 
         // No need to remove old data in migration mode
@@ -359,83 +362,109 @@ class UptimeCalculator {
             // Remove the old data
             // TODO: Improvement: Convert it to a job?
             log.debug("uptime_calc", "Remove old data");
-            await R.exec("DELETE FROM stat_minutely WHERE monitor_id = ? AND timestamp < ?", [
-                this.monitorID,
-                this.getMinutelyKey(currentDate.subtract(this.statMinutelyKeepHour, "hour"), false),
-            ]);
+            await knex("stat_minutely")
+                .where("monitor_id", this.monitorID)
+                .andWhere("timestamp", "<", this.getMinutelyKey(currentDate.subtract(this.statMinutelyKeepHour, "hour"), false))
+                .delete();
 
-            await R.exec("DELETE FROM stat_hourly WHERE monitor_id = ? AND timestamp < ?", [
-                this.monitorID,
-                this.getHourlyKey(currentDate.subtract(this.statHourlyKeepDay, "day"), false),
-            ]);
+            await knex("stat_hourly")
+                .where("monitor_id", this.monitorID)
+                .andWhere("timestamp", "<", this.getHourlyKey(currentDate.subtract(this.statHourlyKeepDay, "day"), false))
+                .delete();
         }
 
         return date;
     }
 
     /**
-     * Get the daily stat bean
+     * Insert or update a stat row, using id when present.
+     * @param {string} table Table name (stat_daily / stat_hourly / stat_minutely)
+     * @param {object} row Row data (with optional id)
+     * @returns {Promise<void>}
+     */
+    async upsertStatRow(table, row) {
+        const knex = getKnex();
+        if (row.id) {
+            const { id, ...patch } = row;
+            await knex(table).where("id", id).update(patch);
+            return;
+        }
+        const result = await knex(table).insert(row).returning("id");
+        const newId = Array.isArray(result) ? (result[0]?.id ?? result[0]) : result;
+        if (newId) {
+            row.id = newId;
+        }
+    }
+
+    /**
+     * Get the daily stat row
      * @param {number} timestamp milliseconds
-     * @returns {Promise<import("redbean-node").Bean>} stat_daily bean
+     * @returns {Promise<object>} stat_daily row
      */
     async getDailyStatBean(timestamp) {
         if (this.lastDailyStatBean && this.lastDailyStatBean.timestamp === timestamp) {
             return this.lastDailyStatBean;
         }
 
-        let bean = await R.findOne("stat_daily", " monitor_id = ? AND timestamp = ?", [this.monitorID, timestamp]);
+        let row = await getKnex()("stat_daily")
+            .where({ monitor_id: this.monitorID,
+                timestamp })
+            .first();
 
-        if (!bean) {
-            bean = R.dispense("stat_daily");
-            bean.monitor_id = this.monitorID;
-            bean.timestamp = timestamp;
+        if (!row) {
+            row = { monitor_id: this.monitorID,
+                timestamp };
         }
 
-        this.lastDailyStatBean = bean;
+        this.lastDailyStatBean = row;
         return this.lastDailyStatBean;
     }
 
     /**
-     * Get the hourly stat bean
+     * Get the hourly stat row
      * @param {number} timestamp milliseconds
-     * @returns {Promise<import("redbean-node").Bean>} stat_hourly bean
+     * @returns {Promise<object>} stat_hourly row
      */
     async getHourlyStatBean(timestamp) {
         if (this.lastHourlyStatBean && this.lastHourlyStatBean.timestamp === timestamp) {
             return this.lastHourlyStatBean;
         }
 
-        let bean = await R.findOne("stat_hourly", " monitor_id = ? AND timestamp = ?", [this.monitorID, timestamp]);
+        let row = await getKnex()("stat_hourly")
+            .where({ monitor_id: this.monitorID,
+                timestamp })
+            .first();
 
-        if (!bean) {
-            bean = R.dispense("stat_hourly");
-            bean.monitor_id = this.monitorID;
-            bean.timestamp = timestamp;
+        if (!row) {
+            row = { monitor_id: this.monitorID,
+                timestamp };
         }
 
-        this.lastHourlyStatBean = bean;
+        this.lastHourlyStatBean = row;
         return this.lastHourlyStatBean;
     }
 
     /**
-     * Get the minutely stat bean
+     * Get the minutely stat row
      * @param {number} timestamp milliseconds
-     * @returns {Promise<import("redbean-node").Bean>} stat_minutely bean
+     * @returns {Promise<object>} stat_minutely row
      */
     async getMinutelyStatBean(timestamp) {
         if (this.lastMinutelyStatBean && this.lastMinutelyStatBean.timestamp === timestamp) {
             return this.lastMinutelyStatBean;
         }
 
-        let bean = await R.findOne("stat_minutely", " monitor_id = ? AND timestamp = ?", [this.monitorID, timestamp]);
+        let row = await getKnex()("stat_minutely")
+            .where({ monitor_id: this.monitorID,
+                timestamp })
+            .first();
 
-        if (!bean) {
-            bean = R.dispense("stat_minutely");
-            bean.monitor_id = this.monitorID;
-            bean.timestamp = timestamp;
+        if (!row) {
+            row = { monitor_id: this.monitorID,
+                timestamp };
         }
 
-        this.lastMinutelyStatBean = bean;
+        this.lastMinutelyStatBean = row;
         return this.lastMinutelyStatBean;
     }
 
@@ -850,11 +879,10 @@ class UptimeCalculator {
      * @returns {Promise<void>}
      */
     static async clearStatistics(monitorID) {
-        await R.exec("DELETE FROM heartbeat WHERE monitor_id = ?", [monitorID]);
-
-        await R.exec("DELETE FROM stat_minutely WHERE monitor_id = ?", [monitorID]);
-        await R.exec("DELETE FROM stat_hourly WHERE monitor_id = ?", [monitorID]);
-        await R.exec("DELETE FROM stat_daily WHERE monitor_id = ?", [monitorID]);
+        const knex = getKnex();
+        for (const table of ["heartbeat", "stat_minutely", "stat_hourly", "stat_daily"]) {
+            await knex(table).where("monitor_id", monitorID).delete();
+        }
 
         await UptimeCalculator.remove(monitorID);
     }
@@ -864,10 +892,10 @@ class UptimeCalculator {
      * @returns {Promise<void>}
      */
     static async clearAllStatistics() {
-        await R.exec("DELETE FROM heartbeat");
-        await R.exec("DELETE FROM stat_minutely");
-        await R.exec("DELETE FROM stat_hourly");
-        await R.exec("DELETE FROM stat_daily");
+        const knex = getKnex();
+        for (const table of ["heartbeat", "stat_minutely", "stat_hourly", "stat_daily"]) {
+            await knex(table).delete();
+        }
 
         await UptimeCalculator.removeAll();
     }

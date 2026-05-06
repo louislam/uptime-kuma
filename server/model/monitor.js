@@ -43,8 +43,13 @@ const {
     encodeBase64,
     checkCertExpiryNotifications,
 } = require("../util-server");
-const { R } = require("redbean-node");
-const { BeanModel } = require("redbean-node/dist/bean-model");
+const { getKnex } = require("../db");
+const { normalizeRows } = require("../utils/db-result");
+const { isoDateTimeMillis } = require("../utils/iso-datetime");
+const { BaseModel } = require("./base-model");
+const Heartbeat = require("./heartbeat");
+const ProxyModel = require("./proxy");
+const DockerHostModel = require("./docker_host");
 const { Notification } = require("../notification");
 const { Proxy } = require("../proxy");
 const { demoMode } = require("../config");
@@ -73,7 +78,9 @@ const rootCertificates = rootCertificatesFingerprints();
  *      2 = PENDING
  *      3 = MAINTENANCE
  */
-class Monitor extends BeanModel {
+class Monitor extends BaseModel {
+    static tableName = "monitor";
+
     /**
      * Return an object that ready to parse to JSON for public Only show
      * necessary data to public
@@ -259,10 +266,11 @@ class Monitor extends BeanModel {
      * monitor
      */
     async getTags() {
-        return await R.getAll(
+        const result = await getKnex().raw(
             "SELECT mt.*, tag.name, tag.color FROM monitor_tag mt JOIN tag ON mt.tag_id = tag.id WHERE mt.monitor_id = ? ORDER BY tag.name",
             [this.id]
         );
+        return normalizeRows(result);
     }
 
     /**
@@ -272,7 +280,7 @@ class Monitor extends BeanModel {
      * monitor
      */
     async getCertExpiry(monitorID) {
-        let tlsInfoBean = await R.findOne("monitor_tls_info", "monitor_id = ?", [monitorID]);
+        let tlsInfoBean = await getKnex()("monitor_tls_info").where("monitor_id", monitorID).first();
         let tlsInfo;
         if (tlsInfoBean) {
             tlsInfo = JSON.parse(tlsInfoBean?.info_json);
@@ -437,7 +445,7 @@ class Monitor extends BeanModel {
             let tlsInfo = undefined;
 
             if (!previousBeat || this.type === "push") {
-                previousBeat = await R.findOne("heartbeat", " monitor_id = ? ORDER BY time DESC", [this.id]);
+                previousBeat = await Heartbeat.query().where("monitor_id", this.id).orderBy("time", "desc").first();
                 if (previousBeat) {
                     retries = previousBeat.retries;
                 }
@@ -445,9 +453,9 @@ class Monitor extends BeanModel {
 
             const isFirstBeat = !previousBeat;
 
-            let bean = R.dispense("heartbeat");
+            let bean = new Heartbeat();
             bean.monitor_id = this.id;
-            bean.time = R.isoDateTimeMillis(dayjs.utc());
+            bean.time = isoDateTimeMillis(dayjs.utc());
             bean.status = DOWN;
             bean.downCount = previousBeat?.downCount || 0;
 
@@ -573,7 +581,7 @@ class Monitor extends BeanModel {
                     }
 
                     if (this.proxy_id) {
-                        const proxy = await R.load("proxy", this.proxy_id);
+                        const proxy = await ProxyModel.query().findById(this.proxy_id);
 
                         if (proxy && proxy.active) {
                             const { httpAgent, httpsAgent } = Proxy.createAgents(proxy, {
@@ -830,7 +838,7 @@ class Monitor extends BeanModel {
                         }),
                     };
 
-                    const dockerHost = await R.load("docker_host", this.docker_host);
+                    const dockerHost = await DockerHostModel.query().findById(this.docker_host);
 
                     if (!dockerHost) {
                         throw new Error("Failed to load docker host config");
@@ -1087,7 +1095,7 @@ class Monitor extends BeanModel {
             // Calculate uptime
             let uptimeCalculator = await UptimeCalculator.getUptimeCalculator(this.id);
             let endTimeDayjs = await uptimeCalculator.update(bean.status, parseFloat(bean.ping));
-            bean.end_time = R.isoDateTimeMillis(endTimeDayjs);
+            bean.end_time = isoDateTimeMillis(endTimeDayjs);
 
             // Send to frontend
             log.debug("monitor", `[${this.name}] Send to socket`);
@@ -1096,7 +1104,7 @@ class Monitor extends BeanModel {
 
             // Store to database
             log.debug("monitor", `[${this.name}] Store`);
-            await R.store(bean);
+            await bean.$query().insertAndFetch();
 
             log.debug("monitor", `[${this.name}] prometheus.update`);
             const data24h = uptimeCalculator.get24Hour();
@@ -1150,7 +1158,7 @@ class Monitor extends BeanModel {
 
     /**
      * Save response body to a heartbeat if response saving is enabled.
-     * @param {import("redbean-node").Bean} bean Heartbeat bean to populate.
+     * @param {object} bean Heartbeat bean to populate.
      * @param {unknown} data Response payload.
      * @returns {void}
      */
@@ -1290,11 +1298,11 @@ class Monitor extends BeanModel {
      * @returns {Promise<object>} Updated certificate
      */
     async updateTlsInfo(checkCertificateResult) {
-        let tlsInfoBean = await R.findOne("monitor_tls_info", "monitor_id = ?", [this.id]);
+        const knex = getKnex();
+        let tlsInfoBean = await knex("monitor_tls_info").where("monitor_id", this.id).first();
 
         if (tlsInfoBean == null) {
-            tlsInfoBean = R.dispense("monitor_tls_info");
-            tlsInfoBean.monitor_id = this.id;
+            tlsInfoBean = { monitor_id: this.id };
         } else {
             // Clear sent history if the cert changed.
             try {
@@ -1306,10 +1314,10 @@ class Monitor extends BeanModel {
                 if (isValidObjects) {
                     if (oldCertInfo.certInfo.fingerprint256 !== checkCertificateResult.certInfo.fingerprint256) {
                         log.debug("monitor", "Resetting sent_history");
-                        await R.exec(
-                            "DELETE FROM notification_sent_history WHERE type = 'certificate' AND monitor_id = ?",
-                            [this.id]
-                        );
+                        await knex("notification_sent_history")
+                            .where({ type: "certificate",
+                                monitor_id: this.id })
+                            .delete();
                     } else {
                         log.debug("monitor", "No need to reset sent_history");
                         log.debug("monitor", oldCertInfo.certInfo.fingerprint256);
@@ -1322,7 +1330,11 @@ class Monitor extends BeanModel {
         }
 
         tlsInfoBean.info_json = JSON.stringify(checkCertificateResult);
-        await R.store(tlsInfoBean);
+        if (tlsInfoBean.id) {
+            await knex("monitor_tls_info").where("id", tlsInfoBean.id).update({ info_json: tlsInfoBean.info_json });
+        } else {
+            await knex("monitor_tls_info").insert(tlsInfoBean);
+        }
 
         return checkCertificateResult;
     }
@@ -1336,7 +1348,7 @@ class Monitor extends BeanModel {
     static async isActive(monitorID, active) {
         const parentActive = await Monitor.isParentActive(monitorID);
 
-        return active === 1 && parentActive;
+        return Boolean(active) && parentActive;
     }
 
     /**
@@ -1384,7 +1396,7 @@ class Monitor extends BeanModel {
      * @returns {void}
      */
     static async sendCertInfo(io, monitorID, userID) {
-        let tlsInfo = await R.findOne("monitor_tls_info", "monitor_id = ?", [monitorID]);
+        let tlsInfo = await getKnex()("monitor_tls_info").where("monitor_id", monitorID).first();
         if (tlsInfo != null) {
             io.to(userID).emit("certInfo", monitorID, tlsInfo.info_json);
         }
@@ -1398,7 +1410,7 @@ class Monitor extends BeanModel {
      * @returns {void}
      */
     static async sendDomainInfo(io, monitorID, userID) {
-        const monitor = await R.findOne("monitor", "id = ?", [monitorID]);
+        const monitor = await Monitor.query().findById(monitorID);
 
         try {
             const supportInfo = await DomainExpiry.checkSupport(monitor);
@@ -1518,10 +1530,12 @@ class Monitor extends BeanModel {
                 try {
                     // Filter by important = 1 to get the state transition heartbeat (e.g. UP→DOWN),
                     // not the most recent DOWN heartbeat which would be the last check before recovery.
-                    const lastDownHeartbeat = await R.getRow(
-                        "SELECT time FROM heartbeat WHERE monitor_id = ? AND status = ? AND important = 1 ORDER BY time DESC LIMIT 1",
-                        [monitor.id, DOWN]
-                    );
+                    const lastDownHeartbeat = await getKnex()("heartbeat")
+                        .where({ monitor_id: monitor.id,
+                            status: DOWN,
+                            important: true })
+                        .orderBy("time", "desc")
+                        .first("time");
 
                     if (lastDownHeartbeat && lastDownHeartbeat.time) {
                         heartbeatJSON["lastDownTime"] = lastDownHeartbeat.time;
@@ -1558,11 +1572,10 @@ class Monitor extends BeanModel {
      * @returns {Promise<LooseObject<any>[]>} List of notifications
      */
     static async getNotificationList(monitor) {
-        let notificationList = await R.getAll(
-            "SELECT notification.* FROM notification, monitor_notification WHERE monitor_id = ? AND monitor_notification.notification_id = notification.id ",
-            [monitor.id]
-        );
-        return notificationList;
+        return getKnex()("notification")
+            .join("monitor_notification", "monitor_notification.notification_id", "notification.id")
+            .where("monitor_notification.monitor_id", monitor.id)
+            .select("notification.*");
     }
 
     /**
@@ -1576,10 +1589,11 @@ class Monitor extends BeanModel {
      * @returns {Promise<void>}
      */
     async sendCertNotificationByTargetDays(certCN, certType, daysRemaining, targetDays, notificationList) {
-        let row = await R.getRow(
-            "SELECT * FROM notification_sent_history WHERE type = ? AND monitor_id = ? AND days <= ?",
-            ["certificate", this.id, targetDays]
-        );
+        let row = await getKnex()("notification_sent_history")
+            .where({ type: "certificate",
+                monitor_id: this.id })
+            .andWhere("days", "<=", targetDays)
+            .first();
 
         // Sent already, no need to send again
         if (row) {
@@ -1605,11 +1619,11 @@ class Monitor extends BeanModel {
         }
 
         if (sent) {
-            await R.exec("INSERT INTO notification_sent_history (type, monitor_id, days) VALUES(?, ?, ?)", [
-                "certificate",
-                this.id,
-                targetDays,
-            ]);
+            await getKnex()("notification_sent_history").insert({
+                type: "certificate",
+                monitor_id: this.id,
+                days: targetDays,
+            });
         }
     }
 
@@ -1619,7 +1633,10 @@ class Monitor extends BeanModel {
      * @returns {Promise<LooseObject<any>>} Previous heartbeat
      */
     static async getPreviousHeartbeat(monitorID) {
-        return await R.findOne("heartbeat", " id = (select MAX(id) from heartbeat where monitor_id = ?)", [monitorID]);
+        return Heartbeat.query()
+            .where("monitor_id", monitorID)
+            .orderBy("id", "desc")
+            .first();
     }
 
     /**
@@ -1628,15 +1645,11 @@ class Monitor extends BeanModel {
      * @returns {Promise<boolean>} Is the monitor under maintenance
      */
     static async isUnderMaintenance(monitorID) {
-        const maintenanceIDList = await R.getCol(
-            `
-            SELECT maintenance_id FROM monitor_maintenance
-            WHERE monitor_id = ?
-        `,
-            [monitorID]
-        );
+        const rows = await getKnex()("monitor_maintenance")
+            .where("monitor_id", monitorID)
+            .pluck("maintenance_id");
 
-        for (const maintenanceID of maintenanceIDList) {
+        for (const maintenanceID of rows) {
             const maintenance = await UptimeKumaServer.getInstance().getMaintenance(maintenanceID);
             if (maintenance && (await maintenance.isUnderMaintenance())) {
                 return true;
@@ -1809,14 +1822,9 @@ class Monitor extends BeanModel {
      * @returns {Promise<LooseObject<any>>} object
      */
     static async getMonitorNotification(monitorIDs) {
-        return await R.getAll(
-            `
-            SELECT monitor_notification.monitor_id, monitor_notification.notification_id
-            FROM monitor_notification
-            WHERE monitor_notification.monitor_id IN (${monitorIDs.map((_) => "?").join(",")})
-        `,
-            monitorIDs
-        );
+        return getKnex()("monitor_notification")
+            .whereIn("monitor_id", monitorIDs)
+            .select("monitor_id", "notification_id");
     }
 
     /**
@@ -1825,15 +1833,10 @@ class Monitor extends BeanModel {
      * @returns {Promise<LooseObject<any>>} object
      */
     static async getMonitorTag(monitorIDs) {
-        return await R.getAll(
-            `
-            SELECT monitor_tag.monitor_id, monitor_tag.tag_id, monitor_tag.value, tag.name, tag.color
-            FROM monitor_tag
-            JOIN tag ON monitor_tag.tag_id = tag.id
-            WHERE monitor_tag.monitor_id IN (${monitorIDs.map((_) => "?").join(",")})
-        `,
-            monitorIDs
-        );
+        return getKnex()("monitor_tag")
+            .join("tag", "monitor_tag.tag_id", "tag.id")
+            .whereIn("monitor_tag.monitor_id", monitorIDs)
+            .select("monitor_tag.monitor_id", "monitor_tag.tag_id", "monitor_tag.value", "tag.name", "tag.color");
     }
 
     /**
@@ -1924,15 +1927,10 @@ class Monitor extends BeanModel {
      * @returns {Promise<LooseObject<any>>} Parent
      */
     static async getParent(monitorID) {
-        return await R.getRow(
-            `
-            SELECT parent.* FROM monitor parent
-    		LEFT JOIN monitor child
-    			ON child.parent = parent.id
-            WHERE child.id = ?
-        `,
-            [monitorID]
-        );
+        return getKnex()({ parent: "monitor" })
+            .leftJoin({ child: "monitor" }, "child.parent", "parent.id")
+            .where("child.id", monitorID)
+            .first("parent.*");
     }
 
     /**
@@ -1941,13 +1939,7 @@ class Monitor extends BeanModel {
      * @returns {Promise<LooseObject<any>[]>} Children
      */
     static async getChildren(monitorID) {
-        return await R.getAll(
-            `
-            SELECT * FROM monitor
-            WHERE parent = ?
-        `,
-            [monitorID]
-        );
+        return getKnex()("monitor").where("parent", monitorID);
     }
 
     /**
@@ -2000,7 +1992,7 @@ class Monitor extends BeanModel {
      * @returns {Promise<void>}
      */
     static async unlinkAllChildren(groupID) {
-        return await R.exec("UPDATE `monitor` SET parent = ? WHERE parent = ? ", [null, groupID]);
+        return await getKnex()("monitor").where("parent", groupID).update({ parent: null });
     }
 
     /**
@@ -2019,7 +2011,8 @@ class Monitor extends BeanModel {
         }
 
         // Delete from database
-        await R.exec("DELETE FROM monitor WHERE id = ? AND user_id = ? ", [monitorID, userID]);
+        await getKnex()("monitor").where({ id: monitorID,
+            user_id: userID }).delete();
     }
 
     /**
@@ -2030,7 +2023,8 @@ class Monitor extends BeanModel {
      */
     static async deleteMonitorRecursively(monitorID, userID) {
         // Check if this monitor is a group
-        const monitor = await R.findOne("monitor", " id = ? AND user_id = ? ", [monitorID, userID]);
+        const monitor = await Monitor.query().where({ id: monitorID,
+            user_id: userID }).first();
 
         if (monitor && monitor.type === "group") {
             // Get all children and delete them recursively
@@ -2059,7 +2053,7 @@ class Monitor extends BeanModel {
         }
 
         const parentActive = await Monitor.isParentActive(parent.id);
-        return parent.active === 1 && parentActive;
+        return Boolean(parent.active) && parentActive;
     }
 
     /**

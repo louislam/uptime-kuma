@@ -1,8 +1,10 @@
-const { BeanModel } = require("redbean-node/dist/bean-model");
-const { R } = require("redbean-node");
+const { BaseModel } = require("./base-model");
+const { isoDateTime } = require("../utils/iso-datetime");
 const dayjs = require("dayjs");
 
-class Incident extends BeanModel {
+class Incident extends BaseModel {
+    static tableName = "incident";
+
     /**
      * Resolve the incident and mark it as inactive
      * @returns {Promise<void>}
@@ -10,8 +12,12 @@ class Incident extends BeanModel {
     async resolve() {
         this.active = false;
         this.pin = false;
-        this.last_updated_date = R.isoDateTime(dayjs.utc());
-        await R.store(this);
+        this.last_updated_date = isoDateTime(dayjs.utc());
+        await this.$query().patch({
+            active: this.active,
+            pin: this.pin,
+            last_updated_date: this.last_updated_date,
+        });
     }
 
     /**

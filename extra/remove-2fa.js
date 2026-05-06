@@ -2,7 +2,7 @@ console.log("== Uptime Kuma Remove 2FA Tool ==");
 console.log("Loading the database");
 
 const Database = require("../server/database");
-const { R } = require("redbean-node");
+const User = require("../server/model/user");
 const readline = require("readline");
 const TwoFA = require("../server/2fa");
 const args = require("args-parser")(process.argv);
@@ -18,7 +18,7 @@ const main = async () => {
     try {
         // No need to actually reset the password for testing, just make sure no connection problem. It is ok for now.
         if (!process.env.TEST_BACKEND) {
-            const user = await R.findOne("user");
+            const user = await User.query().first();
             if (!user) {
                 throw new Error("user not found, have you installed?");
             }

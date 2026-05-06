@@ -1,4 +1,4 @@
-const { BeanModel } = require("redbean-node/dist/bean-model");
+const { BaseModel } = require("./base-model");
 const zlib = require("node:zlib");
 const { promisify } = require("node:util");
 const brotliDecompress = promisify(zlib.brotliDecompress);
@@ -10,7 +10,9 @@ const brotliDecompress = promisify(zlib.brotliDecompress);
  *      2 = PENDING
  *      3 = MAINTENANCE
  */
-class Heartbeat extends BeanModel {
+class Heartbeat extends BaseModel {
+    static tableName = "heartbeat";
+
     /**
      * Return an object that ready to parse to JSON for public
      * Only show necessary data to public
@@ -31,15 +33,15 @@ class Heartbeat extends BeanModel {
      */
     toJSON() {
         return {
-            monitorID: this._monitorId,
-            status: this._status,
-            time: this._time,
-            msg: this._msg,
-            ping: this._ping,
-            important: this._important,
-            duration: this._duration,
-            retries: this._retries,
-            response: this._response,
+            monitorID: this.monitor_id,
+            status: this.status,
+            time: this.time,
+            msg: this.msg,
+            ping: this.ping,
+            important: this.important,
+            duration: this.duration,
+            retries: this.retries,
+            response: this.response,
         };
     }
 
@@ -50,15 +52,15 @@ class Heartbeat extends BeanModel {
      */
     async toJSONAsync(opts) {
         return {
-            monitorID: this._monitorId,
-            status: this._status,
-            time: this._time,
-            msg: this._msg,
-            ping: this._ping,
-            important: this._important,
-            duration: this._duration,
-            retries: this._retries,
-            response: opts?.decodeResponse ? await Heartbeat.decodeResponseValue(this._response) : undefined,
+            monitorID: this.monitor_id,
+            status: this.status,
+            time: this.time,
+            msg: this.msg,
+            ping: this.ping,
+            important: this.important,
+            duration: this.duration,
+            retries: this.retries,
+            response: opts?.decodeResponse ? await Heartbeat.decodeResponseValue(this.response) : undefined,
         };
     }
 

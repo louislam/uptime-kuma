@@ -77,8 +77,9 @@ log.info("server", "Loading modules");
 log.debug("server", "Importing express");
 const express = require("express");
 const expressStaticGzip = require("express-static-gzip");
-log.debug("server", "Importing redbean-node");
-const { R } = require("redbean-node");
+log.debug("server", "Importing Knex");
+const { getKnex } = require("./db");
+const Tag = require("./model/tag");
 log.debug("server", "Importing jsonwebtoken");
 const jwt = require("jsonwebtoken");
 log.debug("server", "Importing http-graceful-shutdown");
@@ -99,6 +100,7 @@ const app = server.app;
 
 log.debug("server", "Importing Monitor");
 const Monitor = require("./model/monitor");
+const Heartbeat = require("./model/heartbeat");
 const User = require("./model/user");
 
 log.debug("server", "Importing Settings");
@@ -390,7 +392,7 @@ let needSetup = false;
 
                 log.info("auth", "Username from JWT: " + decoded.username);
 
-                let user = await R.findOne("user", " username = ? AND active = 1 ", [decoded.username]);
+                let user = await User.query().where({ username: decoded.username, active: true }).first();
 
                 if (user) {
                     // Check if the password changed
@@ -452,7 +454,7 @@ let needSetup = false;
             let user = await login(data.username, data.password);
 
             if (user) {
-                if (user.twofa_status === 0) {
+                if (!Boolean(user.twofa_status)) {
                     await afterLogin(socket, user);
 
                     log.info("auth", `Successfully logged in user ${data.username}. IP=${clientIP}`);
@@ -463,7 +465,7 @@ let needSetup = false;
                     });
                 }
 
-                if (user.twofa_status === 1 && !data.token) {
+                if (Boolean(user.twofa_status) && !data.token) {
                     log.info("auth", `2FA token required for user ${data.username}. IP=${clientIP}`);
 
                     callback({
@@ -477,10 +479,7 @@ let needSetup = false;
                     if (user.twofa_last_token !== data.token && verify) {
                         await afterLogin(socket, user);
 
-                        await R.exec("UPDATE `user` SET twofa_last_token = ? WHERE id = ? ", [
-                            data.token,
-                            socket.userID,
-                        ]);
+                        await getKnex()("user").where("id", socket.userID).update({ twofa_last_token: data.token });
 
                         log.info("auth", `Successfully logged in user ${data.username}. IP=${clientIP}`);
 
@@ -532,9 +531,9 @@ let needSetup = false;
                 checkLogin(socket);
                 await doubleCheckPassword(socket, currentPassword);
 
-                let user = await R.findOne("user", " id = ? AND active = 1 ", [socket.userID]);
+                let user = await User.query().where({ id: socket.userID, active: true }).first();
 
-                if (user.twofa_status === 0) {
+                if (!Boolean(user.twofa_status)) {
                     let newSecret = genSecret();
                     let encodedSecret = base32.encode(newSecret);
 
@@ -545,7 +544,7 @@ let needSetup = false;
 
                     let uri = `otpauth://totp/Uptime%20Kuma:${user.username}?secret=${encodedSecret}`;
 
-                    await R.exec("UPDATE `user` SET twofa_secret = ? WHERE id = ? ", [newSecret, socket.userID]);
+                    await getKnex()("user").where("id", socket.userID).update({ twofa_secret: newSecret });
 
                     callback({
                         ok: true,
@@ -577,7 +576,7 @@ let needSetup = false;
                 checkLogin(socket);
                 await doubleCheckPassword(socket, currentPassword);
 
-                await R.exec("UPDATE `user` SET twofa_status = 1 WHERE id = ? ", [socket.userID]);
+                await getKnex()("user").where("id", socket.userID).update({ twofa_status: true });
 
                 log.info("auth", `Saved 2FA token. IP=${clientIP}`);
 
@@ -630,7 +629,7 @@ let needSetup = false;
                 checkLogin(socket);
                 await doubleCheckPassword(socket, currentPassword);
 
-                let user = await R.findOne("user", " id = ? AND active = 1 ", [socket.userID]);
+                let user = await User.query().where({ id: socket.userID, active: true }).first();
 
                 let verify = notp.totp.verify(token, user.twofa_secret, twoFAVerifyOptions);
 
@@ -659,9 +658,9 @@ let needSetup = false;
             try {
                 checkLogin(socket);
 
-                let user = await R.findOne("user", " id = ? AND active = 1 ", [socket.userID]);
+                let user = await User.query().where({ id: socket.userID, active: true }).first();
 
-                if (user.twofa_status === 1) {
+                if (Boolean(user.twofa_status)) {
                     callback({
                         ok: true,
                         status: true,
@@ -690,16 +689,16 @@ let needSetup = false;
                     throw new TranslatableError("passwordTooWeak");
                 }
 
-                if ((await R.knex("user").count("id as count").first()).count !== 0) {
+                if ((await Database.countRows("user")) !== 0) {
                     throw new Error(
                         "Uptime Kuma has been initialized. If you want to run setup again, please delete the database."
                     );
                 }
 
-                let user = R.dispense("user");
-                user.username = username;
-                user.password = await passwordHash.generate(password);
-                await R.store(user);
+                await User.query().insert({
+                    username,
+                    password: await passwordHash.generate(password),
+                });
 
                 needSetup = false;
 
@@ -725,7 +724,6 @@ let needSetup = false;
         socket.on("add", async (monitor, callback) => {
             try {
                 checkLogin(socket);
-                let bean = R.dispense("monitor");
 
                 let notificationIDList = monitor.notificationIDList;
                 delete monitor.notificationIDList;
@@ -759,16 +757,15 @@ let needSetup = false;
                     }
                 }
 
-                bean.import(monitor);
-                // Map camelCase frontend property to snake_case database column
-                if (monitor.retryOnlyOnStatusCodeFailure !== undefined) {
-                    bean.retry_only_on_status_code_failure = monitor.retryOnlyOnStatusCodeFailure;
-                }
-                bean.user_id = socket.userID;
+                const payload = { ...monitor };
+                payload.user_id = socket.userID;
 
-                bean.validate();
+                // Validate via a transient bean before insert so the same rules apply.
+                const validateBean = new Monitor();
+                Object.assign(validateBean, payload);
+                validateBean.validate();
 
-                await R.store(bean);
+                const bean = await Monitor.query().insertAndFetch(payload);
 
                 await updateMonitorNotification(bean.id, notificationIDList);
 
@@ -802,7 +799,7 @@ let needSetup = false;
                 let removeGroupChildren = false;
                 checkLogin(socket);
 
-                let bean = await R.findOne("monitor", " id = ? ", [monitor.id]);
+                let bean = await Monitor.query().findById(monitor.id);
 
                 if (bean.user_id !== socket.userID) {
                     throw new Error("Permission denied.");
@@ -826,120 +823,121 @@ let needSetup = false;
                     throw new Error("Accepted status codes are not all strings");
                 }
 
-                bean.name = monitor.name;
-                bean.description = monitor.description;
-                bean.parent = monitor.parent;
-                bean.type = monitor.type;
-                bean.subtype = monitor.subtype;
-                bean.url = monitor.url;
-                bean.wsIgnoreSecWebsocketAcceptHeader = monitor.wsIgnoreSecWebsocketAcceptHeader;
-                bean.wsSubprotocol = monitor.wsSubprotocol;
-                bean.method = monitor.method;
-                bean.body = monitor.body;
-                bean.ipFamily = monitor.ipFamily;
-                bean.headers = monitor.headers;
-                bean.basic_auth_user = monitor.basic_auth_user;
-                bean.basic_auth_pass = monitor.basic_auth_pass;
-                bean.timeout = monitor.timeout;
-                bean.oauth_client_id = monitor.oauth_client_id;
-                bean.oauth_client_secret = monitor.oauth_client_secret;
-                bean.oauth_auth_method = monitor.oauth_auth_method;
-                bean.oauth_token_url = monitor.oauth_token_url;
-                bean.oauth_scopes = monitor.oauth_scopes;
-                bean.oauth_audience = monitor.oauth_audience;
-                bean.tlsCa = monitor.tlsCa;
-                bean.tlsCert = monitor.tlsCert;
-                bean.tlsKey = monitor.tlsKey;
-                bean.interval = monitor.interval;
-                bean.retryInterval = monitor.retryInterval;
-                bean.resendInterval = monitor.resendInterval;
-                bean.hostname = monitor.hostname;
-                bean.game = monitor.game;
-                bean.maxretries = monitor.maxretries;
-                bean.port = parseInt(monitor.port);
-                bean.location = monitor.location;
-                bean.protocol = monitor.protocol;
-
-                if (isNaN(bean.port)) {
-                    bean.port = null;
+                let port = parseInt(monitor.port);
+                if (isNaN(port)) {
+                    port = null;
                 }
 
-                bean.keyword = monitor.keyword;
-                bean.invertKeyword = monitor.invertKeyword;
-                bean.ignoreTls = monitor.ignoreTls;
-                bean.expiryNotification = monitor.expiryNotification;
-                bean.domainExpiryNotification = monitor.domainExpiryNotification;
-                bean.upsideDown = monitor.upsideDown;
-                bean.packetSize = monitor.packetSize;
-                bean.maxredirects = monitor.maxredirects;
-                bean.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
-                bean.save_response = monitor.saveResponse;
-                bean.save_error_response = monitor.saveErrorResponse;
-                bean.response_max_length = monitor.responseMaxLength;
-                bean.dns_resolve_type = monitor.dns_resolve_type;
-                bean.dns_resolve_server = monitor.dns_resolve_server;
-                bean.pushToken = monitor.pushToken;
-                bean.docker_container = monitor.docker_container;
-                bean.docker_host = monitor.docker_host;
-                bean.proxyId = Number.isInteger(monitor.proxyId) ? monitor.proxyId : null;
-                bean.mqttUsername = monitor.mqttUsername;
-                bean.mqttPassword = monitor.mqttPassword;
-                bean.mqttTopic = monitor.mqttTopic;
-                bean.mqttSuccessMessage = monitor.mqttSuccessMessage;
-                bean.mqttCheckType = monitor.mqttCheckType;
-                bean.mqttWebsocketPath = monitor.mqttWebsocketPath;
-                bean.databaseConnectionString = monitor.databaseConnectionString;
-                bean.databaseQuery = monitor.databaseQuery;
-                bean.authMethod = monitor.authMethod;
-                bean.authWorkstation = monitor.authWorkstation;
-                bean.authDomain = monitor.authDomain;
-                bean.grpcUrl = monitor.grpcUrl;
-                bean.grpcProtobuf = monitor.grpcProtobuf;
-                bean.grpcServiceName = monitor.grpcServiceName;
-                bean.grpcMethod = monitor.grpcMethod;
-                bean.grpcBody = monitor.grpcBody;
-                bean.grpcMetadata = monitor.grpcMetadata;
-                bean.grpcEnableTls = monitor.grpcEnableTls;
-                bean.radiusUsername = monitor.radiusUsername;
-                bean.radiusPassword = monitor.radiusPassword;
-                bean.radiusCalledStationId = monitor.radiusCalledStationId;
-                bean.radiusCallingStationId = monitor.radiusCallingStationId;
-                bean.radiusSecret = monitor.radiusSecret;
-                bean.httpBodyEncoding = monitor.httpBodyEncoding;
-                bean.expectedValue = monitor.expectedValue;
-                bean.jsonPath = monitor.jsonPath;
-                bean.kafkaProducerTopic = monitor.kafkaProducerTopic;
-                bean.kafkaProducerBrokers = JSON.stringify(monitor.kafkaProducerBrokers);
-                bean.kafkaProducerAllowAutoTopicCreation = monitor.kafkaProducerAllowAutoTopicCreation;
-                bean.kafkaProducerSaslOptions = JSON.stringify(monitor.kafkaProducerSaslOptions);
-                bean.kafkaProducerMessage = monitor.kafkaProducerMessage;
-                bean.cacheBust = monitor.cacheBust;
-                bean.kafkaProducerSsl = monitor.kafkaProducerSsl;
-                bean.kafkaProducerAllowAutoTopicCreation = monitor.kafkaProducerAllowAutoTopicCreation;
-                bean.gamedigGivenPortOnly = monitor.gamedigGivenPortOnly;
-                bean.remote_browser = monitor.remote_browser;
-                bean.smtpSecurity = monitor.smtpSecurity;
-                bean.snmpVersion = monitor.snmpVersion;
-                bean.snmpOid = monitor.snmpOid;
-                bean.jsonPathOperator = monitor.jsonPathOperator;
-                bean.retry_only_on_status_code_failure = Boolean(monitor.retryOnlyOnStatusCodeFailure);
-                bean.timeout = monitor.timeout;
-                bean.rabbitmqNodes = JSON.stringify(monitor.rabbitmqNodes);
-                bean.rabbitmqUsername = monitor.rabbitmqUsername;
-                bean.rabbitmqPassword = monitor.rabbitmqPassword;
-                bean.conditions = JSON.stringify(monitor.conditions);
-                bean.manual_status = monitor.manual_status;
-                bean.system_service_name = monitor.system_service_name;
-                bean.expected_tls_alert = monitor.expectedTlsAlert;
+                const payload = {
+                    name: monitor.name,
+                    description: monitor.description,
+                    parent: monitor.parent,
+                    type: monitor.type,
+                    subtype: monitor.subtype,
+                    url: monitor.url,
+                    wsIgnoreSecWebsocketAcceptHeader: monitor.wsIgnoreSecWebsocketAcceptHeader,
+                    wsSubprotocol: monitor.wsSubprotocol,
+                    method: monitor.method,
+                    body: monitor.body,
+                    ipFamily: monitor.ipFamily,
+                    headers: monitor.headers,
+                    basic_auth_user: monitor.basic_auth_user,
+                    basic_auth_pass: monitor.basic_auth_pass,
+                    timeout: monitor.timeout,
+                    oauth_client_id: monitor.oauth_client_id,
+                    oauth_client_secret: monitor.oauth_client_secret,
+                    oauth_auth_method: monitor.oauth_auth_method,
+                    oauth_token_url: monitor.oauth_token_url,
+                    oauth_scopes: monitor.oauth_scopes,
+                    oauth_audience: monitor.oauth_audience,
+                    tlsCa: monitor.tlsCa,
+                    tlsCert: monitor.tlsCert,
+                    tlsKey: monitor.tlsKey,
+                    interval: monitor.interval,
+                    retryInterval: monitor.retryInterval,
+                    resendInterval: monitor.resendInterval,
+                    hostname: monitor.hostname,
+                    game: monitor.game,
+                    maxretries: monitor.maxretries,
+                    port,
+                    location: monitor.location,
+                    protocol: monitor.protocol,
+                    keyword: monitor.keyword,
+                    invertKeyword: monitor.invertKeyword,
+                    ignoreTls: monitor.ignoreTls,
+                    expiryNotification: monitor.expiryNotification,
+                    domainExpiryNotification: monitor.domainExpiryNotification,
+                    upsideDown: monitor.upsideDown,
+                    packetSize: monitor.packetSize,
+                    maxredirects: monitor.maxredirects,
+                    accepted_statuscodes_json: JSON.stringify(monitor.accepted_statuscodes),
+                    save_response: monitor.saveResponse,
+                    save_error_response: monitor.saveErrorResponse,
+                    response_max_length: monitor.responseMaxLength,
+                    dns_resolve_type: monitor.dns_resolve_type,
+                    dns_resolve_server: monitor.dns_resolve_server,
+                    pushToken: monitor.pushToken,
+                    docker_container: monitor.docker_container,
+                    docker_host: monitor.docker_host,
+                    proxyId: Number.isInteger(monitor.proxyId) ? monitor.proxyId : null,
+                    mqttUsername: monitor.mqttUsername,
+                    mqttPassword: monitor.mqttPassword,
+                    mqttTopic: monitor.mqttTopic,
+                    mqttSuccessMessage: monitor.mqttSuccessMessage,
+                    mqttCheckType: monitor.mqttCheckType,
+                    mqttWebsocketPath: monitor.mqttWebsocketPath,
+                    databaseConnectionString: monitor.databaseConnectionString,
+                    databaseQuery: monitor.databaseQuery,
+                    authMethod: monitor.authMethod,
+                    authWorkstation: monitor.authWorkstation,
+                    authDomain: monitor.authDomain,
+                    grpcUrl: monitor.grpcUrl,
+                    grpcProtobuf: monitor.grpcProtobuf,
+                    grpcServiceName: monitor.grpcServiceName,
+                    grpcMethod: monitor.grpcMethod,
+                    grpcBody: monitor.grpcBody,
+                    grpcMetadata: monitor.grpcMetadata,
+                    grpcEnableTls: monitor.grpcEnableTls,
+                    radiusUsername: monitor.radiusUsername,
+                    radiusPassword: monitor.radiusPassword,
+                    radiusCalledStationId: monitor.radiusCalledStationId,
+                    radiusCallingStationId: monitor.radiusCallingStationId,
+                    radiusSecret: monitor.radiusSecret,
+                    httpBodyEncoding: monitor.httpBodyEncoding,
+                    expectedValue: monitor.expectedValue,
+                    jsonPath: monitor.jsonPath,
+                    kafkaProducerTopic: monitor.kafkaProducerTopic,
+                    kafkaProducerBrokers: JSON.stringify(monitor.kafkaProducerBrokers),
+                    kafkaProducerAllowAutoTopicCreation: monitor.kafkaProducerAllowAutoTopicCreation,
+                    kafkaProducerSaslOptions: JSON.stringify(monitor.kafkaProducerSaslOptions),
+                    kafkaProducerMessage: monitor.kafkaProducerMessage,
+                    cacheBust: monitor.cacheBust,
+                    kafkaProducerSsl: monitor.kafkaProducerSsl,
+                    gamedigGivenPortOnly: monitor.gamedigGivenPortOnly,
+                    remote_browser: monitor.remote_browser,
+                    smtpSecurity: monitor.smtpSecurity,
+                    snmpVersion: monitor.snmpVersion,
+                    snmpOid: monitor.snmpOid,
+                    jsonPathOperator: monitor.jsonPathOperator,
+                    retry_only_on_status_code_failure: Boolean(monitor.retryOnlyOnStatusCodeFailure),
+                    rabbitmqNodes: JSON.stringify(monitor.rabbitmqNodes),
+                    rabbitmqUsername: monitor.rabbitmqUsername,
+                    rabbitmqPassword: monitor.rabbitmqPassword,
+                    conditions: JSON.stringify(monitor.conditions),
+                    manual_status: monitor.manual_status,
+                    system_service_name: monitor.system_service_name,
+                    expected_tls_alert: monitor.expectedTlsAlert,
 
-                // ping advanced options
-                bean.ping_numeric = monitor.ping_numeric;
-                bean.ping_count = monitor.ping_count;
-                bean.ping_per_request_timeout = monitor.ping_per_request_timeout;
+                    // ping advanced options
+                    ping_numeric: monitor.ping_numeric,
+                    ping_count: monitor.ping_count,
+                    ping_per_request_timeout: monitor.ping_per_request_timeout,
+                };
 
+                Object.assign(bean, payload);
                 bean.validate();
 
-                await R.store(bean);
+                await bean.$query().patchAndFetch(payload);
 
                 if (removeGroupChildren) {
                     await Monitor.unlinkAllChildren(monitor.id);
@@ -990,7 +988,7 @@ let needSetup = false;
 
                 log.info("monitor", `Get Monitor: ${monitorID} User ID: ${socket.userID}`);
 
-                let monitor = await R.findOne("monitor", " id = ? AND user_id = ? ", [monitorID, socket.userID]);
+                let monitor = await Monitor.query().where({ id: monitorID, user_id: socket.userID }).first();
                 const monitorData = [{ id: monitor.id, active: monitor.active }];
                 const preloadData = await Monitor.preparePreloadData(monitorData);
                 callback({
@@ -1038,16 +1036,10 @@ let needSetup = false;
 
                 const sqlHourOffset = Database.sqlHourOffset();
 
-                let list = await R.getAll(
-                    `
-                    SELECT *
-                    FROM heartbeat
-                    WHERE monitor_id = ?
-                      AND time > ${sqlHourOffset}
-                    ORDER BY time ASC
-                `,
-                    [monitorID, -period]
-                );
+                let list = await getKnex()("heartbeat")
+                    .where("monitor_id", monitorID)
+                    .andWhereRaw(`time > ${sqlHourOffset}`, [-period])
+                    .orderBy("time", "asc");
 
                 callback({
                     ok: true,
@@ -1113,7 +1105,7 @@ let needSetup = false;
                 const startTime = Date.now();
 
                 // Check if this is a group monitor
-                const monitor = await R.findOne("monitor", " id = ? AND user_id = ? ", [monitorID, socket.userID]);
+                const monitor = await Monitor.query().where({ id: monitorID, user_id: socket.userID }).first();
 
                 // Log with context about deletion type
                 if (monitor && monitor.type === "group") {
@@ -1194,7 +1186,7 @@ let needSetup = false;
             try {
                 checkLogin(socket);
 
-                const list = await R.findAll("tag");
+                const list = await Tag.query();
 
                 callback({
                     ok: true,
@@ -1212,10 +1204,10 @@ let needSetup = false;
             try {
                 checkLogin(socket);
 
-                let bean = R.dispense("tag");
-                bean.name = tag.name;
-                bean.color = tag.color;
-                await R.store(bean);
+                const bean = await Tag.query().insertAndFetch({
+                    name: tag.name,
+                    color: tag.color,
+                });
 
                 callback({
                     ok: true,
@@ -1233,7 +1225,7 @@ let needSetup = false;
             try {
                 checkLogin(socket);
 
-                let bean = await R.findOne("tag", " id = ? ", [tag.id]);
+                let bean = await Tag.query().findById(tag.id);
                 if (bean == null) {
                     callback({
                         ok: false,
@@ -1244,7 +1236,8 @@ let needSetup = false;
                 }
                 bean.name = tag.name;
                 bean.color = tag.color;
-                await R.store(bean);
+                await bean.$query().patch({ name: bean.name,
+                    color: bean.color });
 
                 callback({
                     ok: true,
@@ -1264,7 +1257,7 @@ let needSetup = false;
             try {
                 checkLogin(socket);
 
-                await R.exec("DELETE FROM tag WHERE id = ? ", [tagID]);
+                await getKnex()("tag").where("id", tagID).delete();
 
                 callback({
                     ok: true,
@@ -1283,11 +1276,11 @@ let needSetup = false;
             try {
                 checkLogin(socket);
 
-                await R.exec("INSERT INTO monitor_tag (tag_id, monitor_id, value) VALUES (?, ?, ?)", [
-                    tagID,
-                    monitorID,
+                await getKnex()("monitor_tag").insert({
+                    tag_id: tagID,
+                    monitor_id: monitorID,
                     value,
-                ]);
+                });
 
                 await server.sendUpdateMonitorIntoList(socket, monitorID);
 
@@ -1308,11 +1301,10 @@ let needSetup = false;
             try {
                 checkLogin(socket);
 
-                await R.exec("UPDATE monitor_tag SET value = ? WHERE tag_id = ? AND monitor_id = ?", [
-                    value,
-                    tagID,
-                    monitorID,
-                ]);
+                await getKnex()("monitor_tag")
+                    .where({ tag_id: tagID,
+                        monitor_id: monitorID })
+                    .update({ value });
 
                 await server.sendUpdateMonitorIntoList(socket, monitorID);
 
@@ -1333,11 +1325,11 @@ let needSetup = false;
             try {
                 checkLogin(socket);
 
-                await R.exec("DELETE FROM monitor_tag WHERE tag_id = ? AND monitor_id = ? AND value = ?", [
-                    tagID,
-                    monitorID,
-                    value,
-                ]);
+                await getKnex()("monitor_tag")
+                    .where({ tag_id: tagID,
+                        monitor_id: monitorID,
+                        value })
+                    .delete();
 
                 await server.sendUpdateMonitorIntoList(socket, monitorID);
 
@@ -1360,9 +1352,12 @@ let needSetup = false;
 
                 let count;
                 if (monitorID == null) {
-                    count = await R.count("heartbeat", "important = 1");
+                    const row = await getKnex()("heartbeat").where("important", true).count({ c: "*" }).first();
+                    count = Number(row?.c ?? 0);
                 } else {
-                    count = await R.count("heartbeat", "monitor_id = ? AND important = 1", [monitorID]);
+                    const row = await getKnex()("heartbeat").where({ monitor_id: monitorID,
+                        important: true }).count({ c: "*" }).first();
+                    count = Number(row?.c ?? 0);
                 }
 
                 callback({
@@ -1383,28 +1378,18 @@ let needSetup = false;
 
                 let list;
                 if (monitorID == null) {
-                    list = await R.find(
-                        "heartbeat",
-                        `
-                        important = 1
-                        ORDER BY time DESC
-                        LIMIT ?
-                        OFFSET ?
-                    `,
-                        [count, offset]
-                    );
+                    list = await Heartbeat.query()
+                        .where("important", true)
+                        .orderBy("time", "desc")
+                        .limit(count)
+                        .offset(offset);
                 } else {
-                    list = await R.find(
-                        "heartbeat",
-                        `
-                        monitor_id = ?
-                        AND important = 1
-                        ORDER BY time DESC
-                        LIMIT ?
-                        OFFSET ?
-                    `,
-                        [monitorID, count, offset]
-                    );
+                    list = await Heartbeat.query()
+                        .where({ monitor_id: monitorID,
+                            important: true })
+                        .orderBy("time", "desc")
+                        .limit(count)
+                        .offset(offset);
                 }
 
                 callback({
@@ -1637,7 +1622,8 @@ let needSetup = false;
 
                 log.info("manage", `Clear Events Monitor: ${monitorID} User ID: ${socket.userID}`);
 
-                await R.exec("UPDATE heartbeat SET msg = ?, important = ? WHERE monitor_id = ? ", ["", "0", monitorID]);
+                await getKnex()("heartbeat").where("monitor_id", monitorID).update({ msg: "",
+                    important: false });
 
                 callback({
                     ok: true,
@@ -1726,7 +1712,7 @@ let needSetup = false;
         log.debug("auth", "check auto login");
         if (await setting("disableAuth")) {
             log.info("auth", "Disabled Auth: auto login to admin");
-            await afterLogin(socket, await R.findOne("user"));
+            await afterLogin(socket, await User.query().first());
             socket.emit("autoLogin");
         } else {
             socket.emit("loginRequired");
@@ -1767,14 +1753,15 @@ let needSetup = false;
  * @returns {Promise<void>}
  */
 async function updateMonitorNotification(monitorID, notificationIDList) {
-    await R.exec("DELETE FROM monitor_notification WHERE monitor_id = ? ", [monitorID]);
+    const knex = getKnex();
+    await knex("monitor_notification").where("monitor_id", monitorID).delete();
 
     for (let notificationID in notificationIDList) {
         if (notificationIDList[notificationID]) {
-            let relation = R.dispense("monitor_notification");
-            relation.monitor_id = monitorID;
-            relation.notification_id = notificationID;
-            await R.store(relation);
+            await knex("monitor_notification").insert({
+                monitor_id: monitorID,
+                notification_id: notificationID,
+            });
         }
     }
 }
@@ -1787,7 +1774,10 @@ async function updateMonitorNotification(monitorID, notificationIDList) {
  * @throws {Error} The specified user does not own the monitor
  */
 async function checkOwner(userID, monitorID) {
-    let row = await R.getRow("SELECT id FROM monitor WHERE id = ? AND user_id = ? ", [monitorID, userID]);
+    const row = await getKnex()("monitor")
+        .where({ id: monitorID,
+            user_id: userID })
+        .first("id");
 
     if (!row) {
         throw new Error("You do not own this monitor.");
@@ -1849,7 +1839,7 @@ async function initDatabase(testMode = false) {
     // Patch the database
     await Database.patch(port, hostname);
 
-    let jwtSecretBean = await R.findOne("setting", " `key` = ? ", ["jwtSecret"]);
+    let jwtSecretBean = await getKnex()("setting").where("key", "jwtSecret").first();
 
     if (!jwtSecretBean) {
         log.info("server", "JWT secret is not found, generate one.");
@@ -1860,7 +1850,7 @@ async function initDatabase(testMode = false) {
     }
 
     // If there is no record in user table, it is a new Uptime Kuma instance, need to setup
-    if ((await R.knex("user").count("id as count").first()).count === 0) {
+    if ((await Database.countRows("user")) === 0) {
         log.info("server", "No user, need setup");
         needSetup = true;
     }
@@ -1879,9 +1869,10 @@ async function startMonitor(userID, monitorID) {
 
     log.info("manage", `Resume Monitor: ${monitorID} User ID: ${userID}`);
 
-    await R.exec("UPDATE monitor SET active = 1 WHERE id = ? AND user_id = ? ", [monitorID, userID]);
+    await getKnex()("monitor").where({ id: monitorID,
+        user_id: userID }).update({ active: true });
 
-    let monitor = await R.findOne("monitor", " id = ? ", [monitorID]);
+    let monitor = await Monitor.query().findById(monitorID);
 
     if (monitor.id in server.monitorList) {
         await server.monitorList[monitor.id].stop();
@@ -1912,11 +1903,12 @@ async function pauseMonitor(userID, monitorID) {
 
     log.info("manage", `Pause Monitor: ${monitorID} User ID: ${userID}`);
 
-    await R.exec("UPDATE monitor SET active = 0 WHERE id = ? AND user_id = ? ", [monitorID, userID]);
+    await getKnex()("monitor").where({ id: monitorID,
+        user_id: userID }).update({ active: false });
 
     if (monitorID in server.monitorList) {
         await server.monitorList[monitorID].stop();
-        server.monitorList[monitorID].active = 0;
+        server.monitorList[monitorID].active = false;
     }
 }
 
@@ -1925,7 +1917,7 @@ async function pauseMonitor(userID, monitorID) {
  * @returns {Promise<void>}
  */
 async function startMonitors() {
-    let list = await R.find("monitor", " active = 1 ");
+    let list = await Monitor.query().where("active", true);
 
     for (let monitor of list) {
         server.monitorList[monitor.id] = monitor;

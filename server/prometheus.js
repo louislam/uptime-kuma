@@ -1,6 +1,6 @@
 const PrometheusClient = require("prom-client");
 const { log } = require("../src/util");
-const { R } = require("redbean-node");
+const Tag = require("./model/tag");
 
 let monitorCertDaysRemaining = null;
 let monitorCertIsValid = null;
@@ -39,7 +39,7 @@ class Prometheus {
         // Add all available tags as possible labels,
         // and use Set to remove possible duplicates (for when multiple tags contain non-ascii characters, and thus are sanitized to the same label)
         const tags = new Set(
-            (await R.findAll("tag"))
+            (await Tag.query())
                 .map((tag) => {
                     return Prometheus.sanitizeForPrometheus(tag.name);
                 })

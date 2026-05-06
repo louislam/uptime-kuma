@@ -64,6 +64,16 @@
                         value="sqlite"
                     />
                     <label class="btn btn-outline-primary" for="btnradio1">SQLite</label>
+
+                    <input
+                        id="btnradio4"
+                        v-model="dbConfig.type"
+                        type="radio"
+                        class="btn-check"
+                        autocomplete="off"
+                        value="postgres"
+                    />
+                    <label class="btn btn-outline-primary" for="btnradio4">PostgreSQL</label>
                 </div>
 
                 <div v-if="dbConfig.type === 'embedded-mariadb'" class="mt-3 short">
@@ -78,8 +88,12 @@
                     {{ $t("setupDatabaseSQLite") }}
                 </div>
 
-                <template v-if="dbConfig.type === 'mariadb'">
-                    <div v-if="!isProvidedMariaDBSocket" class="form-floating mt-3 short">
+                <div v-if="dbConfig.type === 'postgres'" class="mt-3 short">
+                    {{ $t("setupDatabasePostgres") }}
+                </div>
+
+                <template v-if="dbConfig.type === 'mariadb' || dbConfig.type === 'postgres'">
+                    <div v-if="!isProvidedMariaDBSocket || dbConfig.type === 'postgres'" class="form-floating mt-3 short">
                         <input
                             id="floatingInput"
                             v-model="dbConfig.hostname"
@@ -90,18 +104,18 @@
                         <label for="floatingInput">{{ $t("Hostname") }}</label>
                     </div>
 
-                    <div v-if="!isProvidedMariaDBSocket" class="form-floating mt-3 short">
+                    <div v-if="!isProvidedMariaDBSocket || dbConfig.type === 'postgres'" class="form-floating mt-3 short">
                         <input id="floatingInput" v-model="dbConfig.port" type="text" class="form-control" required />
                         <label for="floatingInput">{{ $t("Port") }}</label>
                     </div>
 
-                    <div v-if="isProvidedMariaDBSocket" class="mt-1 short text-start">
+                    <div v-if="isProvidedMariaDBSocket && dbConfig.type === 'mariadb'" class="mt-1 short text-start">
                         <i18n-t keypath="mariadbSocketPathDetectedHelptext" tag="div" class="form-text">
                             <code>UPTIME_KUMA_DB_SOCKET</code>
                         </i18n-t>
                     </div>
 
-                    <hr v-if="isProvidedMariaDBSocket" class="mt-3 mb-2 short" />
+                    <hr v-if="isProvidedMariaDBSocket && dbConfig.type === 'mariadb'" class="mt-3 mb-2 short" />
 
                     <div class="form-floating mt-3 short">
                         <input
@@ -208,6 +222,16 @@ export default {
         },
         isProvidedMariaDBSocket() {
             return this.info.isEnabledMariaDBSocket;
+        },
+    },
+    watch: {
+        "dbConfig.type"(newType, oldType) {
+            // Switch default port when toggling between MariaDB (3306) and PostgreSQL (5432)
+            if (newType === "postgres" && (oldType === undefined || this.dbConfig.port === 3306)) {
+                this.dbConfig.port = 5432;
+            } else if (newType === "mariadb" && this.dbConfig.port === 5432) {
+                this.dbConfig.port = 3306;
+            }
         },
     },
     async mounted() {

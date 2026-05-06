@@ -6,7 +6,9 @@ const {
     filterAndJoin,
     sendHttpError,
 } = require("../util-server");
-const { R } = require("redbean-node");
+const { getKnex } = require("../db");
+const { isoDateTimeMillis } = require("../utils/iso-datetime");
+const Heartbeat = require("../model/heartbeat");
 const apicache = require("../modules/apicache");
 const Monitor = require("../model/monitor");
 const dayjs = require("dayjs");
@@ -59,7 +61,8 @@ router.all("/api/push/:pushToken", async (request, response) => {
             throw new Error(`Invalid ping value. Must be between 0 and ${MAX_PING_MS} ms.`);
         }
 
-        let monitor = await R.findOne("monitor", " push_token = ? AND active = 1 ", [pushToken]);
+        let monitor = await Monitor.query().where({ push_token: pushToken,
+            active: true }).first();
 
         if (!monitor) {
             throw new Error("Monitor not found or not active.");
@@ -69,8 +72,8 @@ router.all("/api/push/:pushToken", async (request, response) => {
 
         let isFirstBeat = true;
 
-        let bean = R.dispense("heartbeat");
-        bean.time = R.isoDateTimeMillis(dayjs.utc());
+        let bean = new Heartbeat();
+        bean.time = isoDateTimeMillis(dayjs.utc());
         bean.monitor_id = monitor.id;
         bean.ping = ping;
         bean.msg = msg;
@@ -91,7 +94,7 @@ router.all("/api/push/:pushToken", async (request, response) => {
         // Calculate uptime
         let uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitor.id);
         let endTimeDayjs = await uptimeCalculator.update(bean.status, parseFloat(bean.ping));
-        bean.end_time = R.isoDateTimeMillis(endTimeDayjs);
+        bean.end_time = isoDateTimeMillis(endTimeDayjs);
 
         log.debug("router", `/api/push/ called at ${dayjs().format("YYYY-MM-DD HH:mm:ss.SSS")}`);
         log.debug("router", "PreviousStatus: " + previousHeartbeat?.status);
@@ -122,7 +125,7 @@ router.all("/api/push/:pushToken", async (request, response) => {
             }
         }
 
-        await R.store(bean);
+        await bean.$query().insertAndFetch();
 
         io.to(monitor.user_id).emit("heartbeat", bean.toJSON());
 
@@ -375,19 +378,16 @@ router.get("/api/badge/:id/avg-response/:duration?", cache("5 minutes"), async (
 
         const sqlHourOffset = Database.sqlHourOffset();
 
-        const publicAvgPing = parseInt(
-            await R.getCell(
-                `
-            SELECT AVG(ping) FROM monitor_group, \`group\`, heartbeat
-            WHERE monitor_group.group_id = \`group\`.id
-            AND heartbeat.time > ${sqlHourOffset}
-            AND heartbeat.ping IS NOT NULL
-            AND public = 1
-            AND heartbeat.monitor_id = ?
-            `,
-                [-requestedDuration, requestedMonitorId]
-            )
-        );
+        const publicAvgRow = await getKnex()("monitor_group")
+            .join("group", "monitor_group.group_id", "group.id")
+            .join("heartbeat", "heartbeat.monitor_id", "monitor_group.monitor_id")
+            .whereRaw(`heartbeat.time > ${sqlHourOffset}`, [-requestedDuration])
+            .andWhere("group.public", true)
+            .andWhere("heartbeat.monitor_id", requestedMonitorId)
+            .andWhereNotNull("heartbeat.ping")
+            .avg({ avg: "heartbeat.ping" })
+            .first();
+        const publicAvgPing = parseInt(publicAvgRow?.avg);
 
         const badgeValues = { style };
 
@@ -458,7 +458,7 @@ router.get("/api/badge/:id/cert-exp", cache("5 minutes"), async (request, respon
             badgeValues.message = "N/A";
             badgeValues.color = badgeConstants.naColor;
         } else {
-            const tlsInfoBean = await R.findOne("monitor_tls_info", "monitor_id = ?", [requestedMonitorId]);
+            const tlsInfoBean = await getKnex()("monitor_tls_info").where("monitor_id", requestedMonitorId).first();
 
             if (!tlsInfoBean) {
                 // return a "No/Bad Cert" badge in naColor (grey), if no cert saved (does not save bad certs?)
@@ -624,15 +624,11 @@ function determineStatus(status, previousHeartbeat, maxretries, isUpsideDown, be
  * @returns {Promise<boolean>} true if the monitor is public, otherwise false
  */
 async function isMonitorPublic(monitorID) {
-    let publicMonitor = await R.getRow(
-        `
-            SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
-            WHERE monitor_group.group_id = \`group\`.id
-            AND monitor_group.monitor_id = ?
-            AND public = 1
-        `,
-        [monitorID]
-    );
+    const publicMonitor = await getKnex()("monitor_group")
+        .join("group", "monitor_group.group_id", "group.id")
+        .where("monitor_group.monitor_id", monitorID)
+        .andWhere("group.public", true)
+        .first("monitor_group.monitor_id");
     return !!publicMonitor;
 }
 

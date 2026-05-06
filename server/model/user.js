@@ -1,10 +1,12 @@
-const { BeanModel } = require("redbean-node/dist/bean-model");
+const { BaseModel } = require("./base-model");
 const passwordHash = require("../password-hash");
-const { R } = require("redbean-node");
+const { getKnex } = require("../db");
 const jwt = require("jsonwebtoken");
 const { shake256, SHAKE256_LENGTH } = require("../util-server");
 
-class User extends BeanModel {
+class User extends BaseModel {
+    static tableName = "user";
+
     /**
      * Reset user password
      * Fix #1510, as in the context reset-password.js, there is no auto model mapping. Call this static function instead.
@@ -13,10 +15,9 @@ class User extends BeanModel {
      * @returns {Promise<void>}
      */
     static async resetPassword(userID, newPassword) {
-        await R.exec("UPDATE `user` SET password = ? WHERE id = ? ", [
-            await passwordHash.generate(newPassword),
-            userID,
-        ]);
+        await getKnex()("user").where("id", userID).update({
+            password: await passwordHash.generate(newPassword),
+        });
     }
 
     /**
@@ -26,9 +27,7 @@ class User extends BeanModel {
      */
     async resetPassword(newPassword) {
         const hashedPassword = await passwordHash.generate(newPassword);
-
-        await R.exec("UPDATE `user` SET password = ? WHERE id = ? ", [hashedPassword, this.id]);
-
+        await getKnex()("user").where("id", this.id).update({ password: hashedPassword });
         this.password = hashedPassword;
     }
 

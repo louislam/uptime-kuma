@@ -1,23 +1,25 @@
-const { BeanModel } = require("redbean-node/dist/bean-model");
+const { BaseModel } = require("./base-model");
 
-class Proxy extends BeanModel {
+class Proxy extends BaseModel {
+    static tableName = "proxy";
+
     /**
      * Return an object that ready to parse to JSON
      * @returns {object} Object ready to parse
      */
     toJSON() {
         return {
-            id: this._id,
-            userId: this._user_id,
-            protocol: this._protocol,
-            host: this._host,
-            port: this._port,
-            auth: !!this._auth,
-            username: this._username,
-            password: this._password,
-            active: !!this._active,
-            default: !!this._default,
-            createdDate: this._created_date,
+            id: this.id,
+            userId: this.user_id,
+            protocol: this.protocol,
+            host: this.host,
+            port: this.port,
+            auth: !!this.auth,
+            username: this.username,
+            password: this.password,
+            active: !!this.active,
+            default: !!this.default,
+            createdDate: this.created_date,
         };
     }
 }

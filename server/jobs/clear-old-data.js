@@ -1,4 +1,4 @@
-const { R } = require("redbean-node");
+const { getKnex } = require("../db");
 const { log } = require("../../src/util");
 const Database = require("../database");
 const { Settings } = require("../settings");
@@ -40,17 +40,19 @@ const clearOldData = async () => {
         const sqlHourOffset = Database.sqlHourOffset();
 
         try {
+            const knex = getKnex();
+
             // Heartbeat
-            await R.exec("DELETE FROM heartbeat WHERE time < " + sqlHourOffset, [parsedPeriod * -24]);
+            await knex("heartbeat")
+                .whereRaw("time < " + sqlHourOffset, [parsedPeriod * -24])
+                .delete();
 
             let timestamp = dayjs().subtract(parsedPeriod, "day").utc().startOf("day").unix();
 
             // stat_daily
-            await R.exec("DELETE FROM stat_daily WHERE timestamp < ? ", [timestamp]);
+            await knex("stat_daily").where("timestamp", "<", timestamp).delete();
 
-            if (Database.dbConfig.type === "sqlite") {
-                await R.exec("PRAGMA optimize;");
-            }
+            await Database.dialect.optimize(knex);
         } catch (e) {
             log.error("clearOldData", `Failed to clear old data: ${e.message}`);
         }

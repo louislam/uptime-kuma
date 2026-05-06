@@ -1,18 +1,42 @@
 const fs = require("fs");
-const fsAsync = fs.promises;
-const { R } = require("redbean-node");
 const { setSetting, setting } = require("./util-server");
 const { log, sleep } = require("../src/util");
 const knex = require("knex");
 const path = require("path");
-const { EmbeddedMariaDB } = require("./embedded-mariadb");
-const mysql = require("mysql2/promise");
 const { Settings } = require("./settings");
 const { UptimeCalculator } = require("./uptime-calculator");
 const dayjs = require("dayjs");
 const { SimpleMigrationServer } = require("./utils/simple-migration-server");
-const KumaColumnCompiler = require("./utils/knex/lib/dialects/mysql2/schema/mysql2-columncompiler");
-const SqlString = require("sqlstring");
+const { setupKnex, getKnex, destroyKnex, enableSQLDebugLogging } = require("./db");
+const { normalizeRows } = require("./utils/db-result");
+const { dialectFor } = require("./dialects");
+
+/**
+ * Parse and clamp the `UPTIME_KUMA_DB_POOL_MAX_CONNECTIONS` env var.
+ * Defaults to 10, clamps to [1, 100] (Mysql/MariaDB connections are heavy;
+ * use a proxy like ProxySQL/MaxScale beyond that).
+ * @returns {number} Clamped pool max
+ */
+function parseMaxPoolConnections() {
+    const raw = process.env.UPTIME_KUMA_DB_POOL_MAX_CONNECTIONS;
+    if (!raw) {
+        return 10;
+    }
+    const parsed = parseInt(raw);
+    if (Number.isNaN(parsed)) {
+        log.warn("db", "Max database connections defaulted to 10 because UPTIME_KUMA_DB_POOL_MAX_CONNECTIONS was invalid.");
+        return 10;
+    }
+    if (parsed < 1) {
+        log.warn("db", "Max database connections defaulted to 10 because UPTIME_KUMA_DB_POOL_MAX_CONNECTIONS was less than 1.");
+        return 10;
+    }
+    if (parsed > 100) {
+        log.warn("db", "Max database connections capped to 100 because Mysql/Mariadb connections are heavy. consider using a proxy like ProxySQL or MaxScale.");
+        return 100;
+    }
+    return parsed;
+}
 
 /**
  * Database & App Data Folder
@@ -125,6 +149,9 @@ class Database {
 
     static dbConfig = {};
 
+    /** @type {?import("./dialects/dialect").Dialect} Active dialect strategy */
+    static dialect = null;
+
     static knexMigrationsPath = "./db/knex_migrations";
 
     /**
@@ -200,14 +227,6 @@ class Database {
      * @returns {Promise<void>}
      */
     static async connect(testMode = false, autoloadModels = true, noLog = false) {
-        // Patch "mysql2" knex client
-        // Workaround: Tried extending the ColumnCompiler class, but it didn't work for unknown reasons, so I override the function via prototype
-        const { getDialectByNameOrAlias } = require("knex/lib/dialects");
-        const mysql2 = getDialectByNameOrAlias("mysql2");
-        mysql2.prototype.columnCompiler = function () {
-            return new KumaColumnCompiler(this, ...arguments);
-        };
-
         const acquireConnectionTimeout = 120 * 1000;
         let dbConfig;
         try {
@@ -215,248 +234,41 @@ class Database {
             Database.dbConfig = dbConfig;
         } catch (err) {
             log.warn("db", err.message);
-            dbConfig = {
-                type: "sqlite",
-            };
+            dbConfig = { type: "sqlite" };
+            Database.dbConfig = dbConfig;
         }
 
-        let config = {};
-
-        let parsedMaxPoolConnections = parseInt(process.env.UPTIME_KUMA_DB_POOL_MAX_CONNECTIONS);
-
-        if (!process.env.UPTIME_KUMA_DB_POOL_MAX_CONNECTIONS) {
-            parsedMaxPoolConnections = 10;
-        } else if (Number.isNaN(parsedMaxPoolConnections)) {
-            log.warn(
-                "db",
-                "Max database connections defaulted to 10 because UPTIME_KUMA_DB_POOL_MAX_CONNECTIONS was invalid."
-            );
-            parsedMaxPoolConnections = 10;
-        } else if (parsedMaxPoolConnections < 1) {
-            log.warn(
-                "db",
-                "Max database connections defaulted to 10 because UPTIME_KUMA_DB_POOL_MAX_CONNECTIONS was less than 1."
-            );
-            parsedMaxPoolConnections = 10;
-        } else if (parsedMaxPoolConnections > 100) {
-            log.warn(
-                "db",
-                "Max database connections capped to 100 because Mysql/Mariadb connections are heavy. consider using a proxy like ProxySQL or MaxScale."
-            );
-            parsedMaxPoolConnections = 100;
+        const dialect = dialectFor(dbConfig);
+        if (!dialect) {
+            throw new Error("Unknown Database type: " + dbConfig.type);
         }
-
-        let mariadbPoolConfig = {
-            min: 0,
-            max: parsedMaxPoolConnections,
-            idleTimeoutMillis: 30000,
-        };
+        Database.dialect = dialect;
 
         log.info("db", `Database Type: ${dbConfig.type}`);
 
-        if (dbConfig.type === "sqlite") {
-            if (!fs.existsSync(Database.sqlitePath)) {
-                log.info("server", "Copying Database");
-                fs.copyFileSync(Database.templatePath, Database.sqlitePath);
-            }
+        const poolMaxConnections = parseMaxPoolConnections();
 
-            const Dialect = require("knex/lib/dialects/sqlite3/index.js");
-            Dialect.prototype._driver = () => require("@louislam/sqlite3");
+        await dialect.preConnect();
 
-            // SQLite is actually multiple connections for WAL mode, so we can set it to a higher number.
-            // See: https://github.com/knex/knex/issues/3176#issuecomment-3389054899
-            let poolConfig = {
-                min: 0,
-                max: 20,
-            };
-
-            // Default is still single connection.
-            // Multiple connection could run into "SQLITE_BUSY: database is locked" error.
-            if (process.env.UPTIME_KUMA_SQLITE_SINGLE_CONNECTION !== "false") {
-                log.info("db", "Using single connection for SQLite");
-                poolConfig = {
-                    min: 1,
-                    max: 1,
-                };
-            }
-
-            config = {
-                client: Dialect,
-                connection: {
-                    filename: Database.sqlitePath,
-                    acquireConnectionTimeout: acquireConnectionTimeout,
-                },
-                useNullAsDefault: true,
-                pool: {
-                    ...poolConfig,
-                    acquireTimeoutMillis: acquireConnectionTimeout,
-                    afterCreate: (rawConn, done) => {
-                        this.initSQLite(rawConn, testMode)
-                            .then(() => done(undefined, rawConn))
-                            .catch((err) => done(err, rawConn));
-                    },
-                },
-            };
-        } else if (dbConfig.type === "mariadb") {
-            const connection = await mysql.createConnection({
-                host: dbConfig.hostname,
-                port: dbConfig.port,
-                user: dbConfig.username,
-                password: dbConfig.password,
-                socketPath: dbConfig.socketPath,
-                ...(dbConfig.ssl
-                    ? {
-                          ssl: {
-                              rejectUnauthorized: true,
-                              ...(dbConfig.ca && dbConfig.ca.trim() !== "" ? { ca: [dbConfig.ca] } : {}),
-                          },
-                      }
-                    : {}),
-            });
-
-            // Set to true, so for example "uptime.kuma", becomes `uptime.kuma`, not `uptime`.`kuma`
-            // Doc: https://github.com/mysqljs/sqlstring?tab=readme-ov-file#escaping-query-identifiers
-            const escapedDBName = SqlString.escapeId(dbConfig.dbName, true);
-
-            await connection.execute("CREATE DATABASE IF NOT EXISTS " + escapedDBName + " CHARACTER SET utf8mb4");
-            connection.end();
-
-            config = {
-                client: "mysql2",
-                connection: {
-                    host: dbConfig.hostname,
-                    port: dbConfig.port,
-                    user: dbConfig.username,
-                    password: dbConfig.password,
-                    database: dbConfig.dbName,
-                    socketPath: dbConfig.socketPath,
-                    timezone: "Z",
-                    typeCast: function (field, next) {
-                        if (field.type === "DATETIME") {
-                            // Do not perform timezone conversion
-                            return field.string();
-                        }
-                        return next();
-                    },
-                    ...(dbConfig.ssl
-                        ? {
-                              ssl: {
-                                  rejectUnauthorized: true,
-                                  ...(dbConfig.ca && dbConfig.ca.trim() !== "" ? { ca: [dbConfig.ca] } : {}),
-                              },
-                          }
-                        : {}),
-                },
-                pool: mariadbPoolConfig,
-            };
-        } else if (dbConfig.type === "embedded-mariadb") {
-            let embeddedMariaDB = EmbeddedMariaDB.getInstance();
-            await embeddedMariaDB.start();
-            log.info("mariadb", "Embedded MariaDB started");
-            config = {
-                client: "mysql2",
-                connection: {
-                    socketPath: embeddedMariaDB.socketPath,
-                    user: embeddedMariaDB.username,
-                    database: "kuma",
-                    timezone: "Z",
-                    typeCast: function (field, next) {
-                        if (field.type === "DATETIME") {
-                            // Do not perform timezone conversion
-                            return field.string();
-                        }
-                        return next();
-                    },
-                },
-                pool: mariadbPoolConfig,
-            };
-        } else {
-            throw new Error("Unknown Database type: " + dbConfig.type);
-        }
-
-        // Set to utf8mb4 for MariaDB
-        if (dbConfig.type.endsWith("mariadb")) {
-            config.pool = {
-                afterCreate(conn, done) {
-                    conn.query("SET CHARACTER SET utf8mb4;", (err) => done(err, conn));
-                },
-            };
-        }
-
-        const knexInstance = knex(config);
-
-        R.setup(knexInstance);
-
-        if (process.env.SQL_LOG === "1") {
-            R.debug(true);
-        }
-
-        // Auto map the model to a bean object
-        R.freeze(true);
+        const knexInstance = knex(dialect.buildKnexConfig({
+            testMode,
+            acquireConnectionTimeout,
+            poolMaxConnections,
+        }));
+        setupKnex(knexInstance);
+        enableSQLDebugLogging(knexInstance);
 
         if (autoloadModels) {
-            await R.autoloadModels("./server/model");
-        }
-
-        if (dbConfig.type === "sqlite") {
-            if (!noLog) {
-                log.debug("db", "SQLite config:");
-                log.debug("db", await R.getAll("PRAGMA journal_mode"));
-                log.debug("db", await R.getAll("PRAGMA cache_size"));
-                log.debug("db", "SQLite Version: " + (await R.getCell("SELECT sqlite_version()")));
+            // Eager-load all model files
+            const modelDir = path.join(__dirname, "model");
+            for (const file of fs.readdirSync(modelDir)) {
+                if (file.endsWith(".js")) {
+                    require(path.join(modelDir, file));
+                }
             }
-        } else if (dbConfig.type.endsWith("mariadb")) {
-            await this.initMariaDB();
-        }
-    }
-
-    /**
-     * Initialize SQLite for each connection
-     * @param {any} rawConn The raw node-sqlite3 Database object
-     * @param {boolean} testMode Should the connection be started in test mode?
-     * @returns {Promise<void>}
-     */
-    static async initSQLite(rawConn, testMode) {
-        // Since rawConn.run is callback based, in order to avoid callback hell, wrap it in a promise
-        const asyncRun = (sql) => {
-            return new Promise((resolve, reject) => rawConn.run(sql, (err) => (err ? reject(err) : resolve())));
-        };
-
-        if (testMode) {
-            // Change to MEMORY
-            await asyncRun("PRAGMA journal_mode = MEMORY");
-        } else {
-            // Change to WAL
-            await asyncRun("PRAGMA journal_mode = WAL");
         }
 
-        await asyncRun("PRAGMA foreign_keys = ON");
-        await asyncRun("PRAGMA cache_size = -12000");
-        await asyncRun("PRAGMA auto_vacuum = INCREMENTAL");
-
-        // Avoid error "SQLITE_BUSY: database is locked" by allowing SQLITE to wait up to 5 seconds to do a write
-        await asyncRun("PRAGMA busy_timeout = 5000");
-
-        // This ensures that an operating system crash or power failure will not corrupt the database.
-        // FULL synchronous is very safe, but it is also slower.
-        // Read more: https://sqlite.org/pragma.html#pragma_synchronous
-        await asyncRun("PRAGMA synchronous = NORMAL");
-    }
-
-    /**
-     * Initialize MariaDB
-     * @returns {Promise<void>}
-     */
-    static async initMariaDB() {
-        log.debug("db", "Checking if MariaDB database exists...");
-
-        let hasTable = await R.hasTable("docker_host");
-        if (!hasTable) {
-            const { createTables } = require("../db/knex_init_db");
-            await createTables();
-        } else {
-            log.debug("db", "MariaDB database already exists");
-        }
+        await dialect.postConnect(knexInstance, { noLog });
     }
 
     /**
@@ -474,21 +286,15 @@ class Database {
         // Using knex migrations
         // https://knexjs.org/guide/migrations.html
         // https://gist.github.com/NigelEarle/70db130cc040cc2868555b29a0278261
+        const knex = getKnex();
         try {
-            // Disable foreign key check for SQLite
-            // Known issue of knex: https://github.com/drizzle-team/drizzle-orm/issues/1813
-            if (Database.dbConfig.type === "sqlite") {
-                await R.exec("PRAGMA foreign_keys = OFF");
-            }
+            await Database.dialect.beforeMigrations(knex);
 
-            await R.knex.migrate.latest({
+            await knex.migrate.latest({
                 directory: Database.knexMigrationsPath,
             });
 
-            // Enable foreign key check for SQLite
-            if (Database.dbConfig.type === "sqlite") {
-                await R.exec("PRAGMA foreign_keys = ON");
-            }
+            await Database.dialect.afterMigrations(knex);
 
             await this.migrateAggregateTable(port, hostname);
         } catch (e) {
@@ -608,51 +414,41 @@ class Database {
      * @returns {Promise<void>}
      */
     static async migrateNewStatusPage() {
+        const knex = getKnex();
         // Fix 1.13.0 empty slug bug
-        await R.exec("UPDATE status_page SET slug = 'empty-slug-recover' WHERE TRIM(slug) = ''");
+        await knex("status_page").whereRaw("TRIM(slug) = ''").update({ slug: "empty-slug-recover" });
 
         let title = await setting("title");
 
         if (title) {
             log.info("database", "Migrating Status Page");
 
-            let statusPageCheck = await R.findOne("status_page", " slug = 'default' ");
+            const StatusPage = require("./model/status_page");
+            const statusPageCheck = await StatusPage.query().where("slug", "default").first();
 
-            if (statusPageCheck !== null) {
+            if (statusPageCheck) {
                 log.info("database", "Migrating Status Page - Skip, default slug record is already existing");
                 return;
             }
 
-            let statusPage = R.dispense("status_page");
-            statusPage.slug = "default";
-            statusPage.title = title;
-            statusPage.description = await setting("description");
-            statusPage.icon = await setting("icon");
-            statusPage.theme = await setting("statusPageTheme");
-            statusPage.published = !!(await setting("statusPagePublished"));
-            statusPage.search_engine_index = !!(await setting("searchEngineIndex"));
-            statusPage.show_tags = !!(await setting("statusPageTags"));
-            statusPage.password = null;
+            const payload = {
+                slug: "default",
+                title: title || "My Status Page",
+                description: await setting("description"),
+                icon: (await setting("icon")) || "",
+                theme: (await setting("statusPageTheme")) || "light",
+                published: !!(await setting("statusPagePublished")),
+                search_engine_index: !!(await setting("searchEngineIndex")),
+                show_tags: !!(await setting("statusPageTags")),
+                password: null,
+            };
 
-            if (!statusPage.title) {
-                statusPage.title = "My Status Page";
-            }
+            const inserted = await StatusPage.query().insertAndFetch(payload);
+            const id = inserted.id;
 
-            if (!statusPage.icon) {
-                statusPage.icon = "";
-            }
-
-            if (!statusPage.theme) {
-                statusPage.theme = "light";
-            }
-
-            let id = await R.store(statusPage);
-
-            await R.exec("UPDATE incident SET status_page_id = ? WHERE status_page_id IS NULL", [id]);
-
-            await R.exec("UPDATE [group] SET status_page_id = ? WHERE status_page_id IS NULL", [id]);
-
-            await R.exec("DELETE FROM setting WHERE type = 'statusPage'");
+            await knex("incident").whereNull("status_page_id").update({ status_page_id: id });
+            await knex("group").whereNull("status_page_id").update({ status_page_id: id });
+            await knex("setting").where("type", "statusPage").delete();
 
             // Migrate Entry Page if it is status page
             let entryPage = await setting("entryPage");
@@ -708,8 +504,9 @@ class Database {
      * @returns {Promise<void>}
      */
     static async importSQLFile(filename) {
+        const knex = getKnex();
         // Sadly, multi sql statements is not supported by many sqlite libraries, I have to implement it myself
-        await R.getCell("SELECT 1");
+        await knex.raw("SELECT 1");
 
         let text = fs.readFileSync(filename).toString();
 
@@ -733,7 +530,7 @@ class Database {
             });
 
         for (let statement of statements) {
-            await R.exec(statement);
+            await knex.raw(statement);
         }
     }
 
@@ -749,14 +546,13 @@ class Database {
 
         log.info("db", "Closing the database");
 
-        // Flush WAL to main database
-        if (Database.dbConfig.type === "sqlite") {
-            await R.exec("PRAGMA wal_checkpoint(TRUNCATE)");
+        if (Database.dialect) {
+            await Database.dialect.beforeClose(getKnex());
         }
 
         while (true) {
             Database.noReject = true;
-            await R.close();
+            await destroyKnex();
             await sleep(2000);
 
             if (Database.noReject) {
@@ -771,38 +567,37 @@ class Database {
     }
 
     /**
-     * Get the size of the database (SQLite only)
+     * Get the size of the database in bytes (file-backed dialects only).
      * @returns {Promise<number>} Size of database
      */
     static async getSize() {
-        if (Database.dbConfig.type === "sqlite") {
-            log.debug("db", "Database.getSize()");
-            let stats = await fsAsync.stat(Database.sqlitePath);
-            log.debug("db", stats);
-            return stats.size;
-        }
-        return 0;
+        return Database.dialect.getSize();
     }
 
     /**
-     * Shrink the database
+     * Count rows in a table; returns a real Number across all dialects.
+     * pg returns COUNT(*) as a BIGINT string; SQLite/MySQL return Number.
+     * @param {string} table Table name
+     * @returns {Promise<number>} Row count
+     */
+    static async countRows(table) {
+        const row = await getKnex()(table).count({ c: "*" }).first();
+        return Number(row?.c ?? 0);
+    }
+
+    /**
+     * Reclaim unused space (file-backed dialects only).
      * @returns {Promise<void>}
      */
     static async shrink() {
-        if (Database.dbConfig.type === "sqlite") {
-            await R.exec("VACUUM");
-        }
+        await Database.dialect.shrink(getKnex());
     }
 
     /**
      * @returns {string} Get the SQL for the current time plus a number of hours
      */
     static sqlHourOffset() {
-        if (Database.dbConfig.type === "sqlite") {
-            return "DATETIME('now', ? || ' hours')";
-        } else {
-            return "DATE_ADD(UTC_TIMESTAMP(), INTERVAL ? HOUR)";
-        }
+        return Database.dialect.sqlHourOffset();
     }
 
     /**
@@ -856,17 +651,16 @@ class Database {
 
         log.info("db", "Getting list of unique monitors");
 
-        // Get a list of unique monitors from the heartbeat table, using raw sql
-        let monitors = await R.getAll(`
-            SELECT DISTINCT monitor_id
-            FROM heartbeat
-            ORDER BY monitor_id ASC
-        `);
+        const knex = getKnex();
+        // Get a list of unique monitors from the heartbeat table
+        let monitors = await knex("heartbeat")
+            .distinct("monitor_id")
+            .orderBy("monitor_id", "asc");
 
         // Stop if stat_* tables are not empty
         for (let table of ["stat_minutely", "stat_hourly", "stat_daily"]) {
-            let countResult = await R.getRow(`SELECT COUNT(*) AS count FROM ${table}`);
-            let count = countResult.count;
+            const row = await knex(table).count({ c: "*" }).first();
+            const count = Number(row?.c ?? 0);
             if (count > 0) {
                 log.warn(
                     "db",
@@ -881,8 +675,8 @@ class Database {
 
         let progressPercent = 0;
         for (const [i, monitor] of monitors.entries()) {
-            // Get a list of unique dates from the heartbeat table, using raw sql
-            let dates = await R.getAll(
+            // Get a list of unique dates from the heartbeat table
+            const dateRowsResult = await knex.raw(
                 `
                 SELECT DISTINCT DATE(time) AS date
                 FROM heartbeat
@@ -891,6 +685,7 @@ class Database {
             `,
                 [monitor.monitor_id]
             );
+            const dates = normalizeRows(dateRowsResult);
 
             for (const [dateIndex, date] of dates.entries()) {
                 // New Uptime Calculator
@@ -899,7 +694,7 @@ class Database {
                 calculator.setMigrationMode(true);
 
                 // Get all the heartbeats for this monitor and date
-                let heartbeats = await R.getAll(
+                const hbResult = await knex.raw(
                     `
                     SELECT status, ping, time
                     FROM heartbeat
@@ -909,6 +704,7 @@ class Database {
                 `,
                     [monitor.monitor_id, date.date]
                 );
+                const heartbeats = normalizeRows(hbResult);
 
                 if (heartbeats.length > 0) {
                     msg = `[DON'T STOP] Migrating monitor ${monitor.monitor_id}s' (${i + 1} of ${monitors.length} total) data - ${date.date} - total migration progress ${progressPercent.toFixed(2)}%`;
@@ -951,14 +747,15 @@ class Database {
      * @returns {Promise<void>}
      */
     static async clearHeartbeatData(detailedLog = false) {
-        let monitors = await R.getAll("SELECT id FROM monitor");
+        const knex = getKnex();
+        const monitors = await knex("monitor").select("id");
         const sqlHourOffset = Database.sqlHourOffset();
 
         for (let monitor of monitors) {
             if (detailedLog) {
                 log.info("db", "Deleting non-important heartbeats for monitor " + monitor.id);
             }
-            await R.exec(
+            await knex.raw(
                 `
                 DELETE FROM heartbeat
                 WHERE monitor_id = ?

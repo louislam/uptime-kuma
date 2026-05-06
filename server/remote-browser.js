@@ -1,14 +1,16 @@
-const { R } = require("redbean-node");
+const { getKnex } = require("./db");
+const RemoteBrowserModel = require("./model/remote_browser");
 
 class RemoteBrowser {
     /**
      * Gets remote browser from ID
      * @param {number} remoteBrowserID ID of the remote browser
      * @param {number} userID ID of the user who created the remote browser
-     * @returns {Promise<Bean>} Remote Browser
+     * @returns {Promise<import("./model/remote_browser")>} Remote Browser
      */
     static async get(remoteBrowserID, userID) {
-        let bean = await R.findOne("remote_browser", " id = ? AND user_id = ? ", [remoteBrowserID, userID]);
+        const bean = await RemoteBrowserModel.query().where({ id: remoteBrowserID,
+            user_id: userID }).first();
 
         if (!bean) {
             throw new Error("Remote browser not found");
@@ -22,28 +24,24 @@ class RemoteBrowser {
      * @param {object} remoteBrowser Remote Browser to save
      * @param {?number} remoteBrowserID ID of the Remote Browser to update
      * @param {number} userID ID of the user who adds the Remote Browser
-     * @returns {Promise<Bean>} Updated Remote Browser
+     * @returns {Promise<import("./model/remote_browser")>} Updated Remote Browser
      */
     static async save(remoteBrowser, remoteBrowserID, userID) {
-        let bean;
+        const payload = {
+            user_id: userID,
+            name: remoteBrowser.name,
+            url: remoteBrowser.url,
+        };
 
         if (remoteBrowserID) {
-            bean = await R.findOne("remote_browser", " id = ? AND user_id = ? ", [remoteBrowserID, userID]);
-
-            if (!bean) {
+            const existing = await RemoteBrowserModel.query().where({ id: remoteBrowserID,
+                user_id: userID }).first();
+            if (!existing) {
                 throw new Error("Remote browser not found");
             }
-        } else {
-            bean = R.dispense("remote_browser");
+            return RemoteBrowserModel.query().patchAndFetchById(remoteBrowserID, payload);
         }
-
-        bean.user_id = userID;
-        bean.name = remoteBrowser.name;
-        bean.url = remoteBrowser.url;
-
-        await R.store(bean);
-
-        return bean;
+        return RemoteBrowserModel.query().insertAndFetch(payload);
     }
 
     /**
@@ -53,16 +51,18 @@ class RemoteBrowser {
      * @returns {Promise<void>}
      */
     static async delete(remoteBrowserID, userID) {
-        let bean = await R.findOne("remote_browser", " id = ? AND user_id = ? ", [remoteBrowserID, userID]);
+        const knex = getKnex();
+        const existing = await knex("remote_browser").where({ id: remoteBrowserID,
+            user_id: userID }).first();
 
-        if (!bean) {
+        if (!existing) {
             throw new Error("Remote Browser not found");
         }
 
-        // Delete removed remote browser from monitors if exists
-        await R.exec("UPDATE monitor SET remote_browser = null WHERE remote_browser = ?", [remoteBrowserID]);
+        // Detach removed remote browser from monitors
+        await knex("monitor").where("remote_browser", remoteBrowserID).update({ remote_browser: null });
 
-        await R.trash(bean);
+        await knex("remote_browser").where("id", remoteBrowserID).delete();
     }
 }
 

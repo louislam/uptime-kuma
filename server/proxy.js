@@ -1,4 +1,4 @@
-const { R } = require("redbean-node");
+const { getKnex } = require("./db");
 const { HttpProxyAgent } = require("http-proxy-agent");
 const { HttpsProxyAgent } = require("https-proxy-agent");
 const { SocksProxyAgent } = require("socks-proxy-agent");
@@ -6,6 +6,7 @@ const { debug } = require("../src/util");
 const { UptimeKumaServer } = require("./uptime-kuma-server");
 const { CookieJar } = require("tough-cookie");
 const { createCookieAgent } = require("http-cookie-agent/http");
+const ProxyModel = require("./model/proxy");
 
 class Proxy {
     static SUPPORTED_PROXY_PROTOCOLS = ["http", "https", "socks", "socks5", "socks5h", "socks4"];
@@ -15,20 +16,10 @@ class Proxy {
      * @param {object} proxy Proxy to store
      * @param {number} proxyID ID of proxy to update
      * @param {number} userID ID of user the proxy belongs to
-     * @returns {Promise<Bean>} Updated proxy
+     * @returns {Promise<import("./model/proxy")>} Updated proxy
      */
     static async save(proxy, proxyID, userID) {
-        let bean;
-
-        if (proxyID) {
-            bean = await R.findOne("proxy", " id = ? AND user_id = ? ", [proxyID, userID]);
-
-            if (!bean) {
-                throw new Error("proxy not found");
-            }
-        } else {
-            bean = R.dispense("proxy");
-        }
+        const knex = getKnex();
 
         // Make sure given proxy protocol is supported
         if (!this.SUPPORTED_PROXY_PROTOCOLS.includes(proxy.protocol)) {
@@ -39,20 +30,32 @@ class Proxy {
 
         // When proxy is default update deactivate old default proxy
         if (proxy.default) {
-            await R.exec("UPDATE proxy SET `default` = 0 WHERE `default` = 1");
+            await knex("proxy").where({ default: true }).update({ default: false });
         }
 
-        bean.user_id = userID;
-        bean.protocol = proxy.protocol;
-        bean.host = proxy.host;
-        bean.port = proxy.port;
-        bean.auth = proxy.auth;
-        bean.username = proxy.username;
-        bean.password = proxy.password;
-        bean.active = proxy.active || true;
-        bean.default = proxy.default || false;
+        const payload = {
+            user_id: userID,
+            protocol: proxy.protocol,
+            host: proxy.host,
+            port: proxy.port,
+            auth: proxy.auth,
+            username: proxy.username,
+            password: proxy.password,
+            active: proxy.active ?? true,
+            default: proxy.default || false,
+        };
 
-        await R.store(bean);
+        let bean;
+        if (proxyID) {
+            const existing = await ProxyModel.query().where({ id: proxyID,
+                user_id: userID }).first();
+            if (!existing) {
+                throw new Error("proxy not found");
+            }
+            bean = await ProxyModel.query().patchAndFetchById(proxyID, payload);
+        } else {
+            bean = await ProxyModel.query().insertAndFetch(payload);
+        }
 
         if (proxy.applyExisting) {
             await applyProxyEveryMonitor(bean.id, userID);
@@ -68,17 +71,18 @@ class Proxy {
      * @returns {Promise<void>}
      */
     static async delete(proxyID, userID) {
-        const bean = await R.findOne("proxy", " id = ? AND user_id = ? ", [proxyID, userID]);
-
-        if (!bean) {
+        const knex = getKnex();
+        const existing = await knex("proxy").where({ id: proxyID,
+            user_id: userID }).first();
+        if (!existing) {
             throw new Error("proxy not found");
         }
 
-        // Delete removed proxy from monitors if exists
-        await R.exec("UPDATE monitor SET proxy_id = null WHERE proxy_id = ?", [proxyID]);
+        // Detach removed proxy from monitors
+        await knex("monitor").where("proxy_id", proxyID).update({ proxy_id: null });
 
         // Delete proxy from list
-        await R.trash(bean);
+        await knex("proxy").where("id", proxyID).delete();
     }
 
     /**
@@ -163,14 +167,17 @@ class Proxy {
      */
     static async reloadProxy() {
         const server = UptimeKumaServer.getInstance();
-
-        let updatedList = await R.getAssoc("SELECT id, proxy_id FROM monitor");
+        const rows = await getKnex()("monitor").select("id", "proxy_id");
+        const updatedList = {};
+        for (const row of rows) {
+            updatedList[row.id] = row.proxy_id;
+        }
 
         for (let monitorID in server.monitorList) {
             let monitor = server.monitorList[monitorID];
 
-            if (updatedList[monitorID]) {
-                monitor.proxy_id = updatedList[monitorID].proxy_id;
+            if (Object.prototype.hasOwnProperty.call(updatedList, monitorID)) {
+                monitor.proxy_id = updatedList[monitorID];
             }
         }
     }
@@ -183,13 +190,14 @@ class Proxy {
  * @returns {Promise<void>}
  */
 async function applyProxyEveryMonitor(proxyID, userID) {
+    const knex = getKnex();
     // Find all monitors with id and proxy id
-    const monitors = await R.getAll("SELECT id, proxy_id FROM monitor WHERE user_id = ?", [userID]);
+    const monitors = await knex("monitor").where("user_id", userID).select("id", "proxy_id");
 
-    // Update proxy id not match with given proxy id
+    // Update proxy id not matching given proxy id
     for (const monitor of monitors) {
         if (monitor.proxy_id !== proxyID) {
-            await R.exec("UPDATE monitor SET proxy_id = ? WHERE id = ?", [proxyID, monitor.id]);
+            await knex("monitor").where("id", monitor.id).update({ proxy_id: proxyID });
         }
     }
 }

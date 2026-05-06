@@ -1,5 +1,5 @@
 const ping = require("@louislam/ping");
-const { R } = require("redbean-node");
+const { getKnex } = require("./db");
 const {
     log,
     genSecret,
@@ -37,19 +37,20 @@ const crypto = require("crypto");
 const isWindows = process.platform === /^win/.test(process.platform);
 /**
  * Init or reset JWT secret
- * @returns {Promise<Bean>} JWT secret
+ * @returns {Promise<object>} JWT secret row
  */
 exports.initJWTSecret = async () => {
-    let jwtSecretBean = await R.findOne("setting", " `key` = ? ", ["jwtSecret"]);
+    const knex = getKnex();
+    const newValue = await passwordHash.generate(genSecret());
 
-    if (!jwtSecretBean) {
-        jwtSecretBean = R.dispense("setting");
-        jwtSecretBean.key = "jwtSecret";
-    }
+    await knex("setting")
+        .insert({ key: "jwtSecret",
+            value: newValue })
+        .onConflict("key")
+        .merge({ value: newValue });
 
-    jwtSecretBean.value = await passwordHash.generate(genSecret());
-    await R.store(jwtSecretBean);
-    return jwtSecretBean;
+    return { key: "jwtSecret",
+        value: newValue };
 };
 
 /**
@@ -399,7 +400,7 @@ exports.setSetting = async function (key, value, type = null) {
 /**
  * Get settings based on type
  * @param {string} type The type of setting
- * @returns {Promise<Bean>} Settings of requested type
+ * @returns {Promise<object>} Settings of requested type
  */
 exports.getSettings = async function (type) {
     return await Settings.getSettings(type);
@@ -644,7 +645,7 @@ exports.checkLogin = (socket) => {
  * For logged-in users, double-check the password
  * @param {Socket} socket Socket.io instance
  * @param {string} currentPassword Password to validate
- * @returns {Promise<Bean>} User
+ * @returns {Promise<import("./model/user")>} User
  * @throws The current password is not a string
  * @throws The provided password is not correct
  */
@@ -653,7 +654,9 @@ exports.doubleCheckPassword = async (socket, currentPassword) => {
         throw new Error("Wrong data type?");
     }
 
-    let user = await R.findOne("user", " id = ? AND active = 1 ", [socket.userID]);
+    const User = require("./model/user");
+    let user = await User.query().where({ id: socket.userID,
+        active: true }).first();
 
     if (!user || !passwordHash.verify(currentPassword, user.password)) {
         throw new Error("Incorrect current password");
@@ -919,10 +922,10 @@ async function checkCertExpiryNotifications(monitor, tlsInfoObject) {
         return;
     }
 
-    let notificationList = await R.getAll(
-        "SELECT notification.* FROM notification, monitor_notification WHERE monitor_id = ? AND monitor_notification.notification_id = notification.id ",
-        [monitor.id]
-    );
+    let notificationList = await getKnex()("notification")
+        .join("monitor_notification", "monitor_notification.notification_id", "notification.id")
+        .where("monitor_notification.monitor_id", monitor.id)
+        .select("notification.*");
 
     if (!notificationList.length > 0) {
         // fail fast. If no notification is set, all the following checks can be skipped.
