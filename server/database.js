@@ -259,10 +259,12 @@ class Database {
         enableSQLDebugLogging(knexInstance);
 
         if (autoloadModels) {
-            // Eager-load all model files
+            // Eager-load all model files. base-model.js is the abstract parent
+            // and has no tableName — skip it so a stray require()/query against
+            // it can't surface a confusing Objection error.
             const modelDir = path.join(__dirname, "model");
             for (const file of fs.readdirSync(modelDir)) {
-                if (file.endsWith(".js")) {
+                if (file.endsWith(".js") && file !== "base-model.js") {
                     require(path.join(modelDir, file));
                 }
             }
@@ -685,7 +687,7 @@ class Database {
             `,
                 [monitor.monitor_id]
             );
-            const dates = normalizeRows(dateRowsResult);
+            const dates = normalizeRows(knex, dateRowsResult);
 
             for (const [dateIndex, date] of dates.entries()) {
                 // New Uptime Calculator
@@ -704,7 +706,7 @@ class Database {
                 `,
                     [monitor.monitor_id, date.date]
                 );
-                const heartbeats = normalizeRows(hbResult);
+                const heartbeats = normalizeRows(knex, hbResult);
 
                 if (heartbeats.length > 0) {
                     msg = `[DON'T STOP] Migrating monitor ${monitor.monitor_id}s' (${i + 1} of ${monitors.length} total) data - ${date.date} - total migration progress ${progressPercent.toFixed(2)}%`;

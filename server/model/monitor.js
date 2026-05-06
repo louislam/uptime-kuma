@@ -266,11 +266,12 @@ class Monitor extends BaseModel {
      * monitor
      */
     async getTags() {
-        const result = await getKnex().raw(
+        const knex = getKnex();
+        const result = await knex.raw(
             "SELECT mt.*, tag.name, tag.color FROM monitor_tag mt JOIN tag ON mt.tag_id = tag.id WHERE mt.monitor_id = ? ORDER BY tag.name",
             [this.id]
         );
-        return normalizeRows(result);
+        return normalizeRows(knex, result);
     }
 
     /**

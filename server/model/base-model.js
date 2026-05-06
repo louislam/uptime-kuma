@@ -62,6 +62,14 @@ class BaseModel extends Model {
     /**
      * Before formatting JSON for the database, fold any camelCase aliases
      * back into their snake_case columns and drop the aliases.
+     *
+     * When both forms are present (the common case after a load — the snake
+     * column is real, the camel alias was added by $parseDatabaseJson), the
+     * camelCase value wins. Most legacy mutation paths in the codebase set
+     * the camelCase form (`bean.userId = x`); preferring it ensures those
+     * writes are not silently dropped by a stale snake_case alias.
+     * Callers that mutate a hydrated instance should pick one form per
+     * column for the duration of that mutation.
      * @param {object} json JSON to write
      * @returns {object} Snake-cased JSON
      */
@@ -74,10 +82,7 @@ class BaseModel extends Model {
         }
         for (const key of Object.keys(json)) {
             if (/[A-Z]/.test(key)) {
-                const snake = camelToSnake(key);
-                if (!(snake in out)) {
-                    out[snake] = json[key];
-                }
+                out[camelToSnake(key)] = json[key];
             }
         }
         return super.$formatDatabaseJson(out);

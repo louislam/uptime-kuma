@@ -49,7 +49,7 @@ async function verifyAPIKey(key) {
 
     let hash = await getKnex()("api_key").where("id", index).first();
 
-    if (!hash) {
+    if (hash == null) {
         return false;
     }
 
@@ -59,7 +59,7 @@ async function verifyAPIKey(key) {
         return false;
     }
 
-    return hash && passwordHash.verify(clear, hash.key);
+    return passwordHash.verify(clear, hash.key);
 }
 
 /**

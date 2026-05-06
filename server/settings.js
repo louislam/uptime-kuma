@@ -124,30 +124,31 @@ class Settings {
         }
 
         const knex = getKnex();
-        const existingRows = await knex("setting").whereIn("key", keyList).select("key", "type");
-        const existing = new Map(existingRows.map((r) => [ r.key, r.type ]));
 
-        const inserts = [];
-        const updates = [];
+        await knex.transaction(async (trx) => {
+            const existingRows = await trx("setting").whereIn("key", keyList).select("key", "type");
+            const existing = new Map(existingRows.map((r) => [ r.key, r.type ]));
 
-        for (const key of keyList) {
-            const value = JSON.stringify(data[key]);
-            if (!existing.has(key)) {
-                inserts.push({ key,
-                    type,
-                    value });
-            } else if (existing.get(key) === type) {
-                updates.push({ key,
-                    value });
+            const inserts = [];
+
+            for (const key of keyList) {
+                const value = JSON.stringify(data[key]);
+                if (!existing.has(key)) {
+                    inserts.push({ key,
+                        type,
+                        value });
+                } else if (existing.get(key) === type) {
+                    await trx("setting").where("key", key).update({ value });
+                }
             }
-        }
 
-        if (inserts.length) {
-            await knex("setting").insert(inserts);
-        }
-        for (const u of updates) {
-            await knex("setting").where("key", u.key).update({ value: u.value });
-        }
+            // onConflict.merge() makes the bulk insert idempotent under
+            // concurrent setSettings() calls — a competing transaction may
+            // have inserted the same key between our SELECT and INSERT.
+            if (inserts.length) {
+                await trx("setting").insert(inserts).onConflict("key").merge();
+            }
+        });
 
         Settings.deleteCache(keyList);
     }

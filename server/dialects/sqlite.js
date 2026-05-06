@@ -70,9 +70,9 @@ class SqliteDialect extends Dialect {
             return;
         }
         log.debug("db", "SQLite config:");
-        log.debug("db", normalizeRows(await knex.raw("PRAGMA journal_mode")));
-        log.debug("db", normalizeRows(await knex.raw("PRAGMA cache_size")));
-        const verRows = normalizeRows(await knex.raw("SELECT sqlite_version()"));
+        log.debug("db", normalizeRows(knex, await knex.raw("PRAGMA journal_mode")));
+        log.debug("db", normalizeRows(knex, await knex.raw("PRAGMA cache_size")));
+        const verRows = normalizeRows(knex, await knex.raw("SELECT sqlite_version()"));
         log.debug("db", "SQLite Version: " + (verRows[0] ? Object.values(verRows[0])[0] : ""));
     }
 
