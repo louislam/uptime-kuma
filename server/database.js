@@ -14,7 +14,7 @@ const { SimpleMigrationServer } = require("./utils/simple-migration-server");
 const KumaColumnCompiler = require("./utils/knex/lib/dialects/mysql2/schema/mysql2-columncompiler");
 const SqlString = require("sqlstring");
 const { dataDir } = require("./config");
-const { execSync } = require("child_process");
+const { execFileSync } = require("child_process");
 
 /**
  * Database & App Data Folder
@@ -165,15 +165,13 @@ class Database {
             fs.mkdirSync(Database.dockerTLSDir, { recursive: true });
         }
 
-        // This path MUST NOT end with a trailing slash
-        // It throws off icacls, because the slash will get converted to a backslash by path.join in win32
-        // Thus it passes \" to cmd (an escaped double quote), which then is interpreted as part of the path
-        Database.scriptDir = path.join(Database.dataDir, "scripts");
+        Database.scriptDir = path.join(Database.dataDir, "scripts/");
         if (!fs.existsSync(Database.scriptDir)) {
             fs.mkdirSync(Database.scriptDir, { recursive: true });
             if (process.platform === "win32") {
                 // Unfortunately, we can't simply add a single DENY rule here
                 // As per the Windows docs (https://learn.microsoft.com/en-us/windows/win32/fileio/file-security-and-access-rights):
+                // 
                 // > Note that you cannot use an access-denied ACE to deny only GENERIC_READ or only GENERIC_WRITE access to a file.
                 // > This is because for file objects, the generic mappings for both GENERIC_READ or GENERIC_WRITE include the SYNCHRONIZE access right.
                 // > If an ACE denies GENERIC_WRITE access to a trustee, and the trustee requests GENERIC_READ access,
@@ -186,9 +184,15 @@ class Database {
                 // 3. grant write access to administators (users that are administators but currently not "elevated" will still not have write access.)
                 const AUTHENTICATED_USERS = "S-1-5-11";
                 const ADMINISTRATORS = "S-1-5-32-544";
-                execSync(
-                    `icacls "${Database.scriptDir}" /inheritance:r && icacls "${Database.scriptDir}" /grant *${AUTHENTICATED_USERS}:(OI)(CI)RX && icacls "${Database.scriptDir}" /grant *${ADMINISTRATORS}:(OI)(CI)F`
-                );
+                try {
+                    [
+                        [ "/inheritance:r" ],
+                        [ "/grant", `*${AUTHENTICATED_USERS}:(OI)(CI)RX` ],
+                        [ "/grant", `*${ADMINISTRATORS}:(OI)(CI)F` ]
+                    ].forEach(args => execFileSync("icacls", [ Database.scriptDir, ...args ], { windowsHide: true, encoding: "utf-8" }));
+                } catch(err) {
+                    log.error("server", "Script dir creation failed: " + err.stderr?.toString("utf-8") || err.message);
+                }
             } else {
                 fs.chmodSync(Database.scriptDir, 0o555);
             }
