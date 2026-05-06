@@ -46,4 +46,9 @@ jobs:
         run: npm run tsc
         continue-on-error: true
 
-      - uses: autofix-ci/action@635ffb0c9798bd160680f18fd73371e355b85f27
+      # autofix-ci/action requires the autofix.ci GitHub App installed on the
+      # repository. The App is authorized on louislam/uptime-kuma but not on
+      # forks, so the step fails the workflow on every fork PR. Restrict to
+      # the upstream repository.
+      - if: github.repository == 'louislam/uptime-kuma'
+        uses: autofix-ci/action@635ffb0c9798bd160680f18fd73371e355b85f27
