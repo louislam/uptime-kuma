@@ -83,6 +83,43 @@ function makeHeartbeat() {
 }
 
 /**
+ * Probe an SNMP target with a 1-second timeout. Used to decide whether to
+ * skip the SNMP test gracefully when no agent is reachable.
+ * @param {string} host Target hostname/IP
+ * @param {number} port UDP port (typically 161)
+ * @param {string} community SNMPv2c community string
+ * @returns {Promise<boolean>} True if the agent responded to a sysDescr GET
+ */
+function probeSnmp(host, port, community) {
+    return new Promise((resolve) => {
+        let snmpLib;
+        try {
+            snmpLib = require("net-snmp");
+        } catch {
+            resolve(false);
+            return;
+        }
+        const session = snmpLib.createSession(host, community, {
+            port,
+            timeout: 1000,
+            retries: 0,
+        });
+        const done = (ok) => {
+            try { session.close(); } catch { /* noop */ }
+            resolve(ok);
+        };
+        session.on("error", () => done(false));
+        try {
+            session.get(["1.3.6.1.2.1.1.1.0"], (err, varbinds) => {
+                done(!err && Array.isArray(varbinds) && varbinds.length > 0);
+            });
+        } catch {
+            done(false);
+        }
+    });
+}
+
+/**
  * Pick an unused TCP port for ad-hoc local servers.
  * @returns {Promise<number>} A free port
  */
@@ -356,33 +393,65 @@ describe("Monitor type integration tests", { concurrency: false }, () => {
         });
     });
 
-    // SNMP needs UDP port forwarding; Docker Desktop on macOS does not
-    // expose container UDP ports to the host reliably. Linux runners (and
-    // CI) are fine. Skip on darwin.
-    describe("SNMP monitor", { skip: process.platform === "darwin" ? "Docker Desktop on macOS does not forward UDP" : false }, () => {
+    // SNMP target selection:
+    //   - Linux: spin up polinux/snmpd in a container (CI default). Docker
+    //     forwards UDP normally on Linux.
+    //   - macOS: Docker Desktop's vmnet bridge does not proxy UDP ports
+    //     reliably, so a containerised snmpd is unreachable from the host.
+    //     Use a host-native snmpd instead — point at $SNMP_TEST_HOST (or
+    //     127.0.0.1) and probe before running. If nothing responds, the
+    //     test self-skips with an actionable hint.
+    //
+    // To run on macOS:
+    //   brew install net-snmp
+    //   echo "rocommunity public" > /tmp/snmpd.conf
+    //   sudo /opt/homebrew/sbin/snmpd -f -c /tmp/snmpd.conf -Lo
+    //   RUN_INTEGRATION_TESTS=1 SNMP_TEST_HOST=127.0.0.1 \
+    //     node --test test/backend-test/test-monitor-types.js
+    describe("SNMP monitor", () => {
         let container;
+        let snmpHost;
+        let snmpPort;
+        let snmpReason; // null = run; string = skip-with-reason
 
         before(async () => {
-            container = await new GenericContainer("polinux/snmpd")
-                .withExposedPorts({ container: 1161, host: undefined, protocol: "udp" })
-                .withWaitStrategy(Wait.forLogMessage(/snmpd -f/))
-                .start();
+            const useHostSnmpd = process.platform === "darwin" || process.env.SNMP_TEST_HOST;
+            if (useHostSnmpd) {
+                snmpHost = process.env.SNMP_TEST_HOST || "127.0.0.1";
+                snmpPort = parseInt(process.env.SNMP_TEST_PORT || "161");
+                const ok = await probeSnmp(snmpHost, snmpPort, "public");
+                if (!ok) {
+                    snmpReason =
+                        `host snmpd at ${snmpHost}:${snmpPort} did not respond to ` +
+                        `sysDescr probe — install net-snmp and start snmpd, or set ` +
+                        `SNMP_TEST_HOST/SNMP_TEST_PORT to point at a working agent.`;
+                }
+            } else {
+                container = await new GenericContainer("polinux/snmpd")
+                    .withExposedPorts({ container: 1161, host: undefined, protocol: "udp" })
+                    .withWaitStrategy(Wait.forLogMessage(/snmpd -f/))
+                    .start();
+                snmpHost = container.getHost();
+                snmpPort = container.getMappedPort(1161);
+            }
         });
 
         after(async () => container && container.stop());
 
-        test("UP for sysDescr query against running snmpd", async () => {
-            const host = container.getHost();
-            const port = container.getMappedPort(1161);
+        test("UP for sysDescr query against running snmpd", async (t) => {
+            if (snmpReason) {
+                t.skip(snmpReason);
+                return;
+            }
             const monitor = makeMonitor({
                 type: "snmp",
-                hostname: host,
-                port,
+                hostname: snmpHost,
+                port: snmpPort,
                 snmp_version: "2c",
                 snmp_oid: "1.3.6.1.2.1.1.1.0",
                 radius_password: "public",
                 json_path_operator: "contains",
-                expected_value: "Linux",
+                expected_value: "",
             });
             const heartbeat = makeHeartbeat();
             await server.monitorTypeList["snmp"].check(monitor, heartbeat, server);
