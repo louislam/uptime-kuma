@@ -134,7 +134,7 @@ async function exerciseBackend({ label, dataDir, dbConfig, expectedHourOffsetSql
         assert.ok(monitor.id > 0, `${label} monitor insert returned id`);
         const monitorLoaded = await Monitor.query().findById(monitor.id);
         assert.strictEqual(Number(monitorLoaded.retry_interval), 30, `${label} monitor.retry_interval round-trip`);
-        assert.strictEqual(Number(monitorLoaded.retryInterval), 30, `${label} monitor.retryInterval mirror`);
+        assert.strictEqual(monitorLoaded.retryInterval, undefined, `${label} no camelCase mirror after shim removal`);
 
         // Heartbeat insert via Objection — needs a Monitor first (FK).
         const heartbeatTime = dayjs.utc().format("YYYY-MM-DD HH:mm:ss");
@@ -158,8 +158,8 @@ async function exerciseBackend({ label, dataDir, dbConfig, expectedHourOffsetSql
         // SQLite stores booleans as 0/1; PG returns true/false. Wrap in Boolean()
         // for cross-dialect comparison.
         assert.strictEqual(Boolean(hbLoaded.important), false, `${label} heartbeat.important = false (got ${hbLoaded.important})`);
-        // camelCase alias mirror should also be exposed
-        assert.strictEqual(Number(hbLoaded.monitorId), monitor.id, `${label} heartbeat.monitorId mirror`);
+        // camelCase alias mirror was removed; only snake_case is exposed.
+        assert.strictEqual(hbLoaded.monitorId, undefined, `${label} heartbeat.monitorId is no longer mirrored`);
 
         // ----- Boolean round-trip (regression for the PG int-vs-bool BLOCKER) -----
         // Pre-fix code wrote `active: 1`/`upside_down: 0` and read with `=== 1`.

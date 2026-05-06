@@ -11,11 +11,11 @@ class MongodbMonitorType extends MonitorType {
      */
     async check(monitor, heartbeat, _server) {
         let command = { ping: 1 };
-        if (monitor.databaseQuery) {
-            command = JSON.parse(monitor.databaseQuery);
+        if (monitor.database_query) {
+            command = JSON.parse(monitor.database_query);
         }
 
-        let result = await this.runMongodbCommand(monitor.databaseConnectionString, command);
+        let result = await this.runMongodbCommand(monitor.database_connection_string, command);
 
         if (result["ok"] !== 1) {
             throw new Error("MongoDB command failed");
@@ -23,8 +23,8 @@ class MongodbMonitorType extends MonitorType {
             heartbeat.msg = "Command executed successfully";
         }
 
-        if (monitor.jsonPath) {
-            let expression = jsonata(monitor.jsonPath);
+        if (monitor.json_path) {
+            let expression = jsonata(monitor.json_path);
             result = await expression.evaluate(result);
             if (result) {
                 heartbeat.msg = "Command executed successfully and the jsonata expression produces a result.";
@@ -33,8 +33,8 @@ class MongodbMonitorType extends MonitorType {
             }
         }
 
-        if (monitor.expectedValue) {
-            if (result.toString() === monitor.expectedValue) {
+        if (monitor.expected_value) {
+            if (result.toString() === monitor.expected_value) {
                 heartbeat.msg = "Command executed successfully and expected value was found";
             } else {
                 throw new Error(

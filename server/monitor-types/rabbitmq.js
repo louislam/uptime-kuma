@@ -12,7 +12,7 @@ class RabbitMqMonitorType extends MonitorType {
     async check(monitor, heartbeat, server) {
         let baseUrls = [];
         try {
-            baseUrls = JSON.parse(monitor.rabbitmqNodes);
+            baseUrls = JSON.parse(monitor.rabbitmq_nodes);
         } catch (error) {
             throw new Error("Invalid RabbitMQ Nodes");
         }
@@ -70,7 +70,7 @@ class RabbitMqMonitorType extends MonitorType {
                 Accept: "application/json",
                 Authorization:
                     "Basic " +
-                    Buffer.from(`${monitor.rabbitmqUsername || ""}:${monitor.rabbitmqPassword || ""}`).toString(
+                    Buffer.from(`${monitor.rabbitmq_username || ""}:${monitor.rabbitmq_password || ""}`).toString(
                         "base64"
                     ),
             },

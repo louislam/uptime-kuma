@@ -331,7 +331,7 @@ module.exports.statusPageSocketHandler = (socket) => {
                 title: config.title,
                 description: config.description,
                 icon: config.logo,
-                autoRefreshInterval: config.autoRefreshInterval,
+                auto_refresh_interval: config.autoRefreshInterval,
                 theme: config.theme,
                 show_tags: config.showTags,
                 footer_text: config.footerText,

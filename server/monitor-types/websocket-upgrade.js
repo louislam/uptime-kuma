@@ -74,14 +74,14 @@ class WebSocketMonitorType extends MonitorType {
             options.headers = {};
         }
 
-        if (monitor.authMethod === "basic") {
+        if (monitor.auth_method === "basic") {
             if (monitor.basic_auth_user || monitor.basic_auth_pass) {
                 const credentials = Buffer.from(
                     `${monitor.basic_auth_user ?? ""}:${monitor.basic_auth_pass ?? ""}`
                 ).toString("base64");
                 options.headers.Authorization = `Basic ${credentials}`;
             }
-        } else if (monitor.authMethod === "oauth2-cc") {
+        } else if (monitor.auth_method === "oauth2-cc") {
             if (new Date((monitor.oauthAccessToken?.expires_at || 0) * 1000) <= new Date()) {
                 monitor.oauthAccessToken = await getOidcTokenClientCredentials(
                     monitor.oauth_token_url,
@@ -93,15 +93,15 @@ class WebSocketMonitorType extends MonitorType {
                 );
             }
             options.headers.Authorization = `${monitor.oauthAccessToken.token_type} ${monitor.oauthAccessToken.access_token}`;
-        } else if (monitor.authMethod === "mtls") {
-            if (monitor.tlsCert) {
-                options.cert = monitor.tlsCert;
+        } else if (monitor.auth_method === "mtls") {
+            if (monitor.tls_cert) {
+                options.cert = monitor.tls_cert;
             }
-            if (monitor.tlsKey) {
-                options.key = monitor.tlsKey;
+            if (monitor.tls_key) {
+                options.key = monitor.tls_key;
             }
-            if (monitor.tlsCa) {
-                options.ca = monitor.tlsCa;
+            if (monitor.tls_ca) {
+                options.ca = monitor.tls_ca;
             }
             options.rejectUnauthorized = !monitor.getIgnoreTls();
         }
@@ -119,7 +119,7 @@ class WebSocketMonitorType extends MonitorType {
 
         return new Promise((resolve) => {
             // If user inputs subprotocol(s), convert to array, set Sec-WebSocket-Protocol header, timeout in ms. Subprotocol Identifier column: https://www.iana.org/assignments/websocket/websocket.xml#subprotocol-name
-            const subprotocol = monitor.wsSubprotocol ? monitor.wsSubprotocol.replace(/\s/g, "").split(",") : undefined;
+            const subprotocol = monitor.ws_subprotocol ? monitor.ws_subprotocol.replace(/\s/g, "").split(",") : undefined;
             const ws = new WebSocket(monitor.url, subprotocol, authOptions);
 
             ws.addEventListener("open", (event) => {
@@ -131,7 +131,7 @@ class WebSocketMonitorType extends MonitorType {
                 // Give user the choice to ignore Sec-WebSocket-Accept header for non compliant servers
                 // Header in HTTP 101 Switching Protocols response from server, technically already upgraded to WS
                 if (
-                    monitor.wsIgnoreSecWebsocketAcceptHeader &&
+                    monitor.ws_ignore_sec_websocket_accept_header &&
                     error.message === "Invalid Sec-WebSocket-Accept header"
                 ) {
                     resolve(["1000 - OK", 1000]);

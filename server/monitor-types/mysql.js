@@ -17,14 +17,14 @@ class MysqlMonitorType extends MonitorType {
      * @inheritdoc
      */
     async check(monitor, heartbeat, _server) {
-        let query = monitor.databaseQuery;
+        let query = monitor.database_query;
         if (!query || (typeof query === "string" && query.trim() === "")) {
             query = "SELECT 1";
         }
 
         // Use `radius_password` as `password` field for backwards compatibility
         // TODO: rename `radius_password` to `password` later for general use
-        const password = monitor.radiusPassword;
+        const password = monitor.radius_password;
 
         const conditions = monitor.conditions ? ConditionExpressionGroup.fromMonitor(monitor) : null;
         const hasConditions = conditions && conditions.children && conditions.children.length > 0;
@@ -33,7 +33,7 @@ class MysqlMonitorType extends MonitorType {
         try {
             if (hasConditions) {
                 // When conditions are enabled, expect a single value result
-                const result = await this.mysqlQuerySingleValue(monitor.databaseConnectionString, query, password);
+                const result = await this.mysqlQuerySingleValue(monitor.database_connection_string, query, password);
                 heartbeat.ping = dayjs().valueOf() - startTime;
 
                 const conditionsResult = evaluateExpressionGroup(conditions, { result: String(result) });
@@ -46,7 +46,7 @@ class MysqlMonitorType extends MonitorType {
                 heartbeat.msg = "Query did meet specified conditions";
             } else {
                 // Backwards compatible: just check connection and return row count
-                const result = await this.mysqlQuery(monitor.databaseConnectionString, query, password);
+                const result = await this.mysqlQuery(monitor.database_connection_string, query, password);
                 heartbeat.ping = dayjs().valueOf() - startTime;
                 heartbeat.status = UP;
                 heartbeat.msg = result;

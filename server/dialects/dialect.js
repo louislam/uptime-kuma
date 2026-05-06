@@ -32,6 +32,7 @@ class Dialect {
      */
     async preConnect() {}
 
+    /* eslint-disable jsdoc/require-returns */
     /**
      * Build the Knex configuration object for this dialect. Abstract:
      * subclasses must override and return a Knex config.
@@ -64,6 +65,7 @@ class Dialect {
     sqlHourOffset() {
         throw new Error(`${this.constructor.name}.sqlHourOffset() not implemented`);
     }
+    /* eslint-enable jsdoc/require-returns */
 
     /**
      * Validate dbConfig collected by the setup wizard. Throws on missing or

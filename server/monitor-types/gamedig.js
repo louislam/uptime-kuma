@@ -14,7 +14,7 @@ class GameDigMonitorType extends MonitorType {
                 type: monitor.game,
                 host: monitor.hostname,
                 port: monitor.port,
-                givenPortOnly: Boolean(monitor.gamedigGivenPortOnly),
+                givenPortOnly: Boolean(monitor.gamedig_given_port_only),
             });
 
             heartbeat.msg = state.name;

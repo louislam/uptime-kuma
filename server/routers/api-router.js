@@ -77,7 +77,7 @@ router.all("/api/push/:pushToken", async (request, response) => {
         bean.monitor_id = monitor.id;
         bean.ping = ping;
         bean.msg = msg;
-        bean.downCount = previousHeartbeat?.downCount || 0;
+        bean.downCount = previousHeartbeat?.down_count || 0;
 
         if (previousHeartbeat) {
             isFirstBeat = false;
@@ -109,13 +109,13 @@ router.all("/api/push/:pushToken", async (request, response) => {
             log.debug("monitor", `[${monitor.name}] sendNotification`);
             await Monitor.sendNotification(isFirstBeat, monitor, bean);
         } else {
-            if (bean.status === DOWN && monitor.resendInterval > 0) {
-                ++bean.downCount;
-                if (bean.downCount >= monitor.resendInterval) {
+            if (bean.status === DOWN && monitor.resend_interval > 0) {
+                ++bean.down_count;
+                if (bean.down_count >= monitor.resend_interval) {
                     // Send notification again, because we are still DOWN
                     log.debug(
                         "monitor",
-                        `[${monitor.name}] sendNotification again: Down Count: ${bean.downCount} | Resend Interval: ${monitor.resendInterval}`
+                        `[${monitor.name}] sendNotification again: Down Count: ${bean.down_count} | Resend Interval: ${monitor.resend_interval}`
                     );
                     await Monitor.sendNotification(isFirstBeat, monitor, bean);
 

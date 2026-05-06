@@ -81,9 +81,9 @@ class GlobalpingMonitorType extends MonitorType {
             opts.measurementOptions.port = monitor.port;
         }
 
-        if (monitor.ipFamily === "ipv4") {
+        if (monitor.ip_family === "ipv4") {
             opts.measurementOptions.ipVersion = IpVersion[4];
-        } else if (monitor.ipFamily === "ipv6") {
+        } else if (monitor.ip_family === "ipv6") {
             opts.measurementOptions.ipVersion = IpVersion[6];
         }
 
@@ -151,7 +151,7 @@ class GlobalpingMonitorType extends MonitorType {
             ...(monitor.headers ? JSON.parse(monitor.headers) : {}),
         };
 
-        if (monitor.cacheBust) {
+        if (monitor.cache_bust) {
             const randomFloatString = Math.random().toString(36);
             const cacheBust = randomFloatString.substring(2);
             url.searchParams.set("uptime_kuma_cachebuster", cacheBust);
@@ -179,9 +179,9 @@ class GlobalpingMonitorType extends MonitorType {
             opts.measurementOptions.port = parseInt(url.port);
         }
 
-        if (monitor.ipFamily === "ipv4") {
+        if (monitor.ip_family === "ipv4") {
             opts.measurementOptions.ipVersion = IpVersion[4];
-        } else if (monitor.ipFamily === "ipv6") {
+        } else if (monitor.ip_family === "ipv6") {
             opts.measurementOptions.ipVersion = IpVersion[6];
         }
 
@@ -237,7 +237,7 @@ class GlobalpingMonitorType extends MonitorType {
         }
 
         // json-query
-        if (monitor.expectedValue) {
+        if (monitor.expected_value) {
             await this.handleJSONQueryForHTTP(monitor, heartbeat, result, probe);
             return;
         }
@@ -272,9 +272,9 @@ class GlobalpingMonitorType extends MonitorType {
             },
         };
 
-        if (monitor.ipFamily === "ipv4") {
+        if (monitor.ip_family === "ipv4") {
             opts.measurementOptions.ipVersion = IpVersion[4];
-        } else if (monitor.ipFamily === "ipv6") {
+        } else if (monitor.ip_family === "ipv6") {
             opts.measurementOptions.ipVersion = IpVersion[6];
         }
 
@@ -388,7 +388,7 @@ class GlobalpingMonitorType extends MonitorType {
         let data = result.rawOutput;
         let keywordFound = data.includes(monitor.keyword);
 
-        if (keywordFound === Boolean(monitor.invertKeyword)) {
+        if (keywordFound === Boolean(monitor.invert_keyword)) {
             data = data.replace(/<[^>]*>?|[\n\r]|\s+/gm, " ").trim();
             if (data.length > 50) {
                 data = data.substring(0, 47) + "...";
@@ -413,23 +413,23 @@ class GlobalpingMonitorType extends MonitorType {
     async handleJSONQueryForHTTP(monitor, heartbeat, result, probe) {
         const { status, response } = await evaluateJsonQuery(
             result.rawOutput,
-            monitor.jsonPath,
-            monitor.jsonPathOperator,
-            monitor.expectedValue
+            monitor.json_path,
+            monitor.json_path_operator,
+            monitor.expected_value
         );
 
         if (!status) {
             throw new Error(
                 this.formatResponse(
                     probe,
-                    `JSON query does not pass (comparing ${response} ${monitor.jsonPathOperator} ${monitor.expectedValue})`
+                    `JSON query does not pass (comparing ${response} ${monitor.json_path_operator} ${monitor.expected_value})`
                 )
             );
         }
 
         heartbeat.msg = this.formatResponse(
             probe,
-            `JSON query passes (comparing ${response} ${monitor.jsonPathOperator} ${monitor.expectedValue})`
+            `JSON query passes (comparing ${response} ${monitor.json_path_operator} ${monitor.expected_value})`
         );
         heartbeat.status = UP;
     }
@@ -447,7 +447,7 @@ class GlobalpingMonitorType extends MonitorType {
             return;
         }
 
-        if (!monitor.ignoreTls && protocol === "HTTPS" && !tlsInfo.authorized) {
+        if (!monitor.ignore_tls && protocol === "HTTPS" && !tlsInfo.authorized) {
             throw new Error(this.formatResponse(probe, `TLS certificate is not authorized: ${tlsInfo.error}`));
         }
 
@@ -499,7 +499,7 @@ class GlobalpingMonitorType extends MonitorType {
             monitor.prometheus.update(null, certResult);
         }
 
-        if (!monitor.ignoreTls && monitor.expiryNotification) {
+        if (!monitor.ignore_tls && monitor.expiry_notification) {
             await checkCertExpiryNotifications(monitor, certResult);
         }
     }

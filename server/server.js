@@ -735,13 +735,6 @@ let needSetup = false;
                 monitor.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
                 delete monitor.accepted_statuscodes;
 
-                monitor.kafkaProducerBrokers = JSON.stringify(monitor.kafkaProducerBrokers);
-                monitor.kafkaProducerSaslOptions = JSON.stringify(monitor.kafkaProducerSaslOptions);
-
-                monitor.conditions = JSON.stringify(monitor.conditions);
-
-                monitor.rabbitmqNodes = JSON.stringify(monitor.rabbitmqNodes);
-
                 /*
                  * List of frontend-only properties that should not be saved to the database.
                  * Should clean up before saving to the database.
@@ -757,7 +750,17 @@ let needSetup = false;
                     }
                 }
 
-                const payload = { ...monitor };
+                // Translate frontend camelCase keys to snake_case DB columns.
+                const payload = {};
+                for (const [k, v] of Object.entries(monitor)) {
+                    const snake = k.replace(/([a-z0-9])([A-Z])/g, "$1_$2").toLowerCase();
+                    payload[snake] = v;
+                }
+                // Stringify nested JSON fields (use the now-snake key names).
+                payload.kafka_producer_brokers = JSON.stringify(payload.kafka_producer_brokers);
+                payload.kafka_producer_sasl_options = JSON.stringify(payload.kafka_producer_sasl_options);
+                payload.conditions = JSON.stringify(payload.conditions);
+                payload.rabbitmq_nodes = JSON.stringify(payload.rabbitmq_nodes);
                 payload.user_id = socket.userID;
 
                 // Validate via a transient bean before insert so the same rules apply.
@@ -835,11 +838,11 @@ let needSetup = false;
                     type: monitor.type,
                     subtype: monitor.subtype,
                     url: monitor.url,
-                    wsIgnoreSecWebsocketAcceptHeader: monitor.wsIgnoreSecWebsocketAcceptHeader,
-                    wsSubprotocol: monitor.wsSubprotocol,
+                    ws_ignore_sec_websocket_accept_header: monitor.wsIgnoreSecWebsocketAcceptHeader,
+                    ws_subprotocol: monitor.wsSubprotocol,
                     method: monitor.method,
                     body: monitor.body,
-                    ipFamily: monitor.ipFamily,
+                    ip_family: monitor.ipFamily,
                     headers: monitor.headers,
                     basic_auth_user: monitor.basic_auth_user,
                     basic_auth_pass: monitor.basic_auth_pass,
@@ -850,12 +853,12 @@ let needSetup = false;
                     oauth_token_url: monitor.oauth_token_url,
                     oauth_scopes: monitor.oauth_scopes,
                     oauth_audience: monitor.oauth_audience,
-                    tlsCa: monitor.tlsCa,
-                    tlsCert: monitor.tlsCert,
-                    tlsKey: monitor.tlsKey,
+                    tls_ca: monitor.tlsCa,
+                    tls_cert: monitor.tlsCert,
+                    tls_key: monitor.tlsKey,
                     interval: monitor.interval,
-                    retryInterval: monitor.retryInterval,
-                    resendInterval: monitor.resendInterval,
+                    retry_interval: monitor.retryInterval,
+                    resend_interval: monitor.resendInterval,
                     hostname: monitor.hostname,
                     game: monitor.game,
                     maxretries: monitor.maxretries,
@@ -863,12 +866,12 @@ let needSetup = false;
                     location: monitor.location,
                     protocol: monitor.protocol,
                     keyword: monitor.keyword,
-                    invertKeyword: monitor.invertKeyword,
-                    ignoreTls: monitor.ignoreTls,
-                    expiryNotification: monitor.expiryNotification,
-                    domainExpiryNotification: monitor.domainExpiryNotification,
-                    upsideDown: monitor.upsideDown,
-                    packetSize: monitor.packetSize,
+                    invert_keyword: monitor.invertKeyword,
+                    ignore_tls: monitor.ignoreTls,
+                    expiry_notification: monitor.expiryNotification,
+                    domain_expiry_notification: monitor.domainExpiryNotification,
+                    upside_down: monitor.upsideDown,
+                    packet_size: monitor.packetSize,
                     maxredirects: monitor.maxredirects,
                     accepted_statuscodes_json: JSON.stringify(monitor.accepted_statuscodes),
                     save_response: monitor.saveResponse,
@@ -876,53 +879,53 @@ let needSetup = false;
                     response_max_length: monitor.responseMaxLength,
                     dns_resolve_type: monitor.dns_resolve_type,
                     dns_resolve_server: monitor.dns_resolve_server,
-                    pushToken: monitor.pushToken,
+                    push_token: monitor.pushToken,
                     docker_container: monitor.docker_container,
                     docker_host: monitor.docker_host,
-                    proxyId: Number.isInteger(monitor.proxyId) ? monitor.proxyId : null,
-                    mqttUsername: monitor.mqttUsername,
-                    mqttPassword: monitor.mqttPassword,
-                    mqttTopic: monitor.mqttTopic,
-                    mqttSuccessMessage: monitor.mqttSuccessMessage,
-                    mqttCheckType: monitor.mqttCheckType,
-                    mqttWebsocketPath: monitor.mqttWebsocketPath,
-                    databaseConnectionString: monitor.databaseConnectionString,
-                    databaseQuery: monitor.databaseQuery,
-                    authMethod: monitor.authMethod,
-                    authWorkstation: monitor.authWorkstation,
-                    authDomain: monitor.authDomain,
-                    grpcUrl: monitor.grpcUrl,
-                    grpcProtobuf: monitor.grpcProtobuf,
-                    grpcServiceName: monitor.grpcServiceName,
-                    grpcMethod: monitor.grpcMethod,
-                    grpcBody: monitor.grpcBody,
-                    grpcMetadata: monitor.grpcMetadata,
-                    grpcEnableTls: monitor.grpcEnableTls,
-                    radiusUsername: monitor.radiusUsername,
-                    radiusPassword: monitor.radiusPassword,
-                    radiusCalledStationId: monitor.radiusCalledStationId,
-                    radiusCallingStationId: monitor.radiusCallingStationId,
-                    radiusSecret: monitor.radiusSecret,
-                    httpBodyEncoding: monitor.httpBodyEncoding,
-                    expectedValue: monitor.expectedValue,
-                    jsonPath: monitor.jsonPath,
-                    kafkaProducerTopic: monitor.kafkaProducerTopic,
-                    kafkaProducerBrokers: JSON.stringify(monitor.kafkaProducerBrokers),
-                    kafkaProducerAllowAutoTopicCreation: monitor.kafkaProducerAllowAutoTopicCreation,
-                    kafkaProducerSaslOptions: JSON.stringify(monitor.kafkaProducerSaslOptions),
-                    kafkaProducerMessage: monitor.kafkaProducerMessage,
-                    cacheBust: monitor.cacheBust,
-                    kafkaProducerSsl: monitor.kafkaProducerSsl,
-                    gamedigGivenPortOnly: monitor.gamedigGivenPortOnly,
+                    proxy_id: Number.isInteger(monitor.proxyId) ? monitor.proxyId : null,
+                    mqtt_username: monitor.mqttUsername,
+                    mqtt_password: monitor.mqttPassword,
+                    mqtt_topic: monitor.mqttTopic,
+                    mqtt_success_message: monitor.mqttSuccessMessage,
+                    mqtt_check_type: monitor.mqttCheckType,
+                    mqtt_websocket_path: monitor.mqttWebsocketPath,
+                    database_connection_string: monitor.databaseConnectionString,
+                    database_query: monitor.databaseQuery,
+                    auth_method: monitor.authMethod,
+                    auth_workstation: monitor.authWorkstation,
+                    auth_domain: monitor.authDomain,
+                    grpc_url: monitor.grpcUrl,
+                    grpc_protobuf: monitor.grpcProtobuf,
+                    grpc_service_name: monitor.grpcServiceName,
+                    grpc_method: monitor.grpcMethod,
+                    grpc_body: monitor.grpcBody,
+                    grpc_metadata: monitor.grpcMetadata,
+                    grpc_enable_tls: monitor.grpcEnableTls,
+                    radius_username: monitor.radiusUsername,
+                    radius_password: monitor.radiusPassword,
+                    radius_called_station_id: monitor.radiusCalledStationId,
+                    radius_calling_station_id: monitor.radiusCallingStationId,
+                    radius_secret: monitor.radiusSecret,
+                    http_body_encoding: monitor.httpBodyEncoding,
+                    expected_value: monitor.expectedValue,
+                    json_path: monitor.jsonPath,
+                    kafka_producer_topic: monitor.kafkaProducerTopic,
+                    kafka_producer_brokers: JSON.stringify(monitor.kafkaProducerBrokers),
+                    kafka_producer_allow_auto_topic_creation: monitor.kafkaProducerAllowAutoTopicCreation,
+                    kafka_producer_sasl_options: JSON.stringify(monitor.kafkaProducerSaslOptions),
+                    kafka_producer_message: monitor.kafkaProducerMessage,
+                    cache_bust: monitor.cacheBust,
+                    kafka_producer_ssl: monitor.kafkaProducerSsl,
+                    gamedig_given_port_only: monitor.gamedigGivenPortOnly,
                     remote_browser: monitor.remote_browser,
-                    smtpSecurity: monitor.smtpSecurity,
-                    snmpVersion: monitor.snmpVersion,
-                    snmpOid: monitor.snmpOid,
-                    jsonPathOperator: monitor.jsonPathOperator,
+                    smtp_security: monitor.smtpSecurity,
+                    snmp_version: monitor.snmpVersion,
+                    snmp_oid: monitor.snmpOid,
+                    json_path_operator: monitor.jsonPathOperator,
                     retry_only_on_status_code_failure: Boolean(monitor.retryOnlyOnStatusCodeFailure),
-                    rabbitmqNodes: JSON.stringify(monitor.rabbitmqNodes),
-                    rabbitmqUsername: monitor.rabbitmqUsername,
-                    rabbitmqPassword: monitor.rabbitmqPassword,
+                    rabbitmq_nodes: JSON.stringify(monitor.rabbitmqNodes),
+                    rabbitmq_username: monitor.rabbitmqUsername,
+                    rabbitmq_password: monitor.rabbitmqPassword,
                     conditions: JSON.stringify(monitor.conditions),
                     manual_status: monitor.manual_status,
                     system_service_name: monitor.system_service_name,

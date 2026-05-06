@@ -15,10 +15,10 @@ class SNMPMonitorType extends MonitorType {
                 port: monitor.port || "161",
                 retries: monitor.maxretries,
                 timeout: monitor.timeout * 1000,
-                version: snmp.Version[monitor.snmpVersion],
+                version: snmp.Version[monitor.snmp_version],
             };
 
-            if (monitor.snmpVersion === "3") {
+            if (monitor.snmp_version === "3") {
                 if (!monitor.snmp_v3_username) {
                     throw new Error("SNMPv3 username is required");
                 }
@@ -31,7 +31,7 @@ class SNMPMonitorType extends MonitorType {
                 sessionOptions.username = monitor.snmp_v3_username;
                 session = snmp.createV3Session(monitor.hostname, monitor.snmp_v3_username, sessionOptions);
             } else {
-                session = snmp.createSession(monitor.hostname, monitor.radiusPassword, sessionOptions);
+                session = snmp.createSession(monitor.hostname, monitor.radius_password, sessionOptions);
             }
 
             // Handle errors during session creation
@@ -40,7 +40,7 @@ class SNMPMonitorType extends MonitorType {
             });
 
             const varbinds = await new Promise((resolve, reject) => {
-                session.get([monitor.snmpOid], (error, varbinds) => {
+                session.get([monitor.snmp_oid], (error, varbinds) => {
                     error ? reject(error) : resolve(varbinds);
                 });
             });
@@ -50,11 +50,11 @@ class SNMPMonitorType extends MonitorType {
             );
 
             if (varbinds.length === 0) {
-                throw new Error(`No varbinds returned from SNMP session (OID: ${monitor.snmpOid})`);
+                throw new Error(`No varbinds returned from SNMP session (OID: ${monitor.snmp_oid})`);
             }
 
             if (varbinds[0].type === snmp.ObjectType.NoSuchInstance) {
-                throw new Error(`The SNMP query returned that no instance exists for OID ${monitor.snmpOid}`);
+                throw new Error(`The SNMP query returned that no instance exists for OID ${monitor.snmp_oid}`);
             }
 
             // We restrict querying to one OID per monitor, therefore `varbinds[0]` will always contain the value we're interested in.
@@ -62,17 +62,17 @@ class SNMPMonitorType extends MonitorType {
 
             const { status, response } = await evaluateJsonQuery(
                 value,
-                monitor.jsonPath,
-                monitor.jsonPathOperator,
-                monitor.expectedValue
+                monitor.json_path,
+                monitor.json_path_operator,
+                monitor.expected_value
             );
 
             if (status) {
                 heartbeat.status = UP;
-                heartbeat.msg = `JSON query passes (comparing ${response} ${monitor.jsonPathOperator} ${monitor.expectedValue})`;
+                heartbeat.msg = `JSON query passes (comparing ${response} ${monitor.json_path_operator} ${monitor.expected_value})`;
             } else {
                 throw new Error(
-                    `JSON query does not pass (comparing ${response} ${monitor.jsonPathOperator} ${monitor.expectedValue})`
+                    `JSON query does not pass (comparing ${response} ${monitor.json_path_operator} ${monitor.expected_value})`
                 );
             }
         } finally {

@@ -124,21 +124,14 @@ exports.down = function (knex) {
 - Filename: `YYYY-MM-DD-HHMM-name.js` — ordering is lexicographic.
 - Test new migrations against all three dialects (see Testing below).
 
-## Snake_case ↔ camelCase
+## Snake_case columns
 
-DB columns are `snake_case`. JS code in this repo mixes `bean.user_id` and `bean.userId`. `BaseModel` mirrors both forms so either works at read/write time:
-
-- `$parseDatabaseJson` adds `userId` alongside `user_id` after a load
-- `$formatDatabaseJson` folds `userId` back to `user_id` before a write
-- `import(obj)` mirrors snake↔camel during bulk-assign
-
-For new code prefer snake_case (matches the column).
+DB columns are `snake_case` (e.g. `user_id`, `retry_interval`). Models read and write the columns directly: `bean.user_id`, not `bean.userId`. Where the API contract requires camelCase (frontend expects `retryInterval` etc.), translate at the boundary — typically in the model's `toJSON()` for outbound responses, and in the socket handler that receives the payload for inbound writes (`server.js#editMonitor` is the canonical example: it builds an explicit snake-keyed payload from the camel-keyed socket input before passing to `bean.$query().patchAndFetch(payload)`).
 
 **Footguns:**
 
-1. The mirror only applies to model reads/writes via Objection. **Raw Knex calls don't get translated.** `knex("monitor").where("monitorId", x)` will be sent verbatim — silently zero rows on SQLite/MariaDB (no such column), error on PG (strict identifier check). Always use snake_case identifiers in raw Knex calls.
-
-2. After a load, an instance carries both `user_id` and `userId`. If you mutate one alias on a hydrated instance, **don't also leave the other alias stale**: on write, the camelCase form wins, so `bean.user_id = 99` without updating `bean.userId` will be silently dropped. Pick one form per column for the duration of a mutation.
+- Raw Knex calls don't get translated. `knex("monitor").where("monitorId", x)` sends `monitorId` verbatim — zero rows on SQLite/MariaDB, error on PG. Use the snake column name.
+- The frontend speaks camelCase. When you receive a payload from a socket handler, the keys are camelCase; either translate them to snake when constructing the DB-write payload (see `server.js#editMonitor`), or run the payload through a `camelToSnake` key-rename before insert/patch.
 
 ## Querying
 

@@ -17,7 +17,7 @@ class OracleDbMonitorType extends MonitorType {
      * @inheritdoc
      */
     async check(monitor, heartbeat, _server) {
-        let query = monitor.databaseQuery;
+        let query = monitor.database_query;
         if (!query || (typeof query === "string" && query.trim() === "")) {
             query = "SELECT 1 FROM DUAL";
         }
@@ -29,7 +29,7 @@ class OracleDbMonitorType extends MonitorType {
         try {
             if (hasConditions) {
                 const result = await this.oracledbQuerySingleValue(
-                    monitor.databaseConnectionString,
+                    monitor.database_connection_string,
                     query,
                     monitor.basic_auth_user,
                     monitor.basic_auth_pass
@@ -46,7 +46,7 @@ class OracleDbMonitorType extends MonitorType {
                 heartbeat.msg = "Query did meet specified conditions";
             } else {
                 const result = await this.oracledbQuery(
-                    monitor.databaseConnectionString,
+                    monitor.database_connection_string,
                     query,
                     monitor.basic_auth_user,
                     monitor.basic_auth_pass
