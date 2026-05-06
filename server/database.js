@@ -180,15 +180,18 @@ class Database {
                 //
                 // So instead, we will
                 // 1. turn off inheritance and delete inherited rules
-                // 2. grant read access to authenticated users
+                // 2. grant read+execute access to authenticated users
                 // 3. grant write access to administators (users that are administators but currently not "elevated" will still not have write access.)
+                // 4. remove the grant rule that was auto-generated for ourselves (since we are creator-owner). 
+                //    This step will come last so we don't lock ourselves out inadvertently.
                 const AUTHENTICATED_USERS = "S-1-5-11";
                 const ADMINISTRATORS = "S-1-5-32-544";
                 try {
                     [
                         [ "/inheritance:r" ],
                         [ "/grant", `*${AUTHENTICATED_USERS}:(OI)(CI)RX` ],
-                        [ "/grant", `*${ADMINISTRATORS}:(OI)(CI)F` ]
+                        [ "/grant", `*${ADMINISTRATORS}:(OI)(CI)F` ],
+                        [ "/remove", execFileSync("whoami", [], { windowsHide: true, encoding: "utf-8" }).trim() ]                        
                     ].forEach(args => execFileSync("icacls", [ Database.scriptDir, ...args ], { windowsHide: true, encoding: "utf-8" }));
                 } catch(err) {
                     log.error("server", "Script dir creation failed: " + err.stderr?.toString("utf-8") || err.message);
