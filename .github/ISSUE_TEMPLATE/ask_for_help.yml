@@ -106,11 +106,13 @@ body:
           - Docker Compose: Version `X.X.X`
           - Portainer (BE/CE): Version `X.X.X` (LTS: Yes/No)
           - MariaDB: Version `X.X.X` (LTS: Yes/No)
+          - PostgreSQL: Version `X.X.X` (LTS: Yes/No)
           - Node.js: Version `X.X.X` (LTS: Yes/No)
           - Kubernetes (K3S/K8S): Version `X.X.X` (LTS: Yes/No, via `[method/tool]`)
         - **Database**:
           - SQLite: Embedded
           - MariaDB: Embedded/External
+          - PostgreSQL: External
         - **Database Storage**:
           - **Filesystem**:
             - Linux: ext4/XFS/Btrfs/ZFS/F2FS

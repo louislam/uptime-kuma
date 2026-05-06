@@ -34,6 +34,7 @@ It is a temporary live demo, all data will be deleted after 10 minutes. Sponsore
 - Certificate info
 - Proxy support
 - 2FA support
+- **Database backends:** SQLite (default), MariaDB/MySQL, PostgreSQL — see [`docs/DATABASE.md`](docs/DATABASE.md)
 
 ## 🔧 How to Install
 
@@ -47,6 +48,8 @@ docker compose up -d
 ```
 
 Uptime Kuma is now running on all network interfaces (e.g. http://localhost:3001 or http://your-ip:3001).
+
+For an external database, replace `compose.yaml` with [`compose.mariadb.yaml`](compose.mariadb.yaml) or [`compose.postgres.yaml`](compose.postgres.yaml).
 
 > [!WARNING]
 > File Systems like **NFS** (Network File System) are **NOT** supported. Please map to a local directory or volume.

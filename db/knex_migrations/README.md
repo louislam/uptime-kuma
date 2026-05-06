@@ -6,7 +6,8 @@ https://knexjs.org/guide/migrations.html#knexfile-in-other-languages
 
 - All tables must have a primary key named `id`
 - Filename format: `YYYY-MM-DD-HHMM-patch-name.js`
-- Avoid native SQL syntax, use knex methods, because Uptime Kuma supports SQLite and MariaDB.
+- Avoid native SQL syntax — use Knex schema builder methods. Uptime Kuma supports **SQLite**, **MariaDB/MySQL**, and **PostgreSQL**, so backticks, square brackets, `AUTO_INCREMENT`, dialect-specific functions, etc. will break at least one backend.
+- Migrations are run against all three dialects in CI (`test/backend-test/test-migration.js`). See [`docs/DATABASE.md`](../../docs/DATABASE.md) for the full DB layer overview.
 
 ## Template
 

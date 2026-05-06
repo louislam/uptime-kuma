@@ -24,3 +24,6 @@ extra/exe-builder/obj
 
 .vs
 .vscode
+
+# Local-only design notes
+ORM_MIGRATION_PLAN.md
