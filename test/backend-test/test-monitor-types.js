@@ -450,6 +450,23 @@ describe("Monitor type integration tests", { concurrency: false }, () => {
                     .start();
                 snmpHost = container.getHost();
                 snmpPort = container.getMappedPort("161/udp");
+
+                // The "snmpd -f" log line fires before the daemon actually
+                // binds to UDP 161, so net-snmp's first GET silently times
+                // out. Poll until the agent answers a real probe (or we
+                // hit a 30s ceiling).
+                const deadline = Date.now() + 30_000;
+                let ready = false;
+                while (Date.now() < deadline) {
+                    if (await probeSnmp(snmpHost, snmpPort, "public")) {
+                        ready = true;
+                        break;
+                    }
+                    await new Promise((r) => setTimeout(r, 500));
+                }
+                if (!ready) {
+                    snmpReason = `polinux/snmpd container did not respond to sysDescr probe within 30s`;
+                }
             }
         });
 
