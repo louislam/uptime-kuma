@@ -64,13 +64,38 @@ Development (builds the image from the local source tree via `docker/dockerfile.
 
 - `compose.dev.yaml` — Uptime Kuma + PostgreSQL, builds the image so local
   changes ship in the running container. Run `docker compose -f compose.dev.yaml up --build`.
-  By default the setup wizard appears; uncomment the `UPTIME_KUMA_DB_*`
-  block to skip it. PG is also exposed on host port `5433` for `psql`
-  debugging. State lives under `./data/dev/`.
+  PG is exposed on host port `5433` for `psql` debugging; an optional
+  MariaDB service block at the bottom (commented out) exposes `:3308`.
+  State lives under `./data/dev/`. The dev image is built from
+  `node:24-bookworm-slim` directly — no dependency on upstream's
+  `louislam/uptime-kuma:base2` image — and ships with `iputils-ping`,
+  `mariadb-server` (for the embedded-MariaDB option in the wizard) and
+  the usual `dumb-init` / `ca-certificates`.
 
 Use this when you need to test the production image with branch changes,
 e.g. reproducing a PG-only bug. For frontend hot-reload, run `npm run dev`
 on the host instead.
+
+**LAN-monitor caveat (macOS Docker Desktop).** Containers can reach the
+internet but not 192.168.x.y devices on the host's LAN — Docker Desktop
+runs in a Linux VM whose default route does not bridge to the host's
+local subnet, even with `network_mode: host`. macvlan is unsupported on
+Mac. To exercise ping / HTTP monitors against LAN devices, leave the
+`postgres` service up via compose and run Uptime Kuma natively:
+
+```bash
+docker compose -f compose.dev.yaml up -d postgres
+UPTIME_KUMA_DB_TYPE=postgres \
+UPTIME_KUMA_DB_HOSTNAME=localhost \
+UPTIME_KUMA_DB_PORT=5433 \
+UPTIME_KUMA_DB_NAME=kuma \
+UPTIME_KUMA_DB_USERNAME=kuma \
+UPTIME_KUMA_DB_PASSWORD=kuma \
+npm run start-server-dev
+```
+
+The host-native process inherits the Mac's full LAN access. The
+container path stays useful for testing the DB layer / ORM / migrations.
 
 ## Adding a model
 
@@ -165,6 +190,15 @@ await knex("monitor").where("active", 1);
 if (user.twofa_status === 1) { ... }
 ```
 
+## Integer columns
+
+PostgreSQL is strict about INTEGER vs FLOAT: an `INSERT ... (ping) VALUES (3.208)` against an INTEGER column fails with `invalid input syntax for type bigint: "3.208"`. SQLite stores fractional values loosely; MariaDB silently rounds. Two places in this codebase routinely produce fractional values for integer columns:
+
+- `Heartbeat.ping` — assigned from sub-millisecond HTTP/port-check timings.
+- `Heartbeat.duration` — same (computed from `dayjs().valueOf()` deltas).
+
+`server/model/heartbeat.js#$beforeInsert` / `$beforeUpdate` round both fields. New code that writes to integer columns from a fractional source needs the same treatment, either at the call site or in a model lifecycle hook.
+
 ## Dialect strategy pattern
 
 All per-dialect behavior lives in `server/dialects/*.js`. Each subclass of `Dialect` (defined in `server/dialects/dialect.js`) owns:
@@ -195,10 +229,11 @@ Wrap any `knex.raw(...)` call that returns rows with `normalizeRows(result)`.
 Backend tests use `node:test` and live in `test/backend-test/`.
 
 - `test-dialect.js` — dialect registry + each subclass's contract
-- `test-base-model.js` — snake↔camel + import/export + registry
+- `test-base-model.js` — model surface + registry, no aliasing
 - `test-db-helpers.js` — `db.js` singleton lifecycle, datetime helpers
 - `test-migration.js` — runs all migrations against SQLite + MariaDB + MySQL + PostgreSQL (containers via `testcontainers`)
 - `test-cross-db.js` — same end-to-end CRUD exercise across all three dialects
+- `test-monitor-types.js` — integration tests for each MonitorType subclass: spins up real Postgres / MariaDB / MongoDB / Redis / RabbitMQ / Mosquitto / snmpd via testcontainers and asserts `MonitorType.check()` reports UP. Also locks in regressions for the heartbeat ping-rounding rule and the MQTT default-check-type bug.
 
 Run:
 
@@ -206,8 +241,30 @@ Run:
 npm run test-backend
 ```
 
-Container-based tests skip on non-Linux CI runners but execute locally if Docker is available.
+Container-based tests skip on non-Linux/x64 CI runners but execute locally if Docker is available.
 
 ### Cross-dialect test isolation
 
 Tests that switch dialects must flush the require cache for `/server/**` and `/db/**` (modules capture `getKnex` closures at load time) and call `Settings.stopCacheCleaner()` (60s setInterval otherwise prevents process exit). See `test-cross-db.js` `reloadModules()` for the pattern.
+
+### Running the monitor-type integration suite locally
+
+`test-monitor-types.js` self-skips on non-Linux/x64 unless `RUN_INTEGRATION_TESTS=1` is set:
+
+```bash
+RUN_INTEGRATION_TESTS=1 node --test test/backend-test/test-monitor-types.js
+```
+
+A few caveats hit during macOS development:
+
+- **Module load order matters.** Require `UptimeKumaServer` *before* `Monitor`. The two have a circular dep; importing `Monitor` first hands `monitor-types/group.js` a half-initialised `{}` snapshot of the class and `Monitor.getChildren` ends up undefined at check time. The test file does this correctly at the top — keep that ordering when adding new tests.
+- **SNMP target.** macOS Docker Desktop's vmnet bridge does not forward container UDP ports reliably, so the SNMP test cannot use a containerised snmpd on macOS. The suite probes a host-native snmpd at `127.0.0.1:161` (override with `SNMP_TEST_HOST` / `SNMP_TEST_PORT`) and self-skips if nothing answers, with an actionable hint. Linux runners use the testcontainer path. To run SNMP locally on macOS:
+
+  ```bash
+  echo "rocommunity public" > /tmp/snmpd.conf
+  sudo /usr/sbin/snmpd -f -c /tmp/snmpd.conf -Lo &
+  RUN_INTEGRATION_TESTS=1 SNMP_TEST_HOST=127.0.0.1 \
+    node --test test/backend-test/test-monitor-types.js
+  ```
+
+- **HARDCODED-vs-MonitorType split.** Several monitor types (http, keyword, json-query, ping, push, steam, docker, radius, kafka-producer) are still inlined in `Monitor.beat()` rather than implementing the `MonitorType` subclass contract. `test-monitor-types.js` covers only the subclass-based types — adding integration coverage for the inlined ones requires driving `Monitor.beat()` through the full app lifecycle and isn't worth the test machinery for now.
