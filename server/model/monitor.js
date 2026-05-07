@@ -116,6 +116,23 @@ class Monitor extends BaseModel {
     }
 
     /**
+     * Lazily compute and cache the signed screenshot path. Signing a
+     * JWT per toJSON() call is expensive when emitting hundreds or
+     * thousands of monitors at once (M-6 in docs/ARCHITECTURE_REVIEW.md).
+     * The JWT secret is read once at server start and is treated as
+     * stable for the process lifetime; rotating the secret already
+     * requires a server restart.
+     * @returns {string} Signed screenshot URL path
+     */
+    get _signedScreenshotPath() {
+        if (!this.__cachedScreenshotPath) {
+            const secret = UptimeKumaServer.getInstance().jwtSecret;
+            this.__cachedScreenshotPath = "/screenshots/" + jwt.sign(this.id, secret) + ".png";
+        }
+        return this.__cachedScreenshotPath;
+    }
+
+    /**
      * Return an object that ready to parse to JSON
      * @param {object} preloadData to prevent n+1 problems, we query the data in a batch outside of this function
      * @param {boolean} includeSensitiveData Include sensitive data in
@@ -126,7 +143,7 @@ class Monitor extends BaseModel {
         let screenshot = null;
 
         if (this.type === "real-browser") {
-            screenshot = "/screenshots/" + jwt.sign(this.id, UptimeKumaServer.getInstance().jwtSecret) + ".png";
+            screenshot = this._signedScreenshotPath;
         }
 
         const path = preloadData.paths.get(this.id) || [];
