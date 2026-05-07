@@ -1949,10 +1949,13 @@ class Monitor extends BaseModel {
     /**
      * Gets all Children of the monitor
      * @param {number} monitorID ID of monitor to get
+     * @param {import("knex").Knex.Transaction|null} trx Knex transaction
+     * to run inside, or null to use the shared connection.
      * @returns {Promise<LooseObject<any>[]>} Children
      */
-    static async getChildren(monitorID) {
-        return getKnex()("monitor").where("parent", monitorID);
+    static async getChildren(monitorID, trx) {
+        const db = trx || getKnex();
+        return db("monitor").where("parent", monitorID);
     }
 
     /**
@@ -1998,19 +2001,26 @@ class Monitor extends BaseModel {
     /**
      * Unlinks all children of the group monitor
      * @param {number} groupID ID of group to remove children of
+     * @param {import("knex").Knex.Transaction|null} trx Knex transaction
+     * to run inside, or null to use the shared connection.
      * @returns {Promise<void>}
      */
-    static async unlinkAllChildren(groupID) {
-        return await getKnex()("monitor").where("parent", groupID).update({ parent: null });
+    static async unlinkAllChildren(groupID, trx) {
+        const db = trx || getKnex();
+        return await db("monitor").where("parent", groupID).update({ parent: null });
     }
 
     /**
-     * Delete a monitor from the system
+     * Delete a monitor from the system. The DB delete is performed inside
+     * `trx` when provided so a parent transaction can roll back on failure.
+     * The in-memory monitor stop is a side-effect and runs regardless.
      * @param {number} monitorID ID of the monitor to delete
      * @param {number} userID ID of the user who owns the monitor
+     * @param {import("knex").Knex.Transaction|null} trx Knex transaction
+     * to run inside, or null to use the shared connection.
      * @returns {Promise<void>}
      */
-    static async deleteMonitor(monitorID, userID) {
+    static async deleteMonitor(monitorID, userID, trx) {
         const server = UptimeKumaServer.getInstance();
 
         // Stop the monitor if it's running
@@ -2020,33 +2030,39 @@ class Monitor extends BaseModel {
         }
 
         // Delete from database
-        await getKnex()("monitor").where({ id: monitorID,
+        const db = trx || getKnex();
+        await db("monitor").where({ id: monitorID,
             user_id: userID }).delete();
     }
 
     /**
-     * Recursively delete a monitor and all its descendants
+     * Recursively delete a monitor and all its descendants. When `trx` is
+     * provided every descendant delete runs inside it, so a failure mid
+     * cascade rolls the whole tree back atomically.
      * @param {number} monitorID ID of the monitor to delete
      * @param {number} userID ID of the user who owns the monitor
+     * @param {import("knex").Knex.Transaction|null} trx Knex transaction
+     * to run inside, or null to use the shared connection.
      * @returns {Promise<void>}
      */
-    static async deleteMonitorRecursively(monitorID, userID) {
+    static async deleteMonitorRecursively(monitorID, userID, trx) {
         // Check if this monitor is a group
-        const monitor = await Monitor.query().where({ id: monitorID,
+        const lookup = trx ? Monitor.query(trx) : Monitor.query();
+        const monitor = await lookup.where({ id: monitorID,
             user_id: userID }).first();
 
         if (monitor && monitor.type === "group") {
             // Get all children and delete them recursively
-            const children = await Monitor.getChildren(monitorID);
+            const children = await Monitor.getChildren(monitorID, trx);
             if (children && children.length > 0) {
                 for (const child of children) {
-                    await Monitor.deleteMonitorRecursively(child.id, userID);
+                    await Monitor.deleteMonitorRecursively(child.id, userID, trx);
                 }
             }
         }
 
         // Delete the monitor itself
-        await Monitor.deleteMonitor(monitorID, userID);
+        await Monitor.deleteMonitor(monitorID, userID, trx);
     }
 
     /**

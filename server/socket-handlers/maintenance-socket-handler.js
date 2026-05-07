@@ -40,11 +40,18 @@ module.exports.maintenanceSocketHandler = (socket) => {
                 duration: bean.duration,
             };
 
-            const inserted = await Maintenance.query().insertAndFetch(insertPayload);
+            // Single row insert is atomic on its own, but wrap in a
+            // transaction so future associated writes (status pages,
+            // monitor links) added inside this handler stay atomic with it.
+            const inserted = await getKnex().transaction(async (trx) => {
+                return await Maintenance.query(trx).insertAndFetch(insertPayload);
+            });
             // Reuse the in-memory bean (with beanMeta etc.) but adopt the assigned id.
             bean.id = inserted.id;
             const maintenanceID = bean.id;
 
+            // In-memory state and cron scheduling happen after commit so a
+            // failed insert never leaves a scheduled-but-unsaved maintenance.
             server.maintenanceList[maintenanceID] = bean;
             await bean.run(true);
 
@@ -118,15 +125,18 @@ module.exports.maintenanceSocketHandler = (socket) => {
         try {
             checkLogin(socket);
 
-            const knex = getKnex();
-            await knex("monitor_maintenance").where("maintenance_id", maintenanceID).delete();
+            // Atomic: replace the link set in one transaction so a mid-loop
+            // failure can't leave a partial set of monitors attached.
+            await getKnex().transaction(async (trx) => {
+                await trx("monitor_maintenance").where("maintenance_id", maintenanceID).delete();
 
-            for await (const monitor of monitors) {
-                await knex("monitor_maintenance").insert({
-                    monitor_id: monitor.id,
-                    maintenance_id: maintenanceID,
-                });
-            }
+                for await (const monitor of monitors) {
+                    await trx("monitor_maintenance").insert({
+                        monitor_id: monitor.id,
+                        maintenance_id: maintenanceID,
+                    });
+                }
+            });
 
             apicache.clear();
 
@@ -148,15 +158,17 @@ module.exports.maintenanceSocketHandler = (socket) => {
         try {
             checkLogin(socket);
 
-            const knex = getKnex();
-            await knex("maintenance_status_page").where("maintenance_id", maintenanceID).delete();
+            // Atomic: replace the status-page link set in one transaction.
+            await getKnex().transaction(async (trx) => {
+                await trx("maintenance_status_page").where("maintenance_id", maintenanceID).delete();
 
-            for await (const statusPage of statusPages) {
-                await knex("maintenance_status_page").insert({
-                    status_page_id: statusPage.id,
-                    maintenance_id: maintenanceID,
-                });
-            }
+                for await (const statusPage of statusPages) {
+                    await trx("maintenance_status_page").insert({
+                        status_page_id: statusPage.id,
+                        maintenance_id: maintenanceID,
+                    });
+                }
+            });
 
             apicache.clear();
 

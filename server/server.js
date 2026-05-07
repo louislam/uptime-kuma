@@ -768,10 +768,17 @@ let needSetup = false;
                 Object.assign(validateBean, payload);
                 validateBean.validate();
 
-                const bean = await Monitor.query().insertAndFetch(payload);
+                // Atomic: insert the monitor row and its notification links
+                // together. If notification linking fails the monitor row is
+                // rolled back so we don't leave an orphan.
+                const bean = await getKnex().transaction(async (trx) => {
+                    const inserted = await Monitor.query(trx).insertAndFetch(payload);
+                    await updateMonitorNotification(inserted.id, notificationIDList, trx);
+                    return inserted;
+                });
 
-                await updateMonitorNotification(bean.id, notificationIDList);
-
+                // Side-effects (start the monitor loop, broadcast to clients)
+                // happen after the DB transaction commits.
                 await server.sendUpdateMonitorIntoList(socket, bean.id);
 
                 if (monitor.active !== false) {
@@ -941,13 +948,18 @@ let needSetup = false;
                 Object.assign(bean, payload);
                 bean.validate();
 
-                await bean.$query().patchAndFetch(payload);
+                // Atomic: patch the monitor row, optionally unlink children
+                // (when changing away from a group), and replace its
+                // notification links in a single transaction.
+                await getKnex().transaction(async (trx) => {
+                    await bean.$query(trx).patchAndFetch(payload);
 
-                if (removeGroupChildren) {
-                    await Monitor.unlinkAllChildren(monitor.id);
-                }
+                    if (removeGroupChildren) {
+                        await Monitor.unlinkAllChildren(monitor.id, trx);
+                    }
 
-                await updateMonitorNotification(bean.id, monitor.notificationIDList);
+                    await updateMonitorNotification(bean.id, monitor.notificationIDList, trx);
+                });
 
                 if (await Monitor.isActive(bean.id, bean.active)) {
                     await restartMonitor(socket.userID, bean.id);
@@ -1122,33 +1134,49 @@ let needSetup = false;
                     log.info("manage", `Delete Monitor: ${monitorID} User ID: ${socket.userID}`);
                 }
 
+                let deletedChildren = [];
+                let unlinkedChildren = [];
+
                 if (monitor && monitor.type === "group") {
-                    // Get all children before processing
-                    const children = await Monitor.getChildren(monitorID);
+                    // Atomic: cascade child handling + parent delete in one
+                    // transaction so a partial failure doesn't leave orphans
+                    // or half-detached children. The frontend broadcasts
+                    // happen after the transaction commits.
+                    await getKnex().transaction(async (trx) => {
+                        const children = await Monitor.getChildren(monitorID, trx);
 
-                    if (deleteChildren) {
-                        // Delete all child monitors recursively
-                        if (children && children.length > 0) {
-                            for (const child of children) {
-                                await Monitor.deleteMonitorRecursively(child.id, socket.userID);
-                                await server.sendDeleteMonitorFromList(socket, child.id);
+                        if (deleteChildren) {
+                            if (children && children.length > 0) {
+                                for (const child of children) {
+                                    await Monitor.deleteMonitorRecursively(child.id, socket.userID, trx);
+                                    deletedChildren.push(child.id);
+                                }
+                            }
+                        } else {
+                            // Unlink all children from the group (set parent to null)
+                            await Monitor.unlinkAllChildren(monitorID, trx);
+                            if (children && children.length > 0) {
+                                for (const child of children) {
+                                    unlinkedChildren.push(child.id);
+                                }
                             }
                         }
-                    } else {
-                        // Unlink all children from the group (set parent to null)
-                        await Monitor.unlinkAllChildren(monitorID);
 
-                        // Notify frontend to update each child monitor's parent to null
-                        if (children && children.length > 0) {
-                            for (const child of children) {
-                                await server.sendUpdateMonitorIntoList(socket, child.id);
-                            }
-                        }
-                    }
+                        // Delete the parent group itself inside the same trx.
+                        await Monitor.deleteMonitor(monitorID, socket.userID, trx);
+                    });
+                } else {
+                    // Non-group: a single row delete is already atomic.
+                    await Monitor.deleteMonitor(monitorID, socket.userID);
                 }
 
-                // Delete the monitor itself
-                await Monitor.deleteMonitor(monitorID, socket.userID);
+                // Notify frontend after the DB transaction commits.
+                for (const childId of deletedChildren) {
+                    await server.sendDeleteMonitorFromList(socket, childId);
+                }
+                for (const childId of unlinkedChildren) {
+                    await server.sendUpdateMonitorIntoList(socket, childId);
+                }
 
                 // Fix #2880
                 apicache.clear();
@@ -1754,15 +1782,17 @@ let needSetup = false;
  * @param {number} monitorID ID of monitor to update
  * @param {number[]} notificationIDList List of new notification
  * providers to add
+ * @param {import("knex").Knex.Transaction|null} trx Knex transaction
+ * to run the writes inside, or null to use the shared connection.
  * @returns {Promise<void>}
  */
-async function updateMonitorNotification(monitorID, notificationIDList) {
-    const knex = getKnex();
-    await knex("monitor_notification").where("monitor_id", monitorID).delete();
+async function updateMonitorNotification(monitorID, notificationIDList, trx) {
+    const db = trx || getKnex();
+    await db("monitor_notification").where("monitor_id", monitorID).delete();
 
     for (let notificationID in notificationIDList) {
         if (notificationIDList[notificationID]) {
-            await knex("monitor_notification").insert({
+            await db("monitor_notification").insert({
                 monitor_id: monitorID,
                 notification_id: notificationID,
             });
