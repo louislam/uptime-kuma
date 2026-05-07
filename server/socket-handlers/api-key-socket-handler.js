@@ -1,4 +1,3 @@
-const { checkLogin } = require("../util-server");
 const { log } = require("../../src/util");
 const { getKnex } = require("../db");
 const { nanoid } = require("nanoid");
@@ -7,7 +6,7 @@ const apicache = require("../modules/apicache");
 const APIKey = require("../model/api_key");
 const { Settings } = require("../settings");
 const { sendAPIKeyList } = require("../client");
-const { socketError } = require("../utils/socket-error");
+const { onAuthed } = require("../utils/authed-event");
 
 /**
  * Handlers for API keys
@@ -16,117 +15,90 @@ const { socketError } = require("../utils/socket-error");
  */
 module.exports.apiKeySocketHandler = (socket) => {
     // Add a new api key
-    socket.on("addAPIKey", async (key, callback) => {
-        try {
-            checkLogin(socket);
+    onAuthed(socket, "addAPIKey", async (socket, key, callback) => {
+        let clearKey = nanoid(40);
+        let hashedKey = await passwordHash.generate(clearKey);
+        key["key"] = hashedKey;
+        let bean = await APIKey.save(key, socket.userID);
 
-            let clearKey = nanoid(40);
-            let hashedKey = await passwordHash.generate(clearKey);
-            key["key"] = hashedKey;
-            let bean = await APIKey.save(key, socket.userID);
+        log.debug("apikeys", "Added API Key");
+        log.debug("apikeys", key);
 
-            log.debug("apikeys", "Added API Key");
-            log.debug("apikeys", key);
+        // Append key ID and prefix to start of key separated by _, used to get
+        // correct hash when validating key.
+        let formattedKey = "uk" + bean.id + "_" + clearKey;
+        await sendAPIKeyList(socket);
 
-            // Append key ID and prefix to start of key separated by _, used to get
-            // correct hash when validating key.
-            let formattedKey = "uk" + bean.id + "_" + clearKey;
-            await sendAPIKeyList(socket);
+        // Enable API auth if the user creates a key, otherwise only basic
+        // auth will be used for API.
+        await Settings.set("apiKeysEnabled", true);
 
-            // Enable API auth if the user creates a key, otherwise only basic
-            // auth will be used for API.
-            await Settings.set("apiKeysEnabled", true);
+        callback({
+            ok: true,
+            msg: "successAdded",
+            msgi18n: true,
+            key: formattedKey,
+            keyID: bean.id,
+        });
+    }, { fallbackMsg: "Failed to add API key" });
 
-            callback({
-                ok: true,
-                msg: "successAdded",
-                msgi18n: true,
-                key: formattedKey,
-                keyID: bean.id,
-            });
-        } catch (e) {
-            socketError(callback, e, "Failed to add API key");
-        }
-    });
+    onAuthed(socket, "getAPIKeyList", async (socket, callback) => {
+        await sendAPIKeyList(socket);
+        callback({ ok: true });
+    }, { fallbackMsg: "Failed to retrieve API key list" });
 
-    socket.on("getAPIKeyList", async (callback) => {
-        try {
-            checkLogin(socket);
-            await sendAPIKeyList(socket);
-            callback({
-                ok: true,
-            });
-        } catch (e) {
-            socketError(callback, e, "Failed to retrieve API key list");
-        }
-    });
+    onAuthed(socket, "deleteAPIKey", async (socket, keyID, callback) => {
+        log.debug("apikeys", `Deleted API Key: ${keyID} User ID: ${socket.userID}`);
 
-    socket.on("deleteAPIKey", async (keyID, callback) => {
-        try {
-            checkLogin(socket);
+        // C-1: scope to owning user so another authenticated account can't
+        // delete this key by guessing its id.
+        await getKnex()("api_key").where({ id: keyID,
+            user_id: socket.userID }).delete();
 
-            log.debug("apikeys", `Deleted API Key: ${keyID} User ID: ${socket.userID}`);
+        apicache.clear();
 
-            await getKnex()("api_key").where({ id: keyID,
-                user_id: socket.userID }).delete();
+        callback({
+            ok: true,
+            msg: "successDeleted",
+            msgi18n: true,
+        });
 
-            apicache.clear();
+        await sendAPIKeyList(socket);
+    }, { fallbackMsg: "Failed to delete API key" });
 
-            callback({
-                ok: true,
-                msg: "successDeleted",
-                msgi18n: true,
-            });
+    onAuthed(socket, "disableAPIKey", async (socket, keyID, callback) => {
+        log.debug("apikeys", `Disabled Key: ${keyID} User ID: ${socket.userID}`);
 
-            await sendAPIKeyList(socket);
-        } catch (e) {
-            socketError(callback, e, "Failed to delete API key");
-        }
-    });
+        // C-1
+        await getKnex()("api_key").where({ id: keyID,
+            user_id: socket.userID }).update({ active: false });
 
-    socket.on("disableAPIKey", async (keyID, callback) => {
-        try {
-            checkLogin(socket);
+        apicache.clear();
 
-            log.debug("apikeys", `Disabled Key: ${keyID} User ID: ${socket.userID}`);
+        callback({
+            ok: true,
+            msg: "successDisabled",
+            msgi18n: true,
+        });
 
-            await getKnex()("api_key").where({ id: keyID,
-                user_id: socket.userID }).update({ active: false });
+        await sendAPIKeyList(socket);
+    }, { fallbackMsg: "Failed to disable API key" });
 
-            apicache.clear();
+    onAuthed(socket, "enableAPIKey", async (socket, keyID, callback) => {
+        log.debug("apikeys", `Enabled Key: ${keyID} User ID: ${socket.userID}`);
 
-            callback({
-                ok: true,
-                msg: "successDisabled",
-                msgi18n: true,
-            });
+        // C-1
+        await getKnex()("api_key").where({ id: keyID,
+            user_id: socket.userID }).update({ active: true });
 
-            await sendAPIKeyList(socket);
-        } catch (e) {
-            socketError(callback, e, "Failed to disable API key");
-        }
-    });
+        apicache.clear();
 
-    socket.on("enableAPIKey", async (keyID, callback) => {
-        try {
-            checkLogin(socket);
+        callback({
+            ok: true,
+            msg: "successEnabled",
+            msgi18n: true,
+        });
 
-            log.debug("apikeys", `Enabled Key: ${keyID} User ID: ${socket.userID}`);
-
-            await getKnex()("api_key").where({ id: keyID,
-                user_id: socket.userID }).update({ active: true });
-
-            apicache.clear();
-
-            callback({
-                ok: true,
-                msg: "successEnabled",
-                msgi18n: true,
-            });
-
-            await sendAPIKeyList(socket);
-        } catch (e) {
-            socketError(callback, e, "Failed to enable API key");
-        }
-    });
+        await sendAPIKeyList(socket);
+    }, { fallbackMsg: "Failed to enable API key" });
 };

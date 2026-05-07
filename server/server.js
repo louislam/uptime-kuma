@@ -117,6 +117,7 @@ const {
     allowDevAllOrigin,
     printServerUrls,
 } = require("./util-server");
+const { onAuthed } = require("./utils/authed-event");
 
 log.debug("server", "Importing Notification");
 const { Notification } = require("./notification");
@@ -831,178 +832,174 @@ let needSetup = false;
         });
 
         // Edit a monitor
-        socket.on("editMonitor", async (monitor, callback) => {
-            try {
-                let removeGroupChildren = false;
-                checkLogin(socket);
+        // Auth enforced by onAuthed() — see server/utils/authed-event.js (M-4).
+        onAuthed(socket, "editMonitor", async (socket, monitor, callback) => {
+            let removeGroupChildren = false;
 
-                let bean = await Monitor.query().findById(monitor.id);
+            let bean = await Monitor.query().findById(monitor.id);
 
-                if (bean.user_id !== socket.userID) {
-                    throw new UserFacingError("Permission denied.");
-                }
-
-                // Check if Parent is Descendant (would cause endless loop)
-                if (monitor.parent !== null) {
-                    const childIDs = await Monitor.getAllChildrenIDs(monitor.id);
-                    if (childIDs.includes(monitor.parent)) {
-                        throw new UserFacingError("Invalid Monitor Group");
-                    }
-                }
-
-                // Remove children if monitor type has changed (from group to non-group)
-                if (bean.type === "group" && monitor.type !== bean.type) {
-                    removeGroupChildren = true;
-                }
-
-                // Ensure status code ranges are strings
-                if (!monitor.accepted_statuscodes.every((code) => typeof code === "string")) {
-                    throw new UserFacingError("Accepted status codes are not all strings");
-                }
-
-                let port = parseInt(monitor.port);
-                if (isNaN(port)) {
-                    port = null;
-                }
-
-                const payload = {
-                    name: monitor.name,
-                    description: monitor.description,
-                    parent: monitor.parent,
-                    type: monitor.type,
-                    subtype: monitor.subtype,
-                    url: monitor.url,
-                    ws_ignore_sec_websocket_accept_header: monitor.wsIgnoreSecWebsocketAcceptHeader,
-                    ws_subprotocol: monitor.wsSubprotocol,
-                    method: monitor.method,
-                    body: monitor.body,
-                    ip_family: monitor.ipFamily,
-                    headers: monitor.headers,
-                    basic_auth_user: monitor.basic_auth_user,
-                    basic_auth_pass: monitor.basic_auth_pass,
-                    timeout: monitor.timeout,
-                    oauth_client_id: monitor.oauth_client_id,
-                    oauth_client_secret: monitor.oauth_client_secret,
-                    oauth_auth_method: monitor.oauth_auth_method,
-                    oauth_token_url: monitor.oauth_token_url,
-                    oauth_scopes: monitor.oauth_scopes,
-                    oauth_audience: monitor.oauth_audience,
-                    tls_ca: monitor.tlsCa,
-                    tls_cert: monitor.tlsCert,
-                    tls_key: monitor.tlsKey,
-                    interval: monitor.interval,
-                    retry_interval: monitor.retryInterval,
-                    resend_interval: monitor.resendInterval,
-                    hostname: monitor.hostname,
-                    game: monitor.game,
-                    maxretries: monitor.maxretries,
-                    port,
-                    location: monitor.location,
-                    protocol: monitor.protocol,
-                    keyword: monitor.keyword,
-                    invert_keyword: monitor.invertKeyword,
-                    ignore_tls: monitor.ignoreTls,
-                    expiry_notification: monitor.expiryNotification,
-                    domain_expiry_notification: monitor.domainExpiryNotification,
-                    upside_down: monitor.upsideDown,
-                    packet_size: monitor.packetSize,
-                    maxredirects: monitor.maxredirects,
-                    accepted_statuscodes_json: JSON.stringify(monitor.accepted_statuscodes),
-                    save_response: monitor.saveResponse,
-                    save_error_response: monitor.saveErrorResponse,
-                    response_max_length: monitor.responseMaxLength,
-                    dns_resolve_type: monitor.dns_resolve_type,
-                    dns_resolve_server: monitor.dns_resolve_server,
-                    push_token: monitor.pushToken,
-                    docker_container: monitor.docker_container,
-                    docker_host: monitor.docker_host,
-                    proxy_id: Number.isInteger(monitor.proxyId) ? monitor.proxyId : null,
-                    mqtt_username: monitor.mqttUsername,
-                    mqtt_password: monitor.mqttPassword,
-                    mqtt_topic: monitor.mqttTopic,
-                    mqtt_success_message: monitor.mqttSuccessMessage,
-                    mqtt_check_type: monitor.mqttCheckType,
-                    mqtt_websocket_path: monitor.mqttWebsocketPath,
-                    database_connection_string: monitor.databaseConnectionString,
-                    database_query: monitor.databaseQuery,
-                    auth_method: monitor.authMethod,
-                    auth_workstation: monitor.authWorkstation,
-                    auth_domain: monitor.authDomain,
-                    grpc_url: monitor.grpcUrl,
-                    grpc_protobuf: monitor.grpcProtobuf,
-                    grpc_service_name: monitor.grpcServiceName,
-                    grpc_method: monitor.grpcMethod,
-                    grpc_body: monitor.grpcBody,
-                    grpc_metadata: monitor.grpcMetadata,
-                    grpc_enable_tls: monitor.grpcEnableTls,
-                    radius_username: monitor.radiusUsername,
-                    radius_password: monitor.radiusPassword,
-                    radius_called_station_id: monitor.radiusCalledStationId,
-                    radius_calling_station_id: monitor.radiusCallingStationId,
-                    radius_secret: monitor.radiusSecret,
-                    http_body_encoding: monitor.httpBodyEncoding,
-                    expected_value: monitor.expectedValue,
-                    json_path: monitor.jsonPath,
-                    kafka_producer_topic: monitor.kafkaProducerTopic,
-                    kafka_producer_brokers: JSON.stringify(monitor.kafkaProducerBrokers),
-                    kafka_producer_allow_auto_topic_creation: monitor.kafkaProducerAllowAutoTopicCreation,
-                    kafka_producer_sasl_options: JSON.stringify(monitor.kafkaProducerSaslOptions),
-                    kafka_producer_message: monitor.kafkaProducerMessage,
-                    cache_bust: monitor.cacheBust,
-                    kafka_producer_ssl: monitor.kafkaProducerSsl,
-                    gamedig_given_port_only: monitor.gamedigGivenPortOnly,
-                    remote_browser: monitor.remote_browser,
-                    smtp_security: monitor.smtpSecurity,
-                    snmp_version: monitor.snmpVersion,
-                    snmp_oid: monitor.snmpOid,
-                    json_path_operator: monitor.jsonPathOperator,
-                    retry_only_on_status_code_failure: Boolean(monitor.retryOnlyOnStatusCodeFailure),
-                    rabbitmq_nodes: JSON.stringify(monitor.rabbitmqNodes),
-                    rabbitmq_username: monitor.rabbitmqUsername,
-                    rabbitmq_password: monitor.rabbitmqPassword,
-                    conditions: JSON.stringify(monitor.conditions),
-                    manual_status: monitor.manual_status,
-                    system_service_name: monitor.system_service_name,
-                    expected_tls_alert: monitor.expectedTlsAlert,
-
-                    // ping advanced options
-                    ping_numeric: monitor.ping_numeric,
-                    ping_count: monitor.ping_count,
-                    ping_per_request_timeout: monitor.ping_per_request_timeout,
-                };
-
-                Object.assign(bean, payload);
-                bean.validate();
-
-                // Atomic: patch the monitor row, optionally unlink children
-                // (when changing away from a group), and replace its
-                // notification links in a single transaction.
-                await getKnex().transaction(async (trx) => {
-                    await bean.$query(trx).patchAndFetch(payload);
-
-                    if (removeGroupChildren) {
-                        await Monitor.unlinkAllChildren(monitor.id, trx);
-                    }
-
-                    await updateMonitorNotification(bean.id, monitor.notificationIDList, trx);
-                });
-
-                if (await Monitor.isActive(bean.id, bean.active)) {
-                    await restartMonitor(socket.userID, bean.id);
-                }
-
-                await server.sendUpdateMonitorIntoList(socket, bean.id);
-
-                callback({
-                    ok: true,
-                    msg: "Saved.",
-                    msgi18n: true,
-                    monitorID: bean.id,
-                });
-            } catch (e) {
-                socketError(callback, e, "Failed to edit monitor");
+            if (bean.user_id !== socket.userID) {
+                throw new UserFacingError("Permission denied.");
             }
-        });
+
+            // Check if Parent is Descendant (would cause endless loop)
+            if (monitor.parent !== null) {
+                const childIDs = await Monitor.getAllChildrenIDs(monitor.id);
+                if (childIDs.includes(monitor.parent)) {
+                    throw new UserFacingError("Invalid Monitor Group");
+                }
+            }
+
+            // Remove children if monitor type has changed (from group to non-group)
+            if (bean.type === "group" && monitor.type !== bean.type) {
+                removeGroupChildren = true;
+            }
+
+            // Ensure status code ranges are strings
+            if (!monitor.accepted_statuscodes.every((code) => typeof code === "string")) {
+                throw new UserFacingError("Accepted status codes are not all strings");
+            }
+
+            let port = parseInt(monitor.port);
+            if (isNaN(port)) {
+                port = null;
+            }
+
+            const payload = {
+                name: monitor.name,
+                description: monitor.description,
+                parent: monitor.parent,
+                type: monitor.type,
+                subtype: monitor.subtype,
+                url: monitor.url,
+                ws_ignore_sec_websocket_accept_header: monitor.wsIgnoreSecWebsocketAcceptHeader,
+                ws_subprotocol: monitor.wsSubprotocol,
+                method: monitor.method,
+                body: monitor.body,
+                ip_family: monitor.ipFamily,
+                headers: monitor.headers,
+                basic_auth_user: monitor.basic_auth_user,
+                basic_auth_pass: monitor.basic_auth_pass,
+                timeout: monitor.timeout,
+                oauth_client_id: monitor.oauth_client_id,
+                oauth_client_secret: monitor.oauth_client_secret,
+                oauth_auth_method: monitor.oauth_auth_method,
+                oauth_token_url: monitor.oauth_token_url,
+                oauth_scopes: monitor.oauth_scopes,
+                oauth_audience: monitor.oauth_audience,
+                tls_ca: monitor.tlsCa,
+                tls_cert: monitor.tlsCert,
+                tls_key: monitor.tlsKey,
+                interval: monitor.interval,
+                retry_interval: monitor.retryInterval,
+                resend_interval: monitor.resendInterval,
+                hostname: monitor.hostname,
+                game: monitor.game,
+                maxretries: monitor.maxretries,
+                port,
+                location: monitor.location,
+                protocol: monitor.protocol,
+                keyword: monitor.keyword,
+                invert_keyword: monitor.invertKeyword,
+                ignore_tls: monitor.ignoreTls,
+                expiry_notification: monitor.expiryNotification,
+                domain_expiry_notification: monitor.domainExpiryNotification,
+                upside_down: monitor.upsideDown,
+                packet_size: monitor.packetSize,
+                maxredirects: monitor.maxredirects,
+                accepted_statuscodes_json: JSON.stringify(monitor.accepted_statuscodes),
+                save_response: monitor.saveResponse,
+                save_error_response: monitor.saveErrorResponse,
+                response_max_length: monitor.responseMaxLength,
+                dns_resolve_type: monitor.dns_resolve_type,
+                dns_resolve_server: monitor.dns_resolve_server,
+                push_token: monitor.pushToken,
+                docker_container: monitor.docker_container,
+                docker_host: monitor.docker_host,
+                proxy_id: Number.isInteger(monitor.proxyId) ? monitor.proxyId : null,
+                mqtt_username: monitor.mqttUsername,
+                mqtt_password: monitor.mqttPassword,
+                mqtt_topic: monitor.mqttTopic,
+                mqtt_success_message: monitor.mqttSuccessMessage,
+                mqtt_check_type: monitor.mqttCheckType,
+                mqtt_websocket_path: monitor.mqttWebsocketPath,
+                database_connection_string: monitor.databaseConnectionString,
+                database_query: monitor.databaseQuery,
+                auth_method: monitor.authMethod,
+                auth_workstation: monitor.authWorkstation,
+                auth_domain: monitor.authDomain,
+                grpc_url: monitor.grpcUrl,
+                grpc_protobuf: monitor.grpcProtobuf,
+                grpc_service_name: monitor.grpcServiceName,
+                grpc_method: monitor.grpcMethod,
+                grpc_body: monitor.grpcBody,
+                grpc_metadata: monitor.grpcMetadata,
+                grpc_enable_tls: monitor.grpcEnableTls,
+                radius_username: monitor.radiusUsername,
+                radius_password: monitor.radiusPassword,
+                radius_called_station_id: monitor.radiusCalledStationId,
+                radius_calling_station_id: monitor.radiusCallingStationId,
+                radius_secret: monitor.radiusSecret,
+                http_body_encoding: monitor.httpBodyEncoding,
+                expected_value: monitor.expectedValue,
+                json_path: monitor.jsonPath,
+                kafka_producer_topic: monitor.kafkaProducerTopic,
+                kafka_producer_brokers: JSON.stringify(monitor.kafkaProducerBrokers),
+                kafka_producer_allow_auto_topic_creation: monitor.kafkaProducerAllowAutoTopicCreation,
+                kafka_producer_sasl_options: JSON.stringify(monitor.kafkaProducerSaslOptions),
+                kafka_producer_message: monitor.kafkaProducerMessage,
+                cache_bust: monitor.cacheBust,
+                kafka_producer_ssl: monitor.kafkaProducerSsl,
+                gamedig_given_port_only: monitor.gamedigGivenPortOnly,
+                remote_browser: monitor.remote_browser,
+                smtp_security: monitor.smtpSecurity,
+                snmp_version: monitor.snmpVersion,
+                snmp_oid: monitor.snmpOid,
+                json_path_operator: monitor.jsonPathOperator,
+                retry_only_on_status_code_failure: Boolean(monitor.retryOnlyOnStatusCodeFailure),
+                rabbitmq_nodes: JSON.stringify(monitor.rabbitmqNodes),
+                rabbitmq_username: monitor.rabbitmqUsername,
+                rabbitmq_password: monitor.rabbitmqPassword,
+                conditions: JSON.stringify(monitor.conditions),
+                manual_status: monitor.manual_status,
+                system_service_name: monitor.system_service_name,
+                expected_tls_alert: monitor.expectedTlsAlert,
+
+                // ping advanced options
+                ping_numeric: monitor.ping_numeric,
+                ping_count: monitor.ping_count,
+                ping_per_request_timeout: monitor.ping_per_request_timeout,
+            };
+
+            Object.assign(bean, payload);
+            bean.validate();
+
+            // Atomic: patch the monitor row, optionally unlink children
+            // (when changing away from a group), and replace its
+            // notification links in a single transaction.
+            await getKnex().transaction(async (trx) => {
+                await bean.$query(trx).patchAndFetch(payload);
+
+                if (removeGroupChildren) {
+                    await Monitor.unlinkAllChildren(monitor.id, trx);
+                }
+
+                await updateMonitorNotification(bean.id, monitor.notificationIDList, trx);
+            });
+
+            if (await Monitor.isActive(bean.id, bean.active)) {
+                await restartMonitor(socket.userID, bean.id);
+            }
+
+            await server.sendUpdateMonitorIntoList(socket, bean.id);
+
+            callback({
+                ok: true,
+                msg: "Saved.",
+                msgi18n: true,
+                monitorID: bean.id,
+            });
+        }, { fallbackMsg: "Failed to edit monitor", logNamespace: "monitor" });
 
         socket.on("getMonitorList", async (callback) => {
             try {
