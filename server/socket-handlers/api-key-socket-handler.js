@@ -99,7 +99,8 @@ module.exports.apiKeySocketHandler = (socket) => {
 
             log.debug("apikeys", `Disabled Key: ${keyID} User ID: ${socket.userID}`);
 
-            await getKnex()("api_key").where("id", keyID).update({ active: false });
+            await getKnex()("api_key").where({ id: keyID,
+                user_id: socket.userID }).update({ active: false });
 
             apicache.clear();
 
@@ -124,7 +125,8 @@ module.exports.apiKeySocketHandler = (socket) => {
 
             log.debug("apikeys", `Enabled Key: ${keyID} User ID: ${socket.userID}`);
 
-            await getKnex()("api_key").where("id", keyID).update({ active: true });
+            await getKnex()("api_key").where({ id: keyID,
+                user_id: socket.userID }).update({ active: true });
 
             apicache.clear();
 
