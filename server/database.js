@@ -292,8 +292,16 @@ class Database {
         try {
             await Database.dialect.beforeMigrations(knex);
 
-            await knex.migrate.latest({
-                directory: Database.knexMigrationsPath,
+            // Acquire a dialect-native distributed lock around `migrate.latest`
+            // so concurrent instance startups (k8s scale-up, multi-replica
+            // docker compose) cannot race the same migration set.
+            // Knex's built-in `knex_migrations_lock` is best-effort and its
+            // semantics differ between drivers. See M-5 in
+            // docs/ARCHITECTURE_REVIEW.md.
+            await Database.withMigrationLock(knex, async () => {
+                await knex.migrate.latest({
+                    directory: Database.knexMigrationsPath,
+                });
             });
 
             await Database.dialect.afterMigrations(knex);
@@ -309,6 +317,105 @@ class Database {
                 throw e;
             }
         }
+    }
+
+    /**
+     * Run `fn` while holding a dialect-native advisory lock so multiple
+     * Uptime Kuma instances cannot race `knex.migrate.latest()` on startup.
+     *
+     * - PostgreSQL: `pg_advisory_lock` (session-scoped, released on
+     *   disconnect even if we crash mid-migration).
+     * - MariaDB/MySQL: `GET_LOCK` with a 30s wait. The lock is connection-
+     *   scoped, so we pin it to a single dedicated connection from the pool
+     *   to guarantee `RELEASE_LOCK` runs on the same session.
+     * - SQLite: no distributed lock — the file is single-writer, and
+     *   Knex's `knex_migrations_lock` plus the OS file lock are sufficient.
+     *
+     * Lock acquisition failure is treated as fatal: better to surface the
+     * problem at startup than to silently skip the lock and race.
+     * @param {import("knex").Knex} knex Active Knex instance
+     * @param {() => Promise<void>} fn Critical section to run while locked
+     * @returns {Promise<void>}
+     */
+    static async withMigrationLock(knex, fn) {
+        const dialect = Database.dbConfig.type;
+
+        if (dialect === "postgres") {
+            // pg_advisory_lock is session-scoped (per connection). Pin to
+            // one raw pool connection so the matching pg_advisory_unlock
+            // runs on the same backend session — otherwise the unlock could
+            // land on a different session and leak the lock until disconnect.
+            // Deterministic 32-bit key derived from ASCII "UKMA" (Uptime Kuma).
+            const LOCK_KEY = 0x554B4D41;
+            log.info("db", "Acquiring pg_advisory_lock for migrations");
+            const lockConn = await knex.client.acquireConnection();
+            try {
+                await knex.client.query(lockConn, {
+                    sql: "SELECT pg_advisory_lock(?)",
+                    bindings: [ LOCK_KEY ],
+                });
+                try {
+                    await fn();
+                } finally {
+                    try {
+                        await knex.client.query(lockConn, {
+                            sql: "SELECT pg_advisory_unlock(?)",
+                            bindings: [ LOCK_KEY ],
+                        });
+                    } catch (releaseErr) {
+                        log.warn("db", `Failed to release pg_advisory_lock: ${releaseErr.message}`);
+                    }
+                }
+            } finally {
+                await knex.client.releaseConnection(lockConn);
+            }
+            return;
+        }
+
+        if (dialect === "mariadb" || dialect === "embedded-mariadb") {
+            // GET_LOCK / RELEASE_LOCK are per-connection. We need both calls
+            // to run on the same session, so we acquire a dedicated raw
+            // connection from the pool for the lock and run the migrations
+            // through the regular pool. Knex itself will manage migrations
+            // on its own connections; the lock just serialises the entry.
+            const LOCK_NAME = "uptime_kuma_migration";
+            const LOCK_TIMEOUT_SECONDS = 30;
+            log.info("db", `Acquiring GET_LOCK('${LOCK_NAME}') for migrations`);
+            const lockConn = await knex.client.acquireConnection();
+            try {
+                const acquireRes = await knex.client.query(lockConn, {
+                    sql: "SELECT GET_LOCK(?, ?) AS acquired",
+                    bindings: [ LOCK_NAME, LOCK_TIMEOUT_SECONDS ],
+                });
+                // mysql2 driver: client.query() resolves with the queryObject
+                // whose `response` is `[rows, fields]`. Be defensive about
+                // future driver shape changes.
+                const rows = Array.isArray(acquireRes?.response) ? acquireRes.response[0] : acquireRes?.rows ?? acquireRes;
+                const acquired = Array.isArray(rows) ? rows[0]?.acquired : rows?.acquired;
+                if (Number(acquired) !== 1) {
+                    throw new Error(`Could not acquire migration lock '${LOCK_NAME}' within ${LOCK_TIMEOUT_SECONDS}s`);
+                }
+                try {
+                    await fn();
+                } finally {
+                    try {
+                        await knex.client.query(lockConn, {
+                            sql: "SELECT RELEASE_LOCK(?)",
+                            bindings: [ LOCK_NAME ],
+                        });
+                    } catch (releaseErr) {
+                        log.warn("db", `Failed to release GET_LOCK: ${releaseErr.message}`);
+                    }
+                }
+            } finally {
+                await knex.client.releaseConnection(lockConn);
+            }
+            return;
+        }
+
+        // SQLite (and any unknown dialect): single-writer file, rely on
+        // Knex's knex_migrations_lock plus the OS file lock.
+        await fn();
     }
 
     /**
