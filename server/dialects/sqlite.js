@@ -86,6 +86,13 @@ class SqliteDialect extends Dialect {
     /**
      * @inheritdoc
      */
+    sqlDateFromColumn(columnExpr) {
+        return `DATE(${columnExpr})`;
+    }
+
+    /**
+     * @inheritdoc
+     */
     async beforeMigrations(knex) {
         // Knex's SQLite driver requires foreign_keys OFF during ALTER TABLE migrations.
         await knex.raw("PRAGMA foreign_keys = OFF");

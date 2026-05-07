@@ -163,6 +163,13 @@ class MariadbDialect extends Dialect {
     sqlHourOffset() {
         return "DATE_ADD(UTC_TIMESTAMP(), INTERVAL ? HOUR)";
     }
+
+    /**
+     * @inheritdoc
+     */
+    sqlDateFromColumn(columnExpr) {
+        return `DATE(${columnExpr})`;
+    }
 }
 
 module.exports = { MariadbDialect };

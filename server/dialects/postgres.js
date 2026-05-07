@@ -119,6 +119,14 @@ class PostgresDialect extends Dialect {
     sqlHourOffset() {
         return "(NOW() AT TIME ZONE 'UTC') + (? || ' hours')::interval";
     }
+
+    /**
+     * PostgreSQL has no built-in `DATE()` scalar; cast to `date` instead.
+     * @inheritdoc
+     */
+    sqlDateFromColumn(columnExpr) {
+        return `(${columnExpr})::date`;
+    }
 }
 
 module.exports = { PostgresDialect };

@@ -614,6 +614,7 @@ class Database {
      */
     static async importSQLFile(filename) {
         const knex = getKnex();
+        // portable SQL: `SELECT 1` is a no-op probe to ensure the pool is alive.
         // Sadly, multi sql statements is not supported by many sqlite libraries, I have to implement it myself
         await knex.raw("SELECT 1");
 
@@ -639,6 +640,9 @@ class Database {
             });
 
         for (let statement of statements) {
+            // Statements come from `db/old_migrations/*.sql`, which are only run by
+            // `patchSqlite()` — guarded by `dbConfig.type === "sqlite"` upstream.
+            // The contents are SQLite-specific by design; this loop just executes them.
             await knex.raw(statement);
         }
     }
@@ -707,6 +711,17 @@ class Database {
      */
     static sqlHourOffset() {
         return Database.dialect.sqlHourOffset();
+    }
+
+    /**
+     * SQL fragment that extracts the calendar date from a timestamp column.
+     * Delegates to the active dialect strategy. Used by the legacy
+     * aggregate-table migration.
+     * @param {string} columnExpr Already-quoted column identifier
+     * @returns {string} Dialect-specific SQL fragment
+     */
+    static sqlDateFromColumn(columnExpr) {
+        return Database.dialect.sqlDateFromColumn(columnExpr);
     }
 
     /**
@@ -783,11 +798,14 @@ class Database {
         await Settings.set("migrateAggregateTableState", "migrating");
 
         let progressPercent = 0;
+        // PostgreSQL has no built-in DATE() scalar, so the date extraction
+        // is delegated to the dialect strategy.
+        const dateExpr = Database.sqlDateFromColumn("time");
         for (const [i, monitor] of monitors.entries()) {
             // Get a list of unique dates from the heartbeat table
             const dateRowsResult = await knex.raw(
                 `
-                SELECT DISTINCT DATE(time) AS date
+                SELECT DISTINCT ${dateExpr} AS date
                 FROM heartbeat
                 WHERE monitor_id = ?
                 ORDER BY date ASC
@@ -808,7 +826,7 @@ class Database {
                     SELECT status, ping, time
                     FROM heartbeat
                     WHERE monitor_id = ?
-                    AND DATE(time) = ?
+                    AND ${dateExpr} = ?
                     ORDER BY time ASC
                 `,
                     [monitor.monitor_id, date.date]

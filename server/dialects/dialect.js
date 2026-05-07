@@ -65,6 +65,21 @@ class Dialect {
     sqlHourOffset() {
         throw new Error(`${this.constructor.name}.sqlHourOffset() not implemented`);
     }
+
+    /**
+     * SQL fragment that extracts the calendar date (YYYY-MM-DD) portion of a
+     * timestamp column. Used by the legacy aggregate-table migration when
+     * grouping heartbeats by day. Abstract: subclasses must return a SQL
+     * fragment that, given a column identifier, evaluates to a date.
+     *
+     * SQLite has `DATE(col)`, MariaDB has `DATE(col)`, but PostgreSQL has no
+     * built-in `DATE()` scalar — it needs `col::date`. Hence the hook.
+     * @param {string} columnExpr Already-quoted column identifier (e.g. `"time"`)
+     * @throws {Error} When the subclass does not implement this method
+     */
+    sqlDateFromColumn(columnExpr) { // eslint-disable-line no-unused-vars
+        throw new Error(`${this.constructor.name}.sqlDateFromColumn() not implemented`);
+    }
     /* eslint-enable jsdoc/require-returns */
 
     /**

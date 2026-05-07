@@ -267,6 +267,8 @@ class Monitor extends BaseModel {
      */
     async getTags() {
         const knex = getKnex();
+        // portable SQL: standard SELECT/JOIN/WHERE/ORDER BY with a parameter
+        // placeholder. SQLite, MariaDB and PostgreSQL all parse this identically.
         const result = await knex.raw(
             "SELECT mt.*, tag.name, tag.color FROM monitor_tag mt JOIN tag ON mt.tag_id = tag.id WHERE mt.monitor_id = ? ORDER BY tag.name",
             [this.id]
