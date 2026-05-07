@@ -10,18 +10,18 @@ const matomoAnalytics = require("./matomo-analytics");
  * @returns {string} HTML script tags to inject into page
  */
 function getAnalyticsScript(statusPage) {
-    switch (statusPage.analyticsType) {
+    switch (statusPage.analytics_type) {
         case "google":
-            return googleAnalytics.getGoogleAnalyticsScript(statusPage.analyticsId);
+            return googleAnalytics.getGoogleAnalyticsScript(statusPage.analytics_id);
         case "umami":
-            return umamiAnalytics.getUmamiAnalyticsScript(statusPage.analyticsScriptUrl, statusPage.analyticsId);
+            return umamiAnalytics.getUmamiAnalyticsScript(statusPage.analytics_script_url, statusPage.analytics_id);
         case "plausible":
             return plausibleAnalytics.getPlausibleAnalyticsScript(
-                statusPage.analyticsScriptUrl,
-                statusPage.analyticsId
+                statusPage.analytics_script_url,
+                statusPage.analytics_id
             );
         case "matomo":
-            return matomoAnalytics.getMatomoAnalyticsScript(statusPage.analyticsScriptUrl, statusPage.analyticsId);
+            return matomoAnalytics.getMatomoAnalyticsScript(statusPage.analytics_script_url, statusPage.analytics_id);
         default:
             return null;
     }
@@ -33,13 +33,13 @@ function getAnalyticsScript(statusPage) {
  * @returns {boolean} Boolean defining if the analytics config is valid
  */
 function isValidAnalyticsConfig(statusPage) {
-    switch (statusPage.analyticsType) {
+    switch (statusPage.analytics_type) {
         case "google":
-            return statusPage.analyticsId != null;
+            return statusPage.analytics_id != null;
         case "umami":
         case "plausible":
         case "matomo":
-            return statusPage.analyticsId != null && statusPage.analyticsScriptUrl != null;
+            return statusPage.analytics_id != null && statusPage.analytics_script_url != null;
         default:
             return false;
     }
