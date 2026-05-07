@@ -12,6 +12,10 @@ permissions:
 jobs:
   check-pr-description:
     name: Check PR description and close if missing template phrase
+    # Only enforce on the upstream repository. Forks (like uptime-panda)
+    # have their own contribution flow and don't need to enforce
+    # upstream's template phrase.
+    if: github.repository == 'louislam/uptime-kuma'
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
