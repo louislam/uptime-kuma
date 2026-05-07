@@ -60,6 +60,9 @@ const { HttpsCookieAgent } = require("http-cookie-agent/http");
 const https = require("https");
 const http = require("http");
 const zlib = require("node:zlib");
+const { ConditionExpressionGroup } = require("../monitor-conditions/expression");
+const { evaluateExpressionGroup } = require("../monitor-conditions/evaluator");
+const jsonata = require("jsonata");
 const { promisify } = require("node:util");
 const brotliCompress = promisify(zlib.brotliCompress);
 const DomainExpiry = require("./domain_expiry");
@@ -695,20 +698,47 @@ class Monitor extends BeanModel {
                     } else if (this.type === "json-query") {
                         let data = res.data;
 
-                        const { status, response } = await evaluateJsonQuery(
-                            data,
-                            this.jsonPath,
-                            this.jsonPathOperator,
-                            this.expectedValue
-                        );
+                        const conditions = this.conditions ? ConditionExpressionGroup.fromMonitor(this) : null;
+                        const hasConditions = conditions && conditions.children && conditions.children.length > 0;
 
-                        if (status) {
+                        if (hasConditions) {
+                            let response;
+                            try {
+                                response = JSON.parse(data);
+                            } catch (_a) {
+                                response = (typeof data === "object" || typeof data === "number") && !Buffer.isBuffer(data) ? data : data.toString();
+                            }
+
+                            response = this.jsonPath ? await jsonata(this.jsonPath).evaluate(response) : response;
+
+                            if (response === null || response === undefined) {
+                                throw new Error("JSON query returned empty or undefined value");
+                            }
+
+                            const conditionsResult = evaluateExpressionGroup(conditions, { value: String(response) });
+
+                            if (!conditionsResult) {
+                                throw new Error(`JSON query does not pass conditions (value was ${response})`);
+                            }
+
                             bean.status = UP;
-                            bean.msg = `JSON query passes (comparing ${response} ${this.jsonPathOperator} ${this.expectedValue})`;
+                            bean.msg = `JSON query passes conditions (value was ${response})`;
                         } else {
-                            throw new Error(
-                                `JSON query does not pass (comparing ${response} ${this.jsonPathOperator} ${this.expectedValue})`
+                            const { status, response } = await evaluateJsonQuery(
+                                data,
+                                this.jsonPath,
+                                this.jsonPathOperator,
+                                this.expectedValue
                             );
+
+                            if (status) {
+                                bean.status = UP;
+                                bean.msg = `JSON query passes (comparing ${response} ${this.jsonPathOperator} ${this.expectedValue})`;
+                            } else {
+                                throw new Error(
+                                    `JSON query does not pass (comparing ${response} ${this.jsonPathOperator} ${this.expectedValue})`
+                                );
+                            }
                         }
                     }
                 } else if (this.type === "ping") {
