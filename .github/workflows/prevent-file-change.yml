@@ -10,6 +10,11 @@ permissions: {}
 
 jobs:
   check-file-changes:
+    # Upstream wants src/lang/*.json edited only by the Weblate sync bot.
+    # On this fork we legitimately edit those files (audit, prune orphans,
+    # fix runtime-broken placeholders), so the gate would block our own
+    # cleanup PRs. Restrict it to the upstream repo.
+    if: github.repository == 'louislam/uptime-kuma'
     runs-on: ubuntu-latest
     permissions:
       pull-requests: read
