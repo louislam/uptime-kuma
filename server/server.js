@@ -405,8 +405,20 @@ let needSetup = false;
     });
 
     log.debug("server", "Adding socket handler");
+    const { runWithContext } = require("./utils/request-context");
+    const nodeCrypto = require("node:crypto");
     io.on("connection", async (socket) => {
-        await sendInfo(socket, true);
+        // L-4: assign each connection a UUID and re-enter that context for
+        // every event. AsyncLocalStorage threads the ID into log calls so
+        // one user's actions can be traced across interleaved log lines.
+        const connectionId = nodeCrypto.randomUUID();
+        socket.use((packet, next) => {
+            const event = Array.isArray(packet) && typeof packet[0] === "string" ? packet[0] : undefined;
+            runWithContext({ connectionId, event }, next);
+        });
+        await runWithContext({ connectionId, event: "connection" }, async () => {
+            await sendInfo(socket, true);
+        });
 
         if (needSetup) {
             log.info("server", "Redirect to setup page");

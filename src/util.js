@@ -37,6 +37,17 @@ const dayjs_1 = __importDefault(require("dayjs"));
 const jsonata_1 = __importDefault(require("jsonata"));
 exports.isDev = process.env.NODE_ENV === "development";
 exports.isNode = typeof process !== "undefined" && ((_a = process === null || process === void 0 ? void 0 : process.versions) === null || _a === void 0 ? void 0 : _a.node);
+let getContextSafe = () => null;
+if (exports.isNode) {
+    try {
+        const ctxMod = require("../server/utils/request-context");
+        if (ctxMod && typeof ctxMod.getContext === "function") {
+            getContextSafe = ctxMod.getContext;
+        }
+    }
+    catch (_b) {
+    }
+}
 const dayjs = exports.isNode ? require("dayjs") : dayjs_1.default;
 exports.appName = "Uptime Panda";
 exports.DOWN = 0;
@@ -191,6 +202,8 @@ class Logger {
         else {
             now = dayjs().format();
         }
+        const ctx = getContextSafe();
+        const connectionId = ctx && typeof ctx.connectionId === "string" ? ctx.connectionId : null;
         if (process.env.UPTIME_KUMA_LOG_FORMAT === "json") {
             const msgString = msg
                 .map((m) => {
@@ -207,12 +220,19 @@ class Logger {
                 }
             })
                 .join(" ");
-            console.log(JSON.stringify({
+            const jsonRecord = {
                 time: now,
                 module: module,
                 level: level,
                 msg: msgString,
-            }));
+            };
+            if (connectionId) {
+                jsonRecord.connectionId = connectionId;
+            }
+            if (ctx && typeof ctx.event === "string") {
+                jsonRecord.event = ctx.event;
+            }
+            console.log(JSON.stringify(jsonRecord));
             return;
         }
         const levelColor = consoleLevelColors[level];
@@ -220,6 +240,7 @@ class Logger {
         let timePart;
         let modulePart;
         let levelPart;
+        let ctxPart = "";
         if (exports.isNode) {
             switch (level) {
                 case "DEBUG":
@@ -231,29 +252,38 @@ class Logger {
             }
             modulePart = "[" + moduleColor + module + exports.CONSOLE_STYLE_Reset + "]";
             levelPart = levelColor + `${level}:` + exports.CONSOLE_STYLE_Reset;
+            if (connectionId) {
+                ctxPart = exports.CONSOLE_STYLE_FgGray + "[" + connectionId + "]" + exports.CONSOLE_STYLE_Reset;
+            }
         }
         else {
             timePart = now;
             modulePart = `[${module}]`;
             levelPart = `${level}:`;
+            if (connectionId) {
+                ctxPart = `[${connectionId}]`;
+            }
         }
+        const prefix = ctxPart
+            ? [timePart, ctxPart, modulePart, levelPart]
+            : [timePart, modulePart, levelPart];
         switch (level) {
             case "ERROR":
-                console.error(timePart, modulePart, levelPart, ...msg);
+                console.error(...prefix, ...msg);
                 break;
             case "WARN":
-                console.warn(timePart, modulePart, levelPart, ...msg);
+                console.warn(...prefix, ...msg);
                 break;
             case "INFO":
-                console.info(timePart, modulePart, levelPart, ...msg);
+                console.info(...prefix, ...msg);
                 break;
             case "DEBUG":
                 if (exports.isDev) {
-                    console.debug(timePart, modulePart, levelPart, ...msg);
+                    console.debug(...prefix, ...msg);
                 }
                 break;
             default:
-                console.log(timePart, modulePart, levelPart, ...msg);
+                console.log(...prefix, ...msg);
                 break;
         }
     }

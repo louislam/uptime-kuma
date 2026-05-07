@@ -23,6 +23,27 @@ export const isDev = process.env.NODE_ENV === "development";
 export const isNode = typeof process !== "undefined" && process?.versions?.node;
 
 /**
+ * Read the current request context if available (L-4 correlation IDs).
+ *
+ * `node:async_hooks` only exists in Node, so this file (shared with the
+ * frontend) loads the helper through a guarded require. On the frontend
+ * `getContextSafe` always returns null and log lines are unprefixed.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let getContextSafe: () => any = () => null;
+if (isNode) {
+    try {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const ctxMod = require("../server/utils/request-context");
+        if (ctxMod && typeof ctxMod.getContext === "function") {
+            getContextSafe = ctxMod.getContext;
+        }
+    } catch {
+        // module not present in this environment - leave the noop
+    }
+}
+
+/**
  * Smarter dayjs import that supports both frontend and backend
  * @returns {dayjs.Dayjs} dayjs instance
  */
@@ -272,6 +293,11 @@ class Logger {
             now = dayjs().format();
         }
 
+        // L-4: pull the current correlation ID (if any) so logs can be
+        // traced back to a single connection / request.
+        const ctx = getContextSafe();
+        const connectionId: string | null = ctx && typeof ctx.connectionId === "string" ? ctx.connectionId : null;
+
         if (process.env.UPTIME_KUMA_LOG_FORMAT === "json") {
             const msgString = msg
                 .map((m) => {
@@ -287,14 +313,19 @@ class Logger {
                 })
                 .join(" ");
 
-            console.log(
-                JSON.stringify({
-                    time: now,
-                    module: module,
-                    level: level,
-                    msg: msgString,
-                })
-            );
+            const jsonRecord: Record<string, unknown> = {
+                time: now,
+                module: module,
+                level: level,
+                msg: msgString,
+            };
+            if (connectionId) {
+                jsonRecord.connectionId = connectionId;
+            }
+            if (ctx && typeof ctx.event === "string") {
+                jsonRecord.event = ctx.event;
+            }
+            console.log(JSON.stringify(jsonRecord));
             return;
         }
 
@@ -304,6 +335,7 @@ class Logger {
         let timePart: string;
         let modulePart: string;
         let levelPart: string;
+        let ctxPart: string = "";
 
         if (isNode) {
             // Add console colors
@@ -318,31 +350,40 @@ class Logger {
 
             modulePart = "[" + moduleColor + module + CONSOLE_STYLE_Reset + "]";
             levelPart = levelColor + `${level}:` + CONSOLE_STYLE_Reset;
+            if (connectionId) {
+                ctxPart = CONSOLE_STYLE_FgGray + "[" + connectionId + "]" + CONSOLE_STYLE_Reset;
+            }
         } else {
             // No console colors
             timePart = now;
             modulePart = `[${module}]`;
             levelPart = `${level}:`;
+            if (connectionId) {
+                ctxPart = `[${connectionId}]`;
+            }
         }
 
         // Write to console
+        const prefix: unknown[] = ctxPart
+            ? [ timePart, ctxPart, modulePart, levelPart ]
+            : [ timePart, modulePart, levelPart ];
         switch (level) {
             case "ERROR":
-                console.error(timePart, modulePart, levelPart, ...msg);
+                console.error(...prefix, ...msg);
                 break;
             case "WARN":
-                console.warn(timePart, modulePart, levelPart, ...msg);
+                console.warn(...prefix, ...msg);
                 break;
             case "INFO":
-                console.info(timePart, modulePart, levelPart, ...msg);
+                console.info(...prefix, ...msg);
                 break;
             case "DEBUG":
                 if (isDev) {
-                    console.debug(timePart, modulePart, levelPart, ...msg);
+                    console.debug(...prefix, ...msg);
                 }
                 break;
             default:
-                console.log(timePart, modulePart, levelPart, ...msg);
+                console.log(...prefix, ...msg);
                 break;
         }
     }
