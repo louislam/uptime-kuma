@@ -1936,9 +1936,9 @@ class Monitor extends BaseModel {
                 monitorData.map((monitor) => Monitor.isUnderMaintenance(monitor.id))
             );
 
-            // Load the full monitor adjacency list once and reuse it for both
-            // children traversal and path lookups. Avoids O(n*depth) round-trips.
-            const adjacencyRows = await getKnex()("monitor").select("id", "name", "parent");
+            // Load the full monitor adjacency list once and reuse it for children
+            // traversal, path lookups, and ancestor-active checks. Avoids O(n*depth) round-trips.
+            const adjacencyRows = await getKnex()("monitor").select("id", "name", "parent", "active");
             const childrenByParent = new Map();
             const monitorsByID = new Map();
             for (const row of adjacencyRows) {
@@ -1955,11 +1955,12 @@ class Monitor extends BaseModel {
             const childrenIDs = monitorData.map((monitor) =>
                 Monitor.collectChildrenIDs(monitor.id, childrenByParent)
             );
-            const activeStatuses = await Promise.all(
-                monitorData.map((monitor) => Monitor.isActive(monitor.id, monitor.active))
+            // isParentActiveFromMap walks the in-memory map — no DB round-trips.
+            const activeStatuses = monitorData.map((monitor) =>
+                Boolean(monitor.active) && Monitor.isParentActiveFromMap(monitor.id, monitorsByID)
             );
-            const forceInactiveStatuses = await Promise.all(
-                monitorData.map((monitor) => Monitor.isParentActive(monitor.id))
+            const forceInactiveStatuses = monitorData.map((monitor) =>
+                Monitor.isParentActiveFromMap(monitor.id, monitorsByID)
             );
             const paths = monitorData.map((monitor) =>
                 Monitor.buildPathFromMap(monitor.id, monitor.name, monitorsByID)
@@ -2211,21 +2212,48 @@ class Monitor extends BaseModel {
     }
 
     /**
-     * Checks recursive if parent (ancestors) are active
+     * Checks recursive if parent (ancestors) are active.
+     * Loads the full adjacency list in one query and walks in-memory,
+     * replacing the previous O(depth) recursive approach with O(1) queries.
      * @param {number} monitorID ID of the monitor to get
      * @returns {Promise<boolean>} Is the parent monitor active?
      */
     static async isParentActive(monitorID) {
-        const parent = await Monitor.getParent(monitorID);
-
-        // Knex `.first()` returns undefined when there is no parent row;
-        // also bail out if the LEFT JOIN gave us a stub with no id.
-        if (parent == null || parent.id == null) {
-            return true;
+        const rows = await getKnex()("monitor").select("id", "parent", "active");
+        const byID = new Map();
+        for (const row of rows) {
+            byID.set(row.id, row);
         }
+        return Monitor.isParentActiveFromMap(monitorID, byID);
+    }
 
-        const parentActive = await Monitor.isParentActive(parent.id);
-        return Boolean(parent.active) && parentActive;
+    /**
+     * Walk the in-memory adjacency map to check if all ancestors are active.
+     * Cycle-safe via a `seen` set.
+     * @param {number} monitorID Starting monitor ID
+     * @param {Map<number, {id: number, parent: number|null, active: number}>} byID adjacency map
+     * @returns {boolean}
+     */
+    static isParentActiveFromMap(monitorID, byID) {
+        const seen = new Set();
+        let current = byID.get(monitorID);
+        let parentID = current ? current.parent : null;
+
+        while (parentID !== null && parentID !== undefined) {
+            if (seen.has(parentID)) {
+                break;
+            }
+            seen.add(parentID);
+            const parent = byID.get(parentID);
+            if (!parent) {
+                break;
+            }
+            if (!parent.active) {
+                return false;
+            }
+            parentID = parent.parent;
+        }
+        return true;
     }
 
     /**
