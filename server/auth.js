@@ -74,26 +74,30 @@ async function verifyAPIKey(key) {
  * @param {string} username Username to login with
  * @param {string} password Password to login with
  * @param {authCallback} callback Callback to handle login result
- * @returns {void}
+ * @returns {Promise<void>}
  */
-function apiAuthorizer(username, password, callback) {
+async function apiAuthorizer(username, password, callback) {
     // API Rate Limit
-    apiRateLimiter.pass(null, 0).then((pass) => {
-        if (pass) {
-            verifyAPIKey(password).then((valid) => {
-                if (!valid) {
-                    log.warn("api-auth", "Failed API auth attempt: invalid API Key");
-                }
-                callback(null, valid);
-                // Only allow a set number of api requests per minute
-                // (currently set to 60)
-                apiRateLimiter.removeTokens(1);
-            });
-        } else {
+    try {
+        const pass = await apiRateLimiter.pass(null, 0);
+        if (!pass) {
             log.warn("api-auth", "Failed API auth attempt: rate limit exceeded");
             callback(null, false);
+            return;
         }
-    });
+
+        const valid = await verifyAPIKey(password);
+        if (!valid) {
+            log.warn("api-auth", "Failed API auth attempt: invalid API Key");
+        }
+        callback(null, valid);
+        // Only allow a set number of api requests per minute
+        // (currently set to 60)
+        await apiRateLimiter.removeTokens(1);
+    } catch (e) {
+        log.error("api-auth", e);
+        callback(null, false);
+    }
 }
 
 /**
@@ -101,25 +105,29 @@ function apiAuthorizer(username, password, callback) {
  * @param {string} username Username to login with
  * @param {string} password Password to login with
  * @param {authCallback} callback Callback to handle login result
- * @returns {void}
+ * @returns {Promise<void>}
  */
-function userAuthorizer(username, password, callback) {
+async function userAuthorizer(username, password, callback) {
     // Login Rate Limit
-    loginRateLimiter.pass(null, 0).then((pass) => {
-        if (pass) {
-            exports.login(username, password).then((user) => {
-                callback(null, user != null);
-
-                if (user == null) {
-                    log.warn("basic-auth", "Failed basic auth attempt: invalid username/password");
-                    loginRateLimiter.removeTokens(1);
-                }
-            });
-        } else {
+    try {
+        const pass = await loginRateLimiter.pass(null, 0);
+        if (!pass) {
             log.warn("basic-auth", "Failed basic auth attempt: rate limit exceeded");
             callback(null, false);
+            return;
         }
-    });
+
+        const user = await exports.login(username, password);
+        callback(null, user != null);
+
+        if (user == null) {
+            log.warn("basic-auth", "Failed basic auth attempt: invalid username/password");
+            await loginRateLimiter.removeTokens(1);
+        }
+    } catch (e) {
+        log.error("basic-auth", e);
+        callback(null, false);
+    }
 }
 
 /**
@@ -152,6 +160,9 @@ exports.basicAuth = async function (req, res, next) {
  * @param {express.NextFunction} next Next handler in chain
  * @returns {Promise<void>}
  */
+exports.apiAuthorizer = apiAuthorizer;
+exports.userAuthorizer = userAuthorizer;
+
 exports.apiAuth = async function (req, res, next) {
     if (!(await Settings.get("disableAuth"))) {
         let usingAPIKeys = await Settings.get("apiKeysEnabled");
