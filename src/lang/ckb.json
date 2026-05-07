@@ -8,7 +8,6 @@
     "Theme": "شێوەی ڕووکار",
     "General": "گشتی",
     "Game": "یاری",
-    "Version": "وەشان",
     "Check Update On GitHub": "سەیری وەشانی نوێ بکە لە Github",
     "List": "لیست",
     "Add": "زیادکردن",
@@ -33,14 +32,10 @@
     "Delete": "سڕینەوە",
     "Uptime": "کاتی کارکردن",
     "Cert Exp.": "بەسەرچوونی بڕوانامەی SSL.",
-    "day": "ڕۆژ | ڕۆژەکان",
-    "-day": "-ڕۆژ",
-    "hour": "کاتژمێر",
     "Dashboard": "داشبۆرد",
     "Primary Base URL": "بەستەری بنچینەیی سەرەکی",
     "Add New Monitor": "مۆنیتەرێکی نوێ زیاد بکە",
     "General Monitor Type": "جۆری مۆنیتەری گشتی",
     "DateTime": "رێکەوت",
-    "Current": "هەنووکە",
-    "Monitor": "مۆنیتەر | مۆنیتەرەکان"
+    "Current": "هەنووکە"
 }
