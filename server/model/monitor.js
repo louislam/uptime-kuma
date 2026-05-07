@@ -1360,6 +1360,7 @@ class Monitor extends BaseModel {
         let tlsInfoBean = await knex("monitor_tls_info").where("monitor_id", this.id).first();
 
         if (tlsInfoBean == null) {
+            // First TLS check for this monitor — always insert.
             tlsInfoBean = { monitor_id: this.id };
         } else {
             // Clear sent history if the cert changed.
@@ -1378,9 +1379,9 @@ class Monitor extends BaseModel {
                             monitor_id: this.id })
                         .delete();
                 } else {
-                    log.debug("monitor", "No need to reset sent_history");
-                    log.debug("monitor", oldCertInfo.certInfo.fingerprint256);
-                    log.debug("monitor", checkCertificateResult.certInfo.fingerprint256);
+                    // Cert unchanged — skip the redundant write.
+                    log.debug("monitor", "TLS cert unchanged, skipping write");
+                    return checkCertificateResult;
                 }
             } else {
                 log.debug("monitor", "Not valid object");
