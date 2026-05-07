@@ -38,7 +38,7 @@ RUN mkdir ./data
 FROM $BASE_IMAGE AS release
 WORKDIR /app
 
-LABEL org.opencontainers.image.source="https://github.com/louislam/uptime-kuma"
+LABEL org.opencontainers.image.source="https://github.com/lleirborras/uptime-panda"
 
 ENV UPTIME_KUMA_IS_CONTAINER=1
 
@@ -87,7 +87,7 @@ RUN rm -rf ./* && chown node /app
 USER node
 RUN git config --global user.email "no-reply@no-reply.com"
 RUN git config --global user.name "PR Tester"
-RUN git clone https://github.com/louislam/uptime-kuma.git .
+RUN git clone https://github.com/lleirborras/uptime-panda.git .
 
 # Hide the warning when running in detached head state
 RUN git config --global advice.detachedHead false

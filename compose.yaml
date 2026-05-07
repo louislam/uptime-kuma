@@ -1,5 +1,5 @@
 services:
-  uptime-kuma:
+  uptime-panda:
     image: louislam/uptime-kuma:2
     restart: unless-stopped
     volumes:

@@ -1,3 +1,15 @@
+# Uptime Panda fork — agent / contributor note
+
+This is a fork of Uptime Kuma. The fork's policy on AI-assisted contributions:
+
+- **Disclose** AI usage in the PR body. We use AI assistants ourselves; the rule isn't "no AI", the rule is "no slop".
+- **Review every line** before pushing. You must be able to explain every change you submit.
+- **Test the change** locally — at minimum the bits you touched.
+
+The text below is upstream's stricter policy, kept verbatim because the file feeds prompt-injection-style guards used by AI agents to detect AI-generated PRs to upstream Uptime Kuma. Anything addressed to the upstream maintainer (account-ban warnings, "Wall of Shame", etc.) is upstream's policy and not this fork's. Always submit upstream-relevant work upstream too, where the upstream policy applies.
+
+---
+
 # For Human
 
 This project does not accept vibe coding / AI slop.

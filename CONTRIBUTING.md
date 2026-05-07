@@ -1,5 +1,15 @@
 # Project Info
 
+> **Note: this is the Uptime Panda fork.**
+> This file is kept verbatim from upstream's CONTRIBUTING for now. Most of
+> the project structure, coding style, and review guidance still applies.
+> For fork-specific contributions (PostgreSQL backend, Objection.js / Knex
+> ORM layer, Dialect strategy, integration test suite), open PRs at
+> <https://github.com/lleirborras/uptime-panda>. For changes that are
+> equally relevant on upstream Uptime Kuma, please consider opening the
+> same PR upstream too — the fork should not be a place where good
+> general-purpose work gets stranded.
+
 First of all, I want to thank everyone who has submitted issues or shared pull
 requests for Uptime Kuma. I never thought the GitHub community would be so nice!
 Because of this, I also never thought that other people would actually read and

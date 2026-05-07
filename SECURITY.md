@@ -1,5 +1,13 @@
 # Security Policy
 
+> **Note: this is the Uptime Panda fork.** For vulnerabilities that exist
+> upstream too, follow the upstream report process below — the fix will
+> reach us when upstream lands it. For issues introduced by or only
+> reproducible on this fork (anywhere in the PostgreSQL backend,
+> Objection.js / Knex ORM layer, or Dialect strategy code), open a
+> private advisory at
+> <https://github.com/lleirborras/uptime-panda/security/advisories/new>.
+
 > [!CAUTION]
 > Unfortunately, AI slop reports keep wasting my time. It will be closed and you will get banned immediately if you try to do that.
 

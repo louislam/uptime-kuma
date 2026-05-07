@@ -1,4 +1,4 @@
-# Development compose — builds Uptime Kuma from the LOCAL source tree.
+# Development compose — builds Uptime Panda from the LOCAL source tree.
 #
 # Use cases:
 #   - Test changes in production image form before pushing.
@@ -15,7 +15,7 @@
 #   - First run with no UPTIME_KUMA_DB_* env vars → setup wizard appears.
 #     Pick PostgreSQL with: hostname=postgres, port=5432, db=kuma, user=kuma, password=kuma.
 #   - To skip the wizard, uncomment the UPTIME_KUMA_DB_* block under the
-#     uptime-kuma service.
+#     uptime-panda service.
 #   - For MariaDB, uncomment the `mariadb` service block at the bottom.
 #
 # Reset state: `docker compose -f compose.dev.yaml down -v && rm -rf data/dev/`
@@ -27,7 +27,7 @@
 #   (192.168.x.x devices). Docker Desktop runs containers inside a
 #   Linux VM that has no route to your local subnet, even in
 #   `network_mode: host`. macvlan / ipvlan don't help on macOS either.
-#   To test ping/HTTP monitors against LAN devices, run Uptime Kuma
+#   To test ping/HTTP monitors against LAN devices, run Uptime Panda
 #   natively on the host instead:
 #     docker compose -f compose.dev.yaml up -d postgres   # leave PG up
 #     UPTIME_KUMA_DB_TYPE=postgres \
@@ -43,7 +43,7 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: uptime-kuma-dev-postgres
+    container_name: uptime-panda-dev-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: kuma
@@ -59,11 +59,11 @@ services:
       timeout: 5s
       retries: 10
 
-  uptime-kuma:
+  uptime-panda:
     build:
       context: .
       dockerfile: docker/dockerfile.dev
-    container_name: uptime-kuma-dev
+    container_name: uptime-panda-dev
     restart: unless-stopped
     depends_on:
       postgres:
@@ -81,7 +81,7 @@ services:
       # Uncomment to log every SQL statement
       # SQL_LOG: "1"
     volumes:
-      - ./data/dev/kuma:/app/data
+      - ./data/dev/panda:/app/data
     ports:
       - "3001:3001"
 
@@ -90,7 +90,7 @@ services:
   #
   mariadb:
     image: mariadb:11
-    container_name: uptime-kuma-dev-mariadb
+    container_name: uptime-panda-dev-mariadb
     restart: unless-stopped
     environment:
       MARIADB_ROOT_PASSWORD: rootpw

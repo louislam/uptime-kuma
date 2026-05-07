@@ -14,7 +14,7 @@ services:
       timeout: 5s
       retries: 10
 
-  uptime-kuma:
+  uptime-panda:
     image: louislam/uptime-kuma:2
     restart: unless-stopped
     depends_on:

@@ -1,10 +1,10 @@
 {
-    "name": "uptime-kuma",
+    "name": "uptime-panda",
     "version": "2.3.2",
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/louislam/uptime-kuma.git"
+        "url": "https://github.com/lleirborras/uptime-panda.git"
     },
     "engines": {
         "node": ">= 20.4.0"
@@ -37,11 +37,11 @@
         "playwright-show-report": "playwright show-report ./private/playwright-report",
         "tsc": "tsc --project ./tsconfig-backend.json",
         "vite-preview-dist": "vite preview --host --config ./config/vite.config.js",
-        "build-docker-base": "docker buildx build -f docker/debian-base.dockerfile --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma:base2 --target base2 . --push",
-        "build-docker-base-slim": "docker buildx build -f docker/debian-base.dockerfile --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma:base2-slim --target base2-slim . --push",
-        "build-docker-builder-go": "docker buildx build -f docker/builder-go.dockerfile --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma:builder-go . --push",
-        "build-docker-nightly-local": "npm run build && docker build -f docker/dockerfile -t louislam/uptime-kuma:nightly2 --target nightly .",
-        "build-docker-pr-test": "docker buildx build -f docker/dockerfile --platform linux/amd64,linux/arm64 -t louislam/uptime-kuma:pr-test2 --target pr-test2 . --push",
+        "build-docker-base": "docker buildx build -f docker/debian-base.dockerfile --platform linux/amd64,linux/arm64,linux/arm/v7 -t lleirborras/uptime-panda:base2 --target base2 . --push",
+        "build-docker-base-slim": "docker buildx build -f docker/debian-base.dockerfile --platform linux/amd64,linux/arm64,linux/arm/v7 -t lleirborras/uptime-panda:base2-slim --target base2-slim . --push",
+        "build-docker-builder-go": "docker buildx build -f docker/builder-go.dockerfile --platform linux/amd64,linux/arm64,linux/arm/v7 -t lleirborras/uptime-panda:builder-go . --push",
+        "build-docker-nightly-local": "npm run build && docker build -f docker/dockerfile -t lleirborras/uptime-panda:nightly2 --target nightly .",
+        "build-docker-pr-test": "docker buildx build -f docker/dockerfile --platform linux/amd64,linux/arm64 -t lleirborras/uptime-panda:pr-test2 --target pr-test2 . --push",
         "upload-artifacts": "node extra/release/upload-artifacts.mjs",
         "upload-artifacts-beta": "node extra/release/upload-artifacts-beta.mjs",
         "setup": "git checkout 2.3.2 && npm ci --omit dev --no-audit && npm run download-dist",
@@ -62,7 +62,7 @@
         "start-pr-test": "node extra/checkout-pr.mjs && npm install && npm run dev",
         "build-healthcheck-armv7": "cross-env GOOS=linux GOARCH=arm GOARM=7 go build -x -o ./extra/healthcheck-armv7 ./extra/healthcheck.go",
         "deploy-demo-server": "node extra/deploy-demo-server.js",
-        "quick-run-nightly": "docker run --rm --env NODE_ENV=development -p 3001:3001 louislam/uptime-kuma:nightly2",
+        "quick-run-nightly": "docker run --rm --env NODE_ENV=development -p 3001:3001 lleirborras/uptime-panda:nightly2",
         "start-dev-container": "cd docker && docker-compose -f docker-compose-dev.yml up --force-recreate",
         "rebase-pr-to-1.23.X": "node extra/rebase-pr.js 1.23.X",
         "reset-migrate-aggregate-table-state": "node extra/reset-migrate-aggregate-table-state.js",

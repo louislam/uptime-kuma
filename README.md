@@ -1,33 +1,43 @@
 <div align="center" width="100%">
-    <img src="./public/icon.svg" width="128" alt="Uptime Kuma Logo" />
+    <img src="./public/icon.svg" width="128" alt="Uptime Panda Logo" />
 </div>
 
-# Uptime Kuma
+# Uptime Panda
 
-Uptime Kuma is an easy-to-use self-hosted monitoring tool.
+Uptime Panda is a self-hosted uptime monitoring tool — a fork of [Uptime Kuma](https://github.com/louislam/uptime-kuma) that adds a real ORM layer (Objection.js + Knex) and PostgreSQL as a first-class database backend, alongside SQLite and MariaDB/MySQL.
 
-<a target="_blank" href="https://github.com/louislam/uptime-kuma"><img src="https://img.shields.io/github/stars/louislam/uptime-kuma?style=flat" /></a> <a target="_blank" href="https://hub.docker.com/r/louislam/uptime-kuma"><img src="https://img.shields.io/docker/pulls/louislam/uptime-kuma" /></a> <a target="_blank" href="https://hub.docker.com/r/louislam/uptime-kuma"><img src="https://img.shields.io/docker/v/louislam/uptime-kuma/2?label=docker%20image%20ver." /></a> <a target="_blank" href="https://github.com/louislam/uptime-kuma"><img src="https://img.shields.io/github/last-commit/louislam/uptime-kuma" /></a> <a target="_blank" href="https://opencollective.com/uptime-kuma"><img src="https://opencollective.com/uptime-kuma/total/badge.svg?label=Open%20Collective%20Backers&color=brightgreen" /></a>
-[![GitHub Sponsors](https://img.shields.io/github/sponsors/louislam?label=GitHub%20Sponsors)](https://github.com/sponsors/louislam) <a href="https://weblate.kuma.pet/projects/uptime-kuma/uptime-kuma/">
-<img src="https://weblate.kuma.pet/widgets/uptime-kuma/-/svg-badge.svg" alt="Translation status" />
-</a>
+> 🐼 **What's the difference?** Functionally a superset of upstream. Same features, same look, plus PostgreSQL support, snake_case column reads end-to-end, and a Dialect-strategy DB layer. See [`docs/DATABASE.md`](docs/DATABASE.md).
+>
+> 🐻 **Where credit's due.** All the original work is by [@louislam](https://github.com/louislam) and the upstream Uptime Kuma contributors. Uptime Panda is a downstream fork — bug reports about features that exist upstream should go there too.
 
-<img src="https://user-images.githubusercontent.com/1336778/212262296-e6205815-ad62-488c-83ec-a5b0d0689f7c.jpg" width="700" alt="Uptime Kuma Dashboard Screenshot" />
+<a target="_blank" href="https://github.com/lleirborras/uptime-panda"><img src="https://img.shields.io/github/stars/lleirborras/uptime-panda?style=flat" /></a> <a target="_blank" href="https://github.com/lleirborras/uptime-panda"><img src="https://img.shields.io/github/last-commit/lleirborras/uptime-panda" /></a>
+
+<img src="https://user-images.githubusercontent.com/1336778/212262296-e6205815-ad62-488c-83ec-a5b0d0689f7c.jpg" width="700" alt="Uptime Panda Dashboard Screenshot" />
+
+## 🐼 Why a fork?
+
+This fork exists for two reasons:
+
+1. **Faster development cadence.** Upstream is large, popular, and intentionally cautious about merging changes — bigger features and architectural cleanups can sit in review for months. Uptime Panda lets us ship those changes immediately to the people who need them, then upstream them piecemeal at upstream's pace where appropriate.
+2. **Faster feature acquisition.** PostgreSQL support, the Objection.js + Knex ORM rewrite, the Dialect-strategy database layer, the cross-dialect integration test suite, the Node 24 docker base, and the rebuild-from-source dev compose all shipped here weeks before they could realistically land upstream. If you need any of those today, this fork is for you.
+
+If you don't need the PG/ORM-level changes and you're happy on upstream's release cadence, **use upstream** — it's the canonical project and we recommend it. Uptime Panda is for users who specifically want the divergent features above and don't mind running a less-traveled fork.
 
 ## 🥔 Live Demo
 
-Try it!
+Upstream's hosted demo (same UI):
 
 Demo Server (Location: Frankfurt - Germany): <https://demo.kuma.pet/start-demo>
 
-It is a temporary live demo, all data will be deleted after 10 minutes. Sponsored by [Uptime Kuma Sponsors](https://github.com/louislam/uptime-kuma#%EF%B8%8F-sponsors).
+It is a temporary live demo, all data will be deleted after 10 minutes.
 
 ## ⭐ Features
 
 - Monitoring uptime for HTTP(s) / TCP / HTTP(s) Keyword / HTTP(s) Json Query / Websocket / Ping / DNS Record / Push / Steam Game Server / Docker Containers
 - Fancy, Reactive, Fast UI/UX
-- Notifications via Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP), and [90+ notification services, click here for the full list](https://github.com/louislam/uptime-kuma/tree/master/src/components/notifications)
+- Notifications via Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP), and 90+ other notification services (see `src/components/notifications/`)
 - 20-second intervals
-- [Multi Languages](https://github.com/louislam/uptime-kuma/tree/master/src/lang)
+- Multi Languages (see `src/lang/`)
 - Multiple status pages
 - Map status pages to specific domains
 - Ping chart
@@ -41,166 +51,94 @@ It is a temporary live demo, all data will be deleted after 10 minutes. Sponsore
 ### 🐳 Docker Compose
 
 ```bash
-mkdir uptime-kuma
-cd uptime-kuma
-curl -o compose.yaml https://raw.githubusercontent.com/louislam/uptime-kuma/master/compose.yaml
+mkdir uptime-panda
+cd uptime-panda
+curl -o compose.yaml https://raw.githubusercontent.com/lleirborras/uptime-panda/master/compose.yaml
 docker compose up -d
 ```
 
-Uptime Kuma is now running on all network interfaces (e.g. http://localhost:3001 or http://your-ip:3001).
+Uptime Panda runs on all network interfaces (e.g. `http://localhost:3001` or `http://your-ip:3001`).
 
 For an external database, replace `compose.yaml` with [`compose.mariadb.yaml`](compose.mariadb.yaml) or [`compose.postgres.yaml`](compose.postgres.yaml).
 
 > [!WARNING]
-> File Systems like **NFS** (Network File System) are **NOT** supported. Please map to a local directory or volume.
-
-### 🐳 Docker Command
-
-```bash
-docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name uptime-kuma louislam/uptime-kuma:2
-```
-
-Uptime Kuma is now running on all network interfaces (e.g. http://localhost:3001 or http://your-ip:3001).
-
-If you want to limit exposure to localhost only:
-
-```bash
-docker run ... -p 127.0.0.1:3001:3001 ...
-```
+> File systems like **NFS** (Network File System) are **NOT** supported. Map to a local directory or volume.
 
 ### 💪🏻 Non-Docker
 
 Requirements:
 
 - Platform
-  - ✅ Major Linux distros such as Debian, Ubuntu, Fedora and ArchLinux etc.
+  - ✅ Major Linux distros (Debian, Ubuntu, Fedora, Arch, …)
   - ✅ Windows 10 (x64), Windows Server 2012 R2 (x64) or higher
   - ❌ FreeBSD / OpenBSD / NetBSD
   - ❌ Replit / Heroku
-- [Node.js](https://nodejs.org/en/download/) >= 20.4
+- [Node.js](https://nodejs.org/en/download/) >= 20.4 (24 LTS recommended)
 - [Git](https://git-scm.com/downloads)
-- [pm2](https://pm2.keymetrics.io/) - For running Uptime Kuma in the background
+- [pm2](https://pm2.keymetrics.io/) — for running in the background
 
 ```bash
-git clone https://github.com/louislam/uptime-kuma.git
-cd uptime-kuma
-npm run setup
+git clone https://github.com/lleirborras/uptime-panda.git
+cd uptime-panda
+npm ci
+npm run build
 
-# Option 1. Try it
+# Option 1. One-shot
 node server/server.js
 
-# (Recommended) Option 2. Run in the background using PM2
-# Install PM2 if you don't have it:
+# Option 2. Background with PM2
 npm install pm2 -g && pm2 install pm2-logrotate
-
-# Start Server
-pm2 start server/server.js --name uptime-kuma
-```
-
-Uptime Kuma is now running on all network interfaces (e.g. http://localhost:3001 or http://your-ip:3001).
-
-More useful PM2 Commands
-
-```bash
-# If you want to see the current console output
-pm2 monit
-
-# If you want to add it to startup
+pm2 start server/server.js --name uptime-panda
 pm2 startup && pm2 save
 ```
 
-### Advanced Installation
+### Advanced Installation / Reverse proxy / Updates
 
-If you need more options or need to browse via a reverse proxy, please read:
+The bulk of the install / reverse-proxy / update guidance still applies from upstream's wiki. Use these as references; substitute `lleirborras/uptime-panda` for `louislam/uptime-kuma` in any URLs:
 
-<https://github.com/louislam/uptime-kuma/wiki/%F0%9F%94%A7-How-to-Install>
-
-## 🆙 How to Update
-
-Please read:
-
-<https://github.com/louislam/uptime-kuma/wiki/%F0%9F%86%99-How-to-Update>
+- [Install guide (upstream wiki)](https://github.com/louislam/uptime-kuma/wiki/%F0%9F%94%A7-How-to-Install)
+- [Update guide (upstream wiki)](https://github.com/louislam/uptime-kuma/wiki/%F0%9F%86%99-How-to-Update)
 
 ## 🆕 What's Next?
 
-I will assign requests/issues to the next milestone.
+Roadmap and active issues for the fork: <https://github.com/lleirborras/uptime-panda/issues>
 
-<https://github.com/louislam/uptime-kuma/milestones>
-
-## ❤️ Sponsors
-
-Thank you so much! (GitHub Sponsors will be updated manually. OpenCollective sponsors will be updated automatically, the list will be cached by GitHub though. It may need some time to be updated)
-
-<img src="https://uptime.kuma.pet/sponsors?v=6" alt="Uptime Kuma Sponsors" />
+For long-running upstream features the fork hasn't picked up yet, see [upstream milestones](https://github.com/louislam/uptime-kuma/milestones).
 
 ## 🖼 More Screenshots
 
 Light Mode:
 
-<img src="https://uptime.kuma.pet/img/light.jpg" width="512" alt="Uptime Kuma Light Mode Screenshot of how the Dashboard looks" />
+<img src="https://uptime.kuma.pet/img/light.jpg" width="512" alt="Uptime Panda Light Mode Dashboard Screenshot" />
 
 Status Page:
 
-<img src="https://user-images.githubusercontent.com/1336778/134628766-a3fe0981-0926-4285-ab46-891a21c3e4cb.png" width="512" alt="Uptime Kuma Status Page Screenshot" />
-
-Settings Page:
-
-<img src="https://louislam.net/uptimekuma/2.jpg" width="400" alt="Uptime Kuma Settings Page Screenshot" />
-
-Telegram Notification Sample:
-
-<img src="https://louislam.net/uptimekuma/3.jpg" width="400" alt="Uptime Kuma Telegram Notification Sample Screenshot" />
-
-## Motivation
-
-- I was looking for a self-hosted monitoring tool like "Uptime Robot", but it is hard to find a suitable one. One of the closest ones is statping. Unfortunately, it is not stable and no longer maintained.
-- Wanted to build a fancy UI.
-- Learn Vue 3 and vite.js.
-- Show the power of Bootstrap 5.
-- Try to use WebSocket with SPA instead of a REST API.
-- Deploy my first Docker image to Docker Hub.
-
-If you love this project, please consider giving it a ⭐.
+<img src="https://user-images.githubusercontent.com/1336778/134628766-a3fe0981-0926-4285-ab46-891a21c3e4cb.png" width="512" alt="Uptime Panda Status Page Screenshot" />
 
 ## 🗣️ Discussion / Ask for Help
 
-⚠️ For any general or technical questions, please don't send me an email, as I am unable to provide support in that manner. I will not respond if you ask questions there.
+For **fork-specific** questions (anything to do with the PostgreSQL backend, the ORM layer, the Dialect strategy, the integration tests, the rebuild-from-source dev compose):
 
-I recommend using Google, GitHub Issues, or Uptime Kuma's subreddit for finding answers to your question. If you cannot find the information you need, feel free to ask:
+- [GitHub Issues on this fork](https://github.com/lleirborras/uptime-panda/issues)
 
-- [GitHub Issues](https://github.com/louislam/uptime-kuma/issues)
-- [Subreddit (r/UptimeKuma)](https://www.reddit.com/r/UptimeKuma/)
+For **everything else** (general usage, UI questions, monitor-type questions, notification providers — anything that exists upstream too), upstream is the canonical place:
 
-My Reddit account: [u/louislamlam](https://reddit.com/u/louislamlam)
-You can mention me if you ask a question on the subreddit.
+- [Upstream GitHub Issues](https://github.com/louislam/uptime-kuma/issues)
+- [Subreddit r/UptimeKuma](https://www.reddit.com/r/UptimeKuma/)
 
 ## Contributions
 
-### Create Pull Requests
+### Pull Requests
 
-Pull requests are awesome.
-To keep reviews fast and effective, please make sure you’ve [read our pull request guidelines](https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md#can-i-create-a-pull-request-for-uptime-kuma).
-
-### Test Pull Requests
-
-There are a lot of pull requests right now, but I don't have time to test them all.
-
-If you want to help, you can check this:
-<https://github.com/louislam/uptime-kuma/wiki/Test-Pull-Requests>
-
-### Test Beta Version
-
-Check out the latest beta release here: <https://github.com/louislam/uptime-kuma/releases>
+PRs welcome on [the fork](https://github.com/lleirborras/uptime-panda/pulls). For changes that are equally relevant upstream (bug fixes, generic improvements, new monitor types) please consider also opening the PR upstream — the fork should not be a place where good general-purpose work gets stranded.
 
 ### Bug Reports / Feature Requests
 
-If you want to report a bug or request a new feature, feel free to open a [new issue](https://github.com/louislam/uptime-kuma/issues).
+- Fork-specific bugs: [open an issue here](https://github.com/lleirborras/uptime-panda/issues)
+- Anything that reproduces on upstream Uptime Kuma: [open it upstream](https://github.com/louislam/uptime-kuma/issues) — we'll pick up the fix when it lands
 
 ### Translations
 
-If you want to translate Uptime Kuma into your language, please visit [Weblate Readme](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md).
+i18n still flows through upstream's Weblate, since the translation pool is shared:
 
-### Spelling & Grammar
-
-Feel free to correct the grammar in the documentation or code.
-My mother language is not English and my grammar is not that great.
+<https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md>
