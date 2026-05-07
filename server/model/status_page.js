@@ -180,6 +180,12 @@ class StatusPage extends BeanModel {
         let ogType = $('<meta property="og:type" content="website" />');
         head.append(ogType);
 
+        // Custom CSS (injected server-side so @import url() rules are processed on initial page load)
+        if (statusPage.custom_css) {
+            const safeCss = statusPage.custom_css.replace(/<\/style/gi, "<\\/style");
+            head.append(`<style id="custom-css">${safeCss}</style>`);
+        }
+
         // Preload data
         // Add jsesc, fix https://github.com/louislam/uptime-kuma/issues/2186
         const escapedJSONObject = jsesc(await StatusPage.getStatusPageData(statusPage), {

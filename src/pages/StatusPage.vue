@@ -978,6 +978,11 @@ export default {
         this.baseURL = getResBaseURL();
     },
     async mounted() {
+        const serverStyle = document.getElementById("custom-css");
+        if (serverStyle) {
+            serverStyle.remove();
+        }
+
         this.slug = this.overrideSlug || this.$route.params.slug;
 
         if (!this.slug) {
