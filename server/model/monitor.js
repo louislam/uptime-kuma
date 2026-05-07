@@ -46,6 +46,7 @@ const {
 const { getKnex } = require("../db");
 const { normalizeRows } = require("../utils/db-result");
 const { isoDateTimeMillis } = require("../utils/iso-datetime");
+const { safeJsonParse } = require("../utils/safe-json");
 const { BaseModel } = require("./base-model");
 const Heartbeat = require("./heartbeat");
 const ProxyModel = require("./proxy");
@@ -195,7 +196,7 @@ class Monitor extends BaseModel {
             expectedValue: this.expected_value,
             system_service_name: this.system_service_name,
             kafkaProducerTopic: this.kafka_producer_topic,
-            kafkaProducerBrokers: JSON.parse(this.kafka_producer_brokers),
+            kafkaProducerBrokers: safeJsonParse(this.kafka_producer_brokers, [], "kafka_producer_brokers"),
             kafkaProducerSsl: this.getKafkaProducerSsl(),
             kafkaProducerAllowAutoTopicCreation: this.getKafkaProducerAllowAutoTopicCreation(),
             kafkaProducerMessage: this.kafka_producer_message,
@@ -206,8 +207,8 @@ class Monitor extends BaseModel {
             jsonPathOperator: this.json_path_operator,
             snmpVersion: this.snmp_version,
             smtpSecurity: this.smtp_security,
-            rabbitmqNodes: JSON.parse(this.rabbitmq_nodes),
-            conditions: JSON.parse(this.conditions),
+            rabbitmqNodes: safeJsonParse(this.rabbitmq_nodes, [], "rabbitmq_nodes"),
+            conditions: safeJsonParse(this.conditions, [], "conditions"),
             ipFamily: this.ip_family,
             expectedTlsAlert: this.expected_tls_alert,
 
@@ -250,7 +251,7 @@ class Monitor extends BaseModel {
                 tlsCa: this.tls_ca,
                 tlsCert: this.tls_cert,
                 tlsKey: this.tls_key,
-                kafkaProducerSaslOptions: JSON.parse(this.kafka_producer_sasl_options),
+                kafkaProducerSaslOptions: safeJsonParse(this.kafka_producer_sasl_options, null, "kafka_producer_sasl_options"),
                 rabbitmqUsername: this.rabbitmq_username,
                 rabbitmqPassword: this.rabbitmq_password,
             };
@@ -369,7 +370,7 @@ class Monitor extends BaseModel {
      * @returns {object} Accepted status codes
      */
     getAcceptedStatuscodes() {
-        return JSON.parse(this.accepted_statuscodes_json);
+        return safeJsonParse(this.accepted_statuscodes_json, [ "200" ], "accepted_statuscodes_json");
     }
 
     /**
@@ -1308,28 +1309,28 @@ class Monitor extends BaseModel {
             tlsInfoBean = { monitor_id: this.id };
         } else {
             // Clear sent history if the cert changed.
-            try {
-                let oldCertInfo = JSON.parse(tlsInfoBean.info_json);
+            // safeJsonParse logs at debug level: a missing/empty info_json
+            // is normal on first run, so this should not surface as a warning.
+            let oldCertInfo = safeJsonParse(tlsInfoBean.info_json, null, "monitor_tls_info.info_json", "debug");
 
-                let isValidObjects =
-                    oldCertInfo && oldCertInfo.certInfo && checkCertificateResult && checkCertificateResult.certInfo;
+            let isValidObjects =
+                oldCertInfo && oldCertInfo.certInfo && checkCertificateResult && checkCertificateResult.certInfo;
 
-                if (isValidObjects) {
-                    if (oldCertInfo.certInfo.fingerprint256 !== checkCertificateResult.certInfo.fingerprint256) {
-                        log.debug("monitor", "Resetting sent_history");
-                        await knex("notification_sent_history")
-                            .where({ type: "certificate",
-                                monitor_id: this.id })
-                            .delete();
-                    } else {
-                        log.debug("monitor", "No need to reset sent_history");
-                        log.debug("monitor", oldCertInfo.certInfo.fingerprint256);
-                        log.debug("monitor", checkCertificateResult.certInfo.fingerprint256);
-                    }
+            if (isValidObjects) {
+                if (oldCertInfo.certInfo.fingerprint256 !== checkCertificateResult.certInfo.fingerprint256) {
+                    log.debug("monitor", "Resetting sent_history");
+                    await knex("notification_sent_history")
+                        .where({ type: "certificate",
+                            monitor_id: this.id })
+                        .delete();
                 } else {
-                    log.debug("monitor", "Not valid object");
+                    log.debug("monitor", "No need to reset sent_history");
+                    log.debug("monitor", oldCertInfo.certInfo.fingerprint256);
+                    log.debug("monitor", checkCertificateResult.certInfo.fingerprint256);
                 }
-            } catch (e) {}
+            } else {
+                log.debug("monitor", "Not valid object");
+            }
         }
 
         tlsInfoBean.info_json = JSON.stringify(checkCertificateResult);
@@ -1421,7 +1422,9 @@ class Monitor extends BaseModel {
             if (domain?.expiry) {
                 io.to(userID).emit("domainInfo", monitorID, domain.daysRemaining, new Date(domain.expiry));
             }
-        } catch (e) {}
+        } catch (e) {
+            log.debug("monitor", `sendDomainInfo failed for monitor ${monitorID}: ${e.message}`);
+        }
     }
 
     /**
