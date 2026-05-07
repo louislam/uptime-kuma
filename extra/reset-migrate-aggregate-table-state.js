@@ -1,4 +1,4 @@
-const { R } = require("redbean-node");
+const { getKnex } = require("../server/db");
 const Database = require("../server/database");
 const args = require("args-parser")(process.argv);
 const { Settings } = require("../server/settings");
@@ -8,10 +8,11 @@ const main = async () => {
     Database.initDataDir(args);
     await Database.connect(false, false, true);
 
+    const knex = getKnex();
     console.log("Deleting all data from aggregate tables");
-    await R.exec("DELETE FROM stat_minutely");
-    await R.exec("DELETE FROM stat_hourly");
-    await R.exec("DELETE FROM stat_daily");
+    await knex("stat_minutely").delete();
+    await knex("stat_hourly").delete();
+    await knex("stat_daily").delete();
 
     console.log("Resetting the aggregate table state");
     await Settings.set("migrateAggregateTableState", "");

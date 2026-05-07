@@ -10,7 +10,8 @@
         "preserveConstEnums": true,
         "sourceMap": false,
         "strict": true,
-        "esModuleInterop": true
+        "esModuleInterop": true,
+        "skipLibCheck": true
     },
     "files": []
 }

@@ -11,7 +11,7 @@
 **Uptime Kuma** is a self-hosted monitoring tool for HTTP(s), TCP, DNS, Docker, etc. Built with Vue 3 (frontend) and Node.js/Express (backend), using Socket.IO for real-time communication.
 
 - **Languages**: JavaScript, Vue 3, TypeScript (limited), HTML, CSS/SCSS
-- **Backend**: Node.js >= 20.4, Express.js, Socket.IO, SQLite
+- **Backend**: Node.js >= 20.4, Express.js, Socket.IO, Knex.js + Objection.js (SQLite / MariaDB / PostgreSQL)
 - **Frontend**: Vue 3, Vite, Bootstrap 5, Chart.js
 - **Package Manager**: npm with `legacy-peer-deps=true` (.npmrc)
 
@@ -61,7 +61,7 @@ npm run dev  # Starts frontend (port 3000) and backend (port 3001)
 ```
 /
 ├── server/              Backend source code
-│   ├── model/          Database models (auto-mapped to tables)
+│   ├── model/          Objection.js models (extend BaseModel, declare static tableName, register via registerModel)
 │   ├── monitor-types/  Monitor type implementations
 │   ├── notification-providers/  Notification integrations
 │   ├── routers/        Express routers
@@ -103,7 +103,7 @@ npm run dev  # Starts frontend (port 3000) and backend (port 3001)
 ### Code Style (strictly enforced by linters)
 
 - 4 spaces indentation, double quotes, Unix line endings (LF), semicolons required
-- **Naming**: JavaScript/TypeScript (camelCase), SQLite (snake_case), CSS/SCSS (kebab-case)
+- **Naming**: JavaScript/TypeScript (camelCase), database columns (snake_case), CSS/SCSS (kebab-case)
 - JSDoc required for all functions/methods
 
 ## CI/CD Workflows
@@ -134,9 +134,13 @@ npm run dev  # Starts frontend (port 3000) and backend (port 3001)
 
 ## Database
 
-- Primary: SQLite (also supports MariaDB/MySQL)
-- Migrations in `db/knex_migrations/` using Knex.js
+- Backends: **SQLite** (default), **MariaDB/MySQL**, **PostgreSQL** — all via Knex.js + Objection.js
+- Models in `server/model/` extend `BaseModel` (`server/model/base-model.js`) and self-register via `registerModel(tableName, Class)`
+- Legacy RedBean-flavored API surface is provided by the `R` shim at `server/utils/r-compat.js`. Prefer `getKnex()` / Objection queries for new code
+- Migrations in `db/knex_migrations/` using Knex schema builder. **No dialect-specific raw SQL** (no backticks, brackets, `AUTO_INCREMENT`, etc.)
 - Filename format validated by CI: `node ./extra/check-knex-filenames.mjs`
+- Cross-dialect migration tests: `test/backend-test/test-migration.js` (testcontainers, Linux-only in CI)
+- Full DB layer reference: [`docs/DATABASE.md`](../docs/DATABASE.md)
 
 ## Testing
 

@@ -1,4 +1,4 @@
-const { R } = require("redbean-node");
+const { getKnex } = require("../server/db");
 const { log } = require("../src/util");
 
 /**
@@ -8,8 +8,8 @@ const { log } = require("../src/util");
  * @returns {Promise<void>}
  */
 async function createTables() {
-    log.info("mariadb", "Creating basic tables for MariaDB");
-    const knex = R.knex;
+    log.info("db", "Creating base tables (MariaDB / PostgreSQL)");
+    const knex = getKnex();
 
     // TODO: Should check later if it is really the final patch sql file.
 
@@ -603,7 +603,7 @@ ALTER TABLE monitor
         table.boolean("gamedig_given_port_only").defaultTo(1).notNullable();
     });
 
-    log.info("mariadb", "Created basic tables for MariaDB");
+    log.info("db", "Created base tables (MariaDB / PostgreSQL)");
 }
 
 module.exports = {

@@ -9,7 +9,7 @@ const {
     getDaysRemaining,
     checkCertExpiryNotifications,
 } = require("../util-server");
-const { R } = require("redbean-node");
+const { getKnex } = require("../db");
 
 /**
  * Globalping is a free and open-source tool that allows you to run network tests
@@ -51,7 +51,7 @@ class GlobalpingMonitorType extends MonitorType {
                 await this.http(client, monitor, heartbeat, hasAPIToken);
                 break;
             case "dns":
-                await this.dns(client, monitor, heartbeat, hasAPIToken, R);
+                await this.dns(client, monitor, heartbeat, hasAPIToken);
                 break;
         }
     }
@@ -81,9 +81,9 @@ class GlobalpingMonitorType extends MonitorType {
             opts.measurementOptions.port = monitor.port;
         }
 
-        if (monitor.ipFamily === "ipv4") {
+        if (monitor.ip_family === "ipv4") {
             opts.measurementOptions.ipVersion = IpVersion[4];
-        } else if (monitor.ipFamily === "ipv6") {
+        } else if (monitor.ip_family === "ipv6") {
             opts.measurementOptions.ipVersion = IpVersion[6];
         }
 
@@ -151,7 +151,7 @@ class GlobalpingMonitorType extends MonitorType {
             ...(monitor.headers ? JSON.parse(monitor.headers) : {}),
         };
 
-        if (monitor.cacheBust) {
+        if (monitor.cache_bust) {
             const randomFloatString = Math.random().toString(36);
             const cacheBust = randomFloatString.substring(2);
             url.searchParams.set("uptime_kuma_cachebuster", cacheBust);
@@ -179,9 +179,9 @@ class GlobalpingMonitorType extends MonitorType {
             opts.measurementOptions.port = parseInt(url.port);
         }
 
-        if (monitor.ipFamily === "ipv4") {
+        if (monitor.ip_family === "ipv4") {
             opts.measurementOptions.ipVersion = IpVersion[4];
-        } else if (monitor.ipFamily === "ipv6") {
+        } else if (monitor.ip_family === "ipv6") {
             opts.measurementOptions.ipVersion = IpVersion[6];
         }
 
@@ -237,7 +237,7 @@ class GlobalpingMonitorType extends MonitorType {
         }
 
         // json-query
-        if (monitor.expectedValue) {
+        if (monitor.expected_value) {
             await this.handleJSONQueryForHTTP(monitor, heartbeat, result, probe);
             return;
         }
@@ -254,10 +254,9 @@ class GlobalpingMonitorType extends MonitorType {
      * @param {Monitor} monitor - The monitor object.
      * @param {Heartbeat} heartbeat - The heartbeat object.
      * @param {boolean} hasAPIToken - Whether the monitor has an API token.
-     * @param {R} redbean - The redbean object.
      * @returns {Promise<void>} A promise that resolves when the HTTP monitor is handled.
      */
-    async dns(client, monitor, heartbeat, hasAPIToken, redbean) {
+    async dns(client, monitor, heartbeat, hasAPIToken) {
         const opts = {
             type: "dns",
             target: monitor.hostname,
@@ -273,9 +272,9 @@ class GlobalpingMonitorType extends MonitorType {
             },
         };
 
-        if (monitor.ipFamily === "ipv4") {
+        if (monitor.ip_family === "ipv4") {
             opts.measurementOptions.ipVersion = IpVersion[4];
-        } else if (monitor.ipFamily === "ipv6") {
+        } else if (monitor.ip_family === "ipv6") {
             opts.measurementOptions.ipVersion = IpVersion[6];
         }
 
@@ -327,7 +326,7 @@ class GlobalpingMonitorType extends MonitorType {
         }
 
         if (monitor.dns_last_result !== dnsMessage && dnsMessage !== undefined) {
-            await redbean.exec("UPDATE `monitor` SET dns_last_result = ? WHERE id = ? ", [dnsMessage, monitor.id]);
+            await getKnex()("monitor").where("id", monitor.id).update({ dns_last_result: dnsMessage });
         }
 
         heartbeat.ping = result.timings.total || 0;
@@ -389,7 +388,7 @@ class GlobalpingMonitorType extends MonitorType {
         let data = result.rawOutput;
         let keywordFound = data.includes(monitor.keyword);
 
-        if (keywordFound === Boolean(monitor.invertKeyword)) {
+        if (keywordFound === Boolean(monitor.invert_keyword)) {
             data = data.replace(/<[^>]*>?|[\n\r]|\s+/gm, " ").trim();
             if (data.length > 50) {
                 data = data.substring(0, 47) + "...";
@@ -414,23 +413,23 @@ class GlobalpingMonitorType extends MonitorType {
     async handleJSONQueryForHTTP(monitor, heartbeat, result, probe) {
         const { status, response } = await evaluateJsonQuery(
             result.rawOutput,
-            monitor.jsonPath,
-            monitor.jsonPathOperator,
-            monitor.expectedValue
+            monitor.json_path,
+            monitor.json_path_operator,
+            monitor.expected_value
         );
 
         if (!status) {
             throw new Error(
                 this.formatResponse(
                     probe,
-                    `JSON query does not pass (comparing ${response} ${monitor.jsonPathOperator} ${monitor.expectedValue})`
+                    `JSON query does not pass (comparing ${response} ${monitor.json_path_operator} ${monitor.expected_value})`
                 )
             );
         }
 
         heartbeat.msg = this.formatResponse(
             probe,
-            `JSON query passes (comparing ${response} ${monitor.jsonPathOperator} ${monitor.expectedValue})`
+            `JSON query passes (comparing ${response} ${monitor.json_path_operator} ${monitor.expected_value})`
         );
         heartbeat.status = UP;
     }
@@ -448,15 +447,15 @@ class GlobalpingMonitorType extends MonitorType {
             return;
         }
 
-        if (!monitor.ignoreTls && protocol === "HTTPS" && !tlsInfo.authorized) {
+        if (!monitor.ignore_tls && protocol === "HTTPS" && !tlsInfo.authorized) {
             throw new Error(this.formatResponse(probe, `TLS certificate is not authorized: ${tlsInfo.error}`));
         }
 
-        let tlsInfoBean = await R.findOne("monitor_tls_info", "monitor_id = ?", [monitor.id]);
+        const knex = getKnex();
+        let tlsInfoBean = await knex("monitor_tls_info").where("monitor_id", monitor.id).first();
 
         if (tlsInfoBean == null) {
-            tlsInfoBean = R.dispense("monitor_tls_info");
-            tlsInfoBean.monitor_id = monitor.id;
+            tlsInfoBean = { monitor_id: monitor.id };
         } else {
             try {
                 let oldCertInfo = JSON.parse(tlsInfoBean.info_json);
@@ -467,10 +466,10 @@ class GlobalpingMonitorType extends MonitorType {
                     oldCertInfo.certInfo.fingerprint256 !== tlsInfo.fingerprint256
                 ) {
                     log.debug("monitor", "Resetting sent_history");
-                    await R.exec(
-                        "DELETE FROM notification_sent_history WHERE type = 'certificate' AND monitor_id = ?",
-                        [monitor.id]
-                    );
+                    await knex("notification_sent_history")
+                        .where({ type: "certificate",
+                            monitor_id: monitor.id })
+                        .delete();
                 }
             } catch (e) {}
         }
@@ -490,13 +489,17 @@ class GlobalpingMonitorType extends MonitorType {
         };
 
         tlsInfoBean.info_json = JSON.stringify(certResult);
-        await R.store(tlsInfoBean);
+        if (tlsInfoBean.id) {
+            await knex("monitor_tls_info").where("id", tlsInfoBean.id).update({ info_json: tlsInfoBean.info_json });
+        } else {
+            await knex("monitor_tls_info").insert(tlsInfoBean);
+        }
 
         if (monitor.prometheus) {
             monitor.prometheus.update(null, certResult);
         }
 
-        if (!monitor.ignoreTls && monitor.expiryNotification) {
+        if (!monitor.ignore_tls && monitor.expiry_notification) {
             await checkCertExpiryNotifications(monitor, certResult);
         }
     }

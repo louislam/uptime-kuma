@@ -311,7 +311,7 @@ as easy as installing a mobile app.
 ## Name Conventions
 
 - Javascript/Typescript: camelCaseType
-- SQLite: snake_case (Underscore)
+- Database columns (SQLite/MariaDB/PostgreSQL): snake_case (Underscore)
 - CSS/SCSS: kebab-case (Dash)
 
 ## Tools
@@ -357,6 +357,27 @@ npm run start-frontend-dev
 npm run start-server-dev
 ```
 
+### Containerised dev (PostgreSQL / MariaDB)
+
+To test the production image with local changes — e.g. reproducing a
+backend-specific bug — use [`compose.dev.yaml`](compose.dev.yaml). It
+builds the image from the working tree (`docker/dockerfile.dev`) and
+spins up a PostgreSQL container alongside.
+
+```bash
+docker compose -f compose.dev.yaml up --build
+# Then http://localhost:3001 — pick a DB in the setup wizard.
+```
+
+State lives under `./data/dev/`. Reset:
+
+```bash
+docker compose -f compose.dev.yaml down -v && rm -rf data/dev/
+```
+
+For frontend hot-reload, stick with `npm run dev` on the host — the
+compose flow rebuilds the image on every change.
+
 ## Backend Server
 
 It binds to `0.0.0.0:3001` by default.
@@ -372,7 +393,7 @@ in the `socket.io` handlers. `express.js` is also used to serve:
 ### Structure in `/server/`
 
 - `jobs/` (Jobs that are running in another process)
-- `model/` (Object model, auto-mapping to the database table name)
+- `model/` (Objection.js models — each declares `static get tableName()` and self-registers via `registerModel()`. See [`docs/DATABASE.md`](docs/DATABASE.md))
 - `modules/` (Modified 3rd-party modules)
 - `monitor_types/` (Monitor Types)
 - `notification-providers/` (individual notification logic)
@@ -402,9 +423,13 @@ Most data in the frontend is stored at the root level, even though the router ca
 
 The data and socket logic are in `src/mixins/socket.js`.
 
-## Database Migration
+## Database
 
-See: <https://github.com/louislam/uptime-kuma/tree/master/db/knex_migrations>
+Uptime Kuma supports **SQLite** (default), **MariaDB/MySQL**, and **PostgreSQL** via a single Objection.js + Knex layer. See [`docs/DATABASE.md`](docs/DATABASE.md) for env vars, the model template, the `R` legacy shim, and dialect quirks.
+
+### Migration files
+
+See <https://github.com/louislam/uptime-kuma/tree/master/db/knex_migrations>. Use the Knex schema builder — no raw dialect-specific SQL (no backticks, brackets, `AUTO_INCREMENT`, etc.).
 
 ## Unit Test
 

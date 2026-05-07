@@ -91,14 +91,14 @@ describe(
 
             const grpcMonitor = new GrpcKeywordMonitorType();
             const monitor = {
-                grpcUrl: `localhost:${port}`,
-                grpcProtobuf: testProto,
-                grpcServiceName: "test.TestService",
-                grpcMethod: "echo",
-                grpcBody: JSON.stringify({ message: "test" }),
+                grpc_url: `localhost:${port}`,
+                grpc_protobuf: testProto,
+                grpc_service_name: "test.TestService",
+                grpc_method: "echo",
+                grpc_body: JSON.stringify({ message: "test" }),
                 keyword: "SUCCESS",
-                invertKeyword: false,
-                grpcEnableTls: false,
+                invert_keyword: false,
+                grpc_enable_tls: false,
                 isInvertKeyword: () => false,
             };
 
@@ -127,14 +127,14 @@ describe(
 
             const grpcMonitor = new GrpcKeywordMonitorType();
             const monitor = {
-                grpcUrl: `localhost:${port}`,
-                grpcProtobuf: testProto,
-                grpcServiceName: "test.TestService",
-                grpcMethod: "echo",
-                grpcBody: JSON.stringify({ message: "test" }),
+                grpc_url: `localhost:${port}`,
+                grpc_protobuf: testProto,
+                grpc_service_name: "test.TestService",
+                grpc_method: "echo",
+                grpc_body: JSON.stringify({ message: "test" }),
                 keyword: "MISSING",
-                invertKeyword: false,
-                grpcEnableTls: false,
+                invert_keyword: false,
+                grpc_enable_tls: false,
                 isInvertKeyword: () => false,
             };
 
@@ -164,14 +164,14 @@ describe(
 
             const grpcMonitor = new GrpcKeywordMonitorType();
             const monitor = {
-                grpcUrl: `localhost:${port}`,
-                grpcProtobuf: testProto,
-                grpcServiceName: "test.TestService",
-                grpcMethod: "echo",
-                grpcBody: JSON.stringify({ message: "test" }),
+                grpc_url: `localhost:${port}`,
+                grpc_protobuf: testProto,
+                grpc_service_name: "test.TestService",
+                grpc_method: "echo",
+                grpc_body: JSON.stringify({ message: "test" }),
                 keyword: "ERROR",
-                invertKeyword: true,
-                grpcEnableTls: false,
+                invert_keyword: true,
+                grpc_enable_tls: false,
                 isInvertKeyword: () => true,
             };
 
@@ -201,14 +201,14 @@ describe(
 
             const grpcMonitor = new GrpcKeywordMonitorType();
             const monitor = {
-                grpcUrl: `localhost:${port}`,
-                grpcProtobuf: testProto,
-                grpcServiceName: "test.TestService",
-                grpcMethod: "echo",
-                grpcBody: JSON.stringify({ message: "test" }),
+                grpc_url: `localhost:${port}`,
+                grpc_protobuf: testProto,
+                grpc_service_name: "test.TestService",
+                grpc_method: "echo",
+                grpc_body: JSON.stringify({ message: "test" }),
                 keyword: "ERROR",
-                invertKeyword: true,
-                grpcEnableTls: false,
+                invert_keyword: true,
+                grpc_enable_tls: false,
                 isInvertKeyword: () => true,
             };
 
@@ -230,14 +230,14 @@ describe(
         test("check() rejects when gRPC server is unreachable", async () => {
             const grpcMonitor = new GrpcKeywordMonitorType();
             const monitor = {
-                grpcUrl: "localhost:50099",
-                grpcProtobuf: testProto,
-                grpcServiceName: "test.TestService",
-                grpcMethod: "echo",
-                grpcBody: JSON.stringify({ message: "test" }),
+                grpc_url: "localhost:50099",
+                grpc_protobuf: testProto,
+                grpc_service_name: "test.TestService",
+                grpc_method: "echo",
+                grpc_body: JSON.stringify({ message: "test" }),
                 keyword: "SUCCESS",
-                invertKeyword: false,
-                grpcEnableTls: false,
+                invert_keyword: false,
+                grpc_enable_tls: false,
                 isInvertKeyword: () => false,
             };
 
@@ -264,14 +264,14 @@ describe(
 
             const grpcMonitor = new GrpcKeywordMonitorType();
             const monitor = {
-                grpcUrl: `localhost:${port}`,
-                grpcProtobuf: testProto,
-                grpcServiceName: "test.TestService",
-                grpcMethod: "echo",
-                grpcBody: JSON.stringify({ message: "test" }),
+                grpc_url: `localhost:${port}`,
+                grpc_protobuf: testProto,
+                grpc_service_name: "test.TestService",
+                grpc_method: "echo",
+                grpc_body: JSON.stringify({ message: "test" }),
                 keyword: "MISSING",
-                invertKeyword: false,
-                grpcEnableTls: false,
+                invert_keyword: false,
+                grpc_enable_tls: false,
                 isInvertKeyword: () => false,
             };
 

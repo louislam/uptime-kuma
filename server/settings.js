@@ -1,4 +1,4 @@
-const { R } = require("redbean-node");
+const { getKnex } = require("./db");
 const { log } = require("../src/util");
 
 class Settings {
@@ -46,7 +46,8 @@ class Settings {
             return v;
         }
 
-        let value = await R.getCell("SELECT `value` FROM setting WHERE `key` = ? ", [key]);
+        const row = await getKnex()("setting").where("key", key).select("value").first();
+        let value = row ? row.value : null;
 
         try {
             const v = JSON.parse(value);
@@ -71,25 +72,31 @@ class Settings {
      * @returns {Promise<void>}
      */
     static async set(key, value, type = null) {
-        let bean = await R.findOne("setting", " `key` = ? ", [key]);
-        if (!bean) {
-            bean = R.dispense("setting");
-            bean.key = key;
-        }
-        bean.type = type;
-        bean.value = JSON.stringify(value);
-        await R.store(bean);
+        const knex = getKnex();
+        const payload = {
+            key,
+            type,
+            value: JSON.stringify(value),
+        };
 
-        Settings.deleteCache([key]);
+        await knex("setting")
+            .insert(payload)
+            .onConflict("key")
+            .merge({
+                type: payload.type,
+                value: payload.value,
+            });
+
+        Settings.deleteCache([ key ]);
     }
 
     /**
      * Get settings based on type
      * @param {string} type The type of setting
-     * @returns {Promise<Bean>} Settings
+     * @returns {Promise<object>} Settings
      */
     static async getSettings(type) {
-        let list = await R.getAll("SELECT `key`, `value` FROM setting WHERE `type` = ? ", [type]);
+        let list = await getKnex()("setting").where("type", type).select("key", "value");
 
         let result = {};
 
@@ -111,26 +118,37 @@ class Settings {
      * @returns {Promise<void>}
      */
     static async setSettings(type, data) {
-        let keyList = Object.keys(data);
-
-        let promiseList = [];
-
-        for (let key of keyList) {
-            let bean = await R.findOne("setting", " `key` = ? ", [key]);
-
-            if (bean == null) {
-                bean = R.dispense("setting");
-                bean.type = type;
-                bean.key = key;
-            }
-
-            if (bean.type === type) {
-                bean.value = JSON.stringify(data[key]);
-                promiseList.push(R.store(bean));
-            }
+        const keyList = Object.keys(data);
+        if (keyList.length === 0) {
+            return;
         }
 
-        await Promise.all(promiseList);
+        const knex = getKnex();
+
+        await knex.transaction(async (trx) => {
+            const existingRows = await trx("setting").whereIn("key", keyList).select("key", "type");
+            const existing = new Map(existingRows.map((r) => [ r.key, r.type ]));
+
+            const inserts = [];
+
+            for (const key of keyList) {
+                const value = JSON.stringify(data[key]);
+                if (!existing.has(key)) {
+                    inserts.push({ key,
+                        type,
+                        value });
+                } else if (existing.get(key) === type) {
+                    await trx("setting").where("key", key).update({ value });
+                }
+            }
+
+            // onConflict.merge() makes the bulk insert idempotent under
+            // concurrent setSettings() calls — a competing transaction may
+            // have inserted the same key between our SELECT and INSERT.
+            if (inserts.length) {
+                await trx("setting").insert(inserts).onConflict("key").merge();
+            }
+        });
 
         Settings.deleteCache(keyList);
     }

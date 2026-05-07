@@ -3,7 +3,8 @@ const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const StatusPage = require("../model/status_page");
 const { allowDevAllOrigin, sendHttpError } = require("../util-server");
-const { R } = require("redbean-node");
+const { getKnex } = require("../db");
+const Heartbeat = require("../model/heartbeat");
 const { badgeConstants } = require("../../src/util");
 const { makeBadge } = require("badge-maker");
 const { UptimeCalculator } = require("../uptime-calculator");
@@ -43,7 +44,7 @@ router.get("/api/status-page/:slug", cache("5 minutes"), async (request, respons
 
     try {
         // Get Status Page
-        let statusPage = await R.findOne("status_page", " slug = ? ", [slug]);
+        let statusPage = await StatusPage.query().where("slug", slug).first();
 
         if (!statusPage) {
             sendHttpError(response, "Status Page Not Found");
@@ -72,28 +73,19 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
         slug = slug.toLowerCase();
         let statusPageID = await StatusPage.slugToID(slug);
 
-        let monitorIDList = await R.getCol(
-            `
-            SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
-            WHERE monitor_group.group_id = \`group\`.id
-            AND public = 1
-            AND \`group\`.status_page_id = ?
-        `,
-            [statusPageID]
-        );
+        const knex = getKnex();
+        const monitorIDList = await knex("monitor_group")
+            .join("group", "monitor_group.group_id", "group.id")
+            .where("group.public", true)
+            .andWhere("group.status_page_id", statusPageID)
+            .pluck("monitor_group.monitor_id");
 
         for (let monitorID of monitorIDList) {
-            let list = await R.getAll(
-                `
-                    SELECT * FROM heartbeat
-                    WHERE monitor_id = ?
-                    ORDER BY time DESC
-                    LIMIT 100
-            `,
-                [monitorID]
-            );
+            const list = await Heartbeat.query()
+                .where("monitor_id", monitorID)
+                .orderBy("time", "desc")
+                .limit(100);
 
-            list = R.convertToBeans("heartbeat", list);
             heartbeatList[monitorID] = list.reverse().map((row) => row.toPublicJSON());
 
             const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);
@@ -117,7 +109,7 @@ router.get("/api/status-page/:slug/manifest.json", cache("1440 minutes"), async 
 
     try {
         // Get Status Page
-        let statusPage = await R.findOne("status_page", " slug = ? ", [slug]);
+        let statusPage = await StatusPage.query().where("slug", slug).first();
 
         if (!statusPage) {
             sendHttpError(response, "Not Found");
@@ -182,15 +174,12 @@ router.get("/api/status-page/:slug/badge", cache("5 minutes"), async (request, r
     } = request.query;
 
     try {
-        let monitorIDList = await R.getCol(
-            `
-            SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
-            WHERE monitor_group.group_id = \`group\`.id
-            AND public = 1
-            AND \`group\`.status_page_id = ?
-        `,
-            [statusPageID]
-        );
+        const knex = getKnex();
+        const monitorIDList = await knex("monitor_group")
+            .join("group", "monitor_group.group_id", "group.id")
+            .where("group.public", true)
+            .andWhere("group.status_page_id", statusPageID)
+            .pluck("monitor_group.monitor_id");
 
         let hasUp = false;
         let hasDown = false;
@@ -198,15 +187,10 @@ router.get("/api/status-page/:slug/badge", cache("5 minutes"), async (request, r
 
         for (let monitorID of monitorIDList) {
             // retrieve the latest heartbeat
-            let beat = await R.getAll(
-                `
-                    SELECT * FROM heartbeat
-                    WHERE monitor_id = ?
-                    ORDER BY time DESC
-                    LIMIT 1
-            `,
-                [monitorID]
-            );
+            const beat = await knex("heartbeat")
+                .where("monitor_id", monitorID)
+                .orderBy("time", "desc")
+                .limit(1);
 
             // to be sure, when corresponding monitor not found
             if (beat.length === 0) {

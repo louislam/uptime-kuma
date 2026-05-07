@@ -22,16 +22,16 @@ class MqttMonitorType extends MonitorType {
      * @inheritdoc
      */
     async check(monitor, heartbeat, server) {
-        const [messageTopic, receivedMessage] = await this.mqttAsync(monitor.hostname, monitor.mqttTopic, {
+        const [messageTopic, receivedMessage] = await this.mqttAsync(monitor.hostname, monitor.mqtt_topic, {
             port: monitor.port,
-            username: monitor.mqttUsername,
-            password: monitor.mqttPassword,
+            username: monitor.mqtt_username,
+            password: monitor.mqtt_password,
             interval: monitor.interval,
-            websocketPath: monitor.mqttWebsocketPath,
+            websocketPath: monitor.mqtt_websocket_path,
         });
 
-        if (monitor.mqttCheckType == null || monitor.mqttCheckType === "") {
-            monitor.mqttCheckType = "keyword";
+        if (monitor.mqtt_check_type == null || monitor.mqtt_check_type === "") {
+            monitor.mqtt_check_type = "keyword";
         }
 
         // Check if conditions are defined
@@ -40,9 +40,9 @@ class MqttMonitorType extends MonitorType {
 
         if (hasConditions) {
             await this.checkConditions(monitor, heartbeat, messageTopic, receivedMessage, conditions);
-        } else if (monitor.mqttCheckType === "keyword") {
+        } else if (monitor.mqtt_check_type === "keyword") {
             this.checkKeyword(monitor, heartbeat, messageTopic, receivedMessage);
-        } else if (monitor.mqttCheckType === "json-query") {
+        } else if (monitor.mqtt_check_type === "json-query") {
             await this.checkJsonQuery(monitor, heartbeat, receivedMessage);
         } else {
             throw new Error("Unknown MQTT Check Type");
@@ -59,11 +59,11 @@ class MqttMonitorType extends MonitorType {
      * @throws {Error} If keyword is not found in message
      */
     checkKeyword(monitor, heartbeat, messageTopic, receivedMessage) {
-        if (receivedMessage != null && receivedMessage.includes(monitor.mqttSuccessMessage)) {
+        if (receivedMessage != null && receivedMessage.includes(monitor.mqtt_success_message)) {
             heartbeat.msg = `Topic: ${messageTopic}; Message: ${receivedMessage}`;
             heartbeat.status = UP;
         } else {
-            throw new Error(`Message Mismatch - Topic: ${monitor.mqttTopic}; Message: ${receivedMessage}`);
+            throw new Error(`Message Mismatch - Topic: ${monitor.mqtt_topic}; Message: ${receivedMessage}`);
         }
     }
 
@@ -76,10 +76,10 @@ class MqttMonitorType extends MonitorType {
      */
     async checkJsonQuery(monitor, heartbeat, receivedMessage) {
         const parsedMessage = JSON.parse(receivedMessage);
-        const expression = jsonata(monitor.jsonPath);
+        const expression = jsonata(monitor.json_path);
         const result = await expression.evaluate(parsedMessage);
 
-        if (result?.toString() === monitor.expectedValue) {
+        if (result?.toString() === monitor.expected_value) {
             heartbeat.msg = "Message received, expected value is found";
             heartbeat.status = UP;
         } else {
@@ -100,10 +100,10 @@ class MqttMonitorType extends MonitorType {
         let jsonValue = null;
 
         // Parse JSON and extract value if jsonPath is defined
-        if (monitor.jsonPath) {
+        if (monitor.json_path) {
             try {
                 const parsedMessage = JSON.parse(receivedMessage);
-                const expression = jsonata(monitor.jsonPath);
+                const expression = jsonata(monitor.json_path);
                 jsonValue = await expression.evaluate(parsedMessage);
             } catch (e) {
                 // JSON parsing failed, jsonValue remains null

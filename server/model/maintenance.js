@@ -1,12 +1,28 @@
-const { BeanModel } = require("redbean-node/dist/bean-model");
+const { BaseModel } = require("./base-model");
 const { parseTimeObject, parseTimeFromTimeObject, log, SQL_DATETIME_FORMAT } = require("../../src/util");
-const { R } = require("redbean-node");
 const dayjs = require("dayjs");
 const Cron = require("croner");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const apicache = require("../modules/apicache");
 
-class Maintenance extends BeanModel {
+class Maintenance extends BaseModel {
+    beanMeta = {};
+
+    static tableName = "maintenance";
+
+    /**
+     * Drop the in-memory `beanMeta` runtime field before persisting; it is
+     * not a database column.
+     * @param {object} json JSON to write
+     * @returns {object} JSON without beanMeta
+     */
+    $formatDatabaseJson(json) {
+        const out = super.$formatDatabaseJson(json);
+        delete out.bean_meta;
+        delete out.beanMeta;
+        return out;
+    }
+
     /**
      * Return an object that ready to parse to JSON for public
      * Only show necessary data to public
@@ -139,9 +155,9 @@ class Maintenance extends BeanModel {
 
     /**
      * Convert data from socket to bean
-     * @param {Bean} bean Bean to fill in
+     * @param {Maintenance} bean Bean to fill in
      * @param {object} obj Data to fill bean with
-     * @returns {Promise<Bean>} Filled bean
+     * @returns {Promise<Maintenance>} Filled bean
      */
     static async jsonToBean(bean, obj) {
         if (obj.id) {
@@ -224,7 +240,10 @@ class Maintenance extends BeanModel {
                 this.timezone = "UTC";
             }
             if (this.cron) {
-                await R.store(this);
+                await this.$query().patch({
+                    cron: this.cron,
+                    timezone: this.timezone,
+                });
             }
         }
 
@@ -261,14 +280,14 @@ class Maintenance extends BeanModel {
 
                     // Set last start date to current time
                     this.last_start_date = current.utc().format(SQL_DATETIME_FORMAT);
-                    await R.store(this);
+                    await this.$query().patch({ last_start_date: this.last_start_date });
                 };
 
                 // Create Cron
                 if (this.strategy === "recurring-interval") {
                     // For recurring-interval, Croner needs to have interval and startAt
-                    const startDate = dayjs(this.startDate);
-                    const [hour, minute] = this.startTime.split(":");
+                    const startDate = dayjs(this.start_date);
+                    const [hour, minute] = this.start_time.split(":");
                     const startDateTime = startDate.hour(hour).minute(minute);
 
                     // Fix #6118, since the startDateTime is optional, it will throw error if the date is null when using toISOString()
@@ -284,12 +303,12 @@ class Maintenance extends BeanModel {
                             startAt,
                         },
                         () => {
-                            if (!this.lastStartDate || this.interval_day === 1) {
+                            if (!this.last_start_date || this.interval_day === 1) {
                                 return startEvent();
                             }
 
                             // If last start date is set, it means the maintenance has been started before
-                            let lastStartDate = dayjs(this.lastStartDate).subtract(1.1, "hour"); // Subtract 1.1 hour to avoid issues with timezone differences
+                            let lastStartDate = dayjs(this.last_start_date).subtract(1.1, "hour"); // Subtract 1.1 hour to avoid issues with timezone differences
 
                             // Check if the interval is enough
                             if (current.diff(lastStartDate, "day") < this.interval_day) {

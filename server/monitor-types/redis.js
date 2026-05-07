@@ -9,7 +9,7 @@ class RedisMonitorType extends MonitorType {
      * @inheritdoc
      */
     async check(monitor, heartbeat, _server) {
-        heartbeat.msg = await this.redisPingAsync(monitor.databaseConnectionString, !monitor.ignoreTls);
+        heartbeat.msg = await this.redisPingAsync(monitor.database_connection_string, !monitor.ignore_tls);
         heartbeat.status = UP;
     }
 

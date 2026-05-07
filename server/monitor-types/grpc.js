@@ -13,12 +13,12 @@ class GrpcKeywordMonitorType extends MonitorType {
     async check(monitor, heartbeat, _server) {
         const startTime = dayjs().valueOf();
         const service = this.constructGrpcService(
-            monitor.grpcUrl,
-            monitor.grpcProtobuf,
-            monitor.grpcServiceName,
-            monitor.grpcEnableTls
+            monitor.grpc_url,
+            monitor.grpc_protobuf,
+            monitor.grpc_service_name,
+            monitor.grpc_enable_tls
         );
-        let response = await this.grpcQuery(service, monitor.grpcMethod, monitor.grpcBody);
+        let response = await this.grpcQuery(service, monitor.grpc_method, monitor.grpc_body);
         heartbeat.ping = dayjs().valueOf() - startTime;
         log.debug(this.name, "gRPC response:", response);
         let keywordFound = response.toString().includes(monitor.keyword);

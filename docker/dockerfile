@@ -1,16 +1,25 @@
+# Default to upstream's prebuilt base images (Docker Hub: louislam/uptime-kuma).
+# Override with --build-arg to use a fork-owned base instead, e.g.:
+#   docker build \
+#     --build-arg BASE_IMAGE=ghcr.io/lleirborras/uptime-kuma-base:24 \
+#     --build-arg BUILDER_GO_IMAGE=ghcr.io/lleirborras/uptime-kuma-builder-go:latest \
+#     -f docker/dockerfile -t uptime-kuma .
+# Build the base from this repo via docker/debian-base.dockerfile (currently
+# pinned to node:24-bookworm-slim).
 ARG BASE_IMAGE=louislam/uptime-kuma:base2
+ARG BUILDER_GO_IMAGE=louislam/uptime-kuma:builder-go
 
 ############################################
 # Build in Golang
 # Run npm run build-healthcheck-armv7 in the host first, otherwise it will be super slow where it is building the armv7 healthcheck
 # Check file: builder-go.dockerfile
 ############################################
-FROM louislam/uptime-kuma:builder-go AS build_healthcheck
+FROM ${BUILDER_GO_IMAGE} AS build_healthcheck
 
 ############################################
 # Build in Node.js
 ############################################
-FROM louislam/uptime-kuma:base2 AS build
+FROM ${BASE_IMAGE} AS build
 USER node
 WORKDIR /app
 
@@ -59,7 +68,7 @@ USER node
 ############################################
 # Build an image for testing pr
 ############################################
-FROM louislam/uptime-kuma:base2 AS pr-test2
+FROM ${BASE_IMAGE} AS pr-test2
 WORKDIR /app
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1
 
@@ -92,7 +101,7 @@ CMD ["npm", "run", "start-pr-test"]
 ############################################
 # Upload the artifact to Github
 ############################################
-FROM louislam/uptime-kuma:base2 AS upload-artifact
+FROM ${BASE_IMAGE} AS upload-artifact
 WORKDIR /
 RUN apt update && \
     apt --yes install curl file

@@ -1,6 +1,8 @@
-const { BeanModel } = require("redbean-node/dist/bean-model");
+const { BaseModel } = require("./base-model");
 
-class DockerHost extends BeanModel {
+class DockerHost extends BaseModel {
+    static tableName = "docker_host";
+
     /**
      * Returns an object that ready to parse to JSON
      * @returns {object} Object ready to parse

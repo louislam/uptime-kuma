@@ -27,17 +27,17 @@ async function testMqtt(
     const connectionString = hiveMQContainer.getConnectionString();
     const mqttMonitorType = new MqttMonitorType();
     const monitor = {
-        jsonPath: "firstProp", // always return firstProp for the json-query monitor
+        json_path: "firstProp", // always return firstProp for the json-query monitor
         hostname: connectionString.split(":", 2).join(":"),
-        mqttTopic: monitorTopic,
+        mqtt_topic: monitorTopic,
         port: connectionString.split(":")[2],
-        mqttUsername: null,
-        mqttPassword: null,
-        mqttWebsocketPath: null, // for WebSocket connections
+        mqtt_username: null,
+        mqtt_password: null,
+        mqtt_websocket_path: null, // for WebSocket connections
         interval: 20, // controls the timeout
-        mqttSuccessMessage: mqttSuccessMessage, // for keywords
-        expectedValue: mqttSuccessMessage, // for json-query
-        mqttCheckType: mqttCheckType,
+        mqtt_success_message: mqttSuccessMessage, // for keywords
+        expected_value: mqttSuccessMessage, // for json-query
+        mqtt_check_type: mqttCheckType,
         conditions: conditions, // for conditions system
     };
     const heartbeat = {

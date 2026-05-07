@@ -17,7 +17,7 @@ describe(
                 .start();
             const postgresMonitor = new PostgresMonitorType();
             const monitor = {
-                databaseConnectionString: postgresContainer.getConnectionUri(),
+                database_connection_string: postgresContainer.getConnectionUri(),
             };
 
             const heartbeat = {
@@ -36,7 +36,7 @@ describe(
         test("check() rejects when Postgres server is not reachable", async () => {
             const postgresMonitor = new PostgresMonitorType();
             const monitor = {
-                databaseConnectionString: "http://localhost:15432",
+                database_connection_string: "http://localhost:15432",
             };
 
             const heartbeat = {

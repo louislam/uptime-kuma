@@ -135,8 +135,8 @@ class TCPMonitorType extends MonitorType {
         let socket_;
 
         // Handle TLS certificate checking for secure/starttls connections
-        if (["secure", "starttls"].includes(monitor.smtpSecurity) && monitor.isEnabledExpiryNotification()) {
-            const reuseSocket = monitor.smtpSecurity === "starttls" ? await this.performStartTls(monitor) : {};
+        if (["secure", "starttls"].includes(monitor.smtp_security) && monitor.isEnabledExpiryNotification()) {
+            const reuseSocket = monitor.smtp_security === "starttls" ? await this.performStartTls(monitor) : {};
             socket_ = reuseSocket.socket;
             await this.checkTlsCertificate(monitor, reuseSocket);
         }
@@ -298,11 +298,11 @@ class TCPMonitorType extends MonitorType {
         };
 
         // Add client certificate if provided (for mTLS testing with cert)
-        if (monitor.tlsCert && monitor.tlsKey) {
-            options.cert = monitor.tlsCert;
-            options.key = monitor.tlsKey;
-            if (monitor.tlsCa) {
-                options.ca = monitor.tlsCa;
+        if (monitor.tls_cert && monitor.tls_key) {
+            options.cert = monitor.tls_cert;
+            options.key = monitor.tls_key;
+            if (monitor.tls_ca) {
+                options.ca = monitor.tls_ca;
             }
         }
 

@@ -1,6 +1,6 @@
 const { checkLogin } = require("../util-server");
 const { log } = require("../../src/util");
-const { R } = require("redbean-node");
+const { getKnex } = require("../db");
 const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const Maintenance = require("../model/maintenance");
@@ -19,9 +19,31 @@ module.exports.maintenanceSocketHandler = (socket) => {
 
             log.debug("maintenance", maintenance);
 
-            let bean = await Maintenance.jsonToBean(R.dispense("maintenance"), maintenance);
+            let bean = await Maintenance.jsonToBean(new Maintenance(), maintenance);
             bean.user_id = socket.userID;
-            let maintenanceID = await R.store(bean);
+
+            const insertPayload = {
+                title: bean.title,
+                description: bean.description,
+                user_id: bean.user_id,
+                strategy: bean.strategy,
+                interval_day: bean.interval_day,
+                timezone: bean.timezone,
+                active: bean.active,
+                start_date: bean.start_date,
+                end_date: bean.end_date,
+                start_time: bean.start_time,
+                end_time: bean.end_time,
+                weekdays: bean.weekdays,
+                days_of_month: bean.days_of_month,
+                cron: bean.cron,
+                duration: bean.duration,
+            };
+
+            const inserted = await Maintenance.query().insertAndFetch(insertPayload);
+            // Reuse the in-memory bean (with beanMeta etc.) but adopt the assigned id.
+            bean.id = inserted.id;
+            const maintenanceID = bean.id;
 
             server.maintenanceList[maintenanceID] = bean;
             await bean.run(true);
@@ -54,7 +76,25 @@ module.exports.maintenanceSocketHandler = (socket) => {
             }
 
             await Maintenance.jsonToBean(bean, maintenance);
-            await R.store(bean);
+
+            const payload = {
+                title: bean.title,
+                description: bean.description,
+                strategy: bean.strategy,
+                interval_day: bean.interval_day,
+                timezone: bean.timezone,
+                active: bean.active,
+                start_date: bean.start_date,
+                end_date: bean.end_date,
+                start_time: bean.start_time,
+                end_time: bean.end_time,
+                weekdays: bean.weekdays,
+                days_of_month: bean.days_of_month,
+                cron: bean.cron,
+                duration: bean.duration,
+            };
+
+            await Maintenance.query().patchAndFetchById(bean.id, payload);
             await bean.run(true);
             await server.sendMaintenanceList(socket);
 
@@ -78,16 +118,14 @@ module.exports.maintenanceSocketHandler = (socket) => {
         try {
             checkLogin(socket);
 
-            await R.exec("DELETE FROM monitor_maintenance WHERE maintenance_id = ?", [maintenanceID]);
+            const knex = getKnex();
+            await knex("monitor_maintenance").where("maintenance_id", maintenanceID).delete();
 
             for await (const monitor of monitors) {
-                let bean = R.dispense("monitor_maintenance");
-
-                bean.import({
+                await knex("monitor_maintenance").insert({
                     monitor_id: monitor.id,
                     maintenance_id: maintenanceID,
                 });
-                await R.store(bean);
             }
 
             apicache.clear();
@@ -110,16 +148,14 @@ module.exports.maintenanceSocketHandler = (socket) => {
         try {
             checkLogin(socket);
 
-            await R.exec("DELETE FROM maintenance_status_page WHERE maintenance_id = ?", [maintenanceID]);
+            const knex = getKnex();
+            await knex("maintenance_status_page").where("maintenance_id", maintenanceID).delete();
 
             for await (const statusPage of statusPages) {
-                let bean = R.dispense("maintenance_status_page");
-
-                bean.import({
+                await knex("maintenance_status_page").insert({
                     status_page_id: statusPage.id,
                     maintenance_id: maintenanceID,
                 });
-                await R.store(bean);
             }
 
             apicache.clear();
@@ -143,7 +179,8 @@ module.exports.maintenanceSocketHandler = (socket) => {
 
             log.debug("maintenance", `Get Maintenance: ${maintenanceID} User ID: ${socket.userID}`);
 
-            let bean = await R.findOne("maintenance", " id = ? AND user_id = ? ", [maintenanceID, socket.userID]);
+            let bean = await Maintenance.query().where({ id: maintenanceID,
+                user_id: socket.userID }).first();
 
             callback({
                 ok: true,
@@ -179,10 +216,10 @@ module.exports.maintenanceSocketHandler = (socket) => {
 
             log.debug("maintenance", `Get Monitors for Maintenance: ${maintenanceID} User ID: ${socket.userID}`);
 
-            let monitors = await R.getAll(
-                "SELECT monitor.id FROM monitor_maintenance mm JOIN monitor ON mm.monitor_id = monitor.id WHERE mm.maintenance_id = ? ",
-                [maintenanceID]
-            );
+            const monitors = await getKnex()("monitor_maintenance as mm")
+                .join("monitor", "mm.monitor_id", "monitor.id")
+                .where("mm.maintenance_id", maintenanceID)
+                .select("monitor.id");
 
             callback({
                 ok: true,
@@ -203,10 +240,10 @@ module.exports.maintenanceSocketHandler = (socket) => {
 
             log.debug("maintenance", `Get Status Pages for Maintenance: ${maintenanceID} User ID: ${socket.userID}`);
 
-            let statusPages = await R.getAll(
-                "SELECT status_page.id, status_page.title FROM maintenance_status_page msp JOIN status_page ON msp.status_page_id = status_page.id WHERE msp.maintenance_id = ? ",
-                [maintenanceID]
-            );
+            const statusPages = await getKnex()("maintenance_status_page as msp")
+                .join("status_page", "msp.status_page_id", "status_page.id")
+                .where("msp.maintenance_id", maintenanceID)
+                .select("status_page.id", "status_page.title");
 
             callback({
                 ok: true,
@@ -232,7 +269,8 @@ module.exports.maintenanceSocketHandler = (socket) => {
                 delete server.maintenanceList[maintenanceID];
             }
 
-            await R.exec("DELETE FROM maintenance WHERE id = ? AND user_id = ? ", [maintenanceID, socket.userID]);
+            await getKnex()("maintenance").where({ id: maintenanceID,
+                user_id: socket.userID }).delete();
 
             apicache.clear();
 
@@ -264,7 +302,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
             }
 
             maintenance.active = false;
-            await R.store(maintenance);
+            await maintenance.$query().patch({ active: false });
             maintenance.stop();
 
             apicache.clear();
@@ -297,7 +335,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
             }
 
             maintenance.active = true;
-            await R.store(maintenance);
+            await maintenance.$query().patch({ active: true });
             await maintenance.run();
 
             apicache.clear();

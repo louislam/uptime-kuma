@@ -3,7 +3,7 @@ const https = require("https");
 const fs = require("fs");
 const http = require("http");
 const { Server } = require("socket.io");
-const { R } = require("redbean-node");
+const { isoDateTime } = require("./utils/iso-datetime");
 const { log, isDev } = require("../src/util");
 const Database = require("./database");
 const util = require("util");
@@ -262,7 +262,10 @@ class UptimeKumaServer {
             queryParams.push(monitorID);
         }
 
-        let monitorList = await R.find("monitor", query + "ORDER BY weight DESC, name", queryParams);
+        let monitorList = await Monitor.query()
+            .whereRaw(query, queryParams)
+            .orderBy("weight", "desc")
+            .orderBy("name");
 
         const monitorData = monitorList.map((monitor) => ({
             id: monitor.id,
@@ -315,7 +318,10 @@ class UptimeKumaServer {
      * @returns {Promise<void>}
      */
     async loadMaintenanceList(userID) {
-        let maintenanceList = await R.findAll("maintenance", " ORDER BY end_date DESC, title", []);
+        const Maintenance = require("./model/maintenance");
+        let maintenanceList = await Maintenance.query()
+            .orderBy("end_date", "desc")
+            .orderBy("title");
 
         for (let maintenance of maintenanceList) {
             this.maintenanceList[maintenance.id] = maintenance;
@@ -351,7 +357,7 @@ class UptimeKumaServer {
         });
 
         if (errorLogStream) {
-            const dateTime = R.isoDateTime();
+            const dateTime = isoDateTime();
             errorLogStream.write(`[${dateTime}] ` + util.format(error) + "\n");
 
             if (outputToConsole) {

@@ -1,7 +1,8 @@
-const { BeanModel } = require("redbean-node/dist/bean-model");
-const { R } = require("redbean-node");
+const { BaseModel } = require("./base-model");
 
-class Group extends BeanModel {
+class Group extends BaseModel {
+    static tableName = "group";
+
     /**
      * Return an object that ready to parse to JSON for public Only show
      * necessary data to public
@@ -28,21 +29,15 @@ class Group extends BeanModel {
 
     /**
      * Get all monitors
-     * @returns {Promise<Bean[]>} List of monitors
+     * @returns {Promise<import("./monitor")[]>} List of monitors
      */
     async getMonitorList() {
-        return R.convertToBeans(
-            "monitor",
-            await R.getAll(
-                `
-            SELECT monitor.*, monitor_group.send_url, monitor_group.custom_url FROM monitor, monitor_group
-            WHERE monitor.id = monitor_group.monitor_id
-            AND group_id = ?
-            ORDER BY monitor_group.weight
-        `,
-                [this.id]
-            )
-        );
+        const Monitor = require("./monitor");
+        return Monitor.query()
+            .innerJoin("monitor_group", "monitor.id", "monitor_group.monitor_id")
+            .where("monitor_group.group_id", this.id)
+            .orderBy("monitor_group.weight")
+            .select("monitor.*", "monitor_group.send_url", "monitor_group.custom_url");
     }
 }
 

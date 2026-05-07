@@ -100,7 +100,7 @@ describe("TCP Monitor", () => {
         const monitor = {
             hostname: "expired.badssl.com",
             port: 443,
-            smtpSecurity: "secure",
+            smtp_security: "secure",
             isEnabledExpiryNotification: () => true,
             handleTlsInfo: async (tlsInfo) => {
                 return tlsInfo;
@@ -124,7 +124,7 @@ describe("TCP Monitor", () => {
         const monitor = {
             hostname: "smtp.gmail.com",
             port: 465,
-            smtpSecurity: "secure",
+            smtp_security: "secure",
             isEnabledExpiryNotification: () => true,
             handleTlsInfo: async (tlsInfo) => {
                 return tlsInfo;
@@ -148,7 +148,7 @@ describe("TCP Monitor", () => {
         const monitor = {
             hostname: "smtp.gmail.com",
             port: 587,
-            smtpSecurity: "starttls",
+            smtp_security: "starttls",
             isEnabledExpiryNotification: () => true,
             handleTlsInfo: async (tlsInfo) => {
                 return tlsInfo;
@@ -172,7 +172,7 @@ describe("TCP Monitor", () => {
         const monitor = {
             hostname: "wr-in-f108.1e100.net",
             port: 587,
-            smtpSecurity: "starttls",
+            smtp_security: "starttls",
             isEnabledExpiryNotification: () => true,
             handleTlsInfo: async (tlsInfo) => {
                 return tlsInfo;
@@ -194,7 +194,7 @@ describe("TCP Monitor", () => {
         const monitor = {
             hostname: "xmpp.earth",
             port: 5222,
-            smtpSecurity: "starttls",
+            smtp_security: "starttls",
             isEnabledExpiryNotification: () => true,
             handleTlsInfo: async (tlsInfo) => {
                 return tlsInfo;

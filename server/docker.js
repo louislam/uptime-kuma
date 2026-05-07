@@ -1,5 +1,6 @@
 const axios = require("axios");
-const { R } = require("redbean-node");
+const { getKnex } = require("./db");
+const DockerHostModel = require("./model/docker_host");
 const https = require("https");
 const fsAsync = require("fs").promises;
 const path = require("path");
@@ -16,29 +17,25 @@ class DockerHost {
      * @param {object} dockerHost Docker host to save
      * @param {?number} dockerHostID ID of the docker host to update
      * @param {number} userID ID of the user who adds the docker host
-     * @returns {Promise<Bean>} Updated docker host
+     * @returns {Promise<import("./model/docker_host")>} Updated docker host
      */
     static async save(dockerHost, dockerHostID, userID) {
-        let bean;
+        const payload = {
+            user_id: userID,
+            docker_daemon: dockerHost.dockerDaemon,
+            docker_type: dockerHost.dockerType,
+            name: dockerHost.name,
+        };
 
         if (dockerHostID) {
-            bean = await R.findOne("docker_host", " id = ? AND user_id = ? ", [dockerHostID, userID]);
-
-            if (!bean) {
+            const existing = await DockerHostModel.query().where({ id: dockerHostID,
+                user_id: userID }).first();
+            if (!existing) {
                 throw new Error("docker host not found");
             }
-        } else {
-            bean = R.dispense("docker_host");
+            return DockerHostModel.query().patchAndFetchById(dockerHostID, payload);
         }
-
-        bean.user_id = userID;
-        bean.docker_daemon = dockerHost.dockerDaemon;
-        bean.docker_type = dockerHost.dockerType;
-        bean.name = dockerHost.name;
-
-        await R.store(bean);
-
-        return bean;
+        return DockerHostModel.query().insertAndFetch(payload);
     }
 
     /**
@@ -48,16 +45,17 @@ class DockerHost {
      * @returns {Promise<void>}
      */
     static async delete(dockerHostID, userID) {
-        let bean = await R.findOne("docker_host", " id = ? AND user_id = ? ", [dockerHostID, userID]);
-
-        if (!bean) {
+        const knex = getKnex();
+        const existing = await knex("docker_host").where({ id: dockerHostID,
+            user_id: userID }).first();
+        if (!existing) {
             throw new Error("docker host not found");
         }
 
-        // Delete removed proxy from monitors if exists
-        await R.exec("UPDATE monitor SET docker_host = null WHERE docker_host = ?", [dockerHostID]);
+        // Detach removed docker host from monitors
+        await knex("monitor").where("docker_host", dockerHostID).update({ docker_host: null });
 
-        await R.trash(bean);
+        await knex("docker_host").where("id", dockerHostID).delete();
     }
 
     /**

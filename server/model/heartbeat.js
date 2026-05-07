@@ -1,4 +1,4 @@
-const { BeanModel } = require("redbean-node/dist/bean-model");
+const { BaseModel } = require("./base-model");
 const zlib = require("node:zlib");
 const { promisify } = require("node:util");
 const brotliDecompress = promisify(zlib.brotliDecompress);
@@ -10,7 +10,39 @@ const brotliDecompress = promisify(zlib.brotliDecompress);
  *      2 = PENDING
  *      3 = MAINTENANCE
  */
-class Heartbeat extends BeanModel {
+class Heartbeat extends BaseModel {
+    static tableName = "heartbeat";
+
+    /**
+     * Coerce numeric fields whose JS values may be fractional into the
+     * integer types the heartbeat schema declares. PostgreSQL rejects
+     * `INSERT INTO heartbeat (ping) VALUES (3.208)` against an INTEGER
+     * column with `invalid input syntax for type bigint: "3.208"`,
+     * whereas SQLite accepts it (loose typing) and MariaDB silently
+     * rounds. Round here so all three dialects see the same value.
+     * @returns {void}
+     */
+    $beforeInsert() {
+        if (this.ping != null) {
+            this.ping = Math.round(this.ping);
+        }
+        if (this.duration != null) {
+            this.duration = Math.round(this.duration);
+        }
+    }
+
+    /**
+     * @returns {void}
+     */
+    $beforeUpdate() {
+        if (this.ping != null) {
+            this.ping = Math.round(this.ping);
+        }
+        if (this.duration != null) {
+            this.duration = Math.round(this.duration);
+        }
+    }
+
     /**
      * Return an object that ready to parse to JSON for public
      * Only show necessary data to public
@@ -31,15 +63,15 @@ class Heartbeat extends BeanModel {
      */
     toJSON() {
         return {
-            monitorID: this._monitorId,
-            status: this._status,
-            time: this._time,
-            msg: this._msg,
-            ping: this._ping,
-            important: this._important,
-            duration: this._duration,
-            retries: this._retries,
-            response: this._response,
+            monitorID: this.monitor_id,
+            status: this.status,
+            time: this.time,
+            msg: this.msg,
+            ping: this.ping,
+            important: this.important,
+            duration: this.duration,
+            retries: this.retries,
+            response: this.response,
         };
     }
 
@@ -50,15 +82,15 @@ class Heartbeat extends BeanModel {
      */
     async toJSONAsync(opts) {
         return {
-            monitorID: this._monitorId,
-            status: this._status,
-            time: this._time,
-            msg: this._msg,
-            ping: this._ping,
-            important: this._important,
-            duration: this._duration,
-            retries: this._retries,
-            response: opts?.decodeResponse ? await Heartbeat.decodeResponseValue(this._response) : undefined,
+            monitorID: this.monitor_id,
+            status: this.status,
+            time: this.time,
+            msg: this.msg,
+            ping: this.ping,
+            important: this.important,
+            duration: this.duration,
+            retries: this.retries,
+            response: opts?.decodeResponse ? await Heartbeat.decodeResponseValue(this.response) : undefined,
         };
     }
 

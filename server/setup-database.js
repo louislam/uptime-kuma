@@ -5,9 +5,9 @@ const fs = require("fs");
 const path = require("path");
 const Database = require("./database");
 const { allowDevAllOrigin, printServerUrls } = require("./util-server");
-const mysql = require("mysql2/promise");
 const { isSSL, sslKey, sslCert, sslKeyPassphrase } = require("./config");
 const https = require("https");
+const { dialectFor, supportedTypes } = require("./dialects");
 
 /**
  * Reads a configuration value from an environment variable or a Docker secrets file.
@@ -177,97 +177,42 @@ class SetupDatabase {
 
                 this.runningSetup = true;
 
-                let dbConfig = request.body.dbConfig;
+                const dbConfig = request.body.dbConfig;
 
-                let supportedDBTypes = ["mariadb", "sqlite"];
-
-                if (this.isEnabledEmbeddedMariaDB()) {
-                    supportedDBTypes.push("embedded-mariadb");
-                }
-
-                // Validate input
                 if (typeof dbConfig !== "object") {
                     response.status(400).json("Invalid dbConfig");
                     this.runningSetup = false;
                     return;
                 }
-
                 if (!dbConfig.type) {
                     response.status(400).json("Database Type is required");
                     this.runningSetup = false;
                     return;
                 }
 
-                if (!supportedDBTypes.includes(dbConfig.type)) {
+                const allowedTypes = supportedTypes().filter(
+                    (t) => t !== "embedded-mariadb" || this.isEnabledEmbeddedMariaDB()
+                );
+                if (!allowedTypes.includes(dbConfig.type)) {
                     response.status(400).json("Unsupported Database Type");
                     this.runningSetup = false;
                     return;
                 }
 
-                // External MariaDB
-                if (dbConfig.type === "mariadb") {
-                    // If socketPath is provided and not empty, validate it
-                    if (process.env.UPTIME_KUMA_DB_SOCKET?.trim().length > 0) {
-                        dbConfig.socketPath = process.env.UPTIME_KUMA_DB_SOCKET.trim();
-                    } else {
-                        // socketPath not provided, hostname and port are required
-                        if (!dbConfig.hostname) {
-                            response.status(400).json("Hostname is required");
-                            this.runningSetup = false;
-                            return;
-                        }
-
-                        if (!dbConfig.port) {
-                            response.status(400).json("Port is required");
-                            this.runningSetup = false;
-                            return;
-                        }
-                    }
-
-                    if (!dbConfig.dbName) {
-                        response.status(400).json("Database name is required");
-                        this.runningSetup = false;
-                        return;
-                    }
-
-                    if (!dbConfig.username) {
-                        response.status(400).json("Username is required");
-                        this.runningSetup = false;
-                        return;
-                    }
-
-                    if (!dbConfig.password) {
-                        response.status(400).json("Password is required");
-                        this.runningSetup = false;
-                        return;
-                    }
-
-                    // Test connection
-                    try {
-                        log.info("setup-database", "Testing database connection...");
-                        const connection = await mysql.createConnection({
-                            host: dbConfig.hostname,
-                            port: dbConfig.port,
-                            user: dbConfig.username,
-                            password: dbConfig.password,
-                            database: dbConfig.dbName,
-                            socketPath: dbConfig.socketPath,
-                            ...(dbConfig.ssl
-                                ? {
-                                      ssl: {
-                                          rejectUnauthorized: true,
-                                          ...(dbConfig.ca && dbConfig.ca.trim() !== "" ? { ca: [dbConfig.ca] } : {}),
-                                      },
-                                  }
-                                : {}),
-                        });
-                        await connection.execute("SELECT 1");
-                        connection.end();
-                    } catch (e) {
-                        response.status(400).json("Cannot connect to the database: " + e.message);
-                        this.runningSetup = false;
-                        return;
-                    }
+                const dialect = dialectFor(dbConfig);
+                try {
+                    dialect.validateSetupConfig();
+                } catch (e) {
+                    response.status(400).json(e.message);
+                    this.runningSetup = false;
+                    return;
+                }
+                try {
+                    await dialect.testConnection();
+                } catch (e) {
+                    response.status(400).json("Cannot connect to the database: " + e.message);
+                    this.runningSetup = false;
+                    return;
                 }
 
                 // Write db-config.json

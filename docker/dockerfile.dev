@@ -1,0 +1,52 @@
+# Dev image — builds dist/ inside the image so compose users don't need to
+# remember `npm run build` on the host.
+#
+# Built directly from the official Node 24 LTS slim image; no dependency on
+# upstream's `louislam/uptime-kuma:base2` so this fork's CI/dev flow doesn't
+# break when upstream rebuilds their base.
+#
+# Differences from docker/dockerfile (production):
+#   - `npm ci` (NOT --omit=dev) — needs vite to build the frontend.
+#   - Runs `npm run build` to produce dist/.
+#   - Single stage; no healthcheck binary; no rootless variants.
+#   - No chromium / cloudflared / apprise. Those are for the screenshot,
+#     Cloudflare-tunnel and Apprise-notification features. Add them in the
+#     production dockerfile / base image when needed.
+
+FROM node:24-bookworm-slim AS dev
+
+# dumb-init: zombie reaping for the entrypoint
+# ca-certificates: TLS roots for outbound HTTP
+# curl: in-container debugging
+# iputils-ping: ping monitor type shells out to /bin/ping
+# mariadb-server: required for the embedded MariaDB option in the setup
+#   wizard. Gated at runtime by UPTIME_KUMA_ENABLE_EMBEDDED_MARIADB.
+RUN apt-get update \
+    && apt-get install --yes --no-install-recommends \
+        dumb-init \
+        ca-certificates \
+        curl \
+        iputils-ping \
+        mariadb-server \
+    && rm -rf /var/lib/apt/lists/* \
+    && chown -R node:node /var/lib/mysql
+
+USER node
+WORKDIR /app
+
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1
+ENV UPTIME_KUMA_ENABLE_EMBEDDED_MARIADB=1
+
+COPY --chown=node:node .npmrc .npmrc
+COPY --chown=node:node package.json package.json
+COPY --chown=node:node package-lock.json package-lock.json
+RUN npm ci
+
+COPY --chown=node:node . .
+RUN npm run build
+
+EXPOSE 3001
+
+ENV UPTIME_KUMA_IS_CONTAINER=1
+ENTRYPOINT ["/usr/bin/dumb-init", "--"]
+CMD ["node", "server/server.js"]

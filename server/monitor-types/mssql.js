@@ -17,7 +17,7 @@ class MssqlMonitorType extends MonitorType {
      * @inheritdoc
      */
     async check(monitor, heartbeat, _server) {
-        let query = monitor.databaseQuery;
+        let query = monitor.database_query;
         // No query provided by user, use SELECT 1
         if (!query || (typeof query === "string" && query.trim() === "")) {
             query = "SELECT 1";
@@ -30,7 +30,7 @@ class MssqlMonitorType extends MonitorType {
         try {
             if (hasConditions) {
                 // When conditions are enabled, expect a single value result
-                const result = await this.mssqlQuerySingleValue(monitor.databaseConnectionString, query);
+                const result = await this.mssqlQuerySingleValue(monitor.database_connection_string, query);
                 heartbeat.ping = dayjs().valueOf() - startTime;
 
                 const conditionsResult = evaluateExpressionGroup(conditions, { result: String(result) });
@@ -43,7 +43,7 @@ class MssqlMonitorType extends MonitorType {
                 heartbeat.msg = "Query did meet specified conditions";
             } else {
                 // Backwards compatible: just check connection and return row count
-                const result = await this.mssqlQuery(monitor.databaseConnectionString, query);
+                const result = await this.mssqlQuery(monitor.database_connection_string, query);
                 heartbeat.ping = dayjs().valueOf() - startTime;
                 heartbeat.status = UP;
                 heartbeat.msg = result;

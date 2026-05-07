@@ -1,5 +1,5 @@
-const { BeanModel } = require("redbean-node/dist/bean-model");
-const { R } = require("redbean-node");
+const { BaseModel } = require("./base-model");
+const { isoDateTimeMillis } = require("../utils/iso-datetime");
 const { log, TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD } = require("../../src/util");
 const { parse: parseTld } = require("tldts");
 const { setting, setSetting } = require("../util-server");
@@ -167,13 +167,15 @@ async function sendDomainNotificationByTargetDays(domain, daysRemaining, targetD
     return sent;
 }
 
-class DomainExpiry extends BeanModel {
+class DomainExpiry extends BaseModel {
+    static tableName = "domain_expiry";
+
     /**
      * @param {string} domain Domain name
      * @returns {Promise<DomainExpiry>} Domain bean
      */
     static async findByName(domain) {
-        return R.findOne("domain_expiry", "domain = ?", [domain]);
+        return DomainExpiry.query().where("domain", domain).first();
     }
 
     /**
@@ -181,7 +183,7 @@ class DomainExpiry extends BeanModel {
      * @returns {DomainExpiry} Domain bean
      */
     static createByName(domain) {
-        const d = R.dispense("domain_expiry");
+        const d = new DomainExpiry();
         d.domain = domain;
         return d;
     }
@@ -279,19 +281,33 @@ class DomainExpiry extends BeanModel {
         let bean = await DomainExpiry.findByDomainNameOrCreate(domainName);
         let expiryDate;
 
-        if (bean?.lastCheck && dayjs.utc().diff(dayjs.utc(bean.lastCheck), "day") < 1) {
+        if (bean?.last_check && dayjs.utc().diff(dayjs.utc(bean.last_check), "day") < 1) {
             log.debug("domain_expiry", `Domain expiry already checked recently for ${bean.domain}, won't re-check.`);
             return bean.expiry;
         } else if (bean) {
             expiryDate = await bean.getExpiryDate();
 
             if (dayjs.utc(expiryDate).isAfter(dayjs.utc(bean.expiry))) {
-                bean.lastExpiryNotificationSent = null;
+                bean.last_expiry_notification_sent = null;
             }
 
-            bean.expiry = R.isoDateTimeMillis(expiryDate);
-            bean.lastCheck = R.isoDateTimeMillis(dayjs.utc());
-            await R.store(bean);
+            bean.expiry = isoDateTimeMillis(expiryDate);
+            bean.last_check = isoDateTimeMillis(dayjs.utc());
+            if (bean.id) {
+                await bean.$query().patch({
+                    expiry: bean.expiry,
+                    last_check: bean.last_check,
+                    last_expiry_notification_sent: bean.last_expiry_notification_sent,
+                });
+            } else {
+                const inserted = await DomainExpiry.query().insertAndFetch({
+                    domain: bean.domain,
+                    expiry: bean.expiry,
+                    last_check: bean.last_check,
+                    last_expiry_notification_sent: bean.last_expiry_notification_sent,
+                });
+                bean.id = inserted.id;
+            }
         }
 
         if (expiryDate === null) {
@@ -323,7 +339,7 @@ class DomainExpiry extends BeanModel {
         }
 
         const daysRemaining = domain.daysRemaining;
-        const lastSent = domain.lastExpiryNotificationSent;
+        const lastSent = domain.last_expiry_notification_sent;
         log.debug("domain_expiry", `${domainName} expires in ${daysRemaining} days`);
 
         let notifyDays = await setting("domainExpiryNotifyDays");
@@ -356,8 +372,8 @@ class DomainExpiry extends BeanModel {
                     notificationList
                 );
                 if (sent) {
-                    domain.lastExpiryNotificationSent = targetDays;
-                    await R.store(domain);
+                    domain.last_expiry_notification_sent = targetDays;
+                    await domain.$query().patch({ last_expiry_notification_sent: targetDays });
                     return targetDays;
                 }
             }
