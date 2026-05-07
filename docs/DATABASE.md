@@ -158,6 +158,27 @@ DB columns are `snake_case` (e.g. `user_id`, `retry_interval`). Models read and 
 - Raw Knex calls don't get translated. `knex("monitor").where("monitorId", x)` sends `monitorId` verbatim — zero rows on SQLite/MariaDB, error on PG. Use the snake column name.
 - The frontend speaks camelCase. When you receive a payload from a socket handler, the keys are camelCase; either translate them to snake when constructing the DB-write payload (see `server.js#editMonitor`), or run the payload through a `camelToSnake` key-rename before insert/patch.
 
+### Loaded model vs. socket payload — the rule that bit us
+
+Every camel-key bug we saw post-refactor (mqtt, redis, kafka null, analytics) had the same shape: the variable was a **hydrated model instance** (returned from `Model.query().findById(...)` / `.first()` / `.insertAndFetch(...)`), and the code read a camelCase alias that no longer exists.
+
+| Source of the variable | Camel reads OK? |
+|---|---|
+| Just-loaded model: `await Monitor.query().findById(id)` | **NO** — only snake-case columns are populated |
+| Same after `.toJSON()` / `.toPublicJSON()` | **YES** — output keys are camel by API contract |
+| Incoming socket payload: `socket.on("add", (monitor, cb) => ...)` | **YES** — frontend speaks camel |
+| Plain config / express request body / external HTTP response | **YES** — non-model objects, treat as input |
+
+When you touch any code that sees a model instance, audit with this grep before pushing:
+
+```bash
+# from repo root
+grep -rE "\\b(monitor|bean|user|tag|heartbeat|group|incident|maintenance|proxy|apiKey|statusPage|remoteBrowser|domainExpiry|dockerHost|notification)\\.[a-z]+[A-Z]" \
+    server/ | grep -vE "test|node_modules"
+```
+
+False positives: object-literal value-side reads inside socket handlers (`{ snakeKey: monitor.camelKey }` where `monitor` is the incoming payload). Skip those. Real hits: every other `<modelVar>.<camelKey>` access — flip to `<modelVar>.<snake_key>` and add a regression test.
+
 ## Querying
 
 Use Knex/Objection directly.
@@ -234,6 +255,8 @@ Backend tests use `node:test` and live in `test/backend-test/`.
 - `test-migration.js` — runs all migrations against SQLite + MariaDB + MySQL + PostgreSQL (containers via `testcontainers`)
 - `test-cross-db.js` — same end-to-end CRUD exercise across all three dialects
 - `test-monitor-types.js` — integration tests for each MonitorType subclass: spins up real Postgres / MariaDB / MongoDB / Redis / RabbitMQ / Mosquitto / snmpd via testcontainers and asserts `MonitorType.check()` reports UP. Also locks in regressions for the heartbeat ping-rounding rule and the MQTT default-check-type bug.
+- `test-analytics.js` — unit tests for `server/analytics/`. Covers the dispatcher (`getAnalyticsScript` / `isValidAnalyticsConfig` reading snake-case columns from a hydrated StatusPage) and the four script-tag emitters (Google, Umami, Plausible, Matomo). Pinned by a real bug where the dispatcher silently regressed to the `default` branch after the BaseModel mirror was removed.
+- `test-status-page.js` — model contract: snake-case columns are populated on load, camelCase aliases are NOT, but `toJSON()` / `toPublicJSON()` output keys stay camelCase for the API contract. Includes an end-to-end check that `getAnalyticsScript(loaded_status_page)` resolves a non-null script tag.
 
 Run:
 
