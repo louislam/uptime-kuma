@@ -55,7 +55,7 @@
                 {{ $t("Template plain text instead of using cards") }}
             </label>
             <i18n-t tag="p" class="form-text" keypath="issueWithGoogleChatOnAndroidHelptext">
-                <template #issuetackerURL>
+                <template #issueTrackerURL>
                     <a href="https://issuetracker.google.com/issues/283746283" target="_blank">
                         issuetracker.google.com/issues/283746283
                     </a>

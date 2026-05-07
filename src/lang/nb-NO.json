@@ -347,7 +347,6 @@
     "resendDisabled": "Sende på nytt deaktivert",
     "setupDatabaseMariaDB": "Koble til en ekstern MariaDB-database. Du må angi tilkoblingsinformasjon for databasen.",
     "setupDatabaseSQLite": "En enkel databasefil, anbefalt for småskala-installasjoner. I versjoner tidligere enn v2.0.0 brukte Uptime Kuma SQLite som standarddatabase.",
-    "needPushEvery": "Du skal forsøke å nå denne URLen hvert {0] sekund(er).",
     "dbName": "Databasenavn",
     "resendEveryXTimes": "Send på nytt hver {0} gang(er)",
     "Push URL": "Push-URL",

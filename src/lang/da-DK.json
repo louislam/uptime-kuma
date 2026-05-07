@@ -523,7 +523,7 @@
     "Topic": "Emne",
     "Setup Proxy": "Opsæt Proxy",
     "Proxy Server": "Proxy Server",
-    "wayToGetClickSendSMSToken": "Du kan få API brugernavn og API nøgle fra {0} .",
+    "wayToGetClickSendSMSToken": "Du kan få API brugernavn og API nøgle fra {here} .",
     "PushDeer Key": "PushDeer Nøgle",
     "The resource is no longer available.": "Denne ressource er ikke længere tilgængelig.",
     "Proxy Protocol": "Proxy Protokol",

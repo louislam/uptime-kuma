@@ -497,7 +497,7 @@
     "Retype the address.": "Πληκτρολογήστε ξανά τη διεύθυνση.",
     "Go back to the previous page.": "Επιστρέψτε στην προηγούμενη σελίδα.",
     "Coming Soon": "Ερχεται σύντομα",
-    "wayToGetClickSendSMSToken": "Μπορείτε να πάρετε το API Username και API Key απο {0} .",
+    "wayToGetClickSendSMSToken": "Μπορείτε να πάρετε το API Username και API Key απο {here} .",
     "Connection String": "Connection String",
     "Query": "Query",
     "settingsCertificateExpiry": "Λήξη πιστοποιητικού TLS",

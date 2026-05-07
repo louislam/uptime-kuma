@@ -484,7 +484,7 @@
     "Retype the address.": "Berridatzi helbidea.",
     "Go back to the previous page.": "Itzuli aurreko orrialdera.",
     "Coming Soon": "Laster",
-    "wayToGetClickSendSMSToken": "API erabiltzailea and API giltza hemendik lortu ditzakezu: {0} .",
+    "wayToGetClickSendSMSToken": "API erabiltzailea and API giltza hemendik lortu ditzakezu: {here} .",
     "Connection String": "Konexio katea",
     "Query": "Kontsulta",
     "settingsCertificateExpiry": "TLS irungitze zertifikatua",

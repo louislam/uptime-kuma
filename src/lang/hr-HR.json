@@ -1153,7 +1153,7 @@
     "Recipient Numbers": "Brojevi primatelja",
     "deleteChildrenMonitors": "Također izbriši podređene monitore i njihovu djecu ako takvi postoje | Također izbriši sve {count} podređene monitore i njihovu djecu ako takvi postoje",
     "Template ID": "Identifikator predloška",
-    "wayToGetClickSMSIRTemplateID": "Predložak mora sadržavati polje {uptkumaalert}. Novi predložak može se stvoriti {ovdje}.",
+    "wayToGetClickSMSIRTemplateID": "Predložak mora sadržavati polje {uptkumaalert}. Novi predložak može se stvoriti {here}.",
     "deleteGroupMsg": "Jeste li sigurni da želite izbrisati ovu grupu?",
     "Clone Maintenance": "Kloniraj održavanje",
     "ariaPauseMaintenance": "Pauziraj ovaj raspored održavanja",

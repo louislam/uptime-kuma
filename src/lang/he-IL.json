@@ -521,7 +521,7 @@
     "Retype the address.": "הקלד מחדש את הכתובת.",
     "Go back to the previous page.": "חזור לדף הקודם.",
     "Coming Soon": "בקרוב",
-    "wayToGetClickSendSMSToken": "אתה יכול לקבל שם משתמש API ומפתח API מ- {0}.",
+    "wayToGetClickSendSMSToken": "אתה יכול לקבל שם משתמש API ומפתח API מ- {here}.",
     "Connection String": "מחרוזת חיבור",
     "Query": "שאילתא",
     "settingsCertificateExpiry": "תפוגת תעודת TLS",

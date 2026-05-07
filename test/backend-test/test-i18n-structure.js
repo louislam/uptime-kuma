@@ -14,6 +14,29 @@ const localeFiles = fs.readdirSync(LANG_DIR)
     .filter((f) => f.endsWith(".json") && f !== "en.json")
     .sort();
 
+/**
+ * Extracts vue-i18n placeholder names from a string.
+ * Mirrors the regex in extra/i18n-audit.js so the test and the audit agree
+ * on what counts as a placeholder.
+ * @param {string} value Source or locale string.
+ * @returns {Set<string>} Set of `{name}` tokens (with braces) found.
+ */
+function extractPlaceholders(value) {
+    if (typeof value !== "string") {
+        return new Set();
+    }
+    return new Set(value.match(/\{[a-zA-Z0-9_]+\}/g) || []);
+}
+
+/**
+ * Pre-compute en.json's placeholder set per key — every locale's placeholder
+ * set must equal this for the same key (when the locale provides a value).
+ */
+const enPlaceholdersByKey = new Map();
+for (const [ k, v ] of Object.entries(en)) {
+    enPlaceholdersByKey.set(k, extractPlaceholders(v));
+}
+
 describe("i18n structure", () => {
     test("en.json itself is flat strings (no nested objects/arrays)", () => {
         for (const [ k, v ] of Object.entries(en)) {
@@ -79,6 +102,56 @@ describe("i18n structure", () => {
                     dups,
                     [],
                     `${file} has duplicate top-level keys: ${dups.join(", ")}`
+                );
+            });
+
+            test("placeholder parity with en.json (every translated value uses exactly the en placeholders)", () => {
+                // For every key the locale DOES translate, its `{name}` set
+                // must equal en.json's `{name}` set for the same key. Locales
+                // that omit the key are fine — vue-i18n falls back to en.
+                //
+                // This locks in the invariant that mechanical i18n fixes
+                // (chore/i18n-mechanical-fixes) restored: translators must
+                // not rename the placeholder, drop it, or invent new ones.
+                const mismatches = [];
+                for (const [ k, v ] of Object.entries(data)) {
+                    if (k === "languageName") {
+                        continue;
+                    }
+                    if (!enKeys.has(k)) {
+                        // orphan keys are caught by the orphan test
+                        continue;
+                    }
+                    if (typeof v !== "string") {
+                        continue;
+                    }
+                    const enPh = enPlaceholdersByKey.get(k);
+                    const locPh = extractPlaceholders(v);
+                    if (enPh.size === 0 && locPh.size === 0) {
+                        continue;
+                    }
+                    // Set equality
+                    let same = enPh.size === locPh.size;
+                    if (same) {
+                        for (const p of enPh) {
+                            if (!locPh.has(p)) {
+                                same = false;
+                                break;
+                            }
+                        }
+                    }
+                    if (!same) {
+                        mismatches.push({
+                            key: k,
+                            en: [ ...enPh ].sort(),
+                            locale: [ ...locPh ].sort(),
+                        });
+                    }
+                }
+                assert.deepStrictEqual(
+                    mismatches,
+                    [],
+                    `${file} has placeholder mismatches: ${JSON.stringify(mismatches, null, 2)}`
                 );
             });
         });

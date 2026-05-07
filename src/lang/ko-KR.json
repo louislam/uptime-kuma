@@ -483,7 +483,7 @@
     "Retype the address.": "주소 다시 입력하기.",
     "Go back to the previous page.": "이전 페이지로 돌아가기.",
     "Coming Soon": "Coming Soon",
-    "wayToGetClickSendSMSToken": "{0}에서 API 사용자명과 키를 얻을 수 있습니다.",
+    "wayToGetClickSendSMSToken": "{here}에서 API 사용자명과 키를 얻을 수 있습니다.",
     "Custom Monitor Type": "커스텀 모니터",
     "deleteDockerHostMsg": "이 Docker 호스트를 모든 모니터에서 삭제하시겠습니까?",
     "trustProxyDescription": "'X-Forwarded-*' 헤더를 신뢰해요. 올바른 클라이언트 IP를 얻어야하고Uptime Kuma가 Nginx나 Apache 같은 프록시 뒤에 있다면 이 기능을 활성화해야 해요.",

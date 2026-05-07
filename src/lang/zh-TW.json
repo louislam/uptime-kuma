@@ -1103,7 +1103,7 @@
     "ariaDeleteMaintenance": "刪除此維護排程",
     "tagAlreadyStaged": "這個標籤（名稱和數值）已經準備就緒。",
     "tagNameExists": "已經有與此表情同名的系統標籤，請從清單中選擇或使用其他名稱。",
-    "issueWithGoogleChatOnAndroidHelptext": "這也能規避掉像是 {issustackerURL} 的問題",
+    "issueWithGoogleChatOnAndroidHelptext": "這也能規避掉像是 {issuetackerURL} 的問題",
     "Dingtalk User List": "使用者ID列表",
     "Enter a list of userId": "輸入使用者ID列表",
     "Dingtalk Mobile List": "行動裝置列表",

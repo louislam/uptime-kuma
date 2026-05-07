@@ -569,7 +569,7 @@
     "onebotUserOrGroupId": "Ryhmä/käyttäjätunnus",
     "onebotSafetyTips": "Käyttöoikeustunnus on asetettava turvallisuuden vuoksi",
     "PushDeer Key": "PushDeer-avain",
-    "wayToGetClickSendSMSToken": "Voit saada API-käyttäjänimen ja API-avaimen osoitteesta {0}.",
+    "wayToGetClickSendSMSToken": "Voit saada API-käyttäjänimen ja API-avaimen osoitteesta {here}.",
     "Custom Monitor Type": "Mukautettu seuraintyyppi",
     "Google Analytics ID": "Google Analytics -tunnus",
     "Edit Tag": "Muokkaa tunnistetta",

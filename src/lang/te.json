@@ -267,7 +267,7 @@
     "No Proxy": "ప్రాక్సీ లేదు",
     "All Systems Operational": "అన్ని సిస్టమ్స్ ఆపరేషనల్",
     "Edit Status Page": "స్థితి పేజీని సవరించండి",
-    "defaultNotificationName": "నా {నోటిఫికేషన్} హెచ్చరిక ({సంఖ్య})",
+    "defaultNotificationName": "నా {notification} హెచ్చరిక ({number})",
     "webhookJsonDesc": "Express.js వంటి ఏదైనా ఆధునిక HTTP సర్వర్‌లకు {0} మంచిది",
     "webhookAdditionalHeadersDesc": "webhookతో పంపబడిన అదనపు హెడర్లను సెట్ చేస్తుంది. ప్రతి హెడర్ JSON కీ/విలువగా నిర్వచించబడాలి.",
     "emojiCheatSheet": "ఎమోజి చీట్ షీట్: {0}",
