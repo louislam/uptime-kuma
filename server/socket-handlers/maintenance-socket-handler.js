@@ -6,6 +6,65 @@ const { UptimeKumaServer } = require("../uptime-kuma-server");
 const Maintenance = require("../model/maintenance");
 const server = UptimeKumaServer.getInstance();
 
+const MAINTENANCE_PAYLOAD_FIELDS = [
+    "title", "description", "strategy", "interval_day", "timezone", "active",
+    "start_date", "end_date", "start_time", "end_time", "weekdays",
+    "days_of_month", "cron", "duration",
+];
+
+/**
+ * Look up a maintenance and assert the caller owns it.
+ * Prefers the in-memory bean (carries beanMeta for run/stop); falls back
+ * to a DB lookup for handlers that only need ownership verification.
+ * @param {number} maintenanceID Maintenance row id
+ * @param {Socket} socket Socket.io socket carrying userID
+ * @returns {Promise<Maintenance>} the owned maintenance bean
+ * @throws {Error} "Permission denied." when missing or not owned
+ */
+async function requireOwnedMaintenance(maintenanceID, socket) {
+    let bean = server.getMaintenance(maintenanceID);
+    if (!bean) {
+        bean = await Maintenance.query().findById(maintenanceID);
+    }
+    if (!bean || bean.user_id !== socket.userID) {
+        throw new Error("Permission denied.");
+    }
+    return bean;
+}
+
+/**
+ * Atomically replace every row in a maintenance link table.
+ * @param {string} table Link table name
+ * @param {string} foreignKeyCol Column referencing the linked entity
+ * @param {number} maintenanceID Maintenance row id
+ * @param {Array<{id:number}>} items Items to link
+ * @returns {Promise<void>}
+ */
+async function replaceMaintenanceLinks(table, foreignKeyCol, maintenanceID, items) {
+    await getKnex().transaction(async (trx) => {
+        await trx(table).where("maintenance_id", maintenanceID).delete();
+        for (const item of items) {
+            await trx(table).insert({
+                [foreignKeyCol]: item.id,
+                maintenance_id: maintenanceID,
+            });
+        }
+    });
+}
+
+/**
+ * Project a maintenance bean down to the column subset stored on the row.
+ * @param {Maintenance} bean Maintenance bean
+ * @returns {object} insert/patch payload
+ */
+function maintenancePayload(bean) {
+    const payload = {};
+    for (const field of MAINTENANCE_PAYLOAD_FIELDS) {
+        payload[field] = bean[field];
+    }
+    return payload;
+}
+
 /**
  * Handlers for Maintenance
  * @param {Socket} socket Socket.io instance
@@ -22,23 +81,8 @@ module.exports.maintenanceSocketHandler = (socket) => {
             let bean = await Maintenance.jsonToBean(new Maintenance(), maintenance);
             bean.user_id = socket.userID;
 
-            const insertPayload = {
-                title: bean.title,
-                description: bean.description,
-                user_id: bean.user_id,
-                strategy: bean.strategy,
-                interval_day: bean.interval_day,
-                timezone: bean.timezone,
-                active: bean.active,
-                start_date: bean.start_date,
-                end_date: bean.end_date,
-                start_time: bean.start_time,
-                end_time: bean.end_time,
-                weekdays: bean.weekdays,
-                days_of_month: bean.days_of_month,
-                cron: bean.cron,
-                duration: bean.duration,
-            };
+            const insertPayload = maintenancePayload(bean);
+            insertPayload.user_id = bean.user_id;
 
             // Single row insert is atomic on its own, but wrap in a
             // transaction so future associated writes (status pages,
@@ -48,11 +92,10 @@ module.exports.maintenanceSocketHandler = (socket) => {
             });
             // Reuse the in-memory bean (with beanMeta etc.) but adopt the assigned id.
             bean.id = inserted.id;
-            const maintenanceID = bean.id;
 
             // In-memory state and cron scheduling happen after commit so a
             // failed insert never leaves a scheduled-but-unsaved maintenance.
-            server.maintenanceList[maintenanceID] = bean;
+            server.maintenanceList[bean.id] = bean;
             await bean.run(true);
 
             await server.sendMaintenanceList(socket);
@@ -61,7 +104,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
                 ok: true,
                 msg: "successAdded",
                 msgi18n: true,
-                maintenanceID,
+                maintenanceID: bean.id,
             });
         } catch (e) {
             callback({
@@ -76,32 +119,11 @@ module.exports.maintenanceSocketHandler = (socket) => {
         try {
             checkLogin(socket);
 
-            let bean = server.getMaintenance(maintenance.id);
-
-            if (bean.user_id !== socket.userID) {
-                throw new Error("Permission denied.");
-            }
+            const bean = await requireOwnedMaintenance(maintenance.id, socket);
 
             await Maintenance.jsonToBean(bean, maintenance);
 
-            const payload = {
-                title: bean.title,
-                description: bean.description,
-                strategy: bean.strategy,
-                interval_day: bean.interval_day,
-                timezone: bean.timezone,
-                active: bean.active,
-                start_date: bean.start_date,
-                end_date: bean.end_date,
-                start_time: bean.start_time,
-                end_time: bean.end_time,
-                weekdays: bean.weekdays,
-                days_of_month: bean.days_of_month,
-                cron: bean.cron,
-                duration: bean.duration,
-            };
-
-            await Maintenance.query().patchAndFetchById(bean.id, payload);
+            await Maintenance.query().patchAndFetchById(bean.id, maintenancePayload(bean));
             await bean.run(true);
             await server.sendMaintenanceList(socket);
 
@@ -124,19 +146,9 @@ module.exports.maintenanceSocketHandler = (socket) => {
     socket.on("addMonitorMaintenance", async (maintenanceID, monitors, callback) => {
         try {
             checkLogin(socket);
+            await requireOwnedMaintenance(maintenanceID, socket);
 
-            // Atomic: replace the link set in one transaction so a mid-loop
-            // failure can't leave a partial set of monitors attached.
-            await getKnex().transaction(async (trx) => {
-                await trx("monitor_maintenance").where("maintenance_id", maintenanceID).delete();
-
-                for await (const monitor of monitors) {
-                    await trx("monitor_maintenance").insert({
-                        monitor_id: monitor.id,
-                        maintenance_id: maintenanceID,
-                    });
-                }
-            });
+            await replaceMaintenanceLinks("monitor_maintenance", "monitor_id", maintenanceID, monitors);
 
             apicache.clear();
 
@@ -157,18 +169,9 @@ module.exports.maintenanceSocketHandler = (socket) => {
     socket.on("addMaintenanceStatusPage", async (maintenanceID, statusPages, callback) => {
         try {
             checkLogin(socket);
+            await requireOwnedMaintenance(maintenanceID, socket);
 
-            // Atomic: replace the status-page link set in one transaction.
-            await getKnex().transaction(async (trx) => {
-                await trx("maintenance_status_page").where("maintenance_id", maintenanceID).delete();
-
-                for await (const statusPage of statusPages) {
-                    await trx("maintenance_status_page").insert({
-                        status_page_id: statusPage.id,
-                        maintenance_id: maintenanceID,
-                    });
-                }
-            });
+            await replaceMaintenanceLinks("maintenance_status_page", "status_page_id", maintenanceID, statusPages);
 
             apicache.clear();
 
@@ -307,11 +310,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
 
             log.debug("maintenance", `Pause Maintenance: ${maintenanceID} User ID: ${socket.userID}`);
 
-            let maintenance = server.getMaintenance(maintenanceID);
-
-            if (!maintenance) {
-                throw new Error("Maintenance not found");
-            }
+            const maintenance = await requireOwnedMaintenance(maintenanceID, socket);
 
             maintenance.active = false;
             await maintenance.$query().patch({ active: false });
@@ -340,11 +339,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
 
             log.debug("maintenance", `Resume Maintenance: ${maintenanceID} User ID: ${socket.userID}`);
 
-            let maintenance = server.getMaintenance(maintenanceID);
-
-            if (!maintenance) {
-                throw new Error("Maintenance not found");
-            }
+            const maintenance = await requireOwnedMaintenance(maintenanceID, socket);
 
             maintenance.active = true;
             await maintenance.$query().patch({ active: true });
