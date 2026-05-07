@@ -1,6 +1,7 @@
 const PrometheusClient = require("prom-client");
 const { log } = require("../src/util");
 const Tag = require("./model/tag");
+const { startPoolMetricsTicker, registerPoolGauges } = require("./db-metrics");
 
 let monitorCertDaysRemaining = null;
 let monitorCertIsValid = null;
@@ -94,6 +95,12 @@ class Prometheus {
             help: "Monitor Status (1 = UP, 0= DOWN, 2= PENDING, 3= MAINTENANCE)",
             labelNames: commonLabels,
         });
+
+        // Register Knex connection-pool gauges and start the background
+        // ticker that keeps them current. Gauges are exposed via the same
+        // /metrics endpoint as the monitor metrics above. (Refs L-2.)
+        registerPoolGauges();
+        startPoolMetricsTicker();
     }
 
     /**
