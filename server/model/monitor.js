@@ -1695,6 +1695,15 @@ class Monitor extends BaseModel {
             }
         }
 
+        // Validate port range for monitor types that use a port. Some types
+        // (e.g. http, ping) have no port, so this is gated on a non-empty value.
+        if (this.port !== null && this.port !== undefined && this.port !== "") {
+            const p = Number(this.port);
+            if (!Number.isInteger(p) || p < 1 || p > 65535) {
+                throw new Error("Port must be an integer between 1 and 65535");
+            }
+        }
+
         // Validate JSON fields to prevent invalid JSON from being stored in database
         if (this.kafka_producer_brokers) {
             try {
