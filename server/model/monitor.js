@@ -1892,14 +1892,35 @@ class Monitor extends BaseModel {
             const maintenanceStatuses = await Promise.all(
                 monitorData.map((monitor) => Monitor.isUnderMaintenance(monitor.id))
             );
-            const childrenIDs = await Promise.all(monitorData.map((monitor) => Monitor.getAllChildrenIDs(monitor.id)));
+
+            // Load the full monitor adjacency list once and reuse it for both
+            // children traversal and path lookups. Avoids O(n*depth) round-trips.
+            const adjacencyRows = await getKnex()("monitor").select("id", "name", "parent");
+            const childrenByParent = new Map();
+            const monitorsByID = new Map();
+            for (const row of adjacencyRows) {
+                monitorsByID.set(row.id, row);
+                if (row.parent === null || row.parent === undefined) {
+                    continue;
+                }
+                if (!childrenByParent.has(row.parent)) {
+                    childrenByParent.set(row.parent, []);
+                }
+                childrenByParent.get(row.parent).push(row.id);
+            }
+
+            const childrenIDs = monitorData.map((monitor) =>
+                Monitor.collectChildrenIDs(monitor.id, childrenByParent)
+            );
             const activeStatuses = await Promise.all(
                 monitorData.map((monitor) => Monitor.isActive(monitor.id, monitor.active))
             );
             const forceInactiveStatuses = await Promise.all(
                 monitorData.map((monitor) => Monitor.isParentActive(monitor.id))
             );
-            const paths = await Promise.all(monitorData.map((monitor) => Monitor.getAllPath(monitor.id, monitor.name)));
+            const paths = monitorData.map((monitor) =>
+                Monitor.buildPathFromMap(monitor.id, monitor.name, monitorsByID)
+            );
 
             notifications.forEach((row) => {
                 if (!notificationsMap.has(row.monitor_id)) {
@@ -1987,12 +2008,40 @@ class Monitor extends BaseModel {
      * @returns {Promise<string[]>} Full path (includes groups and the name) of the monitor
      */
     static async getAllPath(monitorID, name) {
-        const path = [name];
+        // Load the full adjacency list in one query and walk in-memory rather
+        // than issuing one query per ancestor level.
+        const rows = await getKnex()("monitor").select("id", "name", "parent");
+        const monitorsByID = new Map();
+        for (const row of rows) {
+            monitorsByID.set(row.id, row);
+        }
+        return Monitor.buildPathFromMap(monitorID, name, monitorsByID);
+    }
 
-        let parent = await Monitor.getParent(monitorID);
-        while (parent != null && parent.id != null) {
+    /**
+     * Walk the in-memory monitor map to build the full ancestor path.
+     * Includes cycle protection via a `seen` set so a malformed parent loop
+     * cannot cause an infinite walk.
+     * @param {number} monitorID ID of the monitor to get
+     * @param {string} name name of the monitor to get
+     * @param {Map<number, {id: number, name: string, parent: number|null}>} monitorsByID adjacency map
+     * @returns {string[]} Full path (includes groups and the name) of the monitor
+     */
+    static buildPathFromMap(monitorID, name, monitorsByID) {
+        const path = [name];
+        const seen = new Set([monitorID]);
+
+        const start = monitorsByID.get(monitorID);
+        let parentID = start ? start.parent : null;
+
+        while (parentID !== null && parentID !== undefined && !seen.has(parentID)) {
+            seen.add(parentID);
+            const parent = monitorsByID.get(parentID);
+            if (!parent) {
+                break;
+            }
             path.unshift(parent.name);
-            parent = await Monitor.getParent(parent.id);
+            parentID = parent.parent;
         }
 
         return path;
@@ -2000,24 +2049,55 @@ class Monitor extends BaseModel {
 
     /**
      * Gets recursive all child ids
+     *
+     * Loads the full monitor adjacency list in a single query and traverses it
+     * in-memory. Previously this method recursed with one DB round-trip per
+     * level, producing O(depth * branching) queries; now it is O(1) queries.
      * @param {number} monitorID ID of the monitor to get
      * @returns {Promise<Array>} IDs of all children
      */
     static async getAllChildrenIDs(monitorID) {
-        const childs = await Monitor.getChildren(monitorID);
-
-        if (childs === null) {
-            return [];
+        const rows = await getKnex()("monitor").select("id", "parent");
+        const childrenByParent = new Map();
+        for (const row of rows) {
+            if (row.parent === null || row.parent === undefined) {
+                continue;
+            }
+            if (!childrenByParent.has(row.parent)) {
+                childrenByParent.set(row.parent, []);
+            }
+            childrenByParent.get(row.parent).push(row.id);
         }
+        return Monitor.collectChildrenIDs(monitorID, childrenByParent);
+    }
 
-        let childrenIDs = [];
-
-        for (const child of childs) {
-            childrenIDs.push(child.id);
-            childrenIDs = childrenIDs.concat(await Monitor.getAllChildrenIDs(child.id));
+    /**
+     * Walk an in-memory adjacency map (parent -> [child ids]) and collect every
+     * descendant of `monitorID`. Cycle-safe via a `seen` set.
+     * @param {number} monitorID ID of the monitor to traverse from
+     * @param {Map<number, number[]>} childrenByParent adjacency map keyed by parent ID
+     * @returns {number[]} IDs of all descendants
+     */
+    static collectChildrenIDs(monitorID, childrenByParent) {
+        const out = [];
+        const stack = [monitorID];
+        const seen = new Set();
+        while (stack.length) {
+            const id = stack.pop();
+            if (seen.has(id)) {
+                continue;
+            }
+            seen.add(id);
+            const kids = childrenByParent.get(id) || [];
+            for (const kid of kids) {
+                if (seen.has(kid)) {
+                    continue;
+                }
+                out.push(kid);
+                stack.push(kid);
+            }
         }
-
-        return childrenIDs;
+        return out;
     }
 
     /**
