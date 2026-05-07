@@ -637,7 +637,10 @@ exports.allowAllOrigin = (res) => {
  */
 exports.checkLogin = (socket) => {
     if (!socket.userID) {
-        throw new Error("You are not logged in.");
+        // UserFacingError so M-2's socketError helper passes the message
+        // through to the client instead of substituting a generic fallback.
+        const { UserFacingError } = require("./utils/socket-error");
+        throw new UserFacingError("You are not logged in.");
     }
 };
 

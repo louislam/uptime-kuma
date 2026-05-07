@@ -141,6 +141,7 @@ describe("Socket handler auto-discovery", () => {
             "docker-socket-handler.js",
             "general-socket-handler.js",
             "maintenance-socket-handler.js",
+            "notification-socket-handler.js",
             "proxy-socket-handler.js",
             "remote-browser-socket-handler.js",
             "status-page-socket-handler.js",
