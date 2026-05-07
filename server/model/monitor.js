@@ -706,7 +706,10 @@ class Monitor extends BeanModel {
                             try {
                                 response = JSON.parse(data);
                             } catch (_a) {
-                                response = (typeof data === "object" || typeof data === "number") && !Buffer.isBuffer(data) ? data : data.toString();
+                                response =
+                                    (typeof data === "object" || typeof data === "number") && !Buffer.isBuffer(data)
+                                        ? data
+                                        : data.toString();
                             }
 
                             response = this.jsonPath ? await jsonata(this.jsonPath).evaluate(response) : response;

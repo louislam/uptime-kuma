@@ -7,9 +7,7 @@ class JsonQueryMonitorType extends MonitorType {
 
     supportsConditions = true;
 
-    conditionVariables = [
-        new ConditionVariable("value", [...defaultStringOperators, ...defaultNumberOperators]),
-    ];
+    conditionVariables = [new ConditionVariable("value", [...defaultStringOperators, ...defaultNumberOperators])];
 }
 
 module.exports = {
