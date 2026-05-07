@@ -233,6 +233,19 @@ class UptimeKumaServer {
         if (list && list[monitorID]) {
             this.io.to(socket.userID).emit("updateMonitorIntoList", list);
         }
+
+        // Keep the maintenance cache's parent map in sync (H-4) since
+        // adding or re-parenting a monitor changes recursive maintenance.
+        try {
+            const maintenanceCache = require("./maintenance-cache");
+            const Monitor = require("./model/monitor");
+            const m = await Monitor.query().select("id", "parent").findById(monitorID);
+            if (m) {
+                maintenanceCache.setMonitorParent(m.id, m.parent ?? null);
+            }
+        } catch (e) {
+            log.debug("maintenance-cache", `Failed to refresh parent for monitor ${monitorID}: ${e.message}`);
+        }
     }
 
     /**
@@ -243,6 +256,15 @@ class UptimeKumaServer {
      */
     async sendDeleteMonitorFromList(socket, monitorID) {
         this.io.to(socket.userID).emit("deleteMonitorFromList", monitorID);
+
+        // Drop the monitor from the maintenance cache so it cannot
+        // contribute to future parent walks (H-4).
+        try {
+            const maintenanceCache = require("./maintenance-cache");
+            maintenanceCache.removeMonitor(monitorID);
+        } catch (e) {
+            log.debug("maintenance-cache", `Failed to remove monitor ${monitorID}: ${e.message}`);
+        }
     }
 
     /**
@@ -319,6 +341,7 @@ class UptimeKumaServer {
      */
     async loadMaintenanceList(userID) {
         const Maintenance = require("./model/maintenance");
+        const maintenanceCache = require("./maintenance-cache");
         let maintenanceList = await Maintenance.query()
             .orderBy("end_date", "desc")
             .orderBy("title");
@@ -327,6 +350,10 @@ class UptimeKumaServer {
             this.maintenanceList[maintenance.id] = maintenance;
             maintenance.run(this);
         }
+
+        // Populate the maintenance cache (H-4) so the heartbeat hot path
+        // can resolve `isUnderMaintenance` without hitting the DB.
+        await maintenanceCache.loadFromDb();
     }
 
     /**

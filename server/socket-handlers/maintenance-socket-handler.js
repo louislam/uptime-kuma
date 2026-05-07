@@ -4,6 +4,7 @@ const { getKnex } = require("../db");
 const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const Maintenance = require("../model/maintenance");
+const maintenanceCache = require("../maintenance-cache");
 const server = UptimeKumaServer.getInstance();
 
 const MAINTENANCE_PAYLOAD_FIELDS = [
@@ -150,6 +151,10 @@ module.exports.maintenanceSocketHandler = (socket) => {
 
             await replaceMaintenanceLinks("monitor_maintenance", "monitor_id", maintenanceID, monitors);
 
+            // Refresh the in-memory cache (H-4) so subsequent heartbeats
+            // observe the new monitor->maintenance links without a DB round-trip.
+            await maintenanceCache.loadFromDb();
+
             apicache.clear();
 
             callback({
@@ -286,6 +291,10 @@ module.exports.maintenanceSocketHandler = (socket) => {
 
             await getKnex()("maintenance").where({ id: maintenanceID,
                 user_id: socket.userID }).delete();
+
+            // The CASCADE on `monitor_maintenance` removed our links;
+            // refresh the cache so the heartbeat hot path stays in sync (H-4).
+            await maintenanceCache.loadFromDb();
 
             apicache.clear();
 

@@ -57,6 +57,7 @@ const { demoMode } = require("../config");
 const version = require("../../package.json").version;
 const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
+const maintenanceCache = require("../maintenance-cache");
 const { DockerHost } = require("../docker");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
@@ -497,7 +498,11 @@ class Monitor extends BaseModel {
             }
 
             try {
-                if (await Monitor.isUnderMaintenance(this.id)) {
+                // Hot path: resolve maintenance status from the in-memory
+                // cache instead of issuing a DB query per heartbeat (H-4).
+                // `Monitor.isUnderMaintenance` is preserved below for
+                // backward compatibility and any cold callers.
+                if (await maintenanceCache.isActive(this.id)) {
                     bean.msg = "Monitor under maintenance";
                     bean.status = MAINTENANCE;
                 } else if (this.type === "http" || this.type === "keyword" || this.type === "json-query") {
@@ -1695,7 +1700,13 @@ class Monitor extends BaseModel {
     }
 
     /**
-     * Check if monitor is under maintenance
+     * Check if monitor is under maintenance.
+     *
+     * NOTE: The heartbeat hot path now uses `maintenance-cache.js`
+     * (`maintenanceCache.isActive`) to avoid one or more DB round-trips
+     * per beat (issue H-4). This method is retained for cold callers
+     * (the bulk JSON-list path, tests, ad-hoc consumers) where an
+     * authoritative DB read is preferred.
      * @param {number} monitorID ID of monitor to check
      * @returns {Promise<boolean>} Is the monitor under maintenance
      */
