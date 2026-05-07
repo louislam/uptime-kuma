@@ -172,27 +172,62 @@ const {
     sendRemoteBrowserList,
     sendMonitorTypeList,
 } = require("./client");
-const { statusPageSocketHandler } = require("./socket-handlers/status-page-socket-handler");
-const { databaseSocketHandler } = require("./socket-handlers/database-socket-handler");
-const { remoteBrowserSocketHandler } = require("./socket-handlers/remote-browser-socket-handler");
 const TwoFA = require("./2fa");
 const StatusPage = require("./model/status_page");
 const {
-    cloudflaredSocketHandler,
     autoStart: cloudflaredAutoStart,
     stop: cloudflaredStop,
 } = require("./socket-handlers/cloudflared-socket-handler");
-const { proxySocketHandler } = require("./socket-handlers/proxy-socket-handler");
-const { dockerSocketHandler } = require("./socket-handlers/docker-socket-handler");
-const { maintenanceSocketHandler } = require("./socket-handlers/maintenance-socket-handler");
-const { apiKeySocketHandler } = require("./socket-handlers/api-key-socket-handler");
-const { generalSocketHandler } = require("./socket-handlers/general-socket-handler");
 const { Settings } = require("./settings");
 const apicache = require("./modules/apicache");
 const { resetChrome } = require("./monitor-types/real-browser-monitor-type");
 const { EmbeddedMariaDB } = require("./embedded-mariadb");
 const { SetupDatabase } = require("./setup-database");
-const { chartSocketHandler } = require("./socket-handlers/chart-socket-handler");
+
+// Auto-discover socket handlers. Each module under server/socket-handlers/
+// exports a registrar function (commonly as `*SocketHandler`). Files starting
+// with "_" are treated as private and skipped. Discovery is done at module
+// load time so connections don't pay a readdir cost.
+const socketHandlersFs = require("fs");
+const socketHandlersPath = require("path");
+const socketHandlersDir = socketHandlersPath.join(__dirname, "socket-handlers");
+/**
+ * Resolve the registrar function for a loaded socket-handler module.
+ * Modules typically export the registrar as a named property whose name ends
+ * with "SocketHandler". Falls back to a plain function export, then to the
+ * first function-valued export.
+ * @param {object|Function} mod The loaded handler module.
+ * @returns {Function|null} Registrar function, or null when none is found.
+ */
+const resolveSocketHandlerFn = (mod) => {
+    if (typeof mod === "function") {
+        return mod;
+    }
+    if (mod && typeof mod === "object") {
+        const namedKey = Object.keys(mod).find(
+            (k) => typeof mod[k] === "function" && k.endsWith("SocketHandler")
+        );
+        if (namedKey) {
+            return mod[namedKey];
+        }
+        const firstFn = Object.values(mod).find((v) => typeof v === "function");
+        if (firstFn) {
+            return firstFn;
+        }
+    }
+    return null;
+};
+const socketHandlers = socketHandlersFs.readdirSync(socketHandlersDir)
+    .filter((f) => f.endsWith(".js") && !f.startsWith("_"))
+    .sort()
+    .map((f) => {
+        const mod = require(socketHandlersPath.join(socketHandlersDir, f));
+        const fn = resolveSocketHandlerFn(mod);
+        if (!fn) {
+            throw new Error(`socket-handlers/${f} does not export a registrar function`);
+        }
+        return { file: f, fn };
+    });
 
 app.use(express.json());
 
@@ -1723,17 +1758,12 @@ let needSetup = false;
             }
         });
 
-        // Status Page Socket Handler for admin only
-        statusPageSocketHandler(socket);
-        cloudflaredSocketHandler(socket);
-        databaseSocketHandler(socket);
-        proxySocketHandler(socket);
-        dockerSocketHandler(socket);
-        maintenanceSocketHandler(socket);
-        apiKeySocketHandler(socket);
-        remoteBrowserSocketHandler(socket);
-        generalSocketHandler(socket, server);
-        chartSocketHandler(socket);
+        // Register all auto-discovered socket handlers. Pass `server` as a
+        // second argument so handlers that need it (e.g. general) receive it;
+        // handlers that take only `socket` will simply ignore the extra arg.
+        for (const { fn } of socketHandlers) {
+            fn(socket, server);
+        }
 
         log.debug("server", "added all socket handlers");
 
