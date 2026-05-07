@@ -88,6 +88,7 @@ log.debug("server", "Importing prometheus-api-metrics");
 const prometheusAPIMetrics = require("prometheus-api-metrics");
 const { passwordStrength } = require("check-password-strength");
 const TranslatableError = require("./translatable-error");
+const { socketError, UserFacingError } = require("./utils/socket-error");
 
 log.debug("server", "Importing 2FA Modules");
 const notp = require("notp");
@@ -605,10 +606,7 @@ let needSetup = false;
                     });
                 }
             } catch (error) {
-                callback({
-                    ok: false,
-                    msg: error.message,
-                });
+                socketError(callback, error, "Failed to prepare 2FA");
             }
         });
 
@@ -635,10 +633,7 @@ let needSetup = false;
             } catch (error) {
                 log.error("auth", `Error changing 2FA token. IP=${clientIP}`);
 
-                callback({
-                    ok: false,
-                    msg: error.message,
-                });
+                socketError(callback, error, "Failed to save 2FA token");
             }
         });
 
@@ -664,10 +659,7 @@ let needSetup = false;
             } catch (error) {
                 log.error("auth", `Error disabling 2FA token. IP=${clientIP}`);
 
-                callback({
-                    ok: false,
-                    msg: error.message,
-                });
+                socketError(callback, error, "Failed to disable 2FA");
             }
         });
 
@@ -694,10 +686,7 @@ let needSetup = false;
                     });
                 }
             } catch (error) {
-                callback({
-                    ok: false,
-                    msg: error.message,
-                });
+                socketError(callback, error, "Failed to verify token");
             }
         });
 
@@ -719,10 +708,7 @@ let needSetup = false;
                     });
                 }
             } catch (error) {
-                callback({
-                    ok: false,
-                    msg: error.message,
-                });
+                socketError(callback, error, "Failed to retrieve 2FA status");
             }
         });
 
@@ -737,7 +723,7 @@ let needSetup = false;
                 }
 
                 if ((await Database.countRows("user")) !== 0) {
-                    throw new Error(
+                    throw new UserFacingError(
                         "Uptime Kuma has been initialized. If you want to run setup again, please delete the database."
                     );
                 }
@@ -755,11 +741,7 @@ let needSetup = false;
                     msgi18n: true,
                 });
             } catch (e) {
-                callback({
-                    ok: false,
-                    msg: e.message,
-                    msgi18n: !!e.msgi18n,
-                });
+                socketError(callback, e, "Failed to complete setup");
             }
         });
 
@@ -777,7 +759,7 @@ let needSetup = false;
 
                 // Ensure status code ranges are strings
                 if (!monitor.accepted_statuscodes.every((code) => typeof code === "string")) {
-                    throw new Error("Accepted status codes are not all strings");
+                    throw new UserFacingError("Accepted status codes are not all strings");
                 }
                 monitor.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
                 delete monitor.accepted_statuscodes;
@@ -844,10 +826,7 @@ let needSetup = false;
                 log.error("monitor", `Error adding Monitor: ${monitor.id} User ID: ${socket.userID}`);
                 log.error("monitor", e.stack || e);
 
-                callback({
-                    ok: false,
-                    msg: e.message,
-                });
+                socketError(callback, e, "Failed to add monitor");
             }
         });
 
@@ -860,14 +839,14 @@ let needSetup = false;
                 let bean = await Monitor.query().findById(monitor.id);
 
                 if (bean.user_id !== socket.userID) {
-                    throw new Error("Permission denied.");
+                    throw new UserFacingError("Permission denied.");
                 }
 
                 // Check if Parent is Descendant (would cause endless loop)
                 if (monitor.parent !== null) {
                     const childIDs = await Monitor.getAllChildrenIDs(monitor.id);
                     if (childIDs.includes(monitor.parent)) {
-                        throw new Error("Invalid Monitor Group");
+                        throw new UserFacingError("Invalid Monitor Group");
                     }
                 }
 
@@ -878,7 +857,7 @@ let needSetup = false;
 
                 // Ensure status code ranges are strings
                 if (!monitor.accepted_statuscodes.every((code) => typeof code === "string")) {
-                    throw new Error("Accepted status codes are not all strings");
+                    throw new UserFacingError("Accepted status codes are not all strings");
                 }
 
                 let port = parseInt(monitor.port);
@@ -1021,11 +1000,7 @@ let needSetup = false;
                     monitorID: bean.id,
                 });
             } catch (e) {
-                log.error("monitor", e);
-                callback({
-                    ok: false,
-                    msg: e.message,
-                });
+                socketError(callback, e, "Failed to edit monitor");
             }
         });
 
@@ -1037,11 +1012,7 @@ let needSetup = false;
                     ok: true,
                 });
             } catch (e) {
-                log.error("monitor", e);
-                callback({
-                    ok: false,
-                    msg: e.message,
-                });
+                socketError(callback, e, "Failed to retrieve monitor list");
             }
         });
 
@@ -1059,10 +1030,7 @@ let needSetup = false;
                     monitor: monitor.toJSON(preloadData),
                 });
             } catch (e) {
-                callback({
-                    ok: false,
-                    msg: e.message,
-                });
+                socketError(callback, e, "Failed to retrieve monitor");
             }
         });
 
@@ -1078,12 +1046,21 @@ let needSetup = false;
                     tld: supportInfo.tld,
                 });
             } catch (e) {
-                callback({
-                    ok: false,
-                    msg: e.message,
-                    msgi18n: !!e.msgi18n,
-                    meta: e.meta ?? {},
-                });
+                log.error("socket", e);
+                if (e && (e.isUserFacing || e.msgi18n)) {
+                    callback({
+                        ok: false,
+                        msg: e.message,
+                        msgi18n: !!e.msgi18n,
+                        meta: e.meta ?? {},
+                    });
+                } else {
+                    callback({
+                        ok: false,
+                        msg: "Failed to check domain support",
+                        meta: {},
+                    });
+                }
             }
         });
 
@@ -1094,7 +1071,7 @@ let needSetup = false;
                 log.info("monitor", `Get Monitor Beats: ${monitorID} User ID: ${socket.userID}`);
 
                 if (period == null) {
-                    throw new Error("Invalid period.");
+                    throw new UserFacingError("Invalid period.");
                 }
 
                 const sqlHourOffset = Database.sqlHourOffset();
@@ -1109,10 +1086,7 @@ let needSetup = false;
                     data: list,
                 });
             } catch (e) {
-                callback({
-                    ok: false,
-                    msg: e.message,
-                });
+                socketError(callback, e, "Failed to retrieve monitor beats");
             }
         });
 
@@ -1129,10 +1103,7 @@ let needSetup = false;
                     msgi18n: true,
                 });
             } catch (e) {
-                callback({
-                    ok: false,
-                    msg: e.message,
-                });
+                socketError(callback, e, "Failed to resume monitor");
             }
         });
 
@@ -1148,10 +1119,7 @@ let needSetup = false;
                     msgi18n: true,
                 });
             } catch (e) {
-                callback({
-                    ok: false,
-                    msg: e.message,
-                });
+                socketError(callback, e, "Failed to pause monitor");
             }
         });
 
@@ -1254,10 +1222,7 @@ let needSetup = false;
                 });
                 await server.sendDeleteMonitorFromList(socket, monitorID);
             } catch (e) {
-                callback({
-                    ok: false,
-                    msg: e.message,
-                });
+                socketError(callback, e, "Failed to delete monitor");
             }
         });
 
@@ -1272,10 +1237,7 @@ let needSetup = false;
                     tags: list.map((bean) => bean.toJSON()),
                 });
             } catch (e) {
-                callback({
-                    ok: false,
-                    msg: e.message,
-                });
+                socketError(callback, e, "Failed to retrieve tags");
             }
         });
 
@@ -1293,10 +1255,7 @@ let needSetup = false;
                     tag: await bean.toJSON(),
                 });
             } catch (e) {
-                callback({
-                    ok: false,
-                    msg: e.message,
-                });
+                socketError(callback, e, "Failed to add tag");
             }
         });
 
@@ -1325,10 +1284,7 @@ let needSetup = false;
                     tag: await bean.toJSON(),
                 });
             } catch (e) {
-                callback({
-                    ok: false,
-                    msg: e.message,
-                });
+                socketError(callback, e, "Failed to edit tag");
             }
         });
 
@@ -1344,10 +1300,7 @@ let needSetup = false;
                     msgi18n: true,
                 });
             } catch (e) {
-                callback({
-                    ok: false,
-                    msg: e.message,
-                });
+                socketError(callback, e, "Failed to delete tag");
             }
         });
 
@@ -1369,10 +1322,7 @@ let needSetup = false;
                     msgi18n: true,
                 });
             } catch (e) {
-                callback({
-                    ok: false,
-                    msg: e.message,
-                });
+                socketError(callback, e, "Failed to add monitor tag");
             }
         });
 
@@ -1393,10 +1343,7 @@ let needSetup = false;
                     msgi18n: true,
                 });
             } catch (e) {
-                callback({
-                    ok: false,
-                    msg: e.message,
-                });
+                socketError(callback, e, "Failed to edit monitor tag");
             }
         });
 
@@ -1418,10 +1365,7 @@ let needSetup = false;
                     msgi18n: true,
                 });
             } catch (e) {
-                callback({
-                    ok: false,
-                    msg: e.message,
-                });
+                socketError(callback, e, "Failed to delete monitor tag");
             }
         });
 
@@ -1444,10 +1388,7 @@ let needSetup = false;
                     count: count,
                 });
             } catch (e) {
-                callback({
-                    ok: false,
-                    msg: e.message,
-                });
+                socketError(callback, e, "Failed to count important heartbeats");
             }
         });
 
@@ -1476,10 +1417,7 @@ let needSetup = false;
                     data: list,
                 });
             } catch (e) {
-                callback({
-                    ok: false,
-                    msg: e.message,
-                });
+                socketError(callback, e, "Failed to retrieve important heartbeats");
             }
         });
 
@@ -1488,7 +1426,7 @@ let needSetup = false;
                 checkLogin(socket);
 
                 if (!password.newPassword) {
-                    throw new Error("Invalid new password");
+                    throw new UserFacingError("Invalid new password");
                 }
 
                 if (passwordStrength(password.newPassword).value === "Too weak") {
@@ -1507,11 +1445,7 @@ let needSetup = false;
                     msgi18n: true,
                 });
             } catch (e) {
-                callback({
-                    ok: false,
-                    msg: e.message,
-                    msgi18n: !!e.msgi18n,
-                });
+                socketError(callback, e, "Failed to change password");
             }
         });
 
@@ -1529,10 +1463,7 @@ let needSetup = false;
                     data: data,
                 });
             } catch (e) {
-                callback({
-                    ok: false,
-                    msg: e.message,
-                });
+                socketError(callback, e, "Failed to retrieve settings");
             }
         });
 
@@ -1591,10 +1522,7 @@ let needSetup = false;
                 await sendInfo(socket);
                 await server.sendMaintenanceList(socket);
             } catch (e) {
-                callback({
-                    ok: false,
-                    msg: e.message,
-                });
+                socketError(callback, e, "Failed to save settings");
             }
         });
 
@@ -1613,10 +1541,7 @@ let needSetup = false;
                     id: notificationBean.id,
                 });
             } catch (e) {
-                callback({
-                    ok: false,
-                    msg: e.message,
-                });
+                socketError(callback, e, "Failed to save notification");
             }
         });
 
@@ -1633,10 +1558,7 @@ let needSetup = false;
                     msgi18n: true,
                 });
             } catch (e) {
-                callback({
-                    ok: false,
-                    msg: e.message,
-                });
+                socketError(callback, e, "Failed to delete notification");
             }
         });
 
@@ -1651,12 +1573,7 @@ let needSetup = false;
                     msg,
                 });
             } catch (e) {
-                log.error("server", e);
-
-                callback({
-                    ok: false,
-                    msg: e.message,
-                });
+                socketError(callback, e, "Failed to send test notification");
             }
         });
 
@@ -1688,10 +1605,7 @@ let needSetup = false;
                     msg: publicVapidKey,
                 });
             } catch (e) {
-                callback({
-                    ok: false,
-                    msg: e.message,
-                });
+                socketError(callback, e, "Failed to retrieve VAPID public key");
             }
         });
 
@@ -1708,10 +1622,7 @@ let needSetup = false;
                     ok: true,
                 });
             } catch (e) {
-                callback({
-                    ok: false,
-                    msg: e.message,
-                });
+                socketError(callback, e, "Failed to clear events");
             }
         });
 
@@ -1736,10 +1647,7 @@ let needSetup = false;
                     ok: true,
                 });
             } catch (e) {
-                callback({
-                    ok: false,
-                    msg: e.message,
-                });
+                socketError(callback, e, "Failed to clear heartbeats");
             }
         });
 
@@ -1763,10 +1671,7 @@ let needSetup = false;
                     ok: true,
                 });
             } catch (e) {
-                callback({
-                    ok: false,
-                    msg: e.message,
-                });
+                socketError(callback, e, "Failed to clear statistics");
             }
         });
 

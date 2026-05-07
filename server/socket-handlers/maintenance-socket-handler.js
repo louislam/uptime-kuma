@@ -5,6 +5,7 @@ const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const Maintenance = require("../model/maintenance");
 const maintenanceCache = require("../maintenance-cache");
+const { socketError, UserFacingError } = require("../utils/socket-error");
 const server = UptimeKumaServer.getInstance();
 
 const MAINTENANCE_PAYLOAD_FIELDS = [
@@ -28,7 +29,7 @@ async function requireOwnedMaintenance(maintenanceID, socket) {
         bean = await Maintenance.query().findById(maintenanceID);
     }
     if (!bean || bean.user_id !== socket.userID) {
-        throw new Error("Permission denied.");
+        throw new UserFacingError("Permission denied.");
     }
     return bean;
 }
@@ -108,10 +109,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
                 maintenanceID: bean.id,
             });
         } catch (e) {
-            callback({
-                ok: false,
-                msg: e.message,
-            });
+            socketError(callback, e, "Failed to add maintenance");
         }
     });
 
@@ -135,11 +133,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
                 maintenanceID: bean.id,
             });
         } catch (e) {
-            log.error("maintenance", e);
-            callback({
-                ok: false,
-                msg: e.message,
-            });
+            socketError(callback, e, "Failed to edit maintenance");
         }
     });
 
@@ -163,10 +157,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
                 msgi18n: true,
             });
         } catch (e) {
-            callback({
-                ok: false,
-                msg: e.message,
-            });
+            socketError(callback, e, "Failed to add monitor maintenance");
         }
     });
 
@@ -186,10 +177,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
                 msgi18n: true,
             });
         } catch (e) {
-            callback({
-                ok: false,
-                msg: e.message,
-            });
+            socketError(callback, e, "Failed to add maintenance status page");
         }
     });
 
@@ -207,10 +195,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
                 maintenance: await bean.toJSON(),
             });
         } catch (e) {
-            callback({
-                ok: false,
-                msg: e.message,
-            });
+            socketError(callback, e, "Failed to retrieve maintenance");
         }
     });
 
@@ -222,11 +207,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
                 ok: true,
             });
         } catch (e) {
-            log.error("maintenance", e);
-            callback({
-                ok: false,
-                msg: e.message,
-            });
+            socketError(callback, e, "Failed to retrieve maintenance list");
         }
     });
 
@@ -246,11 +227,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
                 monitors,
             });
         } catch (e) {
-            log.error("maintenance", e);
-            callback({
-                ok: false,
-                msg: e.message,
-            });
+            socketError(callback, e, "Failed to retrieve monitors for maintenance");
         }
     });
 
@@ -270,11 +247,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
                 statusPages,
             });
         } catch (e) {
-            log.error("maintenance", e);
-            callback({
-                ok: false,
-                msg: e.message,
-            });
+            socketError(callback, e, "Failed to retrieve status pages for maintenance");
         }
     });
 
@@ -306,10 +279,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
 
             await server.sendMaintenanceList(socket);
         } catch (e) {
-            callback({
-                ok: false,
-                msg: e.message,
-            });
+            socketError(callback, e, "Failed to delete maintenance");
         }
     });
 
@@ -335,10 +305,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
 
             await server.sendMaintenanceList(socket);
         } catch (e) {
-            callback({
-                ok: false,
-                msg: e.message,
-            });
+            socketError(callback, e, "Failed to pause maintenance");
         }
     });
 
@@ -364,10 +331,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
 
             await server.sendMaintenanceList(socket);
         } catch (e) {
-            callback({
-                ok: false,
-                msg: e.message,
-            });
+            socketError(callback, e, "Failed to resume maintenance");
         }
     });
 };

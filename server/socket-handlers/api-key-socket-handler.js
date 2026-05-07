@@ -7,6 +7,7 @@ const apicache = require("../modules/apicache");
 const APIKey = require("../model/api_key");
 const { Settings } = require("../settings");
 const { sendAPIKeyList } = require("../client");
+const { socketError } = require("../utils/socket-error");
 
 /**
  * Handlers for API keys
@@ -44,10 +45,7 @@ module.exports.apiKeySocketHandler = (socket) => {
                 keyID: bean.id,
             });
         } catch (e) {
-            callback({
-                ok: false,
-                msg: e.message,
-            });
+            socketError(callback, e, "Failed to add API key");
         }
     });
 
@@ -59,11 +57,7 @@ module.exports.apiKeySocketHandler = (socket) => {
                 ok: true,
             });
         } catch (e) {
-            log.error("apikeys", e);
-            callback({
-                ok: false,
-                msg: e.message,
-            });
+            socketError(callback, e, "Failed to retrieve API key list");
         }
     });
 
@@ -86,10 +80,7 @@ module.exports.apiKeySocketHandler = (socket) => {
 
             await sendAPIKeyList(socket);
         } catch (e) {
-            callback({
-                ok: false,
-                msg: e.message,
-            });
+            socketError(callback, e, "Failed to delete API key");
         }
     });
 
@@ -112,10 +103,7 @@ module.exports.apiKeySocketHandler = (socket) => {
 
             await sendAPIKeyList(socket);
         } catch (e) {
-            callback({
-                ok: false,
-                msg: e.message,
-            });
+            socketError(callback, e, "Failed to disable API key");
         }
     });
 
@@ -138,10 +126,7 @@ module.exports.apiKeySocketHandler = (socket) => {
 
             await sendAPIKeyList(socket);
         } catch (e) {
-            callback({
-                ok: false,
-                msg: e.message,
-            });
+            socketError(callback, e, "Failed to enable API key");
         }
     });
 };

@@ -11,6 +11,7 @@ const apicache = require("../modules/apicache");
 const StatusPage = require("../model/status_page");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { Settings } = require("../settings");
+const { socketError, UserFacingError } = require("../utils/socket-error");
 
 /**
  * Validates incident data
@@ -20,10 +21,10 @@ const { Settings } = require("../settings");
  */
 function validateIncident(incident) {
     if (!incident.title || incident.title.trim() === "") {
-        throw new Error("Please input title");
+        throw new UserFacingError("Please input title");
     }
     if (!incident.content || incident.content.trim() === "") {
-        throw new Error("Please input content");
+        throw new UserFacingError("Please input content");
     }
 }
 
@@ -41,7 +42,7 @@ module.exports.statusPageSocketHandler = (socket) => {
             let statusPageID = await StatusPage.slugToID(slug);
 
             if (!statusPageID) {
-                throw new Error("slug is not found");
+                throw new UserFacingError("slug is not found");
             }
 
             let incidentBean = null;
@@ -72,10 +73,7 @@ module.exports.statusPageSocketHandler = (socket) => {
                 incident: incidentBean.toPublicJSON(),
             });
         } catch (error) {
-            callback({
-                ok: false,
-                msg: error.message,
-            });
+            socketError(callback, error, "Failed to post incident");
         }
     });
 
@@ -92,10 +90,7 @@ module.exports.statusPageSocketHandler = (socket) => {
                 ok: true,
             });
         } catch (error) {
-            callback({
-                ok: false,
-                msg: error.message,
-            });
+            socketError(callback, error, "Failed to unpin incident");
         }
     });
 
@@ -103,7 +98,7 @@ module.exports.statusPageSocketHandler = (socket) => {
         try {
             let statusPageID = await StatusPage.slugToID(slug);
             if (!statusPageID) {
-                throw new Error("slug is not found");
+                throw new UserFacingError("slug is not found");
             }
 
             const isPublic = !socket.userID;
@@ -113,10 +108,7 @@ module.exports.statusPageSocketHandler = (socket) => {
                 ...result,
             });
         } catch (error) {
-            callback({
-                ok: false,
-                msg: error.message,
-            });
+            socketError(callback, error, "Failed to retrieve incident history");
         }
     });
 
@@ -145,16 +137,7 @@ module.exports.statusPageSocketHandler = (socket) => {
                 return;
             }
 
-            try {
-                validateIncident(incident);
-            } catch (e) {
-                callback({
-                    ok: false,
-                    msg: e.message,
-                    msgi18n: true,
-                });
-                return;
-            }
+            validateIncident(incident);
 
             const validStyles = ["info", "warning", "danger", "primary", "light", "dark"];
             if (!validStyles.includes(incident.style)) {
@@ -176,11 +159,7 @@ module.exports.statusPageSocketHandler = (socket) => {
                 incident: bean.toPublicJSON(),
             });
         } catch (error) {
-            callback({
-                ok: false,
-                msg: error.message,
-                msgi18n: true,
-            });
+            socketError(callback, error, "Failed to edit incident");
         }
     });
 
@@ -215,11 +194,7 @@ module.exports.statusPageSocketHandler = (socket) => {
                 msgi18n: true,
             });
         } catch (error) {
-            callback({
-                ok: false,
-                msg: error.message,
-                msgi18n: true,
-            });
+            socketError(callback, error, "Failed to delete incident");
         }
     });
 
@@ -257,11 +232,7 @@ module.exports.statusPageSocketHandler = (socket) => {
                 incident: bean.toPublicJSON(),
             });
         } catch (error) {
-            callback({
-                ok: false,
-                msg: error.message,
-                msgi18n: true,
-            });
+            socketError(callback, error, "Failed to resolve incident");
         }
     });
 
@@ -272,7 +243,7 @@ module.exports.statusPageSocketHandler = (socket) => {
             let statusPage = await StatusPage.query().where("slug", slug).first();
 
             if (!statusPage) {
-                throw new Error("No slug?");
+                throw new UserFacingError("No slug?");
             }
 
             callback({
@@ -280,10 +251,7 @@ module.exports.statusPageSocketHandler = (socket) => {
                 config: await statusPage.toJSON(),
             });
         } catch (error) {
-            callback({
-                ok: false,
-                msg: error.message,
-            });
+            socketError(callback, error, "Failed to retrieve status page");
         }
     });
 
@@ -297,7 +265,7 @@ module.exports.statusPageSocketHandler = (socket) => {
             let statusPage = await StatusPage.query().where("slug", slug).first();
 
             if (!statusPage) {
-                throw new Error("No slug?");
+                throw new UserFacingError("No slug?");
             }
 
             checkSlug(config.slug);
@@ -309,7 +277,7 @@ module.exports.statusPageSocketHandler = (socket) => {
             // Else assume it is a url, nothing to do
             if (imgDataUrl.startsWith("data:")) {
                 if (!imgDataUrl.startsWith(header)) {
-                    throw new Error("Only allowed PNG logo.");
+                    throw new UserFacingError("Only allowed PNG logo.");
                 }
 
                 const filename = `logo${statusPage.id}.png`;
@@ -323,7 +291,7 @@ module.exports.statusPageSocketHandler = (socket) => {
 
             const validAnalyticsTypes = ["google", "umami", "plausible", "matomo"];
             if (config.analyticsType !== null && !validAnalyticsTypes.includes(config.analyticsType)) {
-                throw new Error("Invalid analytics type");
+                throw new UserFacingError("Invalid analytics type");
             }
 
             const statusPagePayload = {
@@ -428,12 +396,7 @@ module.exports.statusPageSocketHandler = (socket) => {
                 publicGroupList,
             });
         } catch (error) {
-            log.error("socket", error);
-
-            callback({
-                ok: false,
-                msg: error.message,
-            });
+            socketError(callback, error, "Failed to save status page");
         }
     });
 
@@ -447,12 +410,12 @@ module.exports.statusPageSocketHandler = (socket) => {
 
             // Check empty
             if (!title || !slug) {
-                throw new Error("Please input all fields");
+                throw new UserFacingError("Please input all fields");
             }
 
             // Make sure slug is string
             if (typeof slug !== "string") {
-                throw new Error("Slug -Accept string only");
+                throw new UserFacingError("Slug -Accept string only");
             }
 
             // lower case only
@@ -475,11 +438,7 @@ module.exports.statusPageSocketHandler = (socket) => {
                 slug: slug,
             });
         } catch (error) {
-            log.error("socket", error);
-            callback({
-                ok: false,
-                msg: error.message,
-            });
+            socketError(callback, error, "Failed to add status page");
         }
     });
 
@@ -512,17 +471,14 @@ module.exports.statusPageSocketHandler = (socket) => {
 
                 apicache.clear();
             } else {
-                throw new Error("Status Page is not found");
+                throw new UserFacingError("Status Page is not found");
             }
 
             callback({
                 ok: true,
             });
         } catch (error) {
-            callback({
-                ok: false,
-                msg: error.message,
-            });
+            socketError(callback, error, "Failed to delete status page");
         }
     });
 };
@@ -536,16 +492,16 @@ module.exports.statusPageSocketHandler = (socket) => {
  */
 function checkSlug(slug) {
     if (typeof slug !== "string") {
-        throw new Error("Slug must be string");
+        throw new UserFacingError("Slug must be string");
     }
 
     slug = slug.trim();
 
     if (!slug) {
-        throw new Error("Slug cannot be empty");
+        throw new UserFacingError("Slug cannot be empty");
     }
 
     if (!slug.match(/^[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*$/)) {
-        throw new Error("Invalid Slug");
+        throw new UserFacingError("Invalid Slug");
     }
 }
