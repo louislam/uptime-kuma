@@ -193,6 +193,21 @@ class Maintenance extends BaseModel {
             bean.end_date = null;
         }
 
+        // Guard against clients that bypass the UI: reject end <= start.
+        // "manual" never has either date (the form hides them), so this
+        // only fires for strategies that actually use a date range.
+        if (bean.start_date && bean.end_date) {
+            const start = new Date(bean.start_date);
+            const end = new Date(bean.end_date);
+            if (
+                !isNaN(start.getTime()) &&
+                !isNaN(end.getTime()) &&
+                end.getTime() <= start.getTime()
+            ) {
+                throw new Error("End date must be after start date.");
+            }
+        }
+
         if (bean.strategy === "cron") {
             bean.duration = obj.durationMinutes * 60;
             bean.cron = obj.cron;

@@ -178,6 +178,85 @@ describe("Maintenance model", () => {
         }
     });
 
+    describe("jsonToBean validation", () => {
+        test("Maintenance with end_date before start_date is rejected", async () => {
+            const bean = new Maintenance();
+            const obj = {
+                title: "reverse-dates",
+                description: "end before start",
+                strategy: "single",
+                intervalDay: 1,
+                timezoneOption: "UTC",
+                active: true,
+                dateRange: ["2026-05-10 12:00:00", "2026-05-09 12:00:00"],
+                timeRange: [
+                    { hours: 0, minutes: 0 },
+                    { hours: 0, minutes: 0 },
+                ],
+                weekdays: [],
+                daysOfMonth: [],
+            };
+
+            await assert.rejects(
+                async () => {
+                    await Maintenance.jsonToBean(bean, obj);
+                },
+                /End date must be after start date\./,
+                "jsonToBean should reject when end_date <= start_date"
+            );
+        });
+
+        test("Maintenance with end_date equal to start_date is rejected", async () => {
+            const bean = new Maintenance();
+            const obj = {
+                title: "equal-dates",
+                description: "end equals start",
+                strategy: "single",
+                intervalDay: 1,
+                timezoneOption: "UTC",
+                active: true,
+                dateRange: ["2026-05-10 12:00:00", "2026-05-10 12:00:00"],
+                timeRange: [
+                    { hours: 0, minutes: 0 },
+                    { hours: 0, minutes: 0 },
+                ],
+                weekdays: [],
+                daysOfMonth: [],
+            };
+
+            await assert.rejects(
+                async () => {
+                    await Maintenance.jsonToBean(bean, obj);
+                },
+                /End date must be after start date\./,
+                "jsonToBean should reject when end_date == start_date"
+            );
+        });
+
+        test("Maintenance with end_date after start_date is accepted", async () => {
+            const bean = new Maintenance();
+            const obj = {
+                title: "valid-dates",
+                description: "end after start",
+                strategy: "single",
+                intervalDay: 1,
+                timezoneOption: "UTC",
+                active: true,
+                dateRange: ["2026-05-09 12:00:00", "2026-05-10 12:00:00"],
+                timeRange: [
+                    { hours: 0, minutes: 0 },
+                    { hours: 0, minutes: 0 },
+                ],
+                weekdays: [],
+                daysOfMonth: [],
+            };
+
+            await assert.doesNotReject(async () => {
+                await Maintenance.jsonToBean(bean, obj);
+            }, "jsonToBean should accept a valid date range");
+        });
+    });
+
     describe("toPublicJSON", () => {
         test("returns expected timeslotList for 'single' strategy without throwing", async () => {
             const inserted = await Maintenance.query().insert(

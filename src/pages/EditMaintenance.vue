@@ -827,6 +827,26 @@ export default {
                 return;
             }
 
+            // Reject end_date <= start_date for any strategy that uses a
+            // date range. "manual" has no end date at all, so skip there.
+            if (this.maintenance.strategy !== "manual") {
+                const startRaw = this.maintenance.dateRange?.[0];
+                const endRaw = this.maintenance.dateRange?.[1];
+                if (startRaw && endRaw) {
+                    const start = new Date(startRaw);
+                    const end = new Date(endRaw);
+                    if (
+                        !isNaN(start.getTime()) &&
+                        !isNaN(end.getTime()) &&
+                        end.getTime() <= start.getTime()
+                    ) {
+                        this.$root.toastError(this.$t("invalidDateRange"));
+                        this.processing = false;
+                        return;
+                    }
+                }
+            }
+
             if (this.isAdd || this.isClone) {
                 this.$root.addMaintenance(this.maintenance, async (res) => {
                     if (res.ok) {
