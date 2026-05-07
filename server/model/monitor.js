@@ -441,6 +441,12 @@ class Monitor extends BaseModel {
 
         this.rootCertificates = rootCertificates;
 
+        // Pre-fetch static per-monitor config (proxy, docker host) so the
+        // beat() closure does not requery these on every heartbeat. They
+        // only change via editMonitor, which restarts the monitor and
+        // re-runs this method. See H-3 in docs/ARCHITECTURE_REVIEW.md.
+        await this._refreshStaticConfig();
+
         try {
             this.prometheus = new Prometheus(this, await this.getTags());
         } catch (e) {
@@ -602,7 +608,9 @@ class Monitor extends BaseModel {
                     }
 
                     if (this.proxy_id) {
-                        const proxy = await ProxyModel.query().findById(this.proxy_id);
+                        // Use the pre-fetched bean populated in start(); see
+                        // _refreshStaticConfig().
+                        const proxy = this._proxyBean;
 
                         if (proxy && proxy.active) {
                             const { httpAgent, httpsAgent } = Proxy.createAgents(proxy, {
@@ -859,7 +867,9 @@ class Monitor extends BaseModel {
                         }),
                     };
 
-                    const dockerHost = await DockerHostModel.query().findById(this.docker_host);
+                    // Use the pre-fetched bean populated in start(); see
+                    // _refreshStaticConfig().
+                    const dockerHost = this._dockerHostBean;
 
                     if (!dockerHost) {
                         throw new Error("Failed to load docker host config");
@@ -1276,6 +1286,28 @@ class Monitor extends BaseModel {
         this.isStop = true;
 
         this.prometheus?.remove();
+    }
+
+    /**
+     * Refresh per-monitor static config that beat() needs but should
+     * not requery on every heartbeat (proxy and docker host beans).
+     *
+     * Called from start(); editMonitor flows go through stop() →
+     * start(), so the cached values stay in sync without an explicit
+     * invalidation hook on the running instance.
+     * @returns {Promise<void>}
+     */
+    async _refreshStaticConfig() {
+        if (this.proxy_id) {
+            this._proxyBean = await ProxyModel.query().findById(this.proxy_id);
+        } else {
+            this._proxyBean = null;
+        }
+        if (this.docker_host) {
+            this._dockerHostBean = await DockerHostModel.query().findById(this.docker_host);
+        } else {
+            this._dockerHostBean = null;
+        }
     }
 
     /**
