@@ -385,10 +385,14 @@ class Monitor extends BaseModel {
 
     /**
      * Get accepted status codes
+     * Parsed once and cached; cleared by editMonitor when accepted_statuscodes_json changes.
      * @returns {object} Accepted status codes
      */
     getAcceptedStatuscodes() {
-        return safeJsonParse(this.accepted_statuscodes_json, [ "200" ], "accepted_statuscodes_json");
+        if (this._acceptedStatuscodes === undefined) {
+            this._acceptedStatuscodes = safeJsonParse(this.accepted_statuscodes_json, [ "200" ], "accepted_statuscodes_json");
+        }
+        return this._acceptedStatuscodes;
     }
 
     /**
@@ -1313,6 +1317,8 @@ class Monitor extends BaseModel {
         } else {
             this._dockerHostBean = null;
         }
+        // Invalidate per-instance parsed caches so editMonitor changes take effect.
+        this._acceptedStatuscodes = undefined;
     }
 
     /**
