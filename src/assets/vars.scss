@@ -21,3 +21,22 @@ $easing-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
 $easing-in-out: cubic-bezier(0.79, 0.14, 0.15, 0.86);
 
 $dropdown-border-radius: 0.5rem;
+
+// ---------------------------------------------------------------------------
+// Density tokens — used by the compact UI layer (_compact.scss). Keeping
+// them here so individual components can opt in (@import "../assets/vars")
+// without having to know where the canonical density numbers live.
+// ---------------------------------------------------------------------------
+$ui-row-pad-y: 0.45rem;
+$ui-row-pad-x: 0.85rem;
+$ui-card-pad: 0.85rem;
+$ui-card-pad-lg: 1rem;
+$ui-radius-sm: 0.375rem;
+$ui-radius: 0.5rem;
+$ui-radius-lg: 0.75rem;
+
+// Subtle elevations. Replace the heavy default Bootstrap shadows on hover
+// states; we want a hint of depth, not Material elevation 12.
+$ui-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+$ui-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+$ui-shadow-lg: 0 6px 18px rgba(0, 0, 0, 0.08);

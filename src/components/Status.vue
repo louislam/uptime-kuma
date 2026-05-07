@@ -58,6 +58,11 @@ export default {
 
 <style scoped>
 span {
-    min-width: 64px;
+    /*
+     * Was min-width: 64px — forced every pill to a fixed width and made the
+     * dashboard look like a bingo card. Let the badge size to its label;
+     * alignment is handled by the surrounding flex layout.
+     */
+    min-width: 0;
 }
 </style>

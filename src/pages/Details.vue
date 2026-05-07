@@ -150,9 +150,8 @@
                     </div>
                     <div class="col-md-4 text-center">
                         <span
-                            class="badge rounded-pill"
+                            class="badge rounded-pill status-pill-lg"
                             :class="'bg-' + status.color"
-                            style="font-size: 30px"
                             data-testid="monitor-status"
                         >
                             {{ status.text }}
@@ -917,8 +916,9 @@ export default {
 
 .url {
     color: $primary;
-    margin-bottom: 20px;
-    font-weight: bold;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
 
     a {
         color: $primary;
@@ -926,8 +926,20 @@ export default {
 }
 
 .shadow-box {
-    padding: 20px;
-    margin-top: 25px;
+    // Was 20/25px — too much air between blocks. Tightening pulls the
+    // page up, especially on detail views with 6+ stacked shadow-boxes.
+    padding: 12px;
+    margin-top: 14px;
+}
+
+.status-pill-lg {
+    // Hero status pill on the monitor detail page. Was inline
+    // font-size: 30px which made the pill larger than the action
+    // buttons next to it. Quiet it down — still bigger than the inline
+    // pills in monitor-list rows, but proportional to the heading.
+    font-size: 1rem;
+    padding: 0.45em 1em;
+    min-width: 4.5rem;
 }
 
 .word {
@@ -949,10 +961,12 @@ table {
 }
 
 .stats {
-    padding: 10px;
+    padding: 6px;
 
     .col {
-        margin: 20px 0;
+        // Was 20px top/bottom — the stats row (Ping / Avg / Uptime …)
+        // wasted ~80px of vertical space below the heartbeat bar.
+        margin: 8px 0;
     }
 }
 

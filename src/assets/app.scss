@@ -1,9 +1,14 @@
 @import "vars.scss";
 @import "multiselect.scss";
 @import "node_modules/bootstrap/scss/bootstrap";
+// Density / typography overrides on top of Bootstrap. Loaded last so it wins
+// the cascade against Bootstrap's defaults but stays beatable by component
+// scoped style blocks. See _compact.scss for the rationale per rule.
+@import "_compact.scss";
 
 #app {
     font-family:
+        "Inter",
         "Twemoji Country Flags",
         BlinkMacSystemFont,
         segoe ui,
@@ -16,14 +21,7 @@
         segoe ui emoji,
         segoe ui symbol,
         noto color emoji;
-}
-
-h1 {
-    font-size: 32px;
-}
-
-h2 {
-    font-size: 26px;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";  // nicer Inter alternates if available
 }
 
 textarea.form-control {
@@ -108,22 +106,23 @@ optgroup {
 
 .shadow-box {
     //overflow: hidden;   // Forget why add this, but multiple select hide by this
-    box-shadow: 0 15px 70px rgba(0, 0, 0, 0.1);
+    // Was 0 15px 70px rgba(0,0,0,0.1) — a huge soft drop that gave the
+    // dashboard a marketing feel. Subtle elevation reads as "card",
+    // 70px blur read as "hero".
+    box-shadow: $ui-shadow;
     padding: 10px;
-    border-radius: 10px;
+    border-radius: $ui-radius-lg;
 
     &.big-padding {
-        padding: 20px;
+        padding: 14px;  // was 20px; the shadow-box grids on Details.vue had heavy top/bottom whitespace that made the page feel oversized.
     }
 }
 
-.btn {
-    padding-left: 20px;
-    padding-right: 20px;
-}
+// .btn padding is owned by _compact.scss now (--bs-btn-padding-* tokens).
+// Don't reintroduce the old 20px sides here.
 
 .btn-sm {
-    border-radius: 25px;
+    border-radius: $ui-radius-sm;
 }
 
 .btn-primary {
@@ -619,7 +618,7 @@ h5.settings-subheading::after {
 /* required class */
 .code-editor,
 .css-editor {
-    /* we dont use `language-` classes anymore so thats why we need to add background and text color manually */
+    /* we dont use language- classes anymore so thats why we need to add background and text color manually */
 
     border-radius: 1rem;
     padding: 10px 5px;

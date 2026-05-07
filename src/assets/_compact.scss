@@ -1,0 +1,121 @@
+// -----------------------------------------------------------------------------
+// Compact UI layer (Uptime Panda).
+//
+// Density / spacing / typography overrides applied on top of Bootstrap. Goal:
+// fit more on the dashboard and pull the visual weight down without breaking
+// any existing template structure (Vue components, data-testid hooks, i18n
+// strings) so e2e tests and translations stay valid.
+//
+// Loaded after Bootstrap from app.scss.
+// -----------------------------------------------------------------------------
+
+@import "vars.scss";
+
+// ---------------------------------------------------------------------------
+// Typography — Bootstrap defaults (h1: 2.5rem ~ 40px, h2: 2rem ~ 32px) are
+// over-scaled for an admin/ops UI. Quiet them down so the dashboard stops
+// looking like a marketing page.
+// ---------------------------------------------------------------------------
+h1 { font-size: 1.5rem; }   // 24px (was 32 in app.scss)
+h2 { font-size: 1.25rem; }  // 20px (was 26)
+h3 { font-size: 1.125rem; } // 18px
+h4 { font-size: 1rem; }
+h5 { font-size: 0.95rem; }
+
+// ---------------------------------------------------------------------------
+// List groups — the dashboard is mostly nested list-groups (groups, monitors,
+// children). Default Bootstrap padding is 0.75rem 1.25rem; trim by ~40%.
+// ---------------------------------------------------------------------------
+.list-group-item {
+    padding: $ui-row-pad-y $ui-row-pad-x;
+}
+
+// ---------------------------------------------------------------------------
+// Cards — round the corners a bit (Bootstrap default 0.375rem looks dated)
+// and give them a subtle shadow on hover.
+// ---------------------------------------------------------------------------
+.card {
+    border-radius: $ui-radius-lg;
+    box-shadow: $ui-shadow-sm;
+    transition: box-shadow 0.15s $easing-in;
+
+    &:hover { box-shadow: $ui-shadow; }
+
+    > .card-body { padding: $ui-card-pad; }
+    > .card-header { padding: $ui-row-pad-y $ui-card-pad; }
+}
+
+// ---------------------------------------------------------------------------
+// Status pills — Bootstrap's .badge defaults plus our min-width: 64px
+// (Status.vue) made every UP/DOWN/PENDING pill feel oversized. Tighten the
+// padding and let the badge breathe with the text.
+// ---------------------------------------------------------------------------
+.badge {
+    padding: 0.3em 0.65em;
+    font-size: 0.72em;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+// ---------------------------------------------------------------------------
+// Buttons — Bootstrap defaults are fine, just shave a hair off vertical
+// padding so they line up better with shrunken inputs / pills.
+// ---------------------------------------------------------------------------
+.btn {
+    --bs-btn-padding-y: 0.4rem;
+    --bs-btn-padding-x: 0.85rem;
+    border-radius: $ui-radius;
+}
+.btn-sm {
+    --bs-btn-padding-y: 0.25rem;
+    --bs-btn-padding-x: 0.55rem;
+    border-radius: $ui-radius-sm;
+}
+
+// ---------------------------------------------------------------------------
+// Form controls — keep Bootstrap floating labels working but tighten the
+// vertical rhythm. Most pages use .mt-3 between fields; that's fine.
+// ---------------------------------------------------------------------------
+.form-control,
+.form-select {
+    border-radius: $ui-radius;
+}
+.form-floating {
+    > .form-control,
+    > .form-select {
+        height: calc(3rem + 2px);
+    }
+    > label {
+        padding: 0.85rem 1rem;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Tables — used on uptime-history / incident pages.
+// ---------------------------------------------------------------------------
+.table {
+    > :not(caption) > * > * {
+        padding: $ui-row-pad-y $ui-row-pad-x;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Header chrome — Layout.vue wraps with py-3. Trim it; the brand mark
+// also drops from 40px to 32px in the template change.
+// ---------------------------------------------------------------------------
+header.border-bottom {
+    padding-top: 0.55rem !important;
+    padding-bottom: 0.55rem !important;
+    margin-bottom: 0.85rem !important;
+}
+
+// ---------------------------------------------------------------------------
+// Nav pills — visual weight reduction. Default nav-pills .nav-link has
+// ~10px y / 16px x; tighten and round.
+// ---------------------------------------------------------------------------
+.nav-pills {
+    .nav-link {
+        padding: 0.4rem 0.75rem;
+        border-radius: $ui-radius;
+    }
+}

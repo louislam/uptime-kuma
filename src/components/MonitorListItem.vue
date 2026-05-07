@@ -382,7 +382,9 @@ export default {
 
     /* We don't want the padding change due to the border animated */
     .item {
-        padding: 12px 15px;
+        // Tightened from 12px 15px — the dashboard mostly shows monitor
+        // rows, so each row's vertical real estate is precious.
+        padding: 7px 12px;
         transition: none !important;
     }
 

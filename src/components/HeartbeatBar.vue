@@ -71,9 +71,12 @@ export default {
     },
     data() {
         return {
-            beatWidth: 10,
-            beatHeight: 30,
-            hoverScale: 1.5,
+            // Tightened from 10x30 — fits more history on the dashboard
+            // without losing readability; hoverScale keeps the bar
+            // legible when the user mouses over a beat.
+            beatWidth: 8,
+            beatHeight: 22,
+            hoverScale: 1.6,
             beatHoverAreaPadding: 4,
             move: false,
             maxBeat: -1,
