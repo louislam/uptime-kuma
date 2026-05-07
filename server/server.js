@@ -2016,9 +2016,9 @@ gracefulShutdown(server.httpServer, {
 
 // Catch unexpected errors here
 let unexpectedErrorHandler = (error, promise) => {
-    console.trace(error);
+    log.error("server", error);
     UptimeKumaServer.errorLog(error, false);
-    console.error("If you keep encountering errors, please report to https://github.com/louislam/uptime-kuma/issues");
+    log.error("server", "If you keep encountering errors, please report to https://github.com/louislam/uptime-kuma/issues");
 };
 process.addListener("unhandledRejection", unexpectedErrorHandler);
 process.addListener("uncaughtException", unexpectedErrorHandler);

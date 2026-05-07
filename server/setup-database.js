@@ -158,7 +158,7 @@ class SetupDatabase {
 
             app.get("/setup-database-info", (request, response) => {
                 allowDevAllOrigin(response);
-                console.log("Request /setup-database-info");
+                log.debug("setup-database", "Request /setup-database-info");
                 response.json({
                     runningSetup: this.runningSetup,
                     needSetup: this.needSetup,

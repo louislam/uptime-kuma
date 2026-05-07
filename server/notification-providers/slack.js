@@ -18,12 +18,12 @@ class Slack extends NotificationProvider {
         let currentPrimaryBaseURL = await setting("primaryBaseURL");
 
         if (!currentPrimaryBaseURL) {
-            console.log("Move the url to be the primary base URL");
+            log.info("slack", "Move the url to be the primary base URL");
             await setSettings("general", {
                 primaryBaseURL: url,
             });
         } else {
-            console.log("Already there, no need to move the primary base URL");
+            log.info("slack", "Already there, no need to move the primary base URL");
         }
     }
 

@@ -1,5 +1,6 @@
 const NotificationProvider = require("./notification-provider");
 const { finalizeEvent, Relay, nip19, nip59 } = require("nostr-tools");
+const { log } = require("../../src/util");
 
 // polyfill WebSocket for nostr-tools
 global.WebSocket = require("isomorphic-ws");
@@ -59,7 +60,7 @@ class Nostr extends NotificationProvider {
                 }
                 successfulRelays++;
             } catch (error) {
-                console.error(`Failed to publish event to ${relayUrl}:`, error);
+                log.error("nostr", `Failed to publish event to ${relayUrl}: ${error}`);
             } finally {
                 relay.close();
             }

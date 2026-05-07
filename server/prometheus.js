@@ -259,7 +259,7 @@ class Prometheus {
             monitorResponseTime.remove(this.monitorLabelValues);
             monitorStatus.remove(this.monitorLabelValues);
         } catch (e) {
-            console.error(e);
+            log.error("prometheus", e);
         }
     }
 

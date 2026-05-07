@@ -463,7 +463,7 @@ class Monitor extends BaseModel {
 
             if (demoMode) {
                 if (beatInterval < 20) {
-                    console.log("beat interval too low, reset to 20s");
+                    log.warn("monitor", "beat interval too low, reset to 20s");
                     beatInterval = 20;
                 }
             }
@@ -1171,7 +1171,7 @@ class Monitor extends BaseModel {
             try {
                 await beat();
             } catch (e) {
-                console.trace(e);
+                log.error("monitor", e);
                 UptimeKumaServer.errorLog(e, false);
                 log.error("monitor", "Please report to https://github.com/louislam/uptime-kuma/issues");
 
