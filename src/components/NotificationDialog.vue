@@ -336,6 +336,7 @@ export default {
                 YZJ: "YZJ (云之家自定义机器人)",
                 SMSPlanet: "SMSPlanet.pl",
                 VK: "VK",
+                VKTeams: "VKTeams",
             };
 
             // Sort by notification name alphabetically
