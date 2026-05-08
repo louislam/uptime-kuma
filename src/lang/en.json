@@ -1532,5 +1532,11 @@
     "teltonikaModem": "Modem Id",
     "teltonikaModemHelptext": "The id of the SMS modem, must be in the format {0}. Refer to https://developers.teltonika-networks.com/reference/ for guidance.",
     "teltonikaPhoneNumber": "Phone number",
-    "teltonikaPhoneNumberHelptext": "The number must be in the international format {0}, {1}. Only one number is allowed."
+    "teltonikaPhoneNumberHelptext": "The number must be in the international format {0}, {1}. Only one number is allowed.",
+    "VKTeams Bot Token Description": "You can find out how to get a bot token and other details at {0}.",
+    "VKTeams Base Url Description": "VKTeams base API URL, may differ in On-Premise solution. Default: https://myteam.mail.ru",
+    "VKTeams Chat Id Description": "A unique nickname or ID for a chat or user. For channels and chats, add {'@'}chat.agent to the end of the id.",
+    "VKTeams Use Template": "Use custom message template",
+    "VKTeams Use Template Description": "If enabled, the message will be sent using a custom template.",
+    "VKTeams Template Format Description": "VKTeams supports plain text, MarkdownV2 and HTML formatting."
 }
