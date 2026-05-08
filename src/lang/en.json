@@ -485,6 +485,7 @@
     "Domain": "Domain",
     "Workstation": "Workstation",
     "Packet Size": "Packet Size",
+    "pingPacketSizeWarning": "A packet size smaller than 16 does not produce round-trip times on Linux",
     "Bot Token": "Bot Token",
     "wayToGetTelegramToken": "You can get a token from {0}.",
     "wayToGetMaxToken": "You can get a MAX bot token and other details from {0}.",

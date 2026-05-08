@@ -174,8 +174,8 @@
     "Avg. Response": "متوسط زمان پاسخ",
     "Entry Page": "صفحه ورودی",
     "statusPageNothing": "چیزی اینجا نیست، لطفا یک گروه و یا یک مانیتور اضافه کنید.",
-    "No Services": "هیچ سرویسی موجود نیست",
-    "All Systems Operational": "تمامی سیستم‌ها فعال هستند",
+    "No Services": "هیچ خدماتی موجود نیست",
+    "All Systems Operational": "همهٔ سامانه‌ها فعال هستند",
     "Partially Degraded Service": "افت نسبی کیفیت سرویس",
     "Degraded Service": "افت کامل کیفیت سرویس",
     "Add Group": "اضافه کردن گروه",
@@ -329,7 +329,7 @@
     "steamApiKeyDescription": "برای مانیتورینگ یک سرور استیم،‌ شما نیاز به یک \"Steam Web-API key\" دارید. برای دریافت کلید میتوانید از اینجا اقدام کنید: ",
     "No Monitors": "بدون پایشگر",
     "Untitled Group": "دسته بنده نشده",
-    "Services": "سرویس ها",
+    "Services": "خدمت‌ها",
     "Discard": "دست کشیدن",
     "Cancel": "انصراف",
     "About": "درباره",
@@ -1205,5 +1205,7 @@
     "versionIs": "نگارش: {version}",
     "monitorTypeGameServer": "کارساز بازی",
     "monitorTypeDatabase": "پایش پایگاه‌داده",
-    "monitorTypeSpecial": "ویژه"
+    "monitorTypeSpecial": "ویژه",
+    "notificationSmsServices": "پیامک خدمات",
+    "notificationPushServices": "خدمات پوش"
 }

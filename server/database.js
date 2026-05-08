@@ -270,10 +270,9 @@ class Database {
                 max: 20,
             };
 
-            // However, for unknown reason, it is not working probably on Raspberry Pi, it causes "SQLITE_BUSY: database is locked" error.
-            // See: https://github.com/louislam/uptime-kuma/issues/7289
-            // Provide an environment variable to switch back to a single connection.
-            if (process.env.UPTIME_KUMA_SQLITE_SINGLE_CONNECTION === "true") {
+            // Default is still single connection.
+            // Multiple connection could run into "SQLITE_BUSY: database is locked" error.
+            if (process.env.UPTIME_KUMA_SQLITE_SINGLE_CONNECTION !== "false") {
                 log.info("db", "Using single connection for SQLite");
                 poolConfig = {
                     min: 1,
@@ -434,6 +433,9 @@ class Database {
         await asyncRun("PRAGMA foreign_keys = ON");
         await asyncRun("PRAGMA cache_size = -12000");
         await asyncRun("PRAGMA auto_vacuum = INCREMENTAL");
+
+        // Avoid error "SQLITE_BUSY: database is locked" by allowing SQLITE to wait up to 5 seconds to do a write
+        await asyncRun("PRAGMA busy_timeout = 5000");
 
         // This ensures that an operating system crash or power failure will not corrupt the database.
         // FULL synchronous is very safe, but it is also slower.
