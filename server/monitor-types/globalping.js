@@ -529,7 +529,7 @@ class GlobalpingMonitorType extends MonitorType {
                 monitor.oauthAccessToken = oAuthAccessToken;
             }
             return {
-                Authorization: monitor.oauthAccessToken.token_type + " " + monitor.oauthAccessToken.access_token,
+                Authorization: (monitor.oauthAccessToken.token_type || "Bearer") + " " + monitor.oauthAccessToken.access_token,
             };
         } catch (e) {
             throw new Error("The oauth config is invalid. " + e.message);

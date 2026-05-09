@@ -490,7 +490,7 @@ class Monitor extends BeanModel {
                             }
                             oauth2AuthHeader = {
                                 Authorization:
-                                    this.oauthAccessToken.token_type + " " + this.oauthAccessToken.access_token,
+                                    (this.oauthAccessToken.token_type || "Bearer") + " " + this.oauthAccessToken.access_token,
                             };
                         } catch (e) {
                             throw new Error("The oauth config is invalid. " + e.message);
@@ -1209,7 +1209,7 @@ class Monitor extends BeanModel {
             if (this.auth_method === "oauth2-cc" && error.response.status === 401 && !finalCall) {
                 this.oauthAccessToken = await this.makeOidcTokenClientCredentialsRequest();
                 let oauth2AuthHeader = {
-                    Authorization: this.oauthAccessToken.token_type + " " + this.oauthAccessToken.access_token,
+                    Authorization: (this.oauthAccessToken.token_type || "Bearer") + " " + this.oauthAccessToken.access_token,
                 };
                 options.headers = { ...options.headers, ...oauth2AuthHeader };
 

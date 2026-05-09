@@ -92,7 +92,7 @@ class WebSocketMonitorType extends MonitorType {
                     monitor.oauth_auth_method
                 );
             }
-            options.headers.Authorization = `${monitor.oauthAccessToken.token_type} ${monitor.oauthAccessToken.access_token}`;
+            options.headers.Authorization = `${monitor.oauthAccessToken.token_type || "Bearer"} ${monitor.oauthAccessToken.access_token}`;
         } else if (monitor.authMethod === "mtls") {
             if (monitor.tlsCert) {
                 options.cert = monitor.tlsCert;
