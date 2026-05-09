@@ -980,6 +980,11 @@ class Monitor extends BeanModel {
                     }
                 } else {
                     // General retry logic for all other monitor types
+                    // For push monitors transitioning from UP to DOWN, reset retries
+                    if (this.type === "push" && previousBeat && previousBeat.status === (this.isUpsideDown() ? DOWN : UP)) {
+                        retries = 0;
+                    }
+
                     if (this.maxretries > 0 && retries < this.maxretries) {
                         retries++;
                         bean.status = PENDING;
