@@ -57,6 +57,24 @@ describe("Cloudflare Worker API", () => {
         });
     });
 
+    test("Worker Twingate config does not expose a configurable proxy URL", async () => {
+        const wranglerPath = path.join(__dirname, "../../../wrangler.jsonc");
+        const wranglerConfig = JSON.parse(fs.readFileSync(wranglerPath, "utf8"));
+
+        assert.ok(wranglerConfig.vars);
+        assert.strictEqual("TWINGATE_PROXY_URL" in wranglerConfig.vars, false);
+        assert.strictEqual(wranglerConfig.vars.TWINGATE_NETWORK, "wgs.twingate.com");
+        assert.strictEqual(
+            wranglerConfig.vars.TWINGATE_SERVICE_ACCOUNT_ID,
+            "72b53d66-51da-4b90-9f61-4c8bfd83b2a6"
+        );
+        assert.strictEqual(
+            wranglerConfig.vars.TWINGATE_KEY_ID,
+            "O0ORCtbn8BPjempoVgaW7KDypjrscs-7U8B7bp1jGqU"
+        );
+        assert.strictEqual("TWINGATE_PRIVATE_KEY" in wranglerConfig.vars, false);
+    });
+
     test("entry page routes the deployed web UI to the dashboard", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({});

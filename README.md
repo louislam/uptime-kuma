@@ -165,11 +165,9 @@ secret is still supported and should contain the full base64-encoded Twingate
 service key JSON. When both forms are present, the current discrete
 `TWINGATE_*` service key fields take precedence over the legacy full-key secret.
 
-The runner uses `TWINGATE_PROXY_URL` to expose the local HTTP proxy. The default is:
-
-```text
-http://127.0.0.1:9999
-```
+The Cloudflare container runner manages the local Twingate userspace HTTP proxy
+address internally. Do not configure a proxy URL for Twingate; only the service
+account fields and private-key secret are operator-provided.
 
 ## Testing
 

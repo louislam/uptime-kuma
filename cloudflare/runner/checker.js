@@ -7,12 +7,12 @@ const tls = require("node:tls");
 const DOWN = 0;
 const UP = 1;
 const DEFAULT_TIMEOUT_SECONDS = 30;
-const DEFAULT_TWINGATE_PROXY_URL = "http://127.0.0.1:9999";
+const SYSTEM_TWINGATE_PROXY_URL = "http://127.0.0.1:9999";
 
 async function runCheck(job) {
     const monitor = job.monitor || {};
     const networkProfile = job.networkProfile || null;
-    const twingateProxyUrl = job.twingateProxyUrl || process.env.TWINGATE_PROXY_URL || DEFAULT_TWINGATE_PROXY_URL;
+    const twingateProxyUrl = resolveTwingateProxyUrl(job);
     const start = Date.now();
 
     try {
@@ -298,11 +298,17 @@ function isTwingateProfile(networkProfile) {
     return networkProfile?.slug === "twingate" || networkProfile?.type === "twingate";
 }
 
+function resolveTwingateProxyUrl(job = {}) {
+    return job.twingateProxyUrl || SYSTEM_TWINGATE_PROXY_URL;
+}
+
 function getTimeoutMs(timeoutSeconds) {
     return Number(timeoutSeconds || DEFAULT_TIMEOUT_SECONDS) * 1000;
 }
 
 module.exports = {
+    SYSTEM_TWINGATE_PROXY_URL,
+    resolveTwingateProxyUrl,
     runCheck,
     runHttpCheck,
     runTcpCheck,

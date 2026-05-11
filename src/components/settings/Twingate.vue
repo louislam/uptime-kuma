@@ -12,10 +12,6 @@
                 <strong>{{ $t("Status") }}:</strong>
                 <span>{{ statusText }}</span>
             </div>
-            <div class="mb-2">
-                <strong>{{ $t("Proxy") }}:</strong>
-                <span>{{ status.proxyUrl || $t("Unknown") }}</span>
-            </div>
             <div v-if="status.lastError" class="alert alert-warning">
                 {{ status.lastError }}
             </div>
@@ -35,7 +31,6 @@ export default {
             status: {
                 configured: false,
                 running: false,
-                proxyUrl: "",
                 lastError: null,
             },
         };
@@ -73,7 +68,6 @@ export default {
                 this.status = {
                     configured: false,
                     running: false,
-                    proxyUrl: "",
                     lastError: error.message,
                 };
             } finally {

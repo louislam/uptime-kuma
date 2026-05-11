@@ -11,7 +11,6 @@ RUN apt-get update \
 COPY checker.js server.js twingate-service-key.js ./
 
 ENV PORT=8788
-ENV TWINGATE_PROXY_URL=http://127.0.0.1:9999
 
 EXPOSE 8788
 CMD ["node", "server.js"]

@@ -19,7 +19,6 @@ export class MonitorRunner extends Container {
         super(ctx, env);
         this.envVars = {
             PORT: "8788",
-            TWINGATE_PROXY_URL: env.TWINGATE_PROXY_URL || "http://127.0.0.1:9999",
         };
 
         copyOptionalEnv(this.envVars, env, [

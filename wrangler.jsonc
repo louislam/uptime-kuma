@@ -68,12 +68,11 @@
         "crons": ["* * * * *"]
     },
     "vars": {
-        "TWINGATE_PROXY_URL": "http://127.0.0.1:9999",
         "TWINGATE_SERVICE_KEY_VERSION": "1",
         "TWINGATE_NETWORK": "wgs.twingate.com",
         "TWINGATE_SERVICE_ACCOUNT_ID": "72b53d66-51da-4b90-9f61-4c8bfd83b2a6",
-        "TWINGATE_KEY_ID": "gJSqyB9bMYGxhZjxALRV6cr6Hmayz3sNtB5OG8sHoWI",
-        "TWINGATE_EXPIRES_AT": "2027-05-11T06:41:34+00:00",
+        "TWINGATE_KEY_ID": "O0ORCtbn8BPjempoVgaW7KDypjrscs-7U8B7bp1jGqU",
+        "TWINGATE_EXPIRES_AT": "2027-05-11T06:47:33+00:00",
         "TWINGATE_LOGIN_PATH": "/api/v4/headless/login"
     }
 }

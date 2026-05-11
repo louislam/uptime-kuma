@@ -2,7 +2,7 @@
 const http = require("node:http");
 const fs = require("node:fs");
 const childProcess = require("node:child_process");
-const { runCheck } = require("./checker");
+const { SYSTEM_TWINGATE_PROXY_URL, runCheck } = require("./checker");
 const {
     hasTwingateServiceKeyInput,
     resolveTwingateServiceKey,
@@ -13,7 +13,7 @@ const twingateServiceKey = resolveTwingateServiceKey();
 const twingateStatus = {
     configured: twingateServiceKey.configured,
     running: false,
-    proxyUrl: process.env.TWINGATE_PROXY_URL || "http://127.0.0.1:9999",
+    proxyUrl: SYSTEM_TWINGATE_PROXY_URL,
     lastError: twingateServiceKey.configured || !hasTwingateServiceKeyInput()
         ? null
         : `Twingate service key env is incomplete: missing ${twingateServiceKey.missing.join(", ")}`,

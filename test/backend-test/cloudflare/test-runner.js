@@ -80,6 +80,30 @@ describe("Cloudflare monitor runner", () => {
         assert.strictEqual(proxyRequests, 1);
     });
 
+    test("Twingate proxy URL is not configurable through process env", async () => {
+        const {
+            SYSTEM_TWINGATE_PROXY_URL,
+            resolveTwingateProxyUrl,
+        } = require("../../../cloudflare/runner/checker");
+        const originalProxyUrl = process.env.TWINGATE_PROXY_URL;
+
+        process.env.TWINGATE_PROXY_URL = "http://127.0.0.1:34567";
+        try {
+            assert.strictEqual(SYSTEM_TWINGATE_PROXY_URL, "http://127.0.0.1:9999");
+            assert.strictEqual(resolveTwingateProxyUrl({}), SYSTEM_TWINGATE_PROXY_URL);
+            assert.strictEqual(
+                resolveTwingateProxyUrl({ twingateProxyUrl: "http://127.0.0.1:45678" }),
+                "http://127.0.0.1:45678"
+            );
+        } finally {
+            if (originalProxyUrl === undefined) {
+                delete process.env.TWINGATE_PROXY_URL;
+            } else {
+                process.env.TWINGATE_PROXY_URL = originalProxyUrl;
+            }
+        }
+    });
+
     test("Twingate TCP checks use HTTP CONNECT and record latency", async () => {
         const { runCheck } = require("../../../cloudflare/runner/checker");
         let connectTarget = null;
