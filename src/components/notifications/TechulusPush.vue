@@ -80,10 +80,10 @@ export default {
     },
     mounted() {
         if (typeof this.$parent.notification.pushTitle === "undefined") {
-            this.$parent.notification.pushTitle = "Uptime-Kuma";
+            this.$parent.notification.pushTitle = "Uptime-Worker";
         }
         if (typeof this.$parent.notification.pushChannel === "undefined") {
-            this.$parent.notification.pushChannel = "uptime-kuma";
+            this.$parent.notification.pushChannel = "uptime-worker";
         }
         if (typeof this.$parent.notification.pushSound === "undefined") {
             this.$parent.notification.pushSound = "default";

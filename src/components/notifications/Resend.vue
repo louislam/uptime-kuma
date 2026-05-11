@@ -57,10 +57,10 @@ export default {
     },
     mounted() {
         if (typeof this.$parent.notification.resendSubject === "undefined") {
-            this.$parent.notification.resendSubject = "Notification from Your Uptime Kuma";
+            this.$parent.notification.resendSubject = "Notification from Your Uptime Worker";
         }
         if (typeof this.$parent.notification.resendFromName === "undefined") {
-            this.$parent.notification.resendFromName = "Uptime Kuma";
+            this.$parent.notification.resendFromName = "Uptime Worker";
         }
     },
 };

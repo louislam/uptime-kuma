@@ -58,8 +58,8 @@
     "URL": "URL",
     "Hostname": "Gasheernaam",
     "Port": "Poort",
-    "setupDatabaseEmbeddedMariaDB": "U hoef niks te stel nie. Hierdie docker beeld het MariaDB ingebou en vooraf opgestel vir u. Uptime Kuma sal aan hierdie databasis konnekteer via unix sok verbinding.",
-    "setupDatabaseSQLite": "'n Eenvoudige databasis leêr, aanbeveel vir klein-skaalse ontploiings. Voor weergawe 2.0.0 het Uptime Kuma SQLite as die verstekopsie.",
+    "setupDatabaseEmbeddedMariaDB": "U hoef niks te stel nie. Hierdie docker beeld het MariaDB ingebou en vooraf opgestel vir u. Uptime Worker sal aan hierdie databasis konnekteer via unix sok verbinding.",
+    "setupDatabaseSQLite": "'n Eenvoudige databasis leêr, aanbeveel vir klein-skaalse ontploiings. Voor weergawe 2.0.0 het Uptime Worker SQLite as die verstekopsie.",
     "Primary Base URL": "Primêre Basis URL",
     "statusMaintenance": "Onderhoud",
     "Passive Monitor Type": "Passiewe Monitor Tipe"

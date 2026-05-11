@@ -20,7 +20,7 @@
             type="text"
             class="form-control"
             autocomplete="false"
-            placeholder="Uptime Kuma"
+            placeholder="Uptime Worker"
         />
     </div>
 

@@ -250,6 +250,41 @@ describe("Cloudflare Worker API", () => {
         );
     });
 
+    test("lists monitors when the config_json migration has not run yet", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            missingConfigJsonColumn: true,
+            monitors: [
+                {
+                    id: 7,
+                    name: "Private HTTP",
+                    type: "http",
+                    url: "http://private.example.test",
+                    hostname: null,
+                    port: null,
+                    method: "GET",
+                    headers: null,
+                    body: null,
+                    keyword: null,
+                    json_path: "$",
+                    expected_value: null,
+                    timeout: 30,
+                    interval: 60,
+                    active: 1,
+                    network_profile_id: null,
+                },
+            ],
+        });
+
+        const response = await handleApiRequest(new Request("https://example.com/api/monitors"), env);
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(body.monitors.length, 1);
+        assert.strictEqual(body.monitors[0].name, "Private HTTP");
+        assert.deepStrictEqual(body.monitors[0].accepted_statuscodes, ["200-299"]);
+    });
+
     test("gets and saves UI settings through app_settings", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({
@@ -628,6 +663,7 @@ function createEnv(initial) {
         runnerJobs: [],
         runnerResult: initial.runnerResult,
         nextMonitorId: initial.nextMonitorId || 1,
+        missingConfigJsonColumn: Boolean(initial.missingConfigJsonColumn),
     };
 
     return {
@@ -667,6 +703,9 @@ function createStatement(sql, state) {
             return this;
         },
         async all() {
+            if (state.missingConfigJsonColumn && sql.includes("config_json")) {
+                throw new Error("no such column: config_json");
+            }
             if (sql.includes("FROM network_profiles")) {
                 return { results: state.profiles };
             }

@@ -41,6 +41,8 @@ const MONITOR_CONFIG_EXCLUDED_FIELDS = new Set([
     "getUrl",
 ]);
 
+const MISSING_CONFIG_JSON_COLUMN = /no such column:\s*config_json/i;
+
 export async function handleApiRequest(request, env) {
     const url = new URL(request.url);
     const route = matchRoute(request.method, url.pathname);
@@ -199,14 +201,7 @@ export async function setUiSettings(env, settings) {
  * @returns {Promise<object[]>} Monitor rows shaped for the Vue dashboard.
  */
 export async function listMonitors(env) {
-    const monitorResult = await env.DB.prepare(
-        `SELECT id, name, type, url, hostname, port, method, headers, body, keyword,
-                invert_keyword, json_path, expected_value, timeout, "interval",
-                active, network_profile_id, config_json
-         FROM monitors
-         ORDER BY name`
-    ).all();
-    const monitors = monitorResult.results || [];
+    const monitors = await listMonitorRows(env);
 
     const heartbeatResult = await env.DB.prepare(
         `SELECT h.monitor_id, h.status, h.ping, h.msg, h.checked_at
@@ -227,6 +222,34 @@ export async function listMonitors(env) {
         const latestHeartbeat = heartbeatsByMonitorId.get(Number(monitor.id));
         return serializeMonitor(monitor, latestHeartbeat);
     });
+}
+
+async function listMonitorRows(env) {
+    try {
+        const monitorResult = await env.DB.prepare(
+            `SELECT id, name, type, url, hostname, port, method, headers, body, keyword,
+                    invert_keyword, json_path, expected_value, timeout, "interval",
+                    active, network_profile_id, config_json
+             FROM monitors
+             ORDER BY name`
+        ).all();
+        return monitorResult.results || [];
+    } catch (error) {
+        if (!MISSING_CONFIG_JSON_COLUMN.test(error.message || "")) {
+            throw error;
+        }
+        const monitorResult = await env.DB.prepare(
+            `SELECT id, name, type, url, hostname, port, method, headers, body, keyword,
+                    invert_keyword, json_path, expected_value, timeout, "interval",
+                    active, network_profile_id
+             FROM monitors
+             ORDER BY name`
+        ).all();
+        return (monitorResult.results || []).map((monitor) => ({
+            ...monitor,
+            config_json: null,
+        }));
+    }
 }
 
 export async function listStatusPages() {
