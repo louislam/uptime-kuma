@@ -1545,6 +1545,7 @@
     "twingateSettingsTitle": "Twingate",
     "twingateSettingsDescription": "Cloudflare runners use the configured Twingate service key env to start Twingate in userspace HTTP proxy mode. The service key is never displayed here.",
     "twingateNotConfigured": "Not configured",
+    "twingateStarting": "Starting",
     "twingateConfiguredStopped": "Configured, but not running",
     "refreshTwingateStatus": "Refresh"
 }

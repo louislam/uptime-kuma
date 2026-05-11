@@ -75,6 +75,13 @@ describe("Cloudflare Worker API", () => {
         assert.strictEqual("TWINGATE_PRIVATE_KEY" in wranglerConfig.vars, false);
     });
 
+    test("runner container image includes Twingate lifecycle helper", async () => {
+        const dockerfilePath = path.join(__dirname, "../../../cloudflare/runner/Dockerfile");
+        const dockerfile = fs.readFileSync(dockerfilePath, "utf8");
+
+        assert.match(dockerfile, /COPY checker\.js server\.js twingate-lifecycle\.js twingate-service-key\.js \.\//);
+    });
+
     test("entry page routes the deployed web UI to the dashboard", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({});
@@ -591,6 +598,30 @@ describe("Cloudflare Worker API", () => {
         ]);
     });
 
+    test("returns Twingate runner startup status", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            runnerStatus: {
+                configured: true,
+                starting: true,
+                running: false,
+                proxyUrl: "http://127.0.0.1:9999",
+                lastError: null,
+            },
+        });
+
+        const response = await handleApiRequest(new Request("https://example.com/api/twingate/status"), env);
+
+        assert.strictEqual(response.status, 200);
+        assert.deepStrictEqual(await response.json(), {
+            configured: true,
+            starting: true,
+            running: false,
+            proxyUrl: "http://127.0.0.1:9999",
+            lastError: null,
+        });
+    });
+
     test("updates a monitor network route only to direct or an enabled profile", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({
@@ -680,6 +711,13 @@ function createEnv(initial) {
         settings: initial.settings || {},
         runnerJobs: [],
         runnerResult: initial.runnerResult,
+        runnerStatus: initial.runnerStatus || {
+            configured: false,
+            starting: false,
+            running: false,
+            proxyUrl: "http://127.0.0.1:9999",
+            lastError: null,
+        },
         nextMonitorId: initial.nextMonitorId || 1,
         missingConfigJsonColumn: Boolean(initial.missingConfigJsonColumn),
     };
@@ -701,6 +739,10 @@ function createEnv(initial) {
             get() {
                 return {
                     async fetch(request) {
+                        const url = new URL(request.url);
+                        if (request.method === "GET" && url.pathname === "/twingate/status") {
+                            return Response.json(state.runnerStatus);
+                        }
                         state.runnerJobs.push(await request.json());
                         return Response.json(state.runnerResult);
                     },

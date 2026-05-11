@@ -9,7 +9,7 @@
 
         <div class="my-3">
             <div class="mb-2">
-                <strong>{{ $t("Status") }}:</strong>
+                <strong>{{ $t("Status") }}: </strong>
                 <span>{{ statusText }}</span>
             </div>
             <div v-if="status.lastError" class="alert alert-warning">
@@ -30,6 +30,7 @@ export default {
             loading: false,
             status: {
                 configured: false,
+                starting: false,
                 running: false,
                 lastError: null,
             },
@@ -43,6 +44,9 @@ export default {
             }
             if (!this.status.configured) {
                 return this.$t("twingateNotConfigured");
+            }
+            if (this.status.starting) {
+                return this.$t("twingateStarting");
             }
             if (this.status.running) {
                 return this.$t("Running");
@@ -67,6 +71,7 @@ export default {
             } catch (error) {
                 this.status = {
                     configured: false,
+                    starting: false,
                     running: false,
                     lastError: error.message,
                 };

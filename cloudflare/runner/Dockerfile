@@ -8,7 +8,7 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-COPY checker.js server.js twingate-service-key.js ./
+COPY checker.js server.js twingate-lifecycle.js twingate-service-key.js ./
 
 ENV PORT=8788
 
