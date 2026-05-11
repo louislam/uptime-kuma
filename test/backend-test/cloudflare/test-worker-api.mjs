@@ -23,6 +23,18 @@ describe("Cloudflare Worker API", () => {
         assert.match(migrationSql, /'twingate'/);
     });
 
+    test("Worker deployment serves the Vue web UI as a single-page app", async () => {
+        const wranglerPath = path.join(__dirname, "../../../wrangler.jsonc");
+        const wranglerConfig = JSON.parse(fs.readFileSync(wranglerPath, "utf8"));
+
+        assert.deepStrictEqual(wranglerConfig.assets, {
+            directory: "./dist/",
+            not_found_handling: "single-page-application",
+            binding: "ASSETS",
+            run_worker_first: ["/api/*"],
+        });
+    });
+
     test("lists direct and Twingate network profiles", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({

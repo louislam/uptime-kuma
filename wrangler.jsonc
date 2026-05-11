@@ -4,6 +4,12 @@
     "account_id": "5e4d29b3db4faa691c672e24b0009999",
     "main": "cloudflare/worker/index.mjs",
     "compatibility_date": "2026-05-11",
+    "assets": {
+        "directory": "./dist/",
+        "not_found_handling": "single-page-application",
+        "binding": "ASSETS",
+        "run_worker_first": ["/api/*"]
+    },
     "observability": {
         "enabled": true
     },
