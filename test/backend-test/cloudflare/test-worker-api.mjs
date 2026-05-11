@@ -23,6 +23,16 @@ describe("Cloudflare Worker API", () => {
         assert.match(migrationSql, /'twingate'/);
     });
 
+    test("D1 migration adds monitor config JSON for edit form fields", async () => {
+        const migrationPath = path.join(
+            __dirname,
+            "../../../cloudflare/migrations/0003_monitor_config_json.sql"
+        );
+        const migrationSql = fs.readFileSync(migrationPath, "utf8");
+
+        assert.match(migrationSql, /ALTER TABLE monitors ADD COLUMN config_json TEXT/);
+    });
+
     test("D1 migration creates lightweight app settings table", async () => {
         const migrationPath = path.join(
             __dirname,
@@ -56,6 +66,109 @@ describe("Cloudflare Worker API", () => {
 
         assert.strictEqual(response.status, 200);
         assert.deepStrictEqual(body, { type: "entryPage", entryPage: "dashboard" });
+    });
+
+    test("lists the Worker default status page for the deployed web UI", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({});
+
+        const response = await handleApiRequest(new Request("https://example.com/api/status-pages"), env);
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.deepStrictEqual(Object.keys(body.statusPages), ["1"]);
+        assert.strictEqual(body.statusPages[1].slug, "default");
+        assert.strictEqual(body.statusPages[1].icon, "/icon.svg");
+    });
+
+    test("serves Worker status page data from D1 monitors", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                {
+                    id: 7,
+                    name: "Private HTTP",
+                    type: "http",
+                    url: "http://private.example.test",
+                    hostname: null,
+                    port: null,
+                    method: "GET",
+                    headers: null,
+                    body: null,
+                    keyword: null,
+                    json_path: "$",
+                    timeout: 30,
+                    interval: 60,
+                    active: 1,
+                    network_profile_id: null,
+                },
+            ],
+        });
+
+        const response = await handleApiRequest(new Request("https://example.com/api/status-page/default"), env);
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(body.config.slug, "default");
+        assert.strictEqual(body.publicGroupList.length, 1);
+        assert.strictEqual(body.publicGroupList[0].monitorList.length, 1);
+        assert.strictEqual(body.publicGroupList[0].monitorList[0].name, "Private HTTP");
+        assert.strictEqual(body.publicGroupList[0].monitorList[0].sendUrl, true);
+        assert.deepStrictEqual(body.maintenanceList, []);
+    });
+
+    test("serves Worker status page heartbeat data", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                {
+                    id: 7,
+                    name: "Private HTTP",
+                    type: "http",
+                    url: "http://private.example.test",
+                    hostname: null,
+                    port: null,
+                    method: "GET",
+                    headers: null,
+                    body: null,
+                    keyword: null,
+                    json_path: "$",
+                    timeout: 30,
+                    interval: 60,
+                    active: 1,
+                    network_profile_id: null,
+                },
+            ],
+            heartbeats: [
+                {
+                    monitor_id: 7,
+                    status: 1,
+                    ping: 12,
+                    msg: "200 - OK",
+                    checked_at: "2026-05-11 02:30:00",
+                },
+                {
+                    monitor_id: 7,
+                    status: 0,
+                    ping: null,
+                    msg: "Timeout",
+                    checked_at: "2026-05-11 02:31:00",
+                },
+            ],
+        });
+
+        const response = await handleApiRequest(
+            new Request("https://example.com/api/status-page/heartbeat/default"),
+            env
+        );
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.deepStrictEqual(
+            body.heartbeatList[7].map((heartbeat) => heartbeat.time),
+            ["2026-05-11 02:30:00", "2026-05-11 02:31:00"]
+        );
+        assert.strictEqual(body.uptimeList["7_24"], 0.5);
     });
 
     test("lists monitors with their latest heartbeat for the deployed web UI", async () => {
@@ -96,29 +209,35 @@ describe("Cloudflare Worker API", () => {
         const body = await response.json();
 
         assert.strictEqual(response.status, 200);
-        assert.deepStrictEqual(body.monitors, [
+        assert.strictEqual(body.monitors.length, 1);
+        assert.deepStrictEqual(
+            pick(body.monitors[0], [
+                "id",
+                "name",
+                "type",
+                "url",
+                "method",
+                "timeout",
+                "interval",
+                "maxretries",
+                "retryInterval",
+                "resendInterval",
+                "accepted_statuscodes",
+                "networkProfileId",
+                "lastHeartbeat",
+            ]),
             {
                 id: 7,
                 name: "Private HTTP",
                 type: "http",
                 url: "http://private.example.test",
-                hostname: null,
-                port: null,
                 method: "GET",
-                headers: "{\"x-test\":\"true\"}",
-                body: "",
-                keyword: null,
-                invertKeyword: false,
-                jsonPath: "$",
-                expectedValue: null,
                 timeout: 30,
                 interval: 60,
-                active: true,
-                parent: null,
-                path: ["Private HTTP"],
-                childrenIDs: [],
-                tags: [],
-                notificationIDList: {},
+                maxretries: 0,
+                retryInterval: 60,
+                resendInterval: 0,
+                accepted_statuscodes: ["200-299"],
                 networkProfileId: "twingate",
                 lastHeartbeat: {
                     monitorID: 7,
@@ -127,8 +246,8 @@ describe("Cloudflare Worker API", () => {
                     msg: "200 - OK",
                     time: "2026-05-11 02:30:00",
                 },
-            },
-        ]);
+            }
+        );
     });
 
     test("gets and saves UI settings through app_settings", async () => {
@@ -231,6 +350,89 @@ describe("Cloudflare Worker API", () => {
         assert.strictEqual(deleteResponse.status, 200);
         assert.deepStrictEqual(await deleteResponse.json(), { ok: true, msg: "Deleted" });
         assert.strictEqual(env.state.monitors.length, 0);
+    });
+
+    test("round-trips Worker edit form fields that are not runner columns", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({});
+
+        const createResponse = await handleApiRequest(
+            new Request("https://example.com/api/monitors", {
+                method: "POST",
+                body: JSON.stringify({
+                    name: "Editable HTTP",
+                    type: "json-query",
+                    url: "https://example.com/health",
+                    interval: 90,
+                    timeout: 20,
+                    maxretries: 4,
+                    retryInterval: 30,
+                    resendInterval: 6,
+                    retryOnlyOnStatusCodeFailure: true,
+                    accepted_statuscodes: ["200-299", "418"],
+                    ignoreTls: true,
+                    upsideDown: true,
+                    expiryNotification: false,
+                    domainExpiryNotification: false,
+                    cacheBust: true,
+                    maxredirects: 3,
+                    saveResponse: true,
+                    saveErrorResponse: true,
+                    responseMaxLength: 2048,
+                    authMethod: "basic",
+                    basic_auth_user: "worker-user",
+                    basic_auth_pass: "worker-pass",
+                    jsonPathOperator: "contains",
+                    ipFamily: "ipv4",
+                }),
+            }),
+            env
+        );
+        assert.strictEqual(createResponse.status, 200);
+
+        const readResponse = await handleApiRequest(new Request("https://example.com/api/monitors/1"), env);
+        const readBody = await readResponse.json();
+        assert.strictEqual(readResponse.status, 200);
+        assert.strictEqual(readBody.monitor.maxretries, 4);
+        assert.strictEqual(readBody.monitor.retryInterval, 30);
+        assert.strictEqual(readBody.monitor.resendInterval, 6);
+        assert.strictEqual(readBody.monitor.retryOnlyOnStatusCodeFailure, true);
+        assert.deepStrictEqual(readBody.monitor.accepted_statuscodes, ["200-299", "418"]);
+        assert.strictEqual(readBody.monitor.ignoreTls, true);
+        assert.strictEqual(readBody.monitor.upsideDown, true);
+        assert.strictEqual(readBody.monitor.cacheBust, true);
+        assert.strictEqual(readBody.monitor.maxredirects, 3);
+        assert.strictEqual(readBody.monitor.saveResponse, true);
+        assert.strictEqual(readBody.monitor.saveErrorResponse, true);
+        assert.strictEqual(readBody.monitor.responseMaxLength, 2048);
+        assert.strictEqual(readBody.monitor.authMethod, "basic");
+        assert.strictEqual(readBody.monitor.basic_auth_user, "worker-user");
+        assert.strictEqual(readBody.monitor.basic_auth_pass, "worker-pass");
+        assert.strictEqual(readBody.monitor.jsonPathOperator, "contains");
+        assert.strictEqual(readBody.monitor.ipFamily, "ipv4");
+
+        const updateResponse = await handleApiRequest(
+            new Request("https://example.com/api/monitors/1", {
+                method: "PUT",
+                body: JSON.stringify({
+                    ...readBody.monitor,
+                    name: "Still Editable HTTP",
+                    maxretries: 5,
+                }),
+            }),
+            env
+        );
+        assert.strictEqual(updateResponse.status, 200);
+
+        const rereadResponse = await handleApiRequest(new Request("https://example.com/api/monitors/1"), env);
+        const rereadBody = await rereadResponse.json();
+        assert.strictEqual(rereadBody.monitor.name, "Still Editable HTTP");
+        assert.strictEqual(rereadBody.monitor.maxretries, 5);
+        assert.strictEqual(rereadBody.monitor.retryInterval, 30);
+        assert.strictEqual(rereadBody.monitor.resendInterval, 6);
+        assert.deepStrictEqual(rereadBody.monitor.accepted_statuscodes, ["200-299", "418"]);
+        assert.strictEqual(rereadBody.monitor.basic_auth_user, "worker-user");
+        assert.strictEqual(rereadBody.monitor.basic_auth_pass, "worker-pass");
     });
 
     test("rejects unsupported Worker monitor types", async () => {
@@ -538,6 +740,7 @@ function createStatement(sql, state) {
                     interval,
                     active,
                     networkProfileId,
+                    configJson,
                 ] = this.values;
                 const id = state.nextMonitorId++;
                 state.monitors.push({
@@ -558,6 +761,7 @@ function createStatement(sql, state) {
                     interval,
                     active,
                     network_profile_id: networkProfileId,
+                    config_json: configJson,
                 });
                 return { success: true, meta: { last_row_id: id } };
             }
@@ -594,6 +798,7 @@ function createStatement(sql, state) {
                     timeout,
                     interval,
                     networkProfileId,
+                    configJson,
                     id,
                 ] = this.values;
                 const monitor = state.monitors.find((candidate) => candidate.id === Number(id));
@@ -614,6 +819,7 @@ function createStatement(sql, state) {
                         timeout,
                         interval,
                         network_profile_id: networkProfileId,
+                        config_json: configJson,
                     });
                 }
                 return { success: true };
@@ -642,4 +848,14 @@ function createStatement(sql, state) {
         },
     };
     return statement;
+}
+
+/**
+ * Copy selected keys from an object for concise assertions.
+ * @param {object} source Source object.
+ * @param {string[]} keys Keys to copy.
+ * @returns {object} Object with selected keys.
+ */
+function pick(source, keys) {
+    return Object.fromEntries(keys.map((key) => [key, source[key]]));
 }

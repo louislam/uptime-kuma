@@ -374,10 +374,13 @@ export default {
                 this.heartbeatList = heartbeatList;
                 this.avgPingList = avgPingList;
                 this.uptimeList = uptimeList;
+                this.statusPageList = await fetchCloudflareStatusPages();
+                this.statusPageListLoaded = true;
             } catch (error) {
                 console.error(`Failed to load Cloudflare Worker monitor data: ${error.message}`);
                 this.connectionErrorMsg = `Cannot load Cloudflare Worker monitor data. [${error.message}]`;
                 this.socket.connected = false;
+                this.statusPageListLoaded = true;
             }
         },
         /**
@@ -1001,6 +1004,13 @@ function createCloudflareSocketStub(app) {
                     return;
                 }
 
+                if (event === "getStatusPage") {
+                    const [slug] = args;
+                    const body = await requestCloudflareJson(`/api/status-page/${slug || "default"}`);
+                    callback?.({ ok: true, config: body.config });
+                    return;
+                }
+
                 if (event === "setSettings") {
                     const body = await requestCloudflareJson("/api/settings", {
                         method: "PUT",
@@ -1136,6 +1146,15 @@ async function requestCloudflareJson(path, options = {}) {
 async function fetchCloudflareMonitorHeartbeats(monitorID, offset = 0, count = 150) {
     const body = await requestCloudflareJson(`/api/monitors/${monitorID}/heartbeats?offset=${offset}&count=${count}`);
     return body.heartbeats || [];
+}
+
+/**
+ * Fetch status pages for the Worker-backed UI.
+ * @returns {Promise<object>} Status page map keyed by ID.
+ */
+async function fetchCloudflareStatusPages() {
+    const body = await requestCloudflareJson("/api/status-pages");
+    return body.statusPages || {};
 }
 
 /**

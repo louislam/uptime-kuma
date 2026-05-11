@@ -30,6 +30,17 @@ const WORKER_MONITOR_TYPES = new Set([
     "websocket-upgrade",
 ]);
 
+const MONITOR_CONFIG_EXCLUDED_FIELDS = new Set([
+    "id",
+    "active",
+    "lastHeartbeat",
+    "path",
+    "childrenIDs",
+    "tags",
+    "notificationIDList",
+    "getUrl",
+]);
+
 export async function handleApiRequest(request, env) {
     const url = new URL(request.url);
     const route = matchRoute(request.method, url.pathname);
@@ -41,6 +52,23 @@ export async function handleApiRequest(request, env) {
 
         if (route.name === "monitors") {
             return json({ monitors: await listMonitors(env) });
+        }
+
+        if (route.name === "status-pages") {
+            return json({ statusPages: await listStatusPages() });
+        }
+
+        if (route.name === "status-page") {
+            return json(await getStatusPageData(env, route.params.slug));
+        }
+
+        if (route.name === "status-page-heartbeat") {
+            return json(await getStatusPageHeartbeatData(env, route.params.slug));
+        }
+
+        if (route.name === "status-page-incident-history") {
+            assertDefaultStatusPageSlug(route.params.slug);
+            return json({ ok: true, incidents: [], nextCursor: null, hasMore: false });
         }
 
         if (route.name === "settings") {
@@ -174,7 +202,7 @@ export async function listMonitors(env) {
     const monitorResult = await env.DB.prepare(
         `SELECT id, name, type, url, hostname, port, method, headers, body, keyword,
                 invert_keyword, json_path, expected_value, timeout, "interval",
-                active, network_profile_id
+                active, network_profile_id, config_json
          FROM monitors
          ORDER BY name`
     ).all();
@@ -201,6 +229,51 @@ export async function listMonitors(env) {
     });
 }
 
+export async function listStatusPages() {
+    return {
+        1: workerStatusPageConfig(),
+    };
+}
+
+export async function getStatusPageData(env, slug) {
+    assertDefaultStatusPageSlug(slug);
+    const monitors = await listMonitors(env);
+    return {
+        config: workerStatusPageConfig(),
+        incidents: [],
+        publicGroupList: [
+            {
+                id: 1,
+                name: "Services",
+                weight: 1,
+                monitorList: monitors.map(toPublicStatusPageMonitor),
+            },
+        ],
+        maintenanceList: [],
+    };
+}
+
+export async function getStatusPageHeartbeatData(env, slug) {
+    assertDefaultStatusPageSlug(slug);
+    const monitors = await listMonitors(env);
+    const heartbeatList = {};
+    const uptimeList = {};
+
+    await Promise.all(
+        monitors.map(async (monitor) => {
+            const result = await listMonitorHeartbeats(env, monitor.id, 0, 100);
+            const heartbeats = result.heartbeats.slice().reverse();
+            heartbeatList[monitor.id] = heartbeats;
+            uptimeList[`${monitor.id}_24`] = calculateStatusPageUptime(heartbeats);
+        })
+    );
+
+    return {
+        heartbeatList,
+        uptimeList,
+    };
+}
+
 export async function getSerializedMonitor(env, monitorId) {
     const monitor = await getMonitor(env, monitorId);
     if (!monitor) {
@@ -224,10 +297,10 @@ export async function createMonitor(env, monitorInput) {
         `INSERT INTO monitors (
             name, type, url, hostname, port, method, headers, body, keyword,
             invert_keyword, json_path, expected_value, timeout, "interval",
-            active, network_profile_id
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+            active, network_profile_id, config_json
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
-        .bind(...monitorValues(monitor, true))
+        .bind(...monitorValues(monitor, true), monitorConfigJson(monitorInput, {}, monitor))
         .run();
     return Number(result.meta?.last_row_id || result.meta?.last_rowid || result.lastRowId || result.last_row_id);
 }
@@ -243,10 +316,10 @@ export async function updateMonitor(env, monitorId, monitorInput) {
             name = ?, type = ?, url = ?, hostname = ?, port = ?, method = ?,
             headers = ?, body = ?, keyword = ?, invert_keyword = ?,
             json_path = ?, expected_value = ?, timeout = ?, "interval" = ?,
-            network_profile_id = ?, updated_at = CURRENT_TIMESTAMP
+            network_profile_id = ?, config_json = ?, updated_at = CURRENT_TIMESTAMP
          WHERE id = ?`
     )
-        .bind(...monitorValues(monitor, false), monitorId)
+        .bind(...monitorValues(monitor, false), monitorConfigJson(monitorInput, existing, monitor), monitorId)
         .run();
 }
 
@@ -472,6 +545,139 @@ function normalizeMonitorInput(input, existing = {}) {
     };
 }
 
+/**
+ * Build the persisted edit-form configuration for fields outside runner columns.
+ * @param {object} input Request body sent from the edit form.
+ * @param {object} existing Existing monitor row from D1.
+ * @param {object} normalized Normalized runner-column values.
+ * @returns {string} JSON payload for the monitor config column.
+ */
+function monitorConfigJson(input, existing = {}, normalized = {}) {
+    const config = {
+        ...monitorConfigDefaults(normalized.type || input?.type || existing.type),
+        ...parseMonitorConfig(existing.config_json),
+        ...(input || {}),
+        ...normalized,
+    };
+
+    for (const field of MONITOR_CONFIG_EXCLUDED_FIELDS) {
+        delete config[field];
+    }
+
+    return JSON.stringify(config);
+}
+
+/**
+ * Parse a stored monitor config payload.
+ * @param {string|null} value Stored JSON string.
+ * @returns {object} Parsed object, or an empty object for missing/invalid data.
+ */
+function parseMonitorConfig(value) {
+    if (!value || typeof value !== "string") {
+        return {};
+    }
+    try {
+        const parsed = JSON.parse(value);
+        return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+    } catch (_) {
+        return {};
+    }
+}
+
+/**
+ * Return form defaults expected by EditMonitor.vue for Worker-supported types.
+ * @param {string} type Monitor type.
+ * @returns {object} Default edit-form values.
+ */
+function monitorConfigDefaults(type) {
+    return {
+        maxretries: 0,
+        retryInterval: 60,
+        resendInterval: 0,
+        retryOnlyOnStatusCodeFailure: false,
+        accepted_statuscodes: type === "websocket-upgrade" ? ["1000"] : ["200-299"],
+        ignoreTls: false,
+        upsideDown: false,
+        expiryNotification: false,
+        domainExpiryNotification: true,
+        cacheBust: false,
+        maxredirects: 10,
+        saveResponse: false,
+        saveErrorResponse: true,
+        responseMaxLength: 1024,
+        ipFamily: null,
+        authMethod: null,
+        basic_auth_user: "",
+        basic_auth_pass: "",
+        oauth_auth_method: "client_secret_basic",
+        oauth_client_id: "",
+        oauth_client_secret: "",
+        oauth_token_url: "",
+        oauth_scopes: "",
+        oauth_audience: "",
+        wsIgnoreSecWebsocketAcceptHeader: false,
+        wsSubprotocol: "",
+        tlsCa: "",
+        tlsCert: "",
+        tlsKey: "",
+        smtpSecurity: "nostarttls",
+        expectedTlsAlert: "none",
+        jsonPathOperator: "==",
+        description: "",
+        parent: null,
+    };
+}
+
+function workerStatusPageConfig() {
+    return {
+        id: 1,
+        slug: "default",
+        title: "Status Page",
+        description: "",
+        icon: "/icon.svg",
+        theme: "auto",
+        autoRefreshInterval: 300,
+        published: true,
+        showTags: false,
+        domainNameList: [],
+        customCSS: "",
+        footerText: "",
+        showPoweredBy: true,
+        analyticsId: null,
+        analyticsScriptUrl: null,
+        analyticsType: null,
+        showCertificateExpiry: false,
+        showOnlyLastHeartbeat: false,
+        rssTitle: "",
+    };
+}
+
+function assertDefaultStatusPageSlug(slug) {
+    if (!["default", "status-page", ""].includes(slug || "default")) {
+        throw httpError(404, "Status Page Not Found");
+    }
+}
+
+function toPublicStatusPageMonitor(monitor) {
+    return {
+        id: monitor.id,
+        name: monitor.name,
+        type: monitor.type,
+        url: monitor.url,
+        active: monitor.active,
+        tags: [],
+        sendUrl: Boolean(monitor.url),
+    };
+}
+
+function calculateStatusPageUptime(heartbeats) {
+    if (!heartbeats.length) {
+        return 0;
+    }
+    const up = heartbeats.filter((heartbeat) => heartbeat.status === 1).length;
+    return up / heartbeats.length;
+}
+
 function monitorValues(monitor, includeActive) {
     const values = [
         monitor.name,
@@ -498,7 +704,12 @@ function monitorValues(monitor, includeActive) {
 
 function serializeMonitor(monitor, latestHeartbeat = null) {
     const name = monitor.name || "";
+    const config = {
+        ...monitorConfigDefaults(monitor.type),
+        ...parseMonitorConfig(monitor.config_json),
+    };
     return {
+        ...config,
         id: Number(monitor.id),
         name,
         type: monitor.type,
@@ -521,6 +732,9 @@ function serializeMonitor(monitor, latestHeartbeat = null) {
         tags: [],
         notificationIDList: {},
         networkProfileId: monitor.network_profile_id ?? monitor.networkProfileId ?? null,
+        accepted_statuscodes: Array.isArray(config.accepted_statuscodes)
+            ? config.accepted_statuscodes
+            : monitorConfigDefaults(monitor.type).accepted_statuscodes,
         lastHeartbeat: latestHeartbeat ? serializeHeartbeat(latestHeartbeat) : null,
     };
 }
@@ -548,6 +762,9 @@ function matchRoute(method, pathname) {
     }
     if (method === "GET" && pathname === "/api/monitors") {
         return { name: "monitors", params: {} };
+    }
+    if (method === "GET" && pathname === "/api/status-pages") {
+        return { name: "status-pages", params: {} };
     }
     if (method === "POST" && pathname === "/api/monitors") {
         return { name: "create-monitor", params: {} };
@@ -577,6 +794,21 @@ function matchRoute(method, pathname) {
     const checkNowMatch = pathname.match(/^\/api\/monitors\/(\d+)\/check-now$/);
     if (method === "POST" && checkNowMatch) {
         return { name: "check-now", params: { monitorId: checkNowMatch[1] } };
+    }
+
+    const statusPageHeartbeatMatch = pathname.match(/^\/api\/status-page\/heartbeat\/([^/]+)$/);
+    if (method === "GET" && statusPageHeartbeatMatch) {
+        return { name: "status-page-heartbeat", params: { slug: statusPageHeartbeatMatch[1] } };
+    }
+
+    const statusPageIncidentHistoryMatch = pathname.match(/^\/api\/status-page\/([^/]+)\/incident-history$/);
+    if (method === "GET" && statusPageIncidentHistoryMatch) {
+        return { name: "status-page-incident-history", params: { slug: statusPageIncidentHistoryMatch[1] } };
+    }
+
+    const statusPageMatch = pathname.match(/^\/api\/status-page\/([^/]+)$/);
+    if (method === "GET" && statusPageMatch) {
+        return { name: "status-page", params: { slug: statusPageMatch[1] } };
     }
 
     const monitorMatch = pathname.match(/^\/api\/monitors\/(\d+)$/);
