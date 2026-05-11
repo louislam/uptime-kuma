@@ -1,3 +1,4 @@
+/* eslint-disable jsdoc/require-jsdoc */
 const http = require("node:http");
 const fs = require("node:fs");
 const childProcess = require("node:child_process");

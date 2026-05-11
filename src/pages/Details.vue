@@ -131,6 +131,15 @@
                         <font-awesome-icon icon="clone" />
                         {{ $t("Clone") }}
                     </router-link>
+                    <button
+                        v-if="$root.isCloudflareWorkerUI"
+                        class="btn btn-normal"
+                        :disabled="checkingNow"
+                        @click="checkNow"
+                    >
+                        <font-awesome-icon icon="heartbeat" />
+                        {{ checkingNow ? $t("Loading...") : "Check Now" }}
+                    </button>
                     <button class="btn btn-normal text-danger" @click="deleteDialog">
                         <font-awesome-icon icon="trash" />
                         {{ $t("Delete") }}
@@ -491,6 +500,7 @@ export default {
                 code: "",
             },
             deleteChildrenMonitors: false,
+            checkingNow: false,
         };
     },
     computed: {
@@ -685,6 +695,29 @@ export default {
          */
         showScreenshotDialog() {
             this.$refs.screenshotDialog.show();
+        },
+
+        async checkNow() {
+            if (this.checkingNow) {
+                return;
+            }
+            this.checkingNow = true;
+            try {
+                const response = await fetch(`/api/monitors/${this.monitor.id}/check-now`, {
+                    method: "POST",
+                });
+                const body = await response.json();
+                if (!response.ok) {
+                    throw new Error(body.error || body.msg || `HTTP ${response.status}`);
+                }
+                this.$root.toastSuccess(body.result?.msg || "Check complete");
+                await this.$root.loadCloudflareWorkerData();
+                this.getImportantHeartbeatListLength();
+            } catch (error) {
+                this.$root.toastError(error.message);
+            } finally {
+                this.checkingNow = false;
+            }
         },
 
         /**

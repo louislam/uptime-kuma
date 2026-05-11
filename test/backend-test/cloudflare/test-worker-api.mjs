@@ -23,6 +23,18 @@ describe("Cloudflare Worker API", () => {
         assert.match(migrationSql, /'twingate'/);
     });
 
+    test("D1 migration creates lightweight app settings table", async () => {
+        const migrationPath = path.join(
+            __dirname,
+            "../../../cloudflare/migrations/0002_app_settings.sql"
+        );
+        const migrationSql = fs.readFileSync(migrationPath, "utf8");
+
+        assert.match(migrationSql, /CREATE TABLE IF NOT EXISTS app_settings/);
+        assert.match(migrationSql, /key TEXT PRIMARY KEY/);
+        assert.match(migrationSql, /value TEXT NOT NULL/);
+    });
+
     test("Worker deployment serves the Vue web UI as a single-page app", async () => {
         const wranglerPath = path.join(__dirname, "../../../wrangler.jsonc");
         const wranglerConfig = JSON.parse(fs.readFileSync(wranglerPath, "utf8"));
@@ -57,6 +69,14 @@ describe("Cloudflare Worker API", () => {
                     url: "http://private.example.test",
                     hostname: null,
                     port: null,
+                    method: "GET",
+                    headers: "{\"x-test\":\"true\"}",
+                    body: "",
+                    keyword: null,
+                    json_path: "$",
+                    expected_value: null,
+                    timeout: 30,
+                    interval: 60,
                     active: 1,
                     network_profile_id: "twingate",
                 },
@@ -84,10 +104,21 @@ describe("Cloudflare Worker API", () => {
                 url: "http://private.example.test",
                 hostname: null,
                 port: null,
+                method: "GET",
+                headers: "{\"x-test\":\"true\"}",
+                body: "",
+                keyword: null,
+                invertKeyword: false,
+                jsonPath: "$",
+                expectedValue: null,
+                timeout: 30,
+                interval: 60,
                 active: true,
                 parent: null,
+                path: ["Private HTTP"],
                 childrenIDs: [],
                 tags: [],
+                notificationIDList: {},
                 networkProfileId: "twingate",
                 lastHeartbeat: {
                     monitorID: 7,
@@ -98,6 +129,193 @@ describe("Cloudflare Worker API", () => {
                 },
             },
         ]);
+    });
+
+    test("gets and saves UI settings through app_settings", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            settings: {
+                entryPage: "dashboard",
+                searchEngineIndex: false,
+            },
+        });
+
+        const getResponse = await handleApiRequest(new Request("https://example.com/api/settings"), env);
+        const getBody = await getResponse.json();
+
+        assert.strictEqual(getResponse.status, 200);
+        assert.strictEqual(getBody.data.entryPage, "dashboard");
+        assert.strictEqual(getBody.data.checkUpdate, true);
+        assert.strictEqual(getBody.data.keepDataPeriodDays, 180);
+
+        const putResponse = await handleApiRequest(
+            new Request("https://example.com/api/settings", {
+                method: "PUT",
+                body: JSON.stringify({
+                    primaryBaseURL: "https://uptime.example.com",
+                    searchEngineIndex: true,
+                }),
+            }),
+            env
+        );
+
+        assert.strictEqual(putResponse.status, 200);
+        assert.deepStrictEqual(await putResponse.json(), { ok: true, msg: "Settings saved" });
+        assert.strictEqual(env.state.settings.primaryBaseURL, "https://uptime.example.com");
+        assert.strictEqual(env.state.settings.searchEngineIndex, true);
+    });
+
+    test("creates, reads, updates, toggles, and deletes a supported monitor", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({});
+
+        const createResponse = await handleApiRequest(
+            new Request("https://example.com/api/monitors", {
+                method: "POST",
+                body: JSON.stringify({
+                    name: "Example HTTP",
+                    type: "http",
+                    url: "https://example.com",
+                    interval: 90,
+                    timeout: 20,
+                    networkProfileId: null,
+                }),
+            }),
+            env
+        );
+        const createBody = await createResponse.json();
+
+        assert.strictEqual(createResponse.status, 200);
+        assert.strictEqual(createBody.ok, true);
+        assert.strictEqual(createBody.monitorID, 1);
+
+        const readResponse = await handleApiRequest(new Request("https://example.com/api/monitors/1"), env);
+        const readBody = await readResponse.json();
+        assert.strictEqual(readResponse.status, 200);
+        assert.strictEqual(readBody.monitor.name, "Example HTTP");
+        assert.strictEqual(readBody.monitor.interval, 90);
+
+        const updateResponse = await handleApiRequest(
+            new Request("https://example.com/api/monitors/1", {
+                method: "PUT",
+                body: JSON.stringify({
+                    ...readBody.monitor,
+                    name: "Renamed HTTP",
+                    method: "POST",
+                    body: "{\"ok\":true}",
+                }),
+            }),
+            env
+        );
+
+        assert.strictEqual(updateResponse.status, 200);
+        assert.deepStrictEqual(await updateResponse.json(), { ok: true, msg: "Monitor saved" });
+        assert.strictEqual(env.state.monitors[0].name, "Renamed HTTP");
+        assert.strictEqual(env.state.monitors[0].method, "POST");
+
+        const pauseResponse = await handleApiRequest(
+            new Request("https://example.com/api/monitors/1/active", {
+                method: "PATCH",
+                body: JSON.stringify({ active: false }),
+            }),
+            env
+        );
+        assert.strictEqual(pauseResponse.status, 200);
+        assert.deepStrictEqual(await pauseResponse.json(), { ok: true, active: false });
+        assert.strictEqual(env.state.monitors[0].active, 0);
+
+        const deleteResponse = await handleApiRequest(
+            new Request("https://example.com/api/monitors/1", { method: "DELETE" }),
+            env
+        );
+        assert.strictEqual(deleteResponse.status, 200);
+        assert.deepStrictEqual(await deleteResponse.json(), { ok: true, msg: "Deleted" });
+        assert.strictEqual(env.state.monitors.length, 0);
+    });
+
+    test("rejects unsupported Worker monitor types", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({});
+
+        const response = await handleApiRequest(
+            new Request("https://example.com/api/monitors", {
+                method: "POST",
+                body: JSON.stringify({
+                    name: "Unsupported",
+                    type: "ping",
+                    hostname: "example.com",
+                }),
+            }),
+            env
+        );
+
+        assert.strictEqual(response.status, 400);
+        assert.deepStrictEqual(await response.json(), {
+            error: "Monitor type ping is not supported by the Cloudflare Worker UI",
+        });
+    });
+
+    test("lists and clears monitor heartbeats", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [{ id: 7, name: "Private HTTP", type: "http", active: 1 }],
+            heartbeats: [
+                {
+                    monitor_id: 7,
+                    status: 1,
+                    ping: 12,
+                    msg: "200 - OK",
+                    checked_at: "2026-05-11 02:30:00",
+                },
+                {
+                    monitor_id: 7,
+                    status: 0,
+                    ping: 44,
+                    msg: "500 - Error",
+                    checked_at: "2026-05-11 02:00:00",
+                },
+                {
+                    monitor_id: 8,
+                    status: 1,
+                    ping: 7,
+                    msg: "200 - OK",
+                    checked_at: "2026-05-11 01:00:00",
+                },
+            ],
+        });
+
+        const listResponse = await handleApiRequest(new Request("https://example.com/api/monitors/7/heartbeats"), env);
+        const listBody = await listResponse.json();
+
+        assert.strictEqual(listResponse.status, 200);
+        assert.deepStrictEqual(listBody, {
+            count: 2,
+            heartbeats: [
+                {
+                    monitorID: 7,
+                    status: 1,
+                    ping: 12,
+                    msg: "200 - OK",
+                    time: "2026-05-11 02:30:00",
+                },
+                {
+                    monitorID: 7,
+                    status: 0,
+                    ping: 44,
+                    msg: "500 - Error",
+                    time: "2026-05-11 02:00:00",
+                },
+            ],
+        });
+
+        const clearResponse = await handleApiRequest(
+            new Request("https://example.com/api/monitors/7/heartbeats", { method: "DELETE" }),
+            env
+        );
+
+        assert.strictEqual(clearResponse.status, 200);
+        assert.deepStrictEqual(await clearResponse.json(), { ok: true, msg: "Heartbeats cleared" });
+        assert.deepStrictEqual(env.state.heartbeats.map((heartbeat) => heartbeat.monitor_id), [8]);
     });
 
     test("lists direct and Twingate network profiles", async () => {
@@ -204,8 +422,10 @@ function createEnv(initial) {
         profiles: initial.profiles || [],
         monitors: initial.monitors || [],
         heartbeats: initial.heartbeats || [],
+        settings: initial.settings || {},
         runnerJobs: [],
         runnerResult: initial.runnerResult,
+        nextMonitorId: initial.nextMonitorId || 1,
     };
 
     return {
@@ -248,11 +468,32 @@ function createStatement(sql, state) {
             if (sql.includes("FROM network_profiles")) {
                 return { results: state.profiles };
             }
+            if (sql.includes("FROM app_settings")) {
+                return {
+                    results: Object.entries(state.settings).map(([key, value]) => ({
+                        key,
+                        value: JSON.stringify(value),
+                    })),
+                };
+            }
             if (sql.includes("FROM monitors")) {
-                return { results: state.monitors };
+                if (sql.includes("WHERE id = ?")) {
+                    return { results: state.monitors.filter((monitor) => monitor.id === Number(this.values[0])) };
+                }
+                return { results: [...state.monitors] };
             }
             if (sql.includes("FROM heartbeats")) {
-                return { results: state.heartbeats };
+                let results = [...state.heartbeats];
+                if (sql.includes("WHERE monitor_id = ?")) {
+                    results = results.filter((heartbeat) => heartbeat.monitor_id === Number(this.values[0]));
+                }
+                results.sort((a, b) => String(b.checked_at).localeCompare(String(a.checked_at)));
+                if (sql.includes("LIMIT ?")) {
+                    const limit = Number(this.values.at(-2));
+                    const offset = Number(this.values.at(-1));
+                    results = results.slice(offset, offset + limit);
+                }
+                return { results };
             }
             return { results: [] };
         },
@@ -261,6 +502,12 @@ function createStatement(sql, state) {
                 const id = Number(this.values[0]);
                 return state.monitors.find((monitor) => monitor.id === id) || null;
             }
+            if (sql.includes("COUNT(*) AS count") && sql.includes("FROM heartbeats")) {
+                const monitorId = Number(this.values[0]);
+                return {
+                    count: state.heartbeats.filter((heartbeat) => heartbeat.monitor_id === monitorId).length,
+                };
+            }
             if (sql.includes("FROM network_profiles")) {
                 const id = this.values[0];
                 return state.profiles.find((profile) => profile.id === id && profile.enabled) || null;
@@ -268,12 +515,117 @@ function createStatement(sql, state) {
             return null;
         },
         async run() {
+            if (sql.includes("INSERT INTO app_settings")) {
+                const [key, value] = this.values;
+                state.settings[key] = JSON.parse(value);
+                return { success: true };
+            }
+            if (sql.includes("INSERT INTO monitors")) {
+                const [
+                    name,
+                    type,
+                    url,
+                    hostname,
+                    port,
+                    method,
+                    headers,
+                    body,
+                    keyword,
+                    invertKeyword,
+                    jsonPath,
+                    expectedValue,
+                    timeout,
+                    interval,
+                    active,
+                    networkProfileId,
+                ] = this.values;
+                const id = state.nextMonitorId++;
+                state.monitors.push({
+                    id,
+                    name,
+                    type,
+                    url,
+                    hostname,
+                    port,
+                    method,
+                    headers,
+                    body,
+                    keyword,
+                    invert_keyword: invertKeyword,
+                    json_path: jsonPath,
+                    expected_value: expectedValue,
+                    timeout,
+                    interval,
+                    active,
+                    network_profile_id: networkProfileId,
+                });
+                return { success: true, meta: { last_row_id: id } };
+            }
             if (sql.includes("UPDATE monitors")) {
-                const [networkProfileId, id] = this.values;
+                if (sql.includes("SET network_profile_id")) {
+                    const [networkProfileId, id] = this.values;
+                    const monitor = state.monitors.find((candidate) => candidate.id === Number(id));
+                    if (monitor) {
+                        monitor.network_profile_id = networkProfileId;
+                    }
+                    return { success: true };
+                }
+                if (sql.includes("SET active")) {
+                    const [active, id] = this.values;
+                    const monitor = state.monitors.find((candidate) => candidate.id === Number(id));
+                    if (monitor) {
+                        monitor.active = active;
+                    }
+                    return { success: true };
+                }
+                const [
+                    name,
+                    type,
+                    url,
+                    hostname,
+                    port,
+                    method,
+                    headers,
+                    body,
+                    keyword,
+                    invertKeyword,
+                    jsonPath,
+                    expectedValue,
+                    timeout,
+                    interval,
+                    networkProfileId,
+                    id,
+                ] = this.values;
                 const monitor = state.monitors.find((candidate) => candidate.id === Number(id));
                 if (monitor) {
-                    monitor.network_profile_id = networkProfileId;
+                    Object.assign(monitor, {
+                        name,
+                        type,
+                        url,
+                        hostname,
+                        port,
+                        method,
+                        headers,
+                        body,
+                        keyword,
+                        invert_keyword: invertKeyword,
+                        json_path: jsonPath,
+                        expected_value: expectedValue,
+                        timeout,
+                        interval,
+                        network_profile_id: networkProfileId,
+                    });
                 }
+                return { success: true };
+            }
+            if (sql.includes("DELETE FROM monitors")) {
+                const id = Number(this.values[0]);
+                state.monitors = state.monitors.filter((monitor) => monitor.id !== id);
+                return { success: true };
+            }
+            if (sql.includes("DELETE FROM heartbeats")) {
+                const monitorId = Number(this.values[0]);
+                state.heartbeats = state.heartbeats.filter((heartbeat) => heartbeat.monitor_id !== monitorId);
                 return { success: true };
             }
             if (sql.includes("INSERT INTO heartbeats")) {

@@ -60,6 +60,7 @@ export default {
             statusPageListLoaded: false,
             statusPageList: [],
             proxyList: [],
+            isCloudflareWorkerUI: false,
             connectionErrorMsg: `${this.$t("Cannot connect to the socket server.")} ${this.$t("Reconnecting...")}`,
             showReverseProxyGuide: true,
             cloudflared: {
@@ -316,6 +317,7 @@ export default {
          * @returns {void}
          */
         initCloudflareWorkerUI() {
+            this.isCloudflareWorkerUI = true;
             this.socket.initedSocketIO = true;
             this.socket.connected = true;
             this.socket.firstConnect = false;
@@ -324,7 +326,7 @@ export default {
             this.allowLoginDialog = false;
             this.showReverseProxyGuide = false;
             this.username = "Cloudflare";
-            socket = createCloudflareSocketStub();
+            socket = createCloudflareSocketStub(this);
             this.loadCloudflareWorkerData();
         },
 
@@ -342,8 +344,10 @@ export default {
                 const body = await response.json();
                 const monitorList = {};
                 const heartbeatList = {};
+                const avgPingList = {};
+                const uptimeList = {};
 
-                for (const monitor of body.monitors || []) {
+                await Promise.all((body.monitors || []).map(async (monitor) => {
                     const lastHeartbeat = monitor.lastHeartbeat;
                     delete monitor.lastHeartbeat;
                     monitor.getUrl = () => {
@@ -354,13 +358,22 @@ export default {
                         }
                     };
                     monitorList[monitor.id] = monitor;
-                    if (lastHeartbeat) {
+                    const heartbeats = await fetchCloudflareMonitorHeartbeats(monitor.id);
+                    if (heartbeats.length > 0) {
+                        heartbeatList[monitor.id] = heartbeats;
+                    } else if (lastHeartbeat) {
                         heartbeatList[monitor.id] = [lastHeartbeat];
                     }
-                }
+                    avgPingList[monitor.id] = calculateAveragePing(heartbeatList[monitor.id] || []);
+                    for (const type of ["24", "720", "1y"]) {
+                        uptimeList[`${monitor.id}_${type}`] = calculateUptime(heartbeatList[monitor.id] || []);
+                    }
+                }));
 
                 this.monitorList = monitorList;
                 this.heartbeatList = heartbeatList;
+                this.avgPingList = avgPingList;
+                this.uptimeList = uptimeList;
             } catch (error) {
                 console.error(`Failed to load Cloudflare Worker monitor data: ${error.message}`);
                 this.connectionErrorMsg = `Cannot load Cloudflare Worker monitor data. [${error.message}]`;
@@ -965,35 +978,243 @@ export default {
  * @returns {boolean} True when hosted on the Worker UI hostname.
  */
 function isCloudflareWorkerUI() {
-    return cloudflareWorkerHostnames.has(location.hostname);
+    return cloudflareWorkerHostnames.has(location.hostname) || location.port === "8787";
 }
 
 /**
  * Create the small socket-compatible shim needed by dashboard components.
+ * @param {object} app Vue root component instance.
  * @returns {object} Socket-like object for REST-backed Worker UI mode.
  */
-function createCloudflareSocketStub() {
+function createCloudflareSocketStub(app) {
     return {
         on() {},
         off() {},
         disconnect() {},
-        emit(event, ...args) {
+        async emit(event, ...args) {
             const callback = args.find((arg) => typeof arg === "function");
-            if (!callback) {
-                return;
-            }
 
-            if (event === "monitorImportantHeartbeatListCount") {
-                callback({ ok: true, count: 0 });
-                return;
-            }
+            try {
+                if (event === "getSettings") {
+                    const body = await requestCloudflareJson("/api/settings");
+                    callback?.({ ok: true, data: body.data });
+                    return;
+                }
 
-            if (event === "monitorImportantHeartbeatListPaged") {
-                callback({ ok: true, data: [] });
-                return;
-            }
+                if (event === "setSettings") {
+                    const body = await requestCloudflareJson("/api/settings", {
+                        method: "PUT",
+                        body: JSON.stringify(args[0] || {}),
+                    });
+                    callback?.(body);
+                    return;
+                }
 
-            callback({ ok: false, msg: "This action is not available in the Cloudflare Worker UI yet." });
+                if (event === "getMonitor") {
+                    const body = await requestCloudflareJson(`/api/monitors/${args[0]}`);
+                    callback?.(body);
+                    return;
+                }
+
+                if (event === "add") {
+                    const body = await requestCloudflareJson("/api/monitors", {
+                        method: "POST",
+                        body: JSON.stringify(args[0] || {}),
+                    });
+                    await app.loadCloudflareWorkerData();
+                    callback?.(body);
+                    return;
+                }
+
+                if (event === "editMonitor") {
+                    const monitor = args[0] || {};
+                    const body = await requestCloudflareJson(`/api/monitors/${monitor.id}`, {
+                        method: "PUT",
+                        body: JSON.stringify(monitor),
+                    });
+                    await app.loadCloudflareWorkerData();
+                    callback?.(body);
+                    return;
+                }
+
+                if (event === "pauseMonitor" || event === "resumeMonitor") {
+                    const body = await requestCloudflareJson(`/api/monitors/${args[0]}/active`, {
+                        method: "PATCH",
+                        body: JSON.stringify({ active: event === "resumeMonitor" }),
+                    });
+                    await app.loadCloudflareWorkerData();
+                    callback?.({ ok: true, msg: event === "resumeMonitor" ? "Resumed" : "Paused", ...body });
+                    return;
+                }
+
+                if (event === "deleteMonitor") {
+                    const body = await requestCloudflareJson(`/api/monitors/${args[0]}`, {
+                        method: "DELETE",
+                    });
+                    await app.loadCloudflareWorkerData();
+                    callback?.(body);
+                    return;
+                }
+
+                if (event === "monitorImportantHeartbeatListCount") {
+                    const monitorID = args[0];
+                    callback?.({ ok: true, count: await countCloudflareHeartbeats(app, monitorID) });
+                    return;
+                }
+
+                if (event === "monitorImportantHeartbeatListPaged") {
+                    const [monitorID, offset, count] = args;
+                    callback?.({
+                        ok: true,
+                        data: await getCloudflareHeartbeatPage(app, monitorID, offset, count),
+                    });
+                    return;
+                }
+
+                if (event === "clearEvents" || event === "clearHeartbeats") {
+                    await requestCloudflareJson(`/api/monitors/${args[0]}/heartbeats`, {
+                        method: "DELETE",
+                    });
+                    await app.loadCloudflareWorkerData();
+                    callback?.({ ok: true, msg: "Heartbeats cleared" });
+                    return;
+                }
+
+                if (event === "getMonitorChartData") {
+                    const [monitorID, period] = args;
+                    callback?.({ ok: true, data: getCloudflareChartData(app, monitorID, period) });
+                    return;
+                }
+
+                if (event === "getMonitorBeats") {
+                    const [monitorID] = args;
+                    callback?.({ ok: true, data: app.heartbeatList[monitorID] || [] });
+                    return;
+                }
+
+                if (event === "testChrome" || event === "testNotification") {
+                    callback?.({ ok: false, msg: "This action is not available in the Cloudflare Worker UI yet." });
+                    return;
+                }
+
+                callback?.({ ok: false, msg: "This action is not available in the Cloudflare Worker UI yet." });
+            } catch (error) {
+                callback?.({ ok: false, msg: error.message });
+            }
         },
     };
+}
+
+/**
+ * Fetch a JSON response from the Worker API.
+ * @param {string} path API path to request.
+ * @param {object} options Fetch options.
+ * @returns {Promise<object>} Parsed JSON response body.
+ */
+async function requestCloudflareJson(path, options = {}) {
+    const response = await fetch(path, {
+        headers: {
+            "content-type": "application/json",
+            ...(options.headers || {}),
+        },
+        ...options,
+    });
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok) {
+        throw new Error(body.error || body.msg || `HTTP ${response.status}`);
+    }
+    return body;
+}
+
+/**
+ * Fetch heartbeat rows for a Worker-backed monitor.
+ * @param {number} monitorID Monitor ID.
+ * @param {number} offset Pagination offset.
+ * @param {number} count Number of rows to fetch.
+ * @returns {Promise<object[]>} Heartbeat rows.
+ */
+async function fetchCloudflareMonitorHeartbeats(monitorID, offset = 0, count = 150) {
+    const body = await requestCloudflareJson(`/api/monitors/${monitorID}/heartbeats?offset=${offset}&count=${count}`);
+    return body.heartbeats || [];
+}
+
+/**
+ * Count heartbeat rows for one monitor or all loaded monitors.
+ * @param {object} app Vue root component instance.
+ * @param {number|null} monitorID Monitor ID, or null for all loaded monitors.
+ * @returns {Promise<number>} Heartbeat row count.
+ */
+async function countCloudflareHeartbeats(app, monitorID) {
+    if (monitorID != null) {
+        const body = await requestCloudflareJson(`/api/monitors/${monitorID}/heartbeats?offset=0&count=1`);
+        return body.count || 0;
+    }
+    return Object.values(app.heartbeatList).reduce((total, beats) => total + beats.length, 0);
+}
+
+/**
+ * Fetch a page of heartbeats for one monitor or all loaded monitors.
+ * @param {object} app Vue root component instance.
+ * @param {number|null} monitorID Monitor ID, or null for all loaded monitors.
+ * @param {number} offset Pagination offset.
+ * @param {number} count Number of rows to fetch.
+ * @returns {Promise<object[]>} Heartbeat rows.
+ */
+async function getCloudflareHeartbeatPage(app, monitorID, offset = 0, count = 25) {
+    if (monitorID != null) {
+        return await fetchCloudflareMonitorHeartbeats(monitorID, offset, count);
+    }
+    return Object.values(app.heartbeatList)
+        .flat()
+        .sort((a, b) => String(b.time).localeCompare(String(a.time)))
+        .slice(offset, offset + count);
+}
+
+/**
+ * Calculate average ping from loaded heartbeat rows.
+ * @param {object[]} heartbeats Heartbeat rows.
+ * @returns {number|null} Average ping in milliseconds.
+ */
+function calculateAveragePing(heartbeats) {
+    const upBeats = heartbeats.filter((beat) => beat.status === UP && beat.ping != null);
+    if (upBeats.length === 0) {
+        return null;
+    }
+    return Math.round(upBeats.reduce((total, beat) => total + Number(beat.ping), 0) / upBeats.length);
+}
+
+/**
+ * Calculate uptime from loaded heartbeat rows.
+ * @param {object[]} heartbeats Heartbeat rows.
+ * @returns {number|undefined} Uptime ratio.
+ */
+function calculateUptime(heartbeats) {
+    if (heartbeats.length === 0) {
+        return undefined;
+    }
+    const available = heartbeats.filter((beat) => beat.status === UP).length;
+    return available / heartbeats.length;
+}
+
+/**
+ * Build simple chart datapoints from loaded heartbeat rows.
+ * @param {object} app Vue root component instance.
+ * @param {number} monitorID Monitor ID.
+ * @param {number} periodHours Requested chart period in hours.
+ * @returns {object[]} Chart datapoints.
+ */
+function getCloudflareChartData(app, monitorID, periodHours) {
+    const since = Date.now() - Number(periodHours || 24) * 60 * 60 * 1000;
+    return (app.heartbeatList[monitorID] || [])
+        .filter((beat) => new Date(beat.time).getTime() >= since)
+        .map((beat) => ({
+            timestamp: Math.floor(new Date(beat.time).getTime() / 1000),
+            up: beat.status === UP ? 1 : 0,
+            down: beat.status === DOWN ? 1 : 0,
+            maintenance: beat.status === MAINTENANCE ? 1 : 0,
+            avgPing: beat.ping,
+            minPing: beat.ping,
+            maxPing: beat.ping,
+        }))
+        .sort((a, b) => a.timestamp - b.timestamp);
 }

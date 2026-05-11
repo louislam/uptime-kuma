@@ -40,13 +40,14 @@
                                         <option value="http">HTTP(s)</option>
                                         <option value="keyword">HTTP(s) - {{ $t("Keyword") }}</option>
                                         <option value="port">TCP Port</option>
-                                        <option value="ping">Ping</option>
-                                        <option value="dns">DNS</option>
-                                        <option value="docker">
+                                        <option v-if="!$root.isCloudflareWorkerUI" value="ping">Ping</option>
+                                        <option v-if="!$root.isCloudflareWorkerUI" value="dns">DNS</option>
+                                        <option v-if="!$root.isCloudflareWorkerUI" value="docker">
                                             {{ $t("Docker Container") }}
                                         </option>
                                         <option
                                             v-if="
+                                                !$root.isCloudflareWorkerUI &&
                                                 ['linux', 'win32'].includes($root.info.runtime.platform) &&
                                                 !$root.info.isContainer
                                             "
@@ -54,18 +55,18 @@
                                         >
                                             {{ $t("System Service") }}
                                         </option>
-                                        <option value="real-browser">
+                                        <option v-if="!$root.isCloudflareWorkerUI" value="real-browser">
                                             HTTP(s) - Browser Engine (Chrome/Chromium) (Beta)
                                         </option>
                                     </optgroup>
 
-                                    <optgroup :label="$t('monitorTypeSpecial')">
+                                    <optgroup v-if="!$root.isCloudflareWorkerUI" :label="$t('monitorTypeSpecial')">
                                         <option value="group">
                                             {{ $t("Group") }}
                                         </option>
                                     </optgroup>
 
-                                    <optgroup :label="$t('Passive Monitor Type')">
+                                    <optgroup v-if="!$root.isCloudflareWorkerUI" :label="$t('Passive Monitor Type')">
                                         <option value="push">Push</option>
                                         <option value="manual">
                                             {{ $t("Manual") }}
@@ -74,27 +75,37 @@
 
                                     <!-- Should sort from A to Z in this category -->
                                     <optgroup :label="$t('Specific Monitor Type')">
-                                        <option value="globalping">
+                                        <option v-if="!$root.isCloudflareWorkerUI" value="globalping">
                                             {{ $t("Globalping - Access global monitoring probes") }}
                                         </option>
-                                        <option value="grpc-keyword">gRPC(s) - {{ $t("Keyword") }}</option>
+                                        <option v-if="!$root.isCloudflareWorkerUI" value="grpc-keyword">
+                                            gRPC(s) - {{ $t("Keyword") }}
+                                        </option>
                                         <option value="json-query">HTTP(s) - {{ $t("Json Query") }}</option>
-                                        <option value="kafka-producer">Kafka Producer</option>
-                                        <option value="mqtt">MQTT</option>
-                                        <option value="rabbitmq">RabbitMQ</option>
-                                        <option v-if="!$root.info.isContainer" value="sip-options">
+                                        <option v-if="!$root.isCloudflareWorkerUI" value="kafka-producer">
+                                            Kafka Producer
+                                        </option>
+                                        <option v-if="!$root.isCloudflareWorkerUI" value="mqtt">MQTT</option>
+                                        <option v-if="!$root.isCloudflareWorkerUI" value="rabbitmq">RabbitMQ</option>
+                                        <option
+                                            v-if="!$root.isCloudflareWorkerUI && !$root.info.isContainer"
+                                            value="sip-options"
+                                        >
                                             SIP Options Ping
                                         </option>
-                                        <option value="smtp">SMTP</option>
-                                        <option value="snmp">SNMP</option>
-                                        <option v-if="!$root.info.isContainer" value="tailscale-ping">
+                                        <option v-if="!$root.isCloudflareWorkerUI" value="smtp">SMTP</option>
+                                        <option v-if="!$root.isCloudflareWorkerUI" value="snmp">SNMP</option>
+                                        <option
+                                            v-if="!$root.isCloudflareWorkerUI && !$root.info.isContainer"
+                                            value="tailscale-ping"
+                                        >
                                             Tailscale Ping
                                         </option>
                                         <option value="websocket-upgrade">Websocket Upgrade</option>
                                     </optgroup>
 
                                     <!-- Should sort from A to Z in this category -->
-                                    <optgroup :label="$t('monitorTypeDatabase')">
+                                    <optgroup v-if="!$root.isCloudflareWorkerUI" :label="$t('monitorTypeDatabase')">
                                         <option value="sqlserver">Microsoft SQL Server</option>
                                         <option value="mongodb">MongoDB</option>
                                         <option value="mysql">MySQL/MariaDB</option>
@@ -105,7 +116,7 @@
                                     </optgroup>
 
                                     <!-- Should sort from A to Z in this category -->
-                                    <optgroup :label="$t('monitorTypeGameServer')">
+                                    <optgroup v-if="!$root.isCloudflareWorkerUI" :label="$t('monitorTypeGameServer')">
                                         <option value="gamedig">GameDig</option>
                                         <option value="steam">
                                             {{ $t("Steam Game Server") }}

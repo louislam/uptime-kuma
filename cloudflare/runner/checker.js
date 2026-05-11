@@ -1,3 +1,4 @@
+/* eslint-disable jsdoc/require-jsdoc */
 const http = require("node:http");
 const https = require("node:https");
 const net = require("node:net");

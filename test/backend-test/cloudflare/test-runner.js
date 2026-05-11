@@ -1,3 +1,4 @@
+/* eslint-disable jsdoc/require-jsdoc */
 const { describe, test, beforeEach, afterEach } = require("node:test");
 const assert = require("node:assert");
 const http = require("node:http");

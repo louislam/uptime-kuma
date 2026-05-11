@@ -40,7 +40,12 @@
                     <div v-if="currentPage" class="settings-content-header">
                         {{ subMenus[currentPage].title }}
                     </div>
-                    <div class="mx-3">
+                    <div v-if="isUnsupportedWorkerSetting" class="mx-3 my-4">
+                        <div class="alert alert-info">
+                            This settings section is not available in the Cloudflare Worker UI yet.
+                        </div>
+                    </div>
+                    <div v-else class="mx-3">
                         <router-view v-slot="{ Component }">
                             <transition name="slide-fade" appear>
                                 <component :is="Component" />
@@ -81,6 +86,13 @@ export default {
             } else {
                 return true;
             }
+        },
+
+        isUnsupportedWorkerSetting() {
+            if (!this.$root.isCloudflareWorkerUI || !this.currentPage) {
+                return false;
+            }
+            return !["general", "appearance", "twingate"].includes(this.currentPage);
         },
 
         subMenus() {
