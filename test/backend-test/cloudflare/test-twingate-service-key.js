@@ -60,6 +60,21 @@ describe("Twingate service key env", () => {
         assert.strictEqual(resolved.value.toString("utf8"), serviceKeyJson);
     });
 
+    test("prefers current discrete service key env over legacy base64 service key", () => {
+        const legacyServiceKeyJson = JSON.stringify({ network: "legacy.example", private_key: "old-key" });
+        const resolved = resolveTwingateServiceKey({
+            TWINGATE_SERVICE_KEY_B64: Buffer.from(legacyServiceKeyJson, "utf8").toString("base64"),
+            TWINGATE_NETWORK: "wgs.twingate.com",
+            TWINGATE_SERVICE_ACCOUNT_ID: "service-account-id",
+            TWINGATE_PRIVATE_KEY: TEST_PRIVATE_KEY.replace(/\n/g, "\\n"),
+            TWINGATE_KEY_ID: "current-key-id",
+        });
+
+        assert.strictEqual(resolved.configured, true);
+        assert.strictEqual(resolved.source, "TWINGATE_*");
+        assert.strictEqual(JSON.parse(resolved.value.toString("utf8")).key_id, "current-key-id");
+    });
+
     test("reports missing fields for partial discrete service key env", () => {
         const resolved = resolveTwingateServiceKey({
             TWINGATE_NETWORK: "wgs.twingate.com",

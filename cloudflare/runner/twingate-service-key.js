@@ -7,15 +7,6 @@ const REQUIRED_SERVICE_KEY_FIELDS = [
 ];
 
 function resolveTwingateServiceKey(env = process.env) {
-    if (env.TWINGATE_SERVICE_KEY_B64) {
-        return {
-            configured: true,
-            value: Buffer.from(env.TWINGATE_SERVICE_KEY_B64, "base64"),
-            missing: [],
-            source: "TWINGATE_SERVICE_KEY_B64",
-        };
-    }
-
     if (env.TWINGATE_SERVICE_KEY_JSON) {
         return {
             configured: true,
@@ -27,33 +18,42 @@ function resolveTwingateServiceKey(env = process.env) {
 
     const missing = missingServiceKeyFields(env);
     const privateKey = normalizePrivateKey(env);
-    if (!privateKey) {
-        missing.push("TWINGATE_PRIVATE_KEY or TWINGATE_PRIVATE_KEY_B64");
-    }
+    if (privateKey && missing.length === 0) {
+        const serviceKey = {
+            version: env.TWINGATE_SERVICE_KEY_VERSION || "1",
+            network: env.TWINGATE_NETWORK,
+            service_account_id: env.TWINGATE_SERVICE_ACCOUNT_ID,
+            private_key: privateKey,
+            key_id: env.TWINGATE_KEY_ID,
+            expires_at: env.TWINGATE_EXPIRES_AT || null,
+            login_path: env.TWINGATE_LOGIN_PATH || "/api/v4/headless/login",
+        };
 
-    if (missing.length > 0) {
         return {
-            configured: false,
-            value: null,
-            missing,
+            configured: true,
+            value: Buffer.from(JSON.stringify(serviceKey), "utf8"),
+            missing: [],
             source: "TWINGATE_*",
         };
     }
 
-    const serviceKey = {
-        version: env.TWINGATE_SERVICE_KEY_VERSION || "1",
-        network: env.TWINGATE_NETWORK,
-        service_account_id: env.TWINGATE_SERVICE_ACCOUNT_ID,
-        private_key: privateKey,
-        key_id: env.TWINGATE_KEY_ID,
-        expires_at: env.TWINGATE_EXPIRES_AT || null,
-        login_path: env.TWINGATE_LOGIN_PATH || "/api/v4/headless/login",
-    };
+    if (env.TWINGATE_SERVICE_KEY_B64) {
+        return {
+            configured: true,
+            value: Buffer.from(env.TWINGATE_SERVICE_KEY_B64, "base64"),
+            missing: [],
+            source: "TWINGATE_SERVICE_KEY_B64",
+        };
+    }
+
+    if (!privateKey) {
+        missing.push("TWINGATE_PRIVATE_KEY or TWINGATE_PRIVATE_KEY_B64");
+    }
 
     return {
-        configured: true,
-        value: Buffer.from(JSON.stringify(serviceKey), "utf8"),
-        missing: [],
+        configured: false,
+        value: null,
+        missing,
         source: "TWINGATE_*",
     };
 }
