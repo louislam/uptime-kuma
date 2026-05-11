@@ -1,203 +1,217 @@
-<div align="center" width="100%">
-    <img src="./public/icon.svg" width="128" alt="Uptime Kuma Logo" />
-</div>
+# uptimeworker
 
-# Uptime Kuma
+`uptimeworker` is an independent Cloudflare-first uptime monitoring project.
+It started as a fork of Uptime Kuma, but this repository is no longer presented
+as a Docker-first upstream mirror. The goal of this fork is to keep the familiar
+monitoring and status-page experience while moving the runtime to Cloudflare.
 
-Uptime Kuma is an easy-to-use self-hosted monitoring tool.
+The current target platform is Cloudflare Workers with static assets, D1, R2,
+Queues, Cron Triggers, and a containerized monitor runner.
 
-<a target="_blank" href="https://github.com/louislam/uptime-kuma"><img src="https://img.shields.io/github/stars/louislam/uptime-kuma?style=flat" /></a> <a target="_blank" href="https://hub.docker.com/r/louislam/uptime-kuma"><img src="https://img.shields.io/docker/pulls/louislam/uptime-kuma" /></a> <a target="_blank" href="https://hub.docker.com/r/louislam/uptime-kuma"><img src="https://img.shields.io/docker/v/louislam/uptime-kuma/2?label=docker%20image%20ver." /></a> <a target="_blank" href="https://github.com/louislam/uptime-kuma"><img src="https://img.shields.io/github/last-commit/louislam/uptime-kuma" /></a> <a target="_blank" href="https://opencollective.com/uptime-kuma"><img src="https://opencollective.com/uptime-kuma/total/badge.svg?label=Open%20Collective%20Backers&color=brightgreen" /></a>
-[![GitHub Sponsors](https://img.shields.io/github/sponsors/louislam?label=GitHub%20Sponsors)](https://github.com/sponsors/louislam) <a href="https://weblate.kuma.pet/projects/uptime-kuma/uptime-kuma/">
-<img src="https://weblate.kuma.pet/widgets/uptime-kuma/-/svg-badge.svg" alt="Translation status" />
-</a>
+## Project Status
 
-<img src="https://user-images.githubusercontent.com/1336778/212262296-e6205815-ad62-488c-83ec-a5b0d0689f7c.jpg" width="700" alt="Uptime Kuma Dashboard Screenshot" />
+This fork is under active migration toward a Cloudflare-native architecture.
+The Vue dashboard and much of the monitoring model still come from the original
+Uptime Kuma codebase, but the deployment surface in this repository is built
+around `wrangler.jsonc` and the `cloudflare/` runtime.
 
-## 🥔 Live Demo
+Use this repository when you want:
 
-Try it!
+- A monitoring app designed to deploy on Cloudflare.
+- A Worker-hosted web UI with SPA asset serving.
+- D1-backed monitor, heartbeat, and network profile state.
+- Scheduled monitor execution through Cloudflare Cron Triggers and Queues.
+- A Cloudflare Container runner for checks that need Node.js, network tooling,
+  or private-network routing.
+- Optional Twingate-backed network profiles for private endpoint checks.
 
-Demo Server (Location: Frankfurt - Germany): <https://demo.kuma.pet/start-demo>
+Use upstream Uptime Kuma if you want the established Docker/PM2 self-hosted
+server distribution without the Cloudflare migration layer.
 
-It is a temporary live demo, all data will be deleted after 10 minutes. Sponsored by [Uptime Kuma Sponsors](https://github.com/louislam/uptime-kuma#%EF%B8%8F-sponsors).
+## Architecture
 
-## ⭐ Features
+The Cloudflare runtime is split into three main pieces:
 
-- Monitoring uptime for HTTP(s) / TCP / HTTP(s) Keyword / HTTP(s) Json Query / Websocket / Ping / DNS Record / Push / Steam Game Server / Docker Containers
-- Fancy, Reactive, Fast UI/UX
-- Notifications via Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP), and [90+ notification services, click here for the full list](https://github.com/louislam/uptime-kuma/tree/master/src/components/notifications)
-- 20-second intervals
-- [Multi Languages](https://github.com/louislam/uptime-kuma/tree/master/src/lang)
-- Multiple status pages
-- Map status pages to specific domains
-- Ping chart
-- Certificate info
-- Proxy support
-- 2FA support
+- `cloudflare/worker/index.mjs` is the Worker entry point. It serves `/api/*`
+  through Worker code, serves the built Vue app from Cloudflare assets, runs the
+  scheduled enqueue job, and consumes monitor-check queue messages.
+- `cloudflare/worker/api.mjs` contains the Worker API for network profiles,
+  monitor route assignment, immediate checks, queued checks, heartbeat writes,
+  and runner status.
+- `cloudflare/runner/` contains the containerized check runner. The Worker calls
+  this runner through the `MonitorRunner` Durable Object container binding.
 
-## 🔧 How to Install
+Cloudflare resources are declared in `wrangler.jsonc`:
 
-### 🐳 Docker Compose
+- `ASSETS` serves `dist/` as a single-page application.
+- `DB` binds the `uptimeworker` D1 database.
+- `ARTIFACTS` binds the `uptimeworker-artifacts` R2 bucket.
+- `MONITOR_QUEUE` binds the `uptimeworker-monitor-checks` queue.
+- `RUNNER` binds the `MonitorRunner` container Durable Object.
+- A cron trigger runs once per minute and enqueues active monitors.
 
-```bash
-mkdir uptime-kuma
-cd uptime-kuma
-curl -o compose.yaml https://raw.githubusercontent.com/louislam/uptime-kuma/master/compose.yaml
-docker compose up -d
+## Repository Layout
+
+```text
+cloudflare/
+  migrations/          D1 schema for monitors, heartbeats, and network profiles
+  runner/              Container runner for monitor checks and Twingate proxying
+  worker/              Cloudflare Worker entry point and API handlers
+config/                Vite and Playwright configuration
+db/                    Legacy and current database migration files
+public/                Static app assets and PWA metadata
+server/                Original Node server and monitor-provider code
+src/                   Vue dashboard, status pages, and shared frontend modules
+test/                  Backend, Cloudflare API, and browser tests
+wrangler.jsonc         Cloudflare deployment configuration
 ```
 
-Uptime Kuma is now running on all network interfaces (e.g. http://localhost:3001 or http://your-ip:3001).
+## Requirements
 
-> [!WARNING]
-> File Systems like **NFS** (Network File System) are **NOT** supported. Please map to a local directory or volume.
+- Node.js 20.4 or newer.
+- npm.
+- A Cloudflare account with Workers, D1, R2, Queues, Cron Triggers, Durable
+  Objects, and Containers available for the target environment.
+- Wrangler authentication for the account that owns the configured resources.
 
-### 🐳 Docker Command
+## Local Development
 
-```bash
-docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name uptime-kuma louislam/uptime-kuma:2
-```
-
-Uptime Kuma is now running on all network interfaces (e.g. http://localhost:3001 or http://your-ip:3001).
-
-If you want to limit exposure to localhost only:
+Install dependencies:
 
 ```bash
-docker run ... -p 127.0.0.1:3001:3001 ...
+npm ci
 ```
 
-### 💪🏻 Non-Docker
-
-Requirements:
-
-- Platform
-  - ✅ Major Linux distros such as Debian, Ubuntu, Fedora and ArchLinux etc.
-  - ✅ Windows 10 (x64), Windows Server 2012 R2 (x64) or higher
-  - ❌ FreeBSD / OpenBSD / NetBSD
-  - ❌ Replit / Heroku
-- [Node.js](https://nodejs.org/en/download/) >= 20.4
-- [Git](https://git-scm.com/downloads)
-- [pm2](https://pm2.keymetrics.io/) - For running Uptime Kuma in the background
+Run the inherited local development stack:
 
 ```bash
-git clone https://github.com/louislam/uptime-kuma.git
-cd uptime-kuma
-npm run setup
-
-# Option 1. Try it
-node server/server.js
-
-# (Recommended) Option 2. Run in the background using PM2
-# Install PM2 if you don't have it:
-npm install pm2 -g && pm2 install pm2-logrotate
-
-# Start Server
-pm2 start server/server.js --name uptime-kuma
+npm run dev
 ```
 
-Uptime Kuma is now running on all network interfaces (e.g. http://localhost:3001 or http://your-ip:3001).
-
-More useful PM2 Commands
+Build the Vue application:
 
 ```bash
-# If you want to see the current console output
-pm2 monit
-
-# If you want to add it to startup
-pm2 startup && pm2 save
+npm run build
 ```
 
-### Advanced Installation
+The Cloudflare Worker expects the built frontend in `dist/`, matching the
+`assets.directory` setting in `wrangler.jsonc`.
 
-If you need more options or need to browse via a reverse proxy, please read:
+## Cloudflare Development
 
-<https://github.com/louislam/uptime-kuma/wiki/%F0%9F%94%A7-How-to-Install>
+Build the frontend before running or deploying the Worker:
 
-## 🆙 How to Update
+```bash
+npm run build
+```
 
-Please read:
+Apply the D1 migration locally when working against a local Wrangler runtime:
 
-<https://github.com/louislam/uptime-kuma/wiki/%F0%9F%86%99-How-to-Update>
+```bash
+npx wrangler d1 migrations apply uptimeworker --local
+```
 
-## 🆕 What's Next?
+Start a local Worker session:
 
-I will assign requests/issues to the next milestone.
+```bash
+npx wrangler dev
+```
 
-<https://github.com/louislam/uptime-kuma/milestones>
+Deploy to Cloudflare:
 
-## ❤️ Sponsors
+```bash
+npx wrangler deploy
+```
 
-Thank you so much! (GitHub Sponsors will be updated manually. OpenCollective sponsors will be updated automatically, the list will be cached by GitHub though. It may need some time to be updated)
+If your deployment account or resource names differ from this repository's
+defaults, update `wrangler.jsonc` before deploying. Keep the binding names stable
+unless the Worker code is updated at the same time.
 
-<img src="https://uptime.kuma.pet/sponsors?v=6" alt="Uptime Kuma Sponsors" />
+## Cloudflare Resources
 
-## 🖼 More Screenshots
+The checked-in Wrangler configuration currently targets these resource names:
 
-Light Mode:
+| Binding | Cloudflare resource |
+| --- | --- |
+| `DB` | D1 database `uptimeworker` |
+| `ARTIFACTS` | R2 bucket `uptimeworker-artifacts` |
+| `MONITOR_QUEUE` | Queue `uptimeworker-monitor-checks` |
+| `RUNNER` | Container Durable Object class `MonitorRunner` |
+| `ASSETS` | Built Vue assets from `./dist/` |
 
-<img src="https://uptime.kuma.pet/img/light.jpg" width="512" alt="Uptime Kuma Light Mode Screenshot of how the Dashboard looks" />
+The first D1 migration creates:
 
-Status Page:
+- `network_profiles`
+- `monitors`
+- `heartbeats`
 
-<img src="https://user-images.githubusercontent.com/1336778/134628766-a3fe0981-0926-4285-ab46-891a21c3e4cb.png" width="512" alt="Uptime Kuma Status Page Screenshot" />
+It also seeds a `twingate` network profile for private routing.
 
-Settings Page:
+## Twingate Private Routing
 
-<img src="https://louislam.net/uptimekuma/2.jpg" width="400" alt="Uptime Kuma Settings Page Screenshot" />
+The monitor runner can start `twingated` inside the Cloudflare Container when a
+service key is provided. Configure it as a Worker secret:
 
-Telegram Notification Sample:
+```bash
+npx wrangler secret put TWINGATE_SERVICE_KEY_B64
+```
 
-<img src="https://louislam.net/uptimekuma/3.jpg" width="400" alt="Uptime Kuma Telegram Notification Sample Screenshot" />
+The value should be the base64-encoded Twingate service key JSON. The runner
+uses `TWINGATE_PROXY_URL` to expose the local HTTP proxy. The default is:
 
-## Motivation
+```text
+http://127.0.0.1:9999
+```
 
-- I was looking for a self-hosted monitoring tool like "Uptime Robot", but it is hard to find a suitable one. One of the closest ones is statping. Unfortunately, it is not stable and no longer maintained.
-- Wanted to build a fancy UI.
-- Learn Vue 3 and vite.js.
-- Show the power of Bootstrap 5.
-- Try to use WebSocket with SPA instead of a REST API.
-- Deploy my first Docker image to Docker Hub.
+## Testing
 
-If you love this project, please consider giving it a ⭐.
+Run the Cloudflare-focused backend tests:
 
-## 🗣️ Discussion / Ask for Help
+```bash
+node --test --test-reporter=spec test/backend-test/cloudflare/test-worker-api.mjs
+```
 
-⚠️ For any general or technical questions, please don't send me an email, as I am unable to provide support in that manner. I will not respond if you ask questions there.
+Run the broader backend test entrypoint:
 
-I recommend using Google, GitHub Issues, or Uptime Kuma's subreddit for finding answers to your question. If you cannot find the information you need, feel free to ask:
+```bash
+npm run test-backend
+```
 
-- [GitHub Issues](https://github.com/louislam/uptime-kuma/issues)
-- [Subreddit (r/UptimeKuma)](https://www.reddit.com/r/UptimeKuma/)
+Run the full project test suite when making broad application changes:
 
-My Reddit account: [u/louislamlam](https://reddit.com/u/louislamlam)
-You can mention me if you ask a question on the subreddit.
+```bash
+npm test
+```
 
-## Contributions
+Some inherited tests may require local services, browser dependencies, or
+container support. If a check cannot run in your environment, record that
+explicitly in the change or pull request.
 
-### Create Pull Requests
+## Deployment Notes
 
-Pull requests are awesome.
-To keep reviews fast and effective, please make sure you’ve [read our pull request guidelines](https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md#can-i-create-a-pull-request-for-uptime-kuma).
+- Build `dist/` before deployment; the Worker serves it through the `ASSETS`
+  binding.
+- Apply D1 migrations before relying on monitor or heartbeat state.
+- Keep `run_worker_first` for `/api/*` so API requests are handled by the Worker
+  instead of the SPA fallback.
+- Queue consumers and the scheduled trigger are part of the production monitor
+  execution path.
+- The runner container is intentionally separate from the Worker because checks
+  may need Node.js libraries, network clients, and private routing helpers that
+  do not belong directly in the Worker isolate.
 
-### Test Pull Requests
+## Relationship to Uptime Kuma
 
-There are a lot of pull requests right now, but I don't have time to test them all.
+`uptimeworker` is based on Uptime Kuma and retains MIT-licensed code from that
+project. The fork is independent: documentation, deployment defaults, and future
+development in this repository are oriented around Cloudflare rather than the
+upstream Docker-first distribution.
 
-If you want to help, you can check this:
-<https://github.com/louislam/uptime-kuma/wiki/Test-Pull-Requests>
+For the upstream project, see:
 
-### Test Beta Version
+<https://github.com/louislam/uptime-kuma>
 
-Check out the latest beta release here: <https://github.com/louislam/uptime-kuma/releases>
+## License
 
-### Bug Reports / Feature Requests
-
-If you want to report a bug or request a new feature, feel free to open a [new issue](https://github.com/louislam/uptime-kuma/issues).
-
-### Translations
-
-If you want to translate Uptime Kuma into your language, please visit [Weblate Readme](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md).
-
-### Spelling & Grammar
-
-Feel free to correct the grammar in the documentation or code.
-My mother language is not English and my grammar is not that great.
+This project is distributed under the MIT license. See `LICENSE` for the full
+license text.
