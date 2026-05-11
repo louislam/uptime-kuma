@@ -11,6 +11,10 @@ export async function handleApiRequest(request, env) {
     const route = matchRoute(request.method, url.pathname);
 
     try {
+        if (route.name === "entry-page") {
+            return json({ type: "entryPage", entryPage: "dashboard" });
+        }
+
         if (route.name === "network-profiles") {
             return json({ profiles: await listNetworkProfiles(env) });
         }
@@ -193,6 +197,9 @@ function normalizeNetworkProfileId(value) {
 }
 
 function matchRoute(method, pathname) {
+    if (method === "GET" && pathname === "/api/entry-page") {
+        return { name: "entry-page", params: {} };
+    }
     if (method === "GET" && pathname === "/api/network-profiles") {
         return { name: "network-profiles", params: {} };
     }

@@ -35,6 +35,17 @@ describe("Cloudflare Worker API", () => {
         });
     });
 
+    test("entry page routes the deployed web UI to the dashboard", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({});
+
+        const response = await handleApiRequest(new Request("https://example.com/api/entry-page"), env);
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.deepStrictEqual(body, { type: "entryPage", entryPage: "dashboard" });
+    });
+
     test("lists direct and Twingate network profiles", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({
