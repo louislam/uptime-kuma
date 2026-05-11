@@ -12,7 +12,6 @@ const TEST_PRIVATE_KEY = [
 describe("Twingate service key env", () => {
     test("builds service key JSON from discrete Worker env vars", () => {
         const resolved = resolveTwingateServiceKey({
-            TWINGATE_SERVICE_KEY_VERSION: "1",
             TWINGATE_NETWORK: "wgs.twingate.com",
             TWINGATE_SERVICE_ACCOUNT_ID: "service-account-id",
             TWINGATE_PRIVATE_KEY: TEST_PRIVATE_KEY.replace(/\n/g, "\\n"),
@@ -47,17 +46,6 @@ describe("Twingate service key env", () => {
         const serviceKey = JSON.parse(resolved.value.toString("utf8"));
         assert.strictEqual(serviceKey.private_key, TEST_PRIVATE_KEY);
         assert.strictEqual(serviceKey.login_path, "/api/v4/headless/login");
-    });
-
-    test("preserves legacy base64 full service key support", () => {
-        const serviceKeyJson = JSON.stringify({ network: "legacy.example", private_key: TEST_PRIVATE_KEY });
-        const resolved = resolveTwingateServiceKey({
-            TWINGATE_SERVICE_KEY_B64: Buffer.from(serviceKeyJson, "utf8").toString("base64"),
-        });
-
-        assert.strictEqual(resolved.configured, true);
-        assert.strictEqual(resolved.source, "TWINGATE_SERVICE_KEY_B64");
-        assert.strictEqual(resolved.value.toString("utf8"), serviceKeyJson);
     });
 
     test("reports missing fields for partial discrete service key env", () => {

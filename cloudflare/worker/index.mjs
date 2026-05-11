@@ -23,9 +23,6 @@ export class MonitorRunner extends Container {
         };
 
         copyOptionalEnv(this.envVars, env, [
-            "TWINGATE_SERVICE_KEY_B64",
-            "TWINGATE_SERVICE_KEY_JSON",
-            "TWINGATE_SERVICE_KEY_VERSION",
             "TWINGATE_NETWORK",
             "TWINGATE_SERVICE_ACCOUNT_ID",
             "TWINGATE_PRIVATE_KEY",
