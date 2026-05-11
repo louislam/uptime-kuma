@@ -150,14 +150,21 @@ It also seeds a `twingate` network profile for private routing.
 ## Twingate Private Routing
 
 The monitor runner can start `twingated` inside the Cloudflare Container when a
-service key is provided. Configure it as a Worker secret:
+service key is provided. The checked-in Wrangler config includes the non-secret
+service key metadata for the WGS Twingate service account. Add the private key
+as a Worker secret:
 
 ```bash
-npx wrangler secret put TWINGATE_SERVICE_KEY_B64
+npx wrangler secret put TWINGATE_PRIVATE_KEY
 ```
 
-The value should be the base64-encoded Twingate service key JSON. The runner
-uses `TWINGATE_PROXY_URL` to expose the local HTTP proxy. The default is:
+`TWINGATE_PRIVATE_KEY` should be the PEM private key from the service key JSON.
+If multiline secret entry is inconvenient, set `TWINGATE_PRIVATE_KEY_B64`
+instead with the base64-encoded PEM. The legacy `TWINGATE_SERVICE_KEY_B64`
+secret is still supported and should contain the full base64-encoded Twingate
+service key JSON.
+
+The runner uses `TWINGATE_PROXY_URL` to expose the local HTTP proxy. The default is:
 
 ```text
 http://127.0.0.1:9999

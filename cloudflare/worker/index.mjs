@@ -10,6 +10,11 @@ export class MonitorRunner extends Container {
     pingEndpoint = "localhost:8788/health";
     entrypoint = ["node", "server.js"];
 
+    /**
+     * Configure container runtime environment variables.
+     * @param {DurableObjectState} ctx Durable Object state.
+     * @param {object} env Cloudflare Worker environment bindings.
+     */
     constructor(ctx, env) {
         super(ctx, env);
         this.envVars = {
@@ -17,8 +22,32 @@ export class MonitorRunner extends Container {
             TWINGATE_PROXY_URL: env.TWINGATE_PROXY_URL || "http://127.0.0.1:9999",
         };
 
-        if (env.TWINGATE_SERVICE_KEY_B64) {
-            this.envVars.TWINGATE_SERVICE_KEY_B64 = env.TWINGATE_SERVICE_KEY_B64;
+        copyOptionalEnv(this.envVars, env, [
+            "TWINGATE_SERVICE_KEY_B64",
+            "TWINGATE_SERVICE_KEY_JSON",
+            "TWINGATE_SERVICE_KEY_VERSION",
+            "TWINGATE_NETWORK",
+            "TWINGATE_SERVICE_ACCOUNT_ID",
+            "TWINGATE_PRIVATE_KEY",
+            "TWINGATE_PRIVATE_KEY_B64",
+            "TWINGATE_KEY_ID",
+            "TWINGATE_EXPIRES_AT",
+            "TWINGATE_LOGIN_PATH",
+        ]);
+    }
+}
+
+/**
+ * Copy optional Worker bindings into the container environment.
+ * @param {object} target Container environment variable map.
+ * @param {object} source Worker environment bindings.
+ * @param {string[]} names Binding names to copy when present.
+ * @returns {void}
+ */
+function copyOptionalEnv(target, source, names) {
+    for (const name of names) {
+        if (source[name]) {
+            target[name] = source[name];
         }
     }
 }

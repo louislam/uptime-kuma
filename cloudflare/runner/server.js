@@ -3,13 +3,20 @@ const http = require("node:http");
 const fs = require("node:fs");
 const childProcess = require("node:child_process");
 const { runCheck } = require("./checker");
+const {
+    hasTwingateServiceKeyInput,
+    resolveTwingateServiceKey,
+} = require("./twingate-service-key");
 
 const port = Number(process.env.PORT || 8788);
+const twingateServiceKey = resolveTwingateServiceKey();
 const twingateStatus = {
-    configured: Boolean(process.env.TWINGATE_SERVICE_KEY_B64),
+    configured: twingateServiceKey.configured,
     running: false,
     proxyUrl: process.env.TWINGATE_PROXY_URL || "http://127.0.0.1:9999",
-    lastError: null,
+    lastError: twingateServiceKey.configured || !hasTwingateServiceKeyInput()
+        ? null
+        : `Twingate service key env is incomplete: missing ${twingateServiceKey.missing.join(", ")}`,
 };
 
 startTwingate();
@@ -44,7 +51,7 @@ server.listen(port, "0.0.0.0", () => {
 });
 
 function startTwingate() {
-    if (!process.env.TWINGATE_SERVICE_KEY_B64) {
+    if (!twingateServiceKey.configured) {
         return;
     }
 
@@ -52,7 +59,7 @@ function startTwingate() {
         fs.mkdirSync("/etc/twingate", { recursive: true });
         fs.writeFileSync(
             "/etc/twingate/service_key.json",
-            Buffer.from(process.env.TWINGATE_SERVICE_KEY_B64, "base64")
+            twingateServiceKey.value
         );
 
         const proxyAddress = twingateStatus.proxyUrl.replace(/^https?:\/\//, "");

@@ -8,7 +8,7 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-COPY checker.js server.js ./
+COPY checker.js server.js twingate-service-key.js ./
 
 ENV PORT=8788
 ENV TWINGATE_PROXY_URL=http://127.0.0.1:9999

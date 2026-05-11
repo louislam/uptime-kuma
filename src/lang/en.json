@@ -1543,7 +1543,7 @@
     "networkRouteDescription": "Choose whether this monitor runs directly or through the configured Twingate service account route.",
     "twingatePingUnsupportedWarning": "Twingate on Cloudflare uses userspace proxy mode and does not support ICMP ping. Use a TCP Port monitor for this device.",
     "twingateSettingsTitle": "Twingate",
-    "twingateSettingsDescription": "Cloudflare runners use the TWINGATE_SERVICE_KEY_B64 secret to start Twingate in userspace HTTP proxy mode. The service key is never displayed here.",
+    "twingateSettingsDescription": "Cloudflare runners use the configured Twingate service key env to start Twingate in userspace HTTP proxy mode. The service key is never displayed here.",
     "twingateNotConfigured": "Not configured",
     "twingateConfiguredStopped": "Configured, but not running",
     "refreshTwingateStatus": "Refresh"
