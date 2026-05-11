@@ -46,6 +46,60 @@ describe("Cloudflare Worker API", () => {
         assert.deepStrictEqual(body, { type: "entryPage", entryPage: "dashboard" });
     });
 
+    test("lists monitors with their latest heartbeat for the deployed web UI", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                {
+                    id: 7,
+                    name: "Private HTTP",
+                    type: "http",
+                    url: "http://private.example.test",
+                    hostname: null,
+                    port: null,
+                    active: 1,
+                    network_profile_id: "twingate",
+                },
+            ],
+            heartbeats: [
+                {
+                    monitor_id: 7,
+                    status: 1,
+                    ping: 12,
+                    msg: "200 - OK",
+                    checked_at: "2026-05-11 02:30:00",
+                },
+            ],
+        });
+
+        const response = await handleApiRequest(new Request("https://example.com/api/monitors"), env);
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.deepStrictEqual(body.monitors, [
+            {
+                id: 7,
+                name: "Private HTTP",
+                type: "http",
+                url: "http://private.example.test",
+                hostname: null,
+                port: null,
+                active: true,
+                parent: null,
+                childrenIDs: [],
+                tags: [],
+                networkProfileId: "twingate",
+                lastHeartbeat: {
+                    monitorID: 7,
+                    status: 1,
+                    ping: 12,
+                    msg: "200 - OK",
+                    time: "2026-05-11 02:30:00",
+                },
+            },
+        ]);
+    });
+
     test("lists direct and Twingate network profiles", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({
@@ -149,7 +203,7 @@ function createEnv(initial) {
     const state = {
         profiles: initial.profiles || [],
         monitors: initial.monitors || [],
-        heartbeats: [],
+        heartbeats: initial.heartbeats || [],
         runnerJobs: [],
         runnerResult: initial.runnerResult,
     };
@@ -193,6 +247,12 @@ function createStatement(sql, state) {
         async all() {
             if (sql.includes("FROM network_profiles")) {
                 return { results: state.profiles };
+            }
+            if (sql.includes("FROM monitors")) {
+                return { results: state.monitors };
+            }
+            if (sql.includes("FROM heartbeats")) {
+                return { results: state.heartbeats };
             }
             return { results: [] };
         },

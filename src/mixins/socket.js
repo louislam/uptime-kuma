@@ -16,6 +16,10 @@ const toast = useToast();
 
 let socket;
 
+const cloudflareWorkerHostnames = new Set([
+    "uptimeworker.wgsglobal.workers.dev",
+]);
+
 const noSocketIOPages = [
     /^\/status-page$/, //  /status-page
     /^\/status/, // /status**
@@ -85,6 +89,11 @@ export default {
         initSocketIO(bypass = false) {
             // No need to re-init
             if (this.socket.initedSocketIO) {
+                return;
+            }
+
+            if (isCloudflareWorkerUI()) {
+                this.initCloudflareWorkerUI();
                 return;
             }
 
@@ -299,6 +308,64 @@ export default {
             socket.on("refresh", () => {
                 location.reload();
             });
+        },
+        /**
+         * Initialize the dashboard when hosted directly by the Cloudflare Worker.
+         * The Worker deployment exposes REST endpoints instead of the upstream
+         * Socket.IO server.
+         * @returns {void}
+         */
+        initCloudflareWorkerUI() {
+            this.socket.initedSocketIO = true;
+            this.socket.connected = true;
+            this.socket.firstConnect = false;
+            this.socket.token = "autoLogin";
+            this.loggedIn = true;
+            this.allowLoginDialog = false;
+            this.showReverseProxyGuide = false;
+            this.username = "Cloudflare";
+            socket = createCloudflareSocketStub();
+            this.loadCloudflareWorkerData();
+        },
+
+        /**
+         * Load monitor state from the Cloudflare Worker REST API.
+         * @returns {Promise<void>}
+         */
+        async loadCloudflareWorkerData() {
+            try {
+                const response = await fetch("/api/monitors");
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const body = await response.json();
+                const monitorList = {};
+                const heartbeatList = {};
+
+                for (const monitor of body.monitors || []) {
+                    const lastHeartbeat = monitor.lastHeartbeat;
+                    delete monitor.lastHeartbeat;
+                    monitor.getUrl = () => {
+                        try {
+                            return new URL(monitor.url);
+                        } catch (_) {
+                            return null;
+                        }
+                    };
+                    monitorList[monitor.id] = monitor;
+                    if (lastHeartbeat) {
+                        heartbeatList[monitor.id] = [lastHeartbeat];
+                    }
+                }
+
+                this.monitorList = monitorList;
+                this.heartbeatList = heartbeatList;
+            } catch (error) {
+                console.error(`Failed to load Cloudflare Worker monitor data: ${error.message}`);
+                this.connectionErrorMsg = `Cannot load Cloudflare Worker monitor data. [${error.message}]`;
+                this.socket.connected = false;
+            }
         },
         /**
          * parse all urls from list.
@@ -892,3 +959,41 @@ export default {
         },
     },
 };
+
+/**
+ * Check whether the frontend is running on the Cloudflare Worker deployment.
+ * @returns {boolean} True when hosted on the Worker UI hostname.
+ */
+function isCloudflareWorkerUI() {
+    return cloudflareWorkerHostnames.has(location.hostname);
+}
+
+/**
+ * Create the small socket-compatible shim needed by dashboard components.
+ * @returns {object} Socket-like object for REST-backed Worker UI mode.
+ */
+function createCloudflareSocketStub() {
+    return {
+        on() {},
+        off() {},
+        disconnect() {},
+        emit(event, ...args) {
+            const callback = args.find((arg) => typeof arg === "function");
+            if (!callback) {
+                return;
+            }
+
+            if (event === "monitorImportantHeartbeatListCount") {
+                callback({ ok: true, count: 0 });
+                return;
+            }
+
+            if (event === "monitorImportantHeartbeatListPaged") {
+                callback({ ok: true, data: [] });
+                return;
+            }
+
+            callback({ ok: false, msg: "This action is not available in the Cloudflare Worker UI yet." });
+        },
+    };
+}

@@ -15,6 +15,10 @@ export async function handleApiRequest(request, env) {
             return json({ type: "entryPage", entryPage: "dashboard" });
         }
 
+        if (route.name === "monitors") {
+            return json({ monitors: await listMonitors(env) });
+        }
+
         if (route.name === "network-profiles") {
             return json({ profiles: await listNetworkProfiles(env) });
         }
@@ -51,6 +55,61 @@ export async function listNetworkProfiles(env) {
         enabled: Boolean(profile.enabled),
     }));
     return [DIRECT_PROFILE, ...profiles];
+}
+
+/**
+ * List monitors and their latest heartbeat for the Worker-hosted web UI.
+ * @param {object} env Cloudflare Worker environment bindings.
+ * @returns {Promise<object[]>} Monitor rows shaped for the Vue dashboard.
+ */
+export async function listMonitors(env) {
+    const monitorResult = await env.DB.prepare(
+        `SELECT id, name, type, url, hostname, port, active, network_profile_id
+         FROM monitors
+         ORDER BY name`
+    ).all();
+    const monitors = monitorResult.results || [];
+
+    const heartbeatResult = await env.DB.prepare(
+        `SELECT h.monitor_id, h.status, h.ping, h.msg, h.checked_at
+         FROM heartbeats h
+         INNER JOIN (
+             SELECT monitor_id, MAX(checked_at) AS checked_at
+             FROM heartbeats
+             GROUP BY monitor_id
+         ) latest
+             ON latest.monitor_id = h.monitor_id
+             AND latest.checked_at = h.checked_at`
+    ).all();
+    const heartbeatsByMonitorId = new Map(
+        (heartbeatResult.results || []).map((heartbeat) => [Number(heartbeat.monitor_id), heartbeat])
+    );
+
+    return monitors.map((monitor) => {
+        const latestHeartbeat = heartbeatsByMonitorId.get(Number(monitor.id));
+        return {
+            id: Number(monitor.id),
+            name: monitor.name,
+            type: monitor.type,
+            url: monitor.url,
+            hostname: monitor.hostname,
+            port: monitor.port,
+            active: Boolean(monitor.active),
+            parent: null,
+            childrenIDs: [],
+            tags: [],
+            networkProfileId: monitor.network_profile_id,
+            lastHeartbeat: latestHeartbeat
+                ? {
+                    monitorID: Number(latestHeartbeat.monitor_id),
+                    status: latestHeartbeat.status,
+                    ping: latestHeartbeat.ping,
+                    msg: latestHeartbeat.msg,
+                    time: latestHeartbeat.checked_at,
+                }
+                : null,
+        };
+    });
 }
 
 export async function updateMonitorNetworkRoute(env, monitorId, networkProfileId) {
@@ -199,6 +258,9 @@ function normalizeNetworkProfileId(value) {
 function matchRoute(method, pathname) {
     if (method === "GET" && pathname === "/api/entry-page") {
         return { name: "entry-page", params: {} };
+    }
+    if (method === "GET" && pathname === "/api/monitors") {
+        return { name: "monitors", params: {} };
     }
     if (method === "GET" && pathname === "/api/network-profiles") {
         return { name: "network-profiles", params: {} };
