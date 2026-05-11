@@ -7,6 +7,24 @@ const REQUIRED_SERVICE_KEY_FIELDS = [
 ];
 
 function resolveTwingateServiceKey(env = process.env) {
+    if (env.TWINGATE_SERVICE_KEY_B64) {
+        return {
+            configured: true,
+            value: Buffer.from(env.TWINGATE_SERVICE_KEY_B64, "base64"),
+            missing: [],
+            source: "TWINGATE_SERVICE_KEY_B64",
+        };
+    }
+
+    if (env.TWINGATE_SERVICE_KEY_JSON) {
+        return {
+            configured: true,
+            value: Buffer.from(env.TWINGATE_SERVICE_KEY_JSON, "utf8"),
+            missing: [],
+            source: "TWINGATE_SERVICE_KEY_JSON",
+        };
+    }
+
     const missing = missingServiceKeyFields(env);
     const privateKey = normalizePrivateKey(env);
     if (!privateKey) {
@@ -23,7 +41,7 @@ function resolveTwingateServiceKey(env = process.env) {
     }
 
     const serviceKey = {
-        version: "1",
+        version: env.TWINGATE_SERVICE_KEY_VERSION || "1",
         network: env.TWINGATE_NETWORK,
         service_account_id: env.TWINGATE_SERVICE_ACCOUNT_ID,
         private_key: privateKey,
@@ -42,6 +60,8 @@ function resolveTwingateServiceKey(env = process.env) {
 
 function hasTwingateServiceKeyInput(env = process.env) {
     return Boolean(
+        env.TWINGATE_SERVICE_KEY_B64 ||
+        env.TWINGATE_SERVICE_KEY_JSON ||
         env.TWINGATE_PRIVATE_KEY ||
         env.TWINGATE_PRIVATE_KEY_B64 ||
         REQUIRED_SERVICE_KEY_FIELDS.some((field) => env[field])

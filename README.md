@@ -160,7 +160,9 @@ npx wrangler secret put TWINGATE_PRIVATE_KEY
 
 `TWINGATE_PRIVATE_KEY` should be the PEM private key from the service key JSON.
 If multiline secret entry is inconvenient, set `TWINGATE_PRIVATE_KEY_B64`
-instead with the base64-encoded PEM.
+instead with the base64-encoded PEM. The legacy `TWINGATE_SERVICE_KEY_B64`
+secret is still supported and should contain the full base64-encoded Twingate
+service key JSON.
 
 The runner uses `TWINGATE_PROXY_URL` to expose the local HTTP proxy. The default is:
 
