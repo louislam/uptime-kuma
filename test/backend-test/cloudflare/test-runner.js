@@ -1,0 +1,171 @@
+const { describe, test, beforeEach, afterEach } = require("node:test");
+const assert = require("node:assert");
+const http = require("node:http");
+const net = require("node:net");
+
+const DOWN = 0;
+const UP = 1;
+let servers = [];
+
+describe("Cloudflare monitor runner", () => {
+    beforeEach(() => {
+        servers = [];
+    });
+
+    afterEach(async () => {
+        await Promise.all(servers.map((server) => closeServer(server)));
+    });
+
+    test("direct HTTP checks bypass the Twingate proxy", async () => {
+        const { runCheck } = require("../../../cloudflare/runner/checker");
+        let proxyRequests = 0;
+        const target = await listen(
+            http.createServer((req, res) => {
+                res.writeHead(200, { "content-type": "text/plain" });
+                res.end("direct ok");
+            })
+        );
+        const proxy = await listen(
+            http.createServer((req, res) => {
+                proxyRequests++;
+                res.writeHead(502);
+                res.end("proxy should not be used");
+            })
+        );
+
+        const result = await runCheck({
+            monitor: {
+                id: 1,
+                type: "http",
+                url: `http://127.0.0.1:${target.port}/health`,
+                timeout: 5,
+            },
+            networkProfile: null,
+            twingateProxyUrl: `http://127.0.0.1:${proxy.port}`,
+        });
+
+        assert.strictEqual(result.status, UP);
+        assert.strictEqual(result.msg, "200 - OK");
+        assert.strictEqual(result.response, "direct ok");
+        assert.strictEqual(proxyRequests, 0);
+    });
+
+    test("Twingate HTTP checks use the configured HTTP proxy", async () => {
+        const { runCheck } = require("../../../cloudflare/runner/checker");
+        let proxyRequests = 0;
+        const proxy = await listen(
+            http.createServer((req, res) => {
+                proxyRequests++;
+                assert.strictEqual(req.url, "http://private.example.test/health");
+                res.writeHead(200, { "content-type": "text/plain" });
+                res.end("proxied ok");
+            })
+        );
+
+        const result = await runCheck({
+            monitor: {
+                id: 2,
+                type: "http",
+                url: "http://private.example.test/health",
+                timeout: 5,
+            },
+            networkProfile: { slug: "twingate", type: "twingate" },
+            twingateProxyUrl: `http://127.0.0.1:${proxy.port}`,
+        });
+
+        assert.strictEqual(result.status, UP);
+        assert.strictEqual(result.msg, "200 - OK");
+        assert.strictEqual(result.response, "proxied ok");
+        assert.strictEqual(proxyRequests, 1);
+    });
+
+    test("Twingate TCP checks use HTTP CONNECT and record latency", async () => {
+        const { runCheck } = require("../../../cloudflare/runner/checker");
+        let connectTarget = null;
+        const proxy = await listen(
+            http.createServer().on("connect", (req, socket) => {
+                connectTarget = req.url;
+                socket.write("HTTP/1.1 200 Connection Established\r\n\r\n");
+                socket.end();
+            })
+        );
+
+        const result = await runCheck({
+            monitor: {
+                id: 3,
+                type: "port",
+                hostname: "db.internal",
+                port: 5432,
+                timeout: 5,
+            },
+            networkProfile: { slug: "twingate", type: "twingate" },
+            twingateProxyUrl: `http://127.0.0.1:${proxy.port}`,
+        });
+
+        assert.strictEqual(result.status, UP);
+        assert.match(result.msg, /^\d+ ms$/);
+        assert.strictEqual(connectTarget, "db.internal:5432");
+    });
+
+    test("Twingate TCP checks report resource or ACL rejection", async () => {
+        const { runCheck } = require("../../../cloudflare/runner/checker");
+        const proxy = await listen(
+            http.createServer().on("connect", (req, socket) => {
+                socket.write("HTTP/1.1 403 Forbidden\r\n\r\n");
+                socket.end("resource unavailable");
+            })
+        );
+
+        const result = await runCheck({
+            monitor: {
+                id: 4,
+                type: "port",
+                hostname: "blocked.internal",
+                port: 443,
+                timeout: 5,
+            },
+            networkProfile: { slug: "twingate", type: "twingate" },
+            twingateProxyUrl: `http://127.0.0.1:${proxy.port}`,
+        });
+
+        assert.strictEqual(result.status, DOWN);
+        assert.match(result.msg, /proxy rejected CONNECT with 403/);
+    });
+
+    test("Ping over Twingate returns a clear unsupported ICMP result", async () => {
+        const { runCheck } = require("../../../cloudflare/runner/checker");
+
+        const result = await runCheck({
+            monitor: {
+                id: 5,
+                type: "ping",
+                hostname: "camera.internal",
+                timeout: 5,
+            },
+            networkProfile: { slug: "twingate", type: "twingate" },
+        });
+
+        assert.strictEqual(result.status, DOWN);
+        assert.match(result.msg, /ICMP ping is not supported through Twingate userspace mode/);
+    });
+});
+
+function listen(server) {
+    return new Promise((resolve) => {
+        server.listen(0, "127.0.0.1", () => {
+            const serverInfo = {
+                server,
+                port: server.address().port,
+            };
+            servers.push(serverInfo);
+            resolve(serverInfo);
+        });
+    });
+}
+
+function closeServer(serverInfo) {
+    return new Promise((resolve) => {
+        serverInfo.server.closeAllConnections?.();
+        serverInfo.server.close(resolve);
+    });
+}

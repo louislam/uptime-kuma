@@ -1607,6 +1607,31 @@
                                     {{ domainExpiryUnsupportedReason }}
                                 </div>
                             </div>
+                            <div v-if="supportsNetworkRoute" class="my-3">
+                                <label for="network-profile" class="form-label">{{ $t("networkRouteLabel") }}</label>
+                                <select
+                                    id="network-profile"
+                                    v-model="monitor.networkProfileId"
+                                    class="form-select"
+                                >
+                                    <option
+                                        v-for="profile in networkProfiles"
+                                        :key="profile.slug"
+                                        :value="profile.id"
+                                    >
+                                        {{ profile.name }}
+                                    </option>
+                                </select>
+                                <div class="form-text">
+                                    {{ $t("networkRouteDescription") }}
+                                </div>
+                                <div
+                                    v-if="monitor.type === 'ping' && monitor.networkProfileId === 'twingate'"
+                                    class="form-text text-warning"
+                                >
+                                    {{ $t("twingatePingUnsupportedWarning") }}
+                                </div>
+                            </div>
                             <div v-if="monitor.type === 'websocket-upgrade'" class="my-3 form-check">
                                 <input
                                     id="wsIgnoreSecWebsocketAcceptHeader"
@@ -3127,7 +3152,27 @@ const monitorDefaults = {
     rabbitmqPassword: "",
     conditions: [],
     system_service_name: "",
+    networkProfileId: null,
 };
+
+const defaultNetworkProfiles = [
+    {
+        id: null,
+        slug: "direct",
+        name: "Direct",
+        type: "direct",
+        enabled: true,
+    },
+    {
+        id: "twingate",
+        slug: "twingate",
+        name: "Twingate",
+        type: "twingate",
+        enabled: true,
+    },
+];
+
+const networkRouteMonitorTypes = ["http", "keyword", "json-query", "port", "websocket-upgrade", "ping"];
 
 export default {
     components: {
@@ -3162,6 +3207,7 @@ export default {
             globalpingdnsresolvetypeoptions: [],
             kafkaSaslMechanismOptions: [],
             gameList: null,
+            networkProfiles: defaultNetworkProfiles,
             connectionStringTemplates: {
                 sqlserver:
                     "Server=<hostname>,<port>;Database=<your database>;User Id=<your user id>;Password=<your password>;Encrypt=<true/false>;TrustServerCertificate=<Yes/No>;Connection Timeout=<int>",
@@ -3458,6 +3504,10 @@ message HealthCheckResponse {
         conditionVariables() {
             return this.$root.monitorTypeList[this.monitor.type]?.conditionVariables || [];
         },
+
+        supportsNetworkRoute() {
+            return networkRouteMonitorTypes.includes(this.monitor.type);
+        },
     },
     watch: {
         "$root.proxyList"() {
@@ -3715,6 +3765,7 @@ message HealthCheckResponse {
     },
     mounted() {
         this.init();
+        this.loadNetworkProfiles();
 
         let acceptedStatusCodeOptions = ["100-199", "200-299", "300-399", "400-499", "500-599"];
 
@@ -3864,11 +3915,31 @@ message HealthCheckResponse {
             this.monitor.rabbitmqNodes.push(newNode);
         },
 
+        async loadNetworkProfiles() {
+            try {
+                const response = await fetch("/api/network-profiles");
+                if (!response.ok) {
+                    return;
+                }
+                const body = await response.json();
+                if (Array.isArray(body.profiles)) {
+                    this.networkProfiles = body.profiles;
+                }
+            } catch (_) {
+                this.networkProfiles = defaultNetworkProfiles;
+            }
+        },
+
         /**
          * Validate form input
          * @returns {boolean} Is the form input valid?
          */
         isInputValid() {
+            if (this.monitor.type === "ping" && this.monitor.networkProfileId === "twingate") {
+                toast.error(this.$t("twingatePingUnsupportedWarning"));
+                return false;
+            }
+
             if (this.monitor.body && (!this.monitor.httpBodyEncoding || this.monitor.httpBodyEncoding === "json")) {
                 try {
                     JSON.parse(this.monitor.body);

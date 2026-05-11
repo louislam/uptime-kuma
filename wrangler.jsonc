@@ -1,0 +1,66 @@
+{
+    "$schema": "node_modules/wrangler/config-schema.json",
+    "name": "uptimeworker",
+    "main": "cloudflare/worker/index.mjs",
+    "compatibility_date": "2026-05-11",
+    "observability": {
+        "enabled": true
+    },
+    "containers": [
+        {
+            "class_name": "MonitorRunner",
+            "image": "./cloudflare/runner/Dockerfile",
+            "max_instances": 3,
+            "instance_type": "basic"
+        }
+    ],
+    "durable_objects": {
+        "bindings": [
+            {
+                "name": "RUNNER",
+                "class_name": "MonitorRunner"
+            }
+        ]
+    },
+    "migrations": [
+        {
+            "tag": "v1",
+            "new_sqlite_classes": ["MonitorRunner"]
+        }
+    ],
+    "d1_databases": [
+        {
+            "binding": "DB",
+            "database_name": "uptimeworker",
+            "database_id": "00000000-0000-0000-0000-000000000000",
+            "migrations_dir": "cloudflare/migrations"
+        }
+    ],
+    "r2_buckets": [
+        {
+            "binding": "ARTIFACTS",
+            "bucket_name": "uptimeworker-artifacts"
+        }
+    ],
+    "queues": {
+        "producers": [
+            {
+                "binding": "MONITOR_QUEUE",
+                "queue": "uptimeworker-monitor-checks"
+            }
+        ],
+        "consumers": [
+            {
+                "queue": "uptimeworker-monitor-checks",
+                "max_batch_size": 10,
+                "max_batch_timeout": 5
+            }
+        ]
+    },
+    "triggers": {
+        "crons": ["* * * * *"]
+    },
+    "vars": {
+        "TWINGATE_PROXY_URL": "http://127.0.0.1:9999"
+    }
+}

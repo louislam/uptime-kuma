@@ -69,6 +69,7 @@
         "generate-changelog": "node ./extra/generate-changelog.mjs"
     },
     "dependencies": {
+        "@cloudflare/containers": "^0.3.3",
         "@grpc/grpc-js": "~1.8.22",
         "@louislam/ping": "~0.4.4-mod.1",
         "@louislam/sqlite3": "15.1.6",
@@ -224,6 +225,7 @@
         "vue-toastification": "~2.0.0-rc.5",
         "vuedraggable": "~4.1.0",
         "wait-on": "^7.2.0",
-        "whatwg-url": "~12.0.1"
+        "whatwg-url": "~12.0.1",
+        "wrangler": "^4.90.0"
     }
 }

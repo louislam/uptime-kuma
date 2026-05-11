@@ -882,6 +882,7 @@ let needSetup = false;
                 bean.docker_container = monitor.docker_container;
                 bean.docker_host = monitor.docker_host;
                 bean.proxyId = Number.isInteger(monitor.proxyId) ? monitor.proxyId : null;
+                bean.networkProfileId = monitor.networkProfileId || null;
                 bean.mqttUsername = monitor.mqttUsername;
                 bean.mqttPassword = monitor.mqttPassword;
                 bean.mqttTopic = monitor.mqttTopic;

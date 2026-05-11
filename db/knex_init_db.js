@@ -94,6 +94,7 @@ async function createTables() {
         table.integer("docker_host").unsigned().references("id").inTable("docker_host");
         table.string("docker_container", 255);
         table.integer("proxy_id").unsigned().references("id").inTable("proxy");
+        table.string("network_profile_id", 64).defaultTo(null);
         table.boolean("expiry_notification").defaultTo(true);
         table.text("mqtt_topic");
         table.string("mqtt_success_message", 255);

@@ -166,6 +166,7 @@ class Monitor extends BeanModel {
             docker_container: this.docker_container,
             docker_host: this.docker_host,
             proxyId: this.proxy_id,
+            networkProfileId: this.network_profile_id,
             notificationIDList: preloadData.notifications.get(this.id) || {},
             tags: preloadData.tags.get(this.id) || [],
             maintenance: preloadData.maintenanceStatus.get(this.id),

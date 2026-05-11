@@ -109,6 +109,9 @@ export default {
                 "remote-browsers": {
                     title: this.$t("Remote Browsers"),
                 },
+                twingate: {
+                    title: this.$t("twingateSettingsTitle"),
+                },
                 security: {
                     title: this.$t("Security"),
                 },
