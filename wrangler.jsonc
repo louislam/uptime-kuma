@@ -1,6 +1,7 @@
 {
     "$schema": "node_modules/wrangler/config-schema.json",
     "name": "uptimeworker",
+    "account_id": "5e4d29b3db4faa691c672e24b0009999",
     "main": "cloudflare/worker/index.mjs",
     "compatibility_date": "2026-05-11",
     "observability": {
@@ -32,7 +33,7 @@
         {
             "binding": "DB",
             "database_name": "uptimeworker",
-            "database_id": "00000000-0000-0000-0000-000000000000",
+            "database_id": "bd08b997-f692-4356-be17-d32af87ce4f8",
             "migrations_dir": "cloudflare/migrations"
         }
     ],

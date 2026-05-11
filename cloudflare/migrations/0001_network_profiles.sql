@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS heartbeats (
     FOREIGN KEY (monitor_id) REFERENCES monitors(id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_monitors_active_interval ON monitors(active, interval);
+CREATE INDEX IF NOT EXISTS idx_monitors_active_interval ON monitors(active, "interval");
 CREATE INDEX IF NOT EXISTS idx_monitors_network_profile ON monitors(network_profile_id);
 CREATE INDEX IF NOT EXISTS idx_heartbeats_monitor_checked_at ON heartbeats(monitor_id, checked_at DESC);
 

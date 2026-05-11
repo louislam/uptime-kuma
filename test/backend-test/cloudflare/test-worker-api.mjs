@@ -18,6 +18,7 @@ describe("Cloudflare Worker API", () => {
         assert.match(migrationSql, /CREATE TABLE IF NOT EXISTS monitors/);
         assert.match(migrationSql, /network_profile_id TEXT/);
         assert.match(migrationSql, /CREATE TABLE IF NOT EXISTS heartbeats/);
+        assert.match(migrationSql, /idx_monitors_active_interval ON monitors\(active, "interval"\)/);
         assert.match(migrationSql, /INSERT OR IGNORE INTO network_profiles/);
         assert.match(migrationSql, /'twingate'/);
     });
