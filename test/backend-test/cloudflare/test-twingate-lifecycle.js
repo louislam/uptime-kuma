@@ -7,6 +7,8 @@ const {
     SYSTEM_TWINGATE_PROXY_URL,
     TwingateLifecycle,
     buildTwingatedCommand,
+    extractTwingateFatalError,
+    inspectServiceKeyJson,
 } = require("../../../cloudflare/runner/twingate-lifecycle");
 
 describe("Twingate runner lifecycle", () => {
@@ -95,6 +97,46 @@ describe("Twingate runner lifecycle", () => {
         assert.match(lifecycle.status.lastError, /service key accepted/);
     });
 
+    test("reports authentication fatal errors before proxy readiness wrappers", async () => {
+        const child = createChild();
+        const lifecycle = new TwingateLifecycle({
+            serviceKey: createServiceKey(),
+            fs: createMemoryFs(),
+            spawn: () => child,
+            waitForProxyReady: async () => false,
+        });
+
+        lifecycle.start();
+        child.stderr.emit("data", Buffer.from([
+            "Configured Headless client with a service key",
+            "failed to get an access token:",
+            "failed to sign auth_token:",
+            "failed to load key:",
+            "bio read failed, code 9",
+        ].join("\n")));
+        child.emit("exit", 0, null);
+
+        await waitForTick();
+
+        assert.match(
+            lifecycle.status.lastError,
+            /^twingated authentication failed: failed to load key: bio read failed, code 9/
+        );
+        assert.match(lifecycle.status.lastError, /failed to get an access token/);
+        assert.doesNotMatch(lifecycle.status.lastError, /^twingated exited with 0 before proxy became ready/);
+    });
+
+    test("extracts Twingate authentication failures from multi-line output", () => {
+        const fatalError = extractTwingateFatalError([
+            "failed to get an access token:",
+            "failed to sign auth_token:",
+            "failed to load key:",
+            "bio read failed, code 9",
+        ].join("\n"));
+
+        assert.strictEqual(fatalError, "failed to load key: bio read failed, code 9");
+    });
+
     test("reports invalid service key JSON before spawning twingated", () => {
         let spawned = false;
         const lifecycle = new TwingateLifecycle({
@@ -116,7 +158,59 @@ describe("Twingate runner lifecycle", () => {
         assert.strictEqual(spawned, false);
         assert.strictEqual(lifecycle.status.running, false);
         assert.strictEqual(lifecycle.status.starting, false);
+        assert.strictEqual(lifecycle.status.serviceKeyInspection.validJson, false);
         assert.match(lifecycle.status.lastError, /Twingate service key JSON is invalid/);
+    });
+
+    test("includes sanitized service key inspection in status", () => {
+        const lifecycle = new TwingateLifecycle({
+            serviceKey: createServiceKey(),
+            fs: createMemoryFs(),
+            spawn: () => createChild(),
+        });
+
+        assert.deepStrictEqual(lifecycle.status.serviceKeyInspection.fields, {
+            version: true,
+            network: true,
+            service_account_id: true,
+            key_id: true,
+            private_key: true,
+            login_path: true,
+        });
+        assert.strictEqual(lifecycle.status.serviceKeyInspection.validJson, true);
+        assert.strictEqual(lifecycle.status.serviceKeyInspection.privateKeyShape.length, 58);
+        assert.strictEqual(lifecycle.status.serviceKeyInspection.privateKeyShape.startsWithPemHeader, true);
+        assert.strictEqual(lifecycle.status.serviceKeyInspection.privateKeyShape.endsWithPemFooter, true);
+        assert.strictEqual(lifecycle.status.serviceKeyInspection.privateKeyShape.containsLiteralBackslashN, false);
+        assert.strictEqual(lifecycle.status.serviceKeyInspection.privateKeyShape.containsRealNewline, true);
+        assert.match(lifecycle.status.serviceKeyInspection.privateKeyShape.sha256Prefix, /^[a-f0-9]{12}$/);
+        assert.doesNotMatch(
+            JSON.stringify(lifecycle.status.serviceKeyInspection),
+            /-----BEGIN PRIVATE KEY-----/
+        );
+    });
+
+    test("detects literal backslash-n private key shape", () => {
+        const inspected = inspectServiceKeyJson(JSON.stringify({
+            network: "wgs.twingate.com",
+            service_account_id: "service-account-id",
+            private_key: "-----BEGIN PRIVATE KEY-----\\ntest\\n-----END PRIVATE KEY-----",
+            key_id: "key-id",
+        }));
+
+        assert.strictEqual(inspected.validJson, true);
+        assert.strictEqual(inspected.privateKeyShape.startsWithPemHeader, true);
+        assert.strictEqual(inspected.privateKeyShape.endsWithPemFooter, true);
+        assert.strictEqual(inspected.privateKeyShape.containsLiteralBackslashN, true);
+        assert.strictEqual(inspected.privateKeyShape.containsRealNewline, false);
+    });
+
+    test("reports invalid service key inspection without leaking raw input", () => {
+        const inspected = inspectServiceKeyJson("{not json");
+
+        assert.strictEqual(inspected.validJson, false);
+        assert.match(inspected.error, /Expected property name|Unexpected token/);
+        assert.doesNotMatch(JSON.stringify(inspected), /not json/);
     });
 
     test("reports running only after the proxy readiness check succeeds", async () => {

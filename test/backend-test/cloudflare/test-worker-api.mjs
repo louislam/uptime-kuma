@@ -615,6 +615,25 @@ describe("Cloudflare Worker API", () => {
                 running: false,
                 proxyUrl: "http://127.0.0.1:9999",
                 lastError: null,
+                serviceKeyInspection: {
+                    validJson: true,
+                    fields: {
+                        version: true,
+                        network: true,
+                        service_account_id: true,
+                        key_id: true,
+                        private_key: true,
+                        login_path: true,
+                    },
+                    privateKeyShape: {
+                        length: 58,
+                        startsWithPemHeader: true,
+                        endsWithPemFooter: true,
+                        containsLiteralBackslashN: false,
+                        containsRealNewline: true,
+                        sha256Prefix: "123456789abc",
+                    },
+                },
             },
         });
 
@@ -627,6 +646,25 @@ describe("Cloudflare Worker API", () => {
             running: false,
             proxyUrl: "http://127.0.0.1:9999",
             lastError: null,
+            serviceKeyInspection: {
+                validJson: true,
+                fields: {
+                    version: true,
+                    network: true,
+                    service_account_id: true,
+                    key_id: true,
+                    private_key: true,
+                    login_path: true,
+                },
+                privateKeyShape: {
+                    length: 58,
+                    startsWithPemHeader: true,
+                    endsWithPemFooter: true,
+                    containsLiteralBackslashN: false,
+                    containsRealNewline: true,
+                    sha256Prefix: "123456789abc",
+                },
+            },
         });
     });
 

@@ -1,4 +1,5 @@
 /* eslint-disable jsdoc/require-jsdoc */
+const crypto = require("node:crypto");
 const fs = require("node:fs");
 const net = require("node:net");
 const childProcess = require("node:child_process");
@@ -30,6 +31,9 @@ class TwingateLifecycle {
             running: false,
             proxyUrl: SYSTEM_TWINGATE_PROXY_URL,
             lastError: getInitialError(this.serviceKey),
+            serviceKeyInspection: this.serviceKey.configured
+                ? inspectServiceKeyJson(this.serviceKey.value)
+                : null,
         };
     }
 
@@ -70,7 +74,10 @@ class TwingateLifecycle {
                 this.status.running = false;
                 const exitValue = signal || code;
                 const readinessText = wasReady ? "" : " before proxy became ready";
-                this.status.lastError = `twingated exited with ${exitValue}${readinessText}${this.formatOutputSuffix()}`;
+                const fatalError = extractTwingateFatalError(this.output);
+                this.status.lastError = fatalError
+                    ? `twingated authentication failed: ${fatalError}${this.formatOutputSuffix()}`
+                    : `twingated exited with ${exitValue}${readinessText}${this.formatOutputSuffix()}`;
             });
 
             this.pollForReadiness();
@@ -154,6 +161,61 @@ function validateServiceKeyJson(value) {
     }
 }
 
+function inspectServiceKeyJson(value) {
+    try {
+        const raw = Buffer.from(value || "").toString("utf8");
+        const parsed = JSON.parse(raw);
+        const privateKey = String(parsed.private_key || "");
+        return {
+            validJson: true,
+            fields: {
+                version: Boolean(parsed.version),
+                network: Boolean(parsed.network),
+                service_account_id: Boolean(parsed.service_account_id),
+                key_id: Boolean(parsed.key_id),
+                private_key: Boolean(parsed.private_key),
+                login_path: Boolean(parsed.login_path),
+            },
+            privateKeyShape: {
+                length: privateKey.length,
+                startsWithPemHeader: privateKey.startsWith("-----BEGIN "),
+                endsWithPemFooter: /-----END [A-Z ]*PRIVATE KEY-----\s*$/.test(privateKey),
+                containsLiteralBackslashN: privateKey.includes("\\n"),
+                containsRealNewline: privateKey.includes("\n"),
+                sha256Prefix: crypto
+                    .createHash("sha256")
+                    .update(privateKey)
+                    .digest("hex")
+                    .slice(0, 12),
+            },
+        };
+    } catch (error) {
+        return {
+            validJson: false,
+            error: error.message,
+        };
+    }
+}
+
+function extractTwingateFatalError(output = "") {
+    const normalizedOutput = String(output);
+    const patterns = [
+        /failed to load key:\s*([^\n]+)/i,
+        /failed to sign auth_token:[^\n]*/i,
+        /failed to get an access token:[^\n]*/i,
+        /Failed to login \([^)]+\)/i,
+    ];
+
+    for (const pattern of patterns) {
+        const match = normalizedOutput.match(pattern);
+        if (match) {
+            return match[0].replace(/\s+/g, " ").trim();
+        }
+    }
+
+    return null;
+}
+
 function getInitialError(serviceKey) {
     if (serviceKey.configured || !serviceKey.missing?.length) {
         return null;
@@ -191,7 +253,9 @@ module.exports = {
     SYSTEM_TWINGATE_PROXY_URL,
     TwingateLifecycle,
     buildTwingatedCommand,
+    extractTwingateFatalError,
     getDefaultReadyTimeoutMs,
+    inspectServiceKeyJson,
     validateServiceKeyJson,
     waitForProxyReady,
 };
