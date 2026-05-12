@@ -30,6 +30,7 @@ function createServer() {
                 const result = await runCheck({
                     ...job,
                     twingateProxyUrl: twingateStatus.proxyUrl,
+                    twingateTunMode: twingateStatus.tunMode,
                 });
                 return sendJson(res, 200, result);
             }

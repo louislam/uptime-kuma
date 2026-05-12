@@ -152,7 +152,7 @@ describe("Cloudflare monitor runner", () => {
         assert.match(result.msg, /proxy rejected CONNECT with 403/);
     });
 
-    test("Ping over Twingate returns a clear unsupported ICMP result", async () => {
+    test("Ping over Twingate requires TUN mode", async () => {
         const { runCheck } = require("../../../cloudflare/runner/checker");
 
         const result = await runCheck({
@@ -163,10 +163,48 @@ describe("Cloudflare monitor runner", () => {
                 timeout: 5,
             },
             networkProfile: { slug: "twingate", type: "twingate" },
+            twingateTunMode: "off",
         });
 
         assert.strictEqual(result.status, DOWN);
-        assert.match(result.msg, /ICMP ping is not supported through Twingate userspace mode/);
+        assert.match(result.msg, /ICMP ping through Twingate requires Twingate TUN mode/);
+    });
+
+    test("Twingate Ping checks allow private targets through the TUN route", async () => {
+        const { runPingCheck } = require("../../../cloudflare/runner/checker");
+
+        const result = await runPingCheck(
+            {
+                hostname: "camera.internal",
+                timeout: 5,
+                ping_count: 1,
+                ping_per_request_timeout: 2,
+                packetSize: 56,
+                ping_numeric: true,
+            },
+            1000,
+            async (command, args) => {
+                assert.strictEqual(command, "ping");
+                assert.deepStrictEqual(args, ["-c", "1", "-W", "2", "-w", "5", "-s", "56", "-n", "camera.internal"]);
+                return {
+                    stdout:
+                        "PING camera.internal (10.0.0.42) 56(84) bytes of data.\n" +
+                        "64 bytes from 10.0.0.42: icmp_seq=1 ttl=56 time=8.4 ms\n\n" +
+                        "--- camera.internal ping statistics ---\n" +
+                        "1 packets transmitted, 1 received, 0% packet loss, time 0ms\n" +
+                        "rtt min/avg/max/mdev = 8.400/8.400/8.400/0.000 ms\n",
+                };
+            },
+            () => 1015,
+            { slug: "twingate", type: "twingate" }
+        );
+
+        assert.deepStrictEqual(result, {
+            status: UP,
+            ping: 8.4,
+            msg: "8.4 ms",
+            response: null,
+        });
     });
 
     test("direct Ping checks return average ICMP latency", async () => {

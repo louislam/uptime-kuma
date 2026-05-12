@@ -200,12 +200,14 @@ the base64-encoded PEM. The legacy `TWINGATE_SERVICE_KEY_B64` secret is still
 supported and should contain the full base64-encoded Twingate service key JSON.
 When both forms are present, `TWINGATE_SERVICE_KEY_JSON` takes precedence.
 
-The Cloudflare container runner manages the local Twingate userspace HTTP proxy
-address internally. Do not configure a proxy URL for Twingate; only the service
-account fields and private-key secret are operator-provided.
+The Cloudflare container runner manages the local Twingate network mode and
+userspace HTTP proxy address internally. Do not configure a proxy URL for
+Twingate; only the service account fields and private-key secret are
+operator-provided.
 Cloudflare-hosted Twingate checks support private HTTP, keyword, JSON query,
-TCP port, and WebSocket reachability checks through the userspace proxy. ICMP
-ping is not supported in this architecture.
+TCP port, and WebSocket reachability checks through the userspace proxy.
+Twingate ICMP ping checks run through the Twingate TUN route; the default
+container setting is `TWINGATE_TUN=on`.
 
 ## Testing
 

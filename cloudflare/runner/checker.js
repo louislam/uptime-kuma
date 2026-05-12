@@ -24,10 +24,8 @@ async function runCheck(job) {
     const start = Date.now();
 
     try {
-        if (isTwingateProfile(networkProfile) && monitor.type === "ping") {
-            throw new Error(
-                "ICMP ping is not supported through Twingate userspace mode. Use a TCP Port monitor for Cloudflare-hosted Twingate checks."
-            );
+        if (isTwingateProfile(networkProfile) && monitor.type === "ping" && job.twingateTunMode === "off") {
+            throw new Error("ICMP ping through Twingate requires Twingate TUN mode");
         }
 
         if (["http", "keyword", "json-query"].includes(monitor.type)) {
@@ -39,7 +37,7 @@ async function runCheck(job) {
         }
 
         if (monitor.type === "ping") {
-            return await runPingCheck(monitor, start);
+            return await runPingCheck(monitor, start, execFileAsync, Date.now, networkProfile);
         }
 
         if (monitor.type === "websocket-upgrade") {
@@ -130,12 +128,12 @@ async function runWebSocketReachabilityCheck(monitor, networkProfile, twingatePr
     return await runTcpCheck(tcpMonitor, networkProfile, twingateProxyUrl, start);
 }
 
-async function runPingCheck(monitor, start, execFileFn = execFileAsync, now = Date.now) {
+async function runPingCheck(monitor, start, execFileFn = execFileAsync, now = Date.now, networkProfile = null) {
     const hostname = monitor.hostname;
     if (!hostname) {
         throw new Error("Ping monitor requires hostname");
     }
-    assertDirectTargetAllowed(hostname, null);
+    assertDirectTargetAllowed(hostname, networkProfile);
 
     const args = [
         "-c",

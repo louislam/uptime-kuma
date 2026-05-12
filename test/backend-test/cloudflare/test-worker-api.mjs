@@ -85,6 +85,7 @@ describe("Cloudflare Worker API", () => {
             "O0ORCtbn8BPjempoVgaW7KDypjrscs-7U8B7bp1jGqU"
         );
         assert.strictEqual("TWINGATE_PRIVATE_KEY" in wranglerConfig.vars, false);
+        assert.strictEqual(wranglerConfig.vars.TWINGATE_TUN, "on");
     });
 
     test("Worker admin API accepts the configured Cloudflare Access application", async () => {
@@ -111,6 +112,7 @@ describe("Cloudflare Worker API", () => {
 
         assert.match(workerSource, /TWINGATE_READY_TIMEOUT_MS:\s*"60000"/);
         assert.match(workerSource, /"TWINGATE_READY_TIMEOUT_MS"/);
+        assert.match(workerSource, /"TWINGATE_TUN"/);
         assert.match(workerSource, /JSON\.stringify\(value\)/);
     });
 
@@ -1289,6 +1291,7 @@ describe("Cloudflare Worker API", () => {
                 starting: true,
                 running: false,
                 proxyUrl: "http://127.0.0.1:9999",
+                tunMode: "on",
                 lastError: null,
                 serviceKeyInspection: {
                     validJson: true,
@@ -1320,6 +1323,7 @@ describe("Cloudflare Worker API", () => {
             starting: true,
             running: false,
             proxyUrl: "http://127.0.0.1:9999",
+            tunMode: "on",
             lastError: null,
         });
     });
@@ -1445,6 +1449,7 @@ function createEnv(initial) {
             starting: false,
             running: false,
             proxyUrl: "http://127.0.0.1:9999",
+            tunMode: null,
             lastError: null,
         },
         nextMonitorId: initial.nextMonitorId || 1,

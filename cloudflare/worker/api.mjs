@@ -1000,6 +1000,7 @@ function sanitizeRunnerStatus(status = {}) {
         starting: Boolean(status.starting),
         running: Boolean(status.running),
         proxyUrl: status.proxyUrl || null,
+        tunMode: status.tunMode || null,
         lastError: status.lastError || null,
     };
 }

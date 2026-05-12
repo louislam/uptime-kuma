@@ -63,11 +63,17 @@ describe("Twingate runner lifecycle", () => {
         }
     });
 
-    test("starts twingated with a container listen address while checks use localhost", () => {
+    test("starts twingated with TUN and a container listen address while checks use localhost", () => {
         const command = buildTwingatedCommand();
 
         assert.strictEqual(SYSTEM_TWINGATE_PROXY_URL, "http://127.0.0.1:9999");
         assert.strictEqual(command.file, "/usr/sbin/twingated");
+        assert.deepStrictEqual(command.args, ["--http-proxy", "0.0.0.0:9999", "--tun", "on"]);
+    });
+
+    test("allows Twingate TUN mode to be disabled explicitly", () => {
+        const command = buildTwingatedCommand("off");
+
         assert.deepStrictEqual(command.args, ["--http-proxy", "0.0.0.0:9999", "--tun", "off"]);
     });
 

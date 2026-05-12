@@ -12,10 +12,12 @@ const TWINGATE_PROXY_READY_HOST = "127.0.0.1";
 const TWINGATE_PROXY_READY_PORT = 9999;
 const DEFAULT_RETRY_DELAY_MS = 250;
 const MAX_CAPTURED_OUTPUT_LENGTH = 4000;
+const DEFAULT_TWINGATE_TUN_MODE = "on";
 
 class TwingateLifecycle {
     constructor(options = {}) {
         this.serviceKey = options.serviceKey || { configured: false, missing: [] };
+        this.tunMode = resolveTwingateTunMode(options.env || process.env);
         this.fs = options.fs || fs;
         this.spawn = options.spawn || childProcess.spawn;
         this.waitForProxyReady = options.waitForProxyReady || waitForProxyReady;
@@ -30,6 +32,7 @@ class TwingateLifecycle {
             starting: false,
             running: false,
             proxyUrl: SYSTEM_TWINGATE_PROXY_URL,
+            tunMode: this.tunMode,
             lastError: getInitialError(this.serviceKey),
             serviceKeyInspection: this.serviceKey.configured
                 ? inspectServiceKeyJson(this.serviceKey.value)
@@ -50,7 +53,7 @@ class TwingateLifecycle {
 
         try {
             this.writeServiceKey();
-            const command = buildTwingatedCommand();
+            const command = buildTwingatedCommand(this.tunMode);
             const child = this.spawn(command.file, command.args, {
                 stdio: ["ignore", "pipe", "pipe"],
             });
@@ -136,11 +139,15 @@ class TwingateLifecycle {
     }
 }
 
-function buildTwingatedCommand() {
+function buildTwingatedCommand(tunMode = DEFAULT_TWINGATE_TUN_MODE) {
     return {
         file: TWINGATED_FILE,
-        args: ["--http-proxy", TWINGATE_PROXY_LISTEN_ADDRESS, "--tun", "off"],
+        args: ["--http-proxy", TWINGATE_PROXY_LISTEN_ADDRESS, "--tun", tunMode],
     };
+}
+
+function resolveTwingateTunMode(env = process.env) {
+    return String(env.TWINGATE_TUN || DEFAULT_TWINGATE_TUN_MODE).toLowerCase() === "off" ? "off" : "on";
 }
 
 function validateServiceKeyJson(value) {
@@ -256,6 +263,7 @@ module.exports = {
     extractTwingateFatalError,
     getDefaultReadyTimeoutMs,
     inspectServiceKeyJson,
+    resolveTwingateTunMode,
     validateServiceKeyJson,
     waitForProxyReady,
 };

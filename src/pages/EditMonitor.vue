@@ -1636,12 +1636,6 @@
                                 <div class="form-text">
                                     {{ $t("networkRouteDescription") }}
                                 </div>
-                                <div
-                                    v-if="monitor.type === 'ping' && monitor.networkProfileId === 'twingate'"
-                                    class="form-text text-warning"
-                                >
-                                    {{ $t("twingatePingUnsupportedWarning") }}
-                                </div>
                             </div>
                             <div v-if="monitor.type === 'websocket-upgrade'" class="my-3 form-check">
                                 <input
@@ -3953,11 +3947,6 @@ message HealthCheckResponse {
          * @returns {boolean} Is the form input valid?
          */
         isInputValid() {
-            if (this.monitor.type === "ping" && this.monitor.networkProfileId === "twingate") {
-                toast.error(this.$t("twingatePingUnsupportedWarning"));
-                return false;
-            }
-
             if (this.monitor.body && (!this.monitor.httpBodyEncoding || this.monitor.httpBodyEncoding === "json")) {
                 try {
                     JSON.parse(this.monitor.body);
