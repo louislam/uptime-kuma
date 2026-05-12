@@ -12,7 +12,7 @@
                 <strong>{{ $t("Status") }}: </strong>
                 <span>{{ statusText }}</span>
             </div>
-            <div v-if="status.lastError" class="twingate-log-panel">
+            <div v-if="showLogPanel" class="twingate-log-panel">
                 <div class="twingate-log-header">
                     <div>
                         <div class="twingate-log-title">{{ $t("twingateRecentLog") }}</div>
@@ -20,9 +20,17 @@
                             {{ $t("twingateLogDescription") }}
                         </div>
                     </div>
-                    <span class="twingate-log-count">
-                        {{ logLineCountText }}
-                    </span>
+                    <div class="twingate-log-actions">
+                        <span class="twingate-log-count">
+                            {{ logLineCountText }}
+                        </span>
+                        <button class="btn btn-outline-primary btn-sm twingate-log-button" type="button" @click="copyLogs">
+                            {{ copyLogButtonText }}
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm twingate-log-button" type="button" @click="clearLogs">
+                            {{ $t("twingateClearLog") }}
+                        </button>
+                    </div>
                 </div>
 
                 <ol class="twingate-log-list">
@@ -38,6 +46,14 @@
                         <span class="twingate-log-message">{{ line.message }}</span>
                     </li>
                 </ol>
+                <textarea
+                    ref="hiddenLogTextarea"
+                    class="twingate-hidden-copy-field"
+                    aria-hidden="true"
+                    readonly
+                    tabindex="-1"
+                    :value="normalizedLogText"
+                ></textarea>
             </div>
         </div>
 
@@ -58,21 +74,34 @@ export default {
                 running: false,
                 lastError: null,
             },
+            logsCleared: false,
+            copyState: "idle",
+            copyResetTimeout: null,
         };
     },
 
     computed: {
-        logLines() {
+        showLogPanel() {
+            return Boolean(this.status.lastError) && !this.logsCleared;
+        },
+
+        normalizedLogText() {
             if (!this.status.lastError) {
-                return [];
+                return "";
             }
 
-            const normalizedLog = String(this.status.lastError)
+            return String(this.status.lastError)
                 .trim()
                 .replace(/;\s+(?=\[\d{4}-\d{2}-\d{2}T)/g, ";\n")
                 .replace(/\s+(?=\[\d{4}-\d{2}-\d{2}T)/g, "\n");
+        },
 
-            return normalizedLog
+        logLines() {
+            if (!this.normalizedLogText) {
+                return [];
+            }
+
+            return this.normalizedLogText
                 .split(/\n+/)
                 .map((line) => line.trim())
                 .filter(Boolean)
@@ -84,6 +113,16 @@ export default {
             const label = count === 1 ? this.$t("twingateLogLine") : this.$t("twingateLogLines");
 
             return `${count} ${label}`;
+        },
+
+        copyLogButtonText() {
+            if (this.copyState === "copied") {
+                return this.$t("twingateLogCopied");
+            }
+            if (this.copyState === "failed") {
+                return this.$t("twingateLogCopyFailed");
+            }
+            return this.$t("twingateCopyLog");
         },
 
         statusText() {
@@ -107,7 +146,26 @@ export default {
         this.loadStatus();
     },
 
+    unmounted() {
+        clearTimeout(this.copyResetTimeout);
+    },
+
     methods: {
+        clearLogs() {
+            this.logsCleared = true;
+            this.copyState = "idle";
+            clearTimeout(this.copyResetTimeout);
+        },
+
+        async copyLogs() {
+            try {
+                await this.writeClipboard(this.normalizedLogText);
+                this.setCopyState("copied");
+            } catch (error) {
+                this.setCopyState("failed");
+            }
+        },
+
         formatLogLine(line) {
             const timestampMatch = line.match(/^\[(\d{4}-\d{2}-\d{2}T[^\]]+)\]\s*(.*)$/);
             const message = timestampMatch ? timestampMatch[2] : line;
@@ -133,6 +191,29 @@ export default {
             };
         },
 
+        setCopyState(state) {
+            this.copyState = state;
+            clearTimeout(this.copyResetTimeout);
+            this.copyResetTimeout = setTimeout(() => {
+                this.copyState = "idle";
+            }, 2500);
+        },
+
+        writeClipboard(text) {
+            if (navigator.clipboard && window.isSecureContext) {
+                return navigator.clipboard.writeText(text);
+            }
+
+            const textArea = this.$refs.hiddenLogTextarea;
+            textArea.value = text;
+            textArea.focus();
+            textArea.select();
+
+            return new Promise((resolve, reject) => {
+                document.execCommand("copy") ? resolve() : reject(new Error("Copy command failed"));
+            });
+        },
+
         async loadStatus() {
             this.loading = true;
             try {
@@ -141,6 +222,8 @@ export default {
                     throw new Error(await response.text());
                 }
                 this.status = await response.json();
+                this.logsCleared = false;
+                this.copyState = "idle";
             } catch (error) {
                 this.status = {
                     configured: false,
@@ -148,6 +231,8 @@ export default {
                     running: false,
                     lastError: error.message,
                 };
+                this.logsCleared = false;
+                this.copyState = "idle";
             } finally {
                 this.loading = false;
             }
@@ -216,6 +301,19 @@ export default {
     .dark & {
         color: $highlight;
     }
+}
+
+.twingate-log-actions {
+    display: flex;
+    flex: 0 0 auto;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.twingate-log-button {
+    min-width: 4.75rem;
+    border-radius: 999px;
 }
 
 .twingate-log-list {
@@ -320,9 +418,19 @@ export default {
     word-break: break-word;
 }
 
+.twingate-hidden-copy-field {
+    position: fixed;
+    top: -999999px;
+    left: -999999px;
+}
+
 @media (max-width: 767px) {
     .twingate-log-header {
         flex-direction: column;
+    }
+
+    .twingate-log-actions {
+        justify-content: flex-start;
     }
 
     .twingate-log-line {

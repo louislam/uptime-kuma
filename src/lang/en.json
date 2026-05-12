@@ -1551,5 +1551,9 @@
     "twingateLogDescription": "Latest Twingate process output from the status check.",
     "twingateLogLine": "line",
     "twingateLogLines": "lines",
+    "twingateCopyLog": "Copy",
+    "twingateLogCopied": "Copied",
+    "twingateLogCopyFailed": "Failed",
+    "twingateClearLog": "Clear",
     "refreshTwingateStatus": "Refresh"
 }
