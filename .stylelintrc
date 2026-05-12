@@ -1,7 +1,6 @@
 {
     "extends": [
-        "stylelint-config-standard",
-        "stylelint-config-prettier"
+        "stylelint-config-standard"
     ],
     "customSyntax": "postcss-html",
     "rules": {

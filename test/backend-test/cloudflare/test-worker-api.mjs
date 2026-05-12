@@ -87,6 +87,17 @@ describe("Cloudflare Worker API", () => {
         assert.strictEqual("TWINGATE_PRIVATE_KEY" in wranglerConfig.vars, false);
     });
 
+    test("Worker admin API accepts the configured Cloudflare Access application", async () => {
+        const wranglerPath = path.join(__dirname, "../../../wrangler.jsonc");
+        const wranglerConfig = JSON.parse(fs.readFileSync(wranglerPath, "utf8"));
+
+        assert.strictEqual(wranglerConfig.vars.CF_ACCESS_TEAM_DOMAIN, "https://wgs.cloudflareaccess.com");
+        assert.strictEqual(
+            wranglerConfig.vars.CF_ACCESS_AUD,
+            "e06744dbe3c5a7aa46503b6e518b0fbfb7f6ff38cfc751f5f5a4bfc56974fae6"
+        );
+    });
+
     test("runner container image includes Twingate lifecycle helper", async () => {
         const dockerfilePath = path.join(__dirname, "../../../cloudflare/runner/Dockerfile");
         const dockerfile = fs.readFileSync(dockerfilePath, "utf8");
@@ -122,6 +133,29 @@ describe("Cloudflare Worker API", () => {
 
         assert.strictEqual(response.status, 401);
         assert.deepStrictEqual(await response.json(), { error: "Unauthorized" });
+    });
+
+    test("accepts authenticated Cloudflare Access users for Worker admin API routes", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const accessAuth = await createAccessAuth();
+        const env = createEnv({
+            adminToken: "",
+            accessAuth,
+            monitors: [],
+        });
+
+        const response = await handleApiRequest(
+            new Request("https://example.com/api/monitors", {
+                headers: {
+                    "cf-access-jwt-assertion": accessAuth.token,
+                },
+            }),
+            env
+        );
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.deepStrictEqual(body, { monitors: [] });
     });
 
     test("fails closed when Worker admin token is not configured", async () => {
@@ -1125,6 +1159,9 @@ function createEnv(initial) {
     return {
         state,
         ADMIN_API_TOKEN: "adminToken" in initial ? initial.adminToken : "test-token",
+        CF_ACCESS_TEAM_DOMAIN: initial.accessAuth?.teamDomain,
+        CF_ACCESS_AUD: initial.accessAuth?.audience,
+        CF_ACCESS_CERTS_JSON: initial.accessAuth?.certsJson,
         DB: {
             prepare(sql) {
                 return createStatement(sql, state);
@@ -1170,6 +1207,57 @@ function adminRequest(url, init = {}) {
             authorization: "Bearer test-token",
         },
     });
+}
+
+async function createAccessAuth() {
+    const teamDomain = "https://wgs.cloudflareaccess.com";
+    const audience = "test-access-aud";
+    const keyPair = await crypto.subtle.generateKey(
+        {
+            name: "RSASSA-PKCS1-v1_5",
+            modulusLength: 2048,
+            publicExponent: new Uint8Array([1, 0, 1]),
+            hash: "SHA-256",
+        },
+        true,
+        ["sign", "verify"]
+    );
+    const publicJwk = await crypto.subtle.exportKey("jwk", keyPair.publicKey);
+    publicJwk.kid = "test-kid";
+    publicJwk.alg = "RS256";
+    publicJwk.use = "sig";
+
+    const header = base64UrlEncodeJson({ alg: "RS256", typ: "JWT", kid: publicJwk.kid });
+    const payload = base64UrlEncodeJson({
+        iss: teamDomain,
+        aud: audience,
+        exp: Math.floor(Date.now() / 1000) + 300,
+        sub: "user@example.com",
+    });
+    const signature = await crypto.subtle.sign(
+        "RSASSA-PKCS1-v1_5",
+        keyPair.privateKey,
+        new TextEncoder().encode(`${header}.${payload}`)
+    );
+
+    return {
+        teamDomain,
+        audience,
+        certsJson: JSON.stringify({ keys: [publicJwk] }),
+        token: `${header}.${payload}.${base64UrlEncode(new Uint8Array(signature))}`,
+    };
+}
+
+function base64UrlEncodeJson(value) {
+    return base64UrlEncode(new TextEncoder().encode(JSON.stringify(value)));
+}
+
+function base64UrlEncode(bytes) {
+    let binary = "";
+    for (const byte of bytes) {
+        binary += String.fromCharCode(byte);
+    }
+    return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
 }
 
 /**

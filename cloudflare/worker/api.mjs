@@ -46,6 +46,8 @@ const MONITOR_CONFIG_EXCLUDED_FIELDS = new Set([
 
 const MISSING_CONFIG_JSON_COLUMN = /no such column:\s*config_json/i;
 const MISSING_PARENT_COLUMN = /(?:no such column:\s*parent|no column named parent)/i;
+const ACCESS_CERT_CACHE_TTL_MS = 60 * 60 * 1000;
+const accessCertCache = new Map();
 const ADMIN_ROUTE_NAMES = new Set([
     "monitors",
     "settings",
@@ -804,15 +806,21 @@ function normalizeMonitorInput(input, existing = {}) {
 
 async function requireAdminRequest(request, env) {
     const expectedToken = env.ADMIN_API_TOKEN;
+    const authorization = request.headers.get("authorization") || "";
+    const suppliedToken = authorization.startsWith("Bearer ") ? authorization.slice(7) : "";
+    if (expectedToken && typeof expectedToken === "string" && timingSafeEqual(suppliedToken, expectedToken)) {
+        return;
+    }
+
+    if (await isCloudflareAccessAdminRequest(request, env)) {
+        return;
+    }
+
     if (!expectedToken || typeof expectedToken !== "string") {
         throw httpError(503, "Admin API token is not configured");
     }
 
-    const authorization = request.headers.get("authorization") || "";
-    const suppliedToken = authorization.startsWith("Bearer ") ? authorization.slice(7) : "";
-    if (!timingSafeEqual(suppliedToken, expectedToken)) {
-        throw httpError(401, "Unauthorized");
-    }
+    throw httpError(401, "Unauthorized");
 }
 
 function timingSafeEqual(left, right) {
@@ -825,6 +833,126 @@ function timingSafeEqual(left, right) {
         diff |= (left.charCodeAt(index) || 0) ^ (right.charCodeAt(index) || 0);
     }
     return diff === 0;
+}
+
+async function isCloudflareAccessAdminRequest(request, env) {
+    const teamDomain = normalizeAccessTeamDomain(env.CF_ACCESS_TEAM_DOMAIN || env.TEAM_DOMAIN);
+    const audience = env.CF_ACCESS_AUD || env.POLICY_AUD;
+    const token = request.headers.get("cf-access-jwt-assertion");
+    if (!teamDomain || !audience || !token) {
+        return false;
+    }
+
+    try {
+        const parts = token.split(".");
+        if (parts.length !== 3) {
+            return false;
+        }
+
+        const header = decodeJwtPart(parts[0]);
+        if (header.alg !== "RS256" || !header.kid) {
+            return false;
+        }
+
+        const jwks = await getCloudflareAccessJwks(teamDomain, env);
+        const jwk = jwks.keys?.find((key) => key.kid === header.kid && key.kty === "RSA");
+        if (!jwk) {
+            return false;
+        }
+
+        const key = await crypto.subtle.importKey(
+            "jwk",
+            jwk,
+            { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+            false,
+            ["verify"]
+        );
+        const signedData = new TextEncoder().encode(`${parts[0]}.${parts[1]}`);
+        const verified = await crypto.subtle.verify(
+            "RSASSA-PKCS1-v1_5",
+            key,
+            base64UrlToBytes(parts[2]),
+            signedData
+        );
+        if (!verified) {
+            return false;
+        }
+
+        const payload = decodeJwtPart(parts[1]);
+        return (
+            payload.iss === teamDomain &&
+            jwtAudienceMatches(payload.aud, audience) &&
+            jwtTimeIsValid(payload)
+        );
+    } catch (_) {
+        return false;
+    }
+}
+
+function normalizeAccessTeamDomain(teamDomain) {
+    if (!teamDomain || typeof teamDomain !== "string") {
+        return "";
+    }
+    const normalized = teamDomain.trim().replace(/\/+$/, "");
+    if (!normalized) {
+        return "";
+    }
+    return normalized.startsWith("https://") ? normalized : `https://${normalized}`;
+}
+
+async function getCloudflareAccessJwks(teamDomain, env) {
+    if (env.CF_ACCESS_CERTS_JSON) {
+        return JSON.parse(env.CF_ACCESS_CERTS_JSON);
+    }
+
+    const cached = accessCertCache.get(teamDomain);
+    if (cached && cached.expiresAt > Date.now()) {
+        return cached.jwks;
+    }
+
+    const response = await fetch(`${teamDomain}/cdn-cgi/access/certs`);
+    if (!response.ok) {
+        throw new Error(`Cloudflare Access cert lookup failed with HTTP ${response.status}`);
+    }
+    const jwks = await response.json();
+    accessCertCache.set(teamDomain, {
+        jwks,
+        expiresAt: Date.now() + ACCESS_CERT_CACHE_TTL_MS,
+    });
+    return jwks;
+}
+
+function jwtAudienceMatches(tokenAudience, expectedAudience) {
+    if (Array.isArray(tokenAudience)) {
+        return tokenAudience.includes(expectedAudience);
+    }
+    return tokenAudience === expectedAudience;
+}
+
+function jwtTimeIsValid(payload) {
+    const now = Math.floor(Date.now() / 1000);
+    if (typeof payload.exp === "number" && payload.exp <= now) {
+        return false;
+    }
+    if (typeof payload.nbf === "number" && payload.nbf > now) {
+        return false;
+    }
+    return true;
+}
+
+function decodeJwtPart(part) {
+    return JSON.parse(new TextDecoder().decode(base64UrlToBytes(part)));
+}
+
+function base64UrlToBytes(value) {
+    const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "=");
+    const binary = atob(padded);
+    const bytes = new Uint8Array(binary.length);
+    for (let index = 0; index < binary.length; index++) {
+        bytes[index] = binary.charCodeAt(index);
+    }
+    return bytes;
 }
 
 function sanitizeRunnerStatus(status = {}) {

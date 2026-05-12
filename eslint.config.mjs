@@ -1,26 +1,75 @@
-module.exports = {
-    ignorePatterns: ["test/*.js", "server/modules/*", "src/util.js"],
-    root: true,
-    env: {
-        browser: true,
-        commonjs: true,
-        es2020: true,
-        node: true,
+import js from "@eslint/js";
+import tsPlugin from "@typescript-eslint/eslint-plugin";
+import tsParser from "@typescript-eslint/parser";
+import prettier from "eslint-config-prettier";
+import jsdoc from "eslint-plugin-jsdoc";
+import vue from "eslint-plugin-vue";
+import vueScopedCss from "eslint-plugin-vue-scoped-css";
+import globals from "globals";
+
+export default [
+    {
+        ignores: [
+            "node_modules/**",
+            "dist/**",
+            "dist-ssr/**",
+            "data/**",
+            "private/**",
+            "out/**",
+            "tmp/**",
+            "server/modules/*",
+            "src/util.js",
+            "test/*.js",
+            "extra/exe-builder/bin/**",
+            "extra/exe-builder/obj/**",
+        ],
     },
-    extends: [
-        "eslint:recommended",
-        "plugin:vue/vue3-recommended",
-        "plugin:vue-scoped-css/vue3-recommended",
-        "plugin:jsdoc/recommended-error",
-        "prettier", // Disables ESLint formatting rules that conflict with Prettier
-    ],
-    parser: "vue-eslint-parser",
-    parserOptions: {
-        parser: "@typescript-eslint/parser",
-        sourceType: "module",
-        requireConfigFile: false,
+    js.configs.recommended,
+    ...vue.configs["flat/recommended"],
+    ...vueScopedCss.configs["flat/recommended"],
+    ...tsPlugin.configs["flat/recommended"],
+    jsdoc.configs["flat/recommended-error"],
+    prettier,
+    {
+        languageOptions: {
+            ecmaVersion: 2020,
+            sourceType: "module",
+            globals: {
+                ...globals.browser,
+                ...globals.commonjs,
+                ...globals.node,
+                FRONTEND_VERSION: "readonly",
+            },
+            parserOptions: {
+                requireConfigFile: false,
+            },
+        },
+        plugins: {
+            "@typescript-eslint": tsPlugin,
+            jsdoc,
+        },
     },
-    plugins: ["jsdoc", "@typescript-eslint"],
+    {
+        files: ["**/*.vue"],
+        languageOptions: {
+            parserOptions: {
+                parser: tsParser,
+                sourceType: "module",
+                requireConfigFile: false,
+            },
+        },
+    },
+    {
+        files: ["**/*.ts"],
+        languageOptions: {
+            parser: tsParser,
+            parserOptions: {
+                sourceType: "module",
+                requireConfigFile: false,
+            },
+        },
+    },
+    {
     rules: {
         yoda: "error",
         eqeqeq: ["warn", "smart"],
@@ -97,17 +146,14 @@ module.exports = {
         "jsdoc/require-param-type": "warn",
         "jsdoc/require-param-description": "warn",
     },
-    overrides: [
-        // Override for TypeScript
-        {
-            files: ["**/*.ts"],
-            extends: ["plugin:@typescript-eslint/recommended"],
-            rules: {
-                "jsdoc/require-returns-type": "off",
-                "jsdoc/require-param-type": "off",
-                "@typescript-eslint/no-explicit-any": "off",
-                "prefer-const": "off",
-            },
+    },
+    {
+        files: ["**/*.ts"],
+        rules: {
+            "jsdoc/require-returns-type": "off",
+            "jsdoc/require-param-type": "off",
+            "@typescript-eslint/no-explicit-any": "off",
+            "prefer-const": "off",
         },
-    ],
-};
+    },
+];
