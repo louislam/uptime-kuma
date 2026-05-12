@@ -45,7 +45,7 @@ const MONITOR_CONFIG_EXCLUDED_FIELDS = new Set([
 ]);
 
 const MISSING_CONFIG_JSON_COLUMN = /no such column:\s*config_json/i;
-const MISSING_PARENT_COLUMN = /no such column:\s*parent/i;
+const MISSING_PARENT_COLUMN = /(?:no such column:\s*parent|no column named parent)/i;
 const ADMIN_ROUTE_NAMES = new Set([
     "monitors",
     "settings",
@@ -354,15 +354,31 @@ export async function getSerializedMonitor(env, monitorId) {
 
 export async function createMonitor(env, monitorInput) {
     const monitor = normalizeMonitorInput(monitorInput);
-    const result = await env.DB.prepare(
-        `INSERT INTO monitors (
-            name, type, url, hostname, port, method, headers, body, keyword,
-            invert_keyword, json_path, expected_value, timeout, "interval",
-            active, network_profile_id, parent, config_json
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-    )
-        .bind(...monitorValues(monitor, true), monitorConfigJson(monitorInput, {}, monitor))
-        .run();
+    let result;
+    try {
+        result = await env.DB.prepare(
+            `INSERT INTO monitors (
+                name, type, url, hostname, port, method, headers, body, keyword,
+                invert_keyword, json_path, expected_value, timeout, "interval",
+                active, network_profile_id, parent, config_json
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        )
+            .bind(...monitorValues(monitor, true), monitorConfigJson(monitorInput, {}, monitor))
+            .run();
+    } catch (error) {
+        if (!MISSING_PARENT_COLUMN.test(error.message || "") || monitor.parent != null) {
+            throw error;
+        }
+        result = await env.DB.prepare(
+            `INSERT INTO monitors (
+                name, type, url, hostname, port, method, headers, body, keyword,
+                invert_keyword, json_path, expected_value, timeout, "interval",
+                active, network_profile_id, config_json
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        )
+            .bind(...monitorValues(monitor, true, false), monitorConfigJson(monitorInput, {}, monitor))
+            .run();
+    }
     return Number(result.meta?.last_row_id || result.meta?.last_rowid || result.lastRowId || result.last_row_id);
 }
 
@@ -506,16 +522,32 @@ export async function updateMonitor(env, monitorId, monitorInput) {
         throw httpError(404, "Monitor not found");
     }
     const monitor = normalizeMonitorInput(monitorInput, existing);
-    await env.DB.prepare(
-        `UPDATE monitors SET
-            name = ?, type = ?, url = ?, hostname = ?, port = ?, method = ?,
-            headers = ?, body = ?, keyword = ?, invert_keyword = ?,
-            json_path = ?, expected_value = ?, timeout = ?, "interval" = ?,
-            network_profile_id = ?, parent = ?, config_json = ?, updated_at = CURRENT_TIMESTAMP
-         WHERE id = ?`
-    )
-        .bind(...monitorValues(monitor, false), monitorConfigJson(monitorInput, existing, monitor), monitorId)
-        .run();
+    try {
+        await env.DB.prepare(
+            `UPDATE monitors SET
+                name = ?, type = ?, url = ?, hostname = ?, port = ?, method = ?,
+                headers = ?, body = ?, keyword = ?, invert_keyword = ?,
+                json_path = ?, expected_value = ?, timeout = ?, "interval" = ?,
+                network_profile_id = ?, parent = ?, config_json = ?, updated_at = CURRENT_TIMESTAMP
+             WHERE id = ?`
+        )
+            .bind(...monitorValues(monitor, false), monitorConfigJson(monitorInput, existing, monitor), monitorId)
+            .run();
+    } catch (error) {
+        if (!MISSING_PARENT_COLUMN.test(error.message || "") || monitor.parent != null) {
+            throw error;
+        }
+        await env.DB.prepare(
+            `UPDATE monitors SET
+                name = ?, type = ?, url = ?, hostname = ?, port = ?, method = ?,
+                headers = ?, body = ?, keyword = ?, invert_keyword = ?,
+                json_path = ?, expected_value = ?, timeout = ?, "interval" = ?,
+                network_profile_id = ?, config_json = ?, updated_at = CURRENT_TIMESTAMP
+             WHERE id = ?`
+        )
+            .bind(...monitorValues(monitor, false, false), monitorConfigJson(monitorInput, existing, monitor), monitorId)
+            .run();
+    }
 }
 
 export async function setMonitorActive(env, monitorId, active) {
@@ -1210,7 +1242,7 @@ function calculateStatusPageUptime(heartbeats) {
     return up / heartbeats.length;
 }
 
-function monitorValues(monitor, includeActive) {
+function monitorValues(monitor, includeActive, includeParent = true) {
     const values = [
         monitor.name,
         monitor.type,
@@ -1231,7 +1263,9 @@ function monitorValues(monitor, includeActive) {
         values.push(monitor.active);
     }
     values.push(monitor.networkProfileId);
-    values.push(monitor.parent);
+    if (includeParent) {
+        values.push(monitor.parent);
+    }
     return values;
 }
 
