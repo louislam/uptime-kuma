@@ -14,6 +14,9 @@ dist-ssr
 /out
 /tmp
 .env
+*.db
+*.sqlite
+*.sqlite3
 
 /extra/healthcheck.exe
 /extra/healthcheck

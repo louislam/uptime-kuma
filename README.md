@@ -123,6 +123,19 @@ Deploy to Cloudflare:
 npx wrangler deploy
 ```
 
+Set an admin API token before exposing the Worker deployment. All monitor,
+settings, network-profile, check-now, and Twingate status endpoints fail closed
+without this secret:
+
+```bash
+openssl rand -base64 32 | npx wrangler secret put ADMIN_API_TOKEN
+```
+
+The Worker dashboard sends this token as a bearer token when it is stored in
+browser local storage or session storage under `uptimeWorkerAdminToken` or
+`cloudflareWorkerApiToken`. Public status-page endpoints do not require the
+token.
+
 If your deployment account or resource names differ from this repository's
 defaults, update `wrangler.jsonc` before deploying. Keep the binding names stable
 unless the Worker code is updated at the same time.

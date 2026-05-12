@@ -1030,6 +1030,7 @@ let needSetup = false;
         socket.on("getMonitorBeats", async (monitorID, period, callback) => {
             try {
                 checkLogin(socket);
+                await checkOwner(socket.userID, monitorID);
 
                 log.info("monitor", `Get Monitor Beats: ${monitorID} User ID: ${socket.userID}`);
 
@@ -1283,6 +1284,7 @@ let needSetup = false;
         socket.on("addMonitorTag", async (tagID, monitorID, value, callback) => {
             try {
                 checkLogin(socket);
+                await checkOwner(socket.userID, monitorID);
 
                 await R.exec("INSERT INTO monitor_tag (tag_id, monitor_id, value) VALUES (?, ?, ?)", [
                     tagID,
@@ -1308,6 +1310,7 @@ let needSetup = false;
         socket.on("editMonitorTag", async (tagID, monitorID, value, callback) => {
             try {
                 checkLogin(socket);
+                await checkOwner(socket.userID, monitorID);
 
                 await R.exec("UPDATE monitor_tag SET value = ? WHERE tag_id = ? AND monitor_id = ?", [
                     value,
@@ -1333,6 +1336,7 @@ let needSetup = false;
         socket.on("deleteMonitorTag", async (tagID, monitorID, value, callback) => {
             try {
                 checkLogin(socket);
+                await checkOwner(socket.userID, monitorID);
 
                 await R.exec("DELETE FROM monitor_tag WHERE tag_id = ? AND monitor_id = ? AND value = ?", [
                     tagID,
@@ -1635,6 +1639,7 @@ let needSetup = false;
         socket.on("clearEvents", async (monitorID, callback) => {
             try {
                 checkLogin(socket);
+                await checkOwner(socket.userID, monitorID);
 
                 log.info("manage", `Clear Events Monitor: ${monitorID} User ID: ${socket.userID}`);
 
@@ -1654,6 +1659,7 @@ let needSetup = false;
         socket.on("clearHeartbeats", async (monitorID, callback) => {
             try {
                 checkLogin(socket);
+                await checkOwner(socket.userID, monitorID);
 
                 log.info("manage", `Clear Heartbeats Monitor: ${monitorID} User ID: ${socket.userID}`);
 

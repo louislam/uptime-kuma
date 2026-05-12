@@ -13,6 +13,8 @@ const DEFAULT_PING_COUNT = 1;
 const DEFAULT_PING_PACKET_SIZE = 56;
 const DEFAULT_PING_PER_REQUEST_TIMEOUT_SECONDS = 2;
 const SYSTEM_TWINGATE_PROXY_URL = "http://127.0.0.1:9999";
+const PRIVATE_WORKER_HOST_ERROR =
+    "Direct Worker checks cannot target private, loopback, link-local, or metadata hosts";
 const execFileAsync = promisify(execFile);
 
 async function runCheck(job) {
@@ -57,6 +59,7 @@ async function runCheck(job) {
 
 async function runHttpCheck(monitor, networkProfile, twingateProxyUrl, start) {
     const targetUrl = new URL(monitor.url);
+    assertDirectTargetAllowed(targetUrl.hostname, networkProfile);
     const response = isTwingateProfile(networkProfile)
         ? await requestViaHttpProxy(targetUrl, twingateProxyUrl, monitor)
         : await requestDirect(targetUrl, monitor);
@@ -98,6 +101,7 @@ async function runTcpCheck(monitor, networkProfile, twingateProxyUrl, start) {
     if (!hostname || !port) {
         throw new Error("TCP monitor requires hostname and port");
     }
+    assertDirectTargetAllowed(hostname, networkProfile);
 
     if (isTwingateProfile(networkProfile)) {
         const socket = await connectViaHttpProxy(hostname, port, twingateProxyUrl, monitor.timeout);
@@ -131,6 +135,7 @@ async function runPingCheck(monitor, start, execFileFn = execFileAsync, now = Da
     if (!hostname) {
         throw new Error("Ping monitor requires hostname");
     }
+    assertDirectTargetAllowed(hostname, null);
 
     const args = [
         "-c",
@@ -358,6 +363,51 @@ function getTimeoutMs(timeoutSeconds) {
 function toPositiveInteger(value, fallback) {
     const parsed = Number(value);
     return Number.isFinite(parsed) && parsed > 0 ? Math.trunc(parsed) : fallback;
+}
+
+function assertDirectTargetAllowed(hostname, networkProfile) {
+    if (isTwingateProfile(networkProfile)) {
+        return;
+    }
+    if (isPrivateWorkerHost(hostname)) {
+        throw new Error(PRIVATE_WORKER_HOST_ERROR);
+    }
+}
+
+function isPrivateWorkerHost(hostname) {
+    const normalized = String(hostname || "").trim().toLowerCase();
+    if (
+        normalized === "localhost" ||
+        normalized.endsWith(".localhost") ||
+        normalized === "metadata.google.internal"
+    ) {
+        return true;
+    }
+
+    if (net.isIP(normalized) === 4) {
+        const [a, b] = normalized.split(".").map((part) => Number(part));
+        return (
+            a === 0 ||
+            a === 10 ||
+            a === 127 ||
+            (a === 100 && b >= 64 && b <= 127) ||
+            (a === 169 && b === 254) ||
+            (a === 172 && b >= 16 && b <= 31) ||
+            (a === 192 && b === 168)
+        );
+    }
+
+    if (net.isIP(normalized) === 6) {
+        return (
+            normalized === "::1" ||
+            normalized === "::" ||
+            normalized.startsWith("fc") ||
+            normalized.startsWith("fd") ||
+            normalized.startsWith("fe80:")
+        );
+    }
+
+    return false;
 }
 
 module.exports = {

@@ -12,6 +12,7 @@ import {
     getToastSuccessTimeout,
     getToastErrorTimeout,
 } from "../util-frontend.js";
+import { requestCloudflareJson } from "../cloudflare-worker-api.js";
 const toast = useToast();
 
 let socket;
@@ -336,12 +337,7 @@ export default {
          */
         async loadCloudflareWorkerData() {
             try {
-                const response = await fetch("/api/monitors");
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
-                }
-
-                const body = await response.json();
+                const body = await requestCloudflareJson("/api/monitors");
                 const monitorList = {};
                 const heartbeatList = {};
                 const avgPingList = {};
@@ -1127,27 +1123,6 @@ function createCloudflareSocketStub(app) {
             }
         },
     };
-}
-
-/**
- * Fetch a JSON response from the Worker API.
- * @param {string} path API path to request.
- * @param {object} options Fetch options.
- * @returns {Promise<object>} Parsed JSON response body.
- */
-async function requestCloudflareJson(path, options = {}) {
-    const response = await fetch(path, {
-        headers: {
-            "content-type": "application/json",
-            ...(options.headers || {}),
-        },
-        ...options,
-    });
-    const body = await response.json().catch(() => ({}));
-    if (!response.ok) {
-        throw new Error(body.error || body.msg || `HTTP ${response.status}`);
-    }
-    return body;
 }
 
 /**

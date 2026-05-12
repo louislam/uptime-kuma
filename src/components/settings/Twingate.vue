@@ -64,6 +64,8 @@
 </template>
 
 <script>
+import { cloudflareWorkerApiHeaders } from "../../cloudflare-worker-api";
+
 export default {
     data() {
         return {
@@ -217,7 +219,9 @@ export default {
         async loadStatus() {
             this.loading = true;
             try {
-                const response = await fetch("/api/twingate/status");
+                const response = await fetch("/api/twingate/status", {
+                    headers: cloudflareWorkerApiHeaders(),
+                });
                 if (!response.ok) {
                     throw new Error(await response.text());
                 }

@@ -46,12 +46,33 @@ const MONITOR_CONFIG_EXCLUDED_FIELDS = new Set([
 
 const MISSING_CONFIG_JSON_COLUMN = /no such column:\s*config_json/i;
 const MISSING_PARENT_COLUMN = /no such column:\s*parent/i;
+const ADMIN_ROUTE_NAMES = new Set([
+    "monitors",
+    "settings",
+    "create-monitor",
+    "import-monitors",
+    "monitor",
+    "update-monitor",
+    "set-monitor-active",
+    "delete-monitor",
+    "monitor-heartbeats",
+    "network-profiles",
+    "patch-network-route",
+    "check-now",
+    "twingate-status",
+]);
+const PRIVATE_WORKER_HOST_ERROR =
+    "Direct Worker checks cannot target private, loopback, link-local, or metadata hosts";
 
 export async function handleApiRequest(request, env) {
     const url = new URL(request.url);
     const route = matchRoute(request.method, url.pathname);
 
     try {
+        if (ADMIN_ROUTE_NAMES.has(route.name)) {
+            await requireAdminRequest(request, env);
+        }
+
         if (route.name === "entry-page") {
             return json({ type: "entryPage", entryPage: "dashboard" });
         }
@@ -628,7 +649,7 @@ async function fetchRunnerStatus(env) {
     if (!response.ok) {
         throw httpError(502, `Runner status failed with ${response.status}`);
     }
-    return await response.json();
+    return sanitizeRunnerStatus(await response.json());
 }
 
 function getRunnerStub(env) {
@@ -726,6 +747,7 @@ function normalizeMonitorInput(input, existing = {}) {
     const timeout = Number(monitor.timeout || existing.timeout || 30);
     const networkProfileId = normalizeNetworkProfileId(monitor.networkProfileId ?? monitor.network_profile_id);
     const parent = normalizeMonitorParent(monitor.parent ?? existing.parent);
+    assertWorkerTargetAllowed(monitor, networkProfileId);
 
     return {
         name,
@@ -746,6 +768,115 @@ function normalizeMonitorInput(input, existing = {}) {
         networkProfileId,
         parent,
     };
+}
+
+async function requireAdminRequest(request, env) {
+    const expectedToken = env.ADMIN_API_TOKEN;
+    if (!expectedToken || typeof expectedToken !== "string") {
+        throw httpError(503, "Admin API token is not configured");
+    }
+
+    const authorization = request.headers.get("authorization") || "";
+    const suppliedToken = authorization.startsWith("Bearer ") ? authorization.slice(7) : "";
+    if (!timingSafeEqual(suppliedToken, expectedToken)) {
+        throw httpError(401, "Unauthorized");
+    }
+}
+
+function timingSafeEqual(left, right) {
+    if (typeof left !== "string" || typeof right !== "string") {
+        return false;
+    }
+    const maxLength = Math.max(left.length, right.length);
+    let diff = left.length ^ right.length;
+    for (let index = 0; index < maxLength; index++) {
+        diff |= (left.charCodeAt(index) || 0) ^ (right.charCodeAt(index) || 0);
+    }
+    return diff === 0;
+}
+
+function sanitizeRunnerStatus(status = {}) {
+    return {
+        configured: Boolean(status.configured),
+        starting: Boolean(status.starting),
+        running: Boolean(status.running),
+        proxyUrl: status.proxyUrl || null,
+        lastError: status.lastError || null,
+    };
+}
+
+function assertWorkerTargetAllowed(monitor, networkProfileId) {
+    if (networkProfileId || monitor.type === "group") {
+        return;
+    }
+
+    const host = getMonitorTargetHost(monitor);
+    if (host && isPrivateWorkerHost(host)) {
+        throw httpError(400, PRIVATE_WORKER_HOST_ERROR);
+    }
+}
+
+function getMonitorTargetHost(monitor) {
+    if (["http", "keyword", "json-query", "websocket-upgrade"].includes(monitor.type)) {
+        try {
+            return new URL(monitor.url).hostname;
+        } catch (_) {
+            return null;
+        }
+    }
+    if (["ping", "port"].includes(monitor.type)) {
+        return monitor.hostname || null;
+    }
+    return null;
+}
+
+function isPrivateWorkerHost(host) {
+    const normalized = String(host || "").trim().toLowerCase();
+    if (!normalized) {
+        return false;
+    }
+    if (
+        normalized === "localhost" ||
+        normalized.endsWith(".localhost") ||
+        normalized === "metadata.google.internal"
+    ) {
+        return true;
+    }
+
+    const ipv4 = parseIPv4(normalized);
+    if (ipv4) {
+        const [a, b] = ipv4;
+        return (
+            a === 0 ||
+            a === 10 ||
+            a === 127 ||
+            (a === 100 && b >= 64 && b <= 127) ||
+            (a === 169 && b === 254) ||
+            (a === 172 && b >= 16 && b <= 31) ||
+            (a === 192 && b === 168)
+        );
+    }
+
+    const ipv6 = normalized.replace(/^\[/, "").replace(/\]$/, "");
+    return (
+        ipv6 === "::1" ||
+        ipv6 === "::" ||
+        ipv6.startsWith("fc") ||
+        ipv6.startsWith("fd") ||
+        ipv6.startsWith("fe80:")
+    );
+}
+
+function parseIPv4(host) {
+    const parts = host.split(".");
+    if (parts.length !== 4) {
+        return null;
+    }
+    const octets = parts.map((part) => Number(part));
+    if (octets.some((part) => !Number.isInteger(part) || part < 0 || part > 255)) {
+        return null;
+    }
+    return octets;
 }
 
 /**

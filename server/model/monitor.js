@@ -629,7 +629,7 @@ class Monitor extends BeanModel {
                         });
                     });
 
-                    log.debug("monitor", `[${this.name}] Axios Options: ${JSON.stringify(options)}`);
+                    log.debug("monitor", `[${this.name}] Axios Options: ${JSON.stringify(redactAxiosOptionsForLog(options))}`);
                     log.debug("monitor", `[${this.name}] Axios Request`);
 
                     // Make Request
@@ -2104,6 +2104,56 @@ class Monitor extends BeanModel {
             await checkCertExpiryNotifications(this, tlsInfo);
         }
     }
+}
+
+/**
+ * Redact sensitive Axios request options before debug logging.
+ * @param {object} options Axios request options.
+ * @returns {object} A copy of the options safe for logs.
+ */
+function redactAxiosOptionsForLog(options) {
+    const redacted = {
+        ...options,
+        headers: redactHeaders(options.headers || {}),
+    };
+
+    if (redacted.data !== undefined) {
+        redacted.data = "[redacted]";
+    }
+    if (redacted.auth !== undefined) {
+        redacted.auth = "[redacted]";
+    }
+
+    if (redacted.httpAgent) {
+        redacted.httpAgent = "[configured]";
+    }
+    if (redacted.httpsAgent) {
+        redacted.httpsAgent = "[configured]";
+    }
+
+    return redacted;
+}
+
+/**
+ * Redact sensitive header values.
+ * @param {object} headers Request headers.
+ * @returns {object} Header copy safe for logs.
+ */
+function redactHeaders(headers) {
+    const redacted = {};
+    for (const [key, value] of Object.entries(headers)) {
+        redacted[key] = isSensitiveHeader(key) ? "[redacted]" : value;
+    }
+    return redacted;
+}
+
+/**
+ * Check whether a header name commonly carries secrets.
+ * @param {string} key Header name.
+ * @returns {boolean} True when the header should be redacted.
+ */
+function isSensitiveHeader(key) {
+    return /authorization|api[-_]?key|token|secret|password|cookie/i.test(key);
 }
 
 module.exports = Monitor;

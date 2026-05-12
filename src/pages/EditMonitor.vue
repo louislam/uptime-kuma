@@ -3086,6 +3086,7 @@ import {
     TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD,
 } from "../util.ts";
 import { timeDurationFormatter } from "../util-frontend";
+import { cloudflareWorkerApiHeaders } from "../cloudflare-worker-api";
 import isFQDN from "validator/lib/isFQDN";
 import isIP from "validator/lib/isIP";
 import HiddenInput from "../components/HiddenInput.vue";
@@ -3932,7 +3933,9 @@ message HealthCheckResponse {
 
         async loadNetworkProfiles() {
             try {
-                const response = await fetch("/api/network-profiles");
+                const response = await fetch("/api/network-profiles", {
+                    headers: cloudflareWorkerApiHeaders(),
+                });
                 if (!response.ok) {
                     return;
                 }

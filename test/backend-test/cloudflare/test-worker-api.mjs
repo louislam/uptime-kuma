@@ -114,6 +114,26 @@ describe("Cloudflare Worker API", () => {
         assert.deepStrictEqual(body, { type: "entryPage", entryPage: "dashboard" });
     });
 
+    test("requires bearer auth for Worker admin API routes", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({});
+
+        const response = await handleApiRequest(new Request("https://example.com/api/monitors"), env);
+
+        assert.strictEqual(response.status, 401);
+        assert.deepStrictEqual(await response.json(), { error: "Unauthorized" });
+    });
+
+    test("fails closed when Worker admin token is not configured", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({ adminToken: "" });
+
+        const response = await handleApiRequest(adminRequest("https://example.com/api/monitors"), env);
+
+        assert.strictEqual(response.status, 503);
+        assert.deepStrictEqual(await response.json(), { error: "Admin API token is not configured" });
+    });
+
     test("lists the Worker default status page for the deployed web UI", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({});
@@ -251,7 +271,7 @@ describe("Cloudflare Worker API", () => {
             ],
         });
 
-        const response = await handleApiRequest(new Request("https://example.com/api/monitors"), env);
+        const response = await handleApiRequest(adminRequest("https://example.com/api/monitors"), env);
         const body = await response.json();
 
         assert.strictEqual(response.status, 200);
@@ -322,7 +342,7 @@ describe("Cloudflare Worker API", () => {
             ],
         });
 
-        const response = await handleApiRequest(new Request("https://example.com/api/monitors"), env);
+        const response = await handleApiRequest(adminRequest("https://example.com/api/monitors"), env);
         const body = await response.json();
 
         assert.strictEqual(response.status, 200);
@@ -340,7 +360,7 @@ describe("Cloudflare Worker API", () => {
             },
         });
 
-        const getResponse = await handleApiRequest(new Request("https://example.com/api/settings"), env);
+        const getResponse = await handleApiRequest(adminRequest("https://example.com/api/settings"), env);
         const getBody = await getResponse.json();
 
         assert.strictEqual(getResponse.status, 200);
@@ -349,7 +369,7 @@ describe("Cloudflare Worker API", () => {
         assert.strictEqual(getBody.data.keepDataPeriodDays, 180);
 
         const putResponse = await handleApiRequest(
-            new Request("https://example.com/api/settings", {
+            adminRequest("https://example.com/api/settings", {
                 method: "PUT",
                 body: JSON.stringify({
                     primaryBaseURL: "https://uptime.example.com",
@@ -370,7 +390,7 @@ describe("Cloudflare Worker API", () => {
         const env = createEnv({});
 
         const createResponse = await handleApiRequest(
-            new Request("https://example.com/api/monitors", {
+            adminRequest("https://example.com/api/monitors", {
                 method: "POST",
                 body: JSON.stringify({
                     name: "Example HTTP",
@@ -389,14 +409,14 @@ describe("Cloudflare Worker API", () => {
         assert.strictEqual(createBody.ok, true);
         assert.strictEqual(createBody.monitorID, 1);
 
-        const readResponse = await handleApiRequest(new Request("https://example.com/api/monitors/1"), env);
+        const readResponse = await handleApiRequest(adminRequest("https://example.com/api/monitors/1"), env);
         const readBody = await readResponse.json();
         assert.strictEqual(readResponse.status, 200);
         assert.strictEqual(readBody.monitor.name, "Example HTTP");
         assert.strictEqual(readBody.monitor.interval, 90);
 
         const updateResponse = await handleApiRequest(
-            new Request("https://example.com/api/monitors/1", {
+            adminRequest("https://example.com/api/monitors/1", {
                 method: "PUT",
                 body: JSON.stringify({
                     ...readBody.monitor,
@@ -414,7 +434,7 @@ describe("Cloudflare Worker API", () => {
         assert.strictEqual(env.state.monitors[0].method, "POST");
 
         const pauseResponse = await handleApiRequest(
-            new Request("https://example.com/api/monitors/1/active", {
+            adminRequest("https://example.com/api/monitors/1/active", {
                 method: "PATCH",
                 body: JSON.stringify({ active: false }),
             }),
@@ -425,7 +445,7 @@ describe("Cloudflare Worker API", () => {
         assert.strictEqual(env.state.monitors[0].active, 0);
 
         const deleteResponse = await handleApiRequest(
-            new Request("https://example.com/api/monitors/1", { method: "DELETE" }),
+            adminRequest("https://example.com/api/monitors/1", { method: "DELETE" }),
             env
         );
         assert.strictEqual(deleteResponse.status, 200);
@@ -438,7 +458,7 @@ describe("Cloudflare Worker API", () => {
         const env = createEnv({});
 
         const createResponse = await handleApiRequest(
-            new Request("https://example.com/api/monitors", {
+            adminRequest("https://example.com/api/monitors", {
                 method: "POST",
                 body: JSON.stringify({
                     name: "Editable HTTP",
@@ -471,7 +491,7 @@ describe("Cloudflare Worker API", () => {
         );
         assert.strictEqual(createResponse.status, 200);
 
-        const readResponse = await handleApiRequest(new Request("https://example.com/api/monitors/1"), env);
+        const readResponse = await handleApiRequest(adminRequest("https://example.com/api/monitors/1"), env);
         const readBody = await readResponse.json();
         assert.strictEqual(readResponse.status, 200);
         assert.strictEqual(readBody.monitor.maxretries, 4);
@@ -493,7 +513,7 @@ describe("Cloudflare Worker API", () => {
         assert.strictEqual(readBody.monitor.ipFamily, "ipv4");
 
         const updateResponse = await handleApiRequest(
-            new Request("https://example.com/api/monitors/1", {
+            adminRequest("https://example.com/api/monitors/1", {
                 method: "PUT",
                 body: JSON.stringify({
                     ...readBody.monitor,
@@ -505,7 +525,7 @@ describe("Cloudflare Worker API", () => {
         );
         assert.strictEqual(updateResponse.status, 200);
 
-        const rereadResponse = await handleApiRequest(new Request("https://example.com/api/monitors/1"), env);
+        const rereadResponse = await handleApiRequest(adminRequest("https://example.com/api/monitors/1"), env);
         const rereadBody = await rereadResponse.json();
         assert.strictEqual(rereadBody.monitor.name, "Still Editable HTTP");
         assert.strictEqual(rereadBody.monitor.maxretries, 5);
@@ -523,7 +543,7 @@ describe("Cloudflare Worker API", () => {
         });
 
         const response = await handleApiRequest(
-            new Request("https://example.com/api/monitors", {
+            adminRequest("https://example.com/api/monitors", {
                 method: "POST",
                 body: JSON.stringify({
                     name: "Ping",
@@ -540,7 +560,7 @@ describe("Cloudflare Worker API", () => {
         assert.strictEqual(env.state.monitors[0].type, "ping");
         assert.strictEqual(env.state.monitors[0].hostname, "example.com");
 
-        const readResponse = await handleApiRequest(new Request("https://example.com/api/monitors/1"), env);
+        const readResponse = await handleApiRequest(adminRequest("https://example.com/api/monitors/1"), env);
         const readBody = await readResponse.json();
         assert.strictEqual(readBody.monitor.type, "ping");
         assert.strictEqual(readBody.monitor.hostname, "example.com");
@@ -548,7 +568,7 @@ describe("Cloudflare Worker API", () => {
         assert.strictEqual(readBody.monitor.ping_per_request_timeout, 2);
 
         const checkResponse = await handleApiRequest(
-            new Request("https://example.com/api/monitors/1/check-now", { method: "POST" }),
+            adminRequest("https://example.com/api/monitors/1/check-now", { method: "POST" }),
             env
         );
         assert.strictEqual(checkResponse.status, 200);
@@ -579,7 +599,7 @@ describe("Cloudflare Worker API", () => {
         const env = createEnv({});
 
         const response = await handleApiRequest(
-            new Request("https://example.com/api/monitors", {
+            adminRequest("https://example.com/api/monitors", {
                 method: "POST",
                 body: JSON.stringify({
                     name: "Unsupported",
@@ -601,7 +621,7 @@ describe("Cloudflare Worker API", () => {
         const env = createEnv({});
 
         const response = await handleApiRequest(
-            new Request("https://example.com/api/monitors/import", {
+            adminRequest("https://example.com/api/monitors/import", {
                 method: "POST",
                 body: JSON.stringify({
                     monitors: [
@@ -653,7 +673,7 @@ describe("Cloudflare Worker API", () => {
         assert.strictEqual(nestedGroup.parent, websites.id);
         assert.strictEqual(nestedSite.parent, nestedGroup.id);
 
-        const listResponse = await handleApiRequest(new Request("https://example.com/api/monitors"), env);
+        const listResponse = await handleApiRequest(adminRequest("https://example.com/api/monitors"), env);
         const listBody = await listResponse.json();
         const byName = Object.fromEntries(listBody.monitors.map((monitor) => [monitor.name, monitor]));
 
@@ -686,7 +706,7 @@ describe("Cloudflare Worker API", () => {
         });
 
         const response = await handleApiRequest(
-            new Request("https://example.com/api/monitors/import", {
+            adminRequest("https://example.com/api/monitors/import", {
                 method: "POST",
                 body: JSON.stringify({
                     importHandle: "skip",
@@ -777,7 +797,7 @@ describe("Cloudflare Worker API", () => {
         });
 
         const response = await handleApiRequest(
-            new Request("https://example.com/api/monitors/import", {
+            adminRequest("https://example.com/api/monitors/import", {
                 method: "POST",
                 body: JSON.stringify({
                     importHandle: "overwrite",
@@ -808,7 +828,7 @@ describe("Cloudflare Worker API", () => {
         const env = createEnv({});
 
         const response = await handleApiRequest(
-            new Request("https://example.com/api/monitors/import", {
+            adminRequest("https://example.com/api/monitors/import", {
                 method: "POST",
                 body: JSON.stringify({
                     monitors: [
@@ -816,7 +836,7 @@ describe("Cloudflare Worker API", () => {
                             name: "Conference Computer",
                             type: "port",
                             url: "https://",
-                            hostname: "192.168.10.137",
+                            hostname: "203.0.113.10",
                             port: 443,
                             active: 1,
                             accepted_statuscodes: "[\"200-299\"]",
@@ -838,7 +858,7 @@ describe("Cloudflare Worker API", () => {
         assert.strictEqual(body.imported, 1);
         assert.strictEqual(env.state.monitors[0].url, null);
 
-        const readResponse = await handleApiRequest(new Request("https://example.com/api/monitors/1"), env);
+        const readResponse = await handleApiRequest(adminRequest("https://example.com/api/monitors/1"), env);
         const readBody = await readResponse.json();
 
         assert.deepStrictEqual(readBody.monitor.accepted_statuscodes, ["200-299"]);
@@ -879,7 +899,7 @@ describe("Cloudflare Worker API", () => {
             ],
         });
 
-        const listResponse = await handleApiRequest(new Request("https://example.com/api/monitors/7/heartbeats"), env);
+        const listResponse = await handleApiRequest(adminRequest("https://example.com/api/monitors/7/heartbeats"), env);
         const listBody = await listResponse.json();
 
         assert.strictEqual(listResponse.status, 200);
@@ -904,7 +924,7 @@ describe("Cloudflare Worker API", () => {
         });
 
         const clearResponse = await handleApiRequest(
-            new Request("https://example.com/api/monitors/7/heartbeats", { method: "DELETE" }),
+            adminRequest("https://example.com/api/monitors/7/heartbeats", { method: "DELETE" }),
             env
         );
 
@@ -921,7 +941,7 @@ describe("Cloudflare Worker API", () => {
             ],
         });
 
-        const response = await handleApiRequest(new Request("https://example.com/api/network-profiles"), env);
+        const response = await handleApiRequest(adminRequest("https://example.com/api/network-profiles"), env);
         const body = await response.json();
 
         assert.strictEqual(response.status, 200);
@@ -962,7 +982,7 @@ describe("Cloudflare Worker API", () => {
             },
         });
 
-        const response = await handleApiRequest(new Request("https://example.com/api/twingate/status"), env);
+        const response = await handleApiRequest(adminRequest("https://example.com/api/twingate/status"), env);
 
         assert.strictEqual(response.status, 200);
         assert.deepStrictEqual(await response.json(), {
@@ -971,25 +991,28 @@ describe("Cloudflare Worker API", () => {
             running: false,
             proxyUrl: "http://127.0.0.1:9999",
             lastError: null,
-            serviceKeyInspection: {
-                validJson: true,
-                fields: {
-                    version: true,
-                    network: true,
-                    service_account_id: true,
-                    key_id: true,
-                    private_key: true,
-                    login_path: true,
-                },
-                privateKeyShape: {
-                    length: 58,
-                    startsWithPemHeader: true,
-                    endsWithPemFooter: true,
-                    containsLiteralBackslashN: false,
-                    containsRealNewline: true,
-                    sha256Prefix: "123456789abc",
-                },
-            },
+        });
+    });
+
+    test("rejects direct Worker monitors for private and metadata addresses", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({});
+
+        const response = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors", {
+                method: "POST",
+                body: JSON.stringify({
+                    name: "Metadata",
+                    type: "http",
+                    url: "http://169.254.169.254/latest/meta-data",
+                }),
+            }),
+            env
+        );
+
+        assert.strictEqual(response.status, 400);
+        assert.deepStrictEqual(await response.json(), {
+            error: "Direct Worker checks cannot target private, loopback, link-local, or metadata hosts",
         });
     });
 
@@ -1003,7 +1026,7 @@ describe("Cloudflare Worker API", () => {
         });
 
         const twingateResponse = await handleApiRequest(
-            new Request("https://example.com/api/monitors/42/network-route", {
+            adminRequest("https://example.com/api/monitors/42/network-route", {
                 method: "PATCH",
                 body: JSON.stringify({ networkProfileId: "twingate" }),
             }),
@@ -1014,7 +1037,7 @@ describe("Cloudflare Worker API", () => {
         assert.strictEqual(env.state.monitors[0].network_profile_id, "twingate");
 
         const directResponse = await handleApiRequest(
-            new Request("https://example.com/api/monitors/42/network-route", {
+            adminRequest("https://example.com/api/monitors/42/network-route", {
                 method: "PATCH",
                 body: JSON.stringify({ networkProfileId: null }),
             }),
@@ -1025,7 +1048,7 @@ describe("Cloudflare Worker API", () => {
         assert.strictEqual(env.state.monitors[0].network_profile_id, null);
 
         const invalidResponse = await handleApiRequest(
-            new Request("https://example.com/api/monitors/42/network-route", {
+            adminRequest("https://example.com/api/monitors/42/network-route", {
                 method: "PATCH",
                 body: JSON.stringify({ networkProfileId: "missing" }),
             }),
@@ -1056,7 +1079,7 @@ describe("Cloudflare Worker API", () => {
         });
 
         const response = await handleApiRequest(
-            new Request("https://example.com/api/monitors/7/check-now", { method: "POST" }),
+            adminRequest("https://example.com/api/monitors/7/check-now", { method: "POST" }),
             env
         );
         const body = await response.json();
@@ -1101,6 +1124,7 @@ function createEnv(initial) {
 
     return {
         state,
+        ADMIN_API_TOKEN: "adminToken" in initial ? initial.adminToken : "test-token",
         DB: {
             prepare(sql) {
                 return createStatement(sql, state);
@@ -1130,6 +1154,22 @@ function createEnv(initial) {
             },
         },
     };
+}
+
+/**
+ * Create an authenticated Worker API request for admin route tests.
+ * @param {string} url Request URL.
+ * @param {RequestInit} init Request init.
+ * @returns {Request} Authenticated request.
+ */
+function adminRequest(url, init = {}) {
+    return new Request(url, {
+        ...init,
+        headers: {
+            ...(init.headers || {}),
+            authorization: "Bearer test-token",
+        },
+    });
 }
 
 /**

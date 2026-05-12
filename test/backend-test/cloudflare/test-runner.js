@@ -2,7 +2,6 @@
 const { describe, test, beforeEach, afterEach } = require("node:test");
 const assert = require("node:assert");
 const http = require("node:http");
-const net = require("node:net");
 
 const DOWN = 0;
 const UP = 1;
@@ -17,15 +16,9 @@ describe("Cloudflare monitor runner", () => {
         await Promise.all(servers.map((server) => closeServer(server)));
     });
 
-    test("direct HTTP checks bypass the Twingate proxy", async () => {
+    test("direct HTTP checks reject loopback and do not use the Twingate proxy", async () => {
         const { runCheck } = require("../../../cloudflare/runner/checker");
         let proxyRequests = 0;
-        const target = await listen(
-            http.createServer((req, res) => {
-                res.writeHead(200, { "content-type": "text/plain" });
-                res.end("direct ok");
-            })
-        );
         const proxy = await listen(
             http.createServer((req, res) => {
                 proxyRequests++;
@@ -38,16 +31,18 @@ describe("Cloudflare monitor runner", () => {
             monitor: {
                 id: 1,
                 type: "http",
-                url: `http://127.0.0.1:${target.port}/health`,
+                url: "http://127.0.0.1:8080/health",
                 timeout: 5,
             },
             networkProfile: null,
             twingateProxyUrl: `http://127.0.0.1:${proxy.port}`,
         });
 
-        assert.strictEqual(result.status, UP);
-        assert.strictEqual(result.msg, "200 - OK");
-        assert.strictEqual(result.response, "direct ok");
+        assert.strictEqual(result.status, DOWN);
+        assert.strictEqual(
+            result.msg,
+            "Direct Worker checks cannot target private, loopback, link-local, or metadata hosts"
+        );
         assert.strictEqual(proxyRequests, 0);
     });
 
