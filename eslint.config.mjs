@@ -7,6 +7,11 @@ import vue from "eslint-plugin-vue";
 import vueScopedCss from "eslint-plugin-vue-scoped-css";
 import globals from "globals";
 
+const typescriptRecommended = tsPlugin.configs["flat/recommended"].map((config) => ({
+    ...config,
+    files: config.files ?? ["**/*.ts"],
+}));
+
 export default [
     {
         ignores: [
@@ -27,7 +32,7 @@ export default [
     js.configs.recommended,
     ...vue.configs["flat/recommended"],
     ...vueScopedCss.configs["flat/recommended"],
-    ...tsPlugin.configs["flat/recommended"],
+    ...typescriptRecommended,
     jsdoc.configs["flat/recommended-error"],
     prettier,
     {

@@ -10,9 +10,9 @@
         "node": ">= 20.19.0"
     },
     "scripts": {
-        "lint:js": "eslint .",
+        "lint:js": "eslint \"**/*.{js,vue}\"",
         "lint:js-prod": "npm run lint:js",
-        "lint-fix:js": "eslint . --fix",
+        "lint-fix:js": "eslint \"**/*.{js,vue}\" --fix",
         "lint:style": "stylelint \"**/*.{vue,css,scss}\" --ignore-path .gitignore",
         "lint-fix:style": "stylelint \"**/*.{vue,css,scss}\" --fix --ignore-path .gitignore",
         "lint": "npm run lint:js && npm run lint:style",

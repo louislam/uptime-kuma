@@ -8,9 +8,15 @@
         "declaration-empty-line-before": null,
         "alpha-value-notation": "number",
         "color-function-notation": "legacy",
+        "color-function-alias-notation": null,
         "shorthand-property-no-redundant-values": null,
         "color-hex-length": null,
         "declaration-block-no-redundant-longhand-properties": null,
+        "declaration-property-value-keyword-no-deprecated": null,
+        "declaration-property-value-no-unknown": null,
+        "import-notation": null,
+        "media-feature-range-notation": null,
+        "block-no-redundant-nested-style-rules": null,
         "at-rule-no-unknown": null
     }
 }
