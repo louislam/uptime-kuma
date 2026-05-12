@@ -48,9 +48,13 @@ export class MonitorRunner extends Container {
 function copyOptionalEnv(target, source, names) {
     for (const name of names) {
         if (source[name]) {
-            target[name] = source[name];
+            target[name] = normalizeContainerEnvValue(source[name]);
         }
     }
+}
+
+function normalizeContainerEnvValue(value) {
+    return typeof value === "object" ? JSON.stringify(value) : value;
 }
 
 export default {

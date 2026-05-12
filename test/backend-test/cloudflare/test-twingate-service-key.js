@@ -80,6 +80,17 @@ describe("Twingate service key env", () => {
         assert.strictEqual(resolved.value.toString("utf8"), serviceKeyJson);
     });
 
+    test("supports dashboard JSON full service key value in TWINGATE_SERVICE_KEY_B64", () => {
+        const serviceKeyJson = JSON.stringify({ network: "dashboard.example", private_key: TEST_PRIVATE_KEY });
+        const resolved = resolveTwingateServiceKey({
+            TWINGATE_SERVICE_KEY_B64: serviceKeyJson,
+        });
+
+        assert.strictEqual(resolved.configured, true);
+        assert.strictEqual(resolved.source, "TWINGATE_SERVICE_KEY_B64");
+        assert.strictEqual(resolved.value.toString("utf8"), serviceKeyJson);
+    });
+
     test("prefers current discrete service key env over legacy base64 service key", () => {
         const legacyServiceKeyJson = JSON.stringify({ network: "legacy.example", private_key: "old-key" });
         const resolved = resolveTwingateServiceKey({

@@ -55,6 +55,7 @@ describe("Cloudflare Worker API", () => {
             binding: "ASSETS",
             run_worker_first: ["/api/*"],
         });
+        assert.strictEqual(wranglerConfig.keep_vars, true);
     });
 
     test("Worker Twingate config does not expose a configurable proxy URL", async () => {
@@ -88,6 +89,7 @@ describe("Cloudflare Worker API", () => {
 
         assert.match(workerSource, /TWINGATE_READY_TIMEOUT_MS:\s*"60000"/);
         assert.match(workerSource, /"TWINGATE_READY_TIMEOUT_MS"/);
+        assert.match(workerSource, /JSON\.stringify\(value\)/);
     });
 
     test("entry page routes the deployed web UI to the dashboard", async () => {

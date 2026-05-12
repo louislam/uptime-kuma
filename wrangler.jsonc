@@ -2,6 +2,7 @@
     "$schema": "node_modules/wrangler/config-schema.json",
     "name": "uptimeworker",
     "account_id": "5e4d29b3db4faa691c672e24b0009999",
+    "keep_vars": true,
     "main": "cloudflare/worker/index.mjs",
     "compatibility_date": "2026-05-11",
     "assets": {

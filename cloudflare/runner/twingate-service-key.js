@@ -49,7 +49,7 @@ function resolveTwingateServiceKey(env = process.env) {
     if (env.TWINGATE_SERVICE_KEY_B64) {
         return {
             configured: true,
-            value: Buffer.from(env.TWINGATE_SERVICE_KEY_B64, "base64"),
+            value: decodeServiceKeyValue(env.TWINGATE_SERVICE_KEY_B64),
             missing: [],
             source: "TWINGATE_SERVICE_KEY_B64",
         };
@@ -113,6 +113,14 @@ function decodeBase64Value(value) {
         return "";
     }
     return Buffer.from(value, "base64").toString("utf8");
+}
+
+function decodeServiceKeyValue(value) {
+    const rawValue = typeof value === "string" ? value : JSON.stringify(value);
+    if (looksLikeJsonObject(rawValue)) {
+        return Buffer.from(rawValue, "utf8");
+    }
+    return Buffer.from(rawValue, "base64");
 }
 
 function looksLikeJsonObject(value) {
