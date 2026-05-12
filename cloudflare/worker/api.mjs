@@ -668,9 +668,15 @@ async function updateMonitorParent(env, monitorId, parent) {
 }
 
 async function updateDeletedMonitorChildren(env, monitorId) {
-    await env.DB.prepare("UPDATE monitors SET parent = NULL, updated_at = CURRENT_TIMESTAMP WHERE parent = ?")
-        .bind(monitorId)
-        .run();
+    try {
+        await env.DB.prepare("UPDATE monitors SET parent = NULL, updated_at = CURRENT_TIMESTAMP WHERE parent = ?")
+            .bind(monitorId)
+            .run();
+    } catch (error) {
+        if (!MISSING_PARENT_COLUMN.test(error.message || "")) {
+            throw error;
+        }
+    }
 }
 
 async function getNetworkProfile(env, networkProfileId) {
