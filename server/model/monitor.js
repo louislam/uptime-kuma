@@ -983,7 +983,10 @@ class Monitor extends BeanModel {
                         }
                     }
                     try {
-                        log.warn("monitor", `Monitor #${this.id} '${this.name}' failure detail: ${JSON.stringify(detail)}`);
+                        log.warn(
+                            "monitor",
+                            `Monitor #${this.id} '${this.name}' failure detail: ${JSON.stringify(detail)}`
+                        );
                     } catch (_) {
                         log.warn("monitor", `Monitor #${this.id} '${this.name}' failure detail: ${error?.message}`);
                     }
