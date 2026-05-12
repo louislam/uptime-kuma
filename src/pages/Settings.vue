@@ -92,7 +92,7 @@ export default {
             if (!this.$root.isCloudflareWorkerUI || !this.currentPage) {
                 return false;
             }
-            return !["general", "appearance", "twingate", "import-monitors"].includes(this.currentPage);
+            return !["general", "appearance", "reverse-proxy", "twingate", "import-monitors"].includes(this.currentPage);
         },
 
         subMenus() {
