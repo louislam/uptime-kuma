@@ -163,7 +163,8 @@ class Logger {
         if (level === "DEBUG" && !exports.isDev) {
             return;
         }
-        if (this.hideLog[level] && this.hideLog[level].includes(module.toLowerCase())) {
+        const levelKey = level.toLowerCase();
+        if (this.hideLog[levelKey] && this.hideLog[levelKey].includes(module.toLowerCase())) {
             return;
         }
         module = module.toUpperCase();
