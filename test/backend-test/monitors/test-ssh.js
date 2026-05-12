@@ -49,14 +49,22 @@ describe("SSH Monitor buildConnectConfig", () => {
 
     test("requires a hostname", () => {
         assert.throws(
-            () => monitorType.buildConnectConfig({ authMethod: "password", sshUsername: "u", sshPassword: "p", sshIgnoreHostKey: true }, 1000),
+            () =>
+                monitorType.buildConnectConfig(
+                    { authMethod: "password", sshUsername: "u", sshPassword: "p", sshIgnoreHostKey: true },
+                    1000
+                ),
             /hostname is required/i
         );
     });
 
     test("requires a username", () => {
         assert.throws(
-            () => monitorType.buildConnectConfig({ authMethod: "password", hostname: "h", sshPassword: "p", sshIgnoreHostKey: true }, 1000),
+            () =>
+                monitorType.buildConnectConfig(
+                    { authMethod: "password", hostname: "h", sshPassword: "p", sshIgnoreHostKey: true },
+                    1000
+                ),
             /username is required/i
         );
     });

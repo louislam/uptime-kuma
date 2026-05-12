@@ -9,7 +9,7 @@ const SSH_DEFAULT_TIMEOUT_MS = 30 * 1000;
 const SSH_OUTPUT_TRUNCATE_BYTES = 2 * 1024;
 const SSH_MAX_COMMAND_LENGTH = 4 * 1024;
 const SSH_MAX_PRIVATE_KEY_BYTES = 64 * 1024;
-const SSH_SUPPORTED_AUTH_METHODS = new Set([ "password", "privateKey", "agent", "none" ]);
+const SSH_SUPPORTED_AUTH_METHODS = new Set(["password", "privateKey", "agent", "none"]);
 
 /**
  * Truncate a string for safe inclusion in heartbeat messages.
@@ -60,11 +60,7 @@ function computeHostKeyDigests(hostKey) {
     const sha256Hex = crypto.createHash("sha256").update(hostKey).digest("hex");
     const sha256B64 = crypto.createHash("sha256").update(hostKey).digest("base64");
     const md5Hex = crypto.createHash("md5").update(hostKey).digest("hex");
-    return [
-        normaliseFingerprint(sha256Hex),
-        normaliseFingerprint(sha256B64),
-        normaliseFingerprint(md5Hex),
-    ];
+    return [normaliseFingerprint(sha256Hex), normaliseFingerprint(sha256B64), normaliseFingerprint(md5Hex)];
 }
 
 class SshMonitorType extends MonitorType {
@@ -133,7 +129,7 @@ class SshMonitorType extends MonitorType {
                 if (Buffer.isBuffer(hashedKey)) {
                     candidates = computeHostKeyDigests(hashedKey);
                 } else {
-                    candidates = [ normaliseFingerprint(hashedKey) ];
+                    candidates = [normaliseFingerprint(hashedKey)];
                 }
                 const ok = candidates.includes(expectedFingerprint);
                 if (typeof callback === "function") {
@@ -143,7 +139,9 @@ class SshMonitorType extends MonitorType {
             };
         } else if (!monitor.sshIgnoreHostKey) {
             // No fingerprint provided AND user did not opt-in to ignoring it: refuse the connection.
-            throw new Error("SSH host key verification is required: provide a host key fingerprint or explicitly enable 'Ignore Host Key'");
+            throw new Error(
+                "SSH host key verification is required: provide a host key fingerprint or explicitly enable 'Ignore Host Key'"
+            );
         }
 
         switch (authMethod) {
@@ -171,7 +169,9 @@ class SshMonitorType extends MonitorType {
             case "agent": {
                 const sock = process.env.SSH_AUTH_SOCK;
                 if (!sock) {
-                    throw new Error("SSH agent authentication requested but SSH_AUTH_SOCK is not set in the server environment");
+                    throw new Error(
+                        "SSH agent authentication requested but SSH_AUTH_SOCK is not set in the server environment"
+                    );
                 }
                 config.agent = sock;
                 break;
@@ -199,9 +199,10 @@ class SshMonitorType extends MonitorType {
             throw new Error(`SSH command exceeds maximum length of ${SSH_MAX_COMMAND_LENGTH} characters`);
         }
 
-        const timeoutMs = (Number.isFinite(parseInt(monitor.timeout, 10)) && monitor.timeout > 0)
-            ? monitor.timeout * 1000
-            : SSH_DEFAULT_TIMEOUT_MS;
+        const timeoutMs =
+            Number.isFinite(parseInt(monitor.timeout, 10)) && monitor.timeout > 0
+                ? monitor.timeout * 1000
+                : SSH_DEFAULT_TIMEOUT_MS;
 
         const config = this.buildConnectConfig(monitor, timeoutMs);
         const ssh = new NodeSSH();
@@ -217,7 +218,7 @@ class SshMonitorType extends MonitorType {
         });
 
         try {
-            await Promise.race([ ssh.connect(config), timeoutPromise ]);
+            await Promise.race([ssh.connect(config), timeoutPromise]);
 
             const result = await Promise.race([
                 ssh.execCommand(command, {
@@ -244,7 +245,7 @@ class SshMonitorType extends MonitorType {
             }
         } catch (error) {
             // Surface a redacted error: never echo credentials back into logs/UI.
-            const message = (error && error.message) ? error.message : "Unknown SSH error";
+            const message = error && error.message ? error.message : "Unknown SSH error";
             log.debug(this.name, `[${monitor.name || monitor.id}] SSH check failed: ${message}`);
             // Re-wrap only generic errors; keep our explicit "SSH command exited..." messages intact.
             if (message.startsWith("SSH command exited")) {

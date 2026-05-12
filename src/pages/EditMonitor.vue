@@ -850,11 +850,7 @@
                                     <label for="ssh_auth_method" class="form-label">
                                         {{ $t("Authentication Method") }}
                                     </label>
-                                    <select
-                                        id="ssh_auth_method"
-                                        v-model="monitor.authMethod"
-                                        class="form-select"
-                                    >
+                                    <select id="ssh_auth_method" v-model="monitor.authMethod" class="form-select">
                                         <option value="password">{{ $t("Password") }}</option>
                                         <option value="privateKey">{{ $t("sshAuthPrivateKey") }}</option>
                                         <option value="agent">{{ $t("sshAuthAgent") }}</option>
