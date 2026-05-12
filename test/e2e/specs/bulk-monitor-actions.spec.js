@@ -1,6 +1,15 @@
 import { expect, test } from "@playwright/test";
 import { login, restoreSqliteSnapshot, screenshot } from "../util-test";
 
+/**
+ * Creates a monitor through the add monitor form.
+ * @param {import("@playwright/test").Page} page Playwright page
+ * @param {object} options Monitor options
+ * @param {string} options.name Monitor display name
+ * @param {string} options.type Monitor type
+ * @param {string} options.url HTTP monitor URL
+ * @returns {Promise<void>}
+ */
 async function createMonitor(page, { name, type = "http", url = "https://www.example.com/" }) {
     await page.goto("./add");
     await expect(page.getByTestId("monitor-type-select")).toBeVisible();
@@ -15,6 +24,12 @@ async function createMonitor(page, { name, type = "http", url = "https://www.exa
     await page.waitForURL("/dashboard/*");
 }
 
+/**
+ * Deselects the monitor row with the matching name.
+ * @param {import("@playwright/test").Page} page Playwright page
+ * @param {string} name Monitor name
+ * @returns {Promise<void>}
+ */
 async function deselectMonitorRow(page, name) {
     await page
         .getByTestId("monitor-list-item")
@@ -23,6 +38,12 @@ async function deselectMonitorRow(page, name) {
         .click();
 }
 
+/**
+ * Selects the monitor row with the matching name.
+ * @param {import("@playwright/test").Page} page Playwright page
+ * @param {string} name Monitor name
+ * @returns {Promise<void>}
+ */
 async function selectMonitorRow(page, name) {
     await page
         .getByTestId("monitor-list-item")
