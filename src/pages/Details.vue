@@ -350,13 +350,56 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(beat, index) in displayedRecords" :key="index" style="padding: 10px">
-                            <td><Status :status="beat.status" /></td>
-                            <td :class="{ 'border-0': !beat.msg }">
-                                <Datetime :value="beat.time" />
-                            </td>
-                            <td class="border-0">{{ beat.msg }}</td>
-                        </tr>
+                        <template v-for="(beat, index) in displayedRecords" :key="index">
+                            <tr
+                                style="padding: 10px"
+                                :class="{ 'cursor-pointer': hasFailureDetail(beat) }"
+                                @click="toggleDetail(index)"
+                            >
+                                <td><Status :status="beat.status" /></td>
+                                <td :class="{ 'border-0': !beat.msg }">
+                                    <Datetime :value="beat.time" />
+                                </td>
+                                <td class="border-0">
+                                    {{ beat.msg }}
+                                    <font-awesome-icon
+                                        v-if="hasFailureDetail(beat)"
+                                        :icon="expandedRows[index] ? 'chevron-up' : 'chevron-down'"
+                                        class="ms-2 expand-icon"
+                                    />
+                                </td>
+                            </tr>
+                            <tr v-if="expandedRows[index] && hasFailureDetail(beat)" class="failure-detail-row">
+                                <td colspan="3" class="p-0">
+                                    <div class="failure-detail">
+                                        <div class="detail-summary">
+                                            <span v-if="parsedDetail(beat).status" class="detail-badge">
+                                                {{ parsedDetail(beat).status }} {{ parsedDetail(beat).statusText }}
+                                            </span>
+                                            <span
+                                                v-if="parsedDetail(beat).code"
+                                                class="detail-badge detail-badge-secondary"
+                                            >
+                                                {{ parsedDetail(beat).code }}
+                                            </span>
+                                            <span v-if="parsedDetail(beat).error" class="detail-error">
+                                                {{ parsedDetail(beat).error }}
+                                            </span>
+                                        </div>
+                                        <div v-if="parsedDetail(beat).body" class="detail-section">
+                                            <div class="detail-section-title">{{ $t("Response Body") }}</div>
+                                            <pre class="detail-pre">{{ formatBody(parsedDetail(beat).body) }}</pre>
+                                        </div>
+                                        <div v-if="parsedDetail(beat).headers" class="detail-section">
+                                            <div class="detail-section-title">{{ $t("Headers") }}</div>
+                                            <pre class="detail-pre">{{
+                                                formatHeaders(parsedDetail(beat).headers)
+                                            }}</pre>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </template>
 
                         <tr v-if="importantHeartBeatListLength === 0">
                             <td colspan="3">
@@ -491,6 +534,7 @@ export default {
                 code: "",
             },
             deleteChildrenMonitors: false,
+            expandedRows: {},
         };
     },
     computed: {
@@ -836,6 +880,121 @@ export default {
             }
         },
 
+        hasFailureDetail(beat) {
+            return beat.response && beat.status !== 1;
+        },
+
+        parsedDetail(beat) {
+            if (!beat.response) {
+                return {};
+            }
+            if (typeof beat.response === "object") {
+                return beat.response;
+            }
+            try {
+                return JSON.parse(beat.response);
+            } catch (_) {
+                const detail = this.parseTruncatedDetail(beat.response);
+                if (detail) {
+                    return detail;
+                }
+                return { body: beat.response };
+            }
+        },
+
+        parseTruncatedDetail(response) {
+            if (typeof response !== "string" || !response.startsWith("{")) {
+                return null;
+            }
+
+            const detail = {};
+            const error = this.matchJsonString(response, "error");
+            const code = this.matchJsonString(response, "code");
+            const statusText = this.matchJsonString(response, "statusText");
+            const status = response.match(/"status":(\d+)/);
+
+            if (error) {
+                detail.error = error;
+            }
+            if (code) {
+                detail.code = code;
+            }
+            if (status) {
+                detail.status = Number(status[1]);
+            }
+            if (statusText) {
+                detail.statusText = statusText;
+            }
+
+            const headersMarker = ',"headers":';
+            const bodyMarker = ',"body":';
+            const headersIndex = response.indexOf(headersMarker);
+            const bodyIndex = response.indexOf(bodyMarker);
+
+            if (headersIndex !== -1 && bodyIndex !== -1 && bodyIndex > headersIndex) {
+                try {
+                    detail.headers = JSON.parse(response.substring(headersIndex + headersMarker.length, bodyIndex));
+                } catch (_) {}
+            }
+
+            if (bodyIndex !== -1) {
+                let body = response.substring(bodyIndex + bodyMarker.length).trim();
+                body = body.replace(/\s*\.\.\. \(truncated\)$/, "... (truncated)");
+                try {
+                    detail.body = JSON.parse(body);
+                } catch (_) {
+                    detail.body = body;
+                }
+            }
+
+            return Object.keys(detail).length > 0 ? detail : null;
+        },
+
+        matchJsonString(source, key) {
+            const match = source.match(new RegExp(`"${key}":"((?:\\\\.|[^"\\\\])*)"`));
+            if (!match) {
+                return null;
+            }
+            try {
+                return JSON.parse(`"${match[1]}"`);
+            } catch (_) {
+                return match[1];
+            }
+        },
+
+        formatHeaders(headers) {
+            if (!headers || typeof headers !== "object") {
+                return String(headers);
+            }
+            return Object.entries(headers)
+                .map(([k, v]) => `${k}: ${v}`)
+                .join("\n");
+        },
+
+        formatBody(body) {
+            if (body === null || body === undefined) {
+                return "";
+            }
+            if (typeof body === "object") {
+                return JSON.stringify(body, null, 2);
+            }
+            try {
+                return JSON.stringify(JSON.parse(body), null, 2);
+            } catch (_) {
+                return String(body);
+            }
+        },
+
+        toggleDetail(index) {
+            if (!this.hasFailureDetail(this.displayedRecords[index])) {
+                return;
+            }
+            this.expandedRows = {
+                ...this.expandedRows,
+                [index]: !this.expandedRows[index],
+            };
+        },
+
         /**
          * Highlight the example code
          * @param {string} code Code
@@ -1040,5 +1199,102 @@ table {
     .dark & {
         opacity: 0.7;
     }
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.expand-icon {
+    font-size: 0.7em;
+    opacity: 0.5;
+}
+
+.failure-detail-row td {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.dark .failure-detail-row td {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+.failure-detail {
+    padding: 12px 20px;
+    font-size: 13px;
+}
+
+.detail-summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.detail-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    background-color: rgba(220, 53, 69, 0.12);
+    color: #dc3545;
+}
+
+.detail-badge-secondary {
+    background-color: rgba(108, 117, 125, 0.12);
+    color: #6c757d;
+}
+
+.detail-error {
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.detail-section {
+    margin-bottom: 8px;
+}
+
+.detail-section-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6c757d;
+    margin-bottom: 4px;
+}
+
+.detail-pre {
+    margin: 0;
+    padding: 8px;
+    font-size: 12px;
+    background-color: rgba(0, 0, 0, 0.04);
+    border-radius: 4px;
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.dark .detail-badge {
+    background-color: rgba(220, 53, 69, 0.2);
+    color: #f1aeb5;
+}
+
+.dark .detail-badge-secondary {
+    background-color: rgba(173, 181, 189, 0.15);
+    color: #adb5bd;
+}
+
+.dark .detail-error {
+    color: #adb5bd;
+}
+
+.dark .detail-section-title {
+    color: #adb5bd;
+}
+
+.dark .detail-pre {
+    background-color: rgba(255, 255, 255, 0.05);
 }
 </style>
