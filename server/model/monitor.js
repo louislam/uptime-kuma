@@ -957,6 +957,38 @@ class Monitor extends BeanModel {
                     await this.saveResponseData(bean, error.response.data);
                 }
 
+                if (process.env.UPTIME_KUMA_LOG_FAILURE_DETAIL === "1") {
+                    const detail = {
+                        error: error?.message,
+                        code: error?.code,
+                    };
+                    if (error?.response) {
+                        detail.status = error.response.status;
+                        detail.statusText = error.response.statusText;
+                        detail.headers = error.response.headers;
+                        let body = error.response.data;
+                        if (body !== undefined) {
+                            if (typeof body !== "string") {
+                                try {
+                                    body = JSON.stringify(body);
+                                } catch (_) {
+                                    body = String(body);
+                                }
+                            }
+                            const maxSize = this.response_max_length ?? RESPONSE_BODY_LENGTH_DEFAULT;
+                            if (body.length > maxSize) {
+                                body = body.substring(0, maxSize) + "... (truncated)";
+                            }
+                            detail.body = body;
+                        }
+                    }
+                    try {
+                        log.warn("monitor", `Monitor #${this.id} '${this.name}' failure detail: ${JSON.stringify(detail)}`);
+                    } catch (_) {
+                        log.warn("monitor", `Monitor #${this.id} '${this.name}' failure detail: ${error?.message}`);
+                    }
+                }
+
                 // If UP come in here, it must be upside down mode
                 // Just reset the retries
                 if (this.isUpsideDown() && bean.status === UP) {
