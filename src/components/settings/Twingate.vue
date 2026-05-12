@@ -12,8 +12,32 @@
                 <strong>{{ $t("Status") }}: </strong>
                 <span>{{ statusText }}</span>
             </div>
-            <div v-if="status.lastError" class="alert alert-warning">
-                {{ status.lastError }}
+            <div v-if="status.lastError" class="twingate-log-panel">
+                <div class="twingate-log-header">
+                    <div>
+                        <div class="twingate-log-title">{{ $t("twingateRecentLog") }}</div>
+                        <div class="twingate-log-summary">
+                            {{ $t("twingateLogDescription") }}
+                        </div>
+                    </div>
+                    <span class="twingate-log-count">
+                        {{ logLineCountText }}
+                    </span>
+                </div>
+
+                <ol class="twingate-log-list">
+                    <li
+                        v-for="(line, index) in logLines"
+                        :key="index"
+                        class="twingate-log-line"
+                        :class="`is-${line.level}`"
+                    >
+                        <span class="twingate-log-number">{{ index + 1 }}</span>
+                        <span class="twingate-log-level">{{ line.levelLabel }}</span>
+                        <span v-if="line.timestamp" class="twingate-log-time">{{ line.timestamp }}</span>
+                        <span class="twingate-log-message">{{ line.message }}</span>
+                    </li>
+                </ol>
             </div>
         </div>
 
@@ -38,6 +62,30 @@ export default {
     },
 
     computed: {
+        logLines() {
+            if (!this.status.lastError) {
+                return [];
+            }
+
+            const normalizedLog = String(this.status.lastError)
+                .trim()
+                .replace(/;\s+(?=\[\d{4}-\d{2}-\d{2}T)/g, ";\n")
+                .replace(/\s+(?=\[\d{4}-\d{2}-\d{2}T)/g, "\n");
+
+            return normalizedLog
+                .split(/\n+/)
+                .map((line) => line.trim())
+                .filter(Boolean)
+                .map((line) => this.formatLogLine(line));
+        },
+
+        logLineCountText() {
+            const count = this.logLines.length;
+            const label = count === 1 ? this.$t("twingateLogLine") : this.$t("twingateLogLines");
+
+            return `${count} ${label}`;
+        },
+
         statusText() {
             if (this.loading) {
                 return this.$t("Loading...");
@@ -60,6 +108,31 @@ export default {
     },
 
     methods: {
+        formatLogLine(line) {
+            const timestampMatch = line.match(/^\[(\d{4}-\d{2}-\d{2}T[^\]]+)\]\s*(.*)$/);
+            const message = timestampMatch ? timestampMatch[2] : line;
+            const severityMatch = message.match(/\[(ERROR|WARNING|WARN|INFO|DEBUG)\]/i);
+            const severity = severityMatch ? severityMatch[1].toLowerCase() : "";
+            let level = "status";
+
+            if (severity === "error" || /\b(error|failed|failure|unrecoverable)\b/i.test(message)) {
+                level = "error";
+            } else if (severity === "warning" || severity === "warn" || /\b(warning|disabled)\b/i.test(message)) {
+                level = "warning";
+            } else if (severity === "debug") {
+                level = "debug";
+            } else if (severity === "info") {
+                level = "info";
+            }
+
+            return {
+                timestamp: timestampMatch ? timestampMatch[1] : "",
+                message,
+                level,
+                levelLabel: level.toUpperCase(),
+            };
+        },
+
         async loadStatus() {
             this.loading = true;
             try {
@@ -82,3 +155,182 @@ export default {
     },
 };
 </script>
+
+<style lang="scss" scoped>
+@import "../../assets/vars.scss";
+
+.twingate-log-panel {
+    overflow: hidden;
+    margin-top: 1rem;
+    border: 1px solid #d8dee4;
+    border-radius: 8px;
+    background: #f6f8fa;
+    color: #24292f;
+
+    .dark & {
+        border-color: $dark-border-color;
+        background: $dark-bg2;
+        color: $dark-font-color;
+    }
+}
+
+.twingate-log-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.875rem 1rem;
+    border-bottom: 1px solid #d8dee4;
+    background: #ffffff;
+
+    .dark & {
+        border-bottom-color: $dark-border-color;
+        background: $dark-header-bg;
+    }
+}
+
+.twingate-log-title {
+    font-weight: 600;
+}
+
+.twingate-log-summary {
+    margin-top: 0.125rem;
+    color: #57606a;
+    font-size: 0.875rem;
+
+    .dark & {
+        color: $secondary-text;
+    }
+}
+
+.twingate-log-count {
+    flex: 0 0 auto;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    background: rgba($primary, 0.16);
+    color: #116329;
+    font-size: 0.78rem;
+    font-weight: 600;
+    white-space: nowrap;
+
+    .dark & {
+        color: $highlight;
+    }
+}
+
+.twingate-log-list {
+    max-height: 26rem;
+    overflow: auto;
+    margin: 0;
+    padding: 0.4rem 0;
+    list-style: none;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    font-size: 0.82rem;
+    line-height: 1.45;
+}
+
+.twingate-log-line {
+    --twingate-log-accent: #57606a;
+
+    display: grid;
+    grid-template-columns: 3rem 4.5rem minmax(13rem, max-content) minmax(0, 1fr);
+    gap: 0.625rem;
+    align-items: start;
+    padding: 0.25rem 1rem;
+
+    &:hover {
+        background: rgba(0, 0, 0, 0.04);
+    }
+
+    .dark &:hover {
+        background: rgba(255, 255, 255, 0.04);
+    }
+
+    &.is-error {
+        --twingate-log-accent: #b42318;
+
+        color: #b42318;
+    }
+
+    &.is-warning {
+        --twingate-log-accent: #9a6700;
+
+        color: #9a6700;
+    }
+
+    &.is-info {
+        --twingate-log-accent: #0969da;
+
+        color: #0969da;
+    }
+
+    &.is-debug,
+    &.is-status {
+        color: #57606a;
+    }
+
+    .dark &.is-error {
+        --twingate-log-accent: #ffb4a9;
+
+        color: #ffb4a9;
+    }
+
+    .dark &.is-warning {
+        --twingate-log-accent: #f0c36a;
+
+        color: #f0c36a;
+    }
+
+    .dark &.is-info {
+        --twingate-log-accent: #8cc2ff;
+
+        color: #8cc2ff;
+    }
+
+    .dark &.is-debug,
+    .dark &.is-status {
+        color: $secondary-text;
+    }
+}
+
+.twingate-log-number,
+.twingate-log-time {
+    color: #6e7781;
+
+    .dark & {
+        color: #7d8590;
+    }
+}
+
+.twingate-log-level {
+    justify-self: start;
+    min-width: 3.9rem;
+    padding: 0.05rem 0.4rem;
+    border-radius: 999px;
+    background: var(--twingate-log-accent);
+    color: #ffffff;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.twingate-log-message {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+@media (max-width: 767px) {
+    .twingate-log-header {
+        flex-direction: column;
+    }
+
+    .twingate-log-line {
+        grid-template-columns: 2.25rem 4.25rem minmax(0, 1fr);
+    }
+
+    .twingate-log-time {
+        display: none;
+    }
+}
+</style>

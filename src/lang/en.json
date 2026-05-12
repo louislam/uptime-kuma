@@ -1547,5 +1547,9 @@
     "twingateNotConfigured": "Not configured",
     "twingateStarting": "Starting",
     "twingateConfiguredStopped": "Configured, but not running",
+    "twingateRecentLog": "Recent startup log",
+    "twingateLogDescription": "Latest Twingate process output from the status check.",
+    "twingateLogLine": "line",
+    "twingateLogLines": "lines",
     "refreshTwingateStatus": "Refresh"
 }
