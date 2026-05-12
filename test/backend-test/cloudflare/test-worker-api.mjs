@@ -820,6 +820,94 @@ describe("Cloudflare Worker API", () => {
         assert.strictEqual(imported.parent, 7);
     });
 
+    test("infers group parents for flat Uptime Kuma exports with group rows", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({});
+
+        const response = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/import", {
+                method: "POST",
+                body: JSON.stringify({
+                    monitors: [
+                        { name: "Archive", type: "group", active: 0 },
+                        { name: "Endpoints", type: "group", active: 1 },
+                        { name: "Internet", type: "group", active: 1 },
+                        { name: "Nodes", type: "group", active: 1 },
+                        { name: "Printers", type: "group", active: 1 },
+                        { name: "Security", type: "group", active: 1 },
+                        { name: "Timeclock", type: "group", active: 1 },
+                        { name: "Websites", type: "group", active: 1 },
+                        {
+                            name: "Dort 3 - Shipping Computer",
+                            type: "ping",
+                            hostname: "shipping.example.com",
+                            active: 0,
+                        },
+                        {
+                            name: "Sales OS - Security Check",
+                            type: "http",
+                            url: "https://sales.example.com",
+                            active: 1,
+                        },
+                        {
+                            name: "Ring - Timeclock",
+                            type: "ping",
+                            hostname: "timeclock.example.com",
+                            active: 1,
+                        },
+                        {
+                            name: "Dort 3 - Lexmark",
+                            type: "ping",
+                            hostname: "printer.example.com",
+                            active: 1,
+                        },
+                        {
+                            name: "Corporate | Node 4",
+                            type: "ping",
+                            hostname: "node4.example.com",
+                            active: 1,
+                        },
+                        {
+                            name: "Corporate | T-Mobile 5G",
+                            type: "ping",
+                            hostname: "cellular.example.com",
+                            active: 1,
+                        },
+                        {
+                            name: "Sales OS",
+                            type: "http",
+                            url: "https://sales.example.com",
+                            active: 1,
+                        },
+                        {
+                            name: "Conference Computer",
+                            type: "port",
+                            hostname: "conference.example.com",
+                            port: 3389,
+                            active: 1,
+                        },
+                    ],
+                }),
+            }),
+            env
+        );
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(body.imported, 16);
+        assert.strictEqual(env.state.monitors.filter((monitor) => monitor.type === "group").length, 8);
+
+        const byName = Object.fromEntries(env.state.monitors.map((monitor) => [monitor.name, monitor]));
+        assert.strictEqual(byName["Dort 3 - Shipping Computer"].parent, byName.Archive.id);
+        assert.strictEqual(byName["Sales OS - Security Check"].parent, byName.Security.id);
+        assert.strictEqual(byName["Ring - Timeclock"].parent, byName.Timeclock.id);
+        assert.strictEqual(byName["Dort 3 - Lexmark"].parent, byName.Printers.id);
+        assert.strictEqual(byName["Corporate | Node 4"].parent, byName.Nodes.id);
+        assert.strictEqual(byName["Corporate | T-Mobile 5G"].parent, byName.Internet.id);
+        assert.strictEqual(byName["Sales OS"].parent, byName.Websites.id);
+        assert.strictEqual(byName["Conference Computer"].parent, byName.Endpoints.id);
+    });
+
     test("does not create placeholder groups for missing parent IDs without hierarchy metadata", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({});

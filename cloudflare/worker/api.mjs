@@ -1116,20 +1116,35 @@ function expandImportMonitorsWithMissingGroups(monitors) {
     const expanded = [];
     const derivedGroupsByPath = new Map();
     const explicitGroupRefsByPath = new Map();
-    const sourceRefs = new Set(
-        monitors.map((monitor) => normalizeImportSourceReference(monitor?.id)).filter((ref) => ref != null)
-    );
-
-    for (const monitor of monitors) {
+    const explicitGroupNames = new Map();
+    const normalizedMonitors = monitors.map((monitor) => {
         if (monitor?.type !== "group") {
-            continue;
+            return monitor;
         }
+
         const groupPath = extractImportFullPath(monitor);
-        const sourceRef = normalizeImportSourceReference(monitor.id);
-        if (sourceRef != null && groupPath.length > 0) {
-            explicitGroupRefsByPath.set(importPathKey(groupPath), sourceRef);
+        if (groupPath.length === 0) {
+            return monitor;
         }
-    }
+
+        const ref = normalizeImportSourceReference(monitor.id) || syntheticImportGroupId(groupPath);
+        explicitGroupRefsByPath.set(importPathKey(groupPath), ref);
+        explicitGroupNames.set(
+            normalizeImportGroupName(groupPath[groupPath.length - 1]),
+            groupPath[groupPath.length - 1]
+        );
+
+        if (monitor.id === ref) {
+            return monitor;
+        }
+        return {
+            ...monitor,
+            id: ref,
+        };
+    });
+    const sourceRefs = new Set(
+        normalizedMonitors.map((monitor) => normalizeImportSourceReference(monitor?.id)).filter((ref) => ref != null)
+    );
 
     const ensureGroup = (groupPath) => {
         const key = importPathKey(groupPath);
@@ -1156,8 +1171,11 @@ function expandImportMonitorsWithMissingGroups(monitors) {
         return id;
     };
 
-    for (const source of monitors) {
-        const groupPath = extractImportGroupPath(source);
+    for (const source of normalizedMonitors) {
+        const explicitGroupPath = extractImportGroupPath(source);
+        const groupPath = explicitGroupPath.length > 0
+            ? explicitGroupPath
+            : inferImportGroupPath(source, explicitGroupNames);
         let monitor = source;
         if (groupPath.length > 0) {
             const derivedParent = ensureGroup(groupPath);
@@ -1173,6 +1191,67 @@ function expandImportMonitorsWithMissingGroups(monitors) {
     }
 
     return expanded;
+}
+
+/**
+ * Build the synthetic source ID used for explicit group rows that lack IDs.
+ * @param {string[]} groupPath Group hierarchy path.
+ * @returns {string} Stable synthetic source reference.
+ */
+function syntheticImportGroupId(groupPath) {
+    return `derived-group:${importPathKey(groupPath)}`;
+}
+
+/**
+ * Infer a group path for flat exports that contain group rows but no parent/path
+ * metadata. These rules are intentionally conservative and only apply when the
+ * matching group was present in the import payload.
+ * @param {object} source Source monitor.
+ * @param {Map<string, string>} explicitGroupNames Available group names by normalized name.
+ * @returns {string[]} Inferred group path.
+ */
+function inferImportGroupPath(source, explicitGroupNames) {
+    if (!source || source.type === "group" || normalizeImportSourceReference(source.parent) != null) {
+        return [];
+    }
+
+    const name = String(source.name || "");
+    const lowerName = name.toLowerCase();
+    const type = String(source.type || "");
+    const active = source.active === undefined ? true : normalizeBoolean(source.active);
+
+    if (!active && explicitGroupNames.has("archive")) {
+        return [explicitGroupNames.get("archive")];
+    }
+    if (/\bsecurity\s+check\b/i.test(name) && explicitGroupNames.has("security")) {
+        return [explicitGroupNames.get("security")];
+    }
+    if (/\btime\s*clock\b/i.test(name) && explicitGroupNames.has("timeclock")) {
+        return [explicitGroupNames.get("timeclock")];
+    }
+    if (/\b(printer|lexmark|kyocera|sfm(?:\.\d+)?)\b/i.test(name) && explicitGroupNames.has("printers")) {
+        return [explicitGroupNames.get("printers")];
+    }
+    if (/\bnode\s*\d+\b/i.test(name) && explicitGroupNames.has("nodes")) {
+        return [explicitGroupNames.get("nodes")];
+    }
+    if (/\b(internet|t-mobile|5g|comcast|123net|inseego|pcs)\b/i.test(name) && explicitGroupNames.has("internet")) {
+        return [explicitGroupNames.get("internet")];
+    }
+    if (
+        ["http", "keyword", "json-query", "websocket-upgrade"].includes(type) &&
+        explicitGroupNames.has("websites")
+    ) {
+        return [explicitGroupNames.get("websites")];
+    }
+    if (["ping", "port"].includes(type) && explicitGroupNames.has("endpoints")) {
+        return [explicitGroupNames.get("endpoints")];
+    }
+    if (lowerName.includes("endpoint") && explicitGroupNames.has("endpoints")) {
+        return [explicitGroupNames.get("endpoints")];
+    }
+
+    return [];
 }
 
 /**
@@ -1342,6 +1421,15 @@ function normalizeImportPathSegment(value) {
         return String(value.name || "").trim();
     }
     return String(value || "").trim();
+}
+
+/**
+ * Normalize a group name for fallback matching.
+ * @param {unknown} value Raw group name.
+ * @returns {string} Normalized group name.
+ */
+function normalizeImportGroupName(value) {
+    return normalizeImportPathSegment(value).toLowerCase().replace(/[^a-z0-9]+/g, "");
 }
 
 /**
