@@ -505,6 +505,64 @@ describe("Cloudflare Worker API", () => {
         assert.strictEqual(rereadBody.monitor.basic_auth_pass, "worker-pass");
     });
 
+    test("accepts Ping worker monitor types", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            runnerResult: { status: 1, ping: 12.345, msg: "12.345 ms", response: null },
+        });
+
+        const response = await handleApiRequest(
+            new Request("https://example.com/api/monitors", {
+                method: "POST",
+                body: JSON.stringify({
+                    name: "Ping",
+                    type: "ping",
+                    hostname: "example.com",
+                    ping_count: 3,
+                    ping_per_request_timeout: 2,
+                }),
+            }),
+            env
+        );
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(env.state.monitors[0].type, "ping");
+        assert.strictEqual(env.state.monitors[0].hostname, "example.com");
+
+        const readResponse = await handleApiRequest(new Request("https://example.com/api/monitors/1"), env);
+        const readBody = await readResponse.json();
+        assert.strictEqual(readBody.monitor.type, "ping");
+        assert.strictEqual(readBody.monitor.hostname, "example.com");
+        assert.strictEqual(readBody.monitor.ping_count, 3);
+        assert.strictEqual(readBody.monitor.ping_per_request_timeout, 2);
+
+        const checkResponse = await handleApiRequest(
+            new Request("https://example.com/api/monitors/1/check-now", { method: "POST" }),
+            env
+        );
+        assert.strictEqual(checkResponse.status, 200);
+        assert.deepStrictEqual(env.state.runnerJobs[0].monitor, {
+            id: 1,
+            name: "Ping",
+            type: "ping",
+            url: null,
+            hostname: "example.com",
+            port: null,
+            method: "GET",
+            headers: null,
+            body: null,
+            keyword: null,
+            invertKeyword: false,
+            jsonPath: "$",
+            expectedValue: null,
+            timeout: 30,
+            packetSize: 56,
+            ping_count: 3,
+            ping_numeric: true,
+            ping_per_request_timeout: 2,
+        });
+    });
+
     test("rejects unsupported Worker monitor types", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({});
@@ -514,7 +572,7 @@ describe("Cloudflare Worker API", () => {
                 method: "POST",
                 body: JSON.stringify({
                     name: "Unsupported",
-                    type: "ping",
+                    type: "dns",
                     hostname: "example.com",
                 }),
             }),
@@ -523,7 +581,7 @@ describe("Cloudflare Worker API", () => {
 
         assert.strictEqual(response.status, 400);
         assert.deepStrictEqual(await response.json(), {
-            error: "Monitor type ping is not supported by the Cloudflare Worker UI",
+            error: "Monitor type dns is not supported by the Cloudflare Worker UI",
         });
     });
 

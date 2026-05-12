@@ -40,7 +40,7 @@
                                         <option value="http">HTTP(s)</option>
                                         <option value="keyword">HTTP(s) - {{ $t("Keyword") }}</option>
                                         <option value="port">TCP Port</option>
-                                        <option v-if="!$root.isCloudflareWorkerUI" value="ping">Ping</option>
+                                        <option value="ping">Ping</option>
                                         <option v-if="!$root.isCloudflareWorkerUI" value="dns">DNS</option>
                                         <option v-if="!$root.isCloudflareWorkerUI" value="docker">
                                             {{ $t("Docker Container") }}

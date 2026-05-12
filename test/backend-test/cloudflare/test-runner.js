@@ -173,6 +173,42 @@ describe("Cloudflare monitor runner", () => {
         assert.strictEqual(result.status, DOWN);
         assert.match(result.msg, /ICMP ping is not supported through Twingate userspace mode/);
     });
+
+    test("direct Ping checks return average ICMP latency", async () => {
+        const { runPingCheck } = require("../../../cloudflare/runner/checker");
+
+        const result = await runPingCheck(
+            {
+                hostname: "example.com",
+                timeout: 5,
+                ping_count: 3,
+                ping_per_request_timeout: 2,
+                packetSize: 56,
+                ping_numeric: true,
+            },
+            1000,
+            async (command, args) => {
+                assert.strictEqual(command, "ping");
+                assert.deepStrictEqual(args, ["-c", "3", "-W", "2", "-w", "5", "-s", "56", "-n", "example.com"]);
+                return {
+                    stdout:
+                        "PING example.com (93.184.216.34) 56(84) bytes of data.\n" +
+                        "64 bytes from 93.184.216.34: icmp_seq=1 ttl=56 time=12.3 ms\n\n" +
+                        "--- example.com ping statistics ---\n" +
+                        "3 packets transmitted, 3 received, 0% packet loss, time 2002ms\n" +
+                        "rtt min/avg/max/mdev = 10.100/12.345/14.900/1.200 ms\n",
+                };
+            },
+            () => 1015
+        );
+
+        assert.deepStrictEqual(result, {
+            status: UP,
+            ping: 12.345,
+            msg: "12.345 ms",
+            response: null,
+        });
+    });
 });
 
 function listen(server) {

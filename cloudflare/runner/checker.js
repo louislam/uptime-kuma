@@ -3,11 +3,17 @@ const http = require("node:http");
 const https = require("node:https");
 const net = require("node:net");
 const tls = require("node:tls");
+const { execFile } = require("node:child_process");
+const { promisify } = require("node:util");
 
 const DOWN = 0;
 const UP = 1;
 const DEFAULT_TIMEOUT_SECONDS = 30;
+const DEFAULT_PING_COUNT = 1;
+const DEFAULT_PING_PACKET_SIZE = 56;
+const DEFAULT_PING_PER_REQUEST_TIMEOUT_SECONDS = 2;
 const SYSTEM_TWINGATE_PROXY_URL = "http://127.0.0.1:9999";
+const execFileAsync = promisify(execFile);
 
 async function runCheck(job) {
     const monitor = job.monitor || {};
@@ -28,6 +34,10 @@ async function runCheck(job) {
 
         if (monitor.type === "port") {
             return await runTcpCheck(monitor, networkProfile, twingateProxyUrl, start);
+        }
+
+        if (monitor.type === "ping") {
+            return await runPingCheck(monitor, start);
         }
 
         if (monitor.type === "websocket-upgrade") {
@@ -114,6 +124,45 @@ async function runWebSocketReachabilityCheck(monitor, networkProfile, twingatePr
         timeout: monitor.timeout,
     };
     return await runTcpCheck(tcpMonitor, networkProfile, twingateProxyUrl, start);
+}
+
+async function runPingCheck(monitor, start, execFileFn = execFileAsync, now = Date.now) {
+    const hostname = monitor.hostname;
+    if (!hostname) {
+        throw new Error("Ping monitor requires hostname");
+    }
+
+    const args = [
+        "-c",
+        String(toPositiveInteger(monitor.ping_count, DEFAULT_PING_COUNT)),
+        "-W",
+        String(toPositiveInteger(monitor.ping_per_request_timeout, DEFAULT_PING_PER_REQUEST_TIMEOUT_SECONDS)),
+        "-w",
+        String(toPositiveInteger(monitor.timeout, DEFAULT_TIMEOUT_SECONDS)),
+        "-s",
+        String(toPositiveInteger(monitor.packetSize, DEFAULT_PING_PACKET_SIZE)),
+    ];
+
+    if (monitor.ping_numeric !== false) {
+        args.push("-n");
+    }
+    args.push(hostname);
+
+    const result = await execFileFn("ping", args);
+    const output = String(result.stdout || "");
+    const ping = parseAveragePing(output) ?? now() - start;
+
+    return {
+        status: UP,
+        ping,
+        msg: `${ping} ms`,
+        response: null,
+    };
+}
+
+function parseAveragePing(output) {
+    const match = output.match(/=\s*([\d.]+)\/([\d.]+)\/([\d.]+)(?:\/([\d.]+))?\s*ms/i);
+    return match ? Number(match[2]) : null;
 }
 
 function requestDirect(targetUrl, monitor) {
@@ -306,11 +355,17 @@ function getTimeoutMs(timeoutSeconds) {
     return Number(timeoutSeconds || DEFAULT_TIMEOUT_SECONDS) * 1000;
 }
 
+function toPositiveInteger(value, fallback) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed > 0 ? Math.trunc(parsed) : fallback;
+}
+
 module.exports = {
     SYSTEM_TWINGATE_PROXY_URL,
     resolveTwingateProxyUrl,
     runCheck,
     runHttpCheck,
+    runPingCheck,
     runTcpCheck,
     isTwingateProfile,
 };

@@ -26,6 +26,7 @@ const WORKER_MONITOR_TYPES = new Set([
     "http",
     "keyword",
     "json-query",
+    "ping",
     "port",
     "websocket-upgrade",
 ]);
@@ -513,6 +514,7 @@ async function getNetworkProfile(env, networkProfileId) {
 }
 
 function sanitizeMonitor(monitor) {
+    const config = parseMonitorConfig(monitor.config_json);
     return {
         id: monitor.id,
         name: monitor.name,
@@ -528,6 +530,10 @@ function sanitizeMonitor(monitor) {
         jsonPath: monitor.json_path,
         expectedValue: monitor.expected_value,
         timeout: monitor.timeout,
+        packetSize: config.packetSize,
+        ping_count: config.ping_count,
+        ping_numeric: config.ping_numeric,
+        ping_per_request_timeout: config.ping_per_request_timeout,
     };
 }
 
@@ -643,6 +649,10 @@ function monitorConfigDefaults(type) {
         tlsCa: "",
         tlsCert: "",
         tlsKey: "",
+        packetSize: 56,
+        ping_count: 1,
+        ping_numeric: true,
+        ping_per_request_timeout: 2,
         smtpSecurity: "nostarttls",
         expectedTlsAlert: "none",
         jsonPathOperator: "==",
