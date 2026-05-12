@@ -22,4 +22,51 @@ describe("Cloudflare Worker socket delete shim", () => {
             "successful REST delete responses must be normalized to Socket.IO's ok:true response shape"
         );
     });
+
+    test("normalizes Worker heartbeat history to oldest-first for live state", () => {
+        const source = fs.readFileSync(
+            path.join(__dirname, "../../src/mixins/socket.js"),
+            "utf8"
+        );
+
+        const helperMatch = source.match(
+            /function normalizeCloudflareHeartbeatHistory\(heartbeats\) \{[\s\S]*?\n\}/
+        );
+        assert.ok(helperMatch, "Worker heartbeat history normalizer should exist");
+
+        const normalizeCloudflareHeartbeatHistory = new Function(`
+            ${helperMatch[0]}
+            return normalizeCloudflareHeartbeatHistory;
+        `)();
+        const newestFirst = [
+            {
+                monitorID: 7,
+                status: 1,
+                time: "2026-05-12 03:40:27",
+            },
+            {
+                monitorID: 7,
+                status: 0,
+                time: "2026-05-12 03:39:27",
+            },
+        ];
+
+        const normalized = normalizeCloudflareHeartbeatHistory(newestFirst);
+
+        assert.deepStrictEqual(
+            normalized.map((heartbeat) => heartbeat.status),
+            [0, 1],
+            "live heartbeat history should render older down checks before the latest up check"
+        );
+        assert.strictEqual(
+            normalized.at(-1).status,
+            1,
+            "latest heartbeat should remain the final live-history entry"
+        );
+        assert.deepStrictEqual(
+            newestFirst.map((heartbeat) => heartbeat.status),
+            [1, 0],
+            "normalization should not mutate the paged API order"
+        );
+    });
 });

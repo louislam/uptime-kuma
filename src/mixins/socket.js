@@ -354,7 +354,9 @@ export default {
                         }
                     };
                     monitorList[monitor.id] = monitor;
-                    const heartbeats = await fetchCloudflareMonitorHeartbeats(monitor.id);
+                    const heartbeats = normalizeCloudflareHeartbeatHistory(
+                        await fetchCloudflareMonitorHeartbeats(monitor.id)
+                    );
                     if (heartbeats.length > 0) {
                         heartbeatList[monitor.id] = heartbeats;
                     } else if (lastHeartbeat) {
@@ -1135,6 +1137,16 @@ function createCloudflareSocketStub(app) {
 async function fetchCloudflareMonitorHeartbeats(monitorID, offset = 0, count = 150) {
     const body = await requestCloudflareJson(`/api/monitors/${monitorID}/heartbeats?offset=${offset}&count=${count}`);
     return body.heartbeats || [];
+}
+
+/**
+ * Normalize Worker heartbeat history for live monitor state.
+ * The Worker API returns newest-first rows for paged tables, while the heartbeat bar expects oldest-first.
+ * @param {object[]} heartbeats Worker heartbeat rows.
+ * @returns {object[]} Heartbeat rows ordered oldest-to-newest.
+ */
+function normalizeCloudflareHeartbeatHistory(heartbeats) {
+    return heartbeats.slice().reverse();
 }
 
 /**
