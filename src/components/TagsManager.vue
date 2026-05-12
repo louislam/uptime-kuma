@@ -1,6 +1,6 @@
 <template>
     <div>
-        <h4 class="mt-5 mb-3">{{ $t("Tags") }}</h4>
+        <h4 class="mt-5 mb-3" :class="headingClass">{{ $t("Tags") }}</h4>
         <div v-if="selectedTags.length > 0" class="mb-2 p-1">
             <tag
                 v-for="item in selectedTags"
@@ -202,6 +202,10 @@ export default {
         preSelectedTags: {
             type: Array,
             default: () => [],
+        },
+        headingClass: {
+            type: String,
+            default: "",
         },
     },
     data() {
@@ -691,6 +695,11 @@ export default {
 <style scoped>
 .btn-add {
     width: 100%;
+}
+
+.group-edit-tags-heading {
+    font-size: 1.65rem;
+    font-weight: 700;
 }
 
 .modal-body {

@@ -337,7 +337,10 @@ export default {
          */
         async loadCloudflareWorkerData() {
             try {
-                const body = await requestCloudflareJson("/api/monitors");
+                const [body, notificationBody] = await Promise.all([
+                    requestCloudflareJson("/api/monitors"),
+                    requestCloudflareJson("/api/notifications"),
+                ]);
                 const monitorList = {};
                 const heartbeatList = {};
                 const avgPingList = {};
@@ -372,6 +375,7 @@ export default {
                 this.heartbeatList = heartbeatList;
                 this.avgPingList = avgPingList;
                 this.uptimeList = uptimeList;
+                this.notificationList = notificationBody.notifications || [];
                 this.statusPageList = await fetchCloudflareStatusPages();
                 this.statusPageListLoaded = true;
             } catch (error) {
@@ -1018,6 +1022,29 @@ function createCloudflareSocketStub(app) {
                     return;
                 }
 
+                if (event === "addNotification") {
+                    const [notification, notificationID] = args;
+                    const body = await requestCloudflareJson(
+                        notificationID ? `/api/notifications/${notificationID}` : "/api/notifications",
+                        {
+                            method: notificationID ? "PUT" : "POST",
+                            body: JSON.stringify(notification || {}),
+                        }
+                    );
+                    await app.loadCloudflareWorkerData();
+                    callback?.(body);
+                    return;
+                }
+
+                if (event === "deleteNotification") {
+                    const body = await requestCloudflareJson(`/api/notifications/${args[0]}`, {
+                        method: "DELETE",
+                    });
+                    await app.loadCloudflareWorkerData();
+                    callback?.(body);
+                    return;
+                }
+
                 if (event === "getMonitor") {
                     const body = await requestCloudflareJson(`/api/monitors/${args[0]}`);
                     callback?.(body);
@@ -1114,8 +1141,17 @@ function createCloudflareSocketStub(app) {
                     return;
                 }
 
-                if (event === "testChrome" || event === "testNotification") {
+                if (event === "testChrome") {
                     callback?.({ ok: false, msg: "This action is not available in the Cloudflare Worker UI yet." });
+                    return;
+                }
+
+                if (event === "testNotification") {
+                    const body = await requestCloudflareJson("/api/notifications/test", {
+                        method: "POST",
+                        body: JSON.stringify(args[0] || {}),
+                    });
+                    callback?.(body);
                     return;
                 }
 

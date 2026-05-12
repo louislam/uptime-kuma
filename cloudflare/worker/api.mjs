@@ -57,6 +57,10 @@ const accessCertCache = new Map();
 const ADMIN_ROUTE_NAMES = new Set([
     "monitors",
     "settings",
+    "notifications",
+    "save-notification",
+    "delete-notification",
+    "test-notification",
     "create-monitor",
     "import-monitors",
     "monitor",
@@ -113,6 +117,32 @@ export async function handleApiRequest(request, env) {
             }
             await setUiSettings(env, await request.json());
             return json({ ok: true, msg: "Settings saved" });
+        }
+
+        if (route.name === "notifications") {
+            return json({ notifications: await listNotifications(env) });
+        }
+
+        if (route.name === "save-notification") {
+            const notification = await saveNotification(env, await request.json(), route.params.notificationId);
+            return json({
+                ok: true,
+                msg: "Saved.",
+                msgi18n: true,
+                id: notification.id,
+            });
+        }
+
+        if (route.name === "delete-notification") {
+            await deleteNotification(env, Number(route.params.notificationId));
+            return json({ ok: true, msg: "successDeleted", msgi18n: true });
+        }
+
+        if (route.name === "test-notification") {
+            return json(
+                { ok: false, msg: "Testing notifications is not available in the Cloudflare Worker UI yet." },
+                501
+            );
         }
 
         if (route.name === "create-monitor") {
@@ -228,6 +258,124 @@ export async function setUiSettings(env, settings) {
                     updated_at = CURRENT_TIMESTAMP`
             )
                 .bind(key, JSON.stringify(value))
+                .run()
+        )
+    );
+}
+
+export async function listNotifications(env) {
+    const result = await env.DB.prepare(
+        `SELECT id, name, active, user_id, is_default, config
+         FROM notification
+         ORDER BY name`
+    ).all();
+    return (result.results || []).map(serializeNotification);
+}
+
+export async function saveNotification(env, notificationInput, notificationId = null) {
+    const notification = normalizeNotificationInput(notificationInput);
+
+    if (notificationId) {
+        const existing = await getNotification(env, Number(notificationId));
+        if (!existing) {
+            throw httpError(404, "notification not found");
+        }
+
+        await env.DB.prepare(
+            `UPDATE notification
+             SET name = ?, active = ?, user_id = ?, is_default = ?, config = ?
+             WHERE id = ?`
+        )
+            .bind(
+                notification.name,
+                notification.active ? 1 : 0,
+                1,
+                notification.isDefault ? 1 : 0,
+                notification.config,
+                Number(notificationId)
+            )
+            .run();
+
+        if (notification.applyExisting) {
+            await applyNotificationToAllMonitors(env, Number(notificationId));
+        }
+
+        return { id: Number(notificationId) };
+    }
+
+    const result = await env.DB.prepare(
+        `INSERT INTO notification (name, active, user_id, is_default, config)
+         VALUES (?, ?, ?, ?, ?)`
+    )
+        .bind(notification.name, notification.active ? 1 : 0, 1, notification.isDefault ? 1 : 0, notification.config)
+        .run();
+    const id = Number(result.meta?.last_row_id);
+
+    if (notification.applyExisting) {
+        await applyNotificationToAllMonitors(env, id);
+    }
+
+    return { id };
+}
+
+export async function deleteNotification(env, notificationId) {
+    const existing = await getNotification(env, notificationId);
+    if (!existing) {
+        throw httpError(404, "notification not found");
+    }
+    await env.DB.prepare("DELETE FROM monitor_notification WHERE notification_id = ?").bind(notificationId).run();
+    await env.DB.prepare("DELETE FROM notification WHERE id = ?").bind(notificationId).run();
+}
+
+async function getNotification(env, notificationId) {
+    return await env.DB.prepare(
+        `SELECT id, name, active, user_id, is_default, config
+         FROM notification
+         WHERE id = ?`
+    )
+        .bind(notificationId)
+        .first();
+}
+
+function normalizeNotificationInput(notificationInput = {}) {
+    const config = {
+        ...notificationInput,
+        applyExisting: false,
+    };
+    const name = String(notificationInput.name || notificationInput.type || "Notification").trim();
+    return {
+        name,
+        active: notificationInput.active !== false,
+        isDefault: Boolean(notificationInput.isDefault),
+        applyExisting: Boolean(notificationInput.applyExisting),
+        config: JSON.stringify(config),
+    };
+}
+
+function serializeNotification(row) {
+    return {
+        id: Number(row.id),
+        name: row.name || "",
+        active: row.active === undefined ? true : Boolean(row.active),
+        user_id: row.user_id ?? 1,
+        isDefault: Boolean(row.is_default),
+        config: row.config || "{}",
+    };
+}
+
+async function applyNotificationToAllMonitors(env, notificationId) {
+    const monitors = await env.DB.prepare("SELECT id FROM monitors").all();
+    await Promise.all(
+        (monitors.results || []).map((monitor) =>
+            env.DB.prepare(
+                `INSERT INTO monitor_notification (monitor_id, notification_id)
+                 SELECT ?, ?
+                 WHERE NOT EXISTS (
+                    SELECT 1 FROM monitor_notification
+                    WHERE monitor_id = ? AND notification_id = ?
+                 )`
+            )
+                .bind(Number(monitor.id), notificationId, Number(monitor.id), notificationId)
                 .run()
         )
     );
@@ -1981,6 +2129,15 @@ function matchRoute(method, pathname) {
     if ((method === "GET" || method === "PUT") && pathname === "/api/settings") {
         return { name: "settings", params: {} };
     }
+    if (method === "GET" && pathname === "/api/notifications") {
+        return { name: "notifications", params: {} };
+    }
+    if (method === "POST" && pathname === "/api/notifications") {
+        return { name: "save-notification", params: {} };
+    }
+    if (method === "POST" && pathname === "/api/notifications/test") {
+        return { name: "test-notification", params: {} };
+    }
     if (method === "GET" && pathname === "/api/monitors") {
         return { name: "monitors", params: {} };
     }
@@ -2003,6 +2160,14 @@ function matchRoute(method, pathname) {
     const networkRouteMatch = pathname.match(/^\/api\/monitors\/(\d+)\/network-route$/);
     if (method === "PATCH" && networkRouteMatch) {
         return { name: "patch-network-route", params: { monitorId: networkRouteMatch[1] } };
+    }
+
+    const notificationMatch = pathname.match(/^\/api\/notifications\/(\d+)$/);
+    if ((method === "PUT" || method === "DELETE") && notificationMatch) {
+        return {
+            name: method === "PUT" ? "save-notification" : "delete-notification",
+            params: { notificationId: notificationMatch[1] },
+        };
     }
 
     const activeMatch = pathname.match(/^\/api\/monitors\/(\d+)\/active$/);

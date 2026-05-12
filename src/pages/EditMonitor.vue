@@ -3,9 +3,12 @@
         <div>
             <h1 class="mb-3">{{ pageName }}</h1>
             <form @submit.prevent="submit">
-                <div class="shadow-box shadow-box-with-fixed-bottom-bar">
-                    <div class="row">
-                        <div class="col-md-6">
+                <div
+                    class="shadow-box shadow-box-with-fixed-bottom-bar"
+                    :class="{ 'group-edit-box': monitor.type === 'group' }"
+                >
+                    <div class="row" :class="{ 'group-edit-row': monitor.type === 'group' }">
+                        <div class="col-md-6" :class="{ 'group-edit-primary': monitor.type === 'group' }">
                             <h2 class="mb-2">{{ $t("General") }}</h2>
 
                             <i18n-t
@@ -2068,11 +2071,15 @@
                             </div>
 
                             <div class="my-3">
-                                <tags-manager ref="tagsManager" :pre-selected-tags="monitor.tags"></tags-manager>
+                                <tags-manager
+                                    ref="tagsManager"
+                                    :pre-selected-tags="monitor.tags"
+                                    :heading-class="monitor.type === 'group' ? 'group-edit-tags-heading' : ''"
+                                ></tags-manager>
                             </div>
                         </div>
 
-                        <div class="col-md-6">
+                        <div class="col-md-6" :class="{ 'group-edit-secondary': monitor.type === 'group' }">
                             <div v-if="$root.isMobile" class="mt-3" />
 
                             <!-- Notifications -->
@@ -4359,5 +4366,63 @@ message HealthCheckResponse {
 
 textarea {
     min-height: 200px;
+}
+
+.group-edit-box {
+    padding-top: 28px;
+    padding-right: 28px;
+    padding-left: 28px;
+
+    h2 {
+        margin-bottom: 1.35rem !important;
+        font-size: 1.85rem;
+        font-weight: 700;
+    }
+
+    .form-label,
+    .form-check-label {
+        font-size: 1.05rem;
+        font-weight: 500;
+    }
+
+    .form-control,
+    .form-select,
+    .input-group {
+        max-width: 100%;
+    }
+
+    .fixed-bottom-bar {
+        margin-top: 1.4rem;
+        padding: 22px !important;
+    }
+}
+
+.group-edit-row {
+    --bs-gutter-x: 2rem;
+}
+
+@media (min-width: 768px) {
+    .group-edit-primary {
+        flex: 0 0 58%;
+        max-width: 58%;
+    }
+
+    .group-edit-secondary {
+        flex: 0 0 42%;
+        max-width: 42%;
+        padding-left: 1.5rem;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .group-edit-box {
+        padding-top: 20px;
+        padding-right: 20px;
+        padding-left: 20px;
+
+        h2 {
+            font-size: 1.55rem;
+        }
+    }
 }
 </style>

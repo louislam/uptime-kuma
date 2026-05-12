@@ -56,6 +56,19 @@ describe("Cloudflare Worker API", () => {
         assert.match(migrationSql, /value TEXT NOT NULL/);
     });
 
+    test("D1 migration creates notification settings tables", async () => {
+        const migrationPath = path.join(
+            __dirname,
+            "../../../cloudflare/migrations/0005_notifications.sql"
+        );
+        const migrationSql = fs.readFileSync(migrationPath, "utf8");
+
+        assert.match(migrationSql, /CREATE TABLE IF NOT EXISTS notification/);
+        assert.match(migrationSql, /config TEXT/);
+        assert.match(migrationSql, /CREATE TABLE IF NOT EXISTS monitor_notification/);
+        assert.match(migrationSql, /monitor_notification_index/);
+    });
+
     test("Worker deployment serves the Vue web UI as a single-page app", async () => {
         const wranglerPath = path.join(__dirname, "../../../wrangler.jsonc");
         const wranglerConfig = JSON.parse(fs.readFileSync(wranglerPath, "utf8"));
@@ -466,6 +479,77 @@ describe("Cloudflare Worker API", () => {
         assert.deepStrictEqual(await putResponse.json(), { ok: true, msg: "Settings saved" });
         assert.strictEqual(env.state.settings.primaryBaseURL, "https://uptime.example.com");
         assert.strictEqual(env.state.settings.searchEngineIndex, true);
+    });
+
+    test("creates, lists, updates, and deletes Worker notification configs", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                {
+                    id: 7,
+                    name: "Example",
+                    type: "http",
+                    url: "https://example.com",
+                    timeout: 30,
+                    interval: 60,
+                    active: 1,
+                    network_profile_id: null,
+                },
+            ],
+        });
+
+        const createResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/notifications", {
+                method: "POST",
+                body: JSON.stringify({
+                    type: "discord",
+                    name: "Discord Alerts",
+                    webhookUrl: "https://example.com/webhook",
+                    isDefault: true,
+                    applyExisting: true,
+                }),
+            }),
+            env
+        );
+        const createBody = await createResponse.json();
+
+        assert.strictEqual(createResponse.status, 200);
+        assert.strictEqual(createBody.id, 1);
+        assert.deepStrictEqual(env.state.monitorNotifications, [{ monitor_id: 7, notification_id: 1 }]);
+
+        const listResponse = await handleApiRequest(adminRequest("https://example.com/api/notifications"), env);
+        const listBody = await listResponse.json();
+
+        assert.strictEqual(listResponse.status, 200);
+        assert.strictEqual(listBody.notifications.length, 1);
+        assert.strictEqual(listBody.notifications[0].name, "Discord Alerts");
+        assert.strictEqual(listBody.notifications[0].isDefault, true);
+        assert.strictEqual(JSON.parse(listBody.notifications[0].config).applyExisting, false);
+
+        const updateResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/notifications/1", {
+                method: "PUT",
+                body: JSON.stringify({
+                    type: "discord",
+                    name: "Primary Discord",
+                    isDefault: false,
+                }),
+            }),
+            env
+        );
+
+        assert.strictEqual(updateResponse.status, 200);
+        assert.strictEqual(env.state.notifications[0].name, "Primary Discord");
+        assert.strictEqual(env.state.notifications[0].is_default, 0);
+
+        const deleteResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/notifications/1", { method: "DELETE" }),
+            env
+        );
+
+        assert.strictEqual(deleteResponse.status, 200);
+        assert.strictEqual(env.state.notifications.length, 0);
+        assert.strictEqual(env.state.monitorNotifications.length, 0);
     });
 
     test("creates, reads, updates, toggles, and deletes a supported monitor", async () => {
@@ -1525,6 +1609,8 @@ function createEnv(initial) {
         profiles: initial.profiles || [],
         monitors: initial.monitors || [],
         heartbeats: initial.heartbeats || [],
+        notifications: initial.notifications || [],
+        monitorNotifications: initial.monitorNotifications || [],
         settings: initial.settings || {},
         runnerJobs: [],
         runnerResult: initial.runnerResult,
@@ -1537,6 +1623,7 @@ function createEnv(initial) {
             lastError: null,
         },
         nextMonitorId: initial.nextMonitorId || 1,
+        nextNotificationId: initial.nextNotificationId || 1,
         missingConfigJsonColumn: Boolean(initial.missingConfigJsonColumn),
         missingParentColumn: Boolean(initial.missingParentColumn),
     };
@@ -1707,6 +1794,9 @@ function createStatement(sql, state) {
                     })),
                 };
             }
+            if (sql.includes("FROM notification")) {
+                return { results: [...state.notifications] };
+            }
             if (sql.includes("FROM monitors")) {
                 if (sql.includes("WHERE id = ?")) {
                     return { results: state.monitors.filter((monitor) => monitor.id === Number(this.values[0])) };
@@ -1747,6 +1837,10 @@ function createStatement(sql, state) {
                 const id = this.values[0];
                 return state.profiles.find((profile) => profile.id === id && profile.enabled) || null;
             }
+            if (sql.includes("FROM notification")) {
+                const id = Number(this.values[0]);
+                return state.notifications.find((notification) => notification.id === id) || null;
+            }
             return null;
         },
         async run() {
@@ -1763,6 +1857,46 @@ function createStatement(sql, state) {
             if (sql.includes("INSERT INTO app_settings")) {
                 const [key, value] = this.values;
                 state.settings[key] = JSON.parse(value);
+                return { success: true };
+            }
+            if (sql.includes("INSERT INTO notification")) {
+                const [name, active, userId, isDefault, config] = this.values;
+                const id = state.nextNotificationId++;
+                state.notifications.push({
+                    id,
+                    name,
+                    active,
+                    user_id: userId,
+                    is_default: isDefault,
+                    config,
+                });
+                return { success: true, meta: { last_row_id: id } };
+            }
+            if (sql.includes("UPDATE notification")) {
+                const [name, active, userId, isDefault, config, id] = this.values;
+                const notification = state.notifications.find((candidate) => candidate.id === Number(id));
+                if (notification) {
+                    Object.assign(notification, {
+                        name,
+                        active,
+                        user_id: userId,
+                        is_default: isDefault,
+                        config,
+                    });
+                }
+                return { success: true };
+            }
+            if (sql.includes("INSERT INTO monitor_notification")) {
+                const [monitorId, notificationId] = this.values;
+                const exists = state.monitorNotifications.some(
+                    (row) => row.monitor_id === Number(monitorId) && row.notification_id === Number(notificationId)
+                );
+                if (!exists) {
+                    state.monitorNotifications.push({
+                        monitor_id: Number(monitorId),
+                        notification_id: Number(notificationId),
+                    });
+                }
                 return { success: true };
             }
             if (sql.includes("INSERT INTO monitors")) {
@@ -1891,6 +2025,20 @@ function createStatement(sql, state) {
             if (sql.includes("DELETE FROM monitors")) {
                 const id = Number(this.values[0]);
                 state.monitors = state.monitors.filter((monitor) => monitor.id !== id);
+                return { success: true };
+            }
+            if (sql.includes("DELETE FROM monitor_notification")) {
+                const id = Number(this.values[0]);
+                if (sql.includes("notification_id")) {
+                    state.monitorNotifications = state.monitorNotifications.filter((row) => row.notification_id !== id);
+                } else {
+                    state.monitorNotifications = state.monitorNotifications.filter((row) => row.monitor_id !== id);
+                }
+                return { success: true };
+            }
+            if (sql.includes("DELETE FROM notification")) {
+                const id = Number(this.values[0]);
+                state.notifications = state.notifications.filter((notification) => notification.id !== id);
                 return { success: true };
             }
             if (sql.includes("DELETE FROM heartbeats")) {
