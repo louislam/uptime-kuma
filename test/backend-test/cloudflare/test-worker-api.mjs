@@ -724,6 +724,45 @@ describe("Cloudflare Worker API", () => {
         assert.deepStrictEqual(byName["Nested Site"].path, ["Websites", "Nested Group", "Nested Site"]);
     });
 
+    test("imports grouped monitors after self-healing an older D1 schema without parent", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({ missingParentColumn: true });
+
+        const response = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/import", {
+                method: "POST",
+                body: JSON.stringify({
+                    monitors: [
+                        {
+                            id: 10,
+                            name: "Websites",
+                            type: "group",
+                            active: 1,
+                        },
+                        {
+                            id: 11,
+                            name: "Public Site",
+                            type: "http",
+                            url: "https://www.example.com",
+                            parent: 10,
+                            active: 1,
+                        },
+                    ],
+                }),
+            }),
+            env
+        );
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(body.imported, 2);
+        assert.strictEqual(env.state.missingParentColumn, false);
+
+        const websites = env.state.monitors.find((monitor) => monitor.name === "Websites");
+        const publicSite = env.state.monitors.find((monitor) => monitor.name === "Public Site");
+        assert.strictEqual(publicSite.parent, websites.id);
+    });
+
     test("creates missing groups from Uptime Kuma path metadata during import", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({});
@@ -1117,6 +1156,48 @@ describe("Cloudflare Worker API", () => {
         assert.strictEqual(readBody.monitor.domainExpiryNotification, true);
         assert.strictEqual(readBody.monitor.cacheBust, false);
         assert.strictEqual(readBody.monitor.ping_numeric, true);
+    });
+
+    test("routes imported private network monitors through Twingate by default", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            profiles: [
+                { id: "twingate", slug: "twingate", name: "Twingate", type: "twingate", enabled: 1 },
+            ],
+        });
+
+        const response = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/import", {
+                method: "POST",
+                body: JSON.stringify({
+                    monitors: [
+                        {
+                            name: "Conference Room Phone",
+                            type: "ping",
+                            hostname: "192.168.1.20",
+                            active: 1,
+                        },
+                        {
+                            name: "Tell City Timeclock",
+                            type: "port",
+                            hostname: "10.10.4.15",
+                            port: 4370,
+                            active: 1,
+                        },
+                    ],
+                }),
+            }),
+            env
+        );
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(body.imported, 2);
+        assert.strictEqual(body.failed, 0);
+        assert.deepStrictEqual(
+            env.state.monitors.map((monitor) => monitor.network_profile_id),
+            ["twingate", "twingate"]
+        );
     });
 
     test("lists and clears monitor heartbeats", async () => {
@@ -1524,6 +1605,9 @@ function createStatement(sql, state) {
                 throw new Error("no such column: parent");
             }
             if (sql.includes("FROM network_profiles")) {
+                if (sql.includes("type = ?")) {
+                    return { results: state.profiles.filter((profile) => profile.type === this.values[0] && profile.enabled) };
+                }
                 return { results: state.profiles };
             }
             if (sql.includes("FROM app_settings")) {
@@ -1567,12 +1651,26 @@ function createStatement(sql, state) {
                 };
             }
             if (sql.includes("FROM network_profiles")) {
+                if (sql.includes("type = ?")) {
+                    const type = this.values[0];
+                    return state.profiles.find((profile) => profile.type === type && profile.enabled) || null;
+                }
                 const id = this.values[0];
                 return state.profiles.find((profile) => profile.id === id && profile.enabled) || null;
             }
             return null;
         },
         async run() {
+            if (sql.includes("ALTER TABLE monitors ADD COLUMN parent")) {
+                state.missingParentColumn = false;
+                for (const monitor of state.monitors) {
+                    monitor.parent = monitor.parent ?? null;
+                }
+                return { success: true };
+            }
+            if (sql.includes("CREATE INDEX IF NOT EXISTS idx_monitors_parent")) {
+                return { success: true };
+            }
             if (sql.includes("INSERT INTO app_settings")) {
                 const [key, value] = this.values;
                 state.settings[key] = JSON.parse(value);

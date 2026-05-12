@@ -71,6 +71,7 @@ const ADMIN_ROUTE_NAMES = new Set([
 ]);
 const PRIVATE_WORKER_HOST_ERROR =
     "Direct Worker checks cannot target private, loopback, link-local, or metadata hosts";
+const DUPLICATE_COLUMN_ERROR = /duplicate column name:\s*parent/i;
 
 export async function handleApiRequest(request, env) {
     const url = new URL(request.url);
@@ -399,6 +400,8 @@ export async function createMonitor(env, monitorInput) {
 export async function importMonitors(env, importInput = {}) {
     const sourceMonitors = extractImportMonitors(importInput);
     const importHandle = normalizeImportHandle(importInput.importHandle || importInput.mode);
+    await ensureMonitorParentColumn(env);
+    const privateNetworkProfileId = await getImportPrivateNetworkProfileId(env);
     const existingRows = await listMonitorRows(env);
     const existingRelationshipData = buildMonitorRelationshipData(existingRows);
     const existingByName = new Map(existingRows.map((monitor) => [monitor.name, monitor]));
@@ -458,7 +461,7 @@ export async function importMonitors(env, importInput = {}) {
                 overwritten++;
             }
 
-            const normalizedMonitor = normalizeImportedMonitor(sourceMonitor);
+            const normalizedMonitor = normalizeImportedMonitor(sourceMonitor, { privateNetworkProfileId });
             const sourceParent = normalizeImportSourceReference(sourceMonitor.parent);
             if (sourceParent != null) {
                 normalizedMonitor.parent = importedIdBySourceId.get(sourceParent) || null;
@@ -736,6 +739,26 @@ async function updateMonitorParent(env, monitorId, parent) {
     await env.DB.prepare("UPDATE monitors SET parent = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
         .bind(parent, monitorId)
         .run();
+}
+
+/**
+ * Ensure the D1 monitor parent column exists before importing grouped monitors.
+ * @param {object} env Cloudflare Worker environment bindings.
+ * @returns {Promise<void>}
+ */
+async function ensureMonitorParentColumn(env) {
+    if (!(await isMissingColumn(env, "monitors", "parent"))) {
+        return;
+    }
+
+    try {
+        await env.DB.prepare("ALTER TABLE monitors ADD COLUMN parent INTEGER").run();
+    } catch (error) {
+        if (!DUPLICATE_COLUMN_ERROR.test(error.message || "")) {
+            throw error;
+        }
+    }
+    await env.DB.prepare("CREATE INDEX IF NOT EXISTS idx_monitors_parent ON monitors(parent)").run();
 }
 
 async function updateDeletedMonitorChildren(env, monitorId) {
@@ -1461,9 +1484,10 @@ function sortImportMonitorsByParent(monitors) {
 /**
  * Normalize JSON-ish Uptime Kuma monitor fields for Worker monitor creation.
  * @param {object} source Source monitor from backup JSON.
+ * @param {object} importContext Import-wide defaults.
  * @returns {object} Monitor payload accepted by createMonitor.
  */
-function normalizeImportedMonitor(source) {
+function normalizeImportedMonitor(source, importContext = {}) {
     const monitor = {
         ...source,
         networkProfileId: normalizeNetworkProfileId(source.networkProfileId ?? source.network_profile_id),
@@ -1481,12 +1505,61 @@ function normalizeImportedMonitor(source) {
     if (["ping", "port"].includes(monitor.type) && isPlaceholderUrl(monitor.url)) {
         monitor.url = null;
     }
+    if (!monitor.networkProfileId && shouldUseImportPrivateNetworkProfile(monitor)) {
+        monitor.networkProfileId = importContext.privateNetworkProfileId || null;
+    }
     for (const field of BOOLEAN_IMPORT_FIELDS) {
         if (field in monitor) {
             monitor[field] = normalizeBoolean(monitor[field]);
         }
     }
     return monitor;
+}
+
+/**
+ * Find the private-network profile to use for imported internal monitors.
+ * @param {object} env Cloudflare Worker environment bindings.
+ * @returns {Promise<string|null>} Network profile ID when available.
+ */
+async function getImportPrivateNetworkProfileId(env) {
+    const profile = await env.DB.prepare(
+        "SELECT id FROM network_profiles WHERE enabled = 1 AND type = ? ORDER BY id LIMIT 1"
+    )
+        .bind("twingate")
+        .first();
+    return profile?.id || null;
+}
+
+/**
+ * Check whether an imported monitor target should default to a private route.
+ * @param {object} monitor Normalized import monitor.
+ * @returns {boolean} True when the target is a private network address.
+ */
+function shouldUseImportPrivateNetworkProfile(monitor) {
+    const host = getMonitorTargetHost(monitor);
+    return isPrivateNetworkHost(host);
+}
+
+/**
+ * Identify private network address ranges that can be reached through Twingate.
+ * @param {string|null} host Monitor target hostname or IP.
+ * @returns {boolean} True when host is private but not loopback/link-local/metadata.
+ */
+function isPrivateNetworkHost(host) {
+    const normalized = String(host || "").trim().toLowerCase();
+    const ipv4 = parseIPv4(normalized);
+    if (ipv4) {
+        const [a, b] = ipv4;
+        return (
+            a === 10 ||
+            (a === 100 && b >= 64 && b <= 127) ||
+            (a === 172 && b >= 16 && b <= 31) ||
+            (a === 192 && b === 168)
+        );
+    }
+
+    const ipv6 = normalized.replace(/^\[/, "").replace(/\]$/, "");
+    return ipv6.startsWith("fc") || ipv6.startsWith("fd");
 }
 
 /**
