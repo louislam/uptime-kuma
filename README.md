@@ -1,8 +1,8 @@
-# uptimeworker
+# Uptime Worker
 
-`uptimeworker` is an independent Cloudflare-first uptime monitoring project.
-It started as a fork of Uptime Kuma, but this repository is no longer presented
-as a Docker-first upstream mirror. The goal of this fork is to keep the familiar
+Uptime Worker is an independent Cloudflare-first uptime monitoring project. It
+started as a fork of Uptime Kuma, but this repository is no longer presented as
+a Docker-first upstream mirror. The goal of this fork is to keep the familiar
 monitoring and status-page experience while moving the runtime to Cloudflare.
 
 The current target platform is Cloudflare Workers with static assets, D1, R2,
@@ -227,7 +227,7 @@ explicitly in the change or pull request.
 
 ## Relationship to Uptime Kuma
 
-`uptimeworker` is based on Uptime Kuma and retains MIT-licensed code from that
+Uptime Worker is based on Uptime Kuma and retains MIT-licensed code from that
 project. The fork is independent: documentation, deployment defaults, and future
 development in this repository are oriented around Cloudflare rather than the
 upstream Docker-first distribution.
