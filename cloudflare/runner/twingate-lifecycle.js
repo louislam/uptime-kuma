@@ -9,7 +9,6 @@ const TWINGATED_FILE = "/usr/sbin/twingated";
 const TWINGATE_PROXY_LISTEN_ADDRESS = "0.0.0.0:9999";
 const TWINGATE_PROXY_READY_HOST = "127.0.0.1";
 const TWINGATE_PROXY_READY_PORT = 9999;
-const DEFAULT_READY_TIMEOUT_MS = 15000;
 const DEFAULT_RETRY_DELAY_MS = 250;
 const MAX_CAPTURED_OUTPUT_LENGTH = 4000;
 
@@ -19,7 +18,7 @@ class TwingateLifecycle {
         this.fs = options.fs || fs;
         this.spawn = options.spawn || childProcess.spawn;
         this.waitForProxyReady = options.waitForProxyReady || waitForProxyReady;
-        this.readyTimeoutMs = options.readyTimeoutMs ?? DEFAULT_READY_TIMEOUT_MS;
+        this.readyTimeoutMs = options.readyTimeoutMs ?? getDefaultReadyTimeoutMs();
         this.retryDelayMs = options.retryDelayMs ?? DEFAULT_RETRY_DELAY_MS;
         this.delay = options.delay || delay;
         this.output = "";
@@ -184,10 +183,15 @@ function delay(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function getDefaultReadyTimeoutMs() {
+    return Number(process.env.TWINGATE_READY_TIMEOUT_MS || 60000);
+}
+
 module.exports = {
     SYSTEM_TWINGATE_PROXY_URL,
     TwingateLifecycle,
     buildTwingatedCommand,
+    getDefaultReadyTimeoutMs,
     validateServiceKeyJson,
     waitForProxyReady,
 };

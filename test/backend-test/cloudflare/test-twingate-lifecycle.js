@@ -10,6 +10,57 @@ const {
 } = require("../../../cloudflare/runner/twingate-lifecycle");
 
 describe("Twingate runner lifecycle", () => {
+    test("defaults to a 60 second proxy readiness timeout", () => {
+        const lifecycle = new TwingateLifecycle({
+            serviceKey: createServiceKey(),
+            fs: createMemoryFs(),
+            spawn: () => createChild(),
+        });
+
+        assert.strictEqual(lifecycle.readyTimeoutMs, 60000);
+    });
+
+    test("uses TWINGATE_READY_TIMEOUT_MS for the default proxy readiness timeout", () => {
+        const originalTimeout = process.env.TWINGATE_READY_TIMEOUT_MS;
+        process.env.TWINGATE_READY_TIMEOUT_MS = "45000";
+        try {
+            const lifecycle = new TwingateLifecycle({
+                serviceKey: createServiceKey(),
+                fs: createMemoryFs(),
+                spawn: () => createChild(),
+            });
+
+            assert.strictEqual(lifecycle.readyTimeoutMs, 45000);
+        } finally {
+            if (originalTimeout === undefined) {
+                delete process.env.TWINGATE_READY_TIMEOUT_MS;
+            } else {
+                process.env.TWINGATE_READY_TIMEOUT_MS = originalTimeout;
+            }
+        }
+    });
+
+    test("constructor readiness timeout overrides env and default timeout", () => {
+        const originalTimeout = process.env.TWINGATE_READY_TIMEOUT_MS;
+        process.env.TWINGATE_READY_TIMEOUT_MS = "45000";
+        try {
+            const lifecycle = new TwingateLifecycle({
+                serviceKey: createServiceKey(),
+                fs: createMemoryFs(),
+                spawn: () => createChild(),
+                readyTimeoutMs: 5000,
+            });
+
+            assert.strictEqual(lifecycle.readyTimeoutMs, 5000);
+        } finally {
+            if (originalTimeout === undefined) {
+                delete process.env.TWINGATE_READY_TIMEOUT_MS;
+            } else {
+                process.env.TWINGATE_READY_TIMEOUT_MS = originalTimeout;
+            }
+        }
+    });
+
     test("starts twingated with a container listen address while checks use localhost", () => {
         const command = buildTwingatedCommand();
 

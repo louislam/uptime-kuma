@@ -19,6 +19,7 @@ export class MonitorRunner extends Container {
         super(ctx, env);
         this.envVars = {
             PORT: "8788",
+            TWINGATE_READY_TIMEOUT_MS: "60000",
         };
 
         copyOptionalEnv(this.envVars, env, [
@@ -32,6 +33,7 @@ export class MonitorRunner extends Container {
             "TWINGATE_KEY_ID",
             "TWINGATE_EXPIRES_AT",
             "TWINGATE_LOGIN_PATH",
+            "TWINGATE_READY_TIMEOUT_MS",
         ]);
     }
 }

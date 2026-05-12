@@ -150,24 +150,43 @@ It also seeds a `twingate` network profile for private routing.
 ## Twingate Private Routing
 
 The monitor runner can start `twingated` inside the Cloudflare Container when a
-service key is provided. The checked-in Wrangler config includes the non-secret
-service key metadata for the WGS Twingate service account. Add the private key
-as a Worker secret:
+service key is provided. The recommended setup is to store the original
+downloaded Twingate service key JSON as a Worker secret:
 
 ```bash
-npx wrangler secret put TWINGATE_PRIVATE_KEY
+jq -c . service_key.json | npx wrangler secret put TWINGATE_SERVICE_KEY_JSON
 ```
 
-`TWINGATE_PRIVATE_KEY` should be the PEM private key from the service key JSON.
-If multiline secret entry is inconvenient, set `TWINGATE_PRIVATE_KEY_B64`
-instead with the base64-encoded PEM. The legacy `TWINGATE_SERVICE_KEY_B64`
-secret is still supported and should contain the full base64-encoded Twingate
-service key JSON. When both forms are present, the current discrete
-`TWINGATE_*` service key fields take precedence over the legacy full-key secret.
+Using `TWINGATE_SERVICE_KEY_JSON` avoids newline and escaping mistakes in the
+PEM private key. If you previously configured a malformed private-key secret,
+delete stale alternatives so the deployment cannot fall back to them later:
+
+```bash
+npx wrangler secret delete TWINGATE_PRIVATE_KEY
+npx wrangler secret delete TWINGATE_PRIVATE_KEY_B64
+npx wrangler secret delete TWINGATE_SERVICE_KEY_B64
+```
+
+If you want to keep the discrete metadata fields in `wrangler.jsonc`, the
+alternative is to set only the PEM private key value:
+
+```bash
+jq -r '.private_key' service_key.json | npx wrangler secret put TWINGATE_PRIVATE_KEY
+```
+
+Do not paste the full service key JSON into `TWINGATE_PRIVATE_KEY`, and do not
+base64-encode the full JSON into `TWINGATE_PRIVATE_KEY_B64`. `TWINGATE_PRIVATE_KEY`
+expects only the PEM `private_key` value. `TWINGATE_PRIVATE_KEY_B64` expects only
+the base64-encoded PEM. The legacy `TWINGATE_SERVICE_KEY_B64` secret is still
+supported and should contain the full base64-encoded Twingate service key JSON.
+When both forms are present, `TWINGATE_SERVICE_KEY_JSON` takes precedence.
 
 The Cloudflare container runner manages the local Twingate userspace HTTP proxy
 address internally. Do not configure a proxy URL for Twingate; only the service
 account fields and private-key secret are operator-provided.
+Cloudflare-hosted Twingate checks support private HTTP, keyword, JSON query,
+TCP port, and WebSocket reachability checks through the userspace proxy. ICMP
+ping is not supported in this architecture.
 
 ## Testing
 

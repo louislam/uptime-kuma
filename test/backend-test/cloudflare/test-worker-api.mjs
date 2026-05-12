@@ -82,6 +82,14 @@ describe("Cloudflare Worker API", () => {
         assert.match(dockerfile, /COPY checker\.js server\.js twingate-lifecycle\.js twingate-service-key\.js \.\//);
     });
 
+    test("runner container receives extended Twingate readiness timeout env", async () => {
+        const workerPath = path.join(__dirname, "../../../cloudflare/worker/index.mjs");
+        const workerSource = fs.readFileSync(workerPath, "utf8");
+
+        assert.match(workerSource, /TWINGATE_READY_TIMEOUT_MS:\s*"60000"/);
+        assert.match(workerSource, /"TWINGATE_READY_TIMEOUT_MS"/);
+    });
+
     test("entry page routes the deployed web UI to the dashboard", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({});
@@ -703,6 +711,11 @@ describe("Cloudflare Worker API", () => {
     });
 });
 
+/**
+ * Create a mock Worker environment for API handler tests.
+ * @param {object} initial Initial mock state.
+ * @returns {object} Mock Worker environment.
+ */
 function createEnv(initial) {
     const state = {
         profiles: initial.profiles || [],
@@ -755,6 +768,12 @@ function createEnv(initial) {
     };
 }
 
+/**
+ * Create a minimal D1 statement mock for API handler tests.
+ * @param {string} sql SQL query text.
+ * @param {object} state Mutable mock environment state.
+ * @returns {object} D1 statement mock.
+ */
 function createStatement(sql, state) {
     const statement = {
         values: [],
