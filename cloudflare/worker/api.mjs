@@ -764,6 +764,14 @@ function normalizeImportedMonitor(source) {
     if (monitor.accepted_statuscodes) {
         monitor.accepted_statuscodes = normalizeAcceptedStatusCodes(monitor.accepted_statuscodes);
     }
+    if (["ping", "port"].includes(monitor.type) && isPlaceholderUrl(monitor.url)) {
+        monitor.url = null;
+    }
+    for (const field of BOOLEAN_IMPORT_FIELDS) {
+        if (field in monitor) {
+            monitor[field] = normalizeBoolean(monitor[field]);
+        }
+    }
     return monitor;
 }
 
@@ -786,6 +794,40 @@ function normalizeAcceptedStatusCodes(value) {
         return value.split(",").map((statusCode) => statusCode.trim()).filter(Boolean);
     }
     return monitorConfigDefaults("http").accepted_statuscodes;
+}
+
+const BOOLEAN_IMPORT_FIELDS = [
+    "active",
+    "invertKeyword",
+    "invert_keyword",
+    "ignoreTls",
+    "upsideDown",
+    "expiryNotification",
+    "domainExpiryNotification",
+    "cacheBust",
+    "ping_numeric",
+    "retryOnlyOnStatusCodeFailure",
+];
+
+/**
+ * Identify placeholder URLs emitted by Uptime Kuma DB exports for non-HTTP monitors.
+ * @param {string|null} value Exported URL value.
+ * @returns {boolean} True when the URL is only a form placeholder.
+ */
+function isPlaceholderUrl(value) {
+    return value === "https://" || value === "http://";
+}
+
+/**
+ * Normalize Uptime Kuma SQLite boolean values into frontend booleans.
+ * @param {unknown} value Raw boolean-ish value.
+ * @returns {boolean} Normalized boolean.
+ */
+function normalizeBoolean(value) {
+    if (typeof value === "string") {
+        return value === "1" || value.toLowerCase() === "true";
+    }
+    return Boolean(value);
 }
 
 /**

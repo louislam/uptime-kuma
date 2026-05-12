@@ -718,6 +718,53 @@ describe("Cloudflare Worker API", () => {
         assert.deepStrictEqual(env.state.heartbeats, []);
     });
 
+    test("normalizes Uptime Kuma v2 monitor export fields for Worker import", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({});
+
+        const response = await handleApiRequest(
+            new Request("https://example.com/api/monitors/import", {
+                method: "POST",
+                body: JSON.stringify({
+                    monitors: [
+                        {
+                            name: "Conference Computer",
+                            type: "port",
+                            url: "https://",
+                            hostname: "192.168.10.137",
+                            port: 443,
+                            active: 1,
+                            accepted_statuscodes: "[\"200-299\"]",
+                            ignoreTls: 0,
+                            upsideDown: 1,
+                            expiryNotification: 0,
+                            domainExpiryNotification: 1,
+                            cacheBust: 0,
+                            ping_numeric: 1,
+                        },
+                    ],
+                }),
+            }),
+            env
+        );
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(body.imported, 1);
+        assert.strictEqual(env.state.monitors[0].url, null);
+
+        const readResponse = await handleApiRequest(new Request("https://example.com/api/monitors/1"), env);
+        const readBody = await readResponse.json();
+
+        assert.deepStrictEqual(readBody.monitor.accepted_statuscodes, ["200-299"]);
+        assert.strictEqual(readBody.monitor.ignoreTls, false);
+        assert.strictEqual(readBody.monitor.upsideDown, true);
+        assert.strictEqual(readBody.monitor.expiryNotification, false);
+        assert.strictEqual(readBody.monitor.domainExpiryNotification, true);
+        assert.strictEqual(readBody.monitor.cacheBust, false);
+        assert.strictEqual(readBody.monitor.ping_numeric, true);
+    });
+
     test("lists and clears monitor heartbeats", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({
