@@ -33,6 +33,17 @@ describe("Cloudflare Worker API", () => {
         assert.match(migrationSql, /ALTER TABLE monitors ADD COLUMN config_json TEXT/);
     });
 
+    test("D1 migration adds monitor parent relationships for groups", async () => {
+        const migrationPath = path.join(
+            __dirname,
+            "../../../cloudflare/migrations/0004_monitor_parent.sql"
+        );
+        const migrationSql = fs.readFileSync(migrationPath, "utf8");
+
+        assert.match(migrationSql, /ALTER TABLE monitors ADD COLUMN parent INTEGER/);
+        assert.match(migrationSql, /idx_monitors_parent ON monitors\(parent\)/);
+    });
+
     test("D1 migration creates lightweight app settings table", async () => {
         const migrationPath = path.join(
             __dirname,
@@ -585,6 +596,80 @@ describe("Cloudflare Worker API", () => {
         });
     });
 
+    test("imports group monitors and preserves child parent relationships", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({});
+
+        const response = await handleApiRequest(
+            new Request("https://example.com/api/monitors/import", {
+                method: "POST",
+                body: JSON.stringify({
+                    monitors: [
+                        {
+                            id: 10,
+                            name: "Websites",
+                            type: "group",
+                            active: 1,
+                        },
+                        {
+                            id: 11,
+                            name: "Public Site",
+                            type: "http",
+                            url: "https://www.example.com",
+                            parent: 10,
+                            active: 1,
+                        },
+                        {
+                            id: 12,
+                            name: "Nested Group",
+                            type: "group",
+                            parent: 10,
+                            active: 1,
+                        },
+                        {
+                            id: 13,
+                            name: "Nested Site",
+                            type: "http",
+                            url: "https://nested.example.com",
+                            parent: 12,
+                            active: 1,
+                        },
+                    ],
+                }),
+            }),
+            env
+        );
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(body.imported, 4);
+        const websites = env.state.monitors.find((monitor) => monitor.name === "Websites");
+        const publicSite = env.state.monitors.find((monitor) => monitor.name === "Public Site");
+        const nestedGroup = env.state.monitors.find((monitor) => monitor.name === "Nested Group");
+        const nestedSite = env.state.monitors.find((monitor) => monitor.name === "Nested Site");
+        assert.strictEqual(websites.type, "group");
+        assert.strictEqual(websites.parent, null);
+        assert.strictEqual(publicSite.parent, websites.id);
+        assert.strictEqual(nestedGroup.parent, websites.id);
+        assert.strictEqual(nestedSite.parent, nestedGroup.id);
+
+        const listResponse = await handleApiRequest(new Request("https://example.com/api/monitors"), env);
+        const listBody = await listResponse.json();
+        const byName = Object.fromEntries(listBody.monitors.map((monitor) => [monitor.name, monitor]));
+
+        assert.deepStrictEqual(byName.Websites.childrenIDs.toSorted((a, b) => a - b), [
+            publicSite.id,
+            nestedGroup.id,
+            nestedSite.id,
+        ].toSorted((a, b) => a - b));
+        assert.deepStrictEqual(byName["Nested Group"].childrenIDs, [nestedSite.id]);
+        assert.strictEqual(byName["Public Site"].parent, websites.id);
+        assert.deepStrictEqual(byName["Public Site"].path, ["Websites", "Public Site"]);
+        assert.strictEqual(byName["Public Site"].pathName, "Websites / Public Site");
+        assert.strictEqual(byName["Nested Site"].parent, nestedGroup.id);
+        assert.deepStrictEqual(byName["Nested Site"].path, ["Websites", "Nested Group", "Nested Site"]);
+    });
+
     test("imports supported monitors from an Uptime Kuma backup and reports skipped rows", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({
@@ -1011,6 +1096,7 @@ function createEnv(initial) {
         },
         nextMonitorId: initial.nextMonitorId || 1,
         missingConfigJsonColumn: Boolean(initial.missingConfigJsonColumn),
+        missingParentColumn: Boolean(initial.missingParentColumn),
     };
 
     return {
@@ -1060,8 +1146,39 @@ function createStatement(sql, state) {
             return this;
         },
         async all() {
-            if (state.missingConfigJsonColumn && sql.includes("config_json")) {
+            if (sql.includes("PRAGMA table_info(monitors)")) {
+                const columns = [
+                    "id",
+                    "name",
+                    "type",
+                    "url",
+                    "hostname",
+                    "port",
+                    "method",
+                    "headers",
+                    "body",
+                    "keyword",
+                    "invert_keyword",
+                    "json_path",
+                    "expected_value",
+                    "timeout",
+                    "interval",
+                    "active",
+                    "network_profile_id",
+                ];
+                if (!state.missingParentColumn) {
+                    columns.push("parent");
+                }
+                if (!state.missingConfigJsonColumn) {
+                    columns.push("config_json");
+                }
+                return { results: columns.map((name, cid) => ({ cid, name })) };
+            }
+            if (state.missingConfigJsonColumn && /network_profile_id,\s*parent,\s*config_json/.test(sql)) {
                 throw new Error("no such column: config_json");
+            }
+            if (state.missingParentColumn && /network_profile_id,\s*parent/.test(sql)) {
+                throw new Error("no such column: parent");
             }
             if (sql.includes("FROM network_profiles")) {
                 return { results: state.profiles };
@@ -1136,6 +1253,7 @@ function createStatement(sql, state) {
                     interval,
                     active,
                     networkProfileId,
+                    parent,
                     configJson,
                 ] = this.values;
                 const id = state.nextMonitorId++;
@@ -1157,11 +1275,29 @@ function createStatement(sql, state) {
                     interval,
                     active,
                     network_profile_id: networkProfileId,
+                    parent,
                     config_json: configJson,
                 });
                 return { success: true, meta: { last_row_id: id } };
             }
             if (sql.includes("UPDATE monitors")) {
+                if (sql.includes("SET parent = NULL")) {
+                    const [parent] = this.values;
+                    for (const monitor of state.monitors) {
+                        if (monitor.parent === Number(parent)) {
+                            monitor.parent = null;
+                        }
+                    }
+                    return { success: true };
+                }
+                if (sql.includes("SET parent = ?")) {
+                    const [parent, id] = this.values;
+                    const monitor = state.monitors.find((candidate) => candidate.id === Number(id));
+                    if (monitor) {
+                        monitor.parent = parent == null ? null : Number(parent);
+                    }
+                    return { success: true };
+                }
                 if (sql.includes("SET network_profile_id")) {
                     const [networkProfileId, id] = this.values;
                     const monitor = state.monitors.find((candidate) => candidate.id === Number(id));
@@ -1194,6 +1330,7 @@ function createStatement(sql, state) {
                     timeout,
                     interval,
                     networkProfileId,
+                    parent,
                     configJson,
                     id,
                 ] = this.values;
@@ -1215,6 +1352,7 @@ function createStatement(sql, state) {
                         timeout,
                         interval,
                         network_profile_id: networkProfileId,
+                        parent,
                         config_json: configJson,
                     });
                 }

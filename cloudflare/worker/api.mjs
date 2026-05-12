@@ -23,6 +23,7 @@ const DEFAULT_SETTINGS = {
 };
 
 const WORKER_MONITOR_TYPES = new Set([
+    "group",
     "http",
     "keyword",
     "json-query",
@@ -39,10 +40,12 @@ const MONITOR_CONFIG_EXCLUDED_FIELDS = new Set([
     "childrenIDs",
     "tags",
     "notificationIDList",
+    "parent",
     "getUrl",
 ]);
 
 const MISSING_CONFIG_JSON_COLUMN = /no such column:\s*config_json/i;
+const MISSING_PARENT_COLUMN = /no such column:\s*parent/i;
 
 export async function handleApiRequest(request, env) {
     const url = new URL(request.url);
@@ -207,6 +210,7 @@ export async function setUiSettings(env, settings) {
  */
 export async function listMonitors(env) {
     const monitors = await listMonitorRows(env);
+    const relationshipData = buildMonitorRelationshipData(monitors);
 
     const heartbeatResult = await env.DB.prepare(
         `SELECT h.monitor_id, h.status, h.ping, h.msg, h.checked_at
@@ -225,7 +229,7 @@ export async function listMonitors(env) {
 
     return monitors.map((monitor) => {
         const latestHeartbeat = heartbeatsByMonitorId.get(Number(monitor.id));
-        return serializeMonitor(monitor, latestHeartbeat);
+        return serializeMonitor(monitor, latestHeartbeat, relationshipData);
     });
 }
 
@@ -234,27 +238,34 @@ async function listMonitorRows(env) {
         const monitorResult = await env.DB.prepare(
             `SELECT id, name, type, url, hostname, port, method, headers, body, keyword,
                     invert_keyword, json_path, expected_value, timeout, "interval",
-                    active, network_profile_id, config_json
+                    active, network_profile_id, parent, config_json
              FROM monitors
              ORDER BY name`
         ).all();
         return monitorResult.results || [];
     } catch (error) {
-        if (!MISSING_CONFIG_JSON_COLUMN.test(error.message || "")) {
+        if (!MISSING_CONFIG_JSON_COLUMN.test(error.message || "") && !MISSING_PARENT_COLUMN.test(error.message || "")) {
             throw error;
         }
-        const monitorResult = await env.DB.prepare(
-            `SELECT id, name, type, url, hostname, port, method, headers, body, keyword,
-                    invert_keyword, json_path, expected_value, timeout, "interval",
-                    active, network_profile_id
-             FROM monitors
-             ORDER BY name`
-        ).all();
-        return (monitorResult.results || []).map((monitor) => ({
-            ...monitor,
-            config_json: null,
-        }));
+        return await listMonitorRowsWithLegacyColumns(env);
     }
+}
+
+async function listMonitorRowsWithLegacyColumns(env) {
+    const missingConfigJson = await isMissingColumn(env, "monitors", "config_json");
+    const missingParent = await isMissingColumn(env, "monitors", "parent");
+    const optionalColumns = [
+        missingParent ? "NULL AS parent" : "parent",
+        missingConfigJson ? "NULL AS config_json" : "config_json",
+    ];
+    const monitorResult = await env.DB.prepare(
+        `SELECT id, name, type, url, hostname, port, method, headers, body, keyword,
+                invert_keyword, json_path, expected_value, timeout, "interval",
+                active, network_profile_id, ${optionalColumns.join(", ")}
+         FROM monitors
+         ORDER BY name`
+    ).all();
+    return monitorResult.results || [];
 }
 
 export async function listStatusPages() {
@@ -316,7 +327,8 @@ export async function getSerializedMonitor(env, monitorId) {
     )
         .bind(monitorId)
         .first();
-    return serializeMonitor(monitor, heartbeat);
+    const rows = await listMonitorRows(env);
+    return serializeMonitor(monitor, heartbeat, buildMonitorRelationshipData(rows));
 }
 
 export async function createMonitor(env, monitorInput) {
@@ -325,8 +337,8 @@ export async function createMonitor(env, monitorInput) {
         `INSERT INTO monitors (
             name, type, url, hostname, port, method, headers, body, keyword,
             invert_keyword, json_path, expected_value, timeout, "interval",
-            active, network_profile_id, config_json
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+            active, network_profile_id, parent, config_json
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
         .bind(...monitorValues(monitor, true), monitorConfigJson(monitorInput, {}, monitor))
         .run();
@@ -344,6 +356,8 @@ export async function importMonitors(env, importInput = {}) {
     const importHandle = normalizeImportHandle(importInput.importHandle || importInput.mode);
     const existingRows = await listMonitorRows(env);
     const existingByName = new Map(existingRows.map((monitor) => [monitor.name, monitor]));
+    const importedIdBySourceId = new Map();
+    const pendingParents = [];
     const results = [];
     let imported = 0;
     let skipped = 0;
@@ -351,7 +365,7 @@ export async function importMonitors(env, importInput = {}) {
     let overwritten = 0;
     let failed = 0;
 
-    for (const sourceMonitor of monitors) {
+    for (const sourceMonitor of sortImportMonitorsByParent(monitors)) {
         const name = String(sourceMonitor?.name || "").trim();
         const type = sourceMonitor?.type;
         const result = { name, type };
@@ -379,6 +393,7 @@ export async function importMonitors(env, importInput = {}) {
         const existing = existingByName.get(name);
         if (existing && importHandle === "skip") {
             skipped++;
+            rememberImportedSourceId(importedIdBySourceId, sourceMonitor, Number(existing.id));
             results.push({
                 ...result,
                 status: "skipped",
@@ -395,7 +410,16 @@ export async function importMonitors(env, importInput = {}) {
                 overwritten++;
             }
 
-            const monitorID = await createMonitor(env, normalizeImportedMonitor(sourceMonitor));
+            const normalizedMonitor = normalizeImportedMonitor(sourceMonitor);
+            const sourceParent = normalizeImportParentId(sourceMonitor.parent);
+            if (sourceParent != null) {
+                normalizedMonitor.parent = importedIdBySourceId.get(sourceParent) || null;
+            }
+            const monitorID = await createMonitor(env, normalizedMonitor);
+            rememberImportedSourceId(importedIdBySourceId, sourceMonitor, monitorID);
+            if (sourceParent != null && !normalizedMonitor.parent) {
+                pendingParents.push({ monitorID, sourceParent });
+            }
             const importedMonitor = {
                 ...result,
                 status: "imported",
@@ -411,6 +435,13 @@ export async function importMonitors(env, importInput = {}) {
                 status: "failed",
                 reason: error.message,
             });
+        }
+    }
+
+    for (const pendingParent of pendingParents) {
+        const parent = importedIdBySourceId.get(pendingParent.sourceParent);
+        if (parent) {
+            await updateMonitorParent(env, pendingParent.monitorID, parent);
         }
     }
 
@@ -459,7 +490,7 @@ export async function updateMonitor(env, monitorId, monitorInput) {
             name = ?, type = ?, url = ?, hostname = ?, port = ?, method = ?,
             headers = ?, body = ?, keyword = ?, invert_keyword = ?,
             json_path = ?, expected_value = ?, timeout = ?, "interval" = ?,
-            network_profile_id = ?, config_json = ?, updated_at = CURRENT_TIMESTAMP
+            network_profile_id = ?, parent = ?, config_json = ?, updated_at = CURRENT_TIMESTAMP
          WHERE id = ?`
     )
         .bind(...monitorValues(monitor, false), monitorConfigJson(monitorInput, existing, monitor), monitorId)
@@ -482,6 +513,7 @@ export async function deleteMonitor(env, monitorId) {
         throw httpError(404, "Monitor not found");
     }
     await clearMonitorHeartbeats(env, monitorId);
+    await updateDeletedMonitorChildren(env, monitorId);
     await env.DB.prepare("DELETE FROM monitors WHERE id = ?")
         .bind(monitorId)
         .run();
@@ -539,6 +571,9 @@ export async function executeMonitorCheck(env, monitorId) {
     if (!monitor) {
         throw httpError(404, "Monitor not found");
     }
+    if (monitor.type === "group") {
+        throw httpError(400, "Group monitors do not run checks");
+    }
 
     const networkProfile = monitor.network_profile_id ? await getNetworkProfile(env, monitor.network_profile_id) : null;
     const job = {
@@ -552,7 +587,7 @@ export async function executeMonitorCheck(env, monitorId) {
 
 export async function enqueueDueMonitors(env) {
     const result = await env.DB.prepare(
-        "SELECT id FROM monitors WHERE active = 1 ORDER BY id"
+        "SELECT id FROM monitors WHERE active = 1 AND type != 'group' ORDER BY id"
     ).all();
 
     await Promise.all(
@@ -626,6 +661,18 @@ async function getMonitor(env, monitorId) {
         .first();
 }
 
+async function updateMonitorParent(env, monitorId, parent) {
+    await env.DB.prepare("UPDATE monitors SET parent = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
+        .bind(parent, monitorId)
+        .run();
+}
+
+async function updateDeletedMonitorChildren(env, monitorId) {
+    await env.DB.prepare("UPDATE monitors SET parent = NULL, updated_at = CURRENT_TIMESTAMP WHERE parent = ?")
+        .bind(monitorId)
+        .run();
+}
+
 async function getNetworkProfile(env, networkProfileId) {
     return await env.DB.prepare("SELECT id, slug, name, type, enabled FROM network_profiles WHERE id = ?")
         .bind(networkProfileId)
@@ -672,6 +719,7 @@ function normalizeMonitorInput(input, existing = {}) {
     const interval = Number(monitor.interval || existing.interval || 60);
     const timeout = Number(monitor.timeout || existing.timeout || 30);
     const networkProfileId = normalizeNetworkProfileId(monitor.networkProfileId ?? monitor.network_profile_id);
+    const parent = normalizeMonitorParent(monitor.parent ?? existing.parent);
 
     return {
         name,
@@ -690,6 +738,7 @@ function normalizeMonitorInput(input, existing = {}) {
         interval: Number.isFinite(interval) && interval > 0 ? interval : 60,
         active: monitor.active === undefined ? 1 : (monitor.active ? 1 : 0),
         networkProfileId,
+        parent,
     };
 }
 
@@ -745,6 +794,23 @@ function normalizeImportHandle(value) {
 }
 
 /**
+ * Sort source monitors so parent groups are usually created before children.
+ * @param {object[]} monitors Source monitors.
+ * @returns {object[]} Sorted source monitors.
+ */
+function sortImportMonitorsByParent(monitors) {
+    return [...monitors].sort((a, b) => {
+        if (a.type === "group" && b.type !== "group") {
+            return -1;
+        }
+        if (a.type !== "group" && b.type === "group") {
+            return 1;
+        }
+        return 0;
+    });
+}
+
+/**
  * Normalize JSON-ish Uptime Kuma monitor fields for Worker monitor creation.
  * @param {object} source Source monitor from backup JSON.
  * @returns {object} Monitor payload accepted by createMonitor.
@@ -773,6 +839,20 @@ function normalizeImportedMonitor(source) {
         }
     }
     return monitor;
+}
+
+/**
+ * Track old-to-new ID mappings when source monitor IDs are present.
+ * @param {Map<number, number>} importedIdBySourceId Source ID map.
+ * @param {object} source Source monitor.
+ * @param {number} monitorID New or existing monitor ID.
+ * @returns {void}
+ */
+function rememberImportedSourceId(importedIdBySourceId, source, monitorID) {
+    const sourceId = normalizeImportParentId(source.id);
+    if (sourceId != null) {
+        importedIdBySourceId.set(sourceId, monitorID);
+    }
 }
 
 /**
@@ -808,6 +888,32 @@ const BOOLEAN_IMPORT_FIELDS = [
     "ping_numeric",
     "retryOnlyOnStatusCodeFailure",
 ];
+
+/**
+ * Normalize a source parent/id field from a DB export.
+ * @param {unknown} value Raw source ID value.
+ * @returns {number|null} Numeric source ID or null.
+ */
+function normalizeImportParentId(value) {
+    if (value === undefined || value === null || value === "") {
+        return null;
+    }
+    const id = Number(value);
+    return Number.isFinite(id) && id > 0 ? id : null;
+}
+
+/**
+ * Normalize the persisted parent field.
+ * @param {unknown} value Raw parent value.
+ * @returns {number|null} Parent monitor ID or null.
+ */
+function normalizeMonitorParent(value) {
+    if (value === undefined || value === null || value === "" || value === -1) {
+        return null;
+    }
+    const id = Number(value);
+    return Number.isFinite(id) && id > 0 ? id : null;
+}
 
 /**
  * Identify placeholder URLs emitted by Uptime Kuma DB exports for non-HTTP monitors.
@@ -988,10 +1094,11 @@ function monitorValues(monitor, includeActive) {
         values.push(monitor.active);
     }
     values.push(monitor.networkProfileId);
+    values.push(monitor.parent);
     return values;
 }
 
-function serializeMonitor(monitor, latestHeartbeat = null) {
+function serializeMonitor(monitor, latestHeartbeat = null, relationshipData = buildMonitorRelationshipData([monitor])) {
     const name = monitor.name || "";
     const config = {
         ...monitorConfigDefaults(monitor.type),
@@ -1015,9 +1122,10 @@ function serializeMonitor(monitor, latestHeartbeat = null) {
         timeout: Number(monitor.timeout || 30),
         interval: Number(monitor.interval || 60),
         active: monitor.active === undefined ? true : Boolean(monitor.active),
-        parent: null,
-        path: [name],
-        childrenIDs: [],
+        parent: monitor.parent == null ? null : Number(monitor.parent),
+        path: relationshipData.paths.get(Number(monitor.id)) || [name],
+        pathName: (relationshipData.paths.get(Number(monitor.id)) || [name]).join(" / "),
+        childrenIDs: relationshipData.childrenIDs.get(Number(monitor.id)) || [],
         tags: [],
         notificationIDList: {},
         networkProfileId: monitor.network_profile_id ?? monitor.networkProfileId ?? null,
@@ -1026,6 +1134,64 @@ function serializeMonitor(monitor, latestHeartbeat = null) {
             : monitorConfigDefaults(monitor.type).accepted_statuscodes,
         lastHeartbeat: latestHeartbeat ? serializeHeartbeat(latestHeartbeat) : null,
     };
+}
+
+function buildMonitorRelationshipData(monitors) {
+    const monitorsById = new Map(monitors.map((monitor) => [Number(monitor.id), monitor]));
+    const directChildren = new Map();
+    const childrenIDs = new Map();
+    const paths = new Map();
+
+    for (const monitor of monitors) {
+        const parent = normalizeMonitorParent(monitor.parent);
+        if (parent != null) {
+            if (!directChildren.has(parent)) {
+                directChildren.set(parent, []);
+            }
+            directChildren.get(parent).push(Number(monitor.id));
+        }
+    }
+
+    const collectChildren = (monitorId) => {
+        if (childrenIDs.has(monitorId)) {
+            return childrenIDs.get(monitorId);
+        }
+        const collected = [];
+        for (const childId of directChildren.get(monitorId) || []) {
+            collected.push(childId, ...collectChildren(childId));
+        }
+        childrenIDs.set(monitorId, collected);
+        return collected;
+    };
+
+    const buildPath = (monitorId, seen = new Set()) => {
+        if (paths.has(monitorId)) {
+            return paths.get(monitorId);
+        }
+        const monitor = monitorsById.get(monitorId);
+        if (!monitor || seen.has(monitorId)) {
+            return [];
+        }
+        seen.add(monitorId);
+        const parent = normalizeMonitorParent(monitor.parent);
+        const path = parent != null
+            ? [...buildPath(parent, seen), monitor.name || ""]
+            : [monitor.name || ""];
+        paths.set(monitorId, path);
+        return path;
+    };
+
+    for (const monitor of monitors) {
+        collectChildren(Number(monitor.id));
+        buildPath(Number(monitor.id));
+    }
+
+    return { childrenIDs, paths };
+}
+
+async function isMissingColumn(env, table, column) {
+    const info = await env.DB.prepare(`PRAGMA table_info(${table})`).all();
+    return !(info.results || []).some((row) => row.name === column);
 }
 
 function serializeHeartbeat(heartbeat) {

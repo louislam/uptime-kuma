@@ -64,6 +64,18 @@
                         </button>
                         <ul class="dropdown-menu">
                             <li>
+                                <a
+                                    class="dropdown-item"
+                                    href="#"
+                                    data-testid="bulk-move-group-action"
+                                    @click.prevent="showGroupMovePanel = true"
+                                >
+                                    <font-awesome-icon icon="folder-open" class="me-2" />
+                                    {{ $t("Move to Group") }}
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider" /></li>
+                            <li>
                                 <a class="dropdown-item" href="#" @click.prevent="pauseDialog">
                                     <font-awesome-icon icon="pause" class="me-2" />
                                     {{ $t("Pause") }}
@@ -91,6 +103,37 @@
                 <span class="selected-count">
                     {{ $t("selectedMonitorCountMsg", selectedMonitorCount) }}
                 </span>
+            </div>
+            <div v-if="selectMode && selectedMonitorCount > 0 && showGroupMovePanel" class="group-move-row">
+                <label class="group-move-label" for="bulkMoveGroupSelect">
+                    {{ $t("Move to Group") }}
+                </label>
+                <select
+                    id="bulkMoveGroupSelect"
+                    v-model="bulkMoveTargetParent"
+                    class="form-select group-move-select"
+                    :disabled="bulkActionInProgress"
+                    data-testid="bulk-move-group-select"
+                >
+                    <option v-for="option in bulkMoveGroupOptions" :key="option.key" :value="option.value">
+                        {{ option.label }}
+                    </option>
+                </select>
+                <button
+                    class="btn btn-primary"
+                    :disabled="bulkActionInProgress"
+                    data-testid="bulk-move-group-apply"
+                    @click="moveSelectedToGroup"
+                >
+                    {{ $t("Apply") }}
+                </button>
+                <button
+                    class="btn btn-outline-normal"
+                    :disabled="bulkActionInProgress"
+                    @click="showGroupMovePanel = false"
+                >
+                    {{ $t("Cancel") }}
+                </button>
             </div>
         </div>
         <div
@@ -155,6 +198,8 @@ export default {
             selectedMonitors: {},
             windowTop: 0,
             bulkActionInProgress: false,
+            showGroupMovePanel: false,
+            bulkMoveTargetParent: null,
             filterState: {
                 status: null,
                 active: null,
@@ -218,6 +263,10 @@ export default {
                 listHeaderHeight += 42;
             }
 
+            if (this.selectMode && this.selectedMonitorCount > 0 && this.showGroupMovePanel) {
+                listHeaderHeight += 48;
+            }
+
             return {
                 height: `calc(100% - ${listHeaderHeight}px)`,
             };
@@ -225,6 +274,41 @@ export default {
 
         selectedMonitorCount() {
             return Object.keys(this.selectedMonitors).length;
+        },
+
+        selectedMonitorIds() {
+            return Object.keys(this.selectedMonitors).map((id) => parseInt(id, 10));
+        },
+
+        bulkMoveGroupOptions() {
+            const excludedIds = this.getExcludedMoveTargetIds();
+            const groups = Object.values(this.$root.monitorList)
+                .filter((monitor) => monitor.type === "group" && !excludedIds.has(monitor.id))
+                .sort((m1, m2) => {
+                    if (m1.active !== m2.active) {
+                        return m1.active === false ? 1 : -1;
+                    }
+
+                    if (m1.weight !== m2.weight) {
+                        return m1.weight > m2.weight ? -1 : 1;
+                    }
+
+                    return this.getMonitorPathName(m1).localeCompare(this.getMonitorPathName(m2));
+                })
+                .map((monitor) => ({
+                    key: monitor.id,
+                    value: monitor.id,
+                    label: this.getMonitorPathName(monitor),
+                }));
+
+            return [
+                {
+                    key: "none",
+                    value: null,
+                    label: this.$t("None"),
+                },
+                ...groups,
+            ];
         },
 
         /**
@@ -302,6 +386,8 @@ export default {
             if (!this.selectMode) {
                 this.selectAll = false;
                 this.selectedMonitors = {};
+                this.showGroupMovePanel = false;
+                this.bulkMoveTargetParent = null;
             }
         },
     },
@@ -422,6 +508,120 @@ export default {
         cancelSelectMode() {
             this.selectMode = false;
             this.selectedMonitors = {};
+            this.showGroupMovePanel = false;
+            this.bulkMoveTargetParent = null;
+        },
+        /**
+         * Gets group IDs that cannot be move targets for the selected monitors.
+         * @returns {Set<number>} IDs excluded from target group options
+         */
+        getExcludedMoveTargetIds() {
+            const excludedIds = new Set(this.selectedMonitorIds);
+
+            for (const id of this.selectedMonitorIds) {
+                const monitor = this.$root.monitorList[id];
+                if (!monitor) {
+                    continue;
+                }
+
+                for (const childId of monitor.childrenIDs || []) {
+                    excludedIds.add(childId);
+                }
+            }
+
+            return excludedIds;
+        },
+        /**
+         * Gets a readable group name, including parents when available.
+         * @param {object} monitor Monitor to label
+         * @returns {string} Display name for group options
+         */
+        getMonitorPathName(monitor) {
+            return monitor.pathName || monitor.name;
+        },
+        /**
+         * Saves one monitor through the existing edit socket event.
+         * @param {object} monitor Monitor payload to save
+         * @returns {Promise<object>} Socket response
+         */
+        editMonitorAsync(monitor) {
+            return new Promise((resolve) => {
+                this.$root.getSocket().emit("editMonitor", monitor, (res) => {
+                    resolve(res || { ok: false });
+                });
+            });
+        },
+        /**
+         * Move selected monitors into a target group or out of all groups.
+         * @returns {Promise<void>}
+         */
+        async moveSelectedToGroup() {
+            if (this.bulkActionInProgress) {
+                return;
+            }
+
+            let targetParent =
+                this.bulkMoveTargetParent == null || this.bulkMoveTargetParent === ""
+                    ? null
+                    : parseInt(this.bulkMoveTargetParent, 10);
+            if (Number.isNaN(targetParent)) {
+                targetParent = null;
+            }
+            const monitorIds = this.selectedMonitorIds.filter((id) => this.$root.monitorList[id]);
+
+            if (monitorIds.length === 0) {
+                this.cancelSelectMode();
+                return;
+            }
+
+            this.bulkActionInProgress = true;
+            let successCount = 0;
+            let errorCount = 0;
+
+            for (const id of monitorIds) {
+                const originalMonitor = this.$root.monitorList[id];
+                const monitorToSave = JSON.parse(JSON.stringify(originalMonitor));
+                monitorToSave.parent = targetParent;
+
+                const res = await this.editMonitorAsync(monitorToSave);
+                if (res.ok) {
+                    successCount++;
+                } else {
+                    errorCount++;
+                    if (res.msg) {
+                        this.$root.toastError(res.msg);
+                    }
+                }
+            }
+
+            this.bulkActionInProgress = false;
+
+            if (successCount > 0) {
+                this.$root.toastSuccess(
+                    this.$t("bulkMoveMonitorsToGroupMsg", {
+                        count: successCount,
+                        group: this.getBulkMoveTargetLabel(targetParent),
+                    })
+                );
+            }
+            if (errorCount > 0) {
+                this.$root.toastError(this.$t("bulkMoveMonitorsErrorMsg", { count: errorCount }));
+            }
+
+            this.cancelSelectMode();
+        },
+        /**
+         * Gets the selected target label for toast messages.
+         * @param {number|null} targetParent Selected parent ID
+         * @returns {string} Target label
+         */
+        getBulkMoveTargetLabel(targetParent) {
+            if (targetParent == null) {
+                return this.$t("None");
+            }
+
+            const targetMonitor = this.$root.monitorList[targetParent];
+            return targetMonitor ? this.getMonitorPathName(targetMonitor) : this.$t("Monitor Group");
         },
         /**
          * Show dialog to confirm pause
@@ -729,6 +929,24 @@ export default {
     width: 100%;
 }
 
+.group-move-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+}
+
+.group-move-label {
+    margin-bottom: 0;
+    white-space: nowrap;
+    font-size: 0.9em;
+}
+
+.group-move-select {
+    min-width: 0;
+    max-width: 280px;
+}
+
 .selected-count {
     white-space: nowrap;
     font-size: 0.9em;
@@ -773,6 +991,17 @@ export default {
 
     .filters-group {
         width: 100%;
+    }
+
+    .selection-row,
+    .group-move-row {
+        flex-wrap: wrap;
+    }
+
+    .group-move-label,
+    .group-move-select {
+        width: 100%;
+        max-width: 100%;
     }
 }
 

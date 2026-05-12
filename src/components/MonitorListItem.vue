@@ -4,6 +4,8 @@
             class="draggable-item"
             :style="depthMargin"
             :class="{ 'drag-over': dragOverCount > 0 }"
+            data-testid="monitor-list-item"
+            :data-monitor-id="monitor.id"
             @dragstart="onDragStart"
             @dragenter.prevent="onDragEnter"
             @dragleave.prevent="onDragLeave"
@@ -15,6 +17,7 @@
                 <input
                     class="form-check-input select-input"
                     type="checkbox"
+                    data-testid="monitor-list-select"
                     :aria-label="$t('Check/Uncheck')"
                     :checked="isSelected(monitor.id)"
                     @click.stop="toggleSelection"
@@ -28,7 +31,12 @@
                             <Uptime :monitor="monitor" type="24" :pill="true" />
                         </div>
                         <div class="d-flex align-items-center gap-2 flex-fill" style="min-width: 0">
-                            <span v-if="hasChildren" class="collapse-padding" @click.prevent="changeCollapsed">
+                            <span
+                                v-if="hasChildren"
+                                class="collapse-padding"
+                                data-testid="monitor-list-collapse"
+                                @click.prevent="changeCollapsed"
+                            >
                                 <font-awesome-icon
                                     icon="chevron-down"
                                     class="animated"
