@@ -45,10 +45,35 @@
                 </div>
             </div>
 
-            <!-- Line 2: Cancel + Actions (shown when selection mode is active) -->
-            <div v-if="selectMode && selectedMonitorCount > 0" class="selection-row">
+            <!-- Line 2: Select + Actions (shown when selection mode is active) -->
+            <div v-if="selectMode" class="selection-row">
                 <button class="btn btn-outline-normal" @click="cancelSelectMode">
                     {{ $t("Cancel") }}
+                </button>
+                <button
+                    class="btn btn-outline-normal"
+                    :disabled="bulkActionInProgress"
+                    data-testid="bulk-select-all"
+                    @click="selectAllVisibleMonitors"
+                >
+                    {{ $t("Select All") }}
+                </button>
+                <button
+                    class="btn btn-outline-normal"
+                    :disabled="selectedMonitorCount === 0 || bulkActionInProgress"
+                    data-testid="bulk-unselect-all"
+                    @click="unselectAllMonitors"
+                >
+                    {{ $t("Unselect All") }}
+                </button>
+                <button
+                    class="btn btn-outline-normal"
+                    :disabled="selectedMonitorCount === 0 || bulkActionInProgress"
+                    data-testid="bulk-move-group-action"
+                    @click="showGroupMovePanel = true"
+                >
+                    <font-awesome-icon icon="folder-open" class="me-2" />
+                    {{ $t("Add to Group") }}
                 </button>
                 <div class="actions-wrapper">
                     <div class="dropdown">
@@ -57,24 +82,12 @@
                             type="button"
                             data-bs-toggle="dropdown"
                             :aria-label="$t('Actions')"
-                            :disabled="bulkActionInProgress"
+                            :disabled="selectedMonitorCount === 0 || bulkActionInProgress"
                             aria-expanded="false"
                         >
                             {{ $t("Actions") }}
                         </button>
                         <ul class="dropdown-menu">
-                            <li>
-                                <a
-                                    class="dropdown-item"
-                                    href="#"
-                                    data-testid="bulk-move-group-action"
-                                    @click.prevent="showGroupMovePanel = true"
-                                >
-                                    <font-awesome-icon icon="folder-open" class="me-2" />
-                                    {{ $t("Move to Group") }}
-                                </a>
-                            </li>
-                            <li><hr class="dropdown-divider" /></li>
                             <li>
                                 <a class="dropdown-item" href="#" @click.prevent="pauseDialog">
                                     <font-awesome-icon icon="pause" class="me-2" />
@@ -106,7 +119,7 @@
             </div>
             <div v-if="selectMode && selectedMonitorCount > 0 && showGroupMovePanel" class="group-move-row">
                 <label class="group-move-label" for="bulkMoveGroupSelect">
-                    {{ $t("Move to Group") }}
+                    {{ $t("Add to Group") }}
                 </label>
                 <select
                     id="bulkMoveGroupSelect"
@@ -259,7 +272,7 @@ export default {
             let listHeaderHeight = 58 + 10;
 
             // Only add extra height when selection row is visible
-            if (this.selectMode && this.selectedMonitorCount > 0) {
+            if (this.selectMode) {
                 listHeaderHeight += 42;
             }
 
@@ -371,12 +384,9 @@ export default {
                 this.selectedMonitors = {};
 
                 if (this.selectAll) {
-                    this.sortedMonitorList.forEach((item) => {
-                        this.selectedMonitors[item.id] = true;
-                    });
+                    this.selectAllVisibleMonitors();
                 } else {
-                    // Exit select mode when unchecking "select all"
-                    this.selectMode = false;
+                    this.unselectAllMonitors(false);
                 }
             } else {
                 this.disableSelectAllWatcher = false;
@@ -492,6 +502,29 @@ export default {
          */
         select(id) {
             this.selectedMonitors[id] = true;
+        },
+        /**
+         * Select all monitors currently shown in the root monitor list.
+         * @returns {void}
+         */
+        selectAllVisibleMonitors() {
+            this.selectMode = true;
+            this.selectAll = true;
+            this.sortedMonitorList.forEach((item) => {
+                this.selectedMonitors[item.id] = true;
+            });
+        },
+        /**
+         * Clear all selected monitors without leaving selection mode.
+         * @param {boolean} disableSelectAllWatcher Whether to suppress the selectAll watcher
+         * @returns {void}
+         */
+        unselectAllMonitors(disableSelectAllWatcher = true) {
+            this.disableSelectAllWatcher = disableSelectAllWatcher;
+            this.selectAll = false;
+            this.selectedMonitors = {};
+            this.showGroupMovePanel = false;
+            this.bulkMoveTargetParent = null;
         },
         /**
          * Determine if monitor is selected

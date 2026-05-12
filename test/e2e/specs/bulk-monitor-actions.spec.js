@@ -76,8 +76,12 @@ test.describe("Bulk Monitor Actions", () => {
         await expect(page.getByTestId("monitor-list")).toContainText(secondMonitor);
 
         await page.getByLabel("Select all monitors").check();
+        await expect(page.getByTestId("bulk-select-all")).toBeVisible();
+        await page.getByTestId("bulk-unselect-all").click();
+        await expect(page.getByText("selected: 0")).toBeVisible();
+        await page.getByTestId("bulk-select-all").click();
+        await expect(page.getByText("selected: 3")).toBeVisible();
         await deselectMonitorRow(page, groupName);
-        await page.getByRole("button", { name: "Actions" }).click();
         await page.getByTestId("bulk-move-group-action").click();
         await page.getByTestId("bulk-move-group-select").selectOption({ label: groupName });
         await page.getByTestId("bulk-move-group-apply").click();
