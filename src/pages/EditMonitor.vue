@@ -48,7 +48,7 @@
                                         <option
                                             v-if="
                                                 !$root.isCloudflareWorkerUI &&
-                                                ['linux', 'win32'].includes($root.info.runtime.platform) &&
+                                                ['linux', 'win32'].includes(runtimePlatform) &&
                                                 !$root.info.isContainer
                                             "
                                             value="system-service"
@@ -1249,14 +1249,14 @@
                                     />
 
                                     <div class="form-text">
-                                        <template v-if="$root.info.runtime.platform === 'linux'">
+                                        <template v-if="runtimePlatform === 'linux'">
                                             {{
                                                 $t("systemServiceDescriptionLinux", {
                                                     service_name: monitor.system_service_name || "nginx",
                                                 })
                                             }}
                                         </template>
-                                        <template v-else-if="$root.info.runtime.platform === 'win32'">
+                                        <template v-else-if="runtimePlatform === 'win32'">
                                             {{
                                                 $t("systemServiceDescriptionWindows", {
                                                     service_name: monitor.system_service_name || "Dnscache",
@@ -1277,7 +1277,7 @@
                                                 /^[a-zA-Z0-9_\-\.\@\ ]+$/.test(monitor.system_service_name)
                                             "
                                         >
-                                            <div v-if="$root.info.runtime.platform === 'linux'" class="mt-2">
+                                            <div v-if="runtimePlatform === 'linux'" class="mt-2">
                                                 <div>
                                                     <i18n-t keypath="systemServiceCommandHint" tag="span">
                                                         <template #command>
@@ -1292,7 +1292,7 @@
                                                     {{ $t("systemServiceExpectedOutput", ["active"]) }}
                                                 </div>
                                             </div>
-                                            <div v-else-if="$root.info.runtime.platform === 'win32'" class="mt-2">
+                                            <div v-else-if="runtimePlatform === 'win32'" class="mt-2">
                                                 <div>
                                                     <i18n-t keypath="systemServiceCommandHint" tag="span">
                                                         <template #command>
@@ -1803,7 +1803,7 @@
                                     step="1"
                                 />
                                 <div
-                                    v-if="$root.info.runtime.platform === 'linux' && monitor.packetSize < 16"
+                                    v-if="runtimePlatform === 'linux' && monitor.packetSize < 16"
                                     class="form-text text-warning"
                                 >
                                     {{ $t("pingPacketSizeWarning") }}
@@ -3518,6 +3518,10 @@ message HealthCheckResponse {
 
         supportsNetworkRoute() {
             return networkRouteMonitorTypes.includes(this.monitor.type);
+        },
+
+        runtimePlatform() {
+            return this.$root.info?.runtime?.platform;
         },
     },
     watch: {
