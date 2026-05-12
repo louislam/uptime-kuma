@@ -1076,7 +1076,7 @@ function createCloudflareSocketStub(app) {
                         method: "DELETE",
                     });
                     await app.loadCloudflareWorkerData();
-                    callback?.(body);
+                    callback?.({ ok: true, msg: "Deleted", ...body });
                     return;
                 }
 
