@@ -340,7 +340,7 @@
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li>
                             <button type="button" class="dropdown-item" @click="clearEventsDialog">
-                                {{ $t("Events") }}
+                                {{ isClearEventsArmed ? $t("Click again to confirm") : $t("Events") }}
                             </button>
                         </li>
                         <li>
@@ -464,6 +464,11 @@ import "prismjs/components/prism-css";
 import { PrismEditor } from "vue-prism-editor";
 import "vue-prism-editor/dist/prismeditor.min.css";
 import ScreenshotDialog from "../components/ScreenshotDialog.vue";
+import {
+    isDoubleClickConfirmArmed,
+    requireDoubleClickConfirm,
+    resetDoubleClickConfirm,
+} from "../util/double-click-confirm.mjs";
 
 export default {
     components: {
@@ -501,6 +506,8 @@ export default {
             },
             deleteChildrenMonitors: false,
             checkingNow: false,
+            doubleClickConfirmAction: null,
+            doubleClickConfirmTimer: null,
         };
     },
     computed: {
@@ -605,6 +612,9 @@ export default {
                 return "";
             }
         },
+        isClearEventsArmed() {
+            return isDoubleClickConfirmArmed(this, "clear-events");
+        },
     },
 
     watch: {
@@ -640,6 +650,7 @@ export default {
 
     beforeUnmount() {
         this.$root.emitter.off("newImportantHeartbeat", this.onNewImportantHeartbeat);
+        resetDoubleClickConfirm(this);
     },
 
     methods: {
@@ -725,7 +736,9 @@ export default {
          * @returns {void}
          */
         clearEventsDialog() {
-            this.$refs.confirmClearEvents.show();
+            requireDoubleClickConfirm(this, "clear-events", () => {
+                this.$refs.confirmClearEvents.show();
+            });
         },
 
         /**

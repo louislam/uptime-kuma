@@ -698,6 +698,7 @@
     "pauseMonitorMsg": "Are you sure want to pause?",
     "enableDefaultNotificationDescription": "This notification will be enabled by default for new monitors. You can still disable the notification separately for each monitor.",
     "Clear All Events": "Clear All Events",
+    "Click again to confirm": "Click again to confirm",
     "clearAllEventsMsg": "Are you sure you want to delete all events for all monitors? This permanently removes associated message data and cannot be undone.",
     "Events cleared successfully": "Events cleared successfully.",
     "No monitors found": "No monitors found.",

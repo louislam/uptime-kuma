@@ -39,11 +39,12 @@
             <div class="shadow-box table-shadow-box table-wrapper">
                 <div class="mb-3 text-end">
                     <button
-                        class="btn btn-sm btn-outline-danger"
+                        class="btn btn-sm"
+                        :class="isClearAllEventsArmed ? 'btn-danger' : 'btn-outline-danger'"
                         :disabled="clearingAllEvents"
                         @click="clearAllEventsDialog"
                     >
-                        {{ $t("Clear All Events") }}
+                        {{ isClearAllEventsArmed ? $t("Click again to confirm") : $t("Clear All Events") }}
                     </button>
                 </div>
                 <table class="table table-borderless table-hover">
@@ -117,6 +118,11 @@ import Status from "../components/Status.vue";
 import Datetime from "../components/Datetime.vue";
 import Pagination from "v-pagination-3";
 import Confirm from "../components/Confirm.vue";
+import {
+    isDoubleClickConfirmArmed,
+    requireDoubleClickConfirm,
+    resetDoubleClickConfirm,
+} from "../util/double-click-confirm.mjs";
 
 export default {
     components: {
@@ -143,6 +149,8 @@ export default {
             importantHeartBeatListLength: 0,
             displayedRecords: [],
             clearingAllEvents: false,
+            doubleClickConfirmAction: null,
+            doubleClickConfirmTimer: null,
         };
     },
     computed: {
@@ -151,6 +159,9 @@ export default {
         },
         tableColumnCount() {
             return this.showGroupColumn ? 5 : 4;
+        },
+        isClearAllEventsArmed() {
+            return isDoubleClickConfirmArmed(this, "clear-all-events");
         },
     },
     watch: {
@@ -180,6 +191,7 @@ export default {
         this.$root.emitter.off("newImportantHeartbeat", this.onNewImportantHeartbeat);
 
         window.removeEventListener("resize", this.updatePerPage);
+        resetDoubleClickConfirm(this);
     },
 
     methods: {
@@ -266,7 +278,9 @@ export default {
         },
 
         clearAllEventsDialog() {
-            this.$refs.confirmClearEvents.show();
+            requireDoubleClickConfirm(this, "clear-all-events", () => {
+                this.$refs.confirmClearEvents.show();
+            });
         },
         clearAllEvents() {
             this.clearingAllEvents = true;
