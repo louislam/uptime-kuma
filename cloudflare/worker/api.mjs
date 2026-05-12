@@ -87,6 +87,10 @@ export async function handleApiRequest(request, env) {
             return json({ ok: true, msg: "Monitor saved", monitorID });
         }
 
+        if (route.name === "import-monitors") {
+            return json(await importMonitors(env, await request.json()));
+        }
+
         if (route.name === "monitor") {
             const monitor = await getSerializedMonitor(env, Number(route.params.monitorId));
             if (!monitor) {
@@ -327,6 +331,121 @@ export async function createMonitor(env, monitorInput) {
         .bind(...monitorValues(monitor, true), monitorConfigJson(monitorInput, {}, monitor))
         .run();
     return Number(result.meta?.last_row_id || result.meta?.last_rowid || result.lastRowId || result.last_row_id);
+}
+
+/**
+ * Import monitors from an Uptime Kuma backup payload into the Worker D1 store.
+ * @param {object} env Cloudflare Worker environment bindings.
+ * @param {object|object[]} importInput Import request body or monitor array.
+ * @returns {Promise<object>} Import summary with one result per source monitor.
+ */
+export async function importMonitors(env, importInput = {}) {
+    const monitors = extractImportMonitors(importInput);
+    const importHandle = normalizeImportHandle(importInput.importHandle || importInput.mode);
+    const existingRows = await listMonitorRows(env);
+    const existingByName = new Map(existingRows.map((monitor) => [monitor.name, monitor]));
+    const results = [];
+    let imported = 0;
+    let skipped = 0;
+    let unsupported = 0;
+    let overwritten = 0;
+    let failed = 0;
+
+    for (const sourceMonitor of monitors) {
+        const name = String(sourceMonitor?.name || "").trim();
+        const type = sourceMonitor?.type;
+        const result = { name, type };
+
+        if (!WORKER_MONITOR_TYPES.has(type)) {
+            unsupported++;
+            results.push({
+                ...result,
+                status: "unsupported",
+                reason: `Unsupported monitor type: ${type || "unknown"}`,
+            });
+            continue;
+        }
+
+        if (!name) {
+            failed++;
+            results.push({
+                ...result,
+                status: "failed",
+                reason: "Monitor name is required",
+            });
+            continue;
+        }
+
+        const existing = existingByName.get(name);
+        if (existing && importHandle === "skip") {
+            skipped++;
+            results.push({
+                ...result,
+                status: "skipped",
+                reason: "Monitor already exists",
+                monitorID: Number(existing.id),
+            });
+            continue;
+        }
+
+        try {
+            if (existing && importHandle === "overwrite") {
+                await deleteMonitor(env, Number(existing.id));
+                existingByName.delete(name);
+                overwritten++;
+            }
+
+            const monitorID = await createMonitor(env, normalizeImportedMonitor(sourceMonitor));
+            const importedMonitor = {
+                ...result,
+                status: "imported",
+                monitorID,
+            };
+            imported++;
+            existingByName.set(name, { id: monitorID, name });
+            results.push(importedMonitor);
+        } catch (error) {
+            failed++;
+            results.push({
+                ...result,
+                status: "failed",
+                reason: error.message,
+            });
+        }
+    }
+
+    return {
+        ok: failed === 0,
+        msg: monitorImportMessage({ imported, skipped, unsupported, failed }),
+        total: monitors.length,
+        imported,
+        skipped,
+        unsupported,
+        overwritten,
+        failed,
+        results,
+    };
+}
+
+/**
+ * Build a user-facing import summary message.
+ * @param {object} summary Import counters.
+ * @returns {string} Summary sentence.
+ */
+function monitorImportMessage(summary) {
+    const parts = [
+        `Imported ${summary.imported} monitor${summary.imported === 1 ? "" : "s"}`,
+    ];
+    if (summary.skipped) {
+        parts.push(`skipped ${summary.skipped}`);
+    }
+    if (summary.unsupported) {
+        parts.push(`unsupported ${summary.unsupported}`);
+    }
+    if (summary.failed) {
+        parts.push(`failed ${summary.failed}`);
+    }
+    return `${parts.join(", ")}.`;
 }
 
 export async function updateMonitor(env, monitorId, monitorInput) {
@@ -575,6 +694,101 @@ function normalizeMonitorInput(input, existing = {}) {
 }
 
 /**
+ * Extract a monitor array from supported Uptime Kuma backup shapes.
+ * @param {object|object[]} input Import payload.
+ * @returns {object[]} Source monitor objects.
+ */
+function extractImportMonitors(input) {
+    if (Array.isArray(input)) {
+        return input;
+    }
+    if (!input || typeof input !== "object") {
+        throw httpError(400, "Import payload must be a JSON object or monitor array");
+    }
+    if (input.backup) {
+        return extractImportMonitors(input.backup);
+    }
+    if (input.monitorList) {
+        return monitorCollectionToArray(input.monitorList);
+    }
+    if (input.monitors) {
+        return monitorCollectionToArray(input.monitors);
+    }
+    throw httpError(400, "Import payload must include monitorList or monitors");
+}
+
+/**
+ * Convert an array or object-keyed monitor collection into an array.
+ * @param {object[]|object} collection Monitor collection from backup JSON.
+ * @returns {object[]} Source monitor objects.
+ */
+function monitorCollectionToArray(collection) {
+    if (Array.isArray(collection)) {
+        return collection;
+    }
+    if (collection && typeof collection === "object") {
+        return Object.values(collection);
+    }
+    throw httpError(400, "Monitor import list must be an array or object");
+}
+
+/**
+ * Normalize the duplicate-name handling mode.
+ * @param {string} value Raw import mode.
+ * @returns {"skip"|"overwrite"} Normalized import mode.
+ */
+function normalizeImportHandle(value) {
+    if (value === "overwrite") {
+        return "overwrite";
+    }
+    return "skip";
+}
+
+/**
+ * Normalize JSON-ish Uptime Kuma monitor fields for Worker monitor creation.
+ * @param {object} source Source monitor from backup JSON.
+ * @returns {object} Monitor payload accepted by createMonitor.
+ */
+function normalizeImportedMonitor(source) {
+    const monitor = {
+        ...source,
+        networkProfileId: normalizeNetworkProfileId(source.networkProfileId ?? source.network_profile_id),
+    };
+
+    if (monitor.headers && typeof monitor.headers !== "string") {
+        monitor.headers = JSON.stringify(monitor.headers);
+    }
+    if (monitor.body && typeof monitor.body !== "string") {
+        monitor.body = JSON.stringify(monitor.body);
+    }
+    if (monitor.accepted_statuscodes) {
+        monitor.accepted_statuscodes = normalizeAcceptedStatusCodes(monitor.accepted_statuscodes);
+    }
+    return monitor;
+}
+
+/**
+ * Normalize accepted status codes from array, JSON string, or comma string input.
+ * @param {string|string[]} value Raw accepted status code value.
+ * @returns {string[]} Accepted status codes.
+ */
+function normalizeAcceptedStatusCodes(value) {
+    if (Array.isArray(value)) {
+        return value.map((statusCode) => String(statusCode));
+    }
+    if (typeof value === "string") {
+        try {
+            const parsed = JSON.parse(value);
+            if (Array.isArray(parsed)) {
+                return parsed.map((statusCode) => String(statusCode));
+            }
+        } catch (_) {}
+        return value.split(",").map((statusCode) => statusCode.trim()).filter(Boolean);
+    }
+    return monitorConfigDefaults("http").accepted_statuscodes;
+}
+
+/**
  * Build the persisted edit-form configuration for fields outside runner columns.
  * @param {object} input Request body sent from the edit form.
  * @param {object} existing Existing monitor row from D1.
@@ -801,6 +1015,9 @@ function matchRoute(method, pathname) {
     }
     if (method === "POST" && pathname === "/api/monitors") {
         return { name: "create-monitor", params: {} };
+    }
+    if (method === "POST" && pathname === "/api/monitors/import") {
+        return { name: "import-monitors", params: {} };
     }
     if (method === "GET" && pathname === "/api/network-profiles") {
         return { name: "network-profiles", params: {} };

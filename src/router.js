@@ -32,6 +32,7 @@ import Proxies from "./components/settings/Proxies.vue";
 import About from "./components/settings/About.vue";
 import RemoteBrowsers from "./components/settings/RemoteBrowsers.vue";
 import Twingate from "./components/settings/Twingate.vue";
+import ImportMonitors from "./components/settings/ImportMonitors.vue";
 
 const routes = [
     {
@@ -123,6 +124,10 @@ const routes = [
                             {
                                 path: "twingate",
                                 component: Twingate,
+                            },
+                            {
+                                path: "import-monitors",
+                                component: ImportMonitors,
                             },
                             {
                                 path: "security",

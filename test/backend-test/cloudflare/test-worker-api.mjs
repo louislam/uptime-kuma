@@ -585,6 +585,139 @@ describe("Cloudflare Worker API", () => {
         });
     });
 
+    test("imports supported monitors from an Uptime Kuma backup and reports skipped rows", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                {
+                    id: 7,
+                    name: "Existing HTTP",
+                    type: "http",
+                    url: "https://existing.example.com",
+                    active: 1,
+                },
+            ],
+            nextMonitorId: 8,
+        });
+
+        const response = await handleApiRequest(
+            new Request("https://example.com/api/monitors/import", {
+                method: "POST",
+                body: JSON.stringify({
+                    importHandle: "skip",
+                    backup: {
+                        version: "2.0.0",
+                        monitorList: {
+                            1: {
+                                name: "Existing HTTP",
+                                type: "http",
+                                url: "https://duplicate.example.com",
+                            },
+                            2: {
+                                name: "Imported Keyword",
+                                type: "keyword",
+                                url: "https://example.com/health",
+                                method: "POST",
+                                headers: "{\"x-test\":\"true\"}",
+                                body: "{\"probe\":true}",
+                                keyword: "ok",
+                                invertKeyword: true,
+                                timeout: 12,
+                                interval: 45,
+                                active: false,
+                                accepted_statuscodes: ["200-299", "418"],
+                                maxretries: 3,
+                                basic_auth_user: "probe-user",
+                                basic_auth_pass: "probe-pass",
+                            },
+                            3: {
+                                name: "Imported DNS",
+                                type: "dns",
+                                hostname: "example.com",
+                            },
+                        },
+                    },
+                }),
+            }),
+            env
+        );
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.deepStrictEqual(
+            pick(body, ["ok", "imported", "skipped", "unsupported", "total"]),
+            {
+                ok: true,
+                imported: 1,
+                skipped: 1,
+                unsupported: 1,
+                total: 3,
+            }
+        );
+        assert.strictEqual(body.results[0].status, "skipped");
+        assert.strictEqual(body.results[1].status, "imported");
+        assert.strictEqual(body.results[2].reason, "Unsupported monitor type: dns");
+        assert.strictEqual(env.state.monitors.length, 2);
+
+        const imported = env.state.monitors.find((monitor) => monitor.name === "Imported Keyword");
+        assert.strictEqual(imported.id, 8);
+        assert.strictEqual(imported.type, "keyword");
+        assert.strictEqual(imported.url, "https://example.com/health");
+        assert.strictEqual(imported.method, "POST");
+        assert.strictEqual(imported.keyword, "ok");
+        assert.strictEqual(imported.invert_keyword, 1);
+        assert.strictEqual(imported.timeout, 12);
+        assert.strictEqual(imported.interval, 45);
+        assert.strictEqual(imported.active, 0);
+        assert.deepStrictEqual(JSON.parse(imported.config_json).accepted_statuscodes, ["200-299", "418"]);
+        assert.strictEqual(JSON.parse(imported.config_json).basic_auth_user, "probe-user");
+    });
+
+    test("can replace an existing monitor while importing an Uptime Kuma backup", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                {
+                    id: 12,
+                    name: "Existing HTTP",
+                    type: "http",
+                    url: "https://old.example.com",
+                    active: 1,
+                },
+            ],
+            heartbeats: [
+                { monitor_id: 12, status: 1, ping: 10, msg: "200 - OK" },
+            ],
+            nextMonitorId: 13,
+        });
+
+        const response = await handleApiRequest(
+            new Request("https://example.com/api/monitors/import", {
+                method: "POST",
+                body: JSON.stringify({
+                    importHandle: "overwrite",
+                    monitors: [
+                        {
+                            name: "Existing HTTP",
+                            type: "http",
+                            url: "https://new.example.com",
+                        },
+                    ],
+                }),
+            }),
+            env
+        );
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(body.imported, 1);
+        assert.strictEqual(body.overwritten, 1);
+        assert.strictEqual(env.state.monitors.length, 1);
+        assert.strictEqual(env.state.monitors[0].id, 13);
+        assert.strictEqual(env.state.monitors[0].url, "https://new.example.com");
+        assert.deepStrictEqual(env.state.heartbeats, []);
+    });
+
     test("lists and clears monitor heartbeats", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({

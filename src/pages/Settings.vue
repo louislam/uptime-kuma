@@ -92,11 +92,11 @@ export default {
             if (!this.$root.isCloudflareWorkerUI || !this.currentPage) {
                 return false;
             }
-            return !["general", "appearance", "twingate"].includes(this.currentPage);
+            return !["general", "appearance", "twingate", "import-monitors"].includes(this.currentPage);
         },
 
         subMenus() {
-            return {
+            const menus = {
                 general: {
                     title: this.$t("General"),
                 },
@@ -137,6 +137,14 @@ export default {
                     title: this.$t("About"),
                 },
             };
+
+            if (this.$root.isCloudflareWorkerUI) {
+                menus["import-monitors"] = {
+                    title: "Import Monitors",
+                };
+            }
+
+            return menus;
         },
     },
 

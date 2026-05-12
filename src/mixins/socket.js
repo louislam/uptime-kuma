@@ -1036,6 +1036,20 @@ function createCloudflareSocketStub(app) {
                     return;
                 }
 
+                if (event === "uploadBackup") {
+                    const [uploadedJSON, importHandle] = args;
+                    const body = await requestCloudflareJson("/api/monitors/import", {
+                        method: "POST",
+                        body: JSON.stringify({
+                            backup: JSON.parse(uploadedJSON || "{}"),
+                            importHandle,
+                        }),
+                    });
+                    await app.loadCloudflareWorkerData();
+                    callback?.(body);
+                    return;
+                }
+
                 if (event === "editMonitor") {
                     const monitor = args[0] || {};
                     const body = await requestCloudflareJson(`/api/monitors/${monitor.id}`, {
