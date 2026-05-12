@@ -37,11 +37,17 @@ const MONITOR_CONFIG_EXCLUDED_FIELDS = new Set([
     "active",
     "lastHeartbeat",
     "path",
+    "pathName",
     "childrenIDs",
     "tags",
     "notificationIDList",
     "parent",
+    "parentName",
+    "parent_name",
+    "groupName",
+    "group_name",
     "getUrl",
+    "__derivedGroupPath",
 ]);
 
 const MISSING_CONFIG_JSON_COLUMN = /no such column:\s*config_json/i;
@@ -388,13 +394,16 @@ export async function createMonitor(env, monitorInput) {
  * Import monitors from an Uptime Kuma backup payload into the Worker D1 store.
  * @param {object} env Cloudflare Worker environment bindings.
  * @param {object|object[]} importInput Import request body or monitor array.
- * @returns {Promise<object>} Import summary with one result per source monitor.
+ * @returns {Promise<object>} Import summary with one result per imported or derived monitor.
  */
 export async function importMonitors(env, importInput = {}) {
-    const monitors = extractImportMonitors(importInput);
+    const sourceMonitors = extractImportMonitors(importInput);
     const importHandle = normalizeImportHandle(importInput.importHandle || importInput.mode);
     const existingRows = await listMonitorRows(env);
+    const existingRelationshipData = buildMonitorRelationshipData(existingRows);
     const existingByName = new Map(existingRows.map((monitor) => [monitor.name, monitor]));
+    const existingGroupByPath = buildExistingGroupPathIndex(existingRows, existingRelationshipData);
+    const monitors = expandImportMonitorsWithMissingGroups(sourceMonitors);
     const importedIdBySourceId = new Map();
     const pendingParents = [];
     const results = [];
@@ -429,7 +438,7 @@ export async function importMonitors(env, importInput = {}) {
             continue;
         }
 
-        const existing = existingByName.get(name);
+        const existing = findExistingImportMonitor(sourceMonitor, existingByName, existingGroupByPath);
         if (existing && importHandle === "skip") {
             skipped++;
             rememberImportedSourceId(importedIdBySourceId, sourceMonitor, Number(existing.id));
@@ -445,27 +454,32 @@ export async function importMonitors(env, importInput = {}) {
         try {
             if (existing && importHandle === "overwrite") {
                 await deleteMonitor(env, Number(existing.id));
-                existingByName.delete(name);
+                removeExistingImportMonitor(existing, sourceMonitor, existingByName, existingGroupByPath);
                 overwritten++;
             }
 
             const normalizedMonitor = normalizeImportedMonitor(sourceMonitor);
-            const sourceParent = normalizeImportParentId(sourceMonitor.parent);
+            const sourceParent = normalizeImportSourceReference(sourceMonitor.parent);
             if (sourceParent != null) {
                 normalizedMonitor.parent = importedIdBySourceId.get(sourceParent) || null;
             }
             const monitorID = await createMonitor(env, normalizedMonitor);
             rememberImportedSourceId(importedIdBySourceId, sourceMonitor, monitorID);
-            if (sourceParent != null && !normalizedMonitor.parent) {
-                pendingParents.push({ monitorID, sourceParent });
-            }
             const importedMonitor = {
                 ...result,
                 status: "imported",
                 monitorID,
             };
+            if (sourceParent != null && !normalizedMonitor.parent) {
+                pendingParents.push({ monitorID, sourceParent, result: importedMonitor });
+            }
             imported++;
-            existingByName.set(name, { id: monitorID, name });
+            rememberExistingImportMonitor(
+                existingByName,
+                existingGroupByPath,
+                sourceMonitor,
+                { id: monitorID, name, type, parent: normalizedMonitor.parent }
+            );
             results.push(importedMonitor);
         } catch (error) {
             failed++;
@@ -481,6 +495,8 @@ export async function importMonitors(env, importInput = {}) {
         const parent = importedIdBySourceId.get(pendingParent.sourceParent);
         if (parent) {
             await updateMonitorParent(env, pendingParent.monitorID, parent);
+        } else {
+            pendingParent.result.reason = `Parent monitor ${pendingParent.sourceParent} was not found; imported at top level`;
         }
     }
 
@@ -1091,6 +1107,253 @@ function normalizeImportHandle(value) {
 }
 
 /**
+ * Add synthetic group monitor rows for Uptime Kuma exports that include path
+ * metadata but omit matching group monitor rows.
+ * @param {object[]} monitors Source monitor objects.
+ * @returns {object[]} Original monitors plus derived groups.
+ */
+function expandImportMonitorsWithMissingGroups(monitors) {
+    const expanded = [];
+    const derivedGroupsByPath = new Map();
+    const explicitGroupRefsByPath = new Map();
+    const sourceRefs = new Set(
+        monitors.map((monitor) => normalizeImportSourceReference(monitor?.id)).filter((ref) => ref != null)
+    );
+
+    for (const monitor of monitors) {
+        if (monitor?.type !== "group") {
+            continue;
+        }
+        const groupPath = extractImportFullPath(monitor);
+        const sourceRef = normalizeImportSourceReference(monitor.id);
+        if (sourceRef != null && groupPath.length > 0) {
+            explicitGroupRefsByPath.set(importPathKey(groupPath), sourceRef);
+        }
+    }
+
+    const ensureGroup = (groupPath) => {
+        const key = importPathKey(groupPath);
+        const explicitRef = explicitGroupRefsByPath.get(key);
+        if (explicitRef != null) {
+            return explicitRef;
+        }
+        if (derivedGroupsByPath.has(key)) {
+            return derivedGroupsByPath.get(key).id;
+        }
+
+        const parentPath = groupPath.slice(0, -1);
+        const id = `derived-group:${key}`;
+        const group = {
+            id,
+            name: groupPath[groupPath.length - 1],
+            type: "group",
+            active: 1,
+            parent: parentPath.length > 0 ? ensureGroup(parentPath) : null,
+            __derivedGroupPath: groupPath,
+        };
+        derivedGroupsByPath.set(key, group);
+        expanded.push(group);
+        return id;
+    };
+
+    for (const source of monitors) {
+        const groupPath = extractImportGroupPath(source);
+        let monitor = source;
+        if (groupPath.length > 0) {
+            const derivedParent = ensureGroup(groupPath);
+            const sourceParent = normalizeImportSourceReference(source.parent);
+            if (sourceParent == null || !sourceRefs.has(sourceParent)) {
+                monitor = {
+                    ...source,
+                    parent: derivedParent,
+                };
+            }
+        }
+        expanded.push(monitor);
+    }
+
+    return expanded;
+}
+
+/**
+ * Build an index of existing group monitor rows by their full path.
+ * @param {object[]} existingRows Existing monitor rows.
+ * @param {object} relationshipData Existing monitor relationship data.
+ * @returns {Map<string, object>} Existing group rows keyed by full path.
+ */
+function buildExistingGroupPathIndex(existingRows, relationshipData) {
+    const existingGroupByPath = new Map();
+    for (const monitor of existingRows) {
+        if (monitor.type !== "group") {
+            continue;
+        }
+        const path = relationshipData.paths.get(Number(monitor.id)) || [monitor.name || ""];
+        existingGroupByPath.set(importPathKey(path), monitor);
+    }
+    return existingGroupByPath;
+}
+
+/**
+ * Find an existing monitor row for the current import source.
+ * @param {object} source Source monitor.
+ * @param {Map<string, object>} existingByName Existing rows keyed by name.
+ * @param {Map<string, object>} existingGroupByPath Existing group rows keyed by path.
+ * @returns {object|undefined} Existing row if one should be reused/replaced.
+ */
+function findExistingImportMonitor(source, existingByName, existingGroupByPath) {
+    if (source?.type === "group") {
+        const groupPath = source.__derivedGroupPath || extractImportFullPath(source);
+        if (groupPath.length > 0) {
+            const byPath = existingGroupByPath.get(importPathKey(groupPath));
+            if (byPath) {
+                return byPath;
+            }
+            if (groupPath.length > 1) {
+                return undefined;
+            }
+        }
+    }
+    return existingByName.get(String(source?.name || "").trim());
+}
+
+/**
+ * Add a newly imported monitor to duplicate-detection indexes.
+ * @param {Map<string, object>} existingByName Existing rows keyed by name.
+ * @param {Map<string, object>} existingGroupByPath Existing group rows keyed by path.
+ * @param {object} source Source monitor.
+ * @param {object} monitor Imported monitor row.
+ * @returns {void}
+ */
+function rememberExistingImportMonitor(existingByName, existingGroupByPath, source, monitor) {
+    existingByName.set(monitor.name, monitor);
+    if (monitor.type !== "group") {
+        return;
+    }
+    const groupPath = source.__derivedGroupPath || extractImportFullPath(source);
+    if (groupPath.length > 0) {
+        existingGroupByPath.set(importPathKey(groupPath), monitor);
+    }
+}
+
+/**
+ * Remove a replaced monitor from duplicate-detection indexes.
+ * @param {object} existing Existing monitor row.
+ * @param {object} source Source monitor being imported.
+ * @param {Map<string, object>} existingByName Existing rows keyed by name.
+ * @param {Map<string, object>} existingGroupByPath Existing group rows keyed by path.
+ * @returns {void}
+ */
+function removeExistingImportMonitor(existing, source, existingByName, existingGroupByPath) {
+    const byName = existingByName.get(existing.name);
+    if (byName && Number(byName.id) === Number(existing.id)) {
+        existingByName.delete(existing.name);
+    }
+    if (existing.type !== "group") {
+        return;
+    }
+    const groupPath = source.__derivedGroupPath || extractImportFullPath(source);
+    if (groupPath.length > 0) {
+        existingGroupByPath.delete(importPathKey(groupPath));
+    }
+}
+
+/**
+ * Extract the full hierarchy path from Uptime Kuma import metadata.
+ * @param {object} source Source monitor.
+ * @returns {string[]} Full path including the monitor name when available.
+ */
+function extractImportFullPath(source) {
+    const path = normalizeImportPath(source?.path);
+    if (path.length > 0) {
+        return path;
+    }
+
+    const pathName = normalizeImportPathName(source?.pathName ?? source?.path_name);
+    if (pathName.length > 0) {
+        return pathName;
+    }
+
+    const parentName = normalizeImportPathSegment(
+        source?.parentName ?? source?.parent_name ?? source?.groupName ?? source?.group_name
+    );
+    const name = String(source?.name || "").trim();
+    if (parentName && name) {
+        return [parentName, name];
+    }
+
+    if (source?.type === "group" && name) {
+        return [name];
+    }
+
+    return [];
+}
+
+/**
+ * Extract only the group portion of an imported monitor's full path.
+ * @param {object} source Source monitor.
+ * @returns {string[]} Group path.
+ */
+function extractImportGroupPath(source) {
+    const fullPath = extractImportFullPath(source);
+    if (fullPath.length === 0) {
+        return [];
+    }
+    const name = String(source?.name || "").trim();
+    if (name && fullPath[fullPath.length - 1] === name) {
+        return fullPath.slice(0, -1);
+    }
+    return fullPath;
+}
+
+/**
+ * Normalize path array metadata.
+ * @param {unknown} value Raw path value.
+ * @returns {string[]} Normalized path segments.
+ */
+function normalizeImportPath(value) {
+    if (Array.isArray(value)) {
+        return value.map(normalizeImportPathSegment).filter(Boolean);
+    }
+    if (typeof value === "string") {
+        return normalizeImportPathName(value);
+    }
+    return [];
+}
+
+/**
+ * Normalize pathName-style metadata.
+ * @param {unknown} value Raw pathName value.
+ * @returns {string[]} Normalized path segments.
+ */
+function normalizeImportPathName(value) {
+    if (typeof value !== "string") {
+        return [];
+    }
+    return value.split(/\s*\/\s*/).map(normalizeImportPathSegment).filter(Boolean);
+}
+
+/**
+ * Normalize one hierarchy path segment.
+ * @param {unknown} value Raw segment.
+ * @returns {string} Normalized segment.
+ */
+function normalizeImportPathSegment(value) {
+    if (value && typeof value === "object" && "name" in value) {
+        return String(value.name || "").trim();
+    }
+    return String(value || "").trim();
+}
+
+/**
+ * Build a stable key for a monitor path.
+ * @param {string[]} path Path segments.
+ * @returns {string} Path key.
+ */
+function importPathKey(path) {
+    return path.map((segment) => String(segment).trim()).filter(Boolean).join(" / ");
+}
+
+/**
  * Sort source monitors so parent groups are usually created before children.
  * @param {object[]} monitors Source monitors.
  * @returns {object[]} Sorted source monitors.
@@ -1140,13 +1403,13 @@ function normalizeImportedMonitor(source) {
 
 /**
  * Track old-to-new ID mappings when source monitor IDs are present.
- * @param {Map<number, number>} importedIdBySourceId Source ID map.
+ * @param {Map<number|string, number>} importedIdBySourceId Source ID map.
  * @param {object} source Source monitor.
  * @param {number} monitorID New or existing monitor ID.
  * @returns {void}
  */
 function rememberImportedSourceId(importedIdBySourceId, source, monitorID) {
-    const sourceId = normalizeImportParentId(source.id);
+    const sourceId = normalizeImportSourceReference(source.id);
     if (sourceId != null) {
         importedIdBySourceId.set(sourceId, monitorID);
     }
@@ -1197,6 +1460,23 @@ function normalizeImportParentId(value) {
     }
     const id = Number(value);
     return Number.isFinite(id) && id > 0 ? id : null;
+}
+
+/**
+ * Normalize source import references, including synthetic group IDs.
+ * @param {unknown} value Raw source ID or parent reference.
+ * @returns {number|string|null} Numeric source ID, synthetic source ID, or null.
+ */
+function normalizeImportSourceReference(value) {
+    const numericId = normalizeImportParentId(value);
+    if (numericId != null) {
+        return numericId;
+    }
+    if (typeof value === "string") {
+        const trimmed = value.trim();
+        return trimmed ? trimmed : null;
+    }
+    return null;
 }
 
 /**

@@ -724,6 +724,133 @@ describe("Cloudflare Worker API", () => {
         assert.deepStrictEqual(byName["Nested Site"].path, ["Websites", "Nested Group", "Nested Site"]);
     });
 
+    test("creates missing groups from Uptime Kuma path metadata during import", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({});
+
+        const response = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/import", {
+                method: "POST",
+                body: JSON.stringify({
+                    monitors: [
+                        {
+                            id: 21,
+                            name: "Node 4",
+                            type: "ping",
+                            hostname: "node4.example.com",
+                            path: ["Corporate", "Node 4"],
+                            active: 1,
+                        },
+                        {
+                            id: 22,
+                            name: "Security Check",
+                            type: "http",
+                            url: "https://accounting.example.com/health",
+                            path: ["Sites", "Accounting", "Security Check"],
+                            active: 1,
+                        },
+                    ],
+                }),
+            }),
+            env
+        );
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(body.imported, 5);
+        assert.strictEqual(env.state.monitors.length, 5);
+
+        const byName = Object.fromEntries(env.state.monitors.map((monitor) => [monitor.name, monitor]));
+        assert.strictEqual(byName.Corporate.type, "group");
+        assert.strictEqual(byName["Node 4"].parent, byName.Corporate.id);
+        assert.strictEqual(byName.Sites.type, "group");
+        assert.strictEqual(byName.Accounting.type, "group");
+        assert.strictEqual(byName.Accounting.parent, byName.Sites.id);
+        assert.strictEqual(byName["Security Check"].parent, byName.Accounting.id);
+
+        const listResponse = await handleApiRequest(adminRequest("https://example.com/api/monitors"), env);
+        const listBody = await listResponse.json();
+        const listedByName = Object.fromEntries(listBody.monitors.map((monitor) => [monitor.name, monitor]));
+        assert.deepStrictEqual(listedByName["Node 4"].path, ["Corporate", "Node 4"]);
+        assert.deepStrictEqual(listedByName["Security Check"].path, ["Sites", "Accounting", "Security Check"]);
+    });
+
+    test("reuses existing groups when importing Uptime Kuma path metadata in skip mode", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                {
+                    id: 7,
+                    name: "Corporate",
+                    type: "group",
+                    parent: null,
+                    active: 1,
+                },
+            ],
+            nextMonitorId: 8,
+        });
+
+        const response = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/import", {
+                method: "POST",
+                body: JSON.stringify({
+                    importHandle: "skip",
+                    monitors: [
+                        {
+                            id: 31,
+                            name: "Node 4",
+                            type: "ping",
+                            hostname: "node4.example.com",
+                            pathName: "Corporate / Node 4",
+                            active: 1,
+                        },
+                    ],
+                }),
+            }),
+            env
+        );
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(body.imported, 1);
+        assert.strictEqual(body.skipped, 1);
+        assert.strictEqual(env.state.monitors.filter((monitor) => monitor.name === "Corporate").length, 1);
+
+        const imported = env.state.monitors.find((monitor) => monitor.name === "Node 4");
+        assert.strictEqual(imported.parent, 7);
+    });
+
+    test("does not create placeholder groups for missing parent IDs without hierarchy metadata", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({});
+
+        const response = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/import", {
+                method: "POST",
+                body: JSON.stringify({
+                    monitors: [
+                        {
+                            id: 41,
+                            name: "Orphan HTTP",
+                            type: "http",
+                            url: "https://orphan.example.com",
+                            parent: 999,
+                            active: 1,
+                        },
+                    ],
+                }),
+            }),
+            env
+        );
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(body.imported, 1);
+        assert.strictEqual(env.state.monitors.length, 1);
+        assert.strictEqual(env.state.monitors[0].parent, null);
+        assert.match(body.results[0].reason, /Parent monitor 999 was not found/);
+    });
+
     test("imports supported monitors from an Uptime Kuma backup and reports skipped rows", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({
