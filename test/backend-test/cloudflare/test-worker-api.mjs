@@ -552,6 +552,43 @@ describe("Cloudflare Worker API", () => {
         assert.strictEqual(env.state.monitorNotifications.length, 0);
     });
 
+    test("self-heals missing notification tables before listing Worker notifications", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            missingNotificationTables: true,
+        });
+
+        const response = await handleApiRequest(adminRequest("https://example.com/api/notifications"), env);
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.deepStrictEqual(body, { notifications: [] });
+        assert.strictEqual(env.state.missingNotificationTables, false);
+    });
+
+    test("self-heals missing notification tables before saving Worker notifications", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            missingNotificationTables: true,
+        });
+
+        const response = await handleApiRequest(
+            adminRequest("https://example.com/api/notifications", {
+                method: "POST",
+                body: JSON.stringify({
+                    type: "webhook",
+                    name: "Webhook Alerts",
+                }),
+            }),
+            env
+        );
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(env.state.notifications.length, 1);
+        assert.strictEqual(env.state.notifications[0].name, "Webhook Alerts");
+        assert.strictEqual(env.state.missingNotificationTables, false);
+    });
+
     test("creates, reads, updates, toggles, and deletes a supported monitor", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({});
@@ -1626,6 +1663,7 @@ function createEnv(initial) {
         nextNotificationId: initial.nextNotificationId || 1,
         missingConfigJsonColumn: Boolean(initial.missingConfigJsonColumn),
         missingParentColumn: Boolean(initial.missingParentColumn),
+        missingNotificationTables: Boolean(initial.missingNotificationTables),
     };
 
     return {
@@ -1795,6 +1833,9 @@ function createStatement(sql, state) {
                 };
             }
             if (sql.includes("FROM notification")) {
+                if (state.missingNotificationTables) {
+                    throw new Error("no such table: notification");
+                }
                 return { results: [...state.notifications] };
             }
             if (sql.includes("FROM monitors")) {
@@ -1838,6 +1879,9 @@ function createStatement(sql, state) {
                 return state.profiles.find((profile) => profile.id === id && profile.enabled) || null;
             }
             if (sql.includes("FROM notification")) {
+                if (state.missingNotificationTables) {
+                    throw new Error("no such table: notification");
+                }
                 const id = Number(this.values[0]);
                 return state.notifications.find((notification) => notification.id === id) || null;
             }
@@ -1852,6 +1896,17 @@ function createStatement(sql, state) {
                 return { success: true };
             }
             if (sql.includes("CREATE INDEX IF NOT EXISTS idx_monitors_parent")) {
+                return { success: true };
+            }
+            if (sql.includes("CREATE TABLE IF NOT EXISTS notification")) {
+                state.missingNotificationTables = false;
+                return { success: true };
+            }
+            if (sql.includes("CREATE TABLE IF NOT EXISTS monitor_notification")) {
+                state.missingNotificationTables = false;
+                return { success: true };
+            }
+            if (sql.includes("CREATE INDEX IF NOT EXISTS monitor_notification_index")) {
                 return { success: true };
             }
             if (sql.includes("INSERT INTO app_settings")) {

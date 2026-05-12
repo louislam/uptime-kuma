@@ -52,6 +52,23 @@ const MONITOR_CONFIG_EXCLUDED_FIELDS = new Set([
 
 const MISSING_CONFIG_JSON_COLUMN = /no such column:\s*config_json/i;
 const MISSING_PARENT_COLUMN = /(?:no such column:\s*parent|no column named parent)/i;
+const NOTIFICATION_TABLE_SQL = `CREATE TABLE IF NOT EXISTS notification (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT,
+    active INTEGER NOT NULL DEFAULT 1,
+    user_id INTEGER,
+    is_default INTEGER NOT NULL DEFAULT 0,
+    config TEXT
+)`;
+const MONITOR_NOTIFICATION_TABLE_SQL = `CREATE TABLE IF NOT EXISTS monitor_notification (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    monitor_id INTEGER NOT NULL,
+    notification_id INTEGER NOT NULL,
+    FOREIGN KEY (monitor_id) REFERENCES monitors(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (notification_id) REFERENCES notification(id) ON DELETE CASCADE ON UPDATE CASCADE
+)`;
+const MONITOR_NOTIFICATION_INDEX_SQL =
+    "CREATE INDEX IF NOT EXISTS monitor_notification_index ON monitor_notification(monitor_id, notification_id)";
 const ACCESS_CERT_CACHE_TTL_MS = 60 * 60 * 1000;
 const accessCertCache = new Map();
 const ADMIN_ROUTE_NAMES = new Set([
@@ -264,6 +281,7 @@ export async function setUiSettings(env, settings) {
 }
 
 export async function listNotifications(env) {
+    await ensureNotificationTables(env);
     const result = await env.DB.prepare(
         `SELECT id, name, active, user_id, is_default, config
          FROM notification
@@ -273,6 +291,7 @@ export async function listNotifications(env) {
 }
 
 export async function saveNotification(env, notificationInput, notificationId = null) {
+    await ensureNotificationTables(env);
     const notification = normalizeNotificationInput(notificationInput);
 
     if (notificationId) {
@@ -319,6 +338,7 @@ export async function saveNotification(env, notificationInput, notificationId = 
 }
 
 export async function deleteNotification(env, notificationId) {
+    await ensureNotificationTables(env);
     const existing = await getNotification(env, notificationId);
     if (!existing) {
         throw httpError(404, "notification not found");
@@ -328,6 +348,7 @@ export async function deleteNotification(env, notificationId) {
 }
 
 async function getNotification(env, notificationId) {
+    await ensureNotificationTables(env);
     return await env.DB.prepare(
         `SELECT id, name, active, user_id, is_default, config
          FROM notification
@@ -335,6 +356,12 @@ async function getNotification(env, notificationId) {
     )
         .bind(notificationId)
         .first();
+}
+
+async function ensureNotificationTables(env) {
+    await env.DB.prepare(NOTIFICATION_TABLE_SQL).run();
+    await env.DB.prepare(MONITOR_NOTIFICATION_TABLE_SQL).run();
+    await env.DB.prepare(MONITOR_NOTIFICATION_INDEX_SQL).run();
 }
 
 function normalizeNotificationInput(notificationInput = {}) {
