@@ -204,6 +204,12 @@ class Monitor extends BeanModel {
             ipFamily: this.ipFamily,
             expectedTlsAlert: this.expected_tls_alert,
 
+            // SSH monitor (non-sensitive fields)
+            sshUsername: this.sshUsername,
+            sshHostKey: this.sshHostKey,
+            sshIgnoreHostKey: Boolean(this.sshIgnoreHostKey),
+            sshCommand: this.sshCommand,
+
             // ping advanced options
             ping_numeric: this.isPingNumeric(),
             ping_count: this.ping_count,
@@ -246,6 +252,9 @@ class Monitor extends BeanModel {
                 kafkaProducerSaslOptions: JSON.parse(this.kafkaProducerSaslOptions),
                 rabbitmqUsername: this.rabbitmqUsername,
                 rabbitmqPassword: this.rabbitmqPassword,
+                sshPassword: this.sshPassword,
+                sshPrivateKey: this.sshPrivateKey,
+                sshKeyPassphrase: this.sshKeyPassphrase,
             };
         }
 

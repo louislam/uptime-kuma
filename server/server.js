@@ -932,6 +932,15 @@ let needSetup = false;
                 bean.system_service_name = monitor.system_service_name;
                 bean.expected_tls_alert = monitor.expectedTlsAlert;
 
+                // SSH monitor
+                bean.sshUsername = monitor.sshUsername;
+                bean.sshPassword = monitor.sshPassword;
+                bean.sshPrivateKey = monitor.sshPrivateKey;
+                bean.sshKeyPassphrase = monitor.sshKeyPassphrase;
+                bean.sshCommand = monitor.sshCommand;
+                bean.sshHostKey = monitor.sshHostKey;
+                bean.sshIgnoreHostKey = Boolean(monitor.sshIgnoreHostKey);
+
                 // ping advanced options
                 bean.ping_numeric = monitor.ping_numeric;
                 bean.ping_count = monitor.ping_count;

@@ -87,6 +87,7 @@
                                         </option>
                                         <option value="smtp">SMTP</option>
                                         <option value="snmp">SNMP</option>
+                                        <option value="ssh">SSH</option>
                                         <option v-if="!$root.info.isContainer" value="tailscale-ping">
                                             Tailscale Ping
                                         </option>
@@ -485,7 +486,8 @@
                                     monitor.type === 'tailscale-ping' ||
                                     monitor.type === 'smtp' ||
                                     monitor.type === 'snmp' ||
-                                    monitor.type === 'sip-options'
+                                    monitor.type === 'sip-options' ||
+                                    monitor.type === 'ssh'
                                 "
                                 class="my-3"
                             >
@@ -697,6 +699,7 @@
                                     monitor.type === 'smtp' ||
                                     monitor.type === 'snmp' ||
                                     monitor.type === 'sip-options' ||
+                                    monitor.type === 'ssh' ||
                                     (monitor.type === 'globalping' &&
                                         monitor.subtype === 'ping' &&
                                         monitor.protocol === 'TCP')
@@ -834,6 +837,134 @@
                                             </a>
                                         </template>
                                     </i18n-t>
+                                </div>
+                            </template>
+
+                            <!-- SSH Monitor -->
+                            <template v-if="monitor.type === 'ssh'">
+                                <div class="form-text mb-3">
+                                    {{ $t("sshMonitorWarning") }}
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="ssh_auth_method" class="form-label">
+                                        {{ $t("Authentication Method") }}
+                                    </label>
+                                    <select
+                                        id="ssh_auth_method"
+                                        v-model="monitor.authMethod"
+                                        class="form-select"
+                                    >
+                                        <option value="password">{{ $t("Password") }}</option>
+                                        <option value="privateKey">{{ $t("sshAuthPrivateKey") }}</option>
+                                        <option value="agent">{{ $t("sshAuthAgent") }}</option>
+                                        <option value="none">{{ $t("sshAuthNone") }}</option>
+                                    </select>
+                                    <div class="form-text">{{ $t("sshAuthMethodDescription") }}</div>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="ssh_username" class="form-label">{{ $t("Username") }}</label>
+                                    <input
+                                        id="ssh_username"
+                                        v-model="monitor.sshUsername"
+                                        type="text"
+                                        class="form-control"
+                                        autocomplete="off"
+                                        required
+                                    />
+                                </div>
+
+                                <div v-if="monitor.authMethod === 'password'" class="my-3">
+                                    <label for="ssh_password" class="form-label">{{ $t("Password") }}</label>
+                                    <HiddenInput
+                                        id="ssh_password"
+                                        v-model="monitor.sshPassword"
+                                        autocomplete="new-password"
+                                        :required="true"
+                                    ></HiddenInput>
+                                </div>
+
+                                <template v-if="monitor.authMethod === 'privateKey'">
+                                    <div class="my-3">
+                                        <label for="ssh_private_key" class="form-label">
+                                            {{ $t("sshPrivateKey") }}
+                                        </label>
+                                        <textarea
+                                            id="ssh_private_key"
+                                            v-model="monitor.sshPrivateKey"
+                                            class="form-control font-monospace"
+                                            rows="8"
+                                            spellcheck="false"
+                                            autocomplete="off"
+                                            placeholder="-----BEGIN OPENSSH PRIVATE KEY-----&#10;...&#10;-----END OPENSSH PRIVATE KEY-----"
+                                            required
+                                        ></textarea>
+                                        <div class="form-text">{{ $t("sshPrivateKeyDescription") }}</div>
+                                    </div>
+
+                                    <div class="my-3">
+                                        <label for="ssh_passphrase" class="form-label">
+                                            {{ $t("sshKeyPassphrase") }}
+                                        </label>
+                                        <HiddenInput
+                                            id="ssh_passphrase"
+                                            v-model="monitor.sshKeyPassphrase"
+                                            autocomplete="new-password"
+                                        ></HiddenInput>
+                                        <div class="form-text">{{ $t("sshKeyPassphraseDescription") }}</div>
+                                    </div>
+                                </template>
+
+                                <div v-if="monitor.authMethod === 'agent'" class="my-3 form-text">
+                                    {{ $t("sshAgentDescription") }}
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="ssh_host_key" class="form-label">
+                                        {{ $t("sshHostKeyFingerprint") }}
+                                    </label>
+                                    <input
+                                        id="ssh_host_key"
+                                        v-model="monitor.sshHostKey"
+                                        type="text"
+                                        class="form-control font-monospace"
+                                        autocomplete="off"
+                                        spellcheck="false"
+                                        placeholder="SHA256:abcdEFgh1234... or aa:bb:cc:dd:..."
+                                        :required="!monitor.sshIgnoreHostKey"
+                                        :disabled="monitor.sshIgnoreHostKey"
+                                    />
+                                    <div class="form-text">{{ $t("sshHostKeyFingerprintDescription") }}</div>
+                                </div>
+
+                                <div class="my-3 form-check">
+                                    <input
+                                        id="ssh_ignore_host_key"
+                                        v-model="monitor.sshIgnoreHostKey"
+                                        class="form-check-input"
+                                        type="checkbox"
+                                    />
+                                    <label class="form-check-label" for="ssh_ignore_host_key">
+                                        {{ $t("sshIgnoreHostKey") }}
+                                    </label>
+                                    <div class="form-text text-danger">
+                                        {{ $t("sshIgnoreHostKeyDescription") }}
+                                    </div>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="ssh_command" class="form-label">{{ $t("sshCommand") }}</label>
+                                    <textarea
+                                        id="ssh_command"
+                                        v-model="monitor.sshCommand"
+                                        class="form-control font-monospace"
+                                        rows="4"
+                                        spellcheck="false"
+                                        placeholder="/usr/local/bin/healthcheck.sh"
+                                        required
+                                    ></textarea>
+                                    <div class="form-text">{{ $t("sshCommandDescription") }}</div>
                                 </div>
                             </template>
 
@@ -3127,6 +3258,15 @@ const monitorDefaults = {
     rabbitmqPassword: "",
     conditions: [],
     system_service_name: "",
+
+    // SSH monitor
+    sshUsername: "",
+    sshPassword: "",
+    sshPrivateKey: "",
+    sshKeyPassphrase: "",
+    sshCommand: "",
+    sshHostKey: "",
+    sshIgnoreHostKey: false,
 };
 
 export default {
@@ -3583,11 +3723,18 @@ message HealthCheckResponse {
                     this.monitor.port = "1812";
                 } else if (this.monitor.type === "snmp") {
                     this.monitor.port = "161";
+                } else if (this.monitor.type === "ssh") {
+                    this.monitor.port = "22";
                 } else if (this.monitor.type === "globalping" && this.monitor.subtype === "ping") {
                     this.monitor.port = "80";
                 } else {
                     this.monitor.port = undefined;
                 }
+            }
+
+            // Default SSH auth method when switching to SSH
+            if (this.monitor.type === "ssh" && !this.monitor.authMethod) {
+                this.monitor.authMethod = "password";
             }
 
             // Set a default timeout if the monitor type has changed or if it's a new monitor
