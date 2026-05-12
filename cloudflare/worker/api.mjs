@@ -594,6 +594,7 @@ export async function deleteMonitor(env, monitorId) {
 }
 
 export async function listMonitorHeartbeats(env, monitorId, offset = 0, count = 100) {
+    const monitor = await getMonitor(env, monitorId);
     const total = await env.DB.prepare("SELECT COUNT(*) AS count FROM heartbeats WHERE monitor_id = ?")
         .bind(monitorId)
         .first();
@@ -608,7 +609,7 @@ export async function listMonitorHeartbeats(env, monitorId, offset = 0, count = 
         .all();
     return {
         count: Number(total?.count || 0),
-        heartbeats: (result.results || []).map(serializeHeartbeat),
+        heartbeats: (result.results || []).map((heartbeat) => serializeHeartbeat(heartbeat, monitor)),
     };
 }
 
@@ -1873,7 +1874,7 @@ function serializeMonitor(monitor, latestHeartbeat = null, relationshipData = bu
         accepted_statuscodes: Array.isArray(config.accepted_statuscodes)
             ? config.accepted_statuscodes
             : monitorConfigDefaults(monitor.type).accepted_statuscodes,
-        lastHeartbeat: latestHeartbeat ? serializeHeartbeat(latestHeartbeat) : null,
+        lastHeartbeat: latestHeartbeat ? serializeHeartbeat(latestHeartbeat, monitor) : null,
     };
 }
 
@@ -1935,14 +1936,38 @@ async function isMissingColumn(env, table, column) {
     return !(info.results || []).some((row) => row.name === column);
 }
 
-function serializeHeartbeat(heartbeat) {
+function serializeHeartbeat(heartbeat, monitor = null) {
     return {
         monitorID: Number(heartbeat.monitor_id ?? heartbeat.monitorID),
-        status: heartbeat.status,
+        status: effectiveHeartbeatStatus(heartbeat.status, monitor),
         ping: heartbeat.ping,
         msg: heartbeat.msg,
         time: heartbeat.checked_at ?? heartbeat.time,
     };
+}
+
+function effectiveHeartbeatStatus(status, monitor) {
+    if (!isUpsideDownMonitor(monitor)) {
+        return status;
+    }
+    const numericStatus = Number(status);
+    if (numericStatus === 1) {
+        return 0;
+    }
+    if (numericStatus === 0) {
+        return 1;
+    }
+    return status;
+}
+
+function isUpsideDownMonitor(monitor) {
+    if (!monitor) {
+        return false;
+    }
+    if (monitor.upsideDown !== undefined) {
+        return Boolean(monitor.upsideDown);
+    }
+    return Boolean(parseMonitorConfig(monitor.config_json).upsideDown);
 }
 
 function normalizeNetworkProfileId(value) {

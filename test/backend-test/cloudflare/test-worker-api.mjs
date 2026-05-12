@@ -352,6 +352,53 @@ describe("Cloudflare Worker API", () => {
         );
     });
 
+    test("lists Worker monitors with upside-down latest heartbeat status applied", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                {
+                    id: 7,
+                    name: "Expected Down HTTP",
+                    type: "http",
+                    url: "https://example.test",
+                    active: 1,
+                    config_json: JSON.stringify({ upsideDown: true }),
+                },
+                {
+                    id: 8,
+                    name: "Expected Up HTTP",
+                    type: "http",
+                    url: "https://offline.example.test",
+                    active: 1,
+                    config_json: JSON.stringify({ upsideDown: true }),
+                },
+            ],
+            heartbeats: [
+                {
+                    monitor_id: 7,
+                    status: 1,
+                    ping: 12,
+                    msg: "200 - OK",
+                    checked_at: "2026-05-11 02:30:00",
+                },
+                {
+                    monitor_id: 8,
+                    status: 0,
+                    ping: null,
+                    msg: "Timeout",
+                    checked_at: "2026-05-11 02:30:00",
+                },
+            ],
+        });
+
+        const response = await handleApiRequest(adminRequest("https://example.com/api/monitors"), env);
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(body.monitors.find((monitor) => monitor.id === 7).lastHeartbeat.status, 0);
+        assert.strictEqual(body.monitors.find((monitor) => monitor.id === 8).lastHeartbeat.status, 1);
+    });
+
     test("lists monitors when the config_json migration has not run yet", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({
@@ -1263,6 +1310,43 @@ describe("Cloudflare Worker API", () => {
         assert.strictEqual(clearResponse.status, 200);
         assert.deepStrictEqual(await clearResponse.json(), { ok: true, msg: "Heartbeats cleared" });
         assert.deepStrictEqual(env.state.heartbeats.map((heartbeat) => heartbeat.monitor_id), [8]);
+    });
+
+    test("lists Worker monitor history with upside-down statuses applied", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                {
+                    id: 7,
+                    name: "Expected Down HTTP",
+                    type: "http",
+                    active: 1,
+                    config_json: JSON.stringify({ upsideDown: true }),
+                },
+            ],
+            heartbeats: [
+                {
+                    monitor_id: 7,
+                    status: 1,
+                    ping: 12,
+                    msg: "200 - OK",
+                    checked_at: "2026-05-11 02:30:00",
+                },
+                {
+                    monitor_id: 7,
+                    status: 0,
+                    ping: 44,
+                    msg: "500 - Error",
+                    checked_at: "2026-05-11 02:00:00",
+                },
+            ],
+        });
+
+        const response = await handleApiRequest(adminRequest("https://example.com/api/monitors/7/heartbeats"), env);
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.deepStrictEqual(body.heartbeats.map((heartbeat) => heartbeat.status), [0, 1]);
     });
 
     test("lists direct and Twingate network profiles", async () => {
