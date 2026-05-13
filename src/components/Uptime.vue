@@ -4,6 +4,9 @@
 
 <script>
 import { DOWN, MAINTENANCE, PENDING, UP } from "../util.ts";
+import groupStatus from "../util/group-status";
+
+const { calculateGroupStatus, calculateGroupUptime, getGroupChildMonitors } = groupStatus;
 
 export default {
     props: {
@@ -30,6 +33,22 @@ export default {
                 return this.$t("statusMaintenance");
             }
 
+            if (this.isGroupMonitor) {
+                const groupUptime = calculateGroupUptime(this.groupChildMonitors, this.$root.uptimeList, this.type);
+
+                if (groupUptime !== null) {
+                    let result = Math.round(groupUptime * 10000) / 100;
+
+                    if (this.$route.path.startsWith("/status") && result > 100) {
+                        return "100%";
+                    }
+
+                    return result + "%";
+                }
+
+                return this.$t("notAvailableShort");
+            }
+
             let key = this.monitor.id + "_" + this.type;
 
             if (this.$root.uptimeList[key] !== undefined) {
@@ -46,19 +65,21 @@ export default {
         },
 
         color() {
-            if (this.lastHeartBeat.status === MAINTENANCE) {
+            const status = this.lastHeartBeat.status;
+
+            if (status === MAINTENANCE) {
                 return "maintenance";
             }
 
-            if (this.lastHeartBeat.status === DOWN) {
+            if (status === DOWN) {
                 return "danger";
             }
 
-            if (this.lastHeartBeat.status === UP) {
+            if (status === UP) {
                 return "primary";
             }
 
-            if (this.lastHeartBeat.status === PENDING) {
+            if (status === PENDING) {
                 return "warning";
             }
 
@@ -66,6 +87,12 @@ export default {
         },
 
         lastHeartBeat() {
+            if (this.isGroupMonitor) {
+                return {
+                    status: calculateGroupStatus(this.groupChildMonitors, this.$root.heartbeatList),
+                };
+            }
+
             if (this.monitor.id in this.$root.lastHeartbeatList && this.$root.lastHeartbeatList[this.monitor.id]) {
                 return this.$root.lastHeartbeatList[this.monitor.id];
             }
@@ -73,6 +100,18 @@ export default {
             return {
                 status: -1,
             };
+        },
+
+        isGroupMonitor() {
+            return this.monitor?.type === "group";
+        },
+
+        groupChildMonitors() {
+            if (!this.isGroupMonitor) {
+                return [];
+            }
+
+            return getGroupChildMonitors(this.monitor, this.$root.monitorList);
         },
 
         className() {

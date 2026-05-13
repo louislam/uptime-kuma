@@ -4,6 +4,16 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 describe("Cloudflare Worker socket delete shim", () => {
+    test("recognizes the production custom domain as Worker UI mode", () => {
+        const source = fs.readFileSync(
+            path.join(__dirname, "../../src/mixins/socket.js"),
+            "utf8"
+        );
+
+        assert.match(source, /"uptimeworker\.wgsglobal\.workers\.dev"/);
+        assert.match(source, /"uptime\.wgsglobal\.app"/);
+    });
+
     test("normalizes successful REST delete responses for Socket.IO callers", () => {
         const source = fs.readFileSync(
             path.join(__dirname, "../../src/mixins/socket.js"),

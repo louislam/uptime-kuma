@@ -106,10 +106,9 @@ describe("Cloudflare Worker API", () => {
         const wranglerConfig = JSON.parse(fs.readFileSync(wranglerPath, "utf8"));
 
         assert.strictEqual(wranglerConfig.vars.CF_ACCESS_TEAM_DOMAIN, "https://wgs.cloudflareaccess.com");
-        assert.strictEqual(
-            wranglerConfig.vars.CF_ACCESS_AUD,
-            "e06744dbe3c5a7aa46503b6e518b0fbfb7f6ff38cfc751f5f5a4bfc56974fae6"
-        );
+        const audiences = wranglerConfig.vars.CF_ACCESS_AUD.split(",");
+        assert.ok(audiences.includes("e06744dbe3c5a7aa46503b6e518b0fbfb7f6ff38cfc751f5f5a4bfc56974fae6"));
+        assert.ok(audiences.includes("31798319d7ee654c37ed0a90f07e7c26d87cdbe50014aaa1718b13d195101734"));
     });
 
     test("runner container image includes Twingate lifecycle helper", async () => {
@@ -171,6 +170,29 @@ describe("Cloudflare Worker API", () => {
 
         assert.strictEqual(response.status, 200);
         assert.deepStrictEqual(body, { monitors: [] });
+    });
+
+    test("accepts authenticated Cloudflare Access users from any configured audience", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const accessAuth = await createAccessAuth({ audience: "custom-domain-aud" });
+        const env = createEnv({
+            adminToken: "",
+            accessAuth,
+            accessAudience: "workers-dev-aud,custom-domain-aud",
+            monitors: [],
+        });
+
+        const response = await handleApiRequest(
+            new Request("https://example.com/api/monitors", {
+                headers: {
+                    "cf-access-jwt-assertion": accessAuth.token,
+                },
+            }),
+            env
+        );
+
+        assert.strictEqual(response.status, 200);
+        assert.deepStrictEqual(await response.json(), { monitors: [] });
     });
 
     test("fails closed when Worker admin token is not configured", async () => {
@@ -1670,7 +1692,7 @@ function createEnv(initial) {
         state,
         ADMIN_API_TOKEN: "adminToken" in initial ? initial.adminToken : "test-token",
         CF_ACCESS_TEAM_DOMAIN: initial.accessAuth?.teamDomain,
-        CF_ACCESS_AUD: initial.accessAuth?.audience,
+        CF_ACCESS_AUD: initial.accessAudience || initial.accessAuth?.audience,
         CF_ACCESS_CERTS_JSON: initial.accessAuth?.certsJson,
         DB: {
             prepare(sql) {
@@ -1719,9 +1741,9 @@ function adminRequest(url, init = {}) {
     });
 }
 
-async function createAccessAuth() {
+async function createAccessAuth(options = {}) {
     const teamDomain = "https://wgs.cloudflareaccess.com";
-    const audience = "test-access-aud";
+    const audience = options.audience || "test-access-aud";
     const keyPair = await crypto.subtle.generateKey(
         {
             name: "RSASSA-PKCS1-v1_5",

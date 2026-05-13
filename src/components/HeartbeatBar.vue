@@ -42,6 +42,9 @@
 import dayjs from "dayjs";
 import { DOWN, UP, PENDING, MAINTENANCE } from "../util.ts";
 import Tooltip from "./Tooltip.vue";
+import groupStatus from "../util/group-status";
+
+const { buildGroupHeartbeatList, getGroupChildMonitors } = groupStatus;
 
 export default {
     components: {
@@ -102,11 +105,27 @@ export default {
          * @returns {object} Heartbeat list
          */
         beatList() {
+            if (this.isGroupMonitor) {
+                return buildGroupHeartbeatList(this.groupChildMonitors, this.$root.heartbeatList);
+            }
+
             if (this.heartbeatList === null) {
                 return this.$root.heartbeatList[this.monitorId];
             } else {
                 return this.heartbeatList;
             }
+        },
+
+        isGroupMonitor() {
+            return this.$root.monitorList?.[this.monitorId]?.type === "group";
+        },
+
+        groupChildMonitors() {
+            if (!this.isGroupMonitor) {
+                return [];
+            }
+
+            return getGroupChildMonitors(this.$root.monitorList[this.monitorId], this.$root.monitorList);
         },
 
         /**

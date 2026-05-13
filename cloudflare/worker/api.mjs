@@ -21,6 +21,15 @@ const DEFAULT_SETTINGS = {
     globalpingApiToken: "",
     chromeExecutable: "",
 };
+const WORKER_AUTH_USER_SETTING = "workerAuthUser";
+const WORKER_AUTH_SESSION_SECRET_SETTING = "workerAuthSessionSecret";
+const SENSITIVE_SETTING_KEYS = new Set([
+    WORKER_AUTH_USER_SETTING,
+    WORKER_AUTH_SESSION_SECRET_SETTING,
+]);
+const WORKER_AUTH_PASSWORD_ITERATIONS = 210000;
+const WORKER_AUTH_SESSION_TTL_SECONDS = 7 * 24 * 60 * 60;
+const WORKER_AUTH_REMEMBER_SESSION_TTL_SECONDS = 30 * 24 * 60 * 60;
 
 const WORKER_MONITOR_TYPES = new Set([
     "group",
@@ -89,6 +98,7 @@ const ADMIN_ROUTE_NAMES = new Set([
     "patch-network-route",
     "check-now",
     "twingate-status",
+    "auth-local-user",
 ]);
 const PRIVATE_WORKER_HOST_ERROR =
     "Direct Worker checks cannot target private, loopback, link-local, or metadata hosts";
@@ -105,6 +115,22 @@ export async function handleApiRequest(request, env) {
 
         if (route.name === "entry-page") {
             return json({ type: "entryPage", entryPage: "dashboard" });
+        }
+
+        if (route.name === "auth-session") {
+            return json(await getWorkerAuthSession(request, env));
+        }
+
+        if (route.name === "auth-login") {
+            return json(await loginWorkerAuthUser(env, await request.json()));
+        }
+
+        if (route.name === "auth-logout") {
+            return json({ ok: true });
+        }
+
+        if (route.name === "auth-local-user") {
+            return json(await saveWorkerAuthUser(env, await request.json()));
         }
 
         if (route.name === "monitors") {
@@ -248,6 +274,9 @@ export async function getUiSettings(env) {
     const result = await env.DB.prepare("SELECT key, value FROM app_settings").all();
     const stored = {};
     for (const row of result.results || []) {
+        if (SENSITIVE_SETTING_KEYS.has(row.key)) {
+            continue;
+        }
         try {
             stored[row.key] = JSON.parse(row.value);
         } catch (_) {
@@ -1027,8 +1056,17 @@ async function requireAdminRequest(request, env) {
         return;
     }
 
-    if (await isCloudflareAccessAdminRequest(request, env)) {
+    const localAuthUser = await getWorkerAuthUser(env);
+    if (localAuthUser && await verifyWorkerAuthSessionToken(suppliedToken, env)) {
         return;
+    }
+
+    if (!localAuthUser && await isCloudflareAccessAdminRequest(request, env)) {
+        return;
+    }
+
+    if (localAuthUser) {
+        throw httpError(401, "Unauthorized");
     }
 
     if (!expectedToken || typeof expectedToken !== "string") {
@@ -1036,6 +1074,237 @@ async function requireAdminRequest(request, env) {
     }
 
     throw httpError(401, "Unauthorized");
+}
+
+async function getWorkerAuthSession(request, env) {
+    const localAuthUser = await getWorkerAuthUser(env);
+    const authorization = request.headers.get("authorization") || "";
+    const suppliedToken = authorization.startsWith("Bearer ") ? authorization.slice(7) : "";
+    const session = localAuthUser ? await verifyWorkerAuthSessionToken(suppliedToken, env) : null;
+    if (session) {
+        return {
+            authenticated: true,
+            username: session.username,
+            localAuthConfigured: true,
+        };
+    }
+
+    if (!localAuthUser && await isBootstrapAdminRequest(request, env)) {
+        return {
+            authenticated: true,
+            username: "Cloudflare",
+            localAuthConfigured: false,
+        };
+    }
+
+    return {
+        authenticated: false,
+        username: null,
+        localAuthConfigured: Boolean(localAuthUser),
+    };
+}
+
+async function isBootstrapAdminRequest(request, env) {
+    const expectedToken = env.ADMIN_API_TOKEN;
+    const authorization = request.headers.get("authorization") || "";
+    const suppliedToken = authorization.startsWith("Bearer ") ? authorization.slice(7) : "";
+    if (expectedToken && typeof expectedToken === "string" && timingSafeEqual(suppliedToken, expectedToken)) {
+        return true;
+    }
+    return await isCloudflareAccessAdminRequest(request, env);
+}
+
+async function saveWorkerAuthUser(env, body) {
+    const username = String(body?.username || "").trim();
+    const newPassword = String(body?.newPassword || body?.password || "");
+    if (!username) {
+        throw httpError(400, "Username is required");
+    }
+    if (newPassword.length < 6) {
+        throw httpError(400, "passwordTooWeak");
+    }
+    const authUser = {
+        username,
+        password: await hashWorkerAuthPassword(newPassword),
+        updatedAt: new Date().toISOString(),
+    };
+    await setStoredSetting(env, WORKER_AUTH_USER_SETTING, authUser);
+    await ensureWorkerAuthSessionSecret(env);
+    return {
+        ok: true,
+        msg: "Local admin login saved",
+        username,
+        localAuthConfigured: true,
+    };
+}
+
+async function loginWorkerAuthUser(env, body) {
+    const username = String(body?.username || "").trim();
+    const password = String(body?.password || "");
+    const authUser = await getWorkerAuthUser(env);
+    if (!authUser || authUser.username !== username || !await verifyWorkerAuthPassword(password, authUser.password)) {
+        throw httpError(401, "authIncorrectCreds");
+    }
+
+    const ttlSeconds = body?.remember ? WORKER_AUTH_REMEMBER_SESSION_TTL_SECONDS : WORKER_AUTH_SESSION_TTL_SECONDS;
+    const token = await createWorkerAuthSessionToken(env, authUser.username, ttlSeconds);
+    return {
+        ok: true,
+        token,
+        username: authUser.username,
+        localAuthConfigured: true,
+    };
+}
+
+async function getWorkerAuthUser(env) {
+    const authUser = await getStoredSetting(env, WORKER_AUTH_USER_SETTING);
+    if (!authUser || typeof authUser.username !== "string" || !authUser.password) {
+        return null;
+    }
+    return authUser;
+}
+
+async function getStoredSetting(env, key) {
+    const row = await env.DB.prepare("SELECT value FROM app_settings WHERE key = ?").bind(key).first();
+    if (!row) {
+        return null;
+    }
+    try {
+        return JSON.parse(row.value);
+    } catch (_) {
+        return row.value;
+    }
+}
+
+async function setStoredSetting(env, key, value) {
+    await env.DB.prepare(
+        `INSERT INTO app_settings (key, value, updated_at)
+         VALUES (?, ?, CURRENT_TIMESTAMP)
+         ON CONFLICT(key) DO UPDATE SET
+            value = excluded.value,
+            updated_at = CURRENT_TIMESTAMP`
+    )
+        .bind(key, JSON.stringify(value))
+        .run();
+}
+
+async function hashWorkerAuthPassword(password) {
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const hash = await deriveWorkerAuthPasswordHash(password, salt, WORKER_AUTH_PASSWORD_ITERATIONS);
+    return {
+        algorithm: "PBKDF2-SHA256",
+        iterations: WORKER_AUTH_PASSWORD_ITERATIONS,
+        salt: bytesToBase64Url(salt),
+        hash: bytesToBase64Url(hash),
+    };
+}
+
+async function verifyWorkerAuthPassword(password, storedPassword) {
+    if (!storedPassword || storedPassword.algorithm !== "PBKDF2-SHA256") {
+        return false;
+    }
+    const iterations = Number(storedPassword.iterations);
+    if (!Number.isFinite(iterations) || iterations < 1) {
+        return false;
+    }
+    const salt = base64UrlToBytes(storedPassword.salt || "");
+    const expectedHash = base64UrlToBytes(storedPassword.hash || "");
+    const suppliedHash = await deriveWorkerAuthPasswordHash(password, salt, iterations);
+    return timingSafeBytesEqual(suppliedHash, expectedHash);
+}
+
+async function deriveWorkerAuthPasswordHash(password, salt, iterations) {
+    const keyMaterial = await crypto.subtle.importKey(
+        "raw",
+        new TextEncoder().encode(password),
+        "PBKDF2",
+        false,
+        ["deriveBits"]
+    );
+    const bits = await crypto.subtle.deriveBits(
+        {
+            name: "PBKDF2",
+            hash: "SHA-256",
+            salt,
+            iterations,
+        },
+        keyMaterial,
+        256
+    );
+    return new Uint8Array(bits);
+}
+
+async function ensureWorkerAuthSessionSecret(env) {
+    const existing = await getStoredSetting(env, WORKER_AUTH_SESSION_SECRET_SETTING);
+    if (typeof existing === "string" && existing.length > 0) {
+        return existing;
+    }
+    const secret = bytesToBase64Url(crypto.getRandomValues(new Uint8Array(32)));
+    await setStoredSetting(env, WORKER_AUTH_SESSION_SECRET_SETTING, secret);
+    return secret;
+}
+
+async function createWorkerAuthSessionToken(env, username, ttlSeconds) {
+    const header = bytesToBase64Url(new TextEncoder().encode(JSON.stringify({ alg: "HS256", typ: "JWT" })));
+    const payload = bytesToBase64Url(new TextEncoder().encode(JSON.stringify({
+        typ: "worker-session",
+        username,
+        exp: Math.floor(Date.now() / 1000) + ttlSeconds,
+    })));
+    const signature = await signWorkerAuthSession(`${header}.${payload}`, await ensureWorkerAuthSessionSecret(env));
+    return `${header}.${payload}.${signature}`;
+}
+
+async function verifyWorkerAuthSessionToken(token, env) {
+    if (!token || typeof token !== "string") {
+        return null;
+    }
+    const parts = token.split(".");
+    if (parts.length !== 3) {
+        return null;
+    }
+    try {
+        const header = decodeJwtPart(parts[0]);
+        if (header.alg !== "HS256") {
+            return null;
+        }
+        const expectedSignature = await signWorkerAuthSession(`${parts[0]}.${parts[1]}`, await ensureWorkerAuthSessionSecret(env));
+        if (!timingSafeEqual(parts[2], expectedSignature)) {
+            return null;
+        }
+        const payload = decodeJwtPart(parts[1]);
+        if (payload.typ !== "worker-session" || typeof payload.username !== "string" || !jwtTimeIsValid(payload)) {
+            return null;
+        }
+        const authUser = await getWorkerAuthUser(env);
+        if (!authUser || authUser.username !== payload.username) {
+            return null;
+        }
+        return payload;
+    } catch (_) {
+        return null;
+    }
+}
+
+async function signWorkerAuthSession(data, secret) {
+    const key = await crypto.subtle.importKey(
+        "raw",
+        base64UrlToBytes(secret),
+        { name: "HMAC", hash: "SHA-256" },
+        false,
+        ["sign"]
+    );
+    const signature = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(data));
+    return bytesToBase64Url(new Uint8Array(signature));
+}
+
+function timingSafeBytesEqual(left, right) {
+    const maxLength = Math.max(left.length, right.length);
+    let diff = left.length ^ right.length;
+    for (let index = 0; index < maxLength; index++) {
+        diff |= (left[index] || 0) ^ (right[index] || 0);
+    }
+    return diff === 0;
 }
 
 function timingSafeEqual(left, right) {
@@ -1138,10 +1407,20 @@ async function getCloudflareAccessJwks(teamDomain, env) {
 }
 
 function jwtAudienceMatches(tokenAudience, expectedAudience) {
+    const expectedAudiences = normalizeExpectedAudiences(expectedAudience);
     if (Array.isArray(tokenAudience)) {
-        return tokenAudience.includes(expectedAudience);
+        return tokenAudience.some((audience) => expectedAudiences.has(audience));
     }
-    return tokenAudience === expectedAudience;
+    return expectedAudiences.has(tokenAudience);
+}
+
+function normalizeExpectedAudiences(expectedAudience) {
+    return new Set(
+        String(expectedAudience || "")
+            .split(/[,\s]+/)
+            .map((audience) => audience.trim())
+            .filter(Boolean)
+    );
 }
 
 function jwtTimeIsValid(payload) {
@@ -2152,6 +2431,18 @@ function normalizeNetworkProfileId(value) {
 function matchRoute(method, pathname) {
     if (method === "GET" && pathname === "/api/entry-page") {
         return { name: "entry-page", params: {} };
+    }
+    if (method === "GET" && pathname === "/api/auth/session") {
+        return { name: "auth-session", params: {} };
+    }
+    if (method === "POST" && pathname === "/api/auth/login") {
+        return { name: "auth-login", params: {} };
+    }
+    if (method === "POST" && pathname === "/api/auth/logout") {
+        return { name: "auth-logout", params: {} };
+    }
+    if (method === "PUT" && pathname === "/api/auth/local-user") {
+        return { name: "auth-local-user", params: {} };
     }
     if ((method === "GET" || method === "PUT") && pathname === "/api/settings") {
         return { name: "settings", params: {} };

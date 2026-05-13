@@ -77,6 +77,6 @@
         "TWINGATE_LOGIN_PATH": "/api/v4/headless/login",
         "TWINGATE_TUN": "on",
         "CF_ACCESS_TEAM_DOMAIN": "https://wgs.cloudflareaccess.com",
-        "CF_ACCESS_AUD": "e06744dbe3c5a7aa46503b6e518b0fbfb7f6ff38cfc751f5f5a4bfc56974fae6"
+        "CF_ACCESS_AUD": "e06744dbe3c5a7aa46503b6e518b0fbfb7f6ff38cfc751f5f5a4bfc56974fae6,31798319d7ee654c37ed0a90f07e7c26d87cdbe50014aaa1718b13d195101734"
     }
 }

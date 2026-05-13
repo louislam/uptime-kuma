@@ -19,6 +19,7 @@ let socket;
 
 const cloudflareWorkerHostnames = new Set([
     "uptimeworker.wgsglobal.workers.dev",
+    "uptime.wgsglobal.app",
 ]);
 
 const noSocketIOPages = [
