@@ -145,6 +145,30 @@ session storage under `uptimeWorkerAdminToken` or `cloudflareWorkerApiToken`,
 but local username/password login is preferred for browser use. Public
 status-page endpoints do not require admin authentication.
 
+To let checks reach your own Cloudflare-protected applications without storing
+the bypass token in monitor rows, set a Worker secret named `ACCESS_SECRET`:
+
+```bash
+openssl rand -base64 32 | npx wrangler secret put ACCESS_SECRET
+```
+
+When `ACCESS_SECRET` is configured, HTTP, keyword, and JSON query checks
+automatically send this request header to the monitored target:
+
+```http
+X-Uptime-Worker-Token: <ACCESS_SECRET>
+```
+
+Use that header in Cloudflare WAF custom rules for the monitored zones. Create a
+Skip rule above challenge/block rules that matches the protected hostnames and
+`http.request.headers["x-uptime-worker-token"][0]`, then skip Managed Rules,
+managed challenges, rate limits, and Super Bot Fight Mode as needed. For
+Cloudflare Access applications, create a Service Auth policy. Either add the
+standard `CF-Access-Client-Id` and `CF-Access-Client-Secret` headers on the
+individual monitor, or configure the Access application to read service tokens
+from the `X-Uptime-Worker-Token` single header and store that single-header
+service token value in `ACCESS_SECRET`.
+
 If your deployment account or resource names differ from this repository's
 defaults, update `wrangler.jsonc` before deploying. Keep the binding names stable
 unless the Worker code is updated at the same time.

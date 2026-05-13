@@ -30,6 +30,8 @@ const SENSITIVE_SETTING_KEYS = new Set([
 const WORKER_AUTH_PASSWORD_ITERATIONS = 100000;
 const WORKER_AUTH_SESSION_TTL_SECONDS = 7 * 24 * 60 * 60;
 const WORKER_AUTH_REMEMBER_SESSION_TTL_SECONDS = 30 * 24 * 60 * 60;
+const ACCESS_SECRET_HEADER = "X-Uptime-Worker-Token";
+const ACCESS_SECRET_MONITOR_TYPES = new Set(["http", "keyword", "json-query"]);
 
 const WORKER_MONITOR_TYPES = new Set([
     "group",
@@ -856,12 +858,46 @@ export async function executeMonitorCheck(env, monitorId) {
 
     const networkProfile = monitor.network_profile_id ? await getNetworkProfile(env, monitor.network_profile_id) : null;
     const job = {
-        monitor: sanitizeMonitor(monitor),
+        monitor: withAccessSecretHeader(sanitizeMonitor(monitor), env),
         networkProfile,
     };
     const result = await callRunner(env, job);
     await writeHeartbeat(env, monitorId, result);
     return result;
+}
+
+function withAccessSecretHeader(monitor, env) {
+    const accessSecret = String(env.ACCESS_SECRET || "").trim();
+    if (!accessSecret || !ACCESS_SECRET_MONITOR_TYPES.has(monitor.type)) {
+        return monitor;
+    }
+
+    return {
+        ...monitor,
+        headers: stringifyMonitorHeaders({
+            ...parseMonitorHeaders(monitor.headers),
+            [ACCESS_SECRET_HEADER]: accessSecret,
+        }),
+    };
+}
+
+function parseMonitorHeaders(headers) {
+    if (!headers) {
+        return {};
+    }
+    if (typeof headers === "string") {
+        try {
+            const parsed = JSON.parse(headers);
+            return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+        } catch (_) {
+            return {};
+        }
+    }
+    return headers && typeof headers === "object" && !Array.isArray(headers) ? headers : {};
+}
+
+function stringifyMonitorHeaders(headers) {
+    return Object.keys(headers).length > 0 ? JSON.stringify(headers) : null;
 }
 
 export async function enqueueDueMonitors(env) {

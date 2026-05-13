@@ -1845,6 +1845,40 @@ describe("Cloudflare Worker API", () => {
             msg: "200 - OK",
         });
     });
+
+    test("check-now adds ACCESS_SECRET header to HTTP monitor jobs without saving it", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            accessSecret: "long-random-secret",
+            monitors: [
+                {
+                    id: 8,
+                    name: "Protected HTTP",
+                    type: "http",
+                    url: "https://protected.example.test",
+                    hostname: null,
+                    port: null,
+                    method: "GET",
+                    headers: "{\"Accept\":\"application/json\"}",
+                    timeout: 5,
+                    network_profile_id: null,
+                },
+            ],
+            runnerResult: { status: 1, ping: 18, msg: "200 - OK", response: "ok" },
+        });
+
+        const response = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/8/check-now", { method: "POST" }),
+            env
+        );
+
+        assert.strictEqual(response.status, 200);
+        assert.deepStrictEqual(JSON.parse(env.state.runnerJobs[0].monitor.headers), {
+            Accept: "application/json",
+            "X-Uptime-Worker-Token": "long-random-secret",
+        });
+        assert.strictEqual(env.state.monitors[0].headers, "{\"Accept\":\"application/json\"}");
+    });
 });
 
 /**
@@ -1880,6 +1914,7 @@ function createEnv(initial) {
     return {
         state,
         ADMIN_API_TOKEN: "adminToken" in initial ? initial.adminToken : "test-token",
+        ACCESS_SECRET: initial.accessSecret,
         CF_ACCESS_TEAM_DOMAIN: initial.accessAuth?.teamDomain,
         CF_ACCESS_AUD: initial.accessAudience || initial.accessAuth?.audience,
         CF_ACCESS_CERTS_JSON: initial.accessAuth?.certsJson,
