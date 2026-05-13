@@ -63,6 +63,7 @@ export default {
             statusPageList: [],
             proxyList: [],
             isCloudflareWorkerUI: false,
+            workerLocalAuthConfigured: false,
             connectionErrorMsg: `${this.$t("Cannot connect to the socket server.")} ${this.$t("Reconnecting...")}`,
             showReverseProxyGuide: true,
             cloudflared: {
@@ -318,18 +319,46 @@ export default {
          * Socket.IO server.
          * @returns {void}
          */
-        initCloudflareWorkerUI() {
+        async initCloudflareWorkerUI() {
             this.isCloudflareWorkerUI = true;
             this.socket.initedSocketIO = true;
             this.socket.connected = true;
             this.socket.firstConnect = false;
-            this.socket.token = "autoLogin";
-            this.loggedIn = true;
+            this.socket.token = null;
+            this.loggedIn = false;
             this.allowLoginDialog = false;
             this.showReverseProxyGuide = false;
-            this.username = "Cloudflare";
+            this.username = null;
             socket = createCloudflareSocketStub(this);
-            this.loadCloudflareWorkerData();
+            await this.refreshCloudflareWorkerAuthSession();
+        },
+
+        /**
+         * Load the current Worker-local auth session.
+         * @returns {Promise<void>}
+         */
+        async refreshCloudflareWorkerAuthSession() {
+            try {
+                const session = await requestCloudflareJson("/api/auth/session");
+                this.workerLocalAuthConfigured = Boolean(session.localAuthConfigured);
+                if (session.authenticated) {
+                    this.loggedIn = true;
+                    this.allowLoginDialog = false;
+                    this.username = session.username;
+                    this.socket.token = this.storage().token || (session.localAuthConfigured ? null : "bootstrap");
+                    await this.loadCloudflareWorkerData();
+                } else {
+                    this.loggedIn = false;
+                    this.username = null;
+                    this.socket.token = null;
+                    this.allowLoginDialog = true;
+                }
+            } catch (error) {
+                console.error(`Failed to load Cloudflare Worker auth session: ${error.message}`);
+                this.connectionErrorMsg = `Cannot load Cloudflare Worker auth session. [${error.message}]`;
+                this.socket.connected = false;
+                this.allowLoginDialog = true;
+            }
         },
 
         /**
@@ -512,7 +541,11 @@ export default {
                         this.storage().token = res.token;
                         this.socket.token = res.token;
                         this.loggedIn = true;
-                        this.username = this.getJWTPayload()?.username;
+                        this.username = res.username || this.getJWTPayload()?.username;
+                        this.workerLocalAuthConfigured = res.localAuthConfigured ?? this.workerLocalAuthConfigured;
+                        if (this.isCloudflareWorkerUI) {
+                            this.loadCloudflareWorkerData();
+                        }
 
                         // Trigger Chrome Save Password
                         history.pushState({}, "");
@@ -536,7 +569,8 @@ export default {
                     this.logout();
                 } else {
                     this.loggedIn = true;
-                    this.username = this.getJWTPayload()?.username;
+                    this.username = res.username || this.getJWTPayload()?.username;
+                    this.workerLocalAuthConfigured = res.localAuthConfigured ?? this.workerLocalAuthConfigured;
                 }
             });
         },
@@ -1001,6 +1035,50 @@ function createCloudflareSocketStub(app) {
             const callback = args.find((arg) => typeof arg === "function");
 
             try {
+                if (event === "login") {
+                    const credentials = args[0] || {};
+                    const body = await requestCloudflareJson("/api/auth/login", {
+                        method: "POST",
+                        body: JSON.stringify({
+                            username: credentials.username,
+                            password: credentials.password,
+                            remember: app.remember,
+                        }),
+                    });
+                    callback?.(body);
+                    return;
+                }
+
+                if (event === "loginByToken") {
+                    const body = await requestCloudflareJson("/api/auth/session", {
+                        headers: {
+                            authorization: `Bearer ${args[0]}`,
+                        },
+                    });
+                    callback?.({
+                        ok: body.authenticated,
+                        username: body.username,
+                        localAuthConfigured: body.localAuthConfigured,
+                    });
+                    return;
+                }
+
+                if (event === "logout") {
+                    await requestCloudflareJson("/api/auth/logout", { method: "POST" }).catch(() => {});
+                    callback?.({ ok: true });
+                    return;
+                }
+
+                if (event === "saveWorkerAuthUser") {
+                    const body = await requestCloudflareJson("/api/auth/local-user", {
+                        method: "PUT",
+                        body: JSON.stringify(args[0] || {}),
+                    });
+                    app.workerLocalAuthConfigured = true;
+                    callback?.(body);
+                    return;
+                }
+
                 if (event === "getSettings") {
                     const body = await requestCloudflareJson("/api/settings");
                     callback?.({ ok: true, data: body.data });

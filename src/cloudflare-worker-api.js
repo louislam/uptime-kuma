@@ -1,4 +1,5 @@
 const WORKER_ADMIN_TOKEN_KEYS = [
+    "token",
     "uptimeWorkerAdminToken",
     "cloudflareWorkerApiToken",
 ];

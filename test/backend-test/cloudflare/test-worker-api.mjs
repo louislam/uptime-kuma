@@ -552,7 +552,10 @@ describe("Cloudflare Worker API", () => {
         );
 
         assert.strictEqual(response.status, 200);
-        assert.deepStrictEqual(await response.json(), {
+        const body = await response.json();
+        assert.match(body.token, /^[^.]+\.[^.]+\.[^.]+$/);
+        delete body.token;
+        assert.deepStrictEqual(body, {
             ok: true,
             msg: "Local admin login saved",
             username: "admin",
@@ -567,7 +570,7 @@ describe("Cloudflare Worker API", () => {
         const env = createEnv({});
         await createLocalUser(handleApiRequest, env);
 
-        const response = await handleApiRequest(new Request("https://example.com/api/monitors"));
+        const response = await handleApiRequest(new Request("https://example.com/api/monitors"), env);
 
         assert.strictEqual(response.status, 401);
         assert.deepStrictEqual(await response.json(), { error: "Unauthorized" });
@@ -577,7 +580,6 @@ describe("Cloudflare Worker API", () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const accessAuth = await createAccessAuth();
         const env = createEnv({
-            adminToken: "",
             accessAuth,
         });
         await createLocalUser(handleApiRequest, env);
@@ -2082,6 +2084,10 @@ function createStatement(sql, state) {
             return { results: [] };
         },
         async first() {
+            if (sql.includes("FROM app_settings")) {
+                const value = state.settings[this.values[0]];
+                return value === undefined ? null : { value: JSON.stringify(value) };
+            }
             if (sql.includes("FROM monitors")) {
                 const id = Number(this.values[0]);
                 return state.monitors.find((monitor) => monitor.id === id) || null;

@@ -98,6 +98,7 @@ export default {
                 "notifications",
                 "reverse-proxy",
                 "twingate",
+                "security",
                 "import-monitors",
             ].includes(this.currentPage);
         },

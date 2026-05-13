@@ -1133,6 +1133,7 @@ async function saveWorkerAuthUser(env, body) {
     return {
         ok: true,
         msg: "Local admin login saved",
+        token: await createWorkerAuthSessionToken(env, username, WORKER_AUTH_SESSION_TTL_SECONDS),
         username,
         localAuthConfigured: true,
     };
@@ -1447,6 +1448,14 @@ function base64UrlToBytes(value) {
         bytes[index] = binary.charCodeAt(index);
     }
     return bytes;
+}
+
+function bytesToBase64Url(bytes) {
+    let binary = "";
+    for (const byte of bytes) {
+        binary += String.fromCharCode(byte);
+    }
+    return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
 }
 
 function sanitizeRunnerStatus(status = {}) {

@@ -12,7 +12,7 @@ describe("Worker Reverse Proxy settings UI", () => {
 
         assert.match(
             source,
-            /\["general",\s*"appearance",\s*"reverse-proxy",\s*"twingate",\s*"import-monitors"\]/,
+            /\[\s*"general",\s*"appearance",\s*"notifications",\s*"reverse-proxy",\s*"twingate",\s*"security",\s*"import-monitors",?\s*\]/,
             "reverse-proxy should be listed as a supported Worker settings page"
         );
     });

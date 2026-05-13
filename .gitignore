@@ -17,6 +17,8 @@ dist-ssr
 /out
 /tmp
 .env
+.wrangler-home/
+.wrangler-logs/
 *.db
 *.sqlite
 *.sqlite3

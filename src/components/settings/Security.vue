@@ -1,6 +1,71 @@
 <template>
     <div>
-        <div v-if="settingsLoaded" class="my-4">
+        <div v-if="$root.isCloudflareWorkerUI" class="my-4">
+            <p v-if="$root.loggedIn">
+                <button id="logout-btn" class="btn btn-danger ms-4 me-2 mb-2" @click="$root.logout">
+                    {{ $t("logoutCurrentUser", { username: $root.username }) }}
+                </button>
+            </p>
+
+            <h5 class="my-4 settings-subheading">
+                {{ $root.workerLocalAuthConfigured ? "Change username/password" : "Create local admin login" }}
+            </h5>
+            <form class="mb-3" @submit.prevent="saveWorkerAuthUser">
+                <div class="mb-3">
+                    <label for="worker-username" class="form-label">
+                        {{ $t("Username") }}
+                    </label>
+                    <input
+                        id="worker-username"
+                        v-model="workerAuth.username"
+                        type="text"
+                        class="form-control"
+                        autocomplete="username"
+                        required
+                    />
+                </div>
+
+                <div class="mb-3">
+                    <label for="worker-new-password" class="form-label">
+                        {{ $t("New Password") }}
+                    </label>
+                    <input
+                        id="worker-new-password"
+                        v-model="workerAuth.newPassword"
+                        type="password"
+                        class="form-control"
+                        autocomplete="new-password"
+                        required
+                    />
+                </div>
+
+                <div class="mb-3">
+                    <label for="worker-repeat-new-password" class="form-label">
+                        {{ $t("Repeat New Password") }}
+                    </label>
+                    <input
+                        id="worker-repeat-new-password"
+                        v-model="workerAuth.repeatNewPassword"
+                        type="password"
+                        class="form-control"
+                        :class="{ 'is-invalid': invalidWorkerPassword }"
+                        autocomplete="new-password"
+                        required
+                    />
+                    <div class="invalid-feedback">
+                        {{ $t("passwordNotMatchMsg") }}
+                    </div>
+                </div>
+
+                <div>
+                    <button class="btn btn-primary" type="submit" :disabled="workerSaving">
+                        {{ $root.workerLocalAuthConfigured ? $t("Update Password") : "Create login" }}
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div v-else-if="settingsLoaded" class="my-4">
             <!-- Change Password -->
             <template v-if="!settings.disableAuth">
                 <p>
@@ -156,6 +221,13 @@ export default {
     data() {
         return {
             invalidPassword: false,
+            invalidWorkerPassword: false,
+            workerSaving: false,
+            workerAuth: {
+                username: "",
+                newPassword: "",
+                repeatNewPassword: "",
+            },
             password: {
                 currentPassword: "",
                 newPassword: "",
@@ -180,9 +252,46 @@ export default {
         "password.repeatNewPassword"() {
             this.invalidPassword = false;
         },
+        "workerAuth.repeatNewPassword"() {
+            this.invalidWorkerPassword = false;
+        },
+    },
+
+    mounted() {
+        this.workerAuth.username = this.$root.username === "Cloudflare" ? "" : (this.$root.username || "");
     },
 
     methods: {
+        /**
+         * Save Worker-local username/password credentials.
+         * @returns {void}
+         */
+        saveWorkerAuthUser() {
+            if (this.workerAuth.newPassword !== this.workerAuth.repeatNewPassword) {
+                this.invalidWorkerPassword = true;
+                return;
+            }
+
+            this.workerSaving = true;
+            this.$root.getSocket().emit("saveWorkerAuthUser", {
+                username: this.workerAuth.username,
+                newPassword: this.workerAuth.newPassword,
+            }, (res) => {
+                this.workerSaving = false;
+                this.$root.toastRes(res);
+                if (res.ok) {
+                    this.$root.workerLocalAuthConfigured = true;
+                    this.$root.username = res.username;
+                    if (res.token) {
+                        this.$root.storage().token = res.token;
+                        this.$root.socket.token = res.token;
+                    }
+                    this.workerAuth.newPassword = "";
+                    this.workerAuth.repeatNewPassword = "";
+                }
+            });
+        },
+
         /**
          * Check new passwords match before saving them
          * @returns {void}
