@@ -40,6 +40,8 @@ class Heartbeat extends BeanModel {
             duration: this._duration,
             retries: this._retries,
             response: this._response,
+            statusCode: this._statusCode,
+            responseHeaders: this._responseHeaders,
         };
     }
 
@@ -59,6 +61,8 @@ class Heartbeat extends BeanModel {
             duration: this._duration,
             retries: this._retries,
             response: opts?.decodeResponse ? await Heartbeat.decodeResponseValue(this._response) : undefined,
+            statusCode: this._statusCode ?? null,
+            responseHeaders: opts?.decodeResponse ? Heartbeat.decodeResponseHeaders(this._responseHeaders) : undefined,
         };
     }
 
@@ -77,6 +81,22 @@ class Heartbeat extends BeanModel {
             return (await brotliDecompress(Buffer.from(response, "base64"))).toString("utf8");
         } catch (error) {
             return response;
+        }
+    }
+
+    /**
+     * Decode base64-encoded response headers stored in database.
+     * @param {string|null} headers Encoded headers payload.
+     * @returns {object|null} Decoded headers object, or null if absent/invalid.
+     */
+    static decodeResponseHeaders(headers) {
+        if (!headers) {
+            return null;
+        }
+        try {
+            return JSON.parse(Buffer.from(headers, "base64").toString("utf8"));
+        } catch (error) {
+            return null;
         }
     }
 }

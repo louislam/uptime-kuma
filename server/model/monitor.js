@@ -953,20 +953,16 @@ class Monitor extends BeanModel {
                     bean.msg = error.message;
                 }
 
-                if (this.getSaveErrorResponse()) {
-                    const failureDetail = {
-                        error: error?.message,
-                        code: error?.code,
-                    };
-                    if (error?.response) {
-                        failureDetail.status = error.response.status;
-                        failureDetail.statusText = error.response.statusText;
-                        failureDetail.headers = error.response.headers;
-                        if (error.response.data !== undefined) {
-                            failureDetail.body = error.response.data;
-                        }
+                if (this.getSaveErrorResponse() && error?.response) {
+                    if (typeof error.response.status === "number") {
+                        bean.status_code = error.response.status;
                     }
-                    await this.saveResponseData(bean, failureDetail, { preserveStructure: true });
+                    if (error.response.headers) {
+                        bean.response_headers = Buffer.from(JSON.stringify(error.response.headers), "utf8").toString("base64");
+                    }
+                    if (error.response.data !== undefined) {
+                        await this.saveResponseData(bean, error.response.data);
+                    }
                 }
 
                 // If UP come in here, it must be upside down mode
@@ -1164,26 +1160,15 @@ class Monitor extends BeanModel {
      * Save response body to a heartbeat if response saving is enabled.
      * @param {import("redbean-node").Bean} bean Heartbeat bean to populate.
      * @param {unknown} data Response payload.
-     * @param {{ preserveStructure?: boolean }} opts Save options.
      * @returns {void}
      */
-    async saveResponseData(bean, data, opts = {}) {
+    async saveResponseData(bean, data) {
         if (data === undefined) {
             return;
         }
 
-        const maxSize = this.response_max_length ?? RESPONSE_BODY_LENGTH_DEFAULT;
         let responseData = data;
-        if (opts.preserveStructure && responseData && typeof responseData === "object") {
-            responseData = { ...responseData };
-            if (responseData.body !== undefined) {
-                responseData.body = Monitor.stringifyResponseData(responseData.body);
-                if (responseData.body.length > maxSize) {
-                    responseData.body = responseData.body.substring(0, maxSize) + "... (truncated)";
-                }
-            }
-            responseData = JSON.stringify(responseData);
-        } else if (typeof responseData !== "string") {
+        if (typeof responseData !== "string") {
             try {
                 responseData = JSON.stringify(responseData);
             } catch (error) {
@@ -1191,28 +1176,13 @@ class Monitor extends BeanModel {
             }
         }
 
-        if (!opts.preserveStructure && responseData.length > maxSize) {
+        const maxSize = this.response_max_length ?? RESPONSE_BODY_LENGTH_DEFAULT;
+        if (responseData.length > maxSize) {
             responseData = responseData.substring(0, maxSize) + "... (truncated)";
         }
 
         // Offload brotli compression from main event loop to libuv thread pool
         bean.response = (await brotliCompress(Buffer.from(responseData, "utf8"))).toString("base64");
-    }
-
-    /**
-     * Convert response payload to a string for storage.
-     * @param {unknown} data Response payload.
-     * @returns {string} String response payload.
-     */
-    static stringifyResponseData(data) {
-        if (typeof data === "string") {
-            return data;
-        }
-        try {
-            return JSON.stringify(data);
-        } catch (error) {
-            return String(data);
-        }
     }
 
     /**
