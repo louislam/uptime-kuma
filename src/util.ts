@@ -130,12 +130,12 @@ const consoleModuleColors = [
 
 type LogLevel = "info" | "warn" | "error" | "debug";
 
-const consoleLevelColors: Record<LogLevel, string> = {
+const consoleLevelColors = {
     info: CONSOLE_STYLE_FgCyan,
     warn: CONSOLE_STYLE_FgYellow,
     error: CONSOLE_STYLE_FgRed,
     debug: CONSOLE_STYLE_FgGray,
-};
+} as const;
 
 /**
  * Flip the status of s
