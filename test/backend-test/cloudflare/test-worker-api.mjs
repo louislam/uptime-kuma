@@ -503,6 +503,192 @@ describe("Cloudflare Worker API", () => {
         assert.strictEqual(env.state.settings.searchEngineIndex, true);
     });
 
+    test("does not expose Worker auth settings through UI settings", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            settings: {
+                workerAuthUser: {
+                    username: "admin",
+                    password: {
+                        algorithm: "PBKDF2-SHA256",
+                        iterations: 210000,
+                        salt: "salt",
+                        hash: "hash",
+                    },
+                },
+                workerAuthSessionSecret: "secret",
+            },
+        });
+
+        const response = await handleApiRequest(adminRequest("https://example.com/api/settings"), env);
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual("workerAuthUser" in body.data, false);
+        assert.strictEqual("workerAuthSessionSecret" in body.data, false);
+    });
+
+    test("Cloudflare Access can bootstrap local Worker auth before a local account exists", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const accessAuth = await createAccessAuth();
+        const env = createEnv({
+            adminToken: "",
+            accessAuth,
+        });
+
+        const response = await handleApiRequest(
+            new Request("https://example.com/api/auth/local-user", {
+                method: "PUT",
+                headers: {
+                    "content-type": "application/json",
+                    "cf-access-jwt-assertion": accessAuth.token,
+                },
+                body: JSON.stringify({
+                    username: "admin",
+                    newPassword: "password123",
+                }),
+            }),
+            env
+        );
+
+        assert.strictEqual(response.status, 200);
+        assert.deepStrictEqual(await response.json(), {
+            ok: true,
+            msg: "Local admin login saved",
+            username: "admin",
+            localAuthConfigured: true,
+        });
+        assert.strictEqual(env.state.settings.workerAuthUser.username, "admin");
+        assert.notStrictEqual(env.state.settings.workerAuthUser.password.hash, "password123");
+    });
+
+    test("rejects unauthenticated Worker admin requests once local auth is configured", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({});
+        await createLocalUser(handleApiRequest, env);
+
+        const response = await handleApiRequest(new Request("https://example.com/api/monitors"));
+
+        assert.strictEqual(response.status, 401);
+        assert.deepStrictEqual(await response.json(), { error: "Unauthorized" });
+    });
+
+    test("rejects Cloudflare Access for admin routes after local Worker auth is configured", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const accessAuth = await createAccessAuth();
+        const env = createEnv({
+            adminToken: "",
+            accessAuth,
+        });
+        await createLocalUser(handleApiRequest, env);
+
+        const response = await handleApiRequest(
+            new Request("https://example.com/api/monitors", {
+                headers: {
+                    "cf-access-jwt-assertion": accessAuth.token,
+                },
+            }),
+            env
+        );
+
+        assert.strictEqual(response.status, 401);
+        assert.deepStrictEqual(await response.json(), { error: "Unauthorized" });
+    });
+
+    test("Worker username and password login returns a session token for admin API access", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [],
+        });
+        await createLocalUser(handleApiRequest, env);
+
+        const loginResponse = await handleApiRequest(
+            new Request("https://example.com/api/auth/login", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({
+                    username: "admin",
+                    password: "password123",
+                    remember: true,
+                }),
+            }),
+            env
+        );
+        const loginBody = await loginResponse.json();
+
+        assert.strictEqual(loginResponse.status, 200);
+        assert.strictEqual(loginBody.ok, true);
+        assert.strictEqual(loginBody.username, "admin");
+        assert.match(loginBody.token, /^[^.]+\.[^.]+\.[^.]+$/);
+
+        const monitorsResponse = await handleApiRequest(
+            new Request("https://example.com/api/monitors", {
+                headers: {
+                    authorization: `Bearer ${loginBody.token}`,
+                },
+            }),
+            env
+        );
+
+        assert.strictEqual(monitorsResponse.status, 200);
+        assert.deepStrictEqual(await monitorsResponse.json(), { monitors: [] });
+    });
+
+    test("Worker username and password login rejects incorrect credentials", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({});
+        await createLocalUser(handleApiRequest, env);
+
+        const response = await handleApiRequest(
+            new Request("https://example.com/api/auth/login", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({
+                    username: "admin",
+                    password: "wrong",
+                }),
+            }),
+            env
+        );
+
+        assert.strictEqual(response.status, 401);
+        assert.deepStrictEqual(await response.json(), { error: "authIncorrectCreds" });
+    });
+
+    test("Worker auth session endpoint returns the configured username", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({});
+        await createLocalUser(handleApiRequest, env);
+        const loginResponse = await handleApiRequest(
+            new Request("https://example.com/api/auth/login", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({
+                    username: "admin",
+                    password: "password123",
+                }),
+            }),
+            env
+        );
+        const { token } = await loginResponse.json();
+
+        const response = await handleApiRequest(
+            new Request("https://example.com/api/auth/session", {
+                headers: {
+                    authorization: `Bearer ${token}`,
+                },
+            }),
+            env
+        );
+
+        assert.strictEqual(response.status, 200);
+        assert.deepStrictEqual(await response.json(), {
+            authenticated: true,
+            username: "admin",
+            localAuthConfigured: true,
+        });
+    });
+
     test("creates, lists, updates, and deletes Worker notification configs", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({
@@ -1739,6 +1925,20 @@ function adminRequest(url, init = {}) {
             authorization: "Bearer test-token",
         },
     });
+}
+
+async function createLocalUser(handleApiRequest, env) {
+    const response = await handleApiRequest(
+        adminRequest("https://example.com/api/auth/local-user", {
+            method: "PUT",
+            body: JSON.stringify({
+                username: "admin",
+                newPassword: "password123",
+            }),
+        }),
+        env
+    );
+    assert.strictEqual(response.status, 200);
 }
 
 async function createAccessAuth(options = {}) {
