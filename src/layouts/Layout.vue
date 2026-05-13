@@ -3,12 +3,6 @@
         <div v-if="!$root.socket.connected && !$root.socket.firstConnect" class="lost-connection">
             <div class="container-fluid">
                 {{ $root.connectionErrorMsg }}
-                <div v-if="$root.showReverseProxyGuide">
-                    {{ $t("Using a Reverse Proxy?") }}
-                    <a href="https://github.com/louislam/uptime-kuma/wiki/Reverse-Proxy" target="_blank">
-                        {{ $t("Check how to config it for WebSocket") }}
-                    </a>
-                </div>
             </div>
         </div>
 

@@ -96,7 +96,6 @@ export default {
                 "general",
                 "appearance",
                 "notifications",
-                "reverse-proxy",
                 "twingate",
                 "security",
                 "import-monitors",
@@ -113,9 +112,6 @@ export default {
                 },
                 notifications: {
                     title: this.$t("Notifications"),
-                },
-                "reverse-proxy": {
-                    title: this.$t("Reverse Proxy"),
                 },
                 tags: {
                     title: this.$t("Tags"),
@@ -213,10 +209,6 @@ export default {
 
                 if (this.settings.domainExpiryNotifyDays === undefined) {
                     this.settings.domainExpiryNotifyDays = [7, 14, 21];
-                }
-
-                if (this.settings.trustProxy === undefined) {
-                    this.settings.trustProxy = false;
                 }
 
                 this.settingsLoaded = true;

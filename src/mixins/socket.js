@@ -65,7 +65,6 @@ export default {
             isCloudflareWorkerUI: false,
             workerLocalAuthConfigured: false,
             connectionErrorMsg: `${this.$t("Cannot connect to the socket server.")} ${this.$t("Reconnecting...")}`,
-            showReverseProxyGuide: true,
             cloudflared: {
                 cloudflareTunnelToken: "",
                 installed: null,
@@ -273,7 +272,6 @@ export default {
             socket.on("connect_error", (err) => {
                 console.error(`Failed to connect to the backend. Socket.io connect_error: ${err.message}`);
                 this.connectionErrorMsg = `${this.$t("Cannot connect to the socket server.")} [${err}] ${this.$t("Reconnecting...")}`;
-                this.showReverseProxyGuide = true;
                 this.socket.connected = false;
                 this.socket.firstConnect = false;
             });
@@ -288,7 +286,6 @@ export default {
                 console.log("Connected to the socket server");
                 this.socket.connectCount++;
                 this.socket.connected = true;
-                this.showReverseProxyGuide = false;
 
                 // Reset Heartbeat list if it is re-connect
                 if (this.socket.connectCount >= 2) {
@@ -327,7 +324,6 @@ export default {
             this.socket.token = null;
             this.loggedIn = false;
             this.allowLoginDialog = false;
-            this.showReverseProxyGuide = false;
             this.username = null;
             socket = createCloudflareSocketStub(this);
             await this.refreshCloudflareWorkerAuthSession();
