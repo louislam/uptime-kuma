@@ -27,7 +27,7 @@ const SENSITIVE_SETTING_KEYS = new Set([
     WORKER_AUTH_USER_SETTING,
     WORKER_AUTH_SESSION_SECRET_SETTING,
 ]);
-const WORKER_AUTH_PASSWORD_ITERATIONS = 210000;
+const WORKER_AUTH_PASSWORD_ITERATIONS = 100000;
 const WORKER_AUTH_SESSION_TTL_SECONDS = 7 * 24 * 60 * 60;
 const WORKER_AUTH_REMEMBER_SESSION_TTL_SECONDS = 30 * 24 * 60 * 60;
 
@@ -1205,7 +1205,7 @@ async function verifyWorkerAuthPassword(password, storedPassword) {
         return false;
     }
     const iterations = Number(storedPassword.iterations);
-    if (!Number.isFinite(iterations) || iterations < 1) {
+    if (!Number.isFinite(iterations) || iterations < 1 || iterations > WORKER_AUTH_PASSWORD_ITERATIONS) {
         return false;
     }
     const salt = base64UrlToBytes(storedPassword.salt || "");

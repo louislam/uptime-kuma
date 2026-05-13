@@ -563,6 +563,7 @@ describe("Cloudflare Worker API", () => {
         });
         assert.strictEqual(env.state.settings.workerAuthUser.username, "admin");
         assert.notStrictEqual(env.state.settings.workerAuthUser.password.hash, "password123");
+        assert.strictEqual(env.state.settings.workerAuthUser.password.iterations, 100000);
     });
 
     test("rejects unauthenticated Worker admin requests once local auth is configured", async () => {
