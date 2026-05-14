@@ -246,6 +246,7 @@ class Monitor extends BeanModel {
                 kafkaProducerSaslOptions: JSON.parse(this.kafkaProducerSaslOptions),
                 rabbitmqUsername: this.rabbitmqUsername,
                 rabbitmqPassword: this.rabbitmqPassword,
+                playwright_script: this.playwright_script,
             };
         }
 
@@ -1791,6 +1792,12 @@ class Monitor extends BeanModel {
                 if (delay >= maxDelayFromInterval) {
                     throw new Error(`Screenshot delay must be less than ${maxDelayFromInterval}ms (0.5 × interval)`);
                 }
+            }
+        }
+
+        if (this.type === "playwright") {
+            if (!this.playwright_script || this.playwright_script.trim().length === 0) {
+                throw new Error("Playwright script is required");
             }
         }
 

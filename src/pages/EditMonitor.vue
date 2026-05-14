@@ -57,6 +57,9 @@
                                         <option value="real-browser">
                                             HTTP(s) - Browser Engine (Chrome/Chromium) (Beta)
                                         </option>
+                                        <option value="playwright">
+                                            HTTP(s) - Playwright Scenario
+                                        </option>
                                     </optgroup>
 
                                     <optgroup :label="$t('monitorTypeSpecial')">
@@ -186,7 +189,8 @@
                                     monitor.type === 'http' ||
                                     monitor.type === 'keyword' ||
                                     monitor.type === 'json-query' ||
-                                    monitor.type === 'real-browser'
+                                    monitor.type === 'real-browser' ||
+                                    monitor.type === 'playwright'
                                 "
                                 class="my-3"
                             >
@@ -301,7 +305,7 @@
                             </div>
 
                             <!-- Remote Browser -->
-                            <div v-if="monitor.type === 'real-browser'" class="my-3">
+                            <div v-if="['real-browser', 'playwright'].includes(monitor.type)" class="my-3">
                                 <!-- Toggle -->
                                 <div class="my-3 form-check">
                                     <input
@@ -327,6 +331,29 @@
                                         :action="() => $refs.remoteBrowserDialog.show()"
                                     />
                                 </div>
+                            </div>
+
+                            <div v-if="monitor.type === 'playwright'" class="my-3">
+                                <label for="playwright-script" class="form-label">{{ $t("Playwright Script") }}</label>
+                                <textarea
+                                    id="playwright-script"
+                                    v-model="monitor.playwright_script"
+                                    class="form-control"
+                                    rows="12"
+                                    required
+                                    data-testid="playwright-script-input"
+                                ></textarea>
+                                <i18n-t keypath="playwrightScriptHelp" tag="div" class="form-text">
+                                    <template #testBlock>
+                                        <code>test("...", async ({ page }) =&gt; { ... })</code>
+                                    </template>
+                                    <template #expectCall>
+                                        <code>expect(...)</code>
+                                    </template>
+                                    <template #importLine>
+                                        <code>import { test, expect } from "@playwright/test";</code>
+                                    </template>
+                                </i18n-t>
                             </div>
 
                             <!-- Game -->
@@ -3070,6 +3097,12 @@ const defaultValueList = {
     },
 };
 
+const defaultPlaywrightScript = `test("monitor.url is reachable", async ({ page }) => {
+    const response = await page.goto(monitor.url, { waitUntil: "domcontentloaded" });
+    expect(response?.ok()).toBeTruthy();
+    await expect(page).toHaveTitle(/.+/);
+});`;
+
 const monitorDefaults = {
     type: "http",
     name: "",
@@ -3122,6 +3155,7 @@ const monitorDefaults = {
     gamedigGivenPortOnly: true,
     remote_browser: null,
     screenshot_delay: 0,
+    playwright_script: defaultPlaywrightScript,
     rabbitmqNodes: [],
     rabbitmqUsername: "",
     rabbitmqPassword: "",
@@ -3191,6 +3225,28 @@ export default {
 
         timeoutMax() {
             return this.monitor.type === "ping" ? 60 : undefined;
+        },
+
+        playwrightIntervalSeconds() {
+            const interval = Number(this.monitor.interval);
+            if (!Number.isFinite(interval) || interval <= 0) {
+                return null;
+            }
+            return interval;
+        },
+
+        playwrightActionTimeoutMs() {
+            if (this.playwrightIntervalSeconds === null) {
+                return null;
+            }
+            return Math.max(1000, Math.floor(this.playwrightIntervalSeconds * 1000 * 0.4));
+        },
+
+        playwrightScenarioTimeoutMs() {
+            if (this.playwrightIntervalSeconds === null) {
+                return null;
+            }
+            return Math.max(1000, Math.floor(this.playwrightIntervalSeconds * 1000 * 0.8));
         },
 
         defaultFriendlyName() {
@@ -3552,7 +3608,7 @@ message HealthCheckResponse {
 
             // Change to http (override websocket-upgrade defaults)
             // Because user may see wss:// and default to http code 1000, which is strange for http monitor.
-            if (["http", "keyword", "real-browser"].includes(newType)) {
+            if (["http", "keyword", "real-browser", "playwright"].includes(newType)) {
                 if (!this.monitor.url || this.monitor.url === defaultValueList["websocket-upgrade"].url) {
                     this.monitor.url = defaultValueList.http.url;
                 }
@@ -3565,6 +3621,10 @@ message HealthCheckResponse {
                 ) {
                     this.monitor.accepted_statuscodes = defaultValueList.http.accepted_statuscodes;
                 }
+            }
+
+            if (newType === "playwright" && !this.monitor.playwright_script) {
+                this.monitor.playwright_script = defaultPlaywrightScript;
             }
 
             if (this.monitor.type === "push") {
@@ -3869,6 +3929,11 @@ message HealthCheckResponse {
          * @returns {boolean} Is the form input valid?
          */
         isInputValid() {
+            if (this.monitor.type === "playwright" && !this.monitor.playwright_script?.trim()) {
+                toast.error(this.$t("playwrightScriptRequired"));
+                return false;
+            }
+
             if (this.monitor.body && (!this.monitor.httpBodyEncoding || this.monitor.httpBodyEncoding === "json")) {
                 try {
                     JSON.parse(this.monitor.body);
@@ -3967,6 +4032,7 @@ message HealthCheckResponse {
                 "json-query": ["http:", "https:"],
                 "websocket-upgrade": ["ws:", "wss:"],
                 "real-browser": null,
+                playwright: ["http:", "https:"],
                 mqtt: ["mqtt:", "ws:", "wss:"],
             };
 

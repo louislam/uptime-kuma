@@ -135,4 +135,30 @@ test.describe("Monitor Form", () => {
 
         await screenshot(testInfo, page);
     });
+
+    test("playwright script form persists", async ({ page }, testInfo) => {
+        await page.goto("./add");
+        await login(page);
+        await selectMonitorType(page, "playwright");
+
+        const friendlyName = "Playwright Form Persistence";
+        const script = `test("example", async ({ page }) => {\n    await page.goto(monitor.url);\n    await expect(page).toHaveTitle(/.+/);\n});`;
+
+        await page.getByTestId("friendly-name-input").fill(friendlyName);
+        await page.getByTestId("url-input").fill("https://example.com/");
+        await page.getByTestId("playwright-script-input").fill(script);
+
+        await screenshot(testInfo, page);
+        await page.getByTestId("save-button").click();
+        await page.waitForURL("/dashboard/*");
+
+        await page.getByRole("link", { name: "Edit" }).click();
+        await page.waitForURL("/edit/*");
+
+        await expect(page.getByTestId("monitor-type-select")).toHaveValue("playwright");
+        await expect(page.getByTestId("url-input")).toHaveValue("https://example.com/");
+        await expect(page.getByTestId("playwright-script-input")).toHaveValue(script);
+
+        await screenshot(testInfo, page);
+    });
 });
