@@ -143,6 +143,15 @@ describe("Cloudflare Worker API", () => {
         assert.match(workerSource, /buildUnavailableTwingateStatus/);
     });
 
+    test("runner Twingate status explicitly uses startup-aware container fetch retries", async () => {
+        const workerPath = path.join(__dirname, "../../../cloudflare/worker/index.mjs");
+        const workerSource = fs.readFileSync(workerPath, "utf8");
+
+        assert.match(workerSource, /TWINGATE_STATUS_MAX_RETRIES = 3/);
+        assert.match(workerSource, /this\.containerFetch\(request,\s*TWINGATE_STATUS_PORT\)/);
+        assert.match(workerSource, /persistStartingTwingateStatus/);
+    });
+
     test("entry page routes the deployed web UI to the dashboard", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({});
@@ -1989,11 +1998,11 @@ describe("Cloudflare Worker API", () => {
         assert.strictEqual(response.status, 200);
         assert.deepStrictEqual(await response.json(), {
             configured: true,
-            starting: false,
+            starting: true,
             running: false,
             proxyUrl: "http://127.0.0.1:9999",
             tunMode: "on",
-            lastError: "Runner status failed with 500: Failed to start container: The container is not running, consider calling start()",
+            lastError: "Twingate runner container is starting or provisioning. Refresh in a few seconds.",
         });
     });
 

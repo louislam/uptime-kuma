@@ -1,19 +1,17 @@
-import { Container, ContainerProxy, getContainer } from "@cloudflare/containers";
+import { Container, ContainerProxy } from "@cloudflare/containers";
 import { consumeQueue, enqueueDueMonitors, handleApiRequest } from "./api.mjs";
+import {
+    buildStartingTwingateStatus,
+    buildUnavailableTwingateStatus,
+    isTransientContainerStartupError,
+} from "./twingate-status.mjs";
 
 export { ContainerProxy };
 
 const RUNNER_STATUS_STORAGE_KEY = "runner:twingate:last-unavailable-status";
-const SYSTEM_TWINGATE_PROXY_URL = "http://127.0.0.1:9999";
-const TWINGATE_ENV_INPUTS = [
-    "TWINGATE_SERVICE_KEY_B64",
-    "TWINGATE_SERVICE_KEY_JSON",
-    "TWINGATE_PRIVATE_KEY",
-    "TWINGATE_PRIVATE_KEY_B64",
-    "TWINGATE_NETWORK",
-    "TWINGATE_SERVICE_ACCOUNT_ID",
-    "TWINGATE_KEY_ID",
-];
+const TWINGATE_STATUS_PORT = 8788;
+const TWINGATE_STATUS_MAX_RETRIES = 3;
+const TWINGATE_STATUS_RETRY_DELAY_MS = 250;
 
 export class MonitorRunner extends Container {
     defaultPort = 8788;
@@ -62,22 +60,41 @@ export class MonitorRunner extends Container {
             return await super.fetch(request);
         }
 
-        try {
-            const response = await super.fetch(request);
-            if (response.ok) {
-                return response;
+        return await this.fetchTwingateStatus(request);
+    }
+
+    /**
+     * Fetch the Twingate status endpoint while giving Cloudflare Containers a brief
+     * window to attach a freshly-starting instance.
+     * @param {Request} request Incoming Twingate status request.
+     * @returns {Promise<Response>} Runner status response.
+     */
+    async fetchTwingateStatus(request) {
+        let lastError = "";
+        for (let attempt = 0; attempt <= TWINGATE_STATUS_MAX_RETRIES; attempt++) {
+            try {
+                const response = await this.containerFetch(request, TWINGATE_STATUS_PORT);
+                if (response.ok) {
+                    return response;
+                }
+
+                lastError = `Failed to start runner container: ${await response.text()}`;
+            } catch (error) {
+                lastError = `Failed to start runner container: ${formatErrorMessage(error)}`;
             }
 
-            const status = await this.persistUnavailableTwingateStatus(
-                `Failed to start runner container: ${await response.text()}`
-            );
-            return Response.json(status);
-        } catch (error) {
-            const status = await this.persistUnavailableTwingateStatus(
-                `Failed to start runner container: ${formatErrorMessage(error)}`
-            );
-            return Response.json(status);
+            if (!isTransientContainerStartupError(lastError)) {
+                const status = await this.persistUnavailableTwingateStatus(lastError);
+                return Response.json(status);
+            }
+
+            if (attempt < TWINGATE_STATUS_MAX_RETRIES) {
+                await delay(TWINGATE_STATUS_RETRY_DELAY_MS);
+            }
         }
+
+        const status = await this.persistStartingTwingateStatus();
+        return Response.json(status);
     }
 
     /**
@@ -113,6 +130,16 @@ export class MonitorRunner extends Container {
         await this.ctx.storage.put(RUNNER_STATUS_STORAGE_KEY, status);
         return status;
     }
+
+    /**
+     * Store and return a sanitized starting Twingate status.
+     * @returns {Promise<object>} Status payload for the Worker API.
+     */
+    async persistStartingTwingateStatus() {
+        const status = buildStartingTwingateStatus(this.env);
+        await this.ctx.storage.put(RUNNER_STATUS_STORAGE_KEY, status);
+        return status;
+    }
 }
 
 /**
@@ -134,19 +161,12 @@ function normalizeContainerEnvValue(value) {
     return typeof value === "object" ? JSON.stringify(value) : value;
 }
 
-function buildUnavailableTwingateStatus(env, lastError) {
-    return {
-        configured: TWINGATE_ENV_INPUTS.some((name) => Boolean(env?.[name])),
-        starting: false,
-        running: false,
-        proxyUrl: SYSTEM_TWINGATE_PROXY_URL,
-        tunMode: env?.TWINGATE_TUN || null,
-        lastError,
-    };
-}
-
 function formatErrorMessage(error) {
     return error instanceof Error ? error.message : String(error);
+}
+
+function delay(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 export default {

@@ -1,3 +1,8 @@
+import {
+    buildTwingateStatusFromRunnerFailure,
+    sanitizeRunnerStatus,
+} from "./twingate-status.mjs";
+
 const DIRECT_PROFILE = {
     id: null,
     slug: "direct",
@@ -1208,14 +1213,14 @@ async function fetchRunnerStatus(env) {
         const stub = getRunnerStub(env);
         const response = await stub.fetch(new Request("http://runner/twingate/status"));
         if (!response.ok) {
-            return getUnavailableRunnerStatus(
+            return buildTwingateStatusFromRunnerFailure(
                 env,
                 `Runner status failed with ${response.status}${await formatRunnerError(response)}`
             );
         }
         return sanitizeRunnerStatus(await response.json());
     } catch (error) {
-        return getUnavailableRunnerStatus(env, `Runner status unavailable: ${error.message}`);
+        return buildTwingateStatusFromRunnerFailure(env, `Runner status unavailable: ${error.message}`);
     }
 }
 
@@ -1250,40 +1255,6 @@ async function formatRunnerError(response) {
         const body = await response.text();
         return body ? `: ${body}` : "";
     }
-}
-
-/**
- * Build a status payload when the runner container cannot provide its own status.
- * @param {object} env Worker environment bindings.
- * @param {string} lastError Sanitized runner status error.
- * @returns {object} Sanitized Twingate status.
- */
-function getUnavailableRunnerStatus(env, lastError) {
-    return sanitizeRunnerStatus({
-        configured: hasTwingateServiceKeyInput(env),
-        starting: false,
-        running: false,
-        proxyUrl: "http://127.0.0.1:9999",
-        tunMode: env.TWINGATE_TUN || null,
-        lastError,
-    });
-}
-
-/**
- * Detect whether Twingate has any service-key material configured in Worker env.
- * @param {object} env Worker environment bindings.
- * @returns {boolean} True when any Twingate service-key field is present.
- */
-function hasTwingateServiceKeyInput(env = {}) {
-    return Boolean(
-        env.TWINGATE_SERVICE_KEY_B64 ||
-        env.TWINGATE_SERVICE_KEY_JSON ||
-        env.TWINGATE_PRIVATE_KEY ||
-        env.TWINGATE_PRIVATE_KEY_B64 ||
-        env.TWINGATE_NETWORK ||
-        env.TWINGATE_SERVICE_ACCOUNT_ID ||
-        env.TWINGATE_KEY_ID
-    );
 }
 
 async function writeHeartbeat(env, monitorId, result) {
@@ -1824,17 +1795,6 @@ function bytesToBase64Url(bytes) {
         binary += String.fromCharCode(byte);
     }
     return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
-}
-
-function sanitizeRunnerStatus(status = {}) {
-    return {
-        configured: Boolean(status.configured),
-        starting: Boolean(status.starting),
-        running: Boolean(status.running),
-        proxyUrl: status.proxyUrl || null,
-        tunMode: status.tunMode || null,
-        lastError: status.lastError || null,
-    };
 }
 
 function assertWorkerTargetAllowed(monitor, networkProfileId) {
