@@ -11,7 +11,8 @@ const twingateServiceKey = resolveTwingateServiceKey();
 const twingateLifecycle = new TwingateLifecycle({ serviceKey: twingateServiceKey });
 const twingateStatus = twingateLifecycle.status;
 
-function createServer() {
+function createServer(options = {}) {
+    const status = options.twingateStatus || twingateStatus;
     return http.createServer(async (req, res) => {
         try {
             if (req.method === "GET" && req.url === "/health") {
@@ -19,18 +20,18 @@ function createServer() {
             }
 
             if (req.method === "GET" && req.url === "/twingate/status") {
-                return sendJson(res, 200, twingateStatus);
+                return sendJson(res, 200, status);
             }
 
             if (req.method === "POST" && req.url === "/check") {
                 const job = await readJson(req);
-                if (isTwingateJob(job) && !twingateStatus.running) {
-                    return sendJson(res, 200, getTwingateNotReadyResult(twingateStatus));
+                if (isTwingateJob(job) && !status.running) {
+                    return sendJson(res, 200, getTwingateNotReadyResult(status));
                 }
                 const result = await runCheck({
                     ...job,
-                    twingateProxyUrl: twingateStatus.proxyUrl,
-                    twingateTunMode: twingateStatus.tunMode,
+                    twingateProxyUrl: status.proxyUrl,
+                    twingateTunMode: status.tunMode,
                 });
                 return sendJson(res, 200, result);
             }
@@ -43,10 +44,10 @@ function createServer() {
 }
 
 function startServer() {
-    twingateLifecycle.start();
     const server = createServer();
     server.listen(port, "0.0.0.0", () => {
         console.log(`Cloudflare monitor runner listening on ${port}`);
+        twingateLifecycle.start();
     });
     return server;
 }

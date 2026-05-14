@@ -3,6 +3,7 @@ const { describe, test } = require("node:test");
 const assert = require("node:assert");
 
 const {
+    createServer,
     getTwingateNotReadyResult,
     isTwingateJob,
 } = require("../../../cloudflare/runner/server");
@@ -52,4 +53,54 @@ describe("Cloudflare monitor runner server", () => {
 
         assert.strictEqual(result.msg, "Twingate proxy is not ready");
     });
+
+    test("serves health and Twingate status before Twingate lifecycle starts", async () => {
+        const twingateStatus = {
+            configured: true,
+            starting: false,
+            running: false,
+            proxyUrl: "http://127.0.0.1:9999",
+            tunMode: "on",
+            lastError: "not started yet",
+        };
+        const server = createServer({
+            twingateStatus,
+        });
+        await listen(server);
+
+        try {
+            const baseUrl = `http://127.0.0.1:${server.address().port}`;
+            const healthResponse = await fetch(`${baseUrl}/health`);
+            const statusResponse = await fetch(`${baseUrl}/twingate/status`);
+
+            assert.strictEqual(healthResponse.status, 200);
+            assert.deepStrictEqual(await healthResponse.json(), { ok: true });
+            assert.strictEqual(statusResponse.status, 200);
+            assert.deepStrictEqual(await statusResponse.json(), twingateStatus);
+        } finally {
+            await close(server);
+        }
+    });
 });
+
+function listen(server) {
+    return new Promise((resolve, reject) => {
+        server.once("error", reject);
+        server.listen(0, "127.0.0.1", () => {
+            server.off("error", reject);
+            resolve();
+        });
+    });
+}
+
+function close(server) {
+    return new Promise((resolve, reject) => {
+        server.close((error) => {
+            if (error) {
+                reject(error);
+                return;
+            }
+            resolve();
+        });
+    });
+}

@@ -132,6 +132,17 @@ describe("Cloudflare Worker API", () => {
         assert.match(workerSource, /JSON\.stringify\(value\)/);
     });
 
+    test("runner container exposes health readiness and status failure hooks", async () => {
+        const workerPath = path.join(__dirname, "../../../cloudflare/worker/index.mjs");
+        const workerSource = fs.readFileSync(workerPath, "utf8");
+
+        assert.match(workerSource, /this\.requiredPorts = \[8788\]/);
+        assert.match(workerSource, /pingEndpoint = "localhost\/health"/);
+        assert.match(workerSource, /onStop\(\{/);
+        assert.match(workerSource, /onError\(error\)/);
+        assert.match(workerSource, /buildUnavailableTwingateStatus/);
+    });
+
     test("entry page routes the deployed web UI to the dashboard", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({});
@@ -1961,6 +1972,28 @@ describe("Cloudflare Worker API", () => {
             proxyUrl: "http://127.0.0.1:9999",
             tunMode: "on",
             lastError: "Runner status failed with 500: container crashed before status endpoint",
+        });
+    });
+
+    test("returns sanitized Twingate status for Cloudflare container startup failure", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            runnerStatusResponseStatus: 500,
+            runnerStatus: "Failed to start container: The container is not running, consider calling start()",
+        });
+        env.TWINGATE_PRIVATE_KEY_B64 = "configured-secret";
+        env.TWINGATE_TUN = "on";
+
+        const response = await handleApiRequest(adminRequest("https://example.com/api/twingate/status"), env);
+
+        assert.strictEqual(response.status, 200);
+        assert.deepStrictEqual(await response.json(), {
+            configured: true,
+            starting: false,
+            running: false,
+            proxyUrl: "http://127.0.0.1:9999",
+            tunMode: "on",
+            lastError: "Runner status failed with 500: Failed to start container: The container is not running, consider calling start()",
         });
     });
 

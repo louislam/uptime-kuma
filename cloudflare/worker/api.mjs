@@ -1242,6 +1242,9 @@ function getRunnerStub(env) {
 async function formatRunnerError(response) {
     try {
         const body = await response.clone().json();
+        if (typeof body === "string") {
+            return body ? `: ${body}` : "";
+        }
         return body?.error ? `: ${body.error}` : "";
     } catch {
         const body = await response.text();
