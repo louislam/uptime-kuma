@@ -1606,5 +1606,6 @@
     "RecordMatch": "Zhoda hodnoty záznamu",
     "evolutionCustomMessageTitle": "Vlastná správa (voliteľné)",
     "evolutionCustomMessageDesc": "Nechajte prázdne, ak chcete použiť predvolenú správu.",
-    "WebSocket Options": "Možnosti WebSocket"
+    "WebSocket Options": "Možnosti WebSocket",
+    "pingPacketSizeWarning": "Pri veľkosti paketu menšej ako 16 sa v systéme Linux nezaznamenávajú časy odozvy"
 }

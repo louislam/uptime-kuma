@@ -90,6 +90,7 @@ import HaloPSA from "./HaloPSA.vue";
 import Resend from "./Resend.vue";
 import Max from "./Max.vue";
 import VK from "./VK.vue";
+import VKTeams from "./VKTeams.vue";
 
 /**
  * Manage all notification form.
@@ -188,6 +189,7 @@ const NotificationFormList = {
     HaloPSA: HaloPSA,
     max: Max,
     VK: VK,
+    VKTeams: VKTeams,
 };
 
 export default NotificationFormList;

@@ -1646,5 +1646,7 @@
     "telnyxMessagingProfileId": "ID de profil de messagerie (facultatif)",
     "telnyxMessagingProfileIdHelptext": "Associez facultativement un profil de messagerie Telnyx pour contrôler les paramètres et les fonctionnalités de l’expéditeur",
     "evolutionCustomMessageTitle": "Message personnalisé (facultatif)",
-    "evolutionCustomMessageDesc": "Laissez vide pour utiliser le message par défaut."
+    "evolutionCustomMessageDesc": "Laissez vide pour utiliser le message par défaut.",
+    "WebSocket Options": "Options du WebSocket",
+    "pingPacketSizeWarning": "Une taille de paquet inférieure à 16 n'entraîne pas de temps d'aller-retour sous Linux"
 }

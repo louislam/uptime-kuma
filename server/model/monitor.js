@@ -1193,6 +1193,7 @@ class Monitor extends BeanModel {
             let res;
             if (this.auth_method === "ntlm") {
                 options.httpsAgent.keepAlive = true;
+                options.httpAgent.keepAlive = true;
 
                 res = await httpNtlm(options, {
                     username: this.basic_auth_user,

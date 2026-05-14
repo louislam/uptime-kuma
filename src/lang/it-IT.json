@@ -1620,5 +1620,6 @@
     "vkDontParseLinksDescription": "Se abilitato, VK non genererà anteprime/link snippet.",
     "vkPeerIdDescription": "Inserisci il peer_id di destinazione di VK. Questo valore viene inviato all’API così com’è.",
     "oracledbConnectionString": "Database Oracle: {connectionString}",
-    "WebSocket Options": "Opzioni WebSocket"
+    "WebSocket Options": "Opzioni WebSocket",
+    "pingPacketSizeWarning": "Una dimensione del pacchetto inferiore a 16 non produce tempi di andata e ritorno su Linux"
 }

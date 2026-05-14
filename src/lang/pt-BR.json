@@ -1614,5 +1614,6 @@
     "telnyxToNumberHelptext": "O número de telefone de destino para receber notificações por SMS (ex.: +15559876543)",
     "evolutionCustomMessageTitle": "Mensagem personalizada (opcional)",
     "evolutionCustomMessageDesc": "Deixe em branco para usar a mensagem padrão.",
-    "WebSocket Options": "Opções do WebSocket"
+    "WebSocket Options": "Opções do WebSocket",
+    "pingPacketSizeWarning": "Um tamanho de pacote menor que 16 não produz tempos de ida e volta no Linux"
 }

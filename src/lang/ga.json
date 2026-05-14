@@ -1601,5 +1601,6 @@
     "evolutionCustomMessageTitle": "Teachtaireacht Saincheaptha (roghnach)",
     "evolutionCustomMessageDesc": "Fág folamh chun an teachtaireacht réamhshocraithe a úsáid.",
     "telnyxPhoneNumberHelptext": "D'uimhir theileafóin Telnyx le seoladh uaithi (ní mór í a bheith cláraithe i do chuntas Telnyx, m.sh. +15551234567)",
-    "WebSocket Options": "Roghanna Soicéad Gréasáin"
+    "WebSocket Options": "Roghanna Soicéad Gréasáin",
+    "pingPacketSizeWarning": "Ní chruthaíonn méid paicéid níos lú ná 16 amanna turas cruinn ar Linux"
 }
