@@ -1103,8 +1103,8 @@ export async function executeMonitorCheck(env, monitorId) {
     }
 
     const networkProfile = monitor.network_profile_id ? await getNetworkProfile(env, monitor.network_profile_id) : null;
-    const jobMonitor = withAccessSecretHeader(sanitizeMonitor(monitor), env);
     const proxy = await getActiveProxy(env, monitor.proxy_id);
+    const jobMonitor = proxy ? sanitizeMonitor(monitor) : withAccessSecretHeader(sanitizeMonitor(monitor), env);
     if (proxy) {
         jobMonitor.proxy = proxy;
     }

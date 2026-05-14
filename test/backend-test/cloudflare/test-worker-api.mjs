@@ -2071,6 +2071,54 @@ describe("Cloudflare Worker API", () => {
         });
         assert.strictEqual(env.state.monitors[0].headers, "{\"Accept\":\"application/json\"}");
     });
+
+    test("check-now does not add ACCESS_SECRET header when monitor uses an active proxy", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            accessSecret: "long-random-secret",
+            monitors: [
+                {
+                    id: 9,
+                    name: "Proxied Protected HTTP",
+                    type: "http",
+                    url: "https://protected.example.test",
+                    hostname: null,
+                    port: null,
+                    method: "GET",
+                    headers: "{\"Accept\":\"application/json\"}",
+                    timeout: 5,
+                    network_profile_id: null,
+                    proxy_id: 4,
+                },
+            ],
+            proxies: [
+                {
+                    id: 4,
+                    user_id: 1,
+                    protocol: "http",
+                    host: "proxy.example.test",
+                    port: 8080,
+                    auth: 0,
+                    username: null,
+                    password: null,
+                    active: 1,
+                    default: 0,
+                },
+            ],
+            runnerResult: { status: 1, ping: 18, msg: "200 - OK", response: "ok" },
+        });
+
+        const response = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/9/check-now", { method: "POST" }),
+            env
+        );
+
+        assert.strictEqual(response.status, 200);
+        assert.deepStrictEqual(JSON.parse(env.state.runnerJobs[0].monitor.headers), {
+            Accept: "application/json",
+        });
+        assert.strictEqual(env.state.runnerJobs[0].monitor.proxy.id, 4);
+    });
 });
 
 /**
