@@ -79,4 +79,69 @@ describe("Cloudflare Worker socket delete shim", () => {
             "normalization should not mutate the paged API order"
         );
     });
+
+    test("handles tag lookups used during Worker monitor saves", () => {
+        const source = fs.readFileSync(
+            path.join(__dirname, "../../src/mixins/socket.js"),
+            "utf8"
+        );
+
+        assert.match(
+            source,
+            /if \(event === "getTags"\) \{[\s\S]*?collectCloudflareTags\(app\.monitorList\)[\s\S]*?return;/,
+            "Worker socket shim should handle getTags instead of showing the unsupported-action toast"
+        );
+
+        const helperMatch = source.match(
+            /function collectCloudflareTags\(monitorList\) \{[\s\S]*?\n\}\n\n\/\*\*/
+        );
+        assert.ok(helperMatch, "Worker tag collector should exist");
+
+        const collectCloudflareTags = new Function(`
+            ${helperMatch[0].replace(/\n\n\/\*\*$/, "")}
+            return collectCloudflareTags;
+        `)();
+
+        assert.deepStrictEqual(
+            collectCloudflareTags({
+                1: {
+                    tags: [
+                        {
+                            tag_id: 5,
+                            name: "role",
+                            color: "#66bb6a",
+                            value: "api",
+                        },
+                    ],
+                },
+                2: {
+                    tags: [
+                        {
+                            id: 5,
+                            name: "role",
+                            color: "#66bb6a",
+                            value: "web",
+                        },
+                        {
+                            name: "site",
+                            color: "#42a5f5",
+                        },
+                    ],
+                },
+            }),
+            [
+                {
+                    id: 5,
+                    name: "role",
+                    color: "#66bb6a",
+                },
+                {
+                    id: undefined,
+                    name: "site",
+                    color: "#42a5f5",
+                },
+            ],
+            "tag options should be unique by tag identity and omit monitor-specific values"
+        );
+    });
 });

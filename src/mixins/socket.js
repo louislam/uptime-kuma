@@ -1120,6 +1120,11 @@ function createCloudflareSocketStub(app) {
                     return;
                 }
 
+                if (event === "getTags") {
+                    callback?.({ ok: true, tags: collectCloudflareTags(app.monitorList) });
+                    return;
+                }
+
                 if (event === "getMonitor") {
                     const body = await requestCloudflareJson(`/api/monitors/${args[0]}`);
                     callback?.(body);
@@ -1236,6 +1241,34 @@ function createCloudflareSocketStub(app) {
             }
         },
     };
+}
+
+/**
+ * Build the tag option list expected by TagsManager from loaded Worker monitors.
+ * @param {object} monitorList Monitor map keyed by ID.
+ * @returns {object[]} Unique tags.
+ */
+function collectCloudflareTags(monitorList) {
+    const tagsByKey = new Map();
+
+    for (const monitor of Object.values(monitorList || {})) {
+        for (const tag of monitor.tags || []) {
+            const tagId = tag.tag_id ?? tag.id;
+            const name = tag.name || "";
+            const color = tag.color || "";
+            const key = tagId != null ? `id:${tagId}` : `${name}\u0000${color}`;
+
+            if (!tagsByKey.has(key)) {
+                tagsByKey.set(key, {
+                    id: tagId,
+                    name,
+                    color,
+                });
+            }
+        }
+    }
+
+    return Array.from(tagsByKey.values());
 }
 
 /**
