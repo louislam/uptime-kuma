@@ -1198,15 +1198,32 @@ async function callRunner(env, job) {
     return await response.json();
 }
 
+/**
+ * Fetch Twingate status from the runner container without failing the settings API.
+ * @param {object} env Worker environment bindings.
+ * @returns {Promise<object>} Sanitized Twingate status.
+ */
 async function fetchRunnerStatus(env) {
-    const stub = getRunnerStub(env);
-    const response = await stub.fetch(new Request("http://runner/twingate/status"));
-    if (!response.ok) {
-        throw httpError(502, `Runner status failed with ${response.status}`);
+    try {
+        const stub = getRunnerStub(env);
+        const response = await stub.fetch(new Request("http://runner/twingate/status"));
+        if (!response.ok) {
+            return getUnavailableRunnerStatus(
+                env,
+                `Runner status failed with ${response.status}${await formatRunnerError(response)}`
+            );
+        }
+        return sanitizeRunnerStatus(await response.json());
+    } catch (error) {
+        return getUnavailableRunnerStatus(env, `Runner status unavailable: ${error.message}`);
     }
-    return sanitizeRunnerStatus(await response.json());
 }
 
+/**
+ * Resolve the runner container stub across local and Cloudflare runtimes.
+ * @param {object} env Worker environment bindings.
+ * @returns {object} Runner container stub.
+ */
 function getRunnerStub(env) {
     if (typeof env.RUNNER.getByName === "function") {
         return env.RUNNER.getByName("default");
@@ -1215,6 +1232,55 @@ function getRunnerStub(env) {
         return env.RUNNER.get(env.RUNNER.idFromName("default"));
     }
     return env.RUNNER.get("default");
+}
+
+/**
+ * Format a non-OK runner response body for display in the sanitized status log.
+ * @param {Response} response Runner response.
+ * @returns {Promise<string>} Formatted error suffix.
+ */
+async function formatRunnerError(response) {
+    try {
+        const body = await response.clone().json();
+        return body?.error ? `: ${body.error}` : "";
+    } catch {
+        const body = await response.text();
+        return body ? `: ${body}` : "";
+    }
+}
+
+/**
+ * Build a status payload when the runner container cannot provide its own status.
+ * @param {object} env Worker environment bindings.
+ * @param {string} lastError Sanitized runner status error.
+ * @returns {object} Sanitized Twingate status.
+ */
+function getUnavailableRunnerStatus(env, lastError) {
+    return sanitizeRunnerStatus({
+        configured: hasTwingateServiceKeyInput(env),
+        starting: false,
+        running: false,
+        proxyUrl: "http://127.0.0.1:9999",
+        tunMode: env.TWINGATE_TUN || null,
+        lastError,
+    });
+}
+
+/**
+ * Detect whether Twingate has any service-key material configured in Worker env.
+ * @param {object} env Worker environment bindings.
+ * @returns {boolean} True when any Twingate service-key field is present.
+ */
+function hasTwingateServiceKeyInput(env = {}) {
+    return Boolean(
+        env.TWINGATE_SERVICE_KEY_B64 ||
+        env.TWINGATE_SERVICE_KEY_JSON ||
+        env.TWINGATE_PRIVATE_KEY ||
+        env.TWINGATE_PRIVATE_KEY_B64 ||
+        env.TWINGATE_NETWORK ||
+        env.TWINGATE_SERVICE_ACCOUNT_ID ||
+        env.TWINGATE_KEY_ID
+    );
 }
 
 async function writeHeartbeat(env, monitorId, result) {

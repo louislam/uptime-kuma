@@ -1940,6 +1940,30 @@ describe("Cloudflare Worker API", () => {
         });
     });
 
+    test("returns sanitized Twingate status when runner status request fails", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            runnerStatusResponseStatus: 500,
+            runnerStatus: {
+                error: "container crashed before status endpoint",
+            },
+        });
+        env.TWINGATE_PRIVATE_KEY_B64 = "configured-secret";
+        env.TWINGATE_TUN = "on";
+
+        const response = await handleApiRequest(adminRequest("https://example.com/api/twingate/status"), env);
+
+        assert.strictEqual(response.status, 200);
+        assert.deepStrictEqual(await response.json(), {
+            configured: true,
+            starting: false,
+            running: false,
+            proxyUrl: "http://127.0.0.1:9999",
+            tunMode: "on",
+            lastError: "Runner status failed with 500: container crashed before status endpoint",
+        });
+    });
+
     test("rejects direct Worker monitors for private and metadata addresses", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({});
@@ -2183,6 +2207,7 @@ function createEnv(initial) {
         runnerJobs: [],
         runnerResult: initial.runnerResult,
         runnerResponseStatus: initial.runnerResponseStatus || 200,
+        runnerStatusResponseStatus: initial.runnerStatusResponseStatus || 200,
         runnerStatus: initial.runnerStatus || {
             configured: false,
             starting: false,
@@ -2224,7 +2249,7 @@ function createEnv(initial) {
                     async fetch(request) {
                         const url = new URL(request.url);
                         if (request.method === "GET" && url.pathname === "/twingate/status") {
-                            return Response.json(state.runnerStatus);
+                            return Response.json(state.runnerStatus, { status: state.runnerStatusResponseStatus });
                         }
                         state.runnerJobs.push(await request.json());
                         return Response.json(state.runnerResult, { status: state.runnerResponseStatus });
