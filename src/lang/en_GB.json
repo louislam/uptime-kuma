@@ -749,7 +749,7 @@
     "systemServiceExpectedOutput": "Expected Output: \"{0}\"",
     "Browser Screenshot": "Browser Screenshot",
     "Playwright Script": "Playwright Script",
-    "playwrightScriptHelp": "Provide one trusted Playwright scenario using exactly one {testBlock} and at least one {expectCall}. An optional {importLine} is allowed.",
+    "playwrightScriptHelp": "Provide one trusted Playwright scenario using exactly one {testBlock}. At least one {expectCall} is recommended so the monitor can clearly assert success. An optional {importLine} is allowed.",
     "playwrightScriptRequired": "Please provide a Playwright script.",
     "Command": "Command",
     "mongodbCommandDescription": "Run a MongoDB command against the database. For information about the available commands check out the {documentation}",
