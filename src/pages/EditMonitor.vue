@@ -3227,28 +3227,6 @@ export default {
             return this.monitor.type === "ping" ? 60 : undefined;
         },
 
-        playwrightIntervalSeconds() {
-            const interval = Number(this.monitor.interval);
-            if (!Number.isFinite(interval) || interval <= 0) {
-                return null;
-            }
-            return interval;
-        },
-
-        playwrightActionTimeoutMs() {
-            if (this.playwrightIntervalSeconds === null) {
-                return null;
-            }
-            return Math.max(1000, Math.floor(this.playwrightIntervalSeconds * 1000 * 0.4));
-        },
-
-        playwrightScenarioTimeoutMs() {
-            if (this.playwrightIntervalSeconds === null) {
-                return null;
-            }
-            return Math.max(1000, Math.floor(this.playwrightIntervalSeconds * 1000 * 0.8));
-        },
-
         defaultFriendlyName() {
             if (this.monitor.hostname) {
                 return this.monitor.hostname;
