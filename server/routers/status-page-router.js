@@ -68,6 +68,8 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
         let heartbeatList = {};
         let uptimeList = {};
 
+        let data_points = parseInt(request.query.data_points) || 288; // default to 24 hours with 5 min interval
+
         let slug = request.params.slug;
         slug = slug.toLowerCase();
         let statusPageID = await StatusPage.slugToID(slug);
@@ -88,9 +90,9 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
                     SELECT * FROM heartbeat
                     WHERE monitor_id = ?
                     ORDER BY time DESC
-                    LIMIT 100
+                    LIMIT ?
             `,
-                [monitorID]
+                [monitorID, data_points]
             );
 
             list = R.convertToBeans("heartbeat", list);
