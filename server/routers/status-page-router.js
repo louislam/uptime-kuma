@@ -68,7 +68,7 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
         let heartbeatList = {};
         let uptimeList = {};
 
-        let data_points = parseInt(request.query.data_points) || 288; // default to 24 hours with 5 min interval
+        let data_points = parseInt(request.query.data_points) || 100; // default to 100 data points to spare the server
 
         let slug = request.params.slug;
         slug = slug.toLowerCase();
