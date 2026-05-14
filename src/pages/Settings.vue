@@ -98,6 +98,7 @@ export default {
                 "notifications",
                 "twingate",
                 "security",
+                "proxies",
                 "about",
                 "import-monitors",
             ].includes(this.currentPage);

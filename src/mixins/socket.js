@@ -196,13 +196,7 @@ export default {
             });
 
             socket.on("proxyList", (data) => {
-                this.proxyList = data.map((item) => {
-                    item.auth = !!item.auth;
-                    item.active = !!item.active;
-                    item.default = !!item.default;
-
-                    return item;
-                });
+                this.proxyList = normalizeProxyList(data);
             });
 
             socket.on("dockerHostList", (data) => {
@@ -363,9 +357,10 @@ export default {
          */
         async loadCloudflareWorkerData() {
             try {
-                const [body, notificationBody] = await Promise.all([
+                const [body, notificationBody, proxyBody] = await Promise.all([
                     requestCloudflareJson("/api/monitors"),
                     requestCloudflareJson("/api/notifications"),
+                    requestCloudflareJson("/api/proxies"),
                 ]);
                 const monitorList = {};
                 const heartbeatList = {};
@@ -402,6 +397,7 @@ export default {
                 this.avgPingList = avgPingList;
                 this.uptimeList = uptimeList;
                 this.notificationList = notificationBody.notifications || [];
+                this.proxyList = normalizeProxyList(proxyBody.proxies || []);
                 this.statusPageList = await fetchCloudflareStatusPages();
                 this.statusPageListLoaded = true;
             } catch (error) {
@@ -1018,6 +1014,20 @@ function isCloudflareWorkerUI() {
 }
 
 /**
+ * Normalize proxy booleans from REST and Socket.IO payloads.
+ * @param {object[]} data Proxy rows.
+ * @returns {object[]} Normalized proxy rows.
+ */
+function normalizeProxyList(data = []) {
+    return data.map((item) => ({
+        ...item,
+        auth: !!item.auth,
+        active: !!item.active,
+        default: !!item.default,
+    }));
+}
+
+/**
  * Create the small socket-compatible shim needed by dashboard components.
  * @param {object} app Vue root component instance.
  * @returns {object} Socket-like object for REST-backed Worker UI mode.
@@ -1113,6 +1123,26 @@ function createCloudflareSocketStub(app) {
 
                 if (event === "deleteNotification") {
                     const body = await requestCloudflareJson(`/api/notifications/${args[0]}`, {
+                        method: "DELETE",
+                    });
+                    await app.loadCloudflareWorkerData();
+                    callback?.(body);
+                    return;
+                }
+
+                if (event === "addProxy") {
+                    const [proxy, proxyID] = args;
+                    const body = await requestCloudflareJson(proxyID ? `/api/proxies/${proxyID}` : "/api/proxies", {
+                        method: proxyID ? "PUT" : "POST",
+                        body: JSON.stringify(proxy || {}),
+                    });
+                    await app.loadCloudflareWorkerData();
+                    callback?.(body);
+                    return;
+                }
+
+                if (event === "deleteProxy") {
+                    const body = await requestCloudflareJson(`/api/proxies/${args[0]}`, {
                         method: "DELETE",
                     });
                     await app.loadCloudflareWorkerData();

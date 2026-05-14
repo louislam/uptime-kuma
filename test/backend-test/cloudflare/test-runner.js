@@ -75,6 +75,79 @@ describe("Cloudflare monitor runner", () => {
         assert.strictEqual(proxyRequests, 1);
     });
 
+    test("HTTP checks use assigned active user proxy with basic auth", async () => {
+        const { runCheck } = require("../../../cloudflare/runner/checker");
+        let proxyRequests = 0;
+        const proxy = await listen(
+            http.createServer((req, res) => {
+                proxyRequests++;
+                assert.strictEqual(req.url, "http://public.example.test/health");
+                assert.strictEqual(req.headers["proxy-authorization"], "Basic dXNlcjpwYXNz");
+                res.writeHead(200, { "content-type": "text/plain" });
+                res.end("user proxied ok");
+            })
+        );
+
+        const result = await runCheck({
+            monitor: {
+                id: 5,
+                type: "http",
+                url: "http://public.example.test/health",
+                timeout: 5,
+                proxy: {
+                    protocol: "http",
+                    host: "127.0.0.1",
+                    port: proxy.port,
+                    auth: true,
+                    username: "user",
+                    password: "pass",
+                    active: true,
+                },
+            },
+            networkProfile: null,
+        });
+
+        assert.strictEqual(result.status, UP);
+        assert.strictEqual(result.msg, "200 - OK");
+        assert.strictEqual(result.response, "user proxied ok");
+        assert.strictEqual(proxyRequests, 1);
+    });
+
+    test("HTTP checks ignore assigned inactive user proxy", async () => {
+        const { runCheck } = require("../../../cloudflare/runner/checker");
+        let proxyRequests = 0;
+        const proxy = await listen(
+            http.createServer((req, res) => {
+                proxyRequests++;
+                res.writeHead(502);
+                res.end("inactive proxy should not be used");
+            })
+        );
+
+        const result = await runCheck({
+            monitor: {
+                id: 6,
+                type: "http",
+                url: "http://127.0.0.1:8080/health",
+                timeout: 5,
+                proxy: {
+                    protocol: "http",
+                    host: "127.0.0.1",
+                    port: proxy.port,
+                    active: false,
+                },
+            },
+            networkProfile: null,
+        });
+
+        assert.strictEqual(result.status, DOWN);
+        assert.strictEqual(
+            result.msg,
+            "Direct Worker checks cannot target private, loopback, link-local, or metadata hosts"
+        );
+        assert.strictEqual(proxyRequests, 0);
+    });
+
     test("Twingate proxy URL is not configurable through process env", async () => {
         const {
             SYSTEM_TWINGATE_PROXY_URL,

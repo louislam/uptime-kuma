@@ -1704,6 +1704,193 @@ describe("Cloudflare Worker API", () => {
         ]);
     });
 
+    test("creates, updates, lists, and deletes Worker proxies", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [{ id: 11, name: "API", proxy_id: null }],
+        });
+
+        const createResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/proxies", {
+                method: "POST",
+                body: JSON.stringify({
+                    protocol: "http",
+                    host: "proxy.example.test",
+                    port: 8080,
+                    auth: true,
+                    username: "user",
+                    password: "pass",
+                    active: true,
+                    default: true,
+                    applyExisting: true,
+                }),
+            }),
+            env
+        );
+        const createBody = await createResponse.json();
+
+        assert.strictEqual(createResponse.status, 200);
+        assert.deepStrictEqual(createBody, { ok: true, msg: "Saved.", msgi18n: true, id: 1 });
+        assert.strictEqual(env.state.monitors[0].proxy_id, 1);
+
+        const updateResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/proxies/1", {
+                method: "PUT",
+                body: JSON.stringify({
+                    protocol: "https",
+                    host: "secure-proxy.example.test",
+                    port: 8443,
+                    auth: false,
+                    active: false,
+                    default: false,
+                }),
+            }),
+            env
+        );
+        assert.strictEqual(updateResponse.status, 200);
+        assert.deepStrictEqual(await updateResponse.json(), { ok: true, msg: "Saved.", msgi18n: true, id: 1 });
+
+        const listResponse = await handleApiRequest(adminRequest("https://example.com/api/proxies"), env);
+        assert.strictEqual(listResponse.status, 200);
+        assert.deepStrictEqual(await listResponse.json(), {
+            proxies: [
+                {
+                    id: 1,
+                    user_id: 1,
+                    protocol: "https",
+                    host: "secure-proxy.example.test",
+                    port: 8443,
+                    auth: false,
+                    username: null,
+                    password: null,
+                    active: false,
+                    default: false,
+                },
+            ],
+        });
+
+        const deleteResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/proxies/1", { method: "DELETE" }),
+            env
+        );
+        assert.strictEqual(deleteResponse.status, 200);
+        assert.deepStrictEqual(await deleteResponse.json(), { ok: true, msg: "successDeleted", msgi18n: true });
+        assert.deepStrictEqual(env.state.proxies, []);
+        assert.strictEqual(env.state.monitors[0].proxy_id, null);
+    });
+
+    test("keeps only one default Worker proxy", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            proxies: [
+                {
+                    id: 1,
+                    user_id: 1,
+                    protocol: "http",
+                    host: "old-default.example.test",
+                    port: 8080,
+                    auth: 0,
+                    username: null,
+                    password: null,
+                    active: 1,
+                    default: 1,
+                },
+            ],
+            nextProxyId: 2,
+        });
+
+        const response = await handleApiRequest(
+            adminRequest("https://example.com/api/proxies", {
+                method: "POST",
+                body: JSON.stringify({
+                    protocol: "http",
+                    host: "new-default.example.test",
+                    port: 8081,
+                    active: true,
+                    default: true,
+                }),
+            }),
+            env
+        );
+
+        assert.strictEqual(response.status, 200);
+        assert.deepStrictEqual(env.state.proxies.map((proxy) => [proxy.id, proxy.default]), [
+            [1, 0],
+            [2, 1],
+        ]);
+    });
+
+    test("serializes monitor proxy assignment and sends active proxy to runner", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                {
+                    id: 7,
+                    name: "Public HTTP",
+                    type: "http",
+                    url: "https://example.test/health",
+                    hostname: null,
+                    port: null,
+                    timeout: 5,
+                    network_profile_id: null,
+                    proxy_id: 3,
+                },
+            ],
+            proxies: [
+                {
+                    id: 3,
+                    user_id: 1,
+                    protocol: "http",
+                    host: "proxy.example.test",
+                    port: 8080,
+                    auth: 1,
+                    username: "user",
+                    password: "pass",
+                    active: 1,
+                    default: 0,
+                },
+            ],
+            runnerResult: { status: 1, ping: 12, msg: "200 - OK", response: "ok" },
+        });
+
+        const monitorResponse = await handleApiRequest(adminRequest("https://example.com/api/monitors/7"), env);
+        const monitorBody = await monitorResponse.json();
+        assert.strictEqual(monitorResponse.status, 200);
+        assert.strictEqual(monitorBody.monitor.proxyId, 3);
+
+        const checkResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/7/check-now", { method: "POST" }),
+            env
+        );
+        assert.strictEqual(checkResponse.status, 200);
+        assert.deepStrictEqual(env.state.runnerJobs[0].monitor.proxy, {
+            id: 3,
+            protocol: "http",
+            host: "proxy.example.test",
+            port: 8080,
+            auth: true,
+            username: "user",
+            password: "pass",
+            active: true,
+        });
+
+        const updateResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/7", {
+                method: "PUT",
+                body: JSON.stringify({
+                    name: "Public HTTP",
+                    type: "http",
+                    url: "https://example.test/health",
+                    timeout: 5,
+                    proxyId: null,
+                }),
+            }),
+            env
+        );
+        assert.strictEqual(updateResponse.status, 200);
+        assert.strictEqual(env.state.monitors[0].proxy_id, null);
+    });
+
     test("returns Twingate runner startup status", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({
@@ -1898,6 +2085,7 @@ function createEnv(initial) {
         heartbeats: initial.heartbeats || [],
         notifications: initial.notifications || [],
         monitorNotifications: initial.monitorNotifications || [],
+        proxies: initial.proxies || [],
         settings: initial.settings || {},
         runnerJobs: [],
         runnerResult: initial.runnerResult,
@@ -1911,8 +2099,10 @@ function createEnv(initial) {
         },
         nextMonitorId: initial.nextMonitorId || 1,
         nextNotificationId: initial.nextNotificationId || 1,
+        nextProxyId: initial.nextProxyId || 1,
         missingConfigJsonColumn: Boolean(initial.missingConfigJsonColumn),
         missingParentColumn: Boolean(initial.missingParentColumn),
+        missingProxyColumn: Boolean(initial.missingProxyColumn),
         missingNotificationTables: Boolean(initial.missingNotificationTables),
     };
 
@@ -2075,6 +2265,9 @@ function createStatement(sql, state) {
                 if (!state.missingConfigJsonColumn) {
                     columns.push("config_json");
                 }
+                if (!state.missingProxyColumn) {
+                    columns.push("proxy_id");
+                }
                 return { results: columns.map((name, cid) => ({ cid, name })) };
             }
             if (state.missingConfigJsonColumn && /network_profile_id,\s*parent,\s*config_json/.test(sql)) {
@@ -2102,6 +2295,9 @@ function createStatement(sql, state) {
                     throw new Error("no such table: notification");
                 }
                 return { results: [...state.notifications] };
+            }
+            if (sql.includes("FROM proxy")) {
+                return { results: [...state.proxies] };
             }
             if (sql.includes("FROM monitors")) {
                 if (sql.includes("WHERE id = ?")) {
@@ -2154,6 +2350,13 @@ function createStatement(sql, state) {
                 const id = Number(this.values[0]);
                 return state.notifications.find((notification) => notification.id === id) || null;
             }
+            if (sql.includes("FROM proxy")) {
+                if (sql.includes("WHERE \"default\" = 1")) {
+                    return state.proxies.find((proxy) => proxy.default && proxy.active) || null;
+                }
+                const id = Number(this.values[0]);
+                return state.proxies.find((proxy) => proxy.id === id) || null;
+            }
             return null;
         },
         async run() {
@@ -2176,6 +2379,22 @@ function createStatement(sql, state) {
                 return { success: true };
             }
             if (sql.includes("CREATE INDEX IF NOT EXISTS monitor_notification_index")) {
+                return { success: true };
+            }
+            if (sql.includes("CREATE TABLE IF NOT EXISTS proxy")) {
+                return { success: true };
+            }
+            if (sql.includes("CREATE INDEX IF NOT EXISTS idx_proxy_default")) {
+                return { success: true };
+            }
+            if (sql.includes("ALTER TABLE monitors ADD COLUMN proxy_id")) {
+                state.missingProxyColumn = false;
+                for (const monitor of state.monitors) {
+                    monitor.proxy_id = monitor.proxy_id ?? null;
+                }
+                return { success: true };
+            }
+            if (sql.includes("CREATE INDEX IF NOT EXISTS idx_monitors_proxy_id")) {
                 return { success: true };
             }
             if (sql.includes("INSERT INTO app_settings")) {
@@ -2210,6 +2429,46 @@ function createStatement(sql, state) {
                 }
                 return { success: true };
             }
+            if (sql.includes("UPDATE proxy SET \"default\" = 0")) {
+                for (const proxy of state.proxies) {
+                    proxy.default = 0;
+                }
+                return { success: true };
+            }
+            if (sql.includes("INSERT INTO proxy")) {
+                const [userId, protocol, host, port, auth, username, password, active, isDefault] = this.values;
+                const id = state.nextProxyId++;
+                state.proxies.push({
+                    id,
+                    user_id: userId,
+                    protocol,
+                    host,
+                    port,
+                    auth,
+                    username,
+                    password,
+                    active,
+                    default: isDefault,
+                });
+                return { success: true, meta: { last_row_id: id } };
+            }
+            if (sql.includes("UPDATE proxy")) {
+                const [protocol, host, port, auth, username, password, active, isDefault, id] = this.values;
+                const proxy = state.proxies.find((candidate) => candidate.id === Number(id));
+                if (proxy) {
+                    Object.assign(proxy, {
+                        protocol,
+                        host,
+                        port,
+                        auth,
+                        username,
+                        password,
+                        active,
+                        default: isDefault,
+                    });
+                }
+                return { success: true };
+            }
             if (sql.includes("INSERT INTO monitor_notification")) {
                 const [monitorId, notificationId] = this.values;
                 const exists = state.monitorNotifications.some(
@@ -2224,6 +2483,7 @@ function createStatement(sql, state) {
                 return { success: true };
             }
             if (sql.includes("INSERT INTO monitors")) {
+                const hasParentColumn = /network_profile_id,\s*parent,\s*config_json/.test(sql);
                 const [
                     name,
                     type,
@@ -2241,9 +2501,13 @@ function createStatement(sql, state) {
                     interval,
                     active,
                     networkProfileId,
-                    parent,
-                    configJson,
+                    parentOrConfigJson,
+                    configJsonOrProxyId,
+                    proxyIdValue,
                 ] = this.values;
+                const parent = hasParentColumn ? parentOrConfigJson : null;
+                const configJson = hasParentColumn ? configJsonOrProxyId : parentOrConfigJson;
+                const proxyId = hasParentColumn ? proxyIdValue : configJsonOrProxyId;
                 const id = state.nextMonitorId++;
                 state.monitors.push({
                     id,
@@ -2265,6 +2529,7 @@ function createStatement(sql, state) {
                     network_profile_id: networkProfileId,
                     parent,
                     config_json: configJson,
+                    proxy_id: proxyId,
                 });
                 return { success: true, meta: { last_row_id: id } };
             }
@@ -2286,6 +2551,22 @@ function createStatement(sql, state) {
                     }
                     return { success: true };
                 }
+                if (sql.includes("SET proxy_id = NULL")) {
+                    const [proxyId] = this.values;
+                    for (const monitor of state.monitors) {
+                        if (monitor.proxy_id === Number(proxyId)) {
+                            monitor.proxy_id = null;
+                        }
+                    }
+                    return { success: true };
+                }
+                if (sql.includes("SET proxy_id = ?")) {
+                    const [proxyId] = this.values;
+                    for (const monitor of state.monitors) {
+                        monitor.proxy_id = proxyId;
+                    }
+                    return { success: true };
+                }
                 if (sql.includes("SET network_profile_id")) {
                     const [networkProfileId, id] = this.values;
                     const monitor = state.monitors.find((candidate) => candidate.id === Number(id));
@@ -2302,6 +2583,7 @@ function createStatement(sql, state) {
                     }
                     return { success: true };
                 }
+                const hasParentColumn = /network_profile_id = \?, parent = \?, config_json/.test(sql);
                 const [
                     name,
                     type,
@@ -2318,10 +2600,15 @@ function createStatement(sql, state) {
                     timeout,
                     interval,
                     networkProfileId,
-                    parent,
-                    configJson,
-                    id,
+                    parentOrConfigJson,
+                    configJsonOrProxyId,
+                    proxyIdOrId,
+                    maybeId,
                 ] = this.values;
+                const parent = hasParentColumn ? parentOrConfigJson : null;
+                const configJson = hasParentColumn ? configJsonOrProxyId : parentOrConfigJson;
+                const proxyId = hasParentColumn ? proxyIdOrId : configJsonOrProxyId;
+                const id = hasParentColumn ? maybeId : proxyIdOrId;
                 const monitor = state.monitors.find((candidate) => candidate.id === Number(id));
                 if (monitor) {
                     Object.assign(monitor, {
@@ -2342,6 +2629,7 @@ function createStatement(sql, state) {
                         network_profile_id: networkProfileId,
                         parent,
                         config_json: configJson,
+                        proxy_id: proxyId,
                     });
                 }
                 return { success: true };
@@ -2363,6 +2651,11 @@ function createStatement(sql, state) {
             if (sql.includes("DELETE FROM notification")) {
                 const id = Number(this.values[0]);
                 state.notifications = state.notifications.filter((notification) => notification.id !== id);
+                return { success: true };
+            }
+            if (sql.includes("DELETE FROM proxy")) {
+                const id = Number(this.values[0]);
+                state.proxies = state.proxies.filter((proxy) => proxy.id !== id);
                 return { success: true };
             }
             if (sql.includes("DELETE FROM heartbeats")) {

@@ -5,6 +5,9 @@ const net = require("node:net");
 const tls = require("node:tls");
 const { execFile } = require("node:child_process");
 const { promisify } = require("node:util");
+const { HttpProxyAgent } = require("http-proxy-agent");
+const { HttpsProxyAgent } = require("https-proxy-agent");
+const { SocksProxyAgent } = require("socks-proxy-agent");
 
 const DOWN = 0;
 const UP = 1;
@@ -57,10 +60,16 @@ async function runCheck(job) {
 
 async function runHttpCheck(monitor, networkProfile, twingateProxyUrl, start) {
     const targetUrl = new URL(monitor.url);
-    assertDirectTargetAllowed(targetUrl.hostname, networkProfile);
-    const response = isTwingateProfile(networkProfile)
+    const useTwingateProxy = isTwingateProfile(networkProfile);
+    const userProxy = useTwingateProxy ? null : activeUserProxy(monitor.proxy);
+    if (!useTwingateProxy && !userProxy) {
+        assertDirectTargetAllowed(targetUrl.hostname, networkProfile);
+    }
+    const response = useTwingateProxy
         ? await requestViaHttpProxy(targetUrl, twingateProxyUrl, monitor)
-        : await requestDirect(targetUrl, monitor);
+        : userProxy
+            ? await requestViaUserProxy(targetUrl, userProxy, monitor)
+            : await requestDirect(targetUrl, monitor);
 
     const statusOk = response.statusCode >= 200 && response.statusCode < 400;
     if (!statusOk) {
@@ -219,6 +228,49 @@ function requestViaHttpProxy(targetUrl, proxyUrlString, monitor) {
     });
 }
 
+function requestViaUserProxy(targetUrl, proxy, monitor) {
+    return new Promise((resolve, reject) => {
+        const transport = targetUrl.protocol === "https:" ? https : http;
+        const req = transport.request(
+            {
+                hostname: targetUrl.hostname,
+                port: Number(targetUrl.port || (targetUrl.protocol === "https:" ? 443 : 80)),
+                method: monitor.method || "GET",
+                path: `${targetUrl.pathname}${targetUrl.search}`,
+                timeout: getTimeoutMs(monitor.timeout),
+                headers: parseHeaders(monitor.headers),
+                agent: createUserProxyAgent(proxy, targetUrl.protocol),
+            },
+            (res) => collectResponse(res, resolve)
+        );
+        req.on("timeout", () => req.destroy(new Error("Request timed out")));
+        req.on("error", reject);
+        if (monitor.body) {
+            req.write(monitor.body);
+        }
+        req.end();
+    });
+}
+
+function createUserProxyAgent(proxy, targetProtocol) {
+    const proxyUrl = proxyToUrl(proxy);
+    if (String(proxy.protocol || "").startsWith("socks")) {
+        return new SocksProxyAgent(proxyUrl);
+    }
+    return targetProtocol === "https:"
+        ? new HttpsProxyAgent(proxyUrl)
+        : new HttpProxyAgent(proxyUrl);
+}
+
+function proxyToUrl(proxy) {
+    const proxyUrl = new URL(`${proxy.protocol}://${proxy.host}:${proxy.port}`);
+    if (proxy.auth) {
+        proxyUrl.username = proxy.username || "";
+        proxyUrl.password = proxy.password || "";
+    }
+    return proxyUrl.toString();
+}
+
 async function requestHttpsViaConnectProxy(targetUrl, proxyUrlString, monitor) {
     const socket = await connectViaHttpProxy(
         targetUrl.hostname,
@@ -348,6 +400,16 @@ function resolveJsonPath(value, path) {
 
 function isTwingateProfile(networkProfile) {
     return networkProfile?.slug === "twingate" || networkProfile?.type === "twingate";
+}
+
+function activeUserProxy(proxy) {
+    if (!proxy || proxy.active === false) {
+        return null;
+    }
+    if (!proxy.protocol || !proxy.host || !proxy.port) {
+        return null;
+    }
+    return proxy;
 }
 
 function resolveTwingateProxyUrl(job = {}) {

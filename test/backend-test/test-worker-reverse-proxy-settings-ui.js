@@ -59,3 +59,29 @@ describe("Worker Reverse Proxy settings UI removal", () => {
         );
     });
 });
+
+describe("Worker Proxies settings UI", () => {
+    test("exposes the Proxies settings page in Worker UI mode", () => {
+        const settingsSource = fs.readFileSync(
+            path.join(__dirname, "../../src/pages/Settings.vue"),
+            "utf8"
+        );
+
+        assert.match(
+            settingsSource,
+            /"proxies"/,
+            "proxies should be listed as a supported Worker settings page"
+        );
+    });
+
+    test("maps proxy socket events to Worker REST endpoints", () => {
+        const socketSource = fs.readFileSync(
+            path.join(__dirname, "../../src/mixins/socket.js"),
+            "utf8"
+        );
+
+        assert.match(socketSource, /event === "addProxy"/);
+        assert.match(socketSource, /event === "deleteProxy"/);
+        assert.match(socketSource, /\/api\/proxies/);
+    });
+});

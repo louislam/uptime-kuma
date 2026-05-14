@@ -53,6 +53,8 @@ const MONITOR_CONFIG_EXCLUDED_FIELDS = new Set([
     "childrenIDs",
     "tags",
     "notificationIDList",
+    "proxyId",
+    "proxy_id",
     "parent",
     "parentName",
     "parent_name",
@@ -81,11 +83,30 @@ const MONITOR_NOTIFICATION_TABLE_SQL = `CREATE TABLE IF NOT EXISTS monitor_notif
 )`;
 const MONITOR_NOTIFICATION_INDEX_SQL =
     "CREATE INDEX IF NOT EXISTS monitor_notification_index ON monitor_notification(monitor_id, notification_id)";
+const PROXY_TABLE_SQL = `CREATE TABLE IF NOT EXISTS proxy (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL DEFAULT 1,
+    protocol TEXT NOT NULL,
+    host TEXT NOT NULL,
+    port INTEGER NOT NULL,
+    auth INTEGER NOT NULL DEFAULT 0,
+    username TEXT,
+    password TEXT,
+    active INTEGER NOT NULL DEFAULT 1,
+    "default" INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+)`;
+const PROXY_INDEX_SQL = `CREATE INDEX IF NOT EXISTS idx_proxy_default ON proxy("default")`;
 const ACCESS_CERT_CACHE_TTL_MS = 60 * 60 * 1000;
 const accessCertCache = new Map();
+const SUPPORTED_PROXY_PROTOCOLS = new Set(["http", "https", "socks", "socks5", "socks5h", "socks4"]);
 const ADMIN_ROUTE_NAMES = new Set([
     "monitors",
     "settings",
+    "proxies",
+    "save-proxy",
+    "delete-proxy",
     "notifications",
     "save-notification",
     "delete-notification",
@@ -105,7 +126,7 @@ const ADMIN_ROUTE_NAMES = new Set([
 ]);
 const PRIVATE_WORKER_HOST_ERROR =
     "Direct Worker checks cannot target private, loopback, link-local, or metadata hosts";
-const DUPLICATE_COLUMN_ERROR = /duplicate column name:\s*parent/i;
+const DUPLICATE_COLUMN_ERROR = /duplicate column name:\s*(parent|proxy_id)/i;
 
 export async function handleApiRequest(request, env) {
     const url = new URL(request.url);
@@ -163,6 +184,25 @@ export async function handleApiRequest(request, env) {
             }
             await setUiSettings(env, await request.json());
             return json({ ok: true, msg: "Settings saved" });
+        }
+
+        if (route.name === "proxies") {
+            return json({ proxies: await listProxies(env) });
+        }
+
+        if (route.name === "save-proxy") {
+            const proxy = await saveProxy(env, await request.json(), route.params.proxyId);
+            return json({
+                ok: true,
+                msg: "Saved.",
+                msgi18n: true,
+                id: proxy.id,
+            });
+        }
+
+        if (route.name === "delete-proxy") {
+            await deleteProxy(env, Number(route.params.proxyId));
+            return json({ ok: true, msg: "successDeleted", msgi18n: true });
         }
 
         if (route.name === "notifications") {
@@ -310,6 +350,204 @@ export async function setUiSettings(env, settings) {
                 .run()
         )
     );
+}
+
+export async function listProxies(env) {
+    await ensureProxyTables(env);
+    const result = await env.DB.prepare(
+        `SELECT id, user_id, protocol, host, port, auth, username, password, active, "default"
+         FROM proxy
+         ORDER BY host, port`
+    ).all();
+    return (result.results || []).map(serializeProxy);
+}
+
+export async function saveProxy(env, proxyInput, proxyId = null) {
+    await ensureProxyTables(env);
+    const proxy = normalizeProxyInput(proxyInput);
+
+    if (proxy.isDefault) {
+        await env.DB.prepare(`UPDATE proxy SET "default" = 0 WHERE "default" = 1`).run();
+    }
+
+    if (proxyId) {
+        const existing = await getProxy(env, Number(proxyId));
+        if (!existing) {
+            throw httpError(404, "proxy not found");
+        }
+        await env.DB.prepare(
+            `UPDATE proxy
+             SET protocol = ?, host = ?, port = ?, auth = ?, username = ?, password = ?,
+                 active = ?, "default" = ?, updated_at = CURRENT_TIMESTAMP
+             WHERE id = ?`
+        )
+            .bind(
+                proxy.protocol,
+                proxy.host,
+                proxy.port,
+                proxy.auth ? 1 : 0,
+                proxy.auth ? proxy.username : null,
+                proxy.auth ? proxy.password : null,
+                proxy.active ? 1 : 0,
+                proxy.isDefault ? 1 : 0,
+                Number(proxyId)
+            )
+            .run();
+
+        if (proxy.applyExisting) {
+            await applyProxyToAllMonitors(env, Number(proxyId));
+        }
+
+        return { id: Number(proxyId) };
+    }
+
+    const result = await env.DB.prepare(
+        `INSERT INTO proxy (user_id, protocol, host, port, auth, username, password, active, "default")
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    )
+        .bind(
+            1,
+            proxy.protocol,
+            proxy.host,
+            proxy.port,
+            proxy.auth ? 1 : 0,
+            proxy.auth ? proxy.username : null,
+            proxy.auth ? proxy.password : null,
+            proxy.active ? 1 : 0,
+            proxy.isDefault ? 1 : 0
+        )
+        .run();
+    const id = Number(result.meta?.last_row_id || result.meta?.last_rowid || result.lastRowId || result.last_row_id);
+
+    if (proxy.applyExisting) {
+        await applyProxyToAllMonitors(env, id);
+    }
+
+    return { id };
+}
+
+export async function deleteProxy(env, proxyId) {
+    await ensureProxyTables(env);
+    const existing = await getProxy(env, proxyId);
+    if (!existing) {
+        throw httpError(404, "proxy not found");
+    }
+    await env.DB.prepare("UPDATE monitors SET proxy_id = NULL, updated_at = CURRENT_TIMESTAMP WHERE proxy_id = ?")
+        .bind(proxyId)
+        .run();
+    await env.DB.prepare("DELETE FROM proxy WHERE id = ?").bind(proxyId).run();
+}
+
+async function getProxy(env, proxyId) {
+    await ensureProxyTables(env);
+    return await env.DB.prepare(
+        `SELECT id, user_id, protocol, host, port, auth, username, password, active, "default"
+         FROM proxy
+         WHERE id = ?`
+    )
+        .bind(proxyId)
+        .first();
+}
+
+async function getActiveProxy(env, proxyId) {
+    if (!proxyId) {
+        return null;
+    }
+    const proxy = await getProxy(env, Number(proxyId));
+    if (!proxy || !Boolean(proxy.active)) {
+        return null;
+    }
+    return serializeRunnerProxy(proxy);
+}
+
+async function getDefaultProxyId(env) {
+    await ensureProxyTables(env);
+    const proxy = await env.DB.prepare(`SELECT id FROM proxy WHERE "default" = 1 AND active = 1 ORDER BY id LIMIT 1`)
+        .first();
+    return proxy ? Number(proxy.id) : null;
+}
+
+async function applyProxyToAllMonitors(env, proxyId) {
+    await env.DB.prepare("UPDATE monitors SET proxy_id = ?, updated_at = CURRENT_TIMESTAMP")
+        .bind(proxyId)
+        .run();
+}
+
+async function ensureProxyTables(env) {
+    await env.DB.prepare(PROXY_TABLE_SQL).run();
+    await env.DB.prepare(PROXY_INDEX_SQL).run();
+    if (!(await isMissingColumn(env, "monitors", "proxy_id"))) {
+        return;
+    }
+    try {
+        await env.DB.prepare("ALTER TABLE monitors ADD COLUMN proxy_id INTEGER").run();
+    } catch (error) {
+        if (!DUPLICATE_COLUMN_ERROR.test(error.message || "")) {
+            throw error;
+        }
+    }
+    await env.DB.prepare("CREATE INDEX IF NOT EXISTS idx_monitors_proxy_id ON monitors(proxy_id)").run();
+}
+
+function normalizeProxyInput(proxyInput = {}) {
+    const protocol = String(proxyInput.protocol || "http").trim().toLowerCase();
+    if (!SUPPORTED_PROXY_PROTOCOLS.has(protocol)) {
+        throw httpError(400, `Unsupported proxy protocol "${protocol}"`);
+    }
+    const host = String(proxyInput.host || "").trim();
+    if (!host) {
+        throw httpError(400, "Proxy host is required");
+    }
+    const port = Number(proxyInput.port);
+    if (!Number.isInteger(port) || port < 1 || port > 65535) {
+        throw httpError(400, "Proxy port must be between 1 and 65535");
+    }
+    const auth = Boolean(proxyInput.auth);
+    const username = proxyInput.username == null ? null : String(proxyInput.username);
+    const password = proxyInput.password == null ? null : String(proxyInput.password);
+    if (auth && (!username || !password)) {
+        throw httpError(400, "Proxy username and password are required");
+    }
+    return {
+        protocol,
+        host,
+        port,
+        auth,
+        username,
+        password,
+        active: proxyInput.active !== false,
+        isDefault: Boolean(proxyInput.default),
+        applyExisting: Boolean(proxyInput.applyExisting),
+    };
+}
+
+function serializeProxy(row) {
+    return {
+        id: Number(row.id),
+        user_id: row.user_id == null ? 1 : Number(row.user_id),
+        protocol: row.protocol,
+        host: row.host,
+        port: Number(row.port),
+        auth: Boolean(row.auth),
+        username: row.username ?? null,
+        password: row.password ?? null,
+        active: row.active === undefined ? true : Boolean(row.active),
+        default: Boolean(row.default),
+    };
+}
+
+function serializeRunnerProxy(row) {
+    const proxy = serializeProxy(row);
+    return {
+        id: proxy.id,
+        protocol: proxy.protocol,
+        host: proxy.host,
+        port: proxy.port,
+        auth: proxy.auth,
+        username: proxy.username,
+        password: proxy.password,
+        active: proxy.active,
+    };
 }
 
 export async function listNotifications(env) {
@@ -471,11 +709,12 @@ export async function listMonitors(env) {
 }
 
 async function listMonitorRows(env) {
+    await ensureProxyTables(env);
     try {
         const monitorResult = await env.DB.prepare(
             `SELECT id, name, type, url, hostname, port, method, headers, body, keyword,
                     invert_keyword, json_path, expected_value, timeout, "interval",
-                    active, network_profile_id, parent, config_json
+                    active, network_profile_id, parent, config_json, proxy_id
              FROM monitors
              ORDER BY name`
         ).all();
@@ -494,6 +733,7 @@ async function listMonitorRowsWithLegacyColumns(env) {
     const optionalColumns = [
         missingParent ? "NULL AS parent" : "parent",
         missingConfigJson ? "NULL AS config_json" : "config_json",
+        "proxy_id",
     ];
     const monitorResult = await env.DB.prepare(
         `SELECT id, name, type, url, hostname, port, method, headers, body, keyword,
@@ -569,17 +809,21 @@ export async function getSerializedMonitor(env, monitorId) {
 }
 
 export async function createMonitor(env, monitorInput) {
+    await ensureProxyTables(env);
     const monitor = normalizeMonitorInput(monitorInput);
+    if (!hasProxySelection(monitorInput) && monitor.proxyId == null) {
+        monitor.proxyId = await getDefaultProxyId(env);
+    }
     let result;
     try {
         result = await env.DB.prepare(
             `INSERT INTO monitors (
                 name, type, url, hostname, port, method, headers, body, keyword,
                 invert_keyword, json_path, expected_value, timeout, "interval",
-                active, network_profile_id, parent, config_json
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+                active, network_profile_id, parent, config_json, proxy_id
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
         )
-            .bind(...monitorValues(monitor, true), monitorConfigJson(monitorInput, {}, monitor))
+            .bind(...monitorValues(monitor, true), monitorConfigJson(monitorInput, {}, monitor), monitor.proxyId)
             .run();
     } catch (error) {
         if (!MISSING_PARENT_COLUMN.test(error.message || "") || monitor.parent != null) {
@@ -589,10 +833,10 @@ export async function createMonitor(env, monitorInput) {
             `INSERT INTO monitors (
                 name, type, url, hostname, port, method, headers, body, keyword,
                 invert_keyword, json_path, expected_value, timeout, "interval",
-                active, network_profile_id, config_json
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+                active, network_profile_id, config_json, proxy_id
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
         )
-            .bind(...monitorValues(monitor, true, false), monitorConfigJson(monitorInput, {}, monitor))
+            .bind(...monitorValues(monitor, true, false), monitorConfigJson(monitorInput, {}, monitor), monitor.proxyId)
             .run();
     }
     return Number(result.meta?.last_row_id || result.meta?.last_rowid || result.lastRowId || result.last_row_id);
@@ -745,6 +989,7 @@ function monitorImportMessage(summary) {
 }
 
 export async function updateMonitor(env, monitorId, monitorInput) {
+    await ensureProxyTables(env);
     const existing = await getMonitor(env, monitorId);
     if (!existing) {
         throw httpError(404, "Monitor not found");
@@ -756,10 +1001,10 @@ export async function updateMonitor(env, monitorId, monitorInput) {
                 name = ?, type = ?, url = ?, hostname = ?, port = ?, method = ?,
                 headers = ?, body = ?, keyword = ?, invert_keyword = ?,
                 json_path = ?, expected_value = ?, timeout = ?, "interval" = ?,
-                network_profile_id = ?, parent = ?, config_json = ?, updated_at = CURRENT_TIMESTAMP
+                network_profile_id = ?, parent = ?, config_json = ?, proxy_id = ?, updated_at = CURRENT_TIMESTAMP
              WHERE id = ?`
         )
-            .bind(...monitorValues(monitor, false), monitorConfigJson(monitorInput, existing, monitor), monitorId)
+            .bind(...monitorValues(monitor, false), monitorConfigJson(monitorInput, existing, monitor), monitor.proxyId, monitorId)
             .run();
     } catch (error) {
         if (!MISSING_PARENT_COLUMN.test(error.message || "") || monitor.parent != null) {
@@ -770,10 +1015,10 @@ export async function updateMonitor(env, monitorId, monitorInput) {
                 name = ?, type = ?, url = ?, hostname = ?, port = ?, method = ?,
                 headers = ?, body = ?, keyword = ?, invert_keyword = ?,
                 json_path = ?, expected_value = ?, timeout = ?, "interval" = ?,
-                network_profile_id = ?, config_json = ?, updated_at = CURRENT_TIMESTAMP
+                network_profile_id = ?, config_json = ?, proxy_id = ?, updated_at = CURRENT_TIMESTAMP
              WHERE id = ?`
         )
-            .bind(...monitorValues(monitor, false, false), monitorConfigJson(monitorInput, existing, monitor), monitorId)
+            .bind(...monitorValues(monitor, false, false), monitorConfigJson(monitorInput, existing, monitor), monitor.proxyId, monitorId)
             .run();
     }
 }
@@ -858,8 +1103,13 @@ export async function executeMonitorCheck(env, monitorId) {
     }
 
     const networkProfile = monitor.network_profile_id ? await getNetworkProfile(env, monitor.network_profile_id) : null;
+    const jobMonitor = withAccessSecretHeader(sanitizeMonitor(monitor), env);
+    const proxy = await getActiveProxy(env, monitor.proxy_id);
+    if (proxy) {
+        jobMonitor.proxy = proxy;
+    }
     const job = {
-        monitor: withAccessSecretHeader(sanitizeMonitor(monitor), env),
+        monitor: jobMonitor,
         networkProfile,
     };
     const result = await callRunner(env, job);
@@ -1062,6 +1312,7 @@ function normalizeMonitorInput(input, existing = {}) {
     const timeout = Number(monitor.timeout || existing.timeout || 30);
     const networkProfileId = normalizeNetworkProfileId(monitor.networkProfileId ?? monitor.network_profile_id);
     const parent = normalizeMonitorParent(monitor.parent ?? existing.parent);
+    const proxyId = normalizeProxyId(resolveMonitorProxyInput(input, existing));
     assertWorkerTargetAllowed(monitor, networkProfileId);
 
     return {
@@ -1082,6 +1333,7 @@ function normalizeMonitorInput(input, existing = {}) {
         active: monitor.active === undefined ? 1 : (monitor.active ? 1 : 0),
         networkProfileId,
         parent,
+        proxyId,
     };
 }
 
@@ -2371,6 +2623,7 @@ function serializeMonitor(monitor, latestHeartbeat = null, relationshipData = bu
         tags: [],
         notificationIDList: {},
         networkProfileId: monitor.network_profile_id ?? monitor.networkProfileId ?? null,
+        proxyId: monitor.proxy_id == null ? null : Number(monitor.proxy_id),
         accepted_statuscodes: Array.isArray(config.accepted_statuscodes)
             ? config.accepted_statuscodes
             : monitorConfigDefaults(monitor.type).accepted_statuscodes,
@@ -2474,6 +2727,29 @@ function normalizeNetworkProfileId(value) {
     return value === undefined || value === "" || value === "direct" ? null : value;
 }
 
+function normalizeProxyId(value) {
+    if (value === undefined || value === "" || value === "none") {
+        return null;
+    }
+    const proxyId = Number(value);
+    return Number.isInteger(proxyId) && proxyId > 0 ? proxyId : null;
+}
+
+function resolveMonitorProxyInput(input = {}, existing = {}) {
+    if (Object.prototype.hasOwnProperty.call(input, "proxyId")) {
+        return input.proxyId;
+    }
+    if (Object.prototype.hasOwnProperty.call(input, "proxy_id")) {
+        return input.proxy_id;
+    }
+    return existing.proxy_id ?? existing.proxyId;
+}
+
+function hasProxySelection(input = {}) {
+    return Object.prototype.hasOwnProperty.call(input, "proxyId")
+        || Object.prototype.hasOwnProperty.call(input, "proxy_id");
+}
+
 function matchRoute(method, pathname) {
     if (method === "GET" && pathname === "/api/entry-page") {
         return { name: "entry-page", params: {} };
@@ -2492,6 +2768,12 @@ function matchRoute(method, pathname) {
     }
     if ((method === "GET" || method === "PUT") && pathname === "/api/settings") {
         return { name: "settings", params: {} };
+    }
+    if (method === "GET" && pathname === "/api/proxies") {
+        return { name: "proxies", params: {} };
+    }
+    if (method === "POST" && pathname === "/api/proxies") {
+        return { name: "save-proxy", params: {} };
     }
     if (method === "GET" && pathname === "/api/notifications") {
         return { name: "notifications", params: {} };
@@ -2531,6 +2813,14 @@ function matchRoute(method, pathname) {
         return {
             name: method === "PUT" ? "save-notification" : "delete-notification",
             params: { notificationId: notificationMatch[1] },
+        };
+    }
+
+    const proxyMatch = pathname.match(/^\/api\/proxies\/(\d+)$/);
+    if ((method === "PUT" || method === "DELETE") && proxyMatch) {
+        return {
+            name: method === "PUT" ? "save-proxy" : "delete-proxy",
+            params: { proxyId: proxyMatch[1] },
         };
     }
 
