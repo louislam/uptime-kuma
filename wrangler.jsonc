@@ -5,6 +5,12 @@
     "keep_vars": true,
     "main": "cloudflare/worker/index.mjs",
     "compatibility_date": "2026-05-11",
+    "routes": [
+        {
+            "pattern": "up.wgsglobal.app",
+            "custom_domain": true
+        }
+    ],
     "assets": {
         "directory": "./dist/",
         "not_found_handling": "single-page-application",

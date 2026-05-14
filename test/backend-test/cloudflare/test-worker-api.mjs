@@ -2038,6 +2038,47 @@ describe("Cloudflare Worker API", () => {
         });
     });
 
+    test("check-now writes a down heartbeat when the runner call fails", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                {
+                    id: 7,
+                    name: "Marketing Dash",
+                    type: "http",
+                    url: "https://marketing.wgsglobal.app/",
+                    hostname: null,
+                    port: null,
+                    method: "GET",
+                    timeout: 48,
+                    network_profile_id: null,
+                },
+            ],
+            runnerResponseStatus: 500,
+            runnerResult: { error: "container unavailable" },
+        });
+
+        const response = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/7/check-now", { method: "POST" }),
+            env
+        );
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.deepStrictEqual(body.result, {
+            status: 0,
+            ping: null,
+            msg: "Runner check failed with 500",
+            response: null,
+        });
+        assert.deepStrictEqual(env.state.heartbeats[0], {
+            monitor_id: 7,
+            status: 0,
+            ping: null,
+            msg: "Runner check failed with 500",
+        });
+    });
+
     test("check-now adds ACCESS_SECRET header to HTTP monitor jobs without saving it", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({
@@ -2137,6 +2178,7 @@ function createEnv(initial) {
         settings: initial.settings || {},
         runnerJobs: [],
         runnerResult: initial.runnerResult,
+        runnerResponseStatus: initial.runnerResponseStatus || 200,
         runnerStatus: initial.runnerStatus || {
             configured: false,
             starting: false,
@@ -2181,7 +2223,7 @@ function createEnv(initial) {
                             return Response.json(state.runnerStatus);
                         }
                         state.runnerJobs.push(await request.json());
-                        return Response.json(state.runnerResult);
+                        return Response.json(state.runnerResult, { status: state.runnerResponseStatus });
                     },
                 };
             },

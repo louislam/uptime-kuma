@@ -12,6 +12,7 @@ describe("Cloudflare Worker socket delete shim", () => {
 
         assert.match(source, /"uptimeworker\.wgsglobal\.workers\.dev"/);
         assert.match(source, /"uptime\.wgsglobal\.app"/);
+        assert.match(source, /"up\.wgsglobal\.app"/);
     });
 
     test("normalizes successful REST delete responses for Socket.IO callers", () => {

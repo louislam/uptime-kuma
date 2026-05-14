@@ -1112,7 +1112,17 @@ export async function executeMonitorCheck(env, monitorId) {
         monitor: jobMonitor,
         networkProfile,
     };
-    const result = await callRunner(env, job);
+    let result;
+    try {
+        result = await callRunner(env, job);
+    } catch (error) {
+        result = {
+            status: 0,
+            ping: null,
+            msg: error.message || "Runner check failed",
+            response: null,
+        };
+    }
     await writeHeartbeat(env, monitorId, result);
     return result;
 }
