@@ -8,6 +8,7 @@ const DIRECT_PROFILE = {
 
 const DEFAULT_SETTINGS = {
     checkUpdate: true,
+    checkBeta: false,
     searchEngineIndex: false,
     entryPage: "dashboard",
     nscd: true,

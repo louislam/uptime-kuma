@@ -484,6 +484,7 @@ describe("Cloudflare Worker API", () => {
         assert.strictEqual(getResponse.status, 200);
         assert.strictEqual(getBody.data.entryPage, "dashboard");
         assert.strictEqual(getBody.data.checkUpdate, true);
+        assert.strictEqual(getBody.data.checkBeta, false);
         assert.strictEqual(getBody.data.keepDataPeriodDays, 180);
 
         const putResponse = await handleApiRequest(
@@ -491,6 +492,8 @@ describe("Cloudflare Worker API", () => {
                 method: "PUT",
                 body: JSON.stringify({
                     primaryBaseURL: "https://uptime.example.com",
+                    checkUpdate: false,
+                    checkBeta: true,
                     searchEngineIndex: true,
                 }),
             }),
@@ -500,6 +503,8 @@ describe("Cloudflare Worker API", () => {
         assert.strictEqual(putResponse.status, 200);
         assert.deepStrictEqual(await putResponse.json(), { ok: true, msg: "Settings saved" });
         assert.strictEqual(env.state.settings.primaryBaseURL, "https://uptime.example.com");
+        assert.strictEqual(env.state.settings.checkUpdate, false);
+        assert.strictEqual(env.state.settings.checkBeta, true);
         assert.strictEqual(env.state.settings.searchEngineIndex, true);
     });
 

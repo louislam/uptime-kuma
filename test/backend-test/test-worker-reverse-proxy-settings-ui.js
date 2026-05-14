@@ -4,6 +4,19 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 describe("Worker Reverse Proxy settings UI removal", () => {
+    test("allows the About settings page in Worker UI mode", () => {
+        const settingsSource = fs.readFileSync(
+            path.join(__dirname, "../../src/pages/Settings.vue"),
+            "utf8"
+        );
+
+        assert.match(
+            settingsSource,
+            /"about"/,
+            "about should be listed as a Worker-supported settings page"
+        );
+    });
+
     test("does not expose the Reverse Proxy settings page in Worker UI mode", () => {
         const settingsSource = fs.readFileSync(
             path.join(__dirname, "../../src/pages/Settings.vue"),
