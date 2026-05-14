@@ -65,8 +65,7 @@ export default {
             return await handleApiRequest(request, env);
         }
 
-        const runner = getContainer(env.RUNNER, "default");
-        return await runner.fetch(request);
+        return await env.ASSETS.fetch(request);
     },
 
     async scheduled(_controller, env, _ctx) {

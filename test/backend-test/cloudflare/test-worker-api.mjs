@@ -72,6 +72,8 @@ describe("Cloudflare Worker API", () => {
     test("Worker deployment serves the Vue web UI as a single-page app", async () => {
         const wranglerPath = path.join(__dirname, "../../../wrangler.jsonc");
         const wranglerConfig = JSON.parse(fs.readFileSync(wranglerPath, "utf8"));
+        const workerPath = path.join(__dirname, "../../../cloudflare/worker/index.mjs");
+        const workerSource = fs.readFileSync(workerPath, "utf8");
 
         assert.deepStrictEqual(wranglerConfig.assets, {
             directory: "./dist/",
@@ -80,6 +82,8 @@ describe("Cloudflare Worker API", () => {
             run_worker_first: ["/api/*"],
         });
         assert.strictEqual(wranglerConfig.keep_vars, true);
+        assert.match(workerSource, /return await env\.ASSETS\.fetch\(request\)/);
+        assert.doesNotMatch(workerSource, /return await runner\.fetch\(request\)/);
     });
 
     test("Worker Twingate config does not expose a configurable proxy URL", async () => {
