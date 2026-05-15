@@ -26,7 +26,11 @@ function hasTwingateServiceKeyInput(env = {}) {
  * @returns {boolean} True when the container is still attaching or starting.
  */
 function isTransientContainerStartupError(message = "") {
-    return /container is not running,\s*consider calling start\(\)/i.test(String(message));
+    const text = String(message);
+    return (
+        /container is not running,\s*consider calling start\(\)/i.test(text)
+        || /failed to start (?:runner )?container:.*operation was aborted/i.test(text)
+    );
 }
 
 /**

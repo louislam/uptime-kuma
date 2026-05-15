@@ -17,6 +17,12 @@ describe("Twingate Worker status helpers", () => {
             true
         );
         assert.strictEqual(
+            isTransientContainerStartupError(
+                "Failed to start runner container: Failed to start container: The operation was aborted"
+            ),
+            true
+        );
+        assert.strictEqual(
             isTransientContainerStartupError("container crashed before status endpoint"),
             false
         );

@@ -2006,6 +2006,28 @@ describe("Cloudflare Worker API", () => {
         });
     });
 
+    test("returns starting Twingate status for aborted Cloudflare container startup", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            runnerStatusResponseStatus: 500,
+            runnerStatus: "Failed to start runner container: Failed to start container: The operation was aborted",
+        });
+        env.TWINGATE_PRIVATE_KEY_B64 = "configured-secret";
+        env.TWINGATE_TUN = "on";
+
+        const response = await handleApiRequest(adminRequest("https://example.com/api/twingate/status"), env);
+
+        assert.strictEqual(response.status, 200);
+        assert.deepStrictEqual(await response.json(), {
+            configured: true,
+            starting: true,
+            running: false,
+            proxyUrl: "http://127.0.0.1:9999",
+            tunMode: "on",
+            lastError: "Twingate runner container is starting or provisioning. Refresh in a few seconds.",
+        });
+    });
+
     test("rejects direct Worker monitors for private and metadata addresses", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({});
