@@ -100,7 +100,7 @@ export default {
             return this.$t("Example:", [
                 `{
     "Title": "Uptime Kuma Alert{% if monitorJSON %} - {{ monitorJSON['name'] }}{% endif %}",
-    "Body": "{{ msg }}"
+    "Body": {{ msg | json }}
 }`,
             ]);
         },

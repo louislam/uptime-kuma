@@ -78,6 +78,7 @@ class NotificationProvider {
             relativeReference: false,
             dynamicPartials: false,
         });
+
         const parsedTpl = engine.parse(template);
 
         // Let's start with dummy values to simplify code

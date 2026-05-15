@@ -1,2 +1,5 @@
 # language files
 src/lang/*.json
+
+# workflow files - autofix.ci cannot commit changes to .github/
+.github/
