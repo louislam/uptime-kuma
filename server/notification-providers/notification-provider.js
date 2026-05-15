@@ -78,6 +78,10 @@ class NotificationProvider {
             relativeReference: false,
             dynamicPartials: false,
         });
+
+        // Allows safe embedding of values into JSON strings: {{ msg | json }}
+        engine.registerFilter("json", (v) => JSON.stringify(v));
+
         const parsedTpl = engine.parse(template);
 
         // Let's start with dummy values to simplify code
