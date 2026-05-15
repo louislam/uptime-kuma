@@ -379,12 +379,6 @@
                             <tr v-if="expandedRows[index] && hasFailureDetail(beat)">
                                 <td :id="`failure-detail-${index}`" colspan="3" class="p-0 bg-body-tertiary">
                                     <div class="p-3 small">
-                                        <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
-                                            <span v-if="failureDetail(beat).statusCode" class="badge bg-danger">
-                                                {{ failureDetail(beat).statusCode }}
-                                            </span>
-                                            <span class="text-body-secondary">{{ beat.msg }}</span>
-                                        </div>
                                         <div v-if="failureDetail(beat).headers" class="mb-2">
                                             <div class="fw-semibold text-body-secondary mb-1">{{ $t("Headers") }}</div>
                                             <pre class="failure-detail-pre">{{ formatHeaders(failureDetail(beat).headers) }}</pre>
@@ -879,7 +873,7 @@ export default {
 
         hasFailureDetail(beat) {
             const detail = this.failureDetail(beat);
-            return beat.status !== 1 && (detail.statusCode != null || detail.headers != null || detail.body);
+            return beat.status !== 1 && (detail.headers != null || detail.body);
         },
 
         failureDetail(beat) {
