@@ -3,6 +3,34 @@ const assert = require("node:assert");
 
 const NotificationProvider = require("../../../server/notification-providers/notification-provider");
 
+describe("NotificationProvider.renderTemplate() - json filter", () => {
+    const provider = new NotificationProvider();
+
+    test("json filter serializes a plain string", async () => {
+        const result = await provider.renderTemplate('{"body": {{ msg | json }}}', "hello", null, null);
+        assert.strictEqual(result, '{"body": "hello"}');
+        assert.doesNotThrow(() => JSON.parse(result));
+    });
+
+    test("json filter escapes newlines so the output is valid JSON", async () => {
+        const result = await provider.renderTemplate('{"body": {{ msg | json }}}', "line1\nline2", null, null);
+        const parsed = JSON.parse(result);
+        assert.strictEqual(parsed.body, "line1\nline2");
+    });
+
+    test("json filter escapes double quotes", async () => {
+        const result = await provider.renderTemplate('{"body": {{ msg | json }}}', 'say "hello"', null, null);
+        const parsed = JSON.parse(result);
+        assert.strictEqual(parsed.body, 'say "hello"');
+    });
+
+    test("json filter escapes backslashes", async () => {
+        const result = await provider.renderTemplate('{"body": {{ msg | json }}}', "C:\\path\\file", null, null);
+        const parsed = JSON.parse(result);
+        assert.strictEqual(parsed.body, "C:\\path\\file");
+    });
+});
+
 describe("NotificationProvider.throwGeneralAxiosError()", () => {
     const provider = new NotificationProvider();
 
