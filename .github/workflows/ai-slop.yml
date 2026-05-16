@@ -1,8 +1,11 @@
 name: Mark as AI Slop
 
 on:
-  pull_request:
-    types: [labeled]
+  pull_request_target:
+    types:
+      - labeled
+
+permissions: {}
 
 jobs:
   handle-ai-slop:
