@@ -1189,6 +1189,7 @@ class Monitor extends BeanModel {
             let res;
             if (this.auth_method === "ntlm") {
                 options.httpsAgent.keepAlive = true;
+                options.httpAgent.keepAlive = true;
 
                 res = await httpNtlm(options, {
                     username: this.basic_auth_user,
@@ -2059,7 +2060,7 @@ class Monitor extends BeanModel {
         }
 
         const parentActive = await Monitor.isParentActive(parent.id);
-        return parent.active && parentActive;
+        return parent.active === 1 && parentActive;
     }
 
     /**
