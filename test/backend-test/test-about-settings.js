@@ -35,7 +35,7 @@ describe("About settings page branding and versioning", () => {
 
     test("shows a single usable app version in Worker mode", () => {
         assert.match(aboutSource, /appVersion\(\)/);
-        assert.match(aboutSource, /\$root\.info\.version \|\| \$root\.frontendVersion/);
+        assert.match(aboutSource, /this\.\$root\.info\.version \|\| this\.\$root\.frontendVersion/);
         assert.doesNotMatch(aboutSource, /frontendVersionIs/);
     });
 
