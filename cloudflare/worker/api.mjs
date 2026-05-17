@@ -1,5 +1,7 @@
 import {
     buildTwingateStatusFromRunnerFailure,
+    buildUnavailableTwingateStatus,
+    resolveTwingateStatusTimeoutMs,
     sanitizeRunnerStatus,
 } from "./twingate-status.mjs";
 
@@ -1209,9 +1211,26 @@ async function callRunner(env, job) {
  * @returns {Promise<object>} Sanitized Twingate status.
  */
 async function fetchRunnerStatus(env) {
+    const timeoutMs = resolveTwingateStatusTimeoutMs(env);
+    const controller = new AbortController();
+    let timeout = null;
+    let responsePromise = null;
     try {
         const stub = getRunnerStub(env);
-        const response = await stub.fetch(new Request("http://runner/twingate/status"));
+        responsePromise = stub.fetch(new Request("http://runner/twingate/status", {
+            signal: controller.signal,
+        }));
+        void responsePromise.catch(() => {});
+        const timeoutPromise = new Promise((_, reject) => {
+            timeout = setTimeout(() => {
+                controller.abort();
+                reject(new Error(`Runner status timed out after ${timeoutMs}ms`));
+            }, timeoutMs);
+        });
+        const response = await Promise.race([
+            responsePromise,
+            timeoutPromise,
+        ]);
         if (!response.ok) {
             return buildTwingateStatusFromRunnerFailure(
                 env,
@@ -1220,7 +1239,14 @@ async function fetchRunnerStatus(env) {
         }
         return sanitizeRunnerStatus(await response.json());
     } catch (error) {
+        if (error.name === "AbortError" || error.message === `Runner status timed out after ${timeoutMs}ms`) {
+            return buildUnavailableTwingateStatus(env, `Runner status timed out after ${timeoutMs}ms`);
+        }
         return buildTwingateStatusFromRunnerFailure(env, `Runner status unavailable: ${error.message}`);
+    } finally {
+        if (timeout) {
+            clearTimeout(timeout);
+        }
     }
 }
 

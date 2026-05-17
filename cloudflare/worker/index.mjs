@@ -4,6 +4,7 @@ import {
     buildStartingTwingateStatus,
     buildUnavailableTwingateStatus,
     isTransientContainerStartupError,
+    resolveTwingateStatusTimeoutMs,
 } from "./twingate-status.mjs";
 
 export { ContainerProxy };
@@ -45,6 +46,7 @@ export class MonitorRunner extends Container {
             "TWINGATE_EXPIRES_AT",
             "TWINGATE_LOGIN_PATH",
             "TWINGATE_READY_TIMEOUT_MS",
+            "TWINGATE_STATUS_REQUEST_TIMEOUT_MS",
             "TWINGATE_TUN",
         ]);
     }
@@ -73,6 +75,19 @@ export class MonitorRunner extends Container {
         let lastError = "";
         for (let attempt = 0; attempt <= TWINGATE_STATUS_MAX_RETRIES; attempt++) {
             try {
+                await this.startAndWaitForPorts({
+                    startOptions: {
+                        envVars: this.envVars,
+                        entrypoint: this.entrypoint,
+                        enableInternet: this.enableInternet,
+                    },
+                    ports: [TWINGATE_STATUS_PORT],
+                    cancellationOptions: {
+                        instanceGetTimeoutMS: resolveTwingateStatusTimeoutMs(this.env),
+                        portReadyTimeoutMS: resolveTwingateStatusTimeoutMs(this.env),
+                        waitInterval: TWINGATE_STATUS_RETRY_DELAY_MS,
+                    },
+                });
                 const response = await this.containerFetch(request, TWINGATE_STATUS_PORT);
                 if (response.ok) {
                     return response;

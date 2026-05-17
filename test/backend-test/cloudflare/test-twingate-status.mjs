@@ -5,6 +5,7 @@ import {
     buildStartingTwingateStatus,
     buildUnavailableTwingateStatus,
     isTransientContainerStartupError,
+    resolveTwingateStatusTimeoutMs,
     sanitizeRunnerStatus,
 } from "../../../cloudflare/worker/twingate-status.mjs";
 
@@ -86,5 +87,13 @@ describe("Twingate Worker status helpers", () => {
             tunMode: "on",
             lastError: null,
         });
+    });
+
+    test("resolves Twingate status timeout with defaults and clamped env overrides", () => {
+        assert.strictEqual(resolveTwingateStatusTimeoutMs(), 10000);
+        assert.strictEqual(resolveTwingateStatusTimeoutMs({ TWINGATE_STATUS_REQUEST_TIMEOUT_MS: "2500" }), 2500);
+        assert.strictEqual(resolveTwingateStatusTimeoutMs({ TWINGATE_STATUS_REQUEST_TIMEOUT_MS: "10" }), 1000);
+        assert.strictEqual(resolveTwingateStatusTimeoutMs({ TWINGATE_STATUS_REQUEST_TIMEOUT_MS: "90000" }), 30000);
+        assert.strictEqual(resolveTwingateStatusTimeoutMs({ TWINGATE_STATUS_REQUEST_TIMEOUT_MS: "invalid" }), 10000);
     });
 });

@@ -66,6 +66,12 @@
 <script>
 import { cloudflareWorkerApiHeaders } from "../../cloudflare-worker-api";
 
+const DEFAULT_TWINGATE_STATUS_BROWSER_TIMEOUT_MS = 12000;
+
+function resolveTwingateStatusBrowserTimeoutMs() {
+    return DEFAULT_TWINGATE_STATUS_BROWSER_TIMEOUT_MS;
+}
+
 export default {
     data() {
         return {
@@ -218,9 +224,13 @@ export default {
 
         async loadStatus() {
             this.loading = true;
+            const timeoutMs = resolveTwingateStatusBrowserTimeoutMs();
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), timeoutMs);
             try {
                 const response = await fetch("/api/twingate/status", {
                     headers: cloudflareWorkerApiHeaders(),
+                    signal: controller.signal,
                 });
                 if (!response.ok) {
                     throw new Error(await response.text());
@@ -229,15 +239,19 @@ export default {
                 this.logsCleared = false;
                 this.copyState = "idle";
             } catch (error) {
+                const message = error.name === "AbortError"
+                    ? `Twingate status request timed out after ${timeoutMs}ms`
+                    : error.message;
                 this.status = {
                     configured: false,
                     starting: false,
                     running: false,
-                    lastError: error.message,
+                    lastError: message,
                 };
                 this.logsCleared = false;
                 this.copyState = "idle";
             } finally {
+                clearTimeout(timeout);
                 this.loading = false;
             }
         },

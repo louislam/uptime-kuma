@@ -1,4 +1,7 @@
 const SYSTEM_TWINGATE_PROXY_URL = "http://127.0.0.1:9999";
+const DEFAULT_TWINGATE_STATUS_REQUEST_TIMEOUT_MS = 10000;
+const MIN_TWINGATE_STATUS_REQUEST_TIMEOUT_MS = 1000;
+const MAX_TWINGATE_STATUS_REQUEST_TIMEOUT_MS = 30000;
 const TWINGATE_CONTAINER_STARTING_MESSAGE =
     "Twingate runner container is starting or provisioning. Refresh in a few seconds.";
 const TWINGATE_ENV_INPUTS = [
@@ -47,6 +50,22 @@ function sanitizeRunnerStatus(status = {}) {
         tunMode: status.tunMode || null,
         lastError: status.lastError || null,
     };
+}
+
+/**
+ * Resolve the maximum time a Twingate status request may wait on the runner.
+ * @param {object} env Worker environment bindings.
+ * @returns {number} Timeout in milliseconds.
+ */
+function resolveTwingateStatusTimeoutMs(env = {}) {
+    const parsed = Number(env?.TWINGATE_STATUS_REQUEST_TIMEOUT_MS);
+    if (!Number.isFinite(parsed)) {
+        return DEFAULT_TWINGATE_STATUS_REQUEST_TIMEOUT_MS;
+    }
+    return Math.min(
+        MAX_TWINGATE_STATUS_REQUEST_TIMEOUT_MS,
+        Math.max(MIN_TWINGATE_STATUS_REQUEST_TIMEOUT_MS, Math.round(parsed))
+    );
 }
 
 /**
@@ -104,5 +123,6 @@ export {
     buildUnavailableTwingateStatus,
     hasTwingateServiceKeyInput,
     isTransientContainerStartupError,
+    resolveTwingateStatusTimeoutMs,
     sanitizeRunnerStatus,
 };

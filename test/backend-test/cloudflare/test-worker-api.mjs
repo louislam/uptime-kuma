@@ -148,8 +148,20 @@ describe("Cloudflare Worker API", () => {
         const workerSource = fs.readFileSync(workerPath, "utf8");
 
         assert.match(workerSource, /TWINGATE_STATUS_MAX_RETRIES = 3/);
+        assert.match(workerSource, /this\.startAndWaitForPorts\(/);
+        assert.match(workerSource, /portReadyTimeoutMS:\s*resolveTwingateStatusTimeoutMs\(this\.env\)/);
         assert.match(workerSource, /this\.containerFetch\(request,\s*TWINGATE_STATUS_PORT\)/);
         assert.match(workerSource, /persistStartingTwingateStatus/);
+    });
+
+    test("Twingate settings UI applies a browser-side status request timeout", async () => {
+        const componentPath = path.join(__dirname, "../../../src/components/settings/Twingate.vue");
+        const componentSource = fs.readFileSync(componentPath, "utf8");
+
+        assert.match(componentSource, /const timeoutMs = resolveTwingateStatusBrowserTimeoutMs\(\)/);
+        assert.match(componentSource, /AbortController/);
+        assert.match(componentSource, /signal: controller\.signal/);
+        assert.match(componentSource, /Twingate status request timed out/);
     });
 
     test("entry page routes the deployed web UI to the dashboard", async () => {
@@ -2028,6 +2040,33 @@ describe("Cloudflare Worker API", () => {
         });
     });
 
+    test("returns sanitized Twingate status when runner status request times out", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            runnerStatusNeverResolves: true,
+        });
+        env.TWINGATE_PRIVATE_KEY_B64 = "configured-secret";
+        env.TWINGATE_TUN = "on";
+        env.TWINGATE_STATUS_REQUEST_TIMEOUT_MS = "1000";
+
+        const timedOut = Symbol("timed out");
+        const result = await Promise.race([
+            handleApiRequest(adminRequest("https://example.com/api/twingate/status"), env),
+            new Promise((resolve) => setTimeout(() => resolve(timedOut), 1500)),
+        ]);
+
+        assert.notStrictEqual(result, timedOut);
+        assert.strictEqual(result.status, 200);
+        assert.deepStrictEqual(await result.json(), {
+            configured: true,
+            starting: false,
+            running: false,
+            proxyUrl: "http://127.0.0.1:9999",
+            tunMode: "on",
+            lastError: "Runner status timed out after 1000ms",
+        });
+    });
+
     test("rejects direct Worker monitors for private and metadata addresses", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({});
@@ -2287,6 +2326,7 @@ function createEnv(initial) {
         missingParentColumn: Boolean(initial.missingParentColumn),
         missingProxyColumn: Boolean(initial.missingProxyColumn),
         missingNotificationTables: Boolean(initial.missingNotificationTables),
+        runnerStatusNeverResolves: Boolean(initial.runnerStatusNeverResolves),
     };
 
     return {
@@ -2313,6 +2353,9 @@ function createEnv(initial) {
                     async fetch(request) {
                         const url = new URL(request.url);
                         if (request.method === "GET" && url.pathname === "/twingate/status") {
+                            if (state.runnerStatusNeverResolves) {
+                                return new Promise(() => {});
+                            }
                             return Response.json(state.runnerStatus, { status: state.runnerStatusResponseStatus });
                         }
                         state.runnerJobs.push(await request.json());
