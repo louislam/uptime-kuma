@@ -7,7 +7,7 @@
         "url": "https://github.com/louislam/uptime-kuma.git"
     },
     "engines": {
-        "node": ">= 24.0.0"
+        "node": ">= 26.0.0"
     },
     "scripts": {
         "lint:js": "eslint --ext \".js,.vue\" --ignore-path .gitignore .",
@@ -124,7 +124,7 @@
         "password-hash": "~1.2.2",
         "pg": "~8.11.6",
         "pg-connection-string": "~2.6.4",
-        "playwright-core": "~1.56.1",
+        "playwright-core": "~1.60.0",
         "prom-client": "~13.2.0",
         "prometheus-api-metrics": "~3.2.2",
         "promisify-child-process": "~4.1.2",
@@ -155,7 +155,7 @@
         "@fortawesome/free-regular-svg-icons": "~5.15.4",
         "@fortawesome/free-solid-svg-icons": "~5.15.4",
         "@fortawesome/vue-fontawesome": "~3.1.3",
-        "@playwright/test": "~1.56.1",
+        "@playwright/test": "~1.60.0",
         "@popperjs/core": "~2.10.2",
         "@testcontainers/hivemq": "^10.28.0",
         "@testcontainers/mariadb": "^10.28.0",
