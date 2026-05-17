@@ -723,7 +723,13 @@ export default {
                 if (!response.ok) {
                     throw new Error(body.error || body.msg || `HTTP ${response.status}`);
                 }
-                this.$root.toastSuccess(body.result?.msg || "Check complete");
+                if (body.result?.skipped || body.result?.status === null) {
+                    this.$root.toastError(body.result?.msg || "Runner check unavailable");
+                } else if (Number(body.result?.status) === 0) {
+                    this.$root.toastError(body.result?.msg || "Check failed");
+                } else {
+                    this.$root.toastSuccess(body.result?.msg || "Check complete");
+                }
                 await this.$root.loadCloudflareWorkerData();
                 this.getImportantHeartbeatListLength();
             } catch (error) {

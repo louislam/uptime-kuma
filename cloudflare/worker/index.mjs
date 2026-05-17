@@ -10,9 +10,9 @@ import {
 export { ContainerProxy };
 
 const RUNNER_STATUS_STORAGE_KEY = "runner:twingate:last-unavailable-status";
-const TWINGATE_STATUS_PORT = 8788;
-const TWINGATE_STATUS_MAX_RETRIES = 3;
-const TWINGATE_STATUS_RETRY_DELAY_MS = 250;
+const RUNNER_PORT = 8788;
+const RUNNER_FETCH_MAX_RETRIES = 3;
+const RUNNER_FETCH_RETRY_DELAY_MS = 250;
 
 export class MonitorRunner extends Container {
     defaultPort = 8788;
@@ -58,11 +58,11 @@ export class MonitorRunner extends Container {
      */
     async fetch(request) {
         const url = new URL(request.url);
-        if (url.pathname !== "/twingate/status") {
-            return await super.fetch(request);
+        if (url.pathname === "/twingate/status") {
+            return await this.fetchTwingateStatus(request);
         }
 
-        return await this.fetchTwingateStatus(request);
+        return await this.fetchRunnerRequest(request);
     }
 
     /**
@@ -73,22 +73,10 @@ export class MonitorRunner extends Container {
      */
     async fetchTwingateStatus(request) {
         let lastError = "";
-        for (let attempt = 0; attempt <= TWINGATE_STATUS_MAX_RETRIES; attempt++) {
+        for (let attempt = 0; attempt <= RUNNER_FETCH_MAX_RETRIES; attempt++) {
             try {
-                await this.startAndWaitForPorts({
-                    startOptions: {
-                        envVars: this.envVars,
-                        entrypoint: this.entrypoint,
-                        enableInternet: this.enableInternet,
-                    },
-                    ports: [TWINGATE_STATUS_PORT],
-                    cancellationOptions: {
-                        instanceGetTimeoutMS: resolveTwingateStatusTimeoutMs(this.env),
-                        portReadyTimeoutMS: resolveTwingateStatusTimeoutMs(this.env),
-                        waitInterval: TWINGATE_STATUS_RETRY_DELAY_MS,
-                    },
-                });
-                const response = await this.containerFetch(request, TWINGATE_STATUS_PORT);
+                await this.startRunnerContainer();
+                const response = await this.containerFetch(request, RUNNER_PORT);
                 if (response.ok) {
                     return response;
                 }
@@ -103,13 +91,63 @@ export class MonitorRunner extends Container {
                 return Response.json(status);
             }
 
-            if (attempt < TWINGATE_STATUS_MAX_RETRIES) {
-                await delay(TWINGATE_STATUS_RETRY_DELAY_MS);
+            if (attempt < RUNNER_FETCH_MAX_RETRIES) {
+                await delay(RUNNER_FETCH_RETRY_DELAY_MS);
             }
         }
 
         const status = await this.persistStartingTwingateStatus();
         return Response.json(status);
+    }
+
+    /**
+     * Fetch a normal monitor-check request after explicitly waiting for the runner
+     * port. The default Container fetch can surface cold-start races as 500s, which
+     * should not be recorded as target downtime.
+     * @param {Request} request Incoming runner request.
+     * @returns {Promise<Response>} Runner response.
+     */
+    async fetchRunnerRequest(request) {
+        let lastError = "";
+        for (let attempt = 0; attempt <= RUNNER_FETCH_MAX_RETRIES; attempt++) {
+            try {
+                await this.startRunnerContainer();
+                return await this.containerFetch(request, RUNNER_PORT);
+            } catch (error) {
+                lastError = `Failed to start runner container: ${formatErrorMessage(error)}`;
+                if (!isTransientContainerStartupError(lastError)) {
+                    await this.persistUnavailableTwingateStatus(lastError);
+                    return Response.json({ error: lastError }, { status: 503 });
+                }
+            }
+
+            if (attempt < RUNNER_FETCH_MAX_RETRIES) {
+                await delay(RUNNER_FETCH_RETRY_DELAY_MS);
+            }
+        }
+
+        const status = await this.persistStartingTwingateStatus();
+        return Response.json({ error: status.lastError }, { status: 503 });
+    }
+
+    /**
+     * Start the runner container and wait until the HTTP port is ready.
+     * @returns {Promise<void>} Resolves when the runner is accepting requests.
+     */
+    async startRunnerContainer() {
+        await this.startAndWaitForPorts({
+            startOptions: {
+                envVars: this.envVars,
+                entrypoint: this.entrypoint,
+                enableInternet: this.enableInternet,
+            },
+            ports: [RUNNER_PORT],
+            cancellationOptions: {
+                instanceGetTimeoutMS: resolveTwingateStatusTimeoutMs(this.env),
+                portReadyTimeoutMS: resolveTwingateStatusTimeoutMs(this.env),
+                waitInterval: RUNNER_FETCH_RETRY_DELAY_MS,
+            },
+        });
     }
 
     /**

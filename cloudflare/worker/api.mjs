@@ -29,6 +29,7 @@ const DEFAULT_SETTINGS = {
     globalpingApiToken: "",
     chromeExecutable: "",
 };
+const DOWN = 0;
 const WORKER_AUTH_USER_SETTING = "workerAuthUser";
 const WORKER_AUTH_SESSION_SECRET_SETTING = "workerAuthSessionSecret";
 const SENSITIVE_SETTING_KEYS = new Set([
@@ -1124,8 +1125,9 @@ export async function executeMonitorCheck(env, monitorId) {
     try {
         result = await callRunner(env, job);
     } catch (error) {
-        result = {
-            status: 0,
+        return {
+            skipped: true,
+            status: null,
             ping: null,
             msg: error.message || "Runner check failed",
             response: null,
@@ -1201,7 +1203,7 @@ async function callRunner(env, job) {
         })
     );
     if (!response.ok) {
-        throw httpError(502, `Runner check failed with ${response.status}`);
+        throw httpError(502, `Runner check failed with ${response.status}${await formatRunnerError(response)}`);
     }
     return await response.json();
 }
@@ -1291,10 +1293,11 @@ async function writeHeartbeat(env, monitorId, result) {
         await env.ARTIFACTS.put(responseR2Key, result.response);
     }
 
+    const status = result.status ?? DOWN;
     await env.DB.prepare(
         "INSERT INTO heartbeats (monitor_id, status, ping, msg, response_r2_key) VALUES (?, ?, ?, ?, ?)"
     )
-        .bind(monitorId, result.status, result.ping ?? null, result.msg ?? "", responseR2Key)
+        .bind(monitorId, status, result.ping ?? null, result.msg ?? "", responseR2Key)
         .run();
 }
 

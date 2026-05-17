@@ -150,11 +150,21 @@ describe("Cloudflare Worker API", () => {
         const workerPath = path.join(__dirname, "../../../cloudflare/worker/index.mjs");
         const workerSource = fs.readFileSync(workerPath, "utf8");
 
-        assert.match(workerSource, /TWINGATE_STATUS_MAX_RETRIES = 3/);
-        assert.match(workerSource, /this\.startAndWaitForPorts\(/);
+        assert.match(workerSource, /RUNNER_FETCH_MAX_RETRIES = 3/);
+        assert.match(workerSource, /startRunnerContainer\(\)/);
         assert.match(workerSource, /portReadyTimeoutMS:\s*resolveTwingateStatusTimeoutMs\(this\.env\)/);
-        assert.match(workerSource, /this\.containerFetch\(request,\s*TWINGATE_STATUS_PORT\)/);
+        assert.match(workerSource, /this\.containerFetch\(request,\s*RUNNER_PORT\)/);
         assert.match(workerSource, /persistStartingTwingateStatus/);
+    });
+
+    test("runner monitor checks use startup-aware forwarding instead of the default container fetch", async () => {
+        const workerPath = path.join(__dirname, "../../../cloudflare/worker/index.mjs");
+        const workerSource = fs.readFileSync(workerPath, "utf8");
+
+        assert.match(workerSource, /return await this\.fetchRunnerRequest\(request\)/);
+        assert.match(workerSource, /async fetchRunnerRequest\(request\)/);
+        assert.match(workerSource, /Failed to start runner container/);
+        assert.doesNotMatch(workerSource, /super\.fetch\(request\)/);
     });
 
     test("Twingate settings UI applies a browser-side status request timeout", async () => {
@@ -165,6 +175,16 @@ describe("Cloudflare Worker API", () => {
         assert.match(componentSource, /AbortController/);
         assert.match(componentSource, /signal: controller\.signal/);
         assert.match(componentSource, /Twingate status request timed out/);
+    });
+
+    test("Worker check-now UI shows runner and down-check failures as errors", async () => {
+        const componentPath = path.join(__dirname, "../../../src/pages/Details.vue");
+        const componentSource = fs.readFileSync(componentPath, "utf8");
+
+        assert.match(componentSource, /body\.result\?\.skipped/);
+        assert.match(componentSource, /Number\(body\.result\?\.status\) === 0/);
+        assert.match(componentSource, /toastError\(body\.result\?\.msg \|\| "Runner check unavailable"\)/);
+        assert.match(componentSource, /toastError\(body\.result\?\.msg \|\| "Check failed"\)/);
     });
 
     test("Worker UI API helper applies a request timeout for bootstrap calls", async () => {
@@ -2227,7 +2247,7 @@ describe("Cloudflare Worker API", () => {
         });
     });
 
-    test("check-now writes a down heartbeat when the runner call fails", async () => {
+    test("check-now skips heartbeat writes when the runner call fails", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({
             monitors: [
@@ -2255,17 +2275,13 @@ describe("Cloudflare Worker API", () => {
 
         assert.strictEqual(response.status, 200);
         assert.deepStrictEqual(body.result, {
-            status: 0,
+            skipped: true,
+            status: null,
             ping: null,
-            msg: "Runner check failed with 500",
+            msg: "Runner check failed with 500: container unavailable",
             response: null,
         });
-        assert.deepStrictEqual(env.state.heartbeats[0], {
-            monitor_id: 7,
-            status: 0,
-            ping: null,
-            msg: "Runner check failed with 500",
-        });
+        assert.deepStrictEqual(env.state.heartbeats, []);
     });
 
     test("check-now adds ACCESS_SECRET header to HTTP monitor jobs without saving it", async () => {
