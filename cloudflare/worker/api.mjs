@@ -41,6 +41,7 @@ const WORKER_AUTH_SESSION_TTL_SECONDS = 7 * 24 * 60 * 60;
 const WORKER_AUTH_REMEMBER_SESSION_TTL_SECONDS = 30 * 24 * 60 * 60;
 const ACCESS_SECRET_HEADER = "X-Uptime-Worker-Token";
 const ACCESS_SECRET_MONITOR_TYPES = new Set(["http", "keyword", "json-query"]);
+const NOTIFICATION_OK_MESSAGE = "Sent Successfully.";
 
 const WORKER_MONITOR_TYPES = new Set([
     "group",
@@ -234,10 +235,7 @@ export async function handleApiRequest(request, env) {
         }
 
         if (route.name === "test-notification") {
-            return json(
-                { ok: false, msg: "Testing notifications is not available in the Cloudflare Worker UI yet." },
-                501
-            );
+            return json(await testNotification(await request.json()));
         }
 
         if (route.name === "create-monitor") {
@@ -624,6 +622,78 @@ export async function deleteNotification(env, notificationId) {
     }
     await env.DB.prepare("DELETE FROM monitor_notification WHERE notification_id = ?").bind(notificationId).run();
     await env.DB.prepare("DELETE FROM notification WHERE id = ?").bind(notificationId).run();
+}
+
+async function testNotification(notificationInput) {
+    const notification = normalizeTestNotification(notificationInput);
+
+    if (notification.type === "pushover") {
+        await sendPushoverTestNotification(notification, `${notification.name} Testing`);
+        return { ok: true, msg: NOTIFICATION_OK_MESSAGE };
+    }
+
+    throw httpError(400, `Notification type "${notification.type}" is not supported by the Worker test sender yet.`);
+}
+
+function normalizeTestNotification(notificationInput = {}) {
+    if (!notificationInput || typeof notificationInput !== "object" || Array.isArray(notificationInput)) {
+        throw httpError(400, "Notification payload is required");
+    }
+
+    const type = String(notificationInput.type || "").trim();
+    if (!type) {
+        throw httpError(400, "Notification type is required");
+    }
+
+    const name = String(notificationInput.name || type || "Notification").trim() || "Notification";
+    return {
+        ...notificationInput,
+        type,
+        name,
+    };
+}
+
+async function sendPushoverTestNotification(notification, msg) {
+    const body = new URLSearchParams();
+    body.set("message", msg);
+    body.set("user", requiredNotificationValue(notification.pushoveruserkey, "Pushover user key is required"));
+    body.set("token", requiredNotificationValue(notification.pushoverapptoken, "Pushover application token is required"));
+    body.set("retry", "30");
+    body.set("expire", "3600");
+    body.set("html", "1");
+
+    appendOptionalNotificationValue(body, "sound", notification.pushoversounds);
+    appendOptionalNotificationValue(body, "priority", notification.pushoverpriority);
+    appendOptionalNotificationValue(body, "title", notification.pushovertitle);
+    appendOptionalNotificationValue(body, "device", notification.pushoverdevice);
+    appendOptionalNotificationValue(body, "ttl", notification.pushoverttl);
+
+    const response = await fetch("https://api.pushover.net/1/messages.json", {
+        method: "POST",
+        headers: {
+            "content-type": "application/x-www-form-urlencoded",
+        },
+        body,
+    });
+
+    if (!response.ok) {
+        throw httpError(502, `Pushover test notification failed with HTTP ${response.status}`);
+    }
+}
+
+function requiredNotificationValue(value, message) {
+    const normalized = String(value || "").trim();
+    if (!normalized) {
+        throw httpError(400, message);
+    }
+    return normalized;
+}
+
+function appendOptionalNotificationValue(body, key, value) {
+    const normalized = String(value ?? "").trim();
+    if (normalized) {
+        body.set(key, normalized);
+    }
 }
 
 async function getNotification(env, notificationId) {

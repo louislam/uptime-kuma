@@ -919,6 +919,53 @@ describe("Cloudflare Worker API", () => {
         assert.strictEqual(env.state.missingNotificationTables, false);
     });
 
+    test("sends Pushover test notifications from the Worker API", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({});
+        const originalFetch = globalThis.fetch;
+        const sentRequests = [];
+        globalThis.fetch = async (url, init = {}) => {
+            sentRequests.push({ url, init });
+            return Response.json({ status: 1 });
+        };
+
+        try {
+            const response = await handleApiRequest(
+                adminRequest("https://example.com/api/notifications/test", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        type: "pushover",
+                        name: "Pushover Alerts",
+                        pushoveruserkey: "user-key",
+                        pushoverapptoken: "app-token",
+                        pushoversounds: "pushover",
+                        pushoverpriority: "-1",
+                        pushovertitle: "Worker Alert",
+                        pushoverdevice: "phone",
+                        pushoverttl: "120",
+                    }),
+                }),
+                env
+            );
+            const body = await response.json();
+
+            assert.strictEqual(response.status, 200);
+            assert.deepStrictEqual(body, { ok: true, msg: "Sent Successfully." });
+            assert.strictEqual(sentRequests.length, 1);
+            assert.strictEqual(sentRequests[0].url, "https://api.pushover.net/1/messages.json");
+            assert.strictEqual(sentRequests[0].init.method, "POST");
+            assert.strictEqual(sentRequests[0].init.headers["content-type"], "application/x-www-form-urlencoded");
+            assert.strictEqual(sentRequests[0].init.body.get("token"), "app-token");
+            assert.strictEqual(sentRequests[0].init.body.get("user"), "user-key");
+            assert.strictEqual(sentRequests[0].init.body.get("message"), "Pushover Alerts Testing");
+            assert.strictEqual(sentRequests[0].init.body.get("title"), "Worker Alert");
+            assert.strictEqual(sentRequests[0].init.body.get("device"), "phone");
+            assert.strictEqual(sentRequests[0].init.body.get("ttl"), "120");
+        } finally {
+            globalThis.fetch = originalFetch;
+        }
+    });
+
     test("creates, reads, updates, toggles, and deletes a supported monitor", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({});
