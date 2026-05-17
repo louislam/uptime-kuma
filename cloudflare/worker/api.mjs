@@ -106,6 +106,7 @@ const PROXY_TABLE_SQL = `CREATE TABLE IF NOT EXISTS proxy (
 )`;
 const PROXY_INDEX_SQL = `CREATE INDEX IF NOT EXISTS idx_proxy_default ON proxy("default")`;
 const ACCESS_CERT_CACHE_TTL_MS = 60 * 60 * 1000;
+const DEFAULT_ACCESS_CERT_LOOKUP_TIMEOUT_MS = 5000;
 const accessCertCache = new Map();
 const SUPPORTED_PROXY_PROTOCOLS = new Set(["http", "https", "socks", "socks5", "socks5h", "socks4"]);
 const ADMIN_ROUTE_NAMES = new Set([
@@ -1760,7 +1761,8 @@ async function getCloudflareAccessJwks(teamDomain, env) {
         return cached.jwks;
     }
 
-    const response = await fetch(`${teamDomain}/cdn-cgi/access/certs`);
+    const timeoutMs = resolveAccessCertLookupTimeoutMs(env);
+    const response = await fetchWithTimeout(`${teamDomain}/cdn-cgi/access/certs`, timeoutMs);
     if (!response.ok) {
         throw new Error(`Cloudflare Access cert lookup failed with HTTP ${response.status}`);
     }
@@ -1770,6 +1772,39 @@ async function getCloudflareAccessJwks(teamDomain, env) {
         expiresAt: Date.now() + ACCESS_CERT_CACHE_TTL_MS,
     });
     return jwks;
+}
+
+async function fetchWithTimeout(url, timeoutMs) {
+    const controller = new AbortController();
+    let timeout = null;
+    const responsePromise = fetch(url, {
+        signal: controller.signal,
+    });
+    void responsePromise.catch(() => {});
+    const timeoutPromise = new Promise((_, reject) => {
+        timeout = setTimeout(() => {
+            controller.abort();
+            reject(new Error(`Request timed out after ${timeoutMs}ms`));
+        }, timeoutMs);
+    });
+    try {
+        return await Promise.race([
+            responsePromise,
+            timeoutPromise,
+        ]);
+    } finally {
+        if (timeout) {
+            clearTimeout(timeout);
+        }
+    }
+}
+
+function resolveAccessCertLookupTimeoutMs(env = {}) {
+    const parsed = Number(env.CF_ACCESS_CERT_LOOKUP_TIMEOUT_MS);
+    if (!Number.isFinite(parsed)) {
+        return DEFAULT_ACCESS_CERT_LOOKUP_TIMEOUT_MS;
+    }
+    return Math.min(30000, Math.max(1000, Math.round(parsed)));
 }
 
 function jwtAudienceMatches(tokenAudience, expectedAudience) {

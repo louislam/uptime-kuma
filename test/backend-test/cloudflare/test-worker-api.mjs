@@ -164,6 +164,16 @@ describe("Cloudflare Worker API", () => {
         assert.match(componentSource, /Twingate status request timed out/);
     });
 
+    test("Worker UI API helper applies a request timeout for bootstrap calls", async () => {
+        const apiHelperPath = path.join(__dirname, "../../../src/cloudflare-worker-api.js");
+        const apiHelperSource = fs.readFileSync(apiHelperPath, "utf8");
+
+        assert.match(apiHelperSource, /DEFAULT_WORKER_API_REQUEST_TIMEOUT_MS = 15000/);
+        assert.match(apiHelperSource, /AbortController/);
+        assert.match(apiHelperSource, /signal: controller\.signal/);
+        assert.match(apiHelperSource, /Worker API request timed out/);
+    });
+
     test("entry page routes the deployed web UI to the dashboard", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({});
@@ -229,6 +239,51 @@ describe("Cloudflare Worker API", () => {
 
         assert.strictEqual(response.status, 200);
         assert.deepStrictEqual(await response.json(), { monitors: [] });
+    });
+
+    test("auth session fails closed when Cloudflare Access cert lookup times out", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            adminToken: "",
+            accessTeamDomain: "https://wgs.cloudflareaccess.com",
+            accessAudience: "workers-dev-aud",
+        });
+        env.CF_ACCESS_CERT_LOOKUP_TIMEOUT_MS = "1000";
+        const originalFetch = globalThis.fetch;
+        globalThis.fetch = () => new Promise(() => {});
+        try {
+            const token = [
+                base64UrlEncodeJson({ alg: "RS256", kid: "slow-key" }),
+                base64UrlEncodeJson({
+                    iss: "https://wgs.cloudflareaccess.com",
+                    aud: "workers-dev-aud",
+                    exp: Math.floor(Date.now() / 1000) + 60,
+                }),
+                "signature",
+            ].join(".");
+            const timedOut = Symbol("timed out");
+            const result = await Promise.race([
+                handleApiRequest(
+                    new Request("https://example.com/api/auth/session", {
+                        headers: {
+                            "cf-access-jwt-assertion": token,
+                        },
+                    }),
+                    env
+                ),
+                new Promise((resolve) => setTimeout(() => resolve(timedOut), 1500)),
+            ]);
+
+            assert.notStrictEqual(result, timedOut);
+            assert.strictEqual(result.status, 200);
+            assert.deepStrictEqual(await result.json(), {
+                authenticated: false,
+                username: null,
+                localAuthConfigured: false,
+            });
+        } finally {
+            globalThis.fetch = originalFetch;
+        }
     });
 
     test("fails closed when Worker admin token is not configured", async () => {
@@ -2333,7 +2388,7 @@ function createEnv(initial) {
         state,
         ADMIN_API_TOKEN: "adminToken" in initial ? initial.adminToken : "test-token",
         ACCESS_SECRET: initial.accessSecret,
-        CF_ACCESS_TEAM_DOMAIN: initial.accessAuth?.teamDomain,
+        CF_ACCESS_TEAM_DOMAIN: initial.accessTeamDomain || initial.accessAuth?.teamDomain,
         CF_ACCESS_AUD: initial.accessAudience || initial.accessAuth?.audience,
         CF_ACCESS_CERTS_JSON: initial.accessAuth?.certsJson,
         DB: {
