@@ -42,21 +42,6 @@
                         @update-filter="updateFilter"
                         @toggle-collapse-all="toggleCollapseAll"
                     />
-
-                    <label
-                        class="name-column-width-control"
-                        :title="$t('Monitor name column width')"
-                    >
-                        <font-awesome-icon icon="columns" fixed-width />
-                        <input
-                            v-model.number="nameColumnWidth"
-                            class="form-range"
-                            type="range"
-                            :min="nameColumnWidthMin"
-                            :max="nameColumnWidthMax"
-                            :aria-label="$t('Monitor name column width')"
-                        />
-                    </label>
                 </div>
             </div>
 
@@ -248,8 +233,6 @@ export default {
             showGroupMovePanel: false,
             bulkMoveTargetParent: null,
             nameColumnWidth: getInitialNameColumnWidth(),
-            nameColumnWidthMin: MIN_NAME_COLUMN_WIDTH,
-            nameColumnWidthMax: MAX_NAME_COLUMN_WIDTH,
             listHeaderHeight: 58,
             listHeaderResizeObserver: null,
             filterState: {
@@ -431,12 +414,6 @@ export default {
                 this.showGroupMovePanel = false;
                 this.bulkMoveTargetParent = null;
             }
-        },
-        nameColumnWidth() {
-            window.localStorage.setItem(NAME_COLUMN_WIDTH_STORAGE_KEY, String(this.nameColumnWidth));
-            this.$nextTick(() => {
-                window.dispatchEvent(new Event("resize"));
-            });
         },
     },
     mounted() {
@@ -928,7 +905,7 @@ export default {
     justify-content: flex-start;
     align-items: center;
     gap: 8px;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     width: 100%;
 
     .form-check-input {
@@ -942,25 +919,10 @@ export default {
 .filters-group {
     display: flex;
     align-items: center;
+    flex: 1 1 auto;
+    flex-wrap: wrap;
     gap: 8px;
     min-width: 0;
-}
-
-.name-column-width-control {
-    display: flex;
-    flex: 1 1 130px;
-    align-items: center;
-    gap: 6px;
-    max-width: 170px;
-    min-width: 120px;
-    margin-left: auto;
-    color: $secondary-text;
-
-    .form-range {
-        min-width: 0;
-        margin: 0;
-        cursor: pointer;
-    }
 }
 
 .actions-wrapper {
@@ -1137,9 +1099,8 @@ export default {
 }
 
 @media (max-width: 549px) {
-    .name-column-width-control {
+    .search-wrapper {
         flex-basis: 100%;
-        max-width: 100%;
         margin-left: 0;
     }
 }
@@ -1155,9 +1116,9 @@ export default {
     display: flex;
     align-items: center;
     position: relative;
-    flex: 1 1 auto;
+    flex: 1 1 220px;
     min-width: 0;
-    max-width: 300px;
+    max-width: none;
     margin-left: auto;
     order: 1;
 
