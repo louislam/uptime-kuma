@@ -124,7 +124,7 @@
         "password-hash": "~1.2.2",
         "pg": "~8.11.6",
         "pg-connection-string": "~2.6.4",
-        "playwright-core": "~1.60.0",
+        "playwright-core": "~1.56.0",
         "prom-client": "~13.2.0",
         "prometheus-api-metrics": "~3.2.2",
         "promisify-child-process": "~4.1.2",
