@@ -1,0 +1,46 @@
+name: Mark as AI Slop
+
+on:
+  pull_request_target:
+    types:
+      - labeled
+
+permissions: {}
+
+jobs:
+  handle-ai-slop:
+    if: github.event.label.name == 'ai-slop'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Rename title and clear body
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const pr = context.payload.pull_request.number;
+            const repo = { owner: context.repo.owner, repo: context.repo.repo };
+
+            await github.rest.pulls.update({
+                ...repo,
+                pull_number: pr,
+                title: "[🚨⚠️AI Slop⚠️🚨] WARNING: THIS GUY CREATED AI SLOP, DO NOT TRUST!",
+                body: ""
+            });
+
+            const comments = [
+                "🚨 AI-generated code submitted without review puts the entire project at risk.",
+                "⚠️ Blindly pasting AI output without understanding it is not a contribution — it's a liability.",
+                "🤖 AI slop wastes maintainers' time reviewing code that was never understood by the submitter.",
+                "💀 Submitting unreviewed AI-generated code can introduce subtle bugs that are very hard to detect.",
+                "🔍 Real open-source contribution requires understanding every line you submit — no shortcuts.",
+                "🛑 AI slop undermines the trust and quality standards this project has worked hard to maintain.",
+                "📉 Code you don't understand cannot be properly tested, debugged, or maintained by you later.",
+                "🧠 A good developer uses AI as a tool to assist thinking, not as a replacement for it.",
+                "⛔ This pull request has been flagged as AI slop and its author may face a permanent ban.",
+                "🏆 Respect the community: read the AGENTS.md, understand the code, and test before submitting."
+            ];
+
+            for (const body of comments) {
+                await github.rest.issues.createComment({ ...repo, issue_number: pr, body });
+            }

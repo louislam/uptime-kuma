@@ -310,15 +310,15 @@ export default {
             // Show ping values if it was up in this period
             avgPingData.push({
                 x,
-                y: datapoint.up > 0 && datapoint.avgPing > 0 ? datapoint.avgPing : null,
+                y: datapoint.up > 0 && datapoint.avgPing != null ? datapoint.avgPing : null,
             });
             minPingData.push({
                 x,
-                y: datapoint.up > 0 && datapoint.avgPing > 0 ? datapoint.minPing : null,
+                y: datapoint.up > 0 && datapoint.avgPing != null ? datapoint.minPing : null,
             });
             maxPingData.push({
                 x,
-                y: datapoint.up > 0 && datapoint.avgPing > 0 ? datapoint.maxPing : null,
+                y: datapoint.up > 0 && datapoint.avgPing != null ? datapoint.maxPing : null,
             });
             downData.push({
                 x,

@@ -279,7 +279,7 @@ class DomainExpiry extends BeanModel {
         let bean = await DomainExpiry.findByDomainNameOrCreate(domainName);
         let expiryDate;
 
-        if (bean?.lastCheck && dayjs.utc(bean.lastCheck).diff(dayjs.utc(), "day") < 1) {
+        if (bean?.lastCheck && dayjs.utc().diff(dayjs.utc(bean.lastCheck), "day") < 1) {
             log.debug("domain_expiry", `Domain expiry already checked recently for ${bean.domain}, won't re-check.`);
             return bean.expiry;
         } else if (bean) {
