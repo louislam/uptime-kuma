@@ -78,11 +78,11 @@ jobs:
       - run: npm run lint:prod
 
   e2e-test:
-    runs-on: ubuntu-22.04-arm
+    runs-on: ubuntu-latest
     permissions:
       contents: read
     env:
-      PLAYWRIGHT_VERSION: ~1.59.1
+      PLAYWRIGHT_VERSION: ~1.60.0
     steps:
       - run: git config --global core.autocrlf false # Mainly for Windows
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
@@ -106,7 +106,7 @@ jobs:
         run: npm rebuild @louislam/sqlite3
 
       - name: Install Playwright ${{ env.PLAYWRIGHT_VERSION }}
-        run: npx playwright@${{ env.PLAYWRIGHT_VERSION }} install
+        run: npx playwright@${{ env.PLAYWRIGHT_VERSION }} install --with-deps
 
       - run: npm run build
       - run: npm run test-e2e
