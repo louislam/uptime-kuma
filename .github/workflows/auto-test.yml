@@ -21,7 +21,7 @@ jobs:
       matrix:
         os: [macos-latest, ubuntu-22.04, windows-latest, ubuntu-22.04-arm]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
-        node: [24, 25]
+        node: [26]
 
     steps:
       - run: git config --global core.autocrlf false # Mainly for Windows
@@ -96,7 +96,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
         with:
-          node-version: 24
+          node-version: 26
       - run: npm clean-install --no-fund
 
       - name: Rebuild native modules for ARM64
