@@ -632,6 +632,11 @@ async function testNotification(notificationInput) {
         return { ok: true, msg: NOTIFICATION_OK_MESSAGE };
     }
 
+    if (notification.type === "teams") {
+        await sendTeamsTestNotification(notification, `${notification.name} Testing`);
+        return { ok: true, msg: NOTIFICATION_OK_MESSAGE };
+    }
+
     throw httpError(400, `Notification type "${notification.type}" is not supported by the Worker test sender yet.`);
 }
 
@@ -679,6 +684,92 @@ async function sendPushoverTestNotification(notification, msg) {
     if (!response.ok) {
         throw httpError(502, `Pushover test notification failed with HTTP ${response.status}`);
     }
+}
+
+/**
+ * Send a Microsoft Teams test card through an Incoming Webhook URL.
+ * @param {object} notification Notification settings from the UI.
+ * @param {string} msg Message to include in the test card.
+ * @returns {Promise<void>}
+ */
+async function sendTeamsTestNotification(notification, msg) {
+    const webhookUrl = normalizeHttpsNotificationUrl(
+        requiredNotificationValue(notification.webhookUrl, "Teams webhook URL is required"),
+        "Teams webhook URL must be a valid HTTPS URL"
+    );
+    const response = await fetch(webhookUrl, {
+        method: "POST",
+        headers: {
+            "content-type": "application/json",
+        },
+        body: JSON.stringify(buildTeamsTestNotificationPayload(msg)),
+    });
+
+    if (!response.ok) {
+        throw httpError(502, `Teams test notification failed with HTTP ${response.status}`);
+    }
+}
+
+/**
+ * Build the adaptive-card payload accepted by Microsoft Teams incoming webhooks.
+ * @param {string} msg Message to include in the test card.
+ * @returns {object} Teams webhook payload.
+ */
+function buildTeamsTestNotificationPayload(msg) {
+    return {
+        type: "message",
+        summary: msg,
+        attachments: [
+            {
+                contentType: "application/vnd.microsoft.card.adaptive",
+                contentUrl: "",
+                content: {
+                    type: "AdaptiveCard",
+                    body: [
+                        {
+                            type: "TextBlock",
+                            size: "Medium",
+                            weight: "Bolder",
+                            text: "Uptime Worker test notification",
+                        },
+                        {
+                            type: "FactSet",
+                            facts: [
+                                {
+                                    title: "Description",
+                                    value: msg,
+                                },
+                            ],
+                        },
+                    ],
+                    $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+                    version: "1.5",
+                },
+            },
+        ],
+    };
+}
+
+/**
+ * Normalize and validate notification webhook URLs that must use HTTPS.
+ * @param {string} value Raw URL from the notification form.
+ * @param {string} message Error message for invalid values.
+ * @returns {string} Normalized HTTPS URL.
+ * @throws {Error} When the value is not a valid HTTPS URL.
+ */
+function normalizeHttpsNotificationUrl(value, message) {
+    let url;
+    try {
+        url = new URL(value);
+    } catch {
+        throw httpError(400, message);
+    }
+
+    if (url.protocol !== "https:") {
+        throw httpError(400, message);
+    }
+
+    return url.toString();
 }
 
 function requiredNotificationValue(value, message) {

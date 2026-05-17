@@ -966,6 +966,68 @@ describe("Cloudflare Worker API", () => {
         }
     });
 
+    test("sends Microsoft Teams test notifications from the Worker API", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({});
+        const originalFetch = globalThis.fetch;
+        const sentRequests = [];
+        globalThis.fetch = async (url, init = {}) => {
+            sentRequests.push({ url, init });
+            return Response.json({ ok: true });
+        };
+
+        try {
+            const response = await handleApiRequest(
+                adminRequest("https://example.com/api/notifications/test", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        type: "teams",
+                        name: "Teams Alerts",
+                        webhookUrl: "https://example.webhook.office.com/services/example",
+                    }),
+                }),
+                env
+            );
+            const body = await response.json();
+
+            assert.strictEqual(response.status, 200);
+            assert.deepStrictEqual(body, { ok: true, msg: "Sent Successfully." });
+            assert.strictEqual(sentRequests.length, 1);
+            assert.strictEqual(sentRequests[0].url, "https://example.webhook.office.com/services/example");
+            assert.strictEqual(sentRequests[0].init.method, "POST");
+            assert.strictEqual(sentRequests[0].init.headers["content-type"], "application/json");
+
+            const payload = JSON.parse(sentRequests[0].init.body);
+            assert.strictEqual(payload.type, "message");
+            assert.strictEqual(payload.summary, "Teams Alerts Testing");
+            assert.strictEqual(payload.attachments[0].contentType, "application/vnd.microsoft.card.adaptive");
+            assert.strictEqual(payload.attachments[0].content.body[1].facts[0].value, "Teams Alerts Testing");
+        } finally {
+            globalThis.fetch = originalFetch;
+        }
+    });
+
+    test("rejects Microsoft Teams test notifications without an HTTPS webhook URL", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({});
+
+        const response = await handleApiRequest(
+            adminRequest("https://example.com/api/notifications/test", {
+                method: "POST",
+                body: JSON.stringify({
+                    type: "teams",
+                    name: "Teams Alerts",
+                    webhookUrl: "http://example.com/webhook",
+                }),
+            }),
+            env
+        );
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 400);
+        assert.deepStrictEqual(body, { error: "Teams webhook URL must be a valid HTTPS URL" });
+    });
+
     test("creates, reads, updates, toggles, and deletes a supported monitor", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({});
