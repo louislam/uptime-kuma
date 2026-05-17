@@ -115,10 +115,13 @@ describe("Cloudflare Worker API", () => {
         assert.ok(audiences.includes("31798319d7ee654c37ed0a90f07e7c26d87cdbe50014aaa1718b13d195101734"));
     });
 
-    test("runner container image includes Twingate lifecycle helper", async () => {
+    test("runner container image installs runtime dependencies and includes Twingate lifecycle helper", async () => {
         const dockerfilePath = path.join(__dirname, "../../../cloudflare/runner/Dockerfile");
         const dockerfile = fs.readFileSync(dockerfilePath, "utf8");
 
+        assert.match(dockerfile, /http-proxy-agent@7\.0\.2/);
+        assert.match(dockerfile, /https-proxy-agent@7\.0\.6/);
+        assert.match(dockerfile, /socks-proxy-agent@8\.0\.5/);
         assert.match(dockerfile, /COPY checker\.js server\.js twingate-lifecycle\.js twingate-service-key\.js \.\//);
     });
 

@@ -8,6 +8,11 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+RUN npm install --omit=dev --no-audit --no-fund \
+    http-proxy-agent@7.0.2 \
+    https-proxy-agent@7.0.6 \
+    socks-proxy-agent@8.0.5
+
 COPY checker.js server.js twingate-lifecycle.js twingate-service-key.js ./
 
 ENV PORT=8788
