@@ -1030,8 +1030,29 @@ export default {
 .selection-row {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 8px;
     width: 100%;
+
+    > .btn,
+    .actions-wrapper,
+    .dropdown-toggle {
+        flex: 0 0 auto;
+    }
+
+    > .btn,
+    .dropdown-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 34px;
+        line-height: 1.2;
+        white-space: nowrap;
+    }
+
+    svg {
+        flex: 0 0 auto;
+    }
 }
 
 .group-move-row {
@@ -1053,6 +1074,8 @@ export default {
 }
 
 .selected-count {
+    flex: 0 0 auto;
+    margin-left: auto;
     white-space: nowrap;
     font-size: 0.9em;
     color: $primary;
@@ -1098,9 +1121,12 @@ export default {
         width: 100%;
     }
 
-    .selection-row,
     .group-move-row {
         flex-wrap: wrap;
+    }
+
+    .selected-count {
+        margin-left: 0;
     }
 
     .group-move-label,

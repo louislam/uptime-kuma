@@ -2863,7 +2863,10 @@ function normalizeWorkerStatusPageConfig(config) {
     normalized.description = String(normalized.description || "");
     normalized.icon = String(normalized.icon || defaults.icon);
     normalized.theme = ["auto", "light", "dark"].includes(normalized.theme) ? normalized.theme : defaults.theme;
-    normalized.autoRefreshInterval = Math.max(5, Number(normalized.autoRefreshInterval || defaults.autoRefreshInterval));
+    const refreshInterval = Number(normalized.autoRefreshInterval);
+    normalized.autoRefreshInterval = Number.isFinite(refreshInterval)
+        ? Math.max(5, refreshInterval)
+        : defaults.autoRefreshInterval;
     normalized.showTags = Boolean(normalized.showTags);
     normalized.domainNameList = Array.isArray(normalized.domainNameList) ? normalized.domainNameList : [];
     normalized.customCSS = String(normalized.customCSS || "");
@@ -3000,12 +3003,18 @@ async function getStatusPageMonitorHeartbeats(env, monitor) {
 function getActiveWorkerLeafMonitors(groupMonitor, monitorsById) {
     const result = [];
 
-    for (const childId of groupMonitor.childrenIDs || []) {
-        const child = monitorsById.get(Number(childId));
+    for (const child of monitorsById.values()) {
+        if (Number(child.parent) !== Number(groupMonitor.id)) {
+            continue;
+        }
+
         if (!child || child.active === false || child.active === 0) {
             continue;
         }
-        if (child.type !== "group") {
+
+        if (child.type === "group") {
+            result.push(...getActiveWorkerLeafMonitors(child, monitorsById));
+        } else {
             result.push(child);
         }
     }
