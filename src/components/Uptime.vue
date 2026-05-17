@@ -34,9 +34,11 @@ export default {
             }
 
             if (this.isGroupMonitor) {
-                const groupUptime = calculateGroupUptime(this.groupChildMonitors, this.$root.uptimeList, this.type);
+                const groupUptime = this.groupChildMonitors.length > 0
+                    ? calculateGroupUptime(this.groupChildMonitors, this.$root.uptimeList, this.type)
+                    : this.$root.uptimeList[`${this.monitor.id}_${this.type}`];
 
-                if (groupUptime !== null) {
+                if (groupUptime !== null && groupUptime !== undefined) {
                     let result = Math.round(groupUptime * 10000) / 100;
 
                     if (this.$route.path.startsWith("/status") && result > 100) {
@@ -87,7 +89,7 @@ export default {
         },
 
         lastHeartBeat() {
-            if (this.isGroupMonitor) {
+            if (this.isGroupMonitor && this.groupChildMonitors.length > 0) {
                 return {
                     status: calculateGroupStatus(this.groupChildMonitors, this.$root.heartbeatList),
                 };

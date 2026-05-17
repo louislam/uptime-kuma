@@ -12,6 +12,10 @@ let router = express.Router();
 
 let cache = apicache.middleware;
 const server = UptimeKumaServer.getInstance();
+const DOWN = 0;
+const UP = 1;
+const PENDING = 2;
+const MAINTENANCE = 3;
 
 router.get("/status/:slug", cache("5 minutes"), async (request, response) => {
     let slug = request.params.slug;
@@ -81,20 +85,31 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
         `,
             [statusPageID]
         );
+        const monitorRows = await R.getAll("SELECT id, parent, type, active FROM monitor");
 
         for (let monitorID of monitorIDList) {
-            let list = await R.getAll(
-                `
-                    SELECT * FROM heartbeat
-                    WHERE monitor_id = ?
-                    ORDER BY time DESC
-                    LIMIT 100
-            `,
-                [monitorID]
-            );
+            monitorID = Number(monitorID);
+            const monitor = monitorRows.find((row) => Number(row.id) === monitorID);
 
-            list = R.convertToBeans("heartbeat", list);
-            heartbeatList[monitorID] = list.reverse().map((row) => row.toPublicJSON());
+            if (monitor?.type === "group") {
+                const childMonitorIDs = getActiveLeafMonitorIDs(monitorID, monitorRows);
+                const childHeartbeatLists = [];
+                let totalUptime = 0;
+
+                for (const childMonitorID of childMonitorIDs) {
+                    const childList = await getPublicHeartbeatList(childMonitorID);
+                    childHeartbeatLists.push(childList);
+
+                    const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(childMonitorID);
+                    totalUptime += uptimeCalculator.get24Hour().uptime;
+                }
+
+                heartbeatList[monitorID] = buildGroupHeartbeatList(monitorID, childHeartbeatLists);
+                uptimeList[`${monitorID}_24`] = childMonitorIDs.length > 0 ? totalUptime / childMonitorIDs.length : 0;
+                continue;
+            }
+
+            heartbeatList[monitorID] = await getPublicHeartbeatList(monitorID);
 
             const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);
             uptimeList[`${monitorID}_24`] = uptimeCalculator.get24Hour().uptime;
@@ -260,5 +275,104 @@ router.get("/api/status-page/:slug/badge", cache("5 minutes"), async (request, r
         sendHttpError(response, error.message);
     }
 });
+
+async function getPublicHeartbeatList(monitorID) {
+    let list = await R.getAll(
+        `
+            SELECT * FROM heartbeat
+            WHERE monitor_id = ?
+            ORDER BY time DESC
+            LIMIT 100
+    `,
+        [monitorID]
+    );
+
+    list = R.convertToBeans("heartbeat", list);
+    return list.reverse().map((row) => row.toPublicJSON());
+}
+
+function getActiveLeafMonitorIDs(groupID, monitorRows) {
+    const result = [];
+    const children = monitorRows.filter((monitor) => Number(monitor.parent) === Number(groupID));
+
+    for (const child of children) {
+        if (child.active === 0 || child.active === false) {
+            continue;
+        }
+
+        if (child.type === "group") {
+            result.push(...getActiveLeafMonitorIDs(child.id, monitorRows));
+        } else {
+            result.push(child.id);
+        }
+    }
+
+    return result;
+}
+
+function buildGroupHeartbeatList(groupID, childHeartbeatLists) {
+    const maxLength = Math.max(0, ...childHeartbeatLists.map((list) => list.length));
+    const result = [];
+
+    for (let index = 0; index < maxLength; index++) {
+        const offsetFromEnd = maxLength - index;
+        const beats = childHeartbeatLists.map((list) => list[list.length - offsetFromEnd] || null);
+        const usableBeats = beats.filter((beat) => beat && beat.status !== undefined && beat.status !== null);
+
+        if (usableBeats.length === 0) {
+            continue;
+        }
+
+        const latestBeat = usableBeats.reduce((latest, beat) => {
+            if (!latest || new Date(beat.time) > new Date(latest.time)) {
+                return beat;
+            }
+            return latest;
+        }, null);
+
+        result.push({
+            monitorID: groupID,
+            status: calculateAggregateStatus(beats),
+            ping: null,
+            msg: "Group status",
+            time: latestBeat?.time,
+        });
+    }
+
+    return result;
+}
+
+function calculateAggregateStatus(beats) {
+    let hasHeartbeat = false;
+    let hasPending = false;
+
+    for (const beat of beats) {
+        if (!beat || beat.status === undefined || beat.status === null) {
+            hasPending = true;
+            continue;
+        }
+
+        hasHeartbeat = true;
+        const status = Number(beat.status);
+
+        if (status === MAINTENANCE) {
+            return MAINTENANCE;
+        }
+
+        if (status === DOWN) {
+            return DOWN;
+        }
+
+        if (status === PENDING) {
+            hasPending = true;
+        }
+    }
+
+    if (!hasHeartbeat) {
+        return PENDING;
+    }
+
+    return hasPending ? PENDING : UP;
+}
 
 module.exports = router;

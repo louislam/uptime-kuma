@@ -15,7 +15,6 @@ const DIRECT_PROFILE = {
 
 const DEFAULT_SETTINGS = {
     checkUpdate: true,
-    checkBeta: false,
     searchEngineIndex: false,
     entryPage: "dashboard",
     nscd: true,
@@ -30,8 +29,13 @@ const DEFAULT_SETTINGS = {
     chromeExecutable: "",
 };
 const DOWN = 0;
+const UP = 1;
+const PENDING = 2;
+const MAINTENANCE = 3;
 const WORKER_AUTH_USER_SETTING = "workerAuthUser";
 const WORKER_AUTH_SESSION_SECRET_SETTING = "workerAuthSessionSecret";
+const WORKER_STATUS_PAGE_CONFIG_SETTING = "statusPageConfig:default";
+const WORKER_STATUS_PAGE_PUBLIC_GROUP_LIST_SETTING = "statusPagePublicGroupList:default";
 const SENSITIVE_SETTING_KEYS = new Set([
     WORKER_AUTH_USER_SETTING,
     WORKER_AUTH_SESSION_SECRET_SETTING,
@@ -133,6 +137,7 @@ const ADMIN_ROUTE_NAMES = new Set([
     "check-now",
     "twingate-status",
     "auth-local-user",
+    "save-status-page",
 ]);
 const PRIVATE_WORKER_HOST_ERROR =
     "Direct Worker checks cannot target private, loopback, link-local, or metadata hosts";
@@ -172,11 +177,15 @@ export async function handleApiRequest(request, env) {
         }
 
         if (route.name === "status-pages") {
-            return json({ statusPages: await listStatusPages() });
+            return json({ statusPages: await listStatusPages(env) });
         }
 
         if (route.name === "status-page") {
             return json(await getStatusPageData(env, route.params.slug));
+        }
+
+        if (route.name === "save-status-page") {
+            return json(await saveStatusPageData(env, route.params.slug, await request.json()));
         }
 
         if (route.name === "status-page-heartbeat") {
@@ -915,26 +924,21 @@ async function listMonitorRowsWithLegacyColumns(env) {
     return monitorResult.results || [];
 }
 
-export async function listStatusPages() {
+export async function listStatusPages(env) {
+    const config = await getWorkerStatusPageConfig(env);
     return {
-        1: workerStatusPageConfig(),
+        1: config,
     };
 }
 
 export async function getStatusPageData(env, slug) {
     assertDefaultStatusPageSlug(slug);
     const monitors = await listMonitors(env);
+    const config = await getWorkerStatusPageConfig(env);
     return {
-        config: workerStatusPageConfig(),
+        config,
         incidents: [],
-        publicGroupList: [
-            {
-                id: 1,
-                name: "Services",
-                weight: 1,
-                monitorList: monitors.map(toPublicStatusPageMonitor),
-            },
-        ],
+        publicGroupList: await getWorkerPublicGroupList(env, monitors),
         maintenanceList: [],
     };
 }
@@ -942,13 +946,27 @@ export async function getStatusPageData(env, slug) {
 export async function getStatusPageHeartbeatData(env, slug) {
     assertDefaultStatusPageSlug(slug);
     const monitors = await listMonitors(env);
+    const monitorsById = new Map(monitors.map((monitor) => [Number(monitor.id), monitor]));
+    const publicGroupList = await getWorkerPublicGroupList(env, monitors);
+    const selectedMonitors = publicGroupList.flatMap((group) => group.monitorList || []);
     const heartbeatList = {};
     const uptimeList = {};
 
     await Promise.all(
-        monitors.map(async (monitor) => {
-            const result = await listMonitorHeartbeats(env, monitor.id, 0, 100);
-            const heartbeats = result.heartbeats.slice().reverse();
+        selectedMonitors.map(async (publicMonitor) => {
+            const monitor = monitorsById.get(Number(publicMonitor.id));
+            if (!monitor) {
+                return;
+            }
+
+            if (monitor.type === "group") {
+                const aggregate = await buildWorkerGroupStatusPageHeartbeatData(env, monitor, monitorsById);
+                heartbeatList[monitor.id] = aggregate.heartbeats;
+                uptimeList[`${monitor.id}_24`] = aggregate.uptime;
+                return;
+            }
+
+            const heartbeats = await getStatusPageMonitorHeartbeats(env, monitor);
             heartbeatList[monitor.id] = heartbeats;
             uptimeList[`${monitor.id}_24`] = calculateStatusPageUptime(heartbeats);
         })
@@ -957,6 +975,30 @@ export async function getStatusPageHeartbeatData(env, slug) {
     return {
         heartbeatList,
         uptimeList,
+    };
+}
+
+export async function saveStatusPageData(env, slug, input) {
+    assertDefaultStatusPageSlug(slug);
+    const configInput = {
+        ...(input?.config || {}),
+    };
+    if (typeof input?.imgDataUrl === "string" && input.imgDataUrl.trim()) {
+        configInput.icon = input.imgDataUrl;
+    }
+
+    const config = normalizeWorkerStatusPageConfig(configInput);
+    const publicGroupList = normalizeWorkerPublicGroupList(input?.publicGroupList);
+    await setStoredSetting(env, WORKER_STATUS_PAGE_CONFIG_SETTING, config);
+    await setStoredSetting(env, WORKER_STATUS_PAGE_PUBLIC_GROUP_LIST_SETTING, publicGroupList);
+
+    const monitors = await listMonitors(env);
+    return {
+        ok: true,
+        msg: "Saved.",
+        msgi18n: true,
+        config,
+        publicGroupList: hydrateWorkerPublicGroupList(publicGroupList, monitors),
     };
 }
 
@@ -2803,21 +2845,119 @@ function workerStatusPageConfig() {
     };
 }
 
+async function getWorkerStatusPageConfig(env) {
+    const stored = await getStoredSetting(env, WORKER_STATUS_PAGE_CONFIG_SETTING);
+    return normalizeWorkerStatusPageConfig(stored);
+}
+
+function normalizeWorkerStatusPageConfig(config) {
+    const defaults = workerStatusPageConfig();
+    const normalized = {
+        ...defaults,
+        ...(config && typeof config === "object" ? config : {}),
+        id: 1,
+        slug: "default",
+    };
+
+    normalized.title = String(normalized.title || defaults.title);
+    normalized.description = String(normalized.description || "");
+    normalized.icon = String(normalized.icon || defaults.icon);
+    normalized.theme = ["auto", "light", "dark"].includes(normalized.theme) ? normalized.theme : defaults.theme;
+    normalized.autoRefreshInterval = Math.max(5, Number(normalized.autoRefreshInterval || defaults.autoRefreshInterval));
+    normalized.showTags = Boolean(normalized.showTags);
+    normalized.domainNameList = Array.isArray(normalized.domainNameList) ? normalized.domainNameList : [];
+    normalized.customCSS = String(normalized.customCSS || "");
+    normalized.footerText = String(normalized.footerText || "");
+    normalized.showPoweredBy = normalized.showPoweredBy !== false;
+    normalized.analyticsId = normalized.analyticsId ?? null;
+    normalized.analyticsScriptUrl = normalized.analyticsScriptUrl ?? null;
+    normalized.analyticsType = ["google", "umami", "plausible", "matomo"].includes(normalized.analyticsType)
+        ? normalized.analyticsType
+        : null;
+    normalized.showCertificateExpiry = Boolean(normalized.showCertificateExpiry);
+    normalized.showOnlyLastHeartbeat = Boolean(normalized.showOnlyLastHeartbeat);
+    normalized.rssTitle = String(normalized.rssTitle || "");
+
+    return normalized;
+}
+
+async function getWorkerPublicGroupList(env, monitors) {
+    const stored = await getStoredSetting(env, WORKER_STATUS_PAGE_PUBLIC_GROUP_LIST_SETTING);
+    if (!Array.isArray(stored)) {
+        return [
+            {
+                id: 1,
+                name: "Services",
+                weight: 1,
+                monitorList: monitors.map((monitor) => toPublicStatusPageMonitor(monitor)),
+            },
+        ];
+    }
+    return hydrateWorkerPublicGroupList(stored, monitors);
+}
+
+function normalizeWorkerPublicGroupList(publicGroupList) {
+    if (!Array.isArray(publicGroupList)) {
+        return [];
+    }
+
+    return publicGroupList.map((group, index) => ({
+        id: normalizePositiveInteger(group?.id) ?? index + 1,
+        name: String(group?.name || (index === 0 ? "Services" : "Untitled Group")),
+        weight: index + 1,
+        monitorList: Array.isArray(group?.monitorList)
+            ? group.monitorList
+                .map((monitor) => ({
+                    id: normalizePositiveInteger(monitor?.id),
+                    sendUrl: monitor?.sendUrl === undefined ? undefined : Boolean(monitor.sendUrl),
+                    url: typeof monitor?.url === "string" ? monitor.url : undefined,
+                }))
+                .filter((monitor) => monitor.id !== null)
+            : [],
+    }));
+}
+
+function normalizePositiveInteger(value) {
+    const numeric = Number(value);
+    if (!Number.isInteger(numeric) || numeric <= 0) {
+        return null;
+    }
+    return numeric;
+}
+
+function hydrateWorkerPublicGroupList(publicGroupList, monitors) {
+    const monitorsById = new Map(monitors.map((monitor) => [Number(monitor.id), monitor]));
+
+    return normalizeWorkerPublicGroupList(publicGroupList).map((group, index) => ({
+        id: group.id,
+        name: group.name,
+        weight: index + 1,
+        monitorList: group.monitorList
+            .map((publicMonitor) => {
+                const monitor = monitorsById.get(Number(publicMonitor.id));
+                return monitor ? toPublicStatusPageMonitor(monitor, publicMonitor) : null;
+            })
+            .filter(Boolean),
+    }));
+}
+
 function assertDefaultStatusPageSlug(slug) {
     if (!["default", "status-page", ""].includes(slug || "default")) {
         throw httpError(404, "Status Page Not Found");
     }
 }
 
-function toPublicStatusPageMonitor(monitor) {
+function toPublicStatusPageMonitor(monitor, options = {}) {
+    const sendUrl = options.sendUrl === undefined ? Boolean(monitor.url) : Boolean(options.sendUrl);
+    const url = options.url === undefined ? monitor.url : options.url;
     return {
         id: monitor.id,
         name: monitor.name,
         type: monitor.type,
-        url: monitor.url,
+        url,
         active: monitor.active,
         tags: [],
-        sendUrl: Boolean(monitor.url),
+        sendUrl,
     };
 }
 
@@ -2827,6 +2967,115 @@ function calculateStatusPageUptime(heartbeats) {
     }
     const up = heartbeats.filter((heartbeat) => heartbeat.status === 1).length;
     return up / heartbeats.length;
+}
+
+async function buildWorkerGroupStatusPageHeartbeatData(env, groupMonitor, monitorsById) {
+    const childMonitors = getActiveWorkerLeafMonitors(groupMonitor, monitorsById);
+    if (childMonitors.length === 0) {
+        return {
+            heartbeats: [],
+            uptime: 0,
+        };
+    }
+
+    const childHeartbeatLists = await Promise.all(
+        childMonitors.map((monitor) => getStatusPageMonitorHeartbeats(env, monitor))
+    );
+
+    const totalUptime = childHeartbeatLists.reduce((total, heartbeats) => (
+        total + calculateStatusPageUptime(heartbeats)
+    ), 0);
+
+    return {
+        heartbeats: buildWorkerGroupHeartbeatList(groupMonitor.id, childHeartbeatLists),
+        uptime: totalUptime / childHeartbeatLists.length,
+    };
+}
+
+async function getStatusPageMonitorHeartbeats(env, monitor) {
+    const result = await listMonitorHeartbeats(env, monitor.id, 0, 100);
+    return result.heartbeats.slice().reverse();
+}
+
+function getActiveWorkerLeafMonitors(groupMonitor, monitorsById) {
+    const result = [];
+
+    for (const childId of groupMonitor.childrenIDs || []) {
+        const child = monitorsById.get(Number(childId));
+        if (!child || child.active === false || child.active === 0) {
+            continue;
+        }
+        if (child.type !== "group") {
+            result.push(child);
+        }
+    }
+
+    return result;
+}
+
+function buildWorkerGroupHeartbeatList(groupMonitorId, childHeartbeatLists) {
+    const maxLength = Math.max(0, ...childHeartbeatLists.map((list) => list.length));
+    const result = [];
+
+    for (let index = 0; index < maxLength; index++) {
+        const offsetFromEnd = maxLength - index;
+        const beats = childHeartbeatLists.map((list) => list[list.length - offsetFromEnd] || null);
+        const usableBeats = beats.filter((beat) => beat && beat.status !== undefined && beat.status !== null);
+
+        if (usableBeats.length === 0) {
+            continue;
+        }
+
+        const latestBeat = usableBeats.reduce((latest, beat) => {
+            if (!latest || new Date(beat.time) > new Date(latest.time)) {
+                return beat;
+            }
+            return latest;
+        }, null);
+
+        result.push({
+            monitorID: Number(groupMonitorId),
+            status: calculateWorkerAggregateStatus(beats),
+            ping: null,
+            msg: "Group status",
+            time: latestBeat?.time,
+        });
+    }
+
+    return result;
+}
+
+function calculateWorkerAggregateStatus(beats) {
+    let hasHeartbeat = false;
+    let hasPending = false;
+
+    for (const beat of beats) {
+        if (!beat || beat.status === undefined || beat.status === null) {
+            hasPending = true;
+            continue;
+        }
+
+        hasHeartbeat = true;
+        const status = Number(beat.status);
+
+        if (status === MAINTENANCE) {
+            return MAINTENANCE;
+        }
+
+        if (status === DOWN) {
+            return DOWN;
+        }
+
+        if (status === PENDING) {
+            hasPending = true;
+        }
+    }
+
+    if (!hasHeartbeat) {
+        return PENDING;
+    }
+
+    return hasPending ? PENDING : UP;
 }
 
 function monitorValues(monitor, includeActive, includeParent = true) {
@@ -3114,6 +3363,9 @@ function matchRoute(method, pathname) {
     }
 
     const statusPageMatch = pathname.match(/^\/api\/status-page\/([^/]+)$/);
+    if (method === "PUT" && statusPageMatch) {
+        return { name: "save-status-page", params: { slug: statusPageMatch[1] } };
+    }
     if (method === "GET" && statusPageMatch) {
         return { name: "status-page", params: { slug: statusPageMatch[1] } };
     }

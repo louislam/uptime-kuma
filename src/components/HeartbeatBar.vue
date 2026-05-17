@@ -61,6 +61,11 @@ export default {
             type: Number,
             required: true,
         },
+        /** Monitor object, used when public pages do not have the full monitor list loaded */
+        monitor: {
+            type: Object,
+            default: null,
+        },
         /** Array of the monitors heartbeats */
         heartbeatList: {
             type: Array,
@@ -105,7 +110,7 @@ export default {
          * @returns {object} Heartbeat list
          */
         beatList() {
-            if (this.isGroupMonitor) {
+            if (this.isGroupMonitor && this.groupChildMonitors.length > 0) {
                 return buildGroupHeartbeatList(this.groupChildMonitors, this.$root.heartbeatList);
             }
 
@@ -116,8 +121,12 @@ export default {
             }
         },
 
+        currentMonitor() {
+            return this.monitor || this.$root.monitorList?.[this.monitorId] || null;
+        },
+
         isGroupMonitor() {
-            return this.$root.monitorList?.[this.monitorId]?.type === "group";
+            return this.currentMonitor?.type === "group";
         },
 
         groupChildMonitors() {
@@ -125,7 +134,7 @@ export default {
                 return [];
             }
 
-            return getGroupChildMonitors(this.$root.monitorList[this.monitorId], this.$root.monitorList);
+            return getGroupChildMonitors(this.currentMonitor, this.$root.monitorList);
         },
 
         /**
@@ -266,8 +275,8 @@ export default {
             const seconds = dayjs().diff(dayjs.utc(lastValidBeat?.time), "seconds");
 
             let tolerance = 60 * 2; // default for when monitorList not available
-            if (this.$root.monitorList[this.monitorId] != null) {
-                tolerance = this.$root.monitorList[this.monitorId].interval * 2;
+            if (this.currentMonitor?.interval) {
+                tolerance = Number(this.currentMonitor.interval) * 2;
             }
 
             if (seconds < tolerance) {

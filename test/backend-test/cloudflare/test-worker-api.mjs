@@ -422,6 +422,127 @@ describe("Cloudflare Worker API", () => {
         assert.strictEqual(body.uptimeList["7_24"], 0.5);
     });
 
+    test("requires admin auth to save Worker status page setup", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({});
+
+        const response = await handleApiRequest(
+            new Request("https://example.com/api/status-page/default", {
+                method: "PUT",
+                body: JSON.stringify({ publicGroupList: [] }),
+            }),
+            env
+        );
+
+        assert.strictEqual(response.status, 401);
+        assert.deepStrictEqual(await response.json(), { error: "Unauthorized" });
+    });
+
+    test("saves Worker status page setup with group and individual monitor selections", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                { id: 1, name: "Sites", type: "group", active: 1, parent: null },
+                { id: 2, name: "Private Site", type: "http", url: "https://private.example.test", active: 1, parent: 1 },
+                { id: 3, name: "Hidden Site", type: "http", url: "https://hidden.example.test", active: 1, parent: 1 },
+                { id: 4, name: "Public API", type: "http", url: "https://api.example.test", active: 1, parent: null },
+            ],
+        });
+
+        const saveResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/status-page/default", {
+                method: "PUT",
+                body: JSON.stringify({
+                    config: {
+                        title: "Selected Services",
+                        showPoweredBy: false,
+                    },
+                    publicGroupList: [
+                        {
+                            id: 10,
+                            name: "Customer Services",
+                            monitorList: [
+                                { id: 1 },
+                                { id: 4, sendUrl: true, url: "https://status-api.example.test" },
+                            ],
+                        },
+                    ],
+                }),
+            }),
+            env
+        );
+        const saveBody = await saveResponse.json();
+
+        assert.strictEqual(saveResponse.status, 200);
+        assert.strictEqual(saveBody.ok, true);
+        assert.strictEqual(env.state.settings["statusPageConfig:default"].title, "Selected Services");
+        assert.strictEqual(env.state.settings["statusPagePublicGroupList:default"][0].monitorList.length, 2);
+
+        const publicResponse = await handleApiRequest(new Request("https://example.com/api/status-page/default"), env);
+        const publicBody = await publicResponse.json();
+
+        assert.strictEqual(publicResponse.status, 200);
+        assert.strictEqual(publicBody.config.title, "Selected Services");
+        assert.strictEqual(publicBody.config.showPoweredBy, false);
+        assert.strictEqual(publicBody.publicGroupList.length, 1);
+        assert.strictEqual(publicBody.publicGroupList[0].name, "Customer Services");
+        assert.deepStrictEqual(
+            publicBody.publicGroupList[0].monitorList.map((monitor) => monitor.id),
+            [1, 4]
+        );
+        assert.strictEqual(publicBody.publicGroupList[0].monitorList[0].type, "group");
+        assert.strictEqual(publicBody.publicGroupList[0].monitorList[1].url, "https://status-api.example.test");
+        assert.strictEqual(publicBody.publicGroupList[0].monitorList[1].sendUrl, true);
+    });
+
+    test("serves aggregate Worker heartbeat data for selected status page groups", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                { id: 1, name: "Sites", type: "group", active: 1, parent: null },
+                { id: 2, name: "Private Site", type: "http", url: "https://private.example.test", active: 1, parent: 1 },
+                { id: 3, name: "Hidden Site", type: "http", url: "https://hidden.example.test", active: 1, parent: 1 },
+                { id: 4, name: "Public API", type: "http", url: "https://api.example.test", active: 1, parent: null },
+            ],
+            settings: {
+                "statusPagePublicGroupList:default": [
+                    {
+                        id: 10,
+                        name: "Customer Services",
+                        monitorList: [
+                            { id: 1 },
+                            { id: 4 },
+                        ],
+                    },
+                ],
+            },
+            heartbeats: [
+                { monitor_id: 2, status: 1, ping: 10, msg: "OK", checked_at: "2026-05-11 02:30:00" },
+                { monitor_id: 2, status: 1, ping: 11, msg: "OK", checked_at: "2026-05-11 02:31:00" },
+                { monitor_id: 3, status: 1, ping: 20, msg: "OK", checked_at: "2026-05-11 02:30:00" },
+                { monitor_id: 3, status: 0, ping: null, msg: "Down", checked_at: "2026-05-11 02:31:00" },
+                { monitor_id: 4, status: 1, ping: 30, msg: "OK", checked_at: "2026-05-11 02:31:00" },
+            ],
+        });
+
+        const response = await handleApiRequest(
+            new Request("https://example.com/api/status-page/heartbeat/default"),
+            env
+        );
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.deepStrictEqual(Object.keys(body.heartbeatList).toSorted(), ["1", "4"]);
+        assert.deepStrictEqual(
+            body.heartbeatList[1].map((heartbeat) => heartbeat.status),
+            [1, 0]
+        );
+        assert.strictEqual(body.uptimeList["1_24"], 0.75);
+        assert.strictEqual(body.uptimeList["4_24"], 1);
+        assert.strictEqual(body.heartbeatList[2], undefined);
+        assert.strictEqual(body.heartbeatList[3], undefined);
+    });
+
     test("lists monitors with their latest heartbeat for the deployed web UI", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({
@@ -598,7 +719,6 @@ describe("Cloudflare Worker API", () => {
         assert.strictEqual(getResponse.status, 200);
         assert.strictEqual(getBody.data.entryPage, "dashboard");
         assert.strictEqual(getBody.data.checkUpdate, true);
-        assert.strictEqual(getBody.data.checkBeta, false);
         assert.strictEqual(getBody.data.keepDataPeriodDays, 180);
 
         const putResponse = await handleApiRequest(
@@ -607,7 +727,6 @@ describe("Cloudflare Worker API", () => {
                 body: JSON.stringify({
                     primaryBaseURL: "https://uptime.example.com",
                     checkUpdate: false,
-                    checkBeta: true,
                     searchEngineIndex: true,
                 }),
             }),
@@ -618,7 +737,6 @@ describe("Cloudflare Worker API", () => {
         assert.deepStrictEqual(await putResponse.json(), { ok: true, msg: "Settings saved" });
         assert.strictEqual(env.state.settings.primaryBaseURL, "https://uptime.example.com");
         assert.strictEqual(env.state.settings.checkUpdate, false);
-        assert.strictEqual(env.state.settings.checkBeta, true);
         assert.strictEqual(env.state.settings.searchEngineIndex, true);
     });
 

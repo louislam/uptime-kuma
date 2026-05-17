@@ -452,25 +452,31 @@
                 </div>
 
                 <div class="mt-3">
-                    <div v-if="sortedMonitorList.length > 0 && loadedData">
-                        <label>{{ $t("Add a monitor") }}:</label>
+                    <div v-if="statusPageItemGroups.length > 0 && loadedData">
+                        <label>{{ $t("Add a group or monitor") }}:</label>
                         <VueMultiselect
                             v-model="selectedMonitor"
-                            :options="sortedMonitorList"
+                            :options="statusPageItemGroups"
                             :multiple="false"
                             :searchable="true"
-                            :placeholder="$t('Add a monitor')"
-                            label="name"
-                            trackBy="name"
+                            :placeholder="$t('Add a group or monitor')"
+                            label="pathName"
+                            trackBy="id"
+                            group-values="options"
+                            group-label="label"
+                            :group-select="false"
                             class="mt-3"
                             data-testid="monitor-select"
                         >
                             <template #option="{ option }">
-                                <div class="d-inline-flex">
-                                    <span>
-                                        {{ option.pathName }}
-                                        <Tag v-for="tag in option.tags" :key="tag" :item="tag" :size="'sm'" />
+                                <div class="status-page-picker-option">
+                                    <span class="badge bg-secondary">
+                                        {{ option.type === "group" ? $t("Monitor Group") : $t("Monitor") }}
                                     </span>
+                                    <span class="status-page-picker-name">
+                                        {{ option.pathName || option.name }}
+                                    </span>
+                                    <Tag v-for="tag in option.tags" :key="tag" :item="tag" :size="'sm'" />
                                 </div>
                             </template>
                         </VueMultiselect>
@@ -720,21 +726,38 @@ export default {
             }
         },
 
-        /**
-         * If the monitor is added to public list, which will not be in this list.
-         * @returns {object[]} List of monitors
-         */
-        sortedMonitorList() {
-            let result = [];
+        statusPageItemGroups() {
+            const groups = this.sortedStatusPageItemList.filter((monitor) => monitor.type === "group");
+            const monitors = this.sortedStatusPageItemList.filter((monitor) => monitor.type !== "group");
+            const result = [];
 
-            for (let id in this.$root.monitorList) {
-                if (this.$root.monitorList[id] && !(id in this.$root.publicMonitorList)) {
-                    let monitor = this.$root.monitorList[id];
-                    result.push(monitor);
-                }
+            if (groups.length > 0) {
+                result.push({
+                    label: this.$t("Monitor Groups"),
+                    options: groups,
+                });
             }
 
-            result.sort((m1, m2) => {
+            if (monitors.length > 0) {
+                result.push({
+                    label: this.$t("Individual Monitors"),
+                    options: monitors,
+                });
+            }
+
+            return result;
+        },
+
+        /**
+         * If the monitor is added to public list, which will not be in this list.
+         * @returns {object[]} List of monitors and monitor groups
+         */
+        sortedStatusPageItemList() {
+            const result = Object.values(this.$root.monitorList).filter((monitor) =>
+                this.canSelectStatusPageMonitor(monitor)
+            );
+
+            return result.sort((m1, m2) => {
                 if (m1.active !== m2.active) {
                     if (m1.active === 0) {
                         return 1;
@@ -755,8 +778,18 @@ export default {
                     }
                 }
 
-                return m1.pathName.localeCompare(m2.pathName);
+                return (m1.pathName || m1.name || "").localeCompare(m2.pathName || m2.name || "");
             });
+        },
+
+        selectedPublicMonitorIds() {
+            const result = new Set();
+
+            for (const group of this.$root.publicGroupList) {
+                for (const monitor of group.monitorList || []) {
+                    result.add(Number(monitor.id));
+                }
+            }
 
             return result;
         },
@@ -928,9 +961,12 @@ export default {
                     this.addGroup();
                 }
 
-                const firstGroup = this.$root.publicGroupList[0];
-
-                firstGroup.monitorList.push(monitor);
+                this.$root.publicGroupList[0].monitorList.push({
+                    ...monitor,
+                    sendUrl: monitor.sendUrl ?? Boolean(monitor.url),
+                    url: monitor.url,
+                    tags: monitor.tags || [],
+                });
                 this.selectedMonitor = null;
             }
         },
@@ -1206,6 +1242,56 @@ export default {
          */
         monitorSelectorLabel(monitor) {
             return `${monitor.name}`;
+        },
+
+        /**
+         * Check whether a monitor or monitor group can be selected for the status page.
+         * @param {object} monitor Monitor to check
+         * @returns {boolean} Whether it can be selected
+         */
+        canSelectStatusPageMonitor(monitor) {
+            if (!monitor || this.selectedPublicMonitorIds.has(Number(monitor.id))) {
+                return false;
+            }
+
+            if (this.hasSelectedStatusPageAncestor(monitor)) {
+                return false;
+            }
+
+            if (monitor.type === "group" && this.hasSelectedStatusPageDescendant(monitor)) {
+                return false;
+            }
+
+            return true;
+        },
+
+        /**
+         * Check whether one of this monitor's ancestors is already selected.
+         * @param {object} monitor Monitor to check
+         * @returns {boolean} Whether a selected ancestor exists
+         */
+        hasSelectedStatusPageAncestor(monitor) {
+            let parentId = monitor.parent;
+
+            while (parentId !== undefined && parentId !== null) {
+                const numericParentId = Number(parentId);
+                if (this.selectedPublicMonitorIds.has(numericParentId)) {
+                    return true;
+                }
+
+                parentId = this.$root.monitorList[numericParentId]?.parent;
+            }
+
+            return false;
+        },
+
+        /**
+         * Check whether one of this monitor group's descendants is already selected.
+         * @param {object} monitor Monitor group to check
+         * @returns {boolean} Whether a selected descendant exists
+         */
+        hasSelectedStatusPageDescendant(monitor) {
+            return (monitor.childrenIDs || []).some((id) => this.selectedPublicMonitorIds.has(Number(id)));
         },
 
         /**
@@ -1757,6 +1843,20 @@ footer {
 
 .refresh-info {
     opacity: 0.7;
+}
+
+.status-page-picker-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.status-page-picker-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .past-incidents-title {

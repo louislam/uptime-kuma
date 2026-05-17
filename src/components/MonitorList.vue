@@ -1,6 +1,6 @@
 <template>
     <div class="shadow-box mb-3 p-0" :style="boxStyle">
-        <div class="list-header">
+        <div ref="listHeader" class="list-header">
             <!-- Line 1: Checkbox + Status + Tags + Search Bar -->
             <div class="filter-row">
                 <div class="search-wrapper">
@@ -42,6 +42,21 @@
                         @update-filter="updateFilter"
                         @toggle-collapse-all="toggleCollapseAll"
                     />
+
+                    <label
+                        class="name-column-width-control"
+                        :title="$t('Monitor name column width')"
+                    >
+                        <font-awesome-icon icon="columns" fixed-width />
+                        <input
+                            v-model.number="nameColumnWidth"
+                            class="form-range"
+                            type="range"
+                            :min="nameColumnWidthMin"
+                            :max="nameColumnWidthMax"
+                            :aria-label="$t('Monitor name column width')"
+                        />
+                    </label>
                 </div>
             </div>
 
@@ -190,6 +205,25 @@ import MonitorListItem from "../components/MonitorListItem.vue";
 import MonitorListFilter from "./MonitorListFilter.vue";
 import { getMonitorRelativeURL } from "../util.ts";
 
+const DEFAULT_NAME_COLUMN_WIDTH = 70;
+const MIN_NAME_COLUMN_WIDTH = 50;
+const MAX_NAME_COLUMN_WIDTH = 82;
+const NAME_COLUMN_WIDTH_STORAGE_KEY = "monitorListNameColumnWidth";
+
+/**
+ * Read the persisted monitor-name column width.
+ * @returns {number} Initial column width percentage.
+ */
+function getInitialNameColumnWidth() {
+    const value = parseInt(window.localStorage.getItem(NAME_COLUMN_WIDTH_STORAGE_KEY), 10);
+
+    if (Number.isNaN(value)) {
+        return DEFAULT_NAME_COLUMN_WIDTH;
+    }
+
+    return Math.min(MAX_NAME_COLUMN_WIDTH, Math.max(MIN_NAME_COLUMN_WIDTH, value));
+}
+
 export default {
     components: {
         Confirm,
@@ -213,6 +247,11 @@ export default {
             bulkActionInProgress: false,
             showGroupMovePanel: false,
             bulkMoveTargetParent: null,
+            nameColumnWidth: getInitialNameColumnWidth(),
+            nameColumnWidthMin: MIN_NAME_COLUMN_WIDTH,
+            nameColumnWidthMax: MAX_NAME_COLUMN_WIDTH,
+            listHeaderHeight: 58,
+            listHeaderResizeObserver: null,
             filterState: {
                 status: null,
                 active: null,
@@ -229,12 +268,18 @@ export default {
          * @returns {object} Style for monitor list
          */
         boxStyle() {
+            const style = {
+                "--monitor-name-column-width": `${this.nameColumnWidth}%`,
+            };
+
             if (window.innerWidth > 550) {
                 return {
+                    ...style,
                     height: `calc(100vh - 160px + ${this.windowTop}px)`,
                 };
             } else {
                 return {
+                    ...style,
                     height: "calc(100vh - 160px)",
                 };
             }
@@ -267,21 +312,8 @@ export default {
         },
 
         monitorListStyle() {
-            // The header height has to be changed in case it is modified in the future.
-            // +10px is the margin-bottom of the header
-            let listHeaderHeight = 58 + 10;
-
-            // Only add extra height when selection row is visible
-            if (this.selectMode) {
-                listHeaderHeight += 42;
-            }
-
-            if (this.selectMode && this.selectedMonitorCount > 0 && this.showGroupMovePanel) {
-                listHeaderHeight += 48;
-            }
-
             return {
-                height: `calc(100% - ${listHeaderHeight}px)`,
+                height: `calc(100% - ${this.listHeaderHeight + 10}px)`,
             };
         },
 
@@ -400,14 +432,36 @@ export default {
                 this.bulkMoveTargetParent = null;
             }
         },
+        nameColumnWidth() {
+            window.localStorage.setItem(NAME_COLUMN_WIDTH_STORAGE_KEY, String(this.nameColumnWidth));
+            this.$nextTick(() => {
+                window.dispatchEvent(new Event("resize"));
+            });
+        },
     },
     mounted() {
         window.addEventListener("scroll", this.onScroll);
+        this.updateListHeaderHeight();
+
+        if (typeof window.ResizeObserver !== "undefined" && this.$refs.listHeader) {
+            this.listHeaderResizeObserver = new window.ResizeObserver(() => this.updateListHeaderHeight());
+            this.listHeaderResizeObserver.observe(this.$refs.listHeader);
+        }
     },
     beforeUnmount() {
         window.removeEventListener("scroll", this.onScroll);
+        if (this.listHeaderResizeObserver) {
+            this.listHeaderResizeObserver.disconnect();
+        }
     },
     methods: {
+        updateListHeaderHeight() {
+            if (!this.$refs.listHeader) {
+                return;
+            }
+
+            this.listHeaderHeight = Math.ceil(this.$refs.listHeader.getBoundingClientRect().height);
+        },
         /**
          * Handle user scroll
          * @returns {void}
@@ -809,8 +863,8 @@ export default {
         },
         /**
          * Function used in Array.sort to order monitors in a list.
-         * @param {*} m1 monitor 1
-         * @param {*} m2 monitor 2
+         * @param {object} m1 monitor 1
+         * @param {object} m2 monitor 2
          * @returns {number} -1, 0 or 1
          */
         sortFunc(m1, m2) {
@@ -889,6 +943,24 @@ export default {
     display: flex;
     align-items: center;
     gap: 8px;
+    min-width: 0;
+}
+
+.name-column-width-control {
+    display: flex;
+    flex: 1 1 130px;
+    align-items: center;
+    gap: 6px;
+    max-width: 170px;
+    min-width: 120px;
+    margin-left: auto;
+    color: $secondary-text;
+
+    .form-range {
+        min-width: 0;
+        margin: 0;
+        cursor: pointer;
+    }
 }
 
 .actions-wrapper {
@@ -1035,6 +1107,14 @@ export default {
     .group-move-select {
         width: 100%;
         max-width: 100%;
+    }
+}
+
+@media (max-width: 549px) {
+    .name-column-width-control {
+        flex-basis: 100%;
+        max-width: 100%;
+        margin-left: 0;
     }
 }
 

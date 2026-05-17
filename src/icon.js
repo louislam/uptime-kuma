@@ -51,6 +51,7 @@ import {
     faInfoCircle,
     faClone,
     faCertificate,
+    faColumns,
     faFolder,
     faFolderOpen,
 } from "@fortawesome/free-solid-svg-icons";
@@ -101,6 +102,7 @@ library.add(
     faInfoCircle,
     faClone,
     faCertificate,
+    faColumns,
     faFolder,
     faFolderOpen,
 );

@@ -1099,6 +1099,21 @@ function createCloudflareSocketStub(app) {
                     return;
                 }
 
+                if (event === "saveStatusPage") {
+                    const [slug, config, imgDataUrl, publicGroupList] = args;
+                    const body = await requestCloudflareJson(`/api/status-page/${slug || "default"}`, {
+                        method: "PUT",
+                        body: JSON.stringify({
+                            config,
+                            imgDataUrl,
+                            publicGroupList,
+                        }),
+                    });
+                    await app.loadCloudflareWorkerData();
+                    callback?.(body);
+                    return;
+                }
+
                 if (event === "setSettings") {
                     const body = await requestCloudflareJson("/api/settings", {
                         method: "PUT",

@@ -25,8 +25,8 @@
             </div>
 
             <router-link :to="monitorURL(monitor.id)" class="item" :class="{ disabled: !monitor.active }">
-                <div class="row">
-                    <div class="small-padding d-flex gap-2 align-items-center" :class="monitorStyle">
+                <div class="monitor-item-row" :class="{ 'monitor-item-row-full': isFullWidth }">
+                    <div class="monitor-main small-padding d-flex gap-2 align-items-center">
                         <div class="me-1">
                             <Uptime :monitor="monitor" type="24" :pill="true" />
                         </div>
@@ -54,7 +54,7 @@
                     <div
                         v-show="$root.userHeartbeatBar == 'normal'"
                         :key="$root.userHeartbeatBar"
-                        class="col-3 col-xl-6"
+                        class="monitor-heartbeat"
                     >
                         <HeartbeatBar ref="heartbeatBar" size="small" :monitor-id="monitor.id" />
                     </div>
@@ -165,19 +165,13 @@ export default {
         hasChildren() {
             return this.sortedChildMonitorList.length > 0;
         },
+        isFullWidth() {
+            return this.$root.userHeartbeatBar === "bottom" || this.$root.userHeartbeatBar === "none";
+        },
         depthMargin() {
             return {
                 marginLeft: `${20 * this.depth}px`,
             };
-        },
-        monitorStyle() {
-            const isFullWidth = this.$root.userHeartbeatBar === "bottom" || this.$root.userHeartbeatBar === "none";
-            const c = {};
-            if (!isFullWidth) {
-                c["col-9"] = true;
-                c["col-xl-6"] = true;
-            }
-            return c;
         },
     },
     watch: {
@@ -339,6 +333,22 @@ export default {
 .small-padding {
     padding-left: 5px !important;
     padding-right: 5px !important;
+}
+
+.monitor-item-row {
+    display: grid;
+    grid-template-columns: minmax(0, var(--monitor-name-column-width, 64%)) minmax(0, 1fr);
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.monitor-item-row-full {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.monitor-main,
+.monitor-heartbeat {
+    min-width: 0;
 }
 
 .tags {
