@@ -3015,6 +3015,99 @@ describe("Cloudflare Worker API", () => {
         });
     });
 
+    test("check-now records failed checks as pending until monitor retries are exhausted", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                {
+                    id: 7,
+                    name: "Private HTTP",
+                    type: "http",
+                    url: "http://private.example.test",
+                    hostname: null,
+                    port: null,
+                    timeout: 5,
+                    network_profile_id: null,
+                    config_json: JSON.stringify({ maxretries: 2 }),
+                },
+            ],
+            runnerResult: { status: 0, ping: 120, msg: "Request timed out", response: null },
+        });
+
+        const response = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/7/check-now", { method: "POST" }),
+            env
+        );
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(body.result.status, 2);
+        assert.deepStrictEqual(env.state.heartbeats[0], {
+            monitor_id: 7,
+            status: 2,
+            ping: 120,
+            msg: "Request timed out",
+        });
+    });
+
+    test("check-now records down after configured pending retries are exhausted", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                {
+                    id: 7,
+                    name: "Private HTTP",
+                    type: "http",
+                    url: "http://private.example.test",
+                    hostname: null,
+                    port: null,
+                    timeout: 5,
+                    network_profile_id: null,
+                    config_json: JSON.stringify({ maxretries: 2 }),
+                },
+            ],
+            heartbeats: [
+                {
+                    monitor_id: 7,
+                    status: 2,
+                    ping: 120,
+                    msg: "Request timed out",
+                    checked_at: "2026-05-18 14:02:00",
+                },
+                {
+                    monitor_id: 7,
+                    status: 2,
+                    ping: 110,
+                    msg: "Request timed out",
+                    checked_at: "2026-05-18 14:01:00",
+                },
+                {
+                    monitor_id: 7,
+                    status: 1,
+                    ping: 20,
+                    msg: "200 - OK",
+                    checked_at: "2026-05-18 14:00:00",
+                },
+            ],
+            runnerResult: { status: 0, ping: 130, msg: "Request timed out", response: null },
+        });
+
+        const response = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/7/check-now", { method: "POST" }),
+            env
+        );
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(body.result.status, 0);
+        assert.deepStrictEqual(env.state.heartbeats.at(-1), {
+            monitor_id: 7,
+            status: 0,
+            ping: 130,
+            msg: "Request timed out",
+        });
+    });
+
     test("check-now skips heartbeat writes when the runner call fails", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({

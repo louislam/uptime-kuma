@@ -1891,6 +1891,7 @@ export async function executeMonitorCheck(env, monitorId) {
             response: null,
         };
     }
+    result = await applyMonitorRetryStatus(env, monitor, result);
     await writeHeartbeat(env, monitorId, result);
     return result;
 }
@@ -2091,6 +2092,56 @@ async function writeHeartbeat(env, monitorId, result) {
     )
         .bind(monitorId, status, result.ping ?? null, result.msg ?? "", responseR2Key)
         .run();
+}
+
+async function applyMonitorRetryStatus(env, monitor, result = {}) {
+    const status = Number(result.status ?? DOWN);
+    if (status !== DOWN) {
+        return {
+            ...result,
+            status,
+        };
+    }
+
+    const maxRetries = resolveMonitorMaxRetries(monitor);
+    if (maxRetries <= 0) {
+        return {
+            ...result,
+            status: DOWN,
+        };
+    }
+
+    const recentFailures = await countRecentMonitorFailures(env, monitor.id);
+    return {
+        ...result,
+        status: recentFailures < maxRetries ? PENDING : DOWN,
+    };
+}
+
+function resolveMonitorMaxRetries(monitor = {}) {
+    const config = parseMonitorConfig(monitor.config_json);
+    const value = config.maxretries ?? monitor.maxretries ?? 0;
+    const maxRetries = Number.parseInt(value, 10);
+    return Number.isFinite(maxRetries) && maxRetries > 0 ? maxRetries : 0;
+}
+
+async function countRecentMonitorFailures(env, monitorId) {
+    const result = await env.DB.prepare(
+        "SELECT status FROM heartbeats WHERE monitor_id = ? ORDER BY checked_at DESC, id DESC"
+    )
+        .bind(monitorId)
+        .all();
+
+    let failures = 0;
+    for (const heartbeat of result.results || []) {
+        const status = Number(heartbeat.status);
+        if (status === PENDING || status === DOWN) {
+            failures++;
+            continue;
+        }
+        break;
+    }
+    return failures;
 }
 
 export async function getDeployMonitorPauseState(env, now = new Date()) {
