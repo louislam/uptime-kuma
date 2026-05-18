@@ -617,7 +617,7 @@ export default {
 
         /**
          * Save the current 2FA configuration
-         * @param {any} secret Unused
+         * @param {unknown} secret Unused
          * @param {socketCB} callback Callback for socket response
          * @returns {void}
          */
@@ -1102,6 +1102,52 @@ function createCloudflareSocketStub(app) {
                         body: JSON.stringify(args[0] || {}),
                     });
                     app.workerLocalAuthConfigured = true;
+                    callback?.(body);
+                    return;
+                }
+
+                if (event === "twoFAStatus") {
+                    const body = await requestCloudflareJson("/api/auth/2fa/status");
+                    callback?.(body);
+                    return;
+                }
+
+                if (event === "prepare2FA") {
+                    const [currentPassword] = args;
+                    const body = await requestCloudflareJson("/api/auth/2fa/prepare", {
+                        method: "POST",
+                        body: JSON.stringify({ currentPassword }),
+                    });
+                    callback?.(body);
+                    return;
+                }
+
+                if (event === "verifyToken") {
+                    const [token, currentPassword] = args;
+                    const body = await requestCloudflareJson("/api/auth/2fa/verify", {
+                        method: "POST",
+                        body: JSON.stringify({ token, currentPassword }),
+                    });
+                    callback?.(body);
+                    return;
+                }
+
+                if (event === "save2FA") {
+                    const [currentPassword] = args;
+                    const body = await requestCloudflareJson("/api/auth/2fa/save", {
+                        method: "POST",
+                        body: JSON.stringify({ currentPassword }),
+                    });
+                    callback?.(body);
+                    return;
+                }
+
+                if (event === "disable2FA") {
+                    const [currentPassword] = args;
+                    const body = await requestCloudflareJson("/api/auth/2fa/disable", {
+                        method: "POST",
+                        body: JSON.stringify({ currentPassword }),
+                    });
                     callback?.(body);
                     return;
                 }

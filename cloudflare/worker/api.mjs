@@ -34,15 +34,19 @@ const PENDING = 2;
 const MAINTENANCE = 3;
 const WORKER_AUTH_USER_SETTING = "workerAuthUser";
 const WORKER_AUTH_SESSION_SECRET_SETTING = "workerAuthSessionSecret";
+const WORKER_AUTH_TOTP_SETTING = "workerAuthTotp";
 const WORKER_STATUS_PAGE_CONFIG_SETTING = "statusPageConfig:default";
 const WORKER_STATUS_PAGE_PUBLIC_GROUP_LIST_SETTING = "statusPagePublicGroupList:default";
 const SENSITIVE_SETTING_KEYS = new Set([
     WORKER_AUTH_USER_SETTING,
     WORKER_AUTH_SESSION_SECRET_SETTING,
+    WORKER_AUTH_TOTP_SETTING,
 ]);
 const WORKER_AUTH_PASSWORD_ITERATIONS = 100000;
 const WORKER_AUTH_SESSION_TTL_SECONDS = 7 * 24 * 60 * 60;
 const WORKER_AUTH_REMEMBER_SESSION_TTL_SECONDS = 30 * 24 * 60 * 60;
+const WORKER_AUTH_TOTP_PERIOD_SECONDS = 30;
+const WORKER_AUTH_TOTP_WINDOW = 1;
 const ACCESS_SECRET_HEADER = "X-Uptime-Worker-Token";
 const ACCESS_SECRET_MONITOR_TYPES = new Set(["http", "keyword", "json-query"]);
 const NOTIFICATION_OK_MESSAGE = "Sent Successfully.";
@@ -186,6 +190,11 @@ const ADMIN_ROUTE_NAMES = new Set([
     "check-now",
     "twingate-status",
     "auth-local-user",
+    "auth-2fa-status",
+    "auth-2fa-prepare",
+    "auth-2fa-verify",
+    "auth-2fa-save",
+    "auth-2fa-disable",
     "save-status-page",
     "statistics",
 ]);
@@ -228,6 +237,26 @@ export async function handleApiRequest(request, env) {
 
         if (route.name === "auth-local-user") {
             return json(await saveWorkerAuthUser(env, await request.json()));
+        }
+
+        if (route.name === "auth-2fa-status") {
+            return json(await getWorkerTwoFAStatus(env));
+        }
+
+        if (route.name === "auth-2fa-prepare") {
+            return json(await prepareWorkerTwoFA(env, await request.json()));
+        }
+
+        if (route.name === "auth-2fa-verify") {
+            return json(await verifyWorkerTwoFAToken(env, await request.json()));
+        }
+
+        if (route.name === "auth-2fa-save") {
+            return json(await saveWorkerTwoFA(env, await request.json()));
+        }
+
+        if (route.name === "auth-2fa-disable") {
+            return json(await disableWorkerTwoFA(env, await request.json()));
         }
 
         if (route.name === "monitors") {
@@ -2240,9 +2269,29 @@ async function saveWorkerAuthUser(env, body) {
 async function loginWorkerAuthUser(env, body) {
     const username = String(body?.username || "").trim();
     const password = String(body?.password || "");
+    const oneTimeToken = String(body?.token || "").trim();
     const authUser = await getWorkerAuthUser(env);
     if (!authUser || authUser.username !== username || !await verifyWorkerAuthPassword(password, authUser.password)) {
         throw httpError(401, "authIncorrectCreds");
+    }
+
+    const twoFA = await getWorkerTwoFA(env);
+    if (twoFA?.enabled) {
+        if (!oneTimeToken) {
+            return { tokenRequired: true };
+        }
+        if (twoFA.lastToken === oneTimeToken || !await verifyWorkerTotpCode(twoFA.secret, oneTimeToken)) {
+            return {
+                ok: false,
+                msg: "authInvalidToken",
+                msgi18n: true,
+            };
+        }
+        await setStoredSetting(env, WORKER_AUTH_TOTP_SETTING, {
+            ...twoFA,
+            lastToken: oneTimeToken,
+            updatedAt: new Date().toISOString(),
+        });
     }
 
     const ttlSeconds = body?.remember ? WORKER_AUTH_REMEMBER_SESSION_TTL_SECONDS : WORKER_AUTH_SESSION_TTL_SECONDS;
@@ -2261,6 +2310,121 @@ async function getWorkerAuthUser(env) {
         return null;
     }
     return authUser;
+}
+
+async function getWorkerTwoFAStatus(env) {
+    const twoFA = await getWorkerTwoFA(env);
+    return {
+        ok: true,
+        status: Boolean(twoFA?.enabled),
+    };
+}
+
+async function prepareWorkerTwoFA(env, body) {
+    const authUser = await requireWorkerAuthPassword(env, body?.currentPassword);
+    const twoFA = await getWorkerTwoFA(env);
+    if (twoFA?.enabled) {
+        return {
+            ok: false,
+            msg: "2faAlreadyEnabled",
+            msgi18n: true,
+        };
+    }
+
+    const secret = base32Encode(crypto.getRandomValues(new Uint8Array(20)));
+    await setStoredSetting(env, WORKER_AUTH_TOTP_SETTING, {
+        secret,
+        enabled: false,
+        lastToken: null,
+        verified: false,
+        updatedAt: new Date().toISOString(),
+    });
+
+    return {
+        ok: true,
+        uri: buildWorkerTotpUri(authUser.username, secret),
+    };
+}
+
+async function verifyWorkerTwoFAToken(env, body) {
+    await requireWorkerAuthPassword(env, body?.currentPassword);
+    const twoFA = await getWorkerTwoFA(env);
+    const token = String(body?.token || "").trim();
+    if (!twoFA?.secret || twoFA.lastToken === token || !await verifyWorkerTotpCode(twoFA.secret, token)) {
+        return {
+            ok: false,
+            msg: "authInvalidToken",
+            msgi18n: true,
+            valid: false,
+        };
+    }
+    await setStoredSetting(env, WORKER_AUTH_TOTP_SETTING, {
+        ...twoFA,
+        verified: true,
+        verifiedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+    });
+    return {
+        ok: true,
+        valid: true,
+    };
+}
+
+async function saveWorkerTwoFA(env, body) {
+    await requireWorkerAuthPassword(env, body?.currentPassword);
+    const twoFA = await getWorkerTwoFA(env);
+    if (!twoFA?.secret) {
+        throw httpError(400, "2FA has not been prepared");
+    }
+    if (!twoFA.verified) {
+        throw httpError(400, "authInvalidToken");
+    }
+    await setStoredSetting(env, WORKER_AUTH_TOTP_SETTING, {
+        ...twoFA,
+        enabled: true,
+        verified: false,
+        updatedAt: new Date().toISOString(),
+    });
+    return {
+        ok: true,
+        msg: "2faEnabled",
+        msgi18n: true,
+    };
+}
+
+async function disableWorkerTwoFA(env, body) {
+    await requireWorkerAuthPassword(env, body?.currentPassword);
+    await setStoredSetting(env, WORKER_AUTH_TOTP_SETTING, {
+        secret: null,
+        enabled: false,
+        lastToken: null,
+        verified: false,
+        updatedAt: new Date().toISOString(),
+    });
+    return {
+        ok: true,
+        msg: "2faDisabled",
+        msgi18n: true,
+    };
+}
+
+async function requireWorkerAuthPassword(env, currentPassword) {
+    const authUser = await getWorkerAuthUser(env);
+    if (!authUser) {
+        throw httpError(401, "authIncorrectCreds");
+    }
+    if (!await verifyWorkerAuthPassword(String(currentPassword || ""), authUser.password)) {
+        throw httpError(401, "authIncorrectCreds");
+    }
+    return authUser;
+}
+
+async function getWorkerTwoFA(env) {
+    const twoFA = await getStoredSetting(env, WORKER_AUTH_TOTP_SETTING);
+    if (!twoFA || typeof twoFA.secret !== "string") {
+        return null;
+    }
+    return twoFA;
 }
 
 async function getStoredSetting(env, key) {
@@ -2395,6 +2559,87 @@ async function signWorkerAuthSession(data, secret) {
     );
     const signature = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(data));
     return bytesToBase64Url(new Uint8Array(signature));
+}
+
+async function verifyWorkerTotpCode(secret, token, now = Date.now()) {
+    if (!/^\d{6}$/.test(token || "")) {
+        return false;
+    }
+    const counter = Math.floor(now / 1000 / WORKER_AUTH_TOTP_PERIOD_SECONDS);
+    for (let offset = -WORKER_AUTH_TOTP_WINDOW; offset <= WORKER_AUTH_TOTP_WINDOW; offset++) {
+        const expected = await generateWorkerTotpCode(secret, counter + offset);
+        if (timingSafeEqual(token, expected)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+async function generateWorkerTotpCode(secret, counter) {
+    const key = await crypto.subtle.importKey(
+        "raw",
+        base32Decode(secret),
+        { name: "HMAC", hash: "SHA-1" },
+        false,
+        ["sign"]
+    );
+    const counterBytes = new ArrayBuffer(8);
+    const view = new DataView(counterBytes);
+    view.setUint32(4, counter);
+    const signature = new Uint8Array(await crypto.subtle.sign("HMAC", key, counterBytes));
+    const offset = signature[signature.length - 1] & 0x0f;
+    const code = (
+        ((signature[offset] & 0x7f) << 24) |
+        ((signature[offset + 1] & 0xff) << 16) |
+        ((signature[offset + 2] & 0xff) << 8) |
+        (signature[offset + 3] & 0xff)
+    ) % 1000000;
+    return String(code).padStart(6, "0");
+}
+
+function buildWorkerTotpUri(username, secret) {
+    const issuer = "Uptime Worker";
+    const label = encodeURIComponent(`${issuer}:${username}`).replace("%3A", ":");
+    const params = new URLSearchParams({
+        secret,
+        issuer,
+    });
+    return `otpauth://totp/${label}?${params.toString()}`;
+}
+
+function base32Encode(bytes) {
+    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+    let bits = "";
+    let output = "";
+    for (const byte of bytes) {
+        bits += byte.toString(2).padStart(8, "0");
+        while (bits.length >= 5) {
+            output += alphabet[Number.parseInt(bits.slice(0, 5), 2)];
+            bits = bits.slice(5);
+        }
+    }
+    if (bits.length > 0) {
+        output += alphabet[Number.parseInt(bits.padEnd(5, "0"), 2)];
+    }
+    return output;
+}
+
+function base32Decode(value) {
+    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+    let bits = "";
+    for (const char of String(value || "").toUpperCase().replace(/=+$/g, "")) {
+        const index = alphabet.indexOf(char);
+        if (index === -1) {
+            throw httpError(400, "Invalid 2FA secret");
+        }
+        bits += index.toString(2).padStart(5, "0");
+    }
+
+    const bytes = [];
+    for (let index = 0; index + 8 <= bits.length; index += 8) {
+        bytes.push(Number.parseInt(bits.slice(index, index + 8), 2));
+    }
+    return new Uint8Array(bytes);
 }
 
 function timingSafeBytesEqual(left, right) {
@@ -3821,6 +4066,21 @@ function matchRoute(method, pathname) {
     }
     if (method === "PUT" && pathname === "/api/auth/local-user") {
         return { name: "auth-local-user", params: {} };
+    }
+    if (method === "GET" && pathname === "/api/auth/2fa/status") {
+        return { name: "auth-2fa-status", params: {} };
+    }
+    if (method === "POST" && pathname === "/api/auth/2fa/prepare") {
+        return { name: "auth-2fa-prepare", params: {} };
+    }
+    if (method === "POST" && pathname === "/api/auth/2fa/verify") {
+        return { name: "auth-2fa-verify", params: {} };
+    }
+    if (method === "POST" && pathname === "/api/auth/2fa/save") {
+        return { name: "auth-2fa-save", params: {} };
+    }
+    if (method === "POST" && pathname === "/api/auth/2fa/disable") {
+        return { name: "auth-2fa-disable", params: {} };
     }
     if ((method === "GET" || method === "PUT") && pathname === "/api/settings") {
         return { name: "settings", params: {} };

@@ -120,3 +120,23 @@ describe("Worker Monitor History settings UI", () => {
         assert.match(componentSource, /!\s*this\.\$root\.isCloudflareWorkerUI/);
     });
 });
+
+describe("Worker Security settings UI", () => {
+    test("maps 2FA socket events to Worker REST endpoints", () => {
+        const socketSource = fs.readFileSync(
+            path.join(__dirname, "../../src/mixins/socket.js"),
+            "utf8"
+        );
+
+        assert.match(socketSource, /event === "twoFAStatus"/);
+        assert.match(socketSource, /event === "prepare2FA"/);
+        assert.match(socketSource, /event === "verifyToken"/);
+        assert.match(socketSource, /event === "save2FA"/);
+        assert.match(socketSource, /event === "disable2FA"/);
+        assert.match(socketSource, /\/api\/auth\/2fa\/status/);
+        assert.match(socketSource, /\/api\/auth\/2fa\/prepare/);
+        assert.match(socketSource, /\/api\/auth\/2fa\/verify/);
+        assert.match(socketSource, /\/api\/auth\/2fa\/save/);
+        assert.match(socketSource, /\/api\/auth\/2fa\/disable/);
+    });
+});

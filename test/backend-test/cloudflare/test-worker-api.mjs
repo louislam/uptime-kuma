@@ -1096,6 +1096,126 @@ describe("Cloudflare Worker API", () => {
         });
     });
 
+    test("Worker 2FA setup verifies TOTP codes and requires them at login", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({});
+        await createLocalUser(handleApiRequest, env);
+
+        const initialStatusResponse = await handleApiRequest(adminRequest("https://example.com/api/auth/2fa/status"), env);
+        assert.strictEqual(initialStatusResponse.status, 200);
+        assert.deepStrictEqual(await initialStatusResponse.json(), { ok: true, status: false });
+
+        const prepareResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/auth/2fa/prepare", {
+                method: "POST",
+                body: JSON.stringify({
+                    currentPassword: "password123",
+                }),
+            }),
+            env
+        );
+
+        assert.strictEqual(prepareResponse.status, 200);
+        const prepareBody = await prepareResponse.json();
+        assert.strictEqual(prepareBody.ok, true);
+        assert.match(prepareBody.uri, /^otpauth:\/\/totp\/Uptime%20Worker:admin\?secret=/);
+        const token = await generateTotp(extractTotpSecret(prepareBody.uri));
+
+        const verifyResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/auth/2fa/verify", {
+                method: "POST",
+                body: JSON.stringify({
+                    currentPassword: "password123",
+                    token,
+                }),
+            }),
+            env
+        );
+
+        assert.strictEqual(verifyResponse.status, 200);
+        assert.deepStrictEqual(await verifyResponse.json(), { ok: true, valid: true });
+
+        const saveResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/auth/2fa/save", {
+                method: "POST",
+                body: JSON.stringify({
+                    currentPassword: "password123",
+                }),
+            }),
+            env
+        );
+
+        assert.strictEqual(saveResponse.status, 200);
+        assert.deepStrictEqual(await saveResponse.json(), { ok: true, msg: "2faEnabled", msgi18n: true });
+
+        const passwordOnlyLoginResponse = await handleApiRequest(
+            new Request("https://example.com/api/auth/login", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({
+                    username: "admin",
+                    password: "password123",
+                }),
+            }),
+            env
+        );
+
+        assert.strictEqual(passwordOnlyLoginResponse.status, 200);
+        assert.deepStrictEqual(await passwordOnlyLoginResponse.json(), { tokenRequired: true });
+
+        const tokenLoginResponse = await handleApiRequest(
+            new Request("https://example.com/api/auth/login", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({
+                    username: "admin",
+                    password: "password123",
+                    token,
+                }),
+            }),
+            env
+        );
+
+        assert.strictEqual(tokenLoginResponse.status, 200);
+        const tokenLoginBody = await tokenLoginResponse.json();
+        assert.strictEqual(tokenLoginBody.ok, true);
+        assert.strictEqual(tokenLoginBody.username, "admin");
+        assert.match(tokenLoginBody.token, /^[^.]+\.[^.]+\.[^.]+$/);
+
+        const replayResponse = await handleApiRequest(
+            new Request("https://example.com/api/auth/login", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({
+                    username: "admin",
+                    password: "password123",
+                    token,
+                }),
+            }),
+            env
+        );
+
+        assert.strictEqual(replayResponse.status, 200);
+        assert.deepStrictEqual(await replayResponse.json(), {
+            ok: false,
+            msg: "authInvalidToken",
+            msgi18n: true,
+        });
+
+        const disableResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/auth/2fa/disable", {
+                method: "POST",
+                body: JSON.stringify({
+                    currentPassword: "password123",
+                }),
+            }),
+            env
+        );
+
+        assert.strictEqual(disableResponse.status, 200);
+        assert.deepStrictEqual(await disableResponse.json(), { ok: true, msg: "2faDisabled", msgi18n: true });
+    });
+
     test("creates, lists, updates, and deletes Worker notification configs", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({
@@ -3113,6 +3233,12 @@ function adminRequest(url, init = {}) {
     });
 }
 
+/**
+ * Create the default local Worker auth user for tests.
+ * @param {(request: Request, env: object) => Promise<Response>} handleApiRequest Worker API handler.
+ * @param {object} env Test Worker environment.
+ * @returns {Promise<void>}
+ */
 async function createLocalUser(handleApiRequest, env) {
     const response = await handleApiRequest(
         adminRequest("https://example.com/api/auth/local-user", {
@@ -3127,6 +3253,11 @@ async function createLocalUser(handleApiRequest, env) {
     assert.strictEqual(response.status, 200);
 }
 
+/**
+ * Create a signed Cloudflare Access JWT fixture.
+ * @param {object} options Fixture options.
+ * @returns {Promise<object>} Access auth fixture.
+ */
 async function createAccessAuth(options = {}) {
     const teamDomain = "https://wgs.cloudflareaccess.com";
     const audience = options.audience || "test-access-aud";
@@ -3166,10 +3297,20 @@ async function createAccessAuth(options = {}) {
     };
 }
 
+/**
+ * Encode an object as JWT-safe base64url JSON.
+ * @param {object} value Value to encode.
+ * @returns {string} Encoded value.
+ */
 function base64UrlEncodeJson(value) {
     return base64UrlEncode(new TextEncoder().encode(JSON.stringify(value)));
 }
 
+/**
+ * Encode bytes as base64url.
+ * @param {Uint8Array} bytes Bytes to encode.
+ * @returns {string} Encoded value.
+ */
 function base64UrlEncode(bytes) {
     let binary = "";
     for (const byte of bytes) {
@@ -3814,6 +3955,68 @@ function createStatement(sql, state) {
         },
     };
     return statement;
+}
+
+/**
+ * Extract a TOTP secret from an otpauth URI.
+ * @param {string} uri OTP auth URI.
+ * @returns {string|null} TOTP secret.
+ */
+function extractTotpSecret(uri) {
+    return new URL(uri).searchParams.get("secret");
+}
+
+/**
+ * Generate a six-digit TOTP code for tests.
+ * @param {string} secret Base32 TOTP secret.
+ * @param {number} now Current timestamp in milliseconds.
+ * @returns {Promise<string>} Six-digit TOTP code.
+ */
+async function generateTotp(secret, now = Date.now()) {
+    const key = await crypto.subtle.importKey(
+        "raw",
+        decodeBase32(secret),
+        { name: "HMAC", hash: "SHA-1" },
+        false,
+        ["sign"]
+    );
+    const counter = Math.floor(now / 30000);
+    const counterBytes = new ArrayBuffer(8);
+    const view = new DataView(counterBytes);
+    view.setUint32(4, counter);
+    const signature = new Uint8Array(await crypto.subtle.sign("HMAC", key, counterBytes));
+    const offset = signature[signature.length - 1] & 0x0f;
+    const code = (
+        ((signature[offset] & 0x7f) << 24) |
+        ((signature[offset + 1] & 0xff) << 16) |
+        ((signature[offset + 2] & 0xff) << 8) |
+        (signature[offset + 3] & 0xff)
+    ) % 1000000;
+    return String(code).padStart(6, "0");
+}
+
+/**
+ * Decode a base32 secret.
+ * @param {string} value Base32 input.
+ * @returns {Uint8Array} Decoded bytes.
+ * @throws {Error} If the input contains a non-base32 character.
+ */
+function decodeBase32(value) {
+    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+    let bits = "";
+    for (const char of String(value || "").toUpperCase().replace(/=+$/g, "")) {
+        const index = alphabet.indexOf(char);
+        if (index === -1) {
+            throw new Error("Invalid base32 character");
+        }
+        bits += index.toString(2).padStart(5, "0");
+    }
+
+    const bytes = [];
+    for (let index = 0; index + 8 <= bits.length; index += 8) {
+        bytes.push(Number.parseInt(bits.slice(index, index + 8), 2));
+    }
+    return new Uint8Array(bytes);
 }
 
 /**
