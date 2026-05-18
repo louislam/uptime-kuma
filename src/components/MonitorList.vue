@@ -1106,9 +1106,35 @@ export default {
 }
 
 @media (max-width: 770px) {
+    .shadow-box {
+        top: 0;
+        height: calc(100vh - 130px - env(safe-area-inset-bottom)) !important;
+    }
+
     .list-header {
-        margin-bottom: 10px;
-        padding: 20px;
+        margin-bottom: 0;
+        padding: 12px;
+        gap: 10px;
+    }
+
+    .filter-row {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .search-wrapper {
+        order: 0;
+        flex: 0 0 auto !important;
+    }
+
+    .filters-group {
+        order: 1;
+        flex: 0 0 auto !important;
+        gap: 8px;
+    }
+
+    .filter-row .form-check-input {
+        margin-left: 2px;
     }
 }
 

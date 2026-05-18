@@ -204,7 +204,7 @@ optgroup {
 
 @media (max-width: 550px) {
     .table-shadow-box {
-        padding: 10px !important;
+        padding: 8px !important;
 
         thead {
             display: none;
@@ -218,7 +218,7 @@ optgroup {
 
         tr {
             margin-top: 0 !important;
-            padding: 4px 10px !important;
+            padding: 3px 8px !important;
             display: block;
             margin-bottom: 6px;
 
@@ -237,7 +237,7 @@ optgroup {
             td {
                 border-bottom: 1px solid $dark-font-color;
                 display: block;
-                padding: 4px;
+                padding: 3px 4px;
 
                 .badge {
                     margin: auto;

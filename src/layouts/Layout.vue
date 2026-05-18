@@ -117,10 +117,10 @@
         </header>
 
         <!-- Mobile header -->
-        <header v-else class="d-flex flex-wrap justify-content-center pt-2 pb-2 mb-3">
+        <header v-else class="mobile-header d-flex flex-wrap justify-content-center">
             <router-link to="/dashboard" class="d-flex align-items-center text-dark text-decoration-none">
-                <object class="bi" width="40" height="40" data="/icon.svg" />
-                <span class="fs-4 title ms-2">Uptime Worker</span>
+                <object class="bi" width="34" height="34" data="/icon.svg" />
+                <span class="title ms-2">Uptime Worker</span>
             </router-link>
         </header>
 
@@ -306,8 +306,23 @@ main {
     min-height: calc(100vh - 160px);
 }
 
+.mobile {
+    main {
+        min-height: calc(100vh - 118px - env(safe-area-inset-bottom));
+    }
+}
+
 .title {
     font-weight: bold;
+}
+
+.mobile-header {
+    margin-bottom: 10px;
+    padding: 8px 0;
+
+    .title {
+        font-size: 1.3rem;
+    }
 }
 
 .nav {

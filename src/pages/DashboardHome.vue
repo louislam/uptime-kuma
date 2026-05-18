@@ -1,35 +1,35 @@
 <template>
     <transition ref="tableContainer" name="slide-fade" appear>
         <div v-if="$route.name === 'DashboardHome'">
-            <h1 class="mb-3">
+            <h1 class="dashboard-heading mb-3">
                 {{ $t("Quick Stats") }}
             </h1>
 
-            <div class="shadow-box big-padding text-center mb-3">
-                <div class="row">
-                    <div class="col">
+            <div class="shadow-box big-padding text-center mb-3 quick-stats-card">
+                <div class="row quick-stats-grid">
+                    <div class="col stat-item">
                         <h3>{{ $t("Up") }}</h3>
                         <span class="num" :class="$root.stats.up === 0 && 'text-secondary'">
                             {{ $root.stats.up }}
                         </span>
                     </div>
-                    <div class="col">
+                    <div class="col stat-item">
                         <h3>{{ $t("Down") }}</h3>
                         <span class="num" :class="$root.stats.down > 0 ? 'text-danger' : 'text-secondary'">
                             {{ $root.stats.down }}
                         </span>
                     </div>
-                    <div class="col">
+                    <div class="col stat-item">
                         <h3>{{ $t("Maintenance") }}</h3>
                         <span class="num" :class="$root.stats.maintenance > 0 ? 'text-maintenance' : 'text-secondary'">
                             {{ $root.stats.maintenance }}
                         </span>
                     </div>
-                    <div class="col">
+                    <div class="col stat-item">
                         <h3>{{ $t("Unknown") }}</h3>
                         <span class="num text-secondary">{{ $root.stats.unknown }}</span>
                     </div>
-                    <div class="col">
+                    <div class="col stat-item">
                         <h3>{{ $t("pauseDashboardHome") }}</h3>
                         <span class="num text-secondary">{{ $root.stats.pause }}</span>
                     </div>
@@ -360,5 +360,49 @@ table {
 
 .table-wrapper {
     overflow-x: auto;
+}
+
+@media (max-width: 767.98px) {
+    .dashboard-heading {
+        margin-bottom: 8px !important;
+        font-size: 24px;
+        line-height: 1.15;
+    }
+
+    .quick-stats-card {
+        margin-bottom: 12px !important;
+        padding: 12px !important;
+    }
+
+    .quick-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px 8px;
+        margin: 0;
+
+        .stat-item {
+            width: auto;
+            padding: 0;
+        }
+
+        h3 {
+            margin-bottom: 3px;
+            font-size: 0.9rem;
+            line-height: 1.15;
+        }
+
+        .num {
+            font-size: 1.45rem;
+            line-height: 1.05;
+        }
+    }
+
+    .table-wrapper {
+        padding: 8px !important;
+
+        > .mb-3 {
+            margin-bottom: 8px !important;
+        }
+    }
 }
 </style>
