@@ -96,6 +96,7 @@ export default {
                 "general",
                 "appearance",
                 "notifications",
+                "tags",
                 "monitor-history",
                 "docker-hosts",
                 "remote-browsers",
