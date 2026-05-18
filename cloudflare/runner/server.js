@@ -7,6 +7,7 @@ const {
 const { TwingateLifecycle } = require("./twingate-lifecycle");
 
 const port = Number(process.env.PORT || 8788);
+const DEFAULT_APP_VERSION = "1.0.0";
 const twingateServiceKey = resolveTwingateServiceKey();
 const twingateLifecycle = new TwingateLifecycle({ serviceKey: twingateServiceKey });
 const twingateStatus = twingateLifecycle.status;
@@ -16,7 +17,7 @@ function createServer(options = {}) {
     return http.createServer(async (req, res) => {
         try {
             if (req.method === "GET" && req.url === "/health") {
-                return sendJson(res, 200, { ok: true });
+                return sendJson(res, 200, { ok: true, version: resolveAppVersion() });
             }
 
             if (req.method === "GET" && req.url === "/twingate/status") {
@@ -50,6 +51,10 @@ function startServer() {
         twingateLifecycle.start();
     });
     return server;
+}
+
+function resolveAppVersion() {
+    return process.env.APP_VERSION || DEFAULT_APP_VERSION;
 }
 
 if (require.main === module) {

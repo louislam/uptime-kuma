@@ -321,7 +321,23 @@ export default {
             this.allowLoginDialog = false;
             this.username = null;
             socket = createCloudflareSocketStub(this);
+            await this.loadCloudflareWorkerInfo();
             await this.refreshCloudflareWorkerAuthSession();
+        },
+
+        /**
+         * Load public Worker deployment metadata.
+         * @returns {Promise<void>}
+         */
+        async loadCloudflareWorkerInfo() {
+            try {
+                const health = await requestCloudflareJson("/api/health");
+                if (health.version) {
+                    this.info.version = health.version;
+                }
+            } catch (error) {
+                console.warn(`Failed to load Cloudflare Worker version: ${error.message}`);
+            }
         },
 
         /**

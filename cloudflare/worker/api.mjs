@@ -46,6 +46,7 @@ const WORKER_AUTH_REMEMBER_SESSION_TTL_SECONDS = 30 * 24 * 60 * 60;
 const ACCESS_SECRET_HEADER = "X-Uptime-Worker-Token";
 const ACCESS_SECRET_MONITOR_TYPES = new Set(["http", "keyword", "json-query"]);
 const NOTIFICATION_OK_MESSAGE = "Sent Successfully.";
+const DEFAULT_APP_VERSION = "1.0.0";
 
 const WORKER_MONITOR_TYPES = new Set([
     "group",
@@ -154,6 +155,14 @@ export async function handleApiRequest(request, env) {
 
         if (route.name === "entry-page") {
             return json({ type: "entryPage", entryPage: "dashboard" });
+        }
+
+        if (route.name === "health") {
+            return json({
+                ok: true,
+                name: "uptimeworker",
+                version: resolveAppVersion(env),
+            });
         }
 
         if (route.name === "auth-session") {
@@ -3276,6 +3285,9 @@ function matchRoute(method, pathname) {
     if (method === "GET" && pathname === "/api/entry-page") {
         return { name: "entry-page", params: {} };
     }
+    if (method === "GET" && pathname === "/api/health") {
+        return { name: "health", params: {} };
+    }
     if (method === "GET" && pathname === "/api/auth/session") {
         return { name: "auth-session", params: {} };
     }
@@ -3401,4 +3413,8 @@ function httpError(status, message) {
 
 function json(body, status = 200) {
     return Response.json(body, { status });
+}
+
+export function resolveAppVersion(env = {}) {
+    return env.APP_VERSION || DEFAULT_APP_VERSION;
 }

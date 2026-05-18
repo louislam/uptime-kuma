@@ -1,5 +1,5 @@
 import { Container, ContainerProxy } from "@cloudflare/containers";
-import { consumeQueue, enqueueDueMonitors, handleApiRequest } from "./api.mjs";
+import { consumeQueue, enqueueDueMonitors, handleApiRequest, resolveAppVersion } from "./api.mjs";
 import {
     buildStartingTwingateStatus,
     buildUnavailableTwingateStatus,
@@ -30,6 +30,7 @@ export class MonitorRunner extends Container {
         super(ctx, env);
         this.requiredPorts = [8788];
         this.envVars = {
+            APP_VERSION: resolveAppVersion(env),
             PORT: "8788",
             TWINGATE_READY_TIMEOUT_MS: "60000",
         };

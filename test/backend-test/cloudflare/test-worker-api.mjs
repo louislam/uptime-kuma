@@ -91,6 +91,7 @@ describe("Cloudflare Worker API", () => {
         const wranglerConfig = JSON.parse(fs.readFileSync(wranglerPath, "utf8"));
 
         assert.ok(wranglerConfig.vars);
+        assert.strictEqual(wranglerConfig.vars.APP_VERSION, "1.0.0");
         assert.strictEqual("TWINGATE_PROXY_URL" in wranglerConfig.vars, false);
         assert.strictEqual(wranglerConfig.vars.TWINGATE_NETWORK, "wgs.twingate.com");
         assert.strictEqual(
@@ -129,10 +130,23 @@ describe("Cloudflare Worker API", () => {
         const workerPath = path.join(__dirname, "../../../cloudflare/worker/index.mjs");
         const workerSource = fs.readFileSync(workerPath, "utf8");
 
+        assert.match(workerSource, /APP_VERSION:\s*resolveAppVersion\(env\)/);
         assert.match(workerSource, /TWINGATE_READY_TIMEOUT_MS:\s*"60000"/);
         assert.match(workerSource, /"TWINGATE_READY_TIMEOUT_MS"/);
         assert.match(workerSource, /"TWINGATE_TUN"/);
         assert.match(workerSource, /JSON\.stringify\(value\)/);
+    });
+
+    test("Worker UI loads release version metadata from a health endpoint", async () => {
+        const workerApiPath = path.join(__dirname, "../../../cloudflare/worker/api.mjs");
+        const workerApiSource = fs.readFileSync(workerApiPath, "utf8");
+        const socketMixinPath = path.join(__dirname, "../../../src/mixins/socket.js");
+        const socketMixinSource = fs.readFileSync(socketMixinPath, "utf8");
+
+        assert.match(workerApiSource, /pathname === "\/api\/health"/);
+        assert.match(workerApiSource, /version: resolveAppVersion\(env\)/);
+        assert.match(socketMixinSource, /requestCloudflareJson\("\/api\/health"/);
+        assert.match(socketMixinSource, /this\.info\.version = health\.version/);
     });
 
     test("runner container exposes health readiness and status failure hooks", async () => {

@@ -75,6 +75,7 @@
         "crons": ["* * * * *"]
     },
     "vars": {
+        "APP_VERSION": "1.0.0",
         "TWINGATE_SERVICE_KEY_VERSION": "1",
         "TWINGATE_NETWORK": "wgs.twingate.com",
         "TWINGATE_SERVICE_ACCOUNT_ID": "72b53d66-51da-4b90-9f61-4c8bfd83b2a6",

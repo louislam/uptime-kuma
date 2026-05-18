@@ -11,6 +11,9 @@ describe("About settings page branding and versioning", () => {
     const packageJson = JSON.parse(
         fs.readFileSync(path.join(__dirname, "../../package.json"), "utf8")
     );
+    const packageLockJson = JSON.parse(
+        fs.readFileSync(path.join(__dirname, "../../package-lock.json"), "utf8")
+    );
     const checkVersionSource = fs.readFileSync(
         path.join(__dirname, "../../server/check-version.js"),
         "utf8"
@@ -24,6 +27,13 @@ describe("About settings page branding and versioning", () => {
         assert.strictEqual(packageJson.repository.url, "https://github.com/esaueng/uptimeworker.git");
         assert.match(aboutSource, /https:\/\/github\.com\/esaueng\/uptimeworker\/releases/);
         assert.match(checkVersionSource, /https:\/\/api\.github\.com\/repos\/esaueng\/uptimeworker\/releases\/latest/);
+    });
+
+    test("declares the first Uptime Worker repo release version", () => {
+        assert.strictEqual(packageJson.version, "1.0.0");
+        assert.strictEqual(packageLockJson.version, "1.0.0");
+        assert.strictEqual(packageLockJson.packages[""].version, "1.0.0");
+        assert.match(packageJson.scripts.setup, /git checkout 1\.0\.0/);
     });
 
     test("does not expose beta release update checks", () => {

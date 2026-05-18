@@ -10,6 +10,8 @@ Queues, Cron Triggers, and a containerized monitor runner.
 
 ## Project Status
 
+Current repository release: `1.0.0`.
+
 This fork is under active migration toward a Cloudflare-native architecture.
 The Vue dashboard and much of the monitoring model still come from the original
 Uptime Kuma codebase, but the deployment surface in this repository is built
