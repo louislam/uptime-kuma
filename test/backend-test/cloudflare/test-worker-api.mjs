@@ -85,7 +85,7 @@ describe("Cloudflare Worker API", () => {
     test("D1 migration creates Docker host settings table", async () => {
         const migrationPath = path.join(
             __dirname,
-            "../../../cloudflare/migrations/0007_docker_hosts.sql"
+            "../../../cloudflare/migrations/0009_docker_hosts.sql"
         );
         const migrationSql = fs.readFileSync(migrationPath, "utf8");
 
