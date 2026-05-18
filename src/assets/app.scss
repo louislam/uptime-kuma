@@ -19,11 +19,11 @@
 }
 
 h1 {
-    font-size: 32px;
+    font-size: 30px;
 }
 
 h2 {
-    font-size: 26px;
+    font-size: 24px;
 }
 
 textarea.form-control {
@@ -109,17 +109,17 @@ optgroup {
 .shadow-box {
     //overflow: hidden;   // Forget why add this, but multiple select hide by this
     box-shadow: 0 15px 70px rgba(0, 0, 0, 0.1);
-    padding: 10px;
+    padding: 8px;
     border-radius: 10px;
 
     &.big-padding {
-        padding: 20px;
+        padding: 14px;
     }
 }
 
 .btn {
-    padding-left: 20px;
-    padding-right: 20px;
+    padding-left: 14px;
+    padding-right: 14px;
 }
 
 .btn-sm {
@@ -183,7 +183,7 @@ optgroup {
 }
 
 .btn-outline-normal {
-    padding: 4px 10px;
+    padding: 3px 8px;
     border: 1px solid #ced4da;
     border-radius: 25px;
     background-color: transparent;
@@ -498,7 +498,7 @@ optgroup {
     .item {
         display: block;
         text-decoration: none;
-        padding: 13px 15px 10px 15px;
+        padding: 9px 10px;
         border-radius: 10px;
         transition: all ease-in-out 0.15s;
 

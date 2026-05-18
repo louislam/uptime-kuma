@@ -3,7 +3,7 @@
         <div ref="dashboardShell" class="dashboard-shell">
             <aside v-if="!$root.isMobile" class="dashboard-sidebar" :style="sidebarStyle">
                 <div>
-                    <router-link to="/add" class="btn btn-primary mb-3">
+                    <router-link to="/add" class="btn btn-primary add-monitor-btn mb-2">
                         <font-awesome-icon icon="plus" />
                         {{ $t("Add New Monitor") }}
                     </router-link>
@@ -24,7 +24,7 @@
                 @pointerdown="startSidebarResize"
             ></div>
 
-            <section ref="container" class="dashboard-content mb-3">
+            <section ref="container" class="dashboard-content mb-2">
                 <!-- Add :key to disable vue router re-use the same component -->
                 <router-view :key="$route.fullPath" :calculatedHeight="height" />
             </section>
@@ -170,7 +170,7 @@ export default {
 
 <style lang="scss" scoped>
 .container-fluid {
-    width: 98%;
+    width: 99%;
 }
 
 .dashboard-container {
@@ -188,7 +188,12 @@ export default {
     flex: 0 0 auto;
     min-width: 0;
     padding-left: 0;
-    padding-right: 10px;
+    padding-right: 8px;
+}
+
+.add-monitor-btn {
+    padding-left: 16px;
+    padding-right: 16px;
 }
 
 .dashboard-content {
@@ -198,11 +203,11 @@ export default {
 
 .dashboard-sidebar-resizer {
     position: sticky;
-    top: 10px;
-    flex: 0 0 16px;
+    top: 8px;
+    flex: 0 0 12px;
     align-self: stretch;
-    height: calc(100vh - 150px);
-    margin-right: 10px;
+    height: calc(100vh - 134px);
+    margin-right: 8px;
     cursor: col-resize;
     touch-action: none;
     outline: 0;

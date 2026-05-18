@@ -323,14 +323,31 @@ export default {
 @import "../assets/vars";
 
 .num {
-    font-size: 30px;
+    font-size: 28px;
     color: $primary;
     font-weight: bold;
     display: block;
 }
 
 .shadow-box {
-    padding: 20px;
+    padding: 14px;
+}
+
+.dashboard-heading {
+    margin-bottom: 10px !important;
+}
+
+.quick-stats-card {
+    margin-bottom: 12px !important;
+    padding: 14px !important;
+}
+
+.quick-stats-grid {
+    h3 {
+        margin-bottom: 4px;
+        font-size: 1.3rem;
+        line-height: 1.15;
+    }
 }
 
 table {
@@ -338,6 +355,12 @@ table {
 
     tr {
         transition: all ease-in-out 0.2ms;
+    }
+
+    th,
+    td {
+        padding-top: 0.4rem;
+        padding-bottom: 0.4rem;
     }
 
     @media (max-width: 550px) {
@@ -360,6 +383,10 @@ table {
 
 .table-wrapper {
     overflow-x: auto;
+
+    > .mb-3 {
+        margin-bottom: 10px !important;
+    }
 }
 
 @media (max-width: 767.98px) {

@@ -258,12 +258,12 @@ export default {
             if (window.innerWidth > 550) {
                 return {
                     ...style,
-                    height: `calc(100vh - 160px + ${this.windowTop}px)`,
+                    height: `calc(100vh - 142px + ${this.windowTop}px)`,
                 };
             } else {
                 return {
                     ...style,
-                    height: "calc(100vh - 160px)",
+                    height: "calc(100vh - 142px)",
                 };
             }
         },
@@ -296,7 +296,7 @@ export default {
 
         monitorListStyle() {
             return {
-                height: `calc(100% - ${this.listHeaderHeight + 10}px)`,
+                height: `calc(100% - ${this.listHeaderHeight + 6}px)`,
             };
         },
 
@@ -875,9 +875,9 @@ export default {
 @import "../assets/vars.scss";
 
 .shadow-box {
-    height: calc(100vh - 150px);
+    height: calc(100vh - 136px);
     position: sticky;
-    top: 10px;
+    top: 8px;
 }
 
 .small-padding {
@@ -888,11 +888,11 @@ export default {
 .list-header {
     border-bottom: 1px solid #dee2e6;
     border-radius: 10px 10px 0 0;
-    margin-bottom: 10px;
-    padding: 10px;
+    margin-bottom: 6px;
+    padding: 8px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
 
     .dark & {
         background-color: $dark-header-bg;
@@ -904,14 +904,14 @@ export default {
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     flex-wrap: wrap;
     width: 100%;
 
     .form-check-input {
         cursor: pointer;
         margin: 0;
-        margin-left: 6px;
+        margin-left: 4px;
         flex-shrink: 0;
     }
 }
@@ -921,7 +921,7 @@ export default {
     align-items: center;
     flex: 1 1 auto;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 6px;
     min-width: 0;
 }
 
@@ -993,7 +993,7 @@ export default {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 6px;
     width: 100%;
 
     > .btn,
@@ -1007,7 +1007,7 @@ export default {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        min-height: 34px;
+        min-height: 30px;
         line-height: 1.2;
         white-space: nowrap;
     }
@@ -1020,7 +1020,7 @@ export default {
 .group-move-row {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     width: 100%;
 }
 
@@ -1108,18 +1108,18 @@ export default {
 @media (max-width: 770px) {
     .shadow-box {
         top: 0;
-        height: calc(100vh - 130px - env(safe-area-inset-bottom)) !important;
+        height: calc(100vh - 118px - env(safe-area-inset-bottom)) !important;
     }
 
     .list-header {
         margin-bottom: 0;
-        padding: 12px;
-        gap: 10px;
+        padding: 8px;
+        gap: 8px;
     }
 
     .filter-row {
         flex-direction: column;
-        gap: 10px;
+        gap: 8px;
     }
 
     .search-wrapper {
@@ -1130,7 +1130,7 @@ export default {
     .filters-group {
         order: 1;
         flex: 0 0 auto !important;
-        gap: 8px;
+        gap: 6px;
     }
 
     .filter-row .form-check-input {
@@ -1155,7 +1155,7 @@ export default {
 
 .search-icon {
     position: absolute;
-    right: 10px;
+    right: 8px;
     color: #c0c0c0;
     cursor: pointer;
     transition: all ease-in-out 0.1s;
@@ -1168,7 +1168,7 @@ export default {
 
 .search-input {
     width: 100%;
-    padding-right: 30px;
+    padding-right: 26px;
     transition: none !important;
 }
 

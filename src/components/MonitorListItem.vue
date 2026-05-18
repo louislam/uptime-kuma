@@ -339,7 +339,7 @@ export default {
     display: grid;
     grid-template-columns: minmax(0, var(--monitor-name-column-width, 64%)) minmax(0, 1fr);
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.35rem;
 }
 
 .monitor-item-row-full {
@@ -352,7 +352,7 @@ export default {
 }
 
 .tags {
-    margin-top: 4px;
+    margin-top: 2px;
     padding-left: 4px;
     display: flex;
     flex-wrap: wrap;
@@ -369,9 +369,9 @@ export default {
 
 .select-input-wrapper {
     float: left;
-    margin-top: 15px;
+    margin-top: 10px;
     margin-left: 3px;
-    margin-right: 10px;
+    margin-right: 6px;
     padding-left: 4px;
     position: relative;
     z-index: 15;
@@ -391,7 +391,7 @@ export default {
 
 /* -4px on all due to border-width */
 .monitor-list .drag-over .item {
-    padding: 9px 11px 6px 11px;
+    padding: 6px 8px 5px 8px;
 }
 
 .draggable-item {
@@ -400,7 +400,7 @@ export default {
 
     /* We don't want the padding change due to the border animated */
     .item {
-        padding: 12px 15px;
+        padding: 9px 10px;
         transition: none !important;
     }
 
@@ -411,6 +411,6 @@ export default {
 
 .bottom-style {
     margin-left: -10px;
-    margin-top: 5px;
+    margin-top: 3px;
 }
 </style>

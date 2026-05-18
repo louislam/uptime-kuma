@@ -7,13 +7,13 @@
         </div>
 
         <!-- Desktop header -->
-        <header v-if="!$root.isMobile" class="d-flex flex-wrap justify-content-center py-3 mb-3 border-bottom">
+        <header v-if="!$root.isMobile" class="d-flex flex-wrap justify-content-center py-2 mb-2 border-bottom">
             <router-link
                 to="/dashboard"
-                class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none"
+                class="d-flex align-items-center mb-2 mb-md-0 me-md-auto text-dark text-decoration-none"
             >
-                <object class="bi me-2 ms-4" width="40" height="40" data="/icon.svg" />
-                <span class="fs-4 title">{{ $t("Uptime Kuma") }}</span>
+                <object class="bi me-2 ms-3" width="34" height="34" data="/icon.svg" />
+                <span class="fs-5 title">{{ $t("Uptime Kuma") }}</span>
             </router-link>
 
             <a
@@ -27,13 +27,13 @@
             </a>
 
             <ul class="nav nav-pills">
-                <li v-if="$root.loggedIn" class="nav-item me-2">
+                <li v-if="$root.loggedIn" class="nav-item me-1">
                     <router-link to="/manage-status-page" class="nav-link">
                         <font-awesome-icon icon="stream" />
                         {{ $t("Status Pages") }}
                     </router-link>
                 </li>
-                <li v-if="$root.loggedIn" class="nav-item me-2">
+                <li v-if="$root.loggedIn" class="nav-item me-1">
                     <router-link
                         to="/dashboard"
                         class="nav-link"
@@ -326,7 +326,15 @@ main {
 }
 
 .nav {
-    margin-right: 25px;
+    margin-right: 18px;
+}
+
+.nav-pills {
+    align-items: center;
+
+    .nav-link {
+        padding: 0.35rem 0.75rem;
+    }
 }
 
 .lost-connection {
@@ -348,7 +356,7 @@ main {
         gap: 6px;
         align-items: center;
         background-color: rgba(200, 200, 200, 0.2);
-        padding: 0.5rem 0.8rem;
+        padding: 0.35rem 0.65rem;
 
         &:hover {
             background-color: rgba(255, 255, 255, 0.2);
@@ -404,8 +412,8 @@ main {
         justify-content: center;
         color: white;
         background-color: $primary;
-        width: 24px;
-        height: 24px;
+        width: 22px;
+        height: 22px;
         margin-right: 5px;
         border-radius: 50rem;
         font-weight: bold;
