@@ -69,6 +69,43 @@ describe("Cloudflare Worker API", () => {
         assert.match(migrationSql, /monitor_notification_index/);
     });
 
+    test("D1 migration creates tag settings tables", async () => {
+        const migrationPath = path.join(
+            __dirname,
+            "../../../cloudflare/migrations/0009_tags.sql"
+        );
+        const migrationSql = fs.readFileSync(migrationPath, "utf8");
+
+        assert.match(migrationSql, /CREATE TABLE IF NOT EXISTS tag/);
+        assert.match(migrationSql, /CREATE TABLE IF NOT EXISTS monitor_tag/);
+        assert.match(migrationSql, /monitor_tag_monitor_id_index/);
+        assert.match(migrationSql, /monitor_tag_tag_id_index/);
+    });
+
+    test("D1 migration creates Docker host settings table", async () => {
+        const migrationPath = path.join(
+            __dirname,
+            "../../../cloudflare/migrations/0007_docker_hosts.sql"
+        );
+        const migrationSql = fs.readFileSync(migrationPath, "utf8");
+
+        assert.match(migrationSql, /CREATE TABLE IF NOT EXISTS docker_host/);
+        assert.match(migrationSql, /docker_daemon TEXT NOT NULL/);
+        assert.match(migrationSql, /docker_type TEXT NOT NULL/);
+    });
+
+    test("D1 migration creates Remote Browser settings table", async () => {
+        const migrationPath = path.join(
+            __dirname,
+            "../../../cloudflare/migrations/0008_remote_browsers.sql"
+        );
+        const migrationSql = fs.readFileSync(migrationPath, "utf8");
+
+        assert.match(migrationSql, /CREATE TABLE IF NOT EXISTS remote_browser/);
+        assert.match(migrationSql, /name TEXT NOT NULL/);
+        assert.match(migrationSql, /url TEXT NOT NULL/);
+    });
+
     test("Worker deployment serves the Vue web UI as a single-page app", async () => {
         const wranglerPath = path.join(__dirname, "../../../wrangler.jsonc");
         const wranglerConfig = JSON.parse(fs.readFileSync(wranglerPath, "utf8"));
@@ -189,6 +226,36 @@ describe("Cloudflare Worker API", () => {
         assert.match(componentSource, /AbortController/);
         assert.match(componentSource, /signal: controller\.signal/);
         assert.match(componentSource, /Twingate status request timed out/);
+    });
+
+    test("Worker UI enables Docker Hosts settings through the REST socket shim", async () => {
+        const settingsPath = path.join(__dirname, "../../../src/pages/Settings.vue");
+        const settingsSource = fs.readFileSync(settingsPath, "utf8");
+        const socketMixinPath = path.join(__dirname, "../../../src/mixins/socket.js");
+        const socketMixinSource = fs.readFileSync(socketMixinPath, "utf8");
+
+        assert.match(settingsSource, /"docker-hosts"/);
+        assert.doesNotMatch(
+            settingsSource,
+            /return !\[[\s\S]*"monitor-history",\s*"twingate"/
+        );
+        assert.match(socketMixinSource, /requestCloudflareJson\("\/api\/docker-hosts"\)/);
+        assert.match(socketMixinSource, /event === "addDockerHost"/);
+        assert.match(socketMixinSource, /event === "deleteDockerHost"/);
+        assert.match(socketMixinSource, /event === "testDockerHost"/);
+    });
+
+    test("Worker UI enables Remote Browsers settings through the REST socket shim", async () => {
+        const settingsPath = path.join(__dirname, "../../../src/pages/Settings.vue");
+        const settingsSource = fs.readFileSync(settingsPath, "utf8");
+        const socketMixinPath = path.join(__dirname, "../../../src/mixins/socket.js");
+        const socketMixinSource = fs.readFileSync(socketMixinPath, "utf8");
+
+        assert.match(settingsSource, /"remote-browsers"/);
+        assert.match(socketMixinSource, /requestCloudflareJson\("\/api\/remote-browsers"\)/);
+        assert.match(socketMixinSource, /event === "addRemoteBrowser"/);
+        assert.match(socketMixinSource, /event === "deleteRemoteBrowser"/);
+        assert.match(socketMixinSource, /event === "testRemoteBrowser"/);
     });
 
     test("Worker check-now UI shows runner and down-check failures as errors", async () => {
@@ -754,6 +821,43 @@ describe("Cloudflare Worker API", () => {
         assert.strictEqual(env.state.settings.searchEngineIndex, true);
     });
 
+    test("clears all Worker monitor statistics", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            heartbeats: [
+                { monitor_id: 7, status: 1, ping: 12, msg: "200 - OK", checked_at: "2026-05-11 02:30:00" },
+                { monitor_id: 8, status: 0, ping: 44, msg: "500 - Error", checked_at: "2026-05-11 02:00:00" },
+            ],
+        });
+
+        const response = await handleApiRequest(
+            adminRequest("https://example.com/api/statistics", { method: "DELETE" }),
+            env
+        );
+
+        assert.strictEqual(response.status, 200);
+        assert.deepStrictEqual(await response.json(), { ok: true, msg: "Statistics cleared" });
+        assert.deepStrictEqual(env.state.heartbeats, []);
+    });
+
+    test("purges old Worker monitor history using the saved retention setting", async () => {
+        const { purgeOldMonitorHistory } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            settings: {
+                keepDataPeriodDays: 7,
+            },
+            heartbeats: [
+                { monitor_id: 7, status: 1, ping: 12, msg: "fresh", checked_at: "2026-05-17 02:30:00" },
+                { monitor_id: 8, status: 0, ping: 44, msg: "old", checked_at: "2026-05-01 02:00:00" },
+            ],
+        });
+
+        const result = await purgeOldMonitorHistory(env, new Date("2026-05-18T12:00:00Z"));
+
+        assert.deepStrictEqual(result, { deleted: true });
+        assert.deepStrictEqual(env.state.heartbeats.map((heartbeat) => heartbeat.msg), ["fresh"]);
+    });
+
     test("does not expose Worker auth settings through UI settings", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({
@@ -1012,6 +1116,112 @@ describe("Cloudflare Worker API", () => {
         assert.strictEqual(deleteResponse.status, 200);
         assert.strictEqual(env.state.notifications.length, 0);
         assert.strictEqual(env.state.monitorNotifications.length, 0);
+    });
+
+    test("creates, attaches, updates, and deletes Worker tags", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                {
+                    id: 7,
+                    name: "Example",
+                    type: "http",
+                    url: "https://example.com",
+                    timeout: 30,
+                    interval: 60,
+                    active: 1,
+                    network_profile_id: null,
+                },
+            ],
+        });
+
+        const createResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/tags", {
+                method: "POST",
+                body: JSON.stringify({
+                    name: "Team",
+                    color: "#66bb6a",
+                }),
+            }),
+            env
+        );
+        const createBody = await createResponse.json();
+
+        assert.strictEqual(createResponse.status, 200);
+        assert.strictEqual(createBody.tag.id, 1);
+        assert.strictEqual(env.state.tags[0].name, "Team");
+
+        const attachResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/7/tags", {
+                method: "POST",
+                body: JSON.stringify({
+                    tagId: 1,
+                    value: "api",
+                }),
+            }),
+            env
+        );
+
+        assert.strictEqual(attachResponse.status, 200);
+        assert.deepStrictEqual(env.state.monitorTags, [
+            {
+                id: 1,
+                monitor_id: 7,
+                tag_id: 1,
+                value: "api",
+            },
+        ]);
+
+        const monitorResponse = await handleApiRequest(adminRequest("https://example.com/api/monitors"), env);
+        const monitorBody = await monitorResponse.json();
+
+        assert.strictEqual(monitorResponse.status, 200);
+        assert.deepStrictEqual(monitorBody.monitors[0].tags, [
+            {
+                id: 1,
+                monitor_id: 7,
+                tag_id: 1,
+                value: "api",
+                name: "Team",
+                color: "#66bb6a",
+            },
+        ]);
+
+        const updateResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/tags/1", {
+                method: "PUT",
+                body: JSON.stringify({
+                    name: "Service",
+                    color: "#42a5f5",
+                }),
+            }),
+            env
+        );
+
+        assert.strictEqual(updateResponse.status, 200);
+        assert.strictEqual(env.state.tags[0].name, "Service");
+
+        const detachResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/7/tags", {
+                method: "DELETE",
+                body: JSON.stringify({
+                    tagId: 1,
+                    value: "api",
+                }),
+            }),
+            env
+        );
+
+        assert.strictEqual(detachResponse.status, 200);
+        assert.deepStrictEqual(env.state.monitorTags, []);
+
+        const deleteResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/tags/1", { method: "DELETE" }),
+            env
+        );
+
+        assert.strictEqual(deleteResponse.status, 200);
+        assert.deepStrictEqual(env.state.tags, []);
     });
 
     test("self-heals missing notification tables before listing Worker notifications", async () => {
@@ -2059,6 +2269,150 @@ describe("Cloudflare Worker API", () => {
         ]);
     });
 
+    test("creates, updates, lists, tests, and deletes Worker Docker hosts", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({});
+
+        const createResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/docker-hosts", {
+                method: "POST",
+                body: JSON.stringify({
+                    name: "Runner Docker",
+                    dockerType: "socket",
+                    dockerDaemon: "/var/run/docker.sock",
+                }),
+            }),
+            env
+        );
+        const createBody = await createResponse.json();
+
+        assert.strictEqual(createResponse.status, 200);
+        assert.deepStrictEqual(createBody, { ok: true, msg: "Saved.", msgi18n: true, id: 1 });
+
+        const updateResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/docker-hosts/1", {
+                method: "PUT",
+                body: JSON.stringify({
+                    name: "Remote Docker",
+                    dockerType: "tcp",
+                    dockerDaemon: "https://docker.example.test:2376",
+                }),
+            }),
+            env
+        );
+        assert.strictEqual(updateResponse.status, 200);
+        assert.deepStrictEqual(await updateResponse.json(), { ok: true, msg: "Saved.", msgi18n: true, id: 1 });
+
+        const listResponse = await handleApiRequest(adminRequest("https://example.com/api/docker-hosts"), env);
+        assert.strictEqual(listResponse.status, 200);
+        assert.deepStrictEqual(await listResponse.json(), {
+            dockerHosts: [
+                {
+                    id: 1,
+                    user_id: 1,
+                    name: "Remote Docker",
+                    dockerDaemon: "https://docker.example.test:2376",
+                    dockerType: "tcp",
+                },
+            ],
+        });
+
+        const testResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/docker-hosts/test", {
+                method: "POST",
+                body: JSON.stringify({
+                    name: "Remote Docker",
+                    dockerType: "tcp",
+                    dockerDaemon: "https://docker.example.test:2376",
+                }),
+            }),
+            env
+        );
+        assert.strictEqual(testResponse.status, 200);
+        assert.deepStrictEqual(await testResponse.json(), {
+            ok: false,
+            msg: "Docker host testing is not available in the Cloudflare Worker UI yet.",
+        });
+
+        const deleteResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/docker-hosts/1", { method: "DELETE" }),
+            env
+        );
+        assert.strictEqual(deleteResponse.status, 200);
+        assert.deepStrictEqual(await deleteResponse.json(), { ok: true, msg: "successDeleted", msgi18n: true });
+        assert.deepStrictEqual(env.state.dockerHosts, []);
+    });
+
+    test("creates, updates, lists, tests, and deletes Worker Remote Browsers", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({});
+
+        const createResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/remote-browsers", {
+                method: "POST",
+                body: JSON.stringify({
+                    name: "Browserless",
+                    url: "wss://chrome.browserless.io/playwright?token=test-token",
+                }),
+            }),
+            env
+        );
+        const createBody = await createResponse.json();
+
+        assert.strictEqual(createResponse.status, 200);
+        assert.deepStrictEqual(createBody, { ok: true, msg: "Saved.", msgi18n: true, id: 1 });
+
+        const updateResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/remote-browsers/1", {
+                method: "PUT",
+                body: JSON.stringify({
+                    name: "Private Browser",
+                    url: "ws://browser.internal:3000/playwright",
+                }),
+            }),
+            env
+        );
+        assert.strictEqual(updateResponse.status, 200);
+        assert.deepStrictEqual(await updateResponse.json(), { ok: true, msg: "Saved.", msgi18n: true, id: 1 });
+
+        const listResponse = await handleApiRequest(adminRequest("https://example.com/api/remote-browsers"), env);
+        assert.strictEqual(listResponse.status, 200);
+        assert.deepStrictEqual(await listResponse.json(), {
+            remoteBrowsers: [
+                {
+                    id: 1,
+                    user_id: 1,
+                    name: "Private Browser",
+                    url: "ws://browser.internal:3000/playwright",
+                },
+            ],
+        });
+
+        const testResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/remote-browsers/test", {
+                method: "POST",
+                body: JSON.stringify({
+                    name: "Private Browser",
+                    url: "ws://browser.internal:3000/playwright",
+                }),
+            }),
+            env
+        );
+        assert.strictEqual(testResponse.status, 200);
+        assert.deepStrictEqual(await testResponse.json(), {
+            ok: false,
+            msg: "Remote browser connection testing is not available in the Cloudflare Worker UI yet.",
+        });
+
+        const deleteResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/remote-browsers/1", { method: "DELETE" }),
+            env
+        );
+        assert.strictEqual(deleteResponse.status, 200);
+        assert.deepStrictEqual(await deleteResponse.json(), { ok: true, msg: "successDeleted", msgi18n: true });
+        assert.deepStrictEqual(env.state.remoteBrowsers, []);
+    });
+
     test("creates, updates, lists, and deletes Worker proxies", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({
@@ -2620,7 +2974,11 @@ function createEnv(initial) {
         heartbeats: initial.heartbeats || [],
         notifications: initial.notifications || [],
         monitorNotifications: initial.monitorNotifications || [],
+        tags: initial.tags || [],
+        monitorTags: initial.monitorTags || [],
         proxies: initial.proxies || [],
+        dockerHosts: initial.dockerHosts || [],
+        remoteBrowsers: initial.remoteBrowsers || [],
         settings: initial.settings || {},
         runnerJobs: [],
         runnerResult: initial.runnerResult,
@@ -2636,11 +2994,16 @@ function createEnv(initial) {
         },
         nextMonitorId: initial.nextMonitorId || 1,
         nextNotificationId: initial.nextNotificationId || 1,
+        nextTagId: initial.nextTagId || 1,
+        nextMonitorTagId: initial.nextMonitorTagId || 1,
         nextProxyId: initial.nextProxyId || 1,
+        nextDockerHostId: initial.nextDockerHostId || 1,
+        nextRemoteBrowserId: initial.nextRemoteBrowserId || 1,
         missingConfigJsonColumn: Boolean(initial.missingConfigJsonColumn),
         missingParentColumn: Boolean(initial.missingParentColumn),
         missingProxyColumn: Boolean(initial.missingProxyColumn),
         missingNotificationTables: Boolean(initial.missingNotificationTables),
+        missingTagTables: Boolean(initial.missingTagTables),
         runnerStatusNeverResolves: Boolean(initial.runnerStatusNeverResolves),
     };
 
@@ -2837,8 +3200,37 @@ function createStatement(sql, state) {
                 }
                 return { results: [...state.notifications] };
             }
+            if (sql.includes("FROM monitor_tag")) {
+                if (state.missingTagTables) {
+                    throw new Error("no such table: monitor_tag");
+                }
+                const tagById = new Map(state.tags.map((tag) => [Number(tag.id), tag]));
+                let results = state.monitorTags.map((monitorTag) => ({
+                    ...monitorTag,
+                    name: tagById.get(Number(monitorTag.tag_id))?.name || "",
+                    color: tagById.get(Number(monitorTag.tag_id))?.color || "",
+                }));
+                if (sql.includes("WHERE mt.monitor_id IN")) {
+                    const ids = this.values.map(Number);
+                    results = results.filter((row) => ids.includes(Number(row.monitor_id)));
+                }
+                results.sort((a, b) => String(a.name).localeCompare(String(b.name)));
+                return { results };
+            }
+            if (sql.includes("FROM tag")) {
+                if (state.missingTagTables) {
+                    throw new Error("no such table: tag");
+                }
+                return { results: [...state.tags].sort((a, b) => String(a.name).localeCompare(String(b.name))) };
+            }
             if (sql.includes("FROM proxy")) {
                 return { results: [...state.proxies] };
+            }
+            if (sql.includes("FROM docker_host")) {
+                return { results: [...state.dockerHosts] };
+            }
+            if (sql.includes("FROM remote_browser")) {
+                return { results: [...state.remoteBrowsers] };
             }
             if (sql.includes("FROM monitors")) {
                 if (sql.includes("WHERE id = ?")) {
@@ -2891,12 +3283,27 @@ function createStatement(sql, state) {
                 const id = Number(this.values[0]);
                 return state.notifications.find((notification) => notification.id === id) || null;
             }
+            if (sql.includes("FROM tag")) {
+                if (state.missingTagTables) {
+                    throw new Error("no such table: tag");
+                }
+                const id = Number(this.values[0]);
+                return state.tags.find((tag) => tag.id === id) || null;
+            }
             if (sql.includes("FROM proxy")) {
                 if (sql.includes("WHERE \"default\" = 1")) {
                     return state.proxies.find((proxy) => proxy.default && proxy.active) || null;
                 }
                 const id = Number(this.values[0]);
                 return state.proxies.find((proxy) => proxy.id === id) || null;
+            }
+            if (sql.includes("FROM docker_host")) {
+                const id = Number(this.values[0]);
+                return state.dockerHosts.find((dockerHost) => dockerHost.id === id) || null;
+            }
+            if (sql.includes("FROM remote_browser")) {
+                const id = Number(this.values[0]);
+                return state.remoteBrowsers.find((remoteBrowser) => remoteBrowser.id === id) || null;
             }
             return null;
         },
@@ -2922,10 +3329,30 @@ function createStatement(sql, state) {
             if (sql.includes("CREATE INDEX IF NOT EXISTS monitor_notification_index")) {
                 return { success: true };
             }
+            if (sql.includes("CREATE TABLE IF NOT EXISTS tag")) {
+                state.missingTagTables = false;
+                return { success: true };
+            }
+            if (sql.includes("CREATE TABLE IF NOT EXISTS monitor_tag")) {
+                state.missingTagTables = false;
+                return { success: true };
+            }
+            if (sql.includes("CREATE INDEX IF NOT EXISTS monitor_tag_monitor_id_index")) {
+                return { success: true };
+            }
+            if (sql.includes("CREATE INDEX IF NOT EXISTS monitor_tag_tag_id_index")) {
+                return { success: true };
+            }
             if (sql.includes("CREATE TABLE IF NOT EXISTS proxy")) {
                 return { success: true };
             }
             if (sql.includes("CREATE INDEX IF NOT EXISTS idx_proxy_default")) {
+                return { success: true };
+            }
+            if (sql.includes("CREATE TABLE IF NOT EXISTS docker_host")) {
+                return { success: true };
+            }
+            if (sql.includes("CREATE TABLE IF NOT EXISTS remote_browser")) {
                 return { success: true };
             }
             if (sql.includes("ALTER TABLE monitors ADD COLUMN proxy_id")) {
@@ -2970,6 +3397,27 @@ function createStatement(sql, state) {
                 }
                 return { success: true };
             }
+            if (sql.includes("INSERT INTO tag")) {
+                const [name, color] = this.values;
+                const id = state.nextTagId++;
+                state.tags.push({
+                    id,
+                    name,
+                    color,
+                });
+                return { success: true, meta: { last_row_id: id } };
+            }
+            if (sql.includes("UPDATE tag")) {
+                const [name, color, id] = this.values;
+                const tag = state.tags.find((candidate) => candidate.id === Number(id));
+                if (tag) {
+                    Object.assign(tag, {
+                        name,
+                        color,
+                    });
+                }
+                return { success: true };
+            }
             if (sql.includes("UPDATE proxy SET \"default\" = 0")) {
                 for (const proxy of state.proxies) {
                     proxy.default = 0;
@@ -2993,6 +3441,29 @@ function createStatement(sql, state) {
                 });
                 return { success: true, meta: { last_row_id: id } };
             }
+            if (sql.includes("INSERT INTO docker_host")) {
+                const [userId, name, dockerDaemon, dockerType] = this.values;
+                const id = state.nextDockerHostId++;
+                state.dockerHosts.push({
+                    id,
+                    user_id: userId,
+                    name,
+                    docker_daemon: dockerDaemon,
+                    docker_type: dockerType,
+                });
+                return { success: true, meta: { last_row_id: id } };
+            }
+            if (sql.includes("INSERT INTO remote_browser")) {
+                const [userId, name, url] = this.values;
+                const id = state.nextRemoteBrowserId++;
+                state.remoteBrowsers.push({
+                    id,
+                    user_id: userId,
+                    name,
+                    url,
+                });
+                return { success: true, meta: { last_row_id: id } };
+            }
             if (sql.includes("UPDATE proxy")) {
                 const [protocol, host, port, auth, username, password, active, isDefault, id] = this.values;
                 const proxy = state.proxies.find((candidate) => candidate.id === Number(id));
@@ -3010,6 +3481,29 @@ function createStatement(sql, state) {
                 }
                 return { success: true };
             }
+            if (sql.includes("UPDATE docker_host")) {
+                const [name, dockerDaemon, dockerType, id] = this.values;
+                const dockerHost = state.dockerHosts.find((candidate) => candidate.id === Number(id));
+                if (dockerHost) {
+                    Object.assign(dockerHost, {
+                        name,
+                        docker_daemon: dockerDaemon,
+                        docker_type: dockerType,
+                    });
+                }
+                return { success: true };
+            }
+            if (sql.includes("UPDATE remote_browser")) {
+                const [name, url, id] = this.values;
+                const remoteBrowser = state.remoteBrowsers.find((candidate) => candidate.id === Number(id));
+                if (remoteBrowser) {
+                    Object.assign(remoteBrowser, {
+                        name,
+                        url,
+                    });
+                }
+                return { success: true };
+            }
             if (sql.includes("INSERT INTO monitor_notification")) {
                 const [monitorId, notificationId] = this.values;
                 const exists = state.monitorNotifications.some(
@@ -3022,6 +3516,17 @@ function createStatement(sql, state) {
                     });
                 }
                 return { success: true };
+            }
+            if (sql.includes("INSERT INTO monitor_tag")) {
+                const [tagId, monitorId, value] = this.values;
+                const id = state.nextMonitorTagId++;
+                state.monitorTags.push({
+                    id,
+                    monitor_id: Number(monitorId),
+                    tag_id: Number(tagId),
+                    value,
+                });
+                return { success: true, meta: { last_row_id: id } };
             }
             if (sql.includes("INSERT INTO monitors")) {
                 const hasParentColumn = /network_profile_id,\s*parent,\s*config_json/.test(sql);
@@ -3189,9 +3694,32 @@ function createStatement(sql, state) {
                 }
                 return { success: true };
             }
+            if (sql.includes("DELETE FROM monitor_tag")) {
+                if (sql.includes("WHERE tag_id = ? AND monitor_id = ? AND value = ?")) {
+                    const [tagId, monitorId, value] = this.values;
+                    state.monitorTags = state.monitorTags.filter(
+                        (row) =>
+                            row.tag_id !== Number(tagId) ||
+                            row.monitor_id !== Number(monitorId) ||
+                            row.value !== value
+                    );
+                } else if (sql.includes("WHERE tag_id = ?")) {
+                    const id = Number(this.values[0]);
+                    state.monitorTags = state.monitorTags.filter((row) => row.tag_id !== id);
+                } else {
+                    const id = Number(this.values[0]);
+                    state.monitorTags = state.monitorTags.filter((row) => row.monitor_id !== id);
+                }
+                return { success: true };
+            }
             if (sql.includes("DELETE FROM notification")) {
                 const id = Number(this.values[0]);
                 state.notifications = state.notifications.filter((notification) => notification.id !== id);
+                return { success: true };
+            }
+            if (sql.includes("DELETE FROM tag")) {
+                const id = Number(this.values[0]);
+                state.tags = state.tags.filter((tag) => tag.id !== id);
                 return { success: true };
             }
             if (sql.includes("DELETE FROM proxy")) {
@@ -3199,9 +3727,28 @@ function createStatement(sql, state) {
                 state.proxies = state.proxies.filter((proxy) => proxy.id !== id);
                 return { success: true };
             }
+            if (sql.includes("DELETE FROM docker_host")) {
+                const id = Number(this.values[0]);
+                state.dockerHosts = state.dockerHosts.filter((dockerHost) => dockerHost.id !== id);
+                return { success: true };
+            }
+            if (sql.includes("DELETE FROM remote_browser")) {
+                const id = Number(this.values[0]);
+                state.remoteBrowsers = state.remoteBrowsers.filter((remoteBrowser) => remoteBrowser.id !== id);
+                return { success: true };
+            }
             if (sql.includes("DELETE FROM heartbeats")) {
-                const monitorId = Number(this.values[0]);
-                state.heartbeats = state.heartbeats.filter((heartbeat) => heartbeat.monitor_id !== monitorId);
+                if (sql.includes("WHERE checked_at < ?")) {
+                    const cutoff = this.values[0];
+                    state.heartbeats = state.heartbeats.filter((heartbeat) => heartbeat.checked_at >= cutoff);
+                    return { success: true };
+                }
+                if (sql.includes("WHERE monitor_id = ?")) {
+                    const monitorId = Number(this.values[0]);
+                    state.heartbeats = state.heartbeats.filter((heartbeat) => heartbeat.monitor_id !== monitorId);
+                    return { success: true };
+                }
+                state.heartbeats = [];
                 return { success: true };
             }
             if (sql.includes("INSERT INTO heartbeats")) {

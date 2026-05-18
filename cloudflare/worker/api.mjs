@@ -97,6 +97,24 @@ const MONITOR_NOTIFICATION_TABLE_SQL = `CREATE TABLE IF NOT EXISTS monitor_notif
 )`;
 const MONITOR_NOTIFICATION_INDEX_SQL =
     "CREATE INDEX IF NOT EXISTS monitor_notification_index ON monitor_notification(monitor_id, notification_id)";
+const TAG_TABLE_SQL = `CREATE TABLE IF NOT EXISTS tag (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    color TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+)`;
+const MONITOR_TAG_TABLE_SQL = `CREATE TABLE IF NOT EXISTS monitor_tag (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    monitor_id INTEGER NOT NULL,
+    tag_id INTEGER NOT NULL,
+    value TEXT,
+    FOREIGN KEY (monitor_id) REFERENCES monitors(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (tag_id) REFERENCES tag(id) ON DELETE CASCADE ON UPDATE CASCADE
+)`;
+const MONITOR_TAG_MONITOR_INDEX_SQL =
+    "CREATE INDEX IF NOT EXISTS monitor_tag_monitor_id_index ON monitor_tag(monitor_id)";
+const MONITOR_TAG_TAG_INDEX_SQL =
+    "CREATE INDEX IF NOT EXISTS monitor_tag_tag_id_index ON monitor_tag(tag_id)";
 const PROXY_TABLE_SQL = `CREATE TABLE IF NOT EXISTS proxy (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL DEFAULT 1,
@@ -112,6 +130,23 @@ const PROXY_TABLE_SQL = `CREATE TABLE IF NOT EXISTS proxy (
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 )`;
 const PROXY_INDEX_SQL = `CREATE INDEX IF NOT EXISTS idx_proxy_default ON proxy("default")`;
+const DOCKER_HOST_TABLE_SQL = `CREATE TABLE IF NOT EXISTS docker_host (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL DEFAULT 1,
+    name TEXT NOT NULL,
+    docker_daemon TEXT NOT NULL,
+    docker_type TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+)`;
+const REMOTE_BROWSER_TABLE_SQL = `CREATE TABLE IF NOT EXISTS remote_browser (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL DEFAULT 1,
+    name TEXT NOT NULL,
+    url TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+)`;
 const ACCESS_CERT_CACHE_TTL_MS = 60 * 60 * 1000;
 const DEFAULT_ACCESS_CERT_LOOKUP_TIMEOUT_MS = 5000;
 const accessCertCache = new Map();
@@ -119,6 +154,14 @@ const SUPPORTED_PROXY_PROTOCOLS = new Set(["http", "https", "socks", "socks5", "
 const ADMIN_ROUTE_NAMES = new Set([
     "monitors",
     "settings",
+    "docker-hosts",
+    "save-docker-host",
+    "delete-docker-host",
+    "test-docker-host",
+    "remote-browsers",
+    "save-remote-browser",
+    "delete-remote-browser",
+    "test-remote-browser",
     "proxies",
     "save-proxy",
     "delete-proxy",
@@ -126,6 +169,11 @@ const ADMIN_ROUTE_NAMES = new Set([
     "save-notification",
     "delete-notification",
     "test-notification",
+    "tags",
+    "save-tag",
+    "delete-tag",
+    "add-monitor-tag",
+    "delete-monitor-tag",
     "create-monitor",
     "import-monitors",
     "monitor",
@@ -139,6 +187,7 @@ const ADMIN_ROUTE_NAMES = new Set([
     "twingate-status",
     "auth-local-user",
     "save-status-page",
+    "statistics",
 ]);
 const PRIVATE_WORKER_HOST_ERROR =
     "Direct Worker checks cannot target private, loopback, link-local, or metadata hosts";
@@ -214,6 +263,60 @@ export async function handleApiRequest(request, env) {
             return json({ ok: true, msg: "Settings saved" });
         }
 
+        if (route.name === "docker-hosts") {
+            return json({ dockerHosts: await listDockerHosts(env) });
+        }
+
+        if (route.name === "save-docker-host") {
+            const dockerHost = await saveDockerHost(env, await request.json(), route.params.dockerHostId);
+            return json({
+                ok: true,
+                msg: "Saved.",
+                msgi18n: true,
+                id: dockerHost.id,
+            });
+        }
+
+        if (route.name === "delete-docker-host") {
+            await deleteDockerHost(env, Number(route.params.dockerHostId));
+            return json({ ok: true, msg: "successDeleted", msgi18n: true });
+        }
+
+        if (route.name === "test-docker-host") {
+            normalizeDockerHostInput(await request.json());
+            return json({
+                ok: false,
+                msg: "Docker host testing is not available in the Cloudflare Worker UI yet.",
+            });
+        }
+
+        if (route.name === "remote-browsers") {
+            return json({ remoteBrowsers: await listRemoteBrowsers(env) });
+        }
+
+        if (route.name === "save-remote-browser") {
+            const remoteBrowser = await saveRemoteBrowser(env, await request.json(), route.params.remoteBrowserId);
+            return json({
+                ok: true,
+                msg: "Saved.",
+                msgi18n: true,
+                id: remoteBrowser.id,
+            });
+        }
+
+        if (route.name === "delete-remote-browser") {
+            await deleteRemoteBrowser(env, Number(route.params.remoteBrowserId));
+            return json({ ok: true, msg: "successDeleted", msgi18n: true });
+        }
+
+        if (route.name === "test-remote-browser") {
+            normalizeRemoteBrowserInput(await request.json());
+            return json({
+                ok: false,
+                msg: "Remote browser connection testing is not available in the Cloudflare Worker UI yet.",
+            });
+        }
+
         if (route.name === "proxies") {
             return json({ proxies: await listProxies(env) });
         }
@@ -254,6 +357,37 @@ export async function handleApiRequest(request, env) {
 
         if (route.name === "test-notification") {
             return json(await testNotification(await request.json()));
+        }
+
+        if (route.name === "tags") {
+            return json({ tags: await listTags(env) });
+        }
+
+        if (route.name === "save-tag") {
+            const tag = await saveTag(env, await request.json(), route.params.tagId);
+            return json({
+                ok: true,
+                msg: "Saved.",
+                msgi18n: true,
+                tag,
+            });
+        }
+
+        if (route.name === "delete-tag") {
+            await deleteTag(env, Number(route.params.tagId));
+            return json({ ok: true, msg: "successDeleted", msgi18n: true });
+        }
+
+        if (route.name === "add-monitor-tag") {
+            const body = await request.json();
+            await addMonitorTag(env, Number(route.params.monitorId), body.tagId, body.value);
+            return json({ ok: true, msg: "successAdded", msgi18n: true });
+        }
+
+        if (route.name === "delete-monitor-tag") {
+            const body = await request.json();
+            await deleteMonitorTag(env, Number(route.params.monitorId), body.tagId, body.value);
+            return json({ ok: true, msg: "successDeleted", msgi18n: true });
         }
 
         if (route.name === "create-monitor") {
@@ -298,6 +432,11 @@ export async function handleApiRequest(request, env) {
             }
             await clearMonitorHeartbeats(env, Number(route.params.monitorId));
             return json({ ok: true, msg: "Heartbeats cleared" });
+        }
+
+        if (route.name === "statistics") {
+            await clearAllStatistics(env);
+            return json({ ok: true, msg: "Statistics cleared" });
         }
 
         if (route.name === "network-profiles") {
@@ -375,6 +514,213 @@ export async function setUiSettings(env, settings) {
                 .run()
         )
     );
+}
+
+export async function listDockerHosts(env) {
+    await ensureDockerHostTable(env);
+    const result = await env.DB.prepare(
+        `SELECT id, user_id, name, docker_daemon, docker_type
+         FROM docker_host
+         ORDER BY name`
+    ).all();
+    return (result.results || []).map(serializeDockerHost);
+}
+
+export async function saveDockerHost(env, dockerHostInput, dockerHostId = null) {
+    await ensureDockerHostTable(env);
+    const dockerHost = normalizeDockerHostInput(dockerHostInput);
+
+    if (dockerHostId) {
+        const existing = await getDockerHost(env, Number(dockerHostId));
+        if (!existing) {
+            throw httpError(404, "docker host not found");
+        }
+        await env.DB.prepare(
+            `UPDATE docker_host
+             SET name = ?, docker_daemon = ?, docker_type = ?, updated_at = CURRENT_TIMESTAMP
+             WHERE id = ?`
+        )
+            .bind(dockerHost.name, dockerHost.dockerDaemon, dockerHost.dockerType, Number(dockerHostId))
+            .run();
+        return { id: Number(dockerHostId) };
+    }
+
+    const result = await env.DB.prepare(
+        `INSERT INTO docker_host (user_id, name, docker_daemon, docker_type)
+         VALUES (?, ?, ?, ?)`
+    )
+        .bind(1, dockerHost.name, dockerHost.dockerDaemon, dockerHost.dockerType)
+        .run();
+    const id = Number(result.meta?.last_row_id || result.meta?.last_rowid || result.lastRowId || result.last_row_id);
+    return { id };
+}
+
+export async function deleteDockerHost(env, dockerHostId) {
+    await ensureDockerHostTable(env);
+    const existing = await getDockerHost(env, dockerHostId);
+    if (!existing) {
+        throw httpError(404, "docker host not found");
+    }
+    await env.DB.prepare("DELETE FROM docker_host WHERE id = ?").bind(dockerHostId).run();
+}
+
+async function getDockerHost(env, dockerHostId) {
+    await ensureDockerHostTable(env);
+    return await env.DB.prepare(
+        `SELECT id, user_id, name, docker_daemon, docker_type
+         FROM docker_host
+         WHERE id = ?`
+    )
+        .bind(dockerHostId)
+        .first();
+}
+
+async function ensureDockerHostTable(env) {
+    await env.DB.prepare(DOCKER_HOST_TABLE_SQL).run();
+}
+
+function normalizeDockerHostInput(dockerHostInput = {}) {
+    const name = String(dockerHostInput.name || "").trim();
+    if (!name) {
+        throw httpError(400, "Docker host name is required");
+    }
+
+    const dockerDaemon = String(dockerHostInput.dockerDaemon || dockerHostInput.docker_daemon || "").trim();
+    if (!dockerDaemon) {
+        throw httpError(400, "Docker daemon is required");
+    }
+
+    const dockerType = String(dockerHostInput.dockerType || dockerHostInput.docker_type || "socket").trim();
+    if (!["socket", "tcp"].includes(dockerType)) {
+        throw httpError(400, `Unsupported Docker connection type "${dockerType}"`);
+    }
+
+    if (dockerType === "tcp") {
+        let url;
+        try {
+            url = new URL(dockerDaemon);
+        } catch (_) {
+            throw httpError(400, "Docker TCP daemon must be a valid URL");
+        }
+        if (!["http:", "https:"].includes(url.protocol)) {
+            throw httpError(400, "Docker TCP daemon must use http or https");
+        }
+    }
+
+    return {
+        name,
+        dockerDaemon,
+        dockerType,
+    };
+}
+
+function serializeDockerHost(row) {
+    return {
+        id: Number(row.id),
+        user_id: row.user_id == null ? 1 : Number(row.user_id),
+        name: row.name,
+        dockerDaemon: row.docker_daemon,
+        dockerType: row.docker_type,
+    };
+}
+
+export async function listRemoteBrowsers(env) {
+    await ensureRemoteBrowserTable(env);
+    const result = await env.DB.prepare(
+        `SELECT id, user_id, name, url
+         FROM remote_browser
+         ORDER BY name`
+    ).all();
+    return (result.results || []).map(serializeRemoteBrowser);
+}
+
+export async function saveRemoteBrowser(env, remoteBrowserInput, remoteBrowserId = null) {
+    await ensureRemoteBrowserTable(env);
+    const remoteBrowser = normalizeRemoteBrowserInput(remoteBrowserInput);
+
+    if (remoteBrowserId) {
+        const existing = await getRemoteBrowser(env, Number(remoteBrowserId));
+        if (!existing) {
+            throw httpError(404, "Remote Browser not found!");
+        }
+        await env.DB.prepare(
+            `UPDATE remote_browser
+             SET name = ?, url = ?, updated_at = CURRENT_TIMESTAMP
+             WHERE id = ?`
+        )
+            .bind(remoteBrowser.name, remoteBrowser.url, Number(remoteBrowserId))
+            .run();
+        return { id: Number(remoteBrowserId) };
+    }
+
+    const result = await env.DB.prepare(
+        `INSERT INTO remote_browser (user_id, name, url)
+         VALUES (?, ?, ?)`
+    )
+        .bind(1, remoteBrowser.name, remoteBrowser.url)
+        .run();
+    const id = Number(result.meta?.last_row_id || result.meta?.last_rowid || result.lastRowId || result.last_row_id);
+    return { id };
+}
+
+export async function deleteRemoteBrowser(env, remoteBrowserId) {
+    await ensureRemoteBrowserTable(env);
+    const existing = await getRemoteBrowser(env, remoteBrowserId);
+    if (!existing) {
+        throw httpError(404, "Remote Browser not found!");
+    }
+    await env.DB.prepare("DELETE FROM remote_browser WHERE id = ?").bind(remoteBrowserId).run();
+}
+
+async function getRemoteBrowser(env, remoteBrowserId) {
+    await ensureRemoteBrowserTable(env);
+    return await env.DB.prepare(
+        `SELECT id, user_id, name, url
+         FROM remote_browser
+         WHERE id = ?`
+    )
+        .bind(remoteBrowserId)
+        .first();
+}
+
+async function ensureRemoteBrowserTable(env) {
+    await env.DB.prepare(REMOTE_BROWSER_TABLE_SQL).run();
+}
+
+function normalizeRemoteBrowserInput(remoteBrowserInput = {}) {
+    const name = String(remoteBrowserInput.name || "").trim();
+    if (!name) {
+        throw httpError(400, "Remote browser name is required");
+    }
+
+    const url = String(remoteBrowserInput.url || "").trim();
+    if (!url) {
+        throw httpError(400, "Remote browser URL is required");
+    }
+
+    let parsed;
+    try {
+        parsed = new URL(url);
+    } catch (_) {
+        throw httpError(400, "Remote browser URL must be a valid URL");
+    }
+    if (!["ws:", "wss:"].includes(parsed.protocol)) {
+        throw httpError(400, "Remote browser URL must use ws or wss");
+    }
+
+    return {
+        name,
+        url: parsed.toString(),
+    };
+}
+
+function serializeRemoteBrowser(row) {
+    return {
+        id: Number(row.id),
+        user_id: row.user_id == null ? 1 : Number(row.user_id),
+        name: row.name,
+        url: row.url,
+    };
 }
 
 export async function listProxies(env) {
@@ -866,6 +1212,101 @@ async function applyNotificationToAllMonitors(env, notificationId) {
     );
 }
 
+export async function listTags(env) {
+    await ensureTagTables(env);
+    const result = await env.DB.prepare("SELECT id, name, color FROM tag ORDER BY name").all();
+    return (result.results || []).map(serializeTag);
+}
+
+export async function saveTag(env, tagInput = {}, tagId = null) {
+    await ensureTagTables(env);
+    const tag = normalizeTagInput(tagInput);
+
+    if (tagId) {
+        const existing = await getTag(env, Number(tagId));
+        if (!existing) {
+            throw httpError(404, "tagNotFound");
+        }
+        await env.DB.prepare("UPDATE tag SET name = ?, color = ? WHERE id = ?")
+            .bind(tag.name, tag.color, Number(tagId))
+            .run();
+        return { id: Number(tagId), ...tag };
+    }
+
+    const result = await env.DB.prepare("INSERT INTO tag (name, color) VALUES (?, ?)")
+        .bind(tag.name, tag.color)
+        .run();
+    const id = Number(result.meta?.last_row_id || result.meta?.last_rowid || result.lastRowId || result.last_row_id);
+    return { id, ...tag };
+}
+
+export async function deleteTag(env, tagId) {
+    await ensureTagTables(env);
+    const existing = await getTag(env, tagId);
+    if (!existing) {
+        throw httpError(404, "tagNotFound");
+    }
+    await env.DB.prepare("DELETE FROM monitor_tag WHERE tag_id = ?").bind(tagId).run();
+    await env.DB.prepare("DELETE FROM tag WHERE id = ?").bind(tagId).run();
+}
+
+export async function addMonitorTag(env, monitorId, tagId, value = "") {
+    await ensureTagTables(env);
+    await assertMonitorAndTagExist(env, monitorId, tagId);
+    await env.DB.prepare("INSERT INTO monitor_tag (tag_id, monitor_id, value) VALUES (?, ?, ?)")
+        .bind(Number(tagId), monitorId, value == null ? "" : String(value))
+        .run();
+}
+
+export async function deleteMonitorTag(env, monitorId, tagId, value = "") {
+    await ensureTagTables(env);
+    await env.DB.prepare("DELETE FROM monitor_tag WHERE tag_id = ? AND monitor_id = ? AND value = ?")
+        .bind(Number(tagId), monitorId, value == null ? "" : String(value))
+        .run();
+}
+
+async function ensureTagTables(env) {
+    await env.DB.prepare(TAG_TABLE_SQL).run();
+    await env.DB.prepare(MONITOR_TAG_TABLE_SQL).run();
+    await env.DB.prepare(MONITOR_TAG_MONITOR_INDEX_SQL).run();
+    await env.DB.prepare(MONITOR_TAG_TAG_INDEX_SQL).run();
+}
+
+async function getTag(env, tagId) {
+    await ensureTagTables(env);
+    return await env.DB.prepare("SELECT id, name, color FROM tag WHERE id = ?").bind(tagId).first();
+}
+
+async function assertMonitorAndTagExist(env, monitorId, tagId) {
+    const monitor = await getMonitor(env, monitorId);
+    if (!monitor) {
+        throw httpError(404, "Monitor not found");
+    }
+    const tag = await getTag(env, Number(tagId));
+    if (!tag) {
+        throw httpError(404, "tagNotFound");
+    }
+}
+
+function normalizeTagInput(tagInput = {}) {
+    const name = String(tagInput.name || "").trim();
+    if (!name) {
+        throw httpError(400, "Tag name is required");
+    }
+    return {
+        name,
+        color: String(tagInput.color || ""),
+    };
+}
+
+function serializeTag(row) {
+    return {
+        id: Number(row.id),
+        name: row.name || "",
+        color: row.color || "",
+    };
+}
+
 /**
  * List monitors and their latest heartbeat for the Worker-hosted web UI.
  * @param {object} env Cloudflare Worker environment bindings.
@@ -874,6 +1315,7 @@ async function applyNotificationToAllMonitors(env, notificationId) {
 export async function listMonitors(env) {
     const monitors = await listMonitorRows(env);
     const relationshipData = buildMonitorRelationshipData(monitors);
+    const tagsByMonitorId = await listTagsByMonitorId(env, monitors.map((monitor) => Number(monitor.id)));
 
     const heartbeatResult = await env.DB.prepare(
         `SELECT h.monitor_id, h.status, h.ping, h.msg, h.checked_at
@@ -892,8 +1334,43 @@ export async function listMonitors(env) {
 
     return monitors.map((monitor) => {
         const latestHeartbeat = heartbeatsByMonitorId.get(Number(monitor.id));
-        return serializeMonitor(monitor, latestHeartbeat, relationshipData);
+        return serializeMonitor(monitor, latestHeartbeat, relationshipData, tagsByMonitorId);
     });
+}
+
+async function listTagsByMonitorId(env, monitorIds) {
+    await ensureTagTables(env);
+    const ids = [...new Set((monitorIds || []).map((id) => Number(id)).filter(Number.isInteger))];
+    if (ids.length === 0) {
+        return new Map();
+    }
+
+    const placeholders = ids.map(() => "?").join(", ");
+    const result = await env.DB.prepare(
+        `SELECT mt.id, mt.monitor_id, mt.tag_id, mt.value, tag.name, tag.color
+         FROM monitor_tag mt
+         JOIN tag ON mt.tag_id = tag.id
+         WHERE mt.monitor_id IN (${placeholders})
+         ORDER BY tag.name`
+    )
+        .bind(...ids)
+        .all();
+    const tagsByMonitorId = new Map();
+    for (const row of result.results || []) {
+        const monitorId = Number(row.monitor_id);
+        if (!tagsByMonitorId.has(monitorId)) {
+            tagsByMonitorId.set(monitorId, []);
+        }
+        tagsByMonitorId.get(monitorId).push({
+            id: Number(row.id),
+            monitor_id: monitorId,
+            tag_id: Number(row.tag_id),
+            value: row.value ?? "",
+            name: row.name || "",
+            color: row.color || "",
+        });
+    }
+    return tagsByMonitorId;
 }
 
 async function listMonitorRows(env) {
@@ -1026,7 +1503,8 @@ export async function getSerializedMonitor(env, monitorId) {
         .bind(monitorId)
         .first();
     const rows = await listMonitorRows(env);
-    return serializeMonitor(monitor, heartbeat, buildMonitorRelationshipData(rows));
+    const tagsByMonitorId = await listTagsByMonitorId(env, [monitorId]);
+    return serializeMonitor(monitor, heartbeat, buildMonitorRelationshipData(rows), tagsByMonitorId);
 }
 
 export async function createMonitor(env, monitorInput) {
@@ -1255,11 +1733,13 @@ export async function setMonitorActive(env, monitorId, active) {
 }
 
 export async function deleteMonitor(env, monitorId) {
+    await ensureTagTables(env);
     const monitor = await getMonitor(env, monitorId);
     if (!monitor) {
         throw httpError(404, "Monitor not found");
     }
     await clearMonitorHeartbeats(env, monitorId);
+    await env.DB.prepare("DELETE FROM monitor_tag WHERE monitor_id = ?").bind(monitorId).run();
     await updateDeletedMonitorChildren(env, monitorId);
     await env.DB.prepare("DELETE FROM monitors WHERE id = ?")
         .bind(monitorId)
@@ -1290,6 +1770,35 @@ export async function clearMonitorHeartbeats(env, monitorId) {
     await env.DB.prepare("DELETE FROM heartbeats WHERE monitor_id = ?")
         .bind(monitorId)
         .run();
+}
+
+/**
+ * Clear all stored Worker heartbeat/statistics rows.
+ * @param {object} env Cloudflare Worker environment bindings.
+ * @returns {Promise<void>} Completion promise.
+ */
+export async function clearAllStatistics(env) {
+    await env.DB.prepare("DELETE FROM heartbeats").run();
+}
+
+/**
+ * Delete heartbeat rows older than the saved retention period.
+ * @param {object} env Cloudflare Worker environment bindings.
+ * @param {Date} now Current time for cutoff calculation.
+ * @returns {Promise<object>} Cleanup result.
+ */
+export async function purgeOldMonitorHistory(env, now = new Date()) {
+    const settings = await getUiSettings(env);
+    const keepDataPeriodDays = Number.parseInt(settings.keepDataPeriodDays, 10);
+    if (!Number.isFinite(keepDataPeriodDays) || keepDataPeriodDays < 1) {
+        return { deleted: false };
+    }
+
+    const cutoff = new Date(now.getTime() - keepDataPeriodDays * 24 * 60 * 60 * 1000);
+    await env.DB.prepare("DELETE FROM heartbeats WHERE checked_at < ?")
+        .bind(formatSqliteDateTime(cutoff))
+        .run();
+    return { deleted: true };
 }
 
 export async function updateMonitorNetworkRoute(env, monitorId, networkProfileId) {
@@ -3123,7 +3632,12 @@ function monitorValues(monitor, includeActive, includeParent = true) {
     return values;
 }
 
-function serializeMonitor(monitor, latestHeartbeat = null, relationshipData = buildMonitorRelationshipData([monitor])) {
+function serializeMonitor(
+    monitor,
+    latestHeartbeat = null,
+    relationshipData = buildMonitorRelationshipData([monitor]),
+    tagsByMonitorId = new Map()
+) {
     const name = monitor.name || "";
     const config = {
         ...monitorConfigDefaults(monitor.type),
@@ -3151,7 +3665,7 @@ function serializeMonitor(monitor, latestHeartbeat = null, relationshipData = bu
         path: relationshipData.paths.get(Number(monitor.id)) || [name],
         pathName: (relationshipData.paths.get(Number(monitor.id)) || [name]).join(" / "),
         childrenIDs: relationshipData.childrenIDs.get(Number(monitor.id)) || [],
-        tags: [],
+        tags: tagsByMonitorId.get(Number(monitor.id)) || [],
         notificationIDList: {},
         networkProfileId: monitor.network_profile_id ?? monitor.networkProfileId ?? null,
         proxyId: monitor.proxy_id == null ? null : Number(monitor.proxy_id),
@@ -3303,6 +3817,27 @@ function matchRoute(method, pathname) {
     if ((method === "GET" || method === "PUT") && pathname === "/api/settings") {
         return { name: "settings", params: {} };
     }
+    if (method === "DELETE" && pathname === "/api/statistics") {
+        return { name: "statistics", params: {} };
+    }
+    if (method === "GET" && pathname === "/api/docker-hosts") {
+        return { name: "docker-hosts", params: {} };
+    }
+    if (method === "POST" && pathname === "/api/docker-hosts") {
+        return { name: "save-docker-host", params: {} };
+    }
+    if (method === "POST" && pathname === "/api/docker-hosts/test") {
+        return { name: "test-docker-host", params: {} };
+    }
+    if (method === "GET" && pathname === "/api/remote-browsers") {
+        return { name: "remote-browsers", params: {} };
+    }
+    if (method === "POST" && pathname === "/api/remote-browsers") {
+        return { name: "save-remote-browser", params: {} };
+    }
+    if (method === "POST" && pathname === "/api/remote-browsers/test") {
+        return { name: "test-remote-browser", params: {} };
+    }
     if (method === "GET" && pathname === "/api/proxies") {
         return { name: "proxies", params: {} };
     }
@@ -3317,6 +3852,12 @@ function matchRoute(method, pathname) {
     }
     if (method === "POST" && pathname === "/api/notifications/test") {
         return { name: "test-notification", params: {} };
+    }
+    if (method === "GET" && pathname === "/api/tags") {
+        return { name: "tags", params: {} };
+    }
+    if (method === "POST" && pathname === "/api/tags") {
+        return { name: "save-tag", params: {} };
     }
     if (method === "GET" && pathname === "/api/monitors") {
         return { name: "monitors", params: {} };
@@ -3350,11 +3891,35 @@ function matchRoute(method, pathname) {
         };
     }
 
+    const tagMatch = pathname.match(/^\/api\/tags\/(\d+)$/);
+    if ((method === "PUT" || method === "DELETE") && tagMatch) {
+        return {
+            name: method === "PUT" ? "save-tag" : "delete-tag",
+            params: { tagId: tagMatch[1] },
+        };
+    }
+
     const proxyMatch = pathname.match(/^\/api\/proxies\/(\d+)$/);
     if ((method === "PUT" || method === "DELETE") && proxyMatch) {
         return {
             name: method === "PUT" ? "save-proxy" : "delete-proxy",
             params: { proxyId: proxyMatch[1] },
+        };
+    }
+
+    const dockerHostMatch = pathname.match(/^\/api\/docker-hosts\/(\d+)$/);
+    if ((method === "PUT" || method === "DELETE") && dockerHostMatch) {
+        return {
+            name: method === "PUT" ? "save-docker-host" : "delete-docker-host",
+            params: { dockerHostId: dockerHostMatch[1] },
+        };
+    }
+
+    const remoteBrowserMatch = pathname.match(/^\/api\/remote-browsers\/(\d+)$/);
+    if ((method === "PUT" || method === "DELETE") && remoteBrowserMatch) {
+        return {
+            name: method === "PUT" ? "save-remote-browser" : "delete-remote-browser",
+            params: { remoteBrowserId: remoteBrowserMatch[1] },
         };
     }
 
@@ -3371,6 +3936,14 @@ function matchRoute(method, pathname) {
     const checkNowMatch = pathname.match(/^\/api\/monitors\/(\d+)\/check-now$/);
     if (method === "POST" && checkNowMatch) {
         return { name: "check-now", params: { monitorId: checkNowMatch[1] } };
+    }
+
+    const monitorTagsMatch = pathname.match(/^\/api\/monitors\/(\d+)\/tags$/);
+    if ((method === "POST" || method === "DELETE") && monitorTagsMatch) {
+        return {
+            name: method === "POST" ? "add-monitor-tag" : "delete-monitor-tag",
+            params: { monitorId: monitorTagsMatch[1] },
+        };
     }
 
     const statusPageHeartbeatMatch = pathname.match(/^\/api\/status-page\/heartbeat\/([^/]+)$/);
@@ -3409,6 +3982,10 @@ function httpError(status, message) {
     const error = new Error(message);
     error.status = status;
     return error;
+}
+
+function formatSqliteDateTime(date) {
+    return date.toISOString().slice(0, 19).replace("T", " ");
 }
 
 function json(body, status = 200) {

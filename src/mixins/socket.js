@@ -374,10 +374,12 @@ export default {
          */
         async loadCloudflareWorkerData() {
             try {
-                const [body, notificationBody, proxyBody] = await Promise.all([
+                const [body, notificationBody, proxyBody, dockerHostBody, remoteBrowserBody] = await Promise.all([
                     requestCloudflareJson("/api/monitors"),
                     requestCloudflareJson("/api/notifications"),
                     requestCloudflareJson("/api/proxies"),
+                    requestCloudflareJson("/api/docker-hosts"),
+                    requestCloudflareJson("/api/remote-browsers"),
                 ]);
                 const monitorList = {};
                 const heartbeatList = {};
@@ -415,6 +417,8 @@ export default {
                 this.uptimeList = uptimeList;
                 this.notificationList = notificationBody.notifications || [];
                 this.proxyList = normalizeProxyList(proxyBody.proxies || []);
+                this.dockerHostList = dockerHostBody.dockerHosts || [];
+                this.remoteBrowserList = remoteBrowserBody.remoteBrowsers || [];
                 this.statusPageList = await fetchCloudflareStatusPages();
                 this.statusPageListLoaded = true;
             } catch (error) {
@@ -1139,6 +1143,70 @@ function createCloudflareSocketStub(app) {
                     return;
                 }
 
+                if (event === "addDockerHost") {
+                    const [dockerHost, dockerHostID] = args;
+                    const body = await requestCloudflareJson(
+                        dockerHostID ? `/api/docker-hosts/${dockerHostID}` : "/api/docker-hosts",
+                        {
+                            method: dockerHostID ? "PUT" : "POST",
+                            body: JSON.stringify(dockerHost || {}),
+                        }
+                    );
+                    await app.loadCloudflareWorkerData();
+                    callback?.(body);
+                    return;
+                }
+
+                if (event === "deleteDockerHost") {
+                    const body = await requestCloudflareJson(`/api/docker-hosts/${args[0]}`, {
+                        method: "DELETE",
+                    });
+                    await app.loadCloudflareWorkerData();
+                    callback?.(body);
+                    return;
+                }
+
+                if (event === "testDockerHost") {
+                    const body = await requestCloudflareJson("/api/docker-hosts/test", {
+                        method: "POST",
+                        body: JSON.stringify(args[0] || {}),
+                    });
+                    callback?.(body);
+                    return;
+                }
+
+                if (event === "addRemoteBrowser") {
+                    const [remoteBrowser, remoteBrowserID] = args;
+                    const body = await requestCloudflareJson(
+                        remoteBrowserID ? `/api/remote-browsers/${remoteBrowserID}` : "/api/remote-browsers",
+                        {
+                            method: remoteBrowserID ? "PUT" : "POST",
+                            body: JSON.stringify(remoteBrowser || {}),
+                        }
+                    );
+                    await app.loadCloudflareWorkerData();
+                    callback?.(body);
+                    return;
+                }
+
+                if (event === "deleteRemoteBrowser") {
+                    const body = await requestCloudflareJson(`/api/remote-browsers/${args[0]}`, {
+                        method: "DELETE",
+                    });
+                    await app.loadCloudflareWorkerData();
+                    callback?.(body);
+                    return;
+                }
+
+                if (event === "testRemoteBrowser") {
+                    const body = await requestCloudflareJson("/api/remote-browsers/test", {
+                        method: "POST",
+                        body: JSON.stringify(args[0] || {}),
+                    });
+                    callback?.(body);
+                    return;
+                }
+
                 if (event === "addNotification") {
                     const [notification, notificationID] = args;
                     const body = await requestCloudflareJson(
@@ -1183,7 +1251,74 @@ function createCloudflareSocketStub(app) {
                 }
 
                 if (event === "getTags") {
-                    callback?.({ ok: true, tags: collectCloudflareTags(app.monitorList) });
+                    const body = await requestCloudflareJson("/api/tags");
+                    callback?.({ ok: true, tags: body.tags || [] });
+                    return;
+                }
+
+                if (event === "addTag") {
+                    const body = await requestCloudflareJson("/api/tags", {
+                        method: "POST",
+                        body: JSON.stringify(args[0] || {}),
+                    });
+                    callback?.(body);
+                    return;
+                }
+
+                if (event === "editTag") {
+                    const tag = args[0] || {};
+                    const body = await requestCloudflareJson(`/api/tags/${tag.id}`, {
+                        method: "PUT",
+                        body: JSON.stringify(tag),
+                    });
+                    await app.loadCloudflareWorkerData();
+                    callback?.(body);
+                    return;
+                }
+
+                if (event === "deleteTag") {
+                    const body = await requestCloudflareJson(`/api/tags/${args[0]}`, {
+                        method: "DELETE",
+                    });
+                    await app.loadCloudflareWorkerData();
+                    callback?.(body);
+                    return;
+                }
+
+                if (event === "addMonitorTag") {
+                    const [tagId, monitorId, value] = args;
+                    const body = await requestCloudflareJson(`/api/monitors/${monitorId}/tags`, {
+                        method: "POST",
+                        body: JSON.stringify({ tagId, value }),
+                    });
+                    await app.loadCloudflareWorkerData();
+                    callback?.(body);
+                    return;
+                }
+
+                if (event === "editMonitorTag") {
+                    const [tagId, monitorId, value] = args;
+                    await requestCloudflareJson(`/api/monitors/${monitorId}/tags`, {
+                        method: "DELETE",
+                        body: JSON.stringify({ tagId, value: "" }),
+                    });
+                    const body = await requestCloudflareJson(`/api/monitors/${monitorId}/tags`, {
+                        method: "POST",
+                        body: JSON.stringify({ tagId, value }),
+                    });
+                    await app.loadCloudflareWorkerData();
+                    callback?.({ ok: true, msg: "successEdited", msgi18n: true, ...body });
+                    return;
+                }
+
+                if (event === "deleteMonitorTag") {
+                    const [tagId, monitorId, value] = args;
+                    const body = await requestCloudflareJson(`/api/monitors/${monitorId}/tags`, {
+                        method: "DELETE",
+                        body: JSON.stringify({ tagId, value }),
+                    });
+                    await app.loadCloudflareWorkerData();
+                    callback?.(body);
                     return;
                 }
 
@@ -1271,6 +1406,15 @@ function createCloudflareSocketStub(app) {
                     return;
                 }
 
+                if (event === "clearStatistics") {
+                    const body = await requestCloudflareJson("/api/statistics", {
+                        method: "DELETE",
+                    });
+                    await app.loadCloudflareWorkerData();
+                    callback?.(body);
+                    return;
+                }
+
                 if (event === "getMonitorChartData") {
                     const [monitorID, period] = args;
                     callback?.({ ok: true, data: getCloudflareChartData(app, monitorID, period) });
@@ -1303,34 +1447,6 @@ function createCloudflareSocketStub(app) {
             }
         },
     };
-}
-
-/**
- * Build the tag option list expected by TagsManager from loaded Worker monitors.
- * @param {object} monitorList Monitor map keyed by ID.
- * @returns {object[]} Unique tags.
- */
-function collectCloudflareTags(monitorList) {
-    const tagsByKey = new Map();
-
-    for (const monitor of Object.values(monitorList || {})) {
-        for (const tag of monitor.tags || []) {
-            const tagId = tag.tag_id ?? tag.id;
-            const name = tag.name || "";
-            const color = tag.color || "";
-            const key = tagId != null ? `id:${tagId}` : `${name}\u0000${color}`;
-
-            if (!tagsByKey.has(key)) {
-                tagsByKey.set(key, {
-                    id: tagId,
-                    name,
-                    color,
-                });
-            }
-        }
-    }
-
-    return Array.from(tagsByKey.values());
 }
 
 /**

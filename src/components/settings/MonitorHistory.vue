@@ -24,7 +24,7 @@
             </button>
         </div>
         <div class="my-4">
-            <div v-if="$root.info.dbType === 'sqlite'" class="my-3">
+            <div v-if="showDatabaseMaintenance" class="my-3">
                 <button class="btn btn-outline-info me-2" @click="shrinkDatabase">
                     {{ $t("Shrink Database") }} ({{ databaseSizeDisplay }})
                 </button>
@@ -81,10 +81,15 @@ export default {
         databaseSizeDisplay() {
             return Math.round((this.databaseSize / 1024 / 1024) * 10) / 10 + " MB";
         },
+        showDatabaseMaintenance() {
+            return !this.$root.isCloudflareWorkerUI && this.$root.info.dbType === "sqlite";
+        },
     },
 
     mounted() {
-        this.loadDatabaseSize();
+        if (this.showDatabaseMaintenance) {
+            this.loadDatabaseSize();
+        }
     },
 
     methods: {

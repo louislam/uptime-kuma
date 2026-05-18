@@ -89,60 +89,20 @@ describe("Cloudflare Worker socket delete shim", () => {
 
         assert.match(
             source,
-            /if \(event === "getTags"\) \{[\s\S]*?collectCloudflareTags\(app\.monitorList\)[\s\S]*?return;/,
-            "Worker socket shim should handle getTags instead of showing the unsupported-action toast"
+            /if \(event === "getTags"\) \{[\s\S]*?requestCloudflareJson\("\/api\/tags"\)[\s\S]*?return;/,
+            "Worker socket shim should handle getTags through the Worker tags API"
         );
-
-        const helperMatch = source.match(
-            /function collectCloudflareTags\(monitorList\) \{[\s\S]*?\n\}\n\n\/\*\*/
+        assert.match(source, /if \(event === "addTag"\) \{[\s\S]*?requestCloudflareJson\("\/api\/tags"/);
+        assert.match(source, /if \(event === "editTag"\) \{[\s\S]*?`\/api\/tags\/\$\{tag\.id\}`/);
+        assert.match(source, /if \(event === "deleteTag"\) \{[\s\S]*?`\/api\/tags\/\$\{args\[0\]\}`/);
+        assert.match(
+            source,
+            /if \(event === "addMonitorTag"\) \{[\s\S]*?`\/api\/monitors\/\$\{monitorId\}\/tags`/
         );
-        assert.ok(helperMatch, "Worker tag collector should exist");
-
-        const collectCloudflareTags = new Function(`
-            ${helperMatch[0].replace(/\n\n\/\*\*$/, "")}
-            return collectCloudflareTags;
-        `)();
-
-        assert.deepStrictEqual(
-            collectCloudflareTags({
-                1: {
-                    tags: [
-                        {
-                            tag_id: 5,
-                            name: "role",
-                            color: "#66bb6a",
-                            value: "api",
-                        },
-                    ],
-                },
-                2: {
-                    tags: [
-                        {
-                            id: 5,
-                            name: "role",
-                            color: "#66bb6a",
-                            value: "web",
-                        },
-                        {
-                            name: "site",
-                            color: "#42a5f5",
-                        },
-                    ],
-                },
-            }),
-            [
-                {
-                    id: 5,
-                    name: "role",
-                    color: "#66bb6a",
-                },
-                {
-                    id: undefined,
-                    name: "site",
-                    color: "#42a5f5",
-                },
-            ],
-            "tag options should be unique by tag identity and omit monitor-specific values"
+        assert.match(
+            source,
+            /if \(event === "deleteMonitorTag"\) \{[\s\S]*?`\/api\/monitors\/\$\{monitorId\}\/tags`/
         );
     });
+
 });

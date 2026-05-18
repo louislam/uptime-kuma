@@ -85,3 +85,38 @@ describe("Worker Proxies settings UI", () => {
         assert.match(socketSource, /\/api\/proxies/);
     });
 });
+
+describe("Worker Monitor History settings UI", () => {
+    test("exposes the Monitor History settings page in Worker UI mode", () => {
+        const settingsSource = fs.readFileSync(
+            path.join(__dirname, "../../src/pages/Settings.vue"),
+            "utf8"
+        );
+
+        assert.match(
+            settingsSource,
+            /"monitor-history"/,
+            "monitor-history should be listed as a supported Worker settings page"
+        );
+    });
+
+    test("maps clear statistics to the Worker REST endpoint", () => {
+        const socketSource = fs.readFileSync(
+            path.join(__dirname, "../../src/mixins/socket.js"),
+            "utf8"
+        );
+
+        assert.match(socketSource, /event === "clearStatistics"/);
+        assert.match(socketSource, /\/api\/statistics/);
+    });
+
+    test("hides SQLite-only database maintenance in Worker UI mode", () => {
+        const componentSource = fs.readFileSync(
+            path.join(__dirname, "../../src/components/settings/MonitorHistory.vue"),
+            "utf8"
+        );
+
+        assert.match(componentSource, /showDatabaseMaintenance/);
+        assert.match(componentSource, /!\s*this\.\$root\.isCloudflareWorkerUI/);
+    });
+});
