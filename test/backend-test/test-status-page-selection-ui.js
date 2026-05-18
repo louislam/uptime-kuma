@@ -11,8 +11,14 @@ describe("Status page group and monitor selection UI", () => {
         assert.match(source, /\$t\("Monitor Groups"\)/);
         assert.match(source, /\$t\("Individual Monitors"\)/);
         assert.match(source, /canSelectStatusPageMonitor\(monitor\)/);
-        assert.match(source, /hasSelectedStatusPageAncestor\(monitor\)/);
-        assert.match(source, /hasSelectedStatusPageDescendant\(monitor\)/);
+    });
+
+    test("editor picker only hides monitors already selected on the status page", () => {
+        const source = fs.readFileSync(path.join(__dirname, "../../src/pages/StatusPage.vue"), "utf8");
+
+        assert.match(source, /selectedPublicMonitorIds\.has\(Number\(monitor\.id\)\)/);
+        assert.doesNotMatch(source, /hasSelectedStatusPageAncestor/);
+        assert.doesNotMatch(source, /hasSelectedStatusPageDescendant/);
     });
 
     test("Worker socket bridge persists status page edits through the Worker API", () => {

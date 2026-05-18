@@ -1254,44 +1254,7 @@ export default {
                 return false;
             }
 
-            if (this.hasSelectedStatusPageAncestor(monitor)) {
-                return false;
-            }
-
-            if (monitor.type === "group" && this.hasSelectedStatusPageDescendant(monitor)) {
-                return false;
-            }
-
             return true;
-        },
-
-        /**
-         * Check whether one of this monitor's ancestors is already selected.
-         * @param {object} monitor Monitor to check
-         * @returns {boolean} Whether a selected ancestor exists
-         */
-        hasSelectedStatusPageAncestor(monitor) {
-            let parentId = monitor.parent;
-
-            while (parentId !== undefined && parentId !== null) {
-                const numericParentId = Number(parentId);
-                if (this.selectedPublicMonitorIds.has(numericParentId)) {
-                    return true;
-                }
-
-                parentId = this.$root.monitorList[numericParentId]?.parent;
-            }
-
-            return false;
-        },
-
-        /**
-         * Check whether one of this monitor group's descendants is already selected.
-         * @param {object} monitor Monitor group to check
-         * @returns {boolean} Whether a selected descendant exists
-         */
-        hasSelectedStatusPageDescendant(monitor) {
-            return (monitor.childrenIDs || []).some((id) => this.selectedPublicMonitorIds.has(Number(id)));
         },
 
         /**
