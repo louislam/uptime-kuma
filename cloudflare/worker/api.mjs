@@ -2205,10 +2205,18 @@ async function isBootstrapAdminRequest(request, env) {
 }
 
 async function saveWorkerAuthUser(env, body) {
-    const username = String(body?.username || "").trim();
+    const existingAuthUser = await getWorkerAuthUser(env);
+    const username = String(body?.username || existingAuthUser?.username || "").trim();
+    const currentPassword = String(body?.currentPassword || "");
     const newPassword = String(body?.newPassword || body?.password || "");
     if (!username) {
         throw httpError(400, "Username is required");
+    }
+    if (
+        existingAuthUser &&
+        (!currentPassword || !(await verifyWorkerAuthPassword(currentPassword, existingAuthUser.password)))
+    ) {
+        throw httpError(401, "authIncorrectCreds");
     }
     if (newPassword.length < 6) {
         throw httpError(400, "passwordTooWeak");

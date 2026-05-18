@@ -34,7 +34,12 @@
                     </router-link>
                 </li>
                 <li v-if="$root.loggedIn" class="nav-item me-2">
-                    <router-link to="/dashboard" class="nav-link">
+                    <router-link
+                        to="/dashboard"
+                        class="nav-link"
+                        active-class="dashboard-link-route-active"
+                        :class="{ active: isDashboardNavActive }"
+                    >
                         <font-awesome-icon icon="tachometer-alt" />
                         {{ $t("Dashboard") }}
                     </router-link>
@@ -162,6 +167,7 @@
 <script>
 import Login from "../components/Login.vue";
 import compareVersions from "compare-versions";
+import { isDashboardNavRoute } from "../util/dashboard-nav.mjs";
 import { useToast } from "vue-toastification";
 const toast = useToast();
 
@@ -193,6 +199,10 @@ export default {
             } else {
                 return false;
             }
+        },
+
+        isDashboardNavActive() {
+            return isDashboardNavRoute(this.$route.path);
         },
     },
 

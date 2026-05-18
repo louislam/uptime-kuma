@@ -1,17 +1,17 @@
 <template>
-    <div>
-        <div v-if="$root.isCloudflareWorkerUI" class="my-4">
+    <div class="security-settings">
+        <div v-if="$root.isCloudflareWorkerUI" class="security-section">
             <p v-if="$root.loggedIn">
-                <button id="logout-btn" class="btn btn-danger ms-4 me-2 mb-2" @click="$root.logout">
+                <button id="logout-btn" class="btn btn-danger security-pill-button logout-button" @click="$root.logout">
                     {{ $t("logoutCurrentUser", { username: $root.username }) }}
                 </button>
             </p>
 
-            <h5 class="my-4 settings-subheading">
-                {{ $root.workerLocalAuthConfigured ? "Change username/password" : "Create local admin login" }}
+            <h5 class="settings-subheading security-subheading">
+                {{ $root.workerLocalAuthConfigured ? $t("Change Password") : "Create local admin login" }}
             </h5>
-            <form class="mb-3" @submit.prevent="saveWorkerAuthUser">
-                <div class="mb-3">
+            <form class="security-form" @submit.prevent="saveWorkerAuthUser">
+                <div v-if="!$root.workerLocalAuthConfigured" class="mb-3">
                     <label for="worker-username" class="form-label">
                         {{ $t("Username") }}
                     </label>
@@ -21,6 +21,20 @@
                         type="text"
                         class="form-control"
                         autocomplete="username"
+                        required
+                    />
+                </div>
+
+                <div v-if="$root.workerLocalAuthConfigured" class="mb-3">
+                    <label for="worker-current-password" class="form-label">
+                        {{ $t("Current Password") }}
+                    </label>
+                    <input
+                        id="worker-current-password"
+                        v-model="workerAuth.currentPassword"
+                        type="password"
+                        class="form-control"
+                        autocomplete="current-password"
                         required
                     />
                 </div>
@@ -58,29 +72,29 @@
                 </div>
 
                 <div>
-                    <button class="btn btn-primary" type="submit" :disabled="workerSaving">
+                    <button class="btn btn-primary security-pill-button" type="submit" :disabled="workerSaving">
                         {{ $root.workerLocalAuthConfigured ? $t("Update Password") : "Create login" }}
                     </button>
                 </div>
             </form>
         </div>
 
-        <div v-else-if="settingsLoaded" class="my-4">
+        <div v-else-if="settingsLoaded" class="security-section">
             <!-- Change Password -->
             <template v-if="!settings.disableAuth">
                 <p>
                     <button
                         v-if="!settings.disableAuth"
                         id="logout-btn"
-                        class="btn btn-danger ms-4 me-2 mb-2"
+                        class="btn btn-danger security-pill-button logout-button"
                         @click="$root.logout"
                     >
                         {{ $t("logoutCurrentUser", { username: $root.username }) }}
                     </button>
                 </p>
 
-                <h5 class="my-4 settings-subheading">{{ $t("Change Password") }}</h5>
-                <form class="mb-3" @submit.prevent="savePassword">
+                <h5 class="settings-subheading security-subheading">{{ $t("Change Password") }}</h5>
+                <form class="security-form" @submit.prevent="savePassword">
                     <div class="mb-3">
                         <label for="current-password" class="form-label">
                             {{ $t("Current Password") }}
@@ -128,33 +142,33 @@
                     </div>
 
                     <div>
-                        <button class="btn btn-primary" type="submit">
+                        <button class="btn btn-primary security-pill-button" type="submit">
                             {{ $t("Update Password") }}
                         </button>
                     </div>
                 </form>
             </template>
 
-            <div v-if="!settings.disableAuth" class="mt-5 mb-3">
-                <h5 class="my-4 settings-subheading">
+            <div v-if="!settings.disableAuth" class="security-section-block">
+                <h5 class="settings-subheading security-subheading">
                     {{ $t("Two Factor Authentication") }}
                 </h5>
                 <div class="mb-4">
-                    <button class="btn btn-primary me-2" type="button" @click="$refs.TwoFADialog.show()">
+                    <button class="btn btn-primary security-pill-button" type="button" @click="$refs.TwoFADialog.show()">
                         {{ $t("2FA Settings") }}
                     </button>
                 </div>
             </div>
 
-            <div class="my-4">
+            <div class="security-section-block">
                 <!-- Advanced -->
-                <h5 class="my-4 settings-subheading">{{ $t("Advanced") }}</h5>
+                <h5 class="settings-subheading security-subheading">{{ $t("Advanced") }}</h5>
 
                 <div class="mb-4">
                     <button
                         v-if="settings.disableAuth"
                         id="enableAuth-btn"
-                        class="btn btn-outline-primary me-2 mb-2"
+                        class="btn btn-outline-primary security-pill-button me-2 mb-2"
                         @click="enableAuth"
                     >
                         {{ $t("Enable Auth") }}
@@ -162,7 +176,7 @@
                     <button
                         v-if="!settings.disableAuth"
                         id="disableAuth-btn"
-                        class="btn btn-primary me-2 mb-2"
+                        class="btn btn-primary security-pill-button me-2 mb-2"
                         @click="confirmDisableAuth"
                     >
                         {{ $t("Disable Auth") }}
@@ -226,6 +240,7 @@ export default {
             workerSaving: false,
             workerAuth: {
                 username: "",
+                currentPassword: "",
                 newPassword: "",
                 repeatNewPassword: "",
             },
@@ -310,6 +325,7 @@ export default {
         workerAuthPayload() {
             return {
                 username: this.workerAuth.username,
+                currentPassword: this.workerAuth.currentPassword,
                 newPassword: this.workerAuth.newPassword,
             };
         },
@@ -325,10 +341,12 @@ export default {
             if (res.ok) {
                 this.$root.workerLocalAuthConfigured = true;
                 this.$root.username = res.username;
+                this.workerAuth.username = res.username || this.workerAuth.username;
                 if (res.token) {
                     this.$root.storage().token = res.token;
                     this.$root.socket.token = res.token;
                 }
+                this.workerAuth.currentPassword = "";
                 this.workerAuth.newPassword = "";
                 this.workerAuth.repeatNewPassword = "";
             }
@@ -396,3 +414,70 @@ export default {
     },
 };
 </script>
+
+<style lang="scss" scoped>
+@import "../../assets/vars.scss";
+
+.security-settings {
+    padding-top: 42px;
+}
+
+.security-section {
+    padding-left: 10px;
+}
+
+.logout-button {
+    margin-left: 32px;
+    margin-bottom: 52px;
+}
+
+.security-form {
+    max-width: 100%;
+    margin-bottom: 72px;
+}
+
+.security-subheading {
+    margin-top: 0;
+    margin-bottom: 44px;
+}
+
+.security-section-block {
+    margin-top: 56px;
+}
+
+.security-pill-button {
+    min-width: 196px;
+    min-height: 48px;
+    border-radius: 999px;
+    font-size: 1rem;
+}
+
+.form-label {
+    margin-bottom: 14px;
+    font-size: 1rem;
+}
+
+.form-control {
+    min-height: 52px;
+    border-radius: 999px;
+}
+
+@media (max-width: 770px) {
+    .security-settings {
+        padding-top: 24px;
+    }
+
+    .security-section {
+        padding-left: 0;
+    }
+
+    .logout-button {
+        margin-left: 0;
+        margin-bottom: 36px;
+    }
+
+    .security-subheading {
+        margin-bottom: 32px;
+    }
+}
+</style>

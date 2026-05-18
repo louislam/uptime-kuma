@@ -921,6 +921,55 @@ describe("Cloudflare Worker API", () => {
         assert.strictEqual(env.state.settings.workerAuthUser.password.iterations, 100000);
     });
 
+    test("Worker local password changes require the current password", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({});
+        await createLocalUser(handleApiRequest, env);
+
+        const missingCurrentPasswordResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/auth/local-user", {
+                method: "PUT",
+                body: JSON.stringify({
+                    newPassword: "newpassword123",
+                }),
+            }),
+            env
+        );
+
+        assert.strictEqual(missingCurrentPasswordResponse.status, 401);
+        assert.deepStrictEqual(await missingCurrentPasswordResponse.json(), { error: "authIncorrectCreds" });
+
+        const updateResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/auth/local-user", {
+                method: "PUT",
+                body: JSON.stringify({
+                    currentPassword: "password123",
+                    newPassword: "newpassword123",
+                }),
+            }),
+            env
+        );
+
+        assert.strictEqual(updateResponse.status, 200);
+        const updateBody = await updateResponse.json();
+        assert.strictEqual(updateBody.ok, true);
+        assert.strictEqual(updateBody.username, "admin");
+
+        const loginResponse = await handleApiRequest(
+            new Request("https://example.com/api/auth/login", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({
+                    username: "admin",
+                    password: "newpassword123",
+                }),
+            }),
+            env
+        );
+
+        assert.strictEqual(loginResponse.status, 200);
+    });
+
     test("rejects unauthenticated Worker admin requests once local auth is configured", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({});
