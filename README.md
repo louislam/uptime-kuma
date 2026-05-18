@@ -269,6 +269,10 @@ explicitly in the change or pull request.
 - Apply D1 migrations before relying on monitor or heartbeat state.
 - Keep `run_worker_first` for `/api/*` so API requests are handled by the Worker
   instead of the SPA fallback.
+- Worker deployments automatically pause monitor checks for 2 minutes when a
+  new Worker version starts serving, so the runner/container rollout does not
+  write false DOWN heartbeats. Adjust `DEPLOY_MONITOR_PAUSE_SECONDS` in
+  `wrangler.jsonc` if the rollout window needs to be longer.
 - Queue consumers and the scheduled trigger are part of the production monitor
   execution path.
 - The runner container is intentionally separate from the Worker because checks

@@ -119,6 +119,10 @@ describe("Cloudflare Worker API", () => {
             run_worker_first: ["/api/*"],
         });
         assert.strictEqual(wranglerConfig.keep_vars, true);
+        assert.deepStrictEqual(wranglerConfig.version_metadata, {
+            binding: "CF_VERSION_METADATA",
+        });
+        assert.strictEqual(wranglerConfig.vars.DEPLOY_MONITOR_PAUSE_SECONDS, "120");
         assert.match(workerSource, /return await env\.ASSETS\.fetch\(request\)/);
         assert.doesNotMatch(workerSource, /return await runner\.fetch\(request\)/);
     });
@@ -3048,6 +3052,196 @@ describe("Cloudflare Worker API", () => {
         assert.deepStrictEqual(env.state.heartbeats, []);
     });
 
+    test("new Worker versions pause scheduled monitor enqueueing", async () => {
+        const { enqueueDueMonitors } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                {
+                    id: 7,
+                    name: "Marketing Dash",
+                    type: "http",
+                    url: "https://marketing.wgsglobal.app/",
+                    active: 1,
+                },
+            ],
+            workerVersionId: "version-a",
+            deployMonitorPauseSeconds: "120",
+        });
+
+        const result = await enqueueDueMonitors(env);
+
+        assert.strictEqual(result.paused, true);
+        assert.strictEqual(env.MONITOR_QUEUE.sent.length, 0);
+        assert.strictEqual(env.state.settings.deployMonitorPause.versionId, "version-a");
+        assert.match(env.state.settings.deployMonitorPause.pauseUntil, /^\d{4}-\d{2}-\d{2}T/);
+    });
+
+    test("existing Worker versions keep scheduled checks paused until pauseUntil", async () => {
+        const { enqueueDueMonitors } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                {
+                    id: 7,
+                    name: "Marketing Dash",
+                    type: "http",
+                    url: "https://marketing.wgsglobal.app/",
+                    active: 1,
+                },
+            ],
+            settings: {
+                deployMonitorPause: {
+                    versionId: "version-a",
+                    pauseUntil: new Date(Date.now() + 60_000).toISOString(),
+                },
+            },
+            workerVersionId: "version-a",
+            deployMonitorPauseSeconds: "120",
+        });
+
+        const result = await enqueueDueMonitors(env);
+
+        assert.strictEqual(result.paused, true);
+        assert.strictEqual(env.MONITOR_QUEUE.sent.length, 0);
+    });
+
+    test("existing Worker versions enqueue scheduled checks after pauseUntil expires", async () => {
+        const { enqueueDueMonitors } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                {
+                    id: 7,
+                    name: "Marketing Dash",
+                    type: "http",
+                    url: "https://marketing.wgsglobal.app/",
+                    active: 1,
+                },
+            ],
+            settings: {
+                deployMonitorPause: {
+                    versionId: "version-a",
+                    pauseUntil: new Date(Date.now() - 60_000).toISOString(),
+                },
+            },
+            workerVersionId: "version-a",
+            deployMonitorPauseSeconds: "120",
+        });
+
+        const result = await enqueueDueMonitors(env);
+
+        assert.strictEqual(result.paused, false);
+        assert.deepStrictEqual(env.MONITOR_QUEUE.sent, [
+            {
+                monitorId: 7,
+                queuedAt: env.MONITOR_QUEUE.sent[0].queuedAt,
+            },
+        ]);
+    });
+
+    test("queue consumer acknowledges messages without runner checks during deploy pause", async () => {
+        const { consumeQueue } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                {
+                    id: 7,
+                    name: "Marketing Dash",
+                    type: "http",
+                    url: "https://marketing.wgsglobal.app/",
+                    active: 1,
+                },
+            ],
+            settings: {
+                deployMonitorPause: {
+                    versionId: "version-a",
+                    pauseUntil: new Date(Date.now() + 60_000).toISOString(),
+                },
+            },
+            workerVersionId: "version-a",
+        });
+        const acknowledged = [];
+
+        const result = await consumeQueue({
+            messages: [
+                {
+                    body: { monitorId: 7 },
+                    ack() {
+                        acknowledged.push(7);
+                    },
+                },
+            ],
+        }, env);
+
+        assert.strictEqual(result.paused, true);
+        assert.deepStrictEqual(acknowledged, [7]);
+        assert.deepStrictEqual(env.state.runnerJobs, []);
+        assert.deepStrictEqual(env.state.heartbeats, []);
+    });
+
+    test("check-now skips runner checks and heartbeat writes during deploy pause", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                {
+                    id: 7,
+                    name: "Marketing Dash",
+                    type: "http",
+                    url: "https://marketing.wgsglobal.app/",
+                    active: 1,
+                },
+            ],
+            settings: {
+                deployMonitorPause: {
+                    versionId: "version-a",
+                    pauseUntil: new Date(Date.now() + 60_000).toISOString(),
+                },
+            },
+            workerVersionId: "version-a",
+        });
+
+        const response = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/7/check-now", { method: "POST" }),
+            env
+        );
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(body.result.skipped, true);
+        assert.strictEqual(body.result.status, null);
+        assert.match(body.result.msg, /paused during Worker deployment/);
+        assert.deepStrictEqual(env.state.runnerJobs, []);
+        assert.deepStrictEqual(env.state.heartbeats, []);
+    });
+
+    test("changed Worker versions refresh the deploy pause window", async () => {
+        const { enqueueDueMonitors } = await import("../../../cloudflare/worker/api.mjs");
+        const oldPauseUntil = new Date(Date.now() - 60_000).toISOString();
+        const env = createEnv({
+            monitors: [
+                {
+                    id: 7,
+                    name: "Marketing Dash",
+                    type: "http",
+                    url: "https://marketing.wgsglobal.app/",
+                    active: 1,
+                },
+            ],
+            settings: {
+                deployMonitorPause: {
+                    versionId: "version-a",
+                    pauseUntil: oldPauseUntil,
+                },
+            },
+            workerVersionId: "version-b",
+            deployMonitorPauseSeconds: "120",
+        });
+
+        const result = await enqueueDueMonitors(env);
+
+        assert.strictEqual(result.paused, true);
+        assert.strictEqual(env.MONITOR_QUEUE.sent.length, 0);
+        assert.strictEqual(env.state.settings.deployMonitorPause.versionId, "version-b");
+        assert.notStrictEqual(env.state.settings.deployMonitorPause.pauseUntil, oldPauseUntil);
+    });
+
     test("check-now adds ACCESS_SECRET header to HTTP monitor jobs without saving it", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({
@@ -3180,6 +3374,8 @@ function createEnv(initial) {
         state,
         ADMIN_API_TOKEN: "adminToken" in initial ? initial.adminToken : "test-token",
         ACCESS_SECRET: initial.accessSecret,
+        CF_VERSION_METADATA: initial.workerVersionId ? { id: initial.workerVersionId } : undefined,
+        DEPLOY_MONITOR_PAUSE_SECONDS: initial.deployMonitorPauseSeconds,
         CF_ACCESS_TEAM_DOMAIN: initial.accessTeamDomain || initial.accessAuth?.teamDomain,
         CF_ACCESS_AUD: initial.accessAudience || initial.accessAuth?.audience,
         CF_ACCESS_CERTS_JSON: initial.accessAuth?.certsJson,

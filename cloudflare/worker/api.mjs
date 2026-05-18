@@ -37,20 +37,24 @@ const WORKER_AUTH_SESSION_SECRET_SETTING = "workerAuthSessionSecret";
 const WORKER_AUTH_TOTP_SETTING = "workerAuthTotp";
 const WORKER_STATUS_PAGE_CONFIG_SETTING = "statusPageConfig:default";
 const WORKER_STATUS_PAGE_PUBLIC_GROUP_LIST_SETTING = "statusPagePublicGroupList:default";
+const DEPLOY_MONITOR_PAUSE_SETTING = "deployMonitorPause";
 const SENSITIVE_SETTING_KEYS = new Set([
     WORKER_AUTH_USER_SETTING,
     WORKER_AUTH_SESSION_SECRET_SETTING,
     WORKER_AUTH_TOTP_SETTING,
+    DEPLOY_MONITOR_PAUSE_SETTING,
 ]);
 const WORKER_AUTH_PASSWORD_ITERATIONS = 100000;
 const WORKER_AUTH_SESSION_TTL_SECONDS = 7 * 24 * 60 * 60;
 const WORKER_AUTH_REMEMBER_SESSION_TTL_SECONDS = 30 * 24 * 60 * 60;
 const WORKER_AUTH_TOTP_PERIOD_SECONDS = 30;
 const WORKER_AUTH_TOTP_WINDOW = 1;
+const DEFAULT_DEPLOY_MONITOR_PAUSE_SECONDS = 120;
 const ACCESS_SECRET_HEADER = "X-Uptime-Worker-Token";
 const ACCESS_SECRET_MONITOR_TYPES = new Set(["http", "keyword", "json-query"]);
 const NOTIFICATION_OK_MESSAGE = "Sent Successfully.";
 const DEFAULT_APP_VERSION = "1.0.0";
+const DEPLOY_MONITOR_PAUSE_MESSAGE = "Monitor checks are paused during Worker deployment";
 
 const WORKER_MONITOR_TYPES = new Set([
     "group",
@@ -1860,6 +1864,10 @@ export async function executeMonitorCheck(env, monitorId) {
     if (monitor.type === "group") {
         throw httpError(400, "Group monitors do not run checks");
     }
+    const deployPause = await getDeployMonitorPauseState(env);
+    if (deployPause.paused) {
+        return buildDeployPauseSkippedResult(deployPause);
+    }
 
     const networkProfile = monitor.network_profile_id ? await getNetworkProfile(env, monitor.network_profile_id) : null;
     const proxy = await getActiveProxy(env, monitor.proxy_id);
@@ -1922,25 +1930,59 @@ function stringifyMonitorHeaders(headers) {
 }
 
 export async function enqueueDueMonitors(env) {
+    const deployPause = await getDeployMonitorPauseState(env);
+    if (deployPause.paused) {
+        return {
+            paused: true,
+            enqueued: 0,
+            pauseUntil: deployPause.pauseUntil,
+        };
+    }
+
     const result = await env.DB.prepare(
         "SELECT id FROM monitors WHERE active = 1 AND type != 'group' ORDER BY id"
     ).all();
+    const monitors = result.results || [];
 
     await Promise.all(
-        (result.results || []).map((monitor) =>
+        monitors.map((monitor) =>
             env.MONITOR_QUEUE.send({
                 monitorId: monitor.id,
                 queuedAt: new Date().toISOString(),
             })
         )
     );
+
+    return {
+        paused: false,
+        enqueued: monitors.length,
+    };
 }
 
 export async function consumeQueue(batch, env) {
+    const deployPause = await getDeployMonitorPauseState(env);
+    if (deployPause.paused) {
+        for (const message of batch.messages || []) {
+            message.ack?.();
+        }
+        return {
+            paused: true,
+            consumed: 0,
+            acknowledged: (batch.messages || []).length,
+            pauseUntil: deployPause.pauseUntil,
+        };
+    }
+
+    let consumed = 0;
     for (const message of batch.messages || []) {
         await executeMonitorCheck(env, Number(message.body.monitorId));
         message.ack?.();
+        consumed++;
     }
+    return {
+        paused: false,
+        consumed,
+    };
 }
 
 async function callRunner(env, job) {
@@ -2049,6 +2091,80 @@ async function writeHeartbeat(env, monitorId, result) {
     )
         .bind(monitorId, status, result.ping ?? null, result.msg ?? "", responseR2Key)
         .run();
+}
+
+export async function getDeployMonitorPauseState(env, now = new Date()) {
+    const versionId = resolveWorkerVersionId(env);
+    if (!versionId) {
+        return {
+            paused: false,
+            versionId: null,
+            pauseUntil: null,
+        };
+    }
+
+    const stored = await getStoredSetting(env, DEPLOY_MONITOR_PAUSE_SETTING);
+    const storedVersionId = typeof stored?.versionId === "string" ? stored.versionId : null;
+    const storedPauseUntil = parsePauseUntil(stored?.pauseUntil);
+    if (storedVersionId !== versionId) {
+        const pauseUntil = new Date(now.getTime() + resolveDeployMonitorPauseMs(env)).toISOString();
+        await setStoredSetting(env, DEPLOY_MONITOR_PAUSE_SETTING, {
+            versionId,
+            pauseUntil,
+        });
+        return {
+            paused: true,
+            versionId,
+            pauseUntil,
+        };
+    }
+
+    if (storedPauseUntil && storedPauseUntil.getTime() > now.getTime()) {
+        return {
+            paused: true,
+            versionId,
+            pauseUntil: storedPauseUntil.toISOString(),
+        };
+    }
+
+    return {
+        paused: false,
+        versionId,
+        pauseUntil: storedPauseUntil ? storedPauseUntil.toISOString() : null,
+    };
+}
+
+function resolveWorkerVersionId(env) {
+    const versionId = env.CF_VERSION_METADATA?.id;
+    return typeof versionId === "string" && versionId.trim() ? versionId.trim() : null;
+}
+
+function resolveDeployMonitorPauseMs(env) {
+    const seconds = Number.parseInt(env.DEPLOY_MONITOR_PAUSE_SECONDS, 10);
+    const normalizedSeconds = Number.isFinite(seconds) && seconds >= 0
+        ? seconds
+        : DEFAULT_DEPLOY_MONITOR_PAUSE_SECONDS;
+    return normalizedSeconds * 1000;
+}
+
+function parsePauseUntil(value) {
+    if (typeof value !== "string" || !value) {
+        return null;
+    }
+    const date = new Date(value);
+    return Number.isFinite(date.getTime()) ? date : null;
+}
+
+function buildDeployPauseSkippedResult(deployPause) {
+    return {
+        skipped: true,
+        status: null,
+        ping: null,
+        msg: deployPause.pauseUntil
+            ? `${DEPLOY_MONITOR_PAUSE_MESSAGE} until ${deployPause.pauseUntil}`
+            : DEPLOY_MONITOR_PAUSE_MESSAGE,
+        response: null,
+    };
 }
 
 async function getMonitor(env, monitorId) {
