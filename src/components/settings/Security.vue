@@ -211,6 +211,7 @@
 <script>
 import Confirm from "../../components/Confirm.vue";
 import TwoFADialog from "../../components/TwoFADialog.vue";
+import { requestCloudflareJson } from "../../cloudflare-worker-api";
 
 export default {
     components: {
@@ -273,23 +274,64 @@ export default {
             }
 
             this.workerSaving = true;
-            this.$root.getSocket().emit("saveWorkerAuthUser", {
+            if (this.$root.isCloudflareWorkerUI) {
+                this.saveWorkerAuthUserWithRest();
+                return;
+            }
+
+            this.$root.getSocket().emit("saveWorkerAuthUser", this.workerAuthPayload(), this.onWorkerAuthUserSaved);
+        },
+
+        /**
+         * Save Worker-local auth via the REST API exposed by Cloudflare Workers.
+         * This keeps the settings form functional even when the Socket.IO shim
+         * bundle is stale in a browser cache.
+         * @returns {Promise<void>}
+         */
+        async saveWorkerAuthUserWithRest() {
+            try {
+                const res = await requestCloudflareJson("/api/auth/local-user", {
+                    method: "PUT",
+                    body: JSON.stringify(this.workerAuthPayload()),
+                });
+                this.onWorkerAuthUserSaved(res);
+            } catch (error) {
+                this.onWorkerAuthUserSaved({
+                    ok: false,
+                    msg: error.message,
+                });
+            }
+        },
+
+        /**
+         * Build the Worker-local auth API payload.
+         * @returns {{username: string, newPassword: string}} Request payload.
+         */
+        workerAuthPayload() {
+            return {
                 username: this.workerAuth.username,
                 newPassword: this.workerAuth.newPassword,
-            }, (res) => {
-                this.workerSaving = false;
-                this.$root.toastRes(res);
-                if (res.ok) {
-                    this.$root.workerLocalAuthConfigured = true;
-                    this.$root.username = res.username;
-                    if (res.token) {
-                        this.$root.storage().token = res.token;
-                        this.$root.socket.token = res.token;
-                    }
-                    this.workerAuth.newPassword = "";
-                    this.workerAuth.repeatNewPassword = "";
+            };
+        },
+
+        /**
+         * Handle a Worker-local auth save response.
+         * @param {object} res API response.
+         * @returns {void}
+         */
+        onWorkerAuthUserSaved(res) {
+            this.workerSaving = false;
+            this.$root.toastRes(res);
+            if (res.ok) {
+                this.$root.workerLocalAuthConfigured = true;
+                this.$root.username = res.username;
+                if (res.token) {
+                    this.$root.storage().token = res.token;
+                    this.$root.socket.token = res.token;
                 }
-            });
+                this.workerAuth.newPassword = "";
+                this.workerAuth.repeatNewPassword = "";
+            }
         },
 
         /**
