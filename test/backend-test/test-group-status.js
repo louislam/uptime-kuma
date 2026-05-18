@@ -9,6 +9,7 @@ const {
 const {
     UNKNOWN,
     buildGroupHeartbeatList,
+    calculateGroupStatusBadge,
     calculateGroupStatus,
     calculateGroupUptime,
     getGroupChildMonitors,
@@ -32,6 +33,31 @@ describe("group-status", () => {
 
         assert.strictEqual(calculateGroupStatus(monitors, heartbeatList), UP);
         assert.strictEqual(calculateGroupUptime(monitors, uptimeList, "24"), 1);
+    });
+
+    test("returns an up badge for a group whose children are all up", () => {
+        const group = { id: 10, type: "group", active: true };
+        const monitorList = {
+            10: group,
+            11: { id: 11, type: "http", parent: 10, active: true },
+            12: { id: 12, type: "ping", parent: 10, active: true },
+        };
+        const heartbeatList = {
+            11: [{ status: UP, time: "2026-05-18 12:00:00" }],
+            12: [{ status: UP, time: "2026-05-18 12:00:00" }],
+        };
+        const translate = (key) => ({
+            Up: "Up",
+            Unknown: "Unknown",
+        }[key] || key);
+
+        assert.deepStrictEqual(
+            calculateGroupStatusBadge(group, monitorList, heartbeatList, translate),
+            {
+                text: "Up",
+                color: "primary",
+            }
+        );
     });
 
     test("returns down when any child is down", () => {

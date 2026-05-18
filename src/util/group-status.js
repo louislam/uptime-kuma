@@ -98,6 +98,71 @@ function calculateGroupStatus(monitors, heartbeatList) {
 }
 
 /**
+ * Convert a status code into the badge display used by monitor details.
+ * @param {number} status Status code
+ * @param {Function} translate Translation function
+ * @returns {{text: string, color: string}} Badge display state
+ */
+function statusToBadge(status, translate) {
+    const t = typeof translate === "function" ? translate : (key) => key;
+
+    if (status === UP) {
+        return {
+            text: t("Up"),
+            color: "primary",
+        };
+    }
+
+    if (status === DOWN) {
+        return {
+            text: t("Down"),
+            color: "danger",
+        };
+    }
+
+    if (status === PENDING) {
+        return {
+            text: t("Pending"),
+            color: "warning",
+        };
+    }
+
+    if (status === MAINTENANCE) {
+        return {
+            text: t("statusMaintenance"),
+            color: "maintenance",
+        };
+    }
+
+    return {
+        text: t("Unknown"),
+        color: "secondary",
+    };
+}
+
+/**
+ * Calculate the dashboard detail badge state for a group monitor.
+ * @param {object} groupMonitor Group monitor
+ * @param {object} monitorList Monitor map
+ * @param {object} heartbeatList Map of monitor heartbeat arrays
+ * @param {Function} translate Translation function
+ * @returns {{text: string, color: string}|null} Badge display state
+ */
+function calculateGroupStatusBadge(groupMonitor, monitorList, heartbeatList, translate) {
+    if (groupMonitor?.type !== "group") {
+        return null;
+    }
+
+    const childMonitors = getGroupChildMonitors(groupMonitor, monitorList);
+
+    if (childMonitors.length === 0) {
+        return null;
+    }
+
+    return statusToBadge(calculateGroupStatus(childMonitors, heartbeatList), translate);
+}
+
+/**
  * Calculate an aggregate uptime ratio from child monitor uptime values.
  * @param {object[]} monitors Child monitors
  * @param {object} uptimeList Map of uptime ratios
@@ -229,7 +294,9 @@ function isActive(monitor) {
 module.exports = {
     UNKNOWN,
     buildGroupHeartbeatList,
+    calculateGroupStatusBadge,
     calculateGroupStatus,
     calculateGroupUptime,
     getGroupChildMonitors,
+    statusToBadge,
 };

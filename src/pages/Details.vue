@@ -470,6 +470,9 @@ import {
     requireDoubleClickConfirm,
     resetDoubleClickConfirm,
 } from "../util/double-click-confirm.mjs";
+import groupStatus from "../util/group-status";
+
+const { calculateGroupStatusBadge } = groupStatus;
 
 export default {
     components: {
@@ -568,6 +571,17 @@ export default {
         },
 
         status() {
+            const groupStatusBadge = calculateGroupStatusBadge(
+                this.monitor,
+                this.$root.monitorList,
+                this.$root.heartbeatList,
+                (key) => this.$t(key)
+            );
+
+            if (groupStatusBadge) {
+                return groupStatusBadge;
+            }
+
             if (this.$root.statusList[this.monitor.id]) {
                 return this.$root.statusList[this.monitor.id];
             }
