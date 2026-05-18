@@ -9,6 +9,7 @@ const {
 const {
     UNKNOWN,
     buildGroupHeartbeatList,
+    calculateGroupAveragePing,
     calculateGroupStatusBadge,
     calculateGroupStatus,
     calculateGroupUptime,
@@ -104,18 +105,45 @@ describe("group-status", () => {
     test("builds aggregate heartbeat bars from child heartbeat slots", () => {
         const heartbeatList = {
             1: [
-                { status: UP, time: "2026-05-13 12:00:00" },
-                { status: UP, time: "2026-05-13 12:01:00" },
+                { status: UP, ping: 10, time: "2026-05-13 12:00:00" },
+                { status: UP, ping: 20, time: "2026-05-13 12:01:00" },
             ],
             2: [
-                { status: UP, time: "2026-05-13 12:00:00" },
-                { status: DOWN, time: "2026-05-13 12:01:00" },
+                { status: UP, ping: 30, time: "2026-05-13 12:00:00" },
+                { status: DOWN, ping: 90, time: "2026-05-13 12:01:00" },
             ],
         };
 
-        assert.deepStrictEqual(
-            buildGroupHeartbeatList(monitors, heartbeatList).map((beat) => beat.status),
-            [UP, DOWN]
+        const aggregate = buildGroupHeartbeatList(monitors, heartbeatList);
+
+        assert.deepStrictEqual(aggregate.map((beat) => beat.status), [UP, DOWN]);
+        assert.deepStrictEqual(aggregate.map((beat) => beat.ping), [20, 20]);
+    });
+
+    test("calculates average ping from active child heartbeat values", () => {
+        const heartbeatList = {
+            1: [
+                { status: UP, ping: 10, time: "2026-05-13 12:00:00" },
+                { status: UP, ping: 30, time: "2026-05-13 12:01:00" },
+            ],
+            2: [
+                { status: DOWN, ping: 200, time: "2026-05-13 12:00:00" },
+                { status: UP, ping: 50, time: "2026-05-13 12:01:00" },
+            ],
+            3: [
+                { status: UP, ping: 500, time: "2026-05-13 12:01:00" },
+            ],
+        };
+
+        assert.strictEqual(
+            calculateGroupAveragePing(
+                [
+                    ...monitors,
+                    { id: 3, active: false },
+                ],
+                heartbeatList
+            ),
+            30
         );
     });
 

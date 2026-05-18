@@ -45,6 +45,9 @@ import {
 import "chartjs-adapter-dayjs-4";
 import { Line } from "vue-chartjs";
 import { UP, DOWN, PENDING, MAINTENANCE } from "../util.ts";
+import groupStatus from "../util/group-status";
+
+const { buildGroupHeartbeatList, getGroupChildMonitors } = groupStatus;
 
 Chart.register(
     LineController,
@@ -221,6 +224,19 @@ export default {
                 return this.getChartDatapointsFromStats();
             }
         },
+        currentMonitor() {
+            return this.$root.monitorList[this.monitorId];
+        },
+        isGroupMonitor() {
+            return this.currentMonitor?.type === "group";
+        },
+        groupChildMonitors() {
+            if (!this.isGroupMonitor) {
+                return [];
+            }
+
+            return getGroupChildMonitors(this.currentMonitor, this.$root.monitorList);
+        },
     },
     watch: {
         // Update chart data when the selected chart period changes
@@ -352,13 +368,14 @@ export default {
         getChartDatapointsFromHeartbeatList() {
             // Render chart using heartbeatList
             let lastHeartbeatTime;
-            const monitorInterval = this.$root.monitorList[this.monitorId]?.interval;
+            const monitorInterval = this.currentMonitor?.interval;
             let pingData = []; // Ping Data for Line Chart, y-axis contains ping time
             let downData = []; // Down Data for Bar Chart, y-axis is 1 if target is down (red color), under maintenance (blue color) or pending (orange color), 0 if target is up
             let colorData = []; // Color Data for Bar Chart
 
-            let heartbeatList =
-                (this.monitorId in this.$root.heartbeatList && this.$root.heartbeatList[this.monitorId]) || [];
+            let heartbeatList = this.isGroupMonitor
+                ? buildGroupHeartbeatList(this.groupChildMonitors, this.$root.heartbeatList)
+                : (this.monitorId in this.$root.heartbeatList && this.$root.heartbeatList[this.monitorId]) || [];
 
             for (const beat of heartbeatList) {
                 const beatTime = this.$root.toDayjs(beat.time);
@@ -441,7 +458,7 @@ export default {
         getChartDatapointsFromStats() {
             // Render chart using UptimeCalculator data
             let lastHeartbeatTime;
-            const monitorInterval = this.$root.monitorList[this.monitorId]?.interval;
+            const monitorInterval = this.currentMonitor?.interval;
 
             let avgPingData = []; // Ping Data for Line Chart, y-axis contains ping time
             let minPingData = []; // Ping Data for Line Chart, y-axis contains ping time

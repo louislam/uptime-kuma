@@ -222,7 +222,7 @@
                         </span>
                     </div>
                     <div
-                        v-if="monitor.type !== 'group'"
+                        v-if="showAvgPingStat"
                         class="col-12 col-sm col row d-flex align-items-center d-sm-block"
                     >
                         <h4 class="col-4 col-sm-12">{{ pingTitle(true) }}</h4>
@@ -472,7 +472,7 @@ import {
 } from "../util/double-click-confirm.mjs";
 import groupStatus from "../util/group-status";
 
-const { calculateGroupStatusBadge } = groupStatus;
+const { calculateGroupAveragePing, calculateGroupStatusBadge, getGroupChildMonitors } = groupStatus;
 
 export default {
     components: {
@@ -563,11 +563,33 @@ export default {
         },
 
         avgPing() {
+            if (this.monitor.type === "group") {
+                const groupAveragePing = calculateGroupAveragePing(this.groupChildMonitors, this.$root.heartbeatList);
+
+                if (groupAveragePing || groupAveragePing === 0) {
+                    return Number(groupAveragePing.toFixed(2));
+                }
+
+                return this.$t("notAvailableShort");
+            }
+
             if (this.$root.avgPingList[this.monitor.id] || this.$root.avgPingList[this.monitor.id] === 0) {
                 return this.$root.avgPingList[this.monitor.id];
             }
 
             return this.$t("notAvailableShort");
+        },
+
+        groupChildMonitors() {
+            if (this.monitor.type !== "group") {
+                return [];
+            }
+
+            return getGroupChildMonitors(this.monitor, this.$root.monitorList);
+        },
+
+        showAvgPingStat() {
+            return this.monitor.type !== "group" || this.groupChildMonitors.length > 0;
         },
 
         status() {

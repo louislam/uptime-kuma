@@ -192,6 +192,42 @@ function calculateGroupUptime(monitors, uptimeList, type = "24") {
 }
 
 /**
+ * Calculate the average ping from active child monitor heartbeat values.
+ * @param {object[]} monitors Child monitors
+ * @param {object} heartbeatList Map of monitor heartbeat arrays
+ * @returns {number|null} Average ping
+ */
+function calculateGroupAveragePing(monitors, heartbeatList) {
+    const activeMonitors = monitors.filter(isActive);
+
+    if (activeMonitors.length === 0) {
+        return null;
+    }
+
+    const pings = [];
+
+    for (const monitor of activeMonitors) {
+        const heartbeats = heartbeatList?.[monitor.id];
+
+        if (!Array.isArray(heartbeats)) {
+            continue;
+        }
+
+        for (const beat of heartbeats) {
+            if (beat?.status === UP && typeof beat.ping === "number" && !Number.isNaN(beat.ping)) {
+                pings.push(beat.ping);
+            }
+        }
+    }
+
+    if (pings.length === 0) {
+        return null;
+    }
+
+    return pings.reduce((total, ping) => total + ping, 0) / pings.length;
+}
+
+/**
  * Build a synthetic heartbeat list by aggregating child heartbeat slots.
  * @param {object[]} monitors Child monitors
  * @param {object} heartbeatList Map of monitor heartbeat arrays
@@ -236,6 +272,7 @@ function buildGroupHeartbeatList(monitors, heartbeatList) {
 
         result.push({
             status: aggregateStatus,
+            ping: calculateBeatAveragePing(beats),
             time: latestBeat?.time,
             msg: "Group status",
         });
@@ -283,6 +320,23 @@ function calculateBeatStatus(beats) {
 }
 
 /**
+ * Calculate average ping for a single aggregate heartbeat slot.
+ * @param {Array} beats Child heartbeat slot values
+ * @returns {number|null} Average ping
+ */
+function calculateBeatAveragePing(beats) {
+    const pings = beats
+        .filter((beat) => beat?.status === UP && typeof beat.ping === "number" && !Number.isNaN(beat.ping))
+        .map((beat) => beat.ping);
+
+    if (pings.length === 0) {
+        return null;
+    }
+
+    return pings.reduce((total, ping) => total + ping, 0) / pings.length;
+}
+
+/**
  * Is a monitor active for aggregate status.
  * @param {object} monitor Monitor
  * @returns {boolean} Whether the monitor should count
@@ -294,6 +348,7 @@ function isActive(monitor) {
 module.exports = {
     UNKNOWN,
     buildGroupHeartbeatList,
+    calculateGroupAveragePing,
     calculateGroupStatusBadge,
     calculateGroupStatus,
     calculateGroupUptime,
