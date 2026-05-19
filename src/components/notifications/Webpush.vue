@@ -54,7 +54,6 @@ export default {
                         if (!resp.ok) {
                             reject(new Error(resp.msg));
                         }
-                        console.log(resp.msg);
                         resolve(resp.msg);
                     });
                 });

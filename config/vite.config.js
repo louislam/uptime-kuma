@@ -25,10 +25,12 @@ export default defineConfig({
         viteCompression({
             algorithm: "gzip",
             filter: viteCompressionFilter,
+            verbose: false,
         }),
         viteCompression({
             algorithm: "brotliCompress",
             filter: viteCompressionFilter,
+            verbose: false,
         }),
     ],
     css: {
@@ -41,11 +43,6 @@ export default defineConfig({
     build: {
         commonjsOptions: {
             include: [/.js$/],
-        },
-        rollupOptions: {
-            output: {
-                manualChunks(id, { getModuleInfo, getModuleIds }) {},
-            },
         },
     },
 });

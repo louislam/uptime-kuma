@@ -492,7 +492,6 @@ export default {
          * @returns {Promise<void>}
          */
         async submit(monitorId) {
-            console.log(`Submitting tag changes for monitor ${monitorId}...`);
             this.processing = true;
 
             for (const newTag of this.newTags) {

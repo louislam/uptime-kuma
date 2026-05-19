@@ -267,6 +267,9 @@ explicitly in the change or pull request.
 - Build `dist/` before deployment; the Worker serves it through the `ASSETS`
   binding.
 - Apply D1 migrations before relying on monitor or heartbeat state.
+- Preserve existing D1 migration filenames after they may have been applied to
+  remote environments. The current `0009_*` pair is intentional compatibility
+  history; the next new Cloudflare migration should use the `0010_` prefix.
 - Keep `run_worker_first` for `/api/*` so API requests are handled by the Worker
   instead of the SPA fallback.
 - Worker deployments automatically pause monitor checks for 2 minutes when a

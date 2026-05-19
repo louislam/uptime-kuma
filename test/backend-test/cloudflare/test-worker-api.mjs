@@ -106,6 +106,32 @@ describe("Cloudflare Worker API", () => {
         assert.match(migrationSql, /url TEXT NOT NULL/);
     });
 
+    test("Cloudflare D1 migrations keep unique numeric prefixes except the applied 0009 pair", async () => {
+        const migrationsDir = path.join(__dirname, "../../../cloudflare/migrations");
+        const files = fs.readdirSync(migrationsDir).filter((file) => file.endsWith(".sql")).sort();
+        const allowedDuplicatePrefixes = new Map([
+            ["0009", ["0009_docker_hosts.sql", "0009_tags.sql"]],
+        ]);
+        const filesByPrefix = new Map();
+
+        for (const file of files) {
+            const prefix = file.match(/^(\d{4})_/)?.[1];
+            assert.ok(prefix, `Cloudflare migration ${file} should start with a four-digit prefix`);
+            filesByPrefix.set(prefix, [...(filesByPrefix.get(prefix) || []), file]);
+        }
+
+        for (const [prefix, prefixedFiles] of filesByPrefix) {
+            if (prefixedFiles.length <= 1) {
+                continue;
+            }
+            assert.deepStrictEqual(
+                prefixedFiles,
+                allowedDuplicatePrefixes.get(prefix),
+                `Cloudflare migration prefix ${prefix} should not be reused for new migrations`
+            );
+        }
+    });
+
     test("Worker deployment serves the Vue web UI as a single-page app", async () => {
         const wranglerPath = path.join(__dirname, "../../../wrangler.jsonc");
         const wranglerConfig = JSON.parse(fs.readFileSync(wranglerPath, "utf8"));

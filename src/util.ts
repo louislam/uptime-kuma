@@ -17,7 +17,7 @@ import * as timezone from "dayjs/plugin/timezone";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import * as utc from "dayjs/plugin/utc";
 
-import * as jsonata from "jsonata";
+import * as jsonataModule from "jsonata";
 
 export const isDev = process.env.NODE_ENV === "development";
 export const isNode = typeof process !== "undefined" && process?.versions?.node;
@@ -702,7 +702,7 @@ export async function evaluateJsonQuery(
 
     try {
         // If a JSON path is provided, pre-evaluate the data using it.
-        response = jsonPath ? await jsonata(jsonPath).evaluate(response) : response;
+        response = jsonPath ? await createJsonataExpression(jsonPath).evaluate(response) : response;
 
         if (response === null || response === undefined) {
             throw new Error("Empty or undefined response. Check query syntax and response structure");
@@ -749,7 +749,7 @@ export async function evaluateJsonQuery(
         }
 
         // Evaluate the JSON Query Expression
-        const expression = jsonata(jsonQueryExpression);
+        const expression = createJsonataExpression(jsonQueryExpression);
         const status = await expression.evaluate({
             value: response.toString(),
             expected: expectedValue.toString(),
@@ -770,6 +770,13 @@ export async function evaluateJsonQuery(
         response = response && response.length > 50 ? `${response.substring(0, 100)}… (truncated)` : response; // Truncate long responses to the console
         throw new Error(`Error evaluating JSON query: ${err.message}. Response from server was: ${response}`);
     }
+}
+
+function createJsonataExpression(expression: string) {
+    const jsonataFactory = typeof jsonataModule === "function"
+        ? jsonataModule
+        : (jsonataModule as unknown as { default: typeof jsonataModule }).default;
+    return jsonataFactory(expression);
 }
 
 // these types will have domain expiry support via the specified field

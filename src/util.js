@@ -13,7 +13,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CONSOLE_STYLE_FgLightBlue = exports.CONSOLE_STYLE_FgLightGreen = exports.CONSOLE_STYLE_FgOrange = exports.CONSOLE_STYLE_FgGray = exports.CONSOLE_STYLE_FgWhite = exports.CONSOLE_STYLE_FgCyan = exports.CONSOLE_STYLE_FgMagenta = exports.CONSOLE_STYLE_FgBlue = exports.CONSOLE_STYLE_FgYellow = exports.CONSOLE_STYLE_FgGreen = exports.CONSOLE_STYLE_FgRed = exports.CONSOLE_STYLE_FgBlack = exports.CONSOLE_STYLE_Hidden = exports.CONSOLE_STYLE_Reverse = exports.CONSOLE_STYLE_Blink = exports.CONSOLE_STYLE_Underscore = exports.CONSOLE_STYLE_Dim = exports.CONSOLE_STYLE_Bright = exports.CONSOLE_STYLE_Reset = exports.RESPONSE_BODY_LENGTH_MAX = exports.RESPONSE_BODY_LENGTH_DEFAULT = exports.PING_PER_REQUEST_TIMEOUT_DEFAULT = exports.PING_PER_REQUEST_TIMEOUT_MAX = exports.PING_PER_REQUEST_TIMEOUT_MIN = exports.PING_COUNT_DEFAULT = exports.PING_COUNT_MAX = exports.PING_COUNT_MIN = exports.PING_GLOBAL_TIMEOUT_DEFAULT = exports.PING_GLOBAL_TIMEOUT_MAX = exports.PING_GLOBAL_TIMEOUT_MIN = exports.PING_PACKET_SIZE_DEFAULT = exports.PING_PACKET_SIZE_MAX = exports.PING_PACKET_SIZE_MIN = exports.INCIDENT_PAGE_SIZE = exports.MIN_INTERVAL_SECOND = exports.MAX_INTERVAL_SECOND = exports.SQL_DATETIME_FORMAT_WITHOUT_SECOND = exports.SQL_DATETIME_FORMAT = exports.SQL_DATE_FORMAT = exports.STATUS_PAGE_MAINTENANCE = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.MAINTENANCE = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isNode = exports.isDev = void 0;
 exports.TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD = exports.evaluateJsonQuery = exports.intHash = exports.localToUTC = exports.utcToLocal = exports.utcToISODateTime = exports.isoToUTCDateTime = exports.parseTimeFromTimeObject = exports.parseTimeObject = exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.log = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.badgeConstants = exports.CONSOLE_STYLE_BgGray = exports.CONSOLE_STYLE_BgWhite = exports.CONSOLE_STYLE_BgCyan = exports.CONSOLE_STYLE_BgMagenta = exports.CONSOLE_STYLE_BgBlue = exports.CONSOLE_STYLE_BgYellow = exports.CONSOLE_STYLE_BgGreen = exports.CONSOLE_STYLE_BgRed = exports.CONSOLE_STYLE_BgBlack = exports.CONSOLE_STYLE_FgPink = exports.CONSOLE_STYLE_FgBrown = exports.CONSOLE_STYLE_FgViolet = void 0;
 const dayjs_1 = require("dayjs");
-const jsonata = require("jsonata");
+const jsonataModule = require("jsonata");
 exports.isDev = process.env.NODE_ENV === "development";
 exports.isNode = typeof process !== "undefined" && ((_a = process === null || process === void 0 ? void 0 : process.versions) === null || _a === void 0 ? void 0 : _a.node);
 const dayjs = exports.isNode ? require("dayjs") : dayjs_1.default;
@@ -417,7 +417,7 @@ async function evaluateJsonQuery(data, jsonPath, jsonPathOperator, expectedValue
             (typeof data === "object" || typeof data === "number") && !Buffer.isBuffer(data) ? data : data.toString();
     }
     try {
-        response = jsonPath ? await jsonata(jsonPath).evaluate(response) : response;
+        response = jsonPath ? await createJsonataExpression(jsonPath).evaluate(response) : response;
         if (response === null || response === undefined) {
             throw new Error("Empty or undefined response. Check query syntax and response structure");
         }
@@ -452,7 +452,7 @@ async function evaluateJsonQuery(data, jsonPath, jsonPathOperator, expectedValue
             default:
                 throw new Error(`Invalid condition ${jsonPathOperator}`);
         }
-        const expression = jsonata(jsonQueryExpression);
+        const expression = createJsonataExpression(jsonQueryExpression);
         const status = await expression.evaluate({
             value: response.toString(),
             expected: expectedValue.toString(),
@@ -472,6 +472,12 @@ async function evaluateJsonQuery(data, jsonPath, jsonPathOperator, expectedValue
     }
 }
 exports.evaluateJsonQuery = evaluateJsonQuery;
+function createJsonataExpression(expression) {
+    const jsonataFactory = typeof jsonataModule === "function"
+        ? jsonataModule
+        : jsonataModule.default;
+    return jsonataFactory(expression);
+}
 exports.TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD = {
     http: "url",
     keyword: "url",

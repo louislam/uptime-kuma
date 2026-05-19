@@ -4069,7 +4069,6 @@ message HealthCheckResponse {
                     }
 
                     if (allowedProtocols && !allowedProtocols.includes(url.protocol)) {
-                        console.log(url);
                         toast.error(this.$t("invalidURL"));
                         return false;
                     }
@@ -4328,7 +4327,6 @@ message HealthCheckResponse {
         // Check Domain
         // Do nothing if not checked
         checkDomain() {
-            console.log("checkDomain called");
             if (this.checkDomainDebounce != null) {
                 clearTimeout(this.checkDomainDebounce);
             }
@@ -4348,7 +4346,6 @@ message HealthCheckResponse {
                 };
 
                 this.$root.getSocket().emit("checkDomain", data, (res) => {
-                    console.log(data);
                     if (!res.ok) {
                         this.domainExpiryUnsupportedReason = res.msgi18n ? this.$t(res.msg, res.meta) : res.msg;
                     } else {

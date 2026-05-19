@@ -1064,7 +1064,7 @@ export default {
                 if (error.response.status === 404) {
                     location.href = "/page-not-found";
                 }
-                console.log(error);
+                console.error(error);
             });
 
         this.updateHeartbeatList();

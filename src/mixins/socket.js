@@ -272,13 +272,11 @@ export default {
             });
 
             socket.on("disconnect", () => {
-                console.log("disconnect");
                 this.connectionErrorMsg = `${this.$t("Lost connection to the socket server.")} ${this.$t("Reconnecting...")}`;
                 this.socket.connected = false;
             });
 
             socket.on("connect", () => {
-                console.log("Connected to the socket server");
                 this.socket.connectCount++;
                 this.socket.connected = true;
 
@@ -797,7 +795,6 @@ export default {
          * @returns {void}
          */
         clearData() {
-            console.log("reset heartbeat list");
             this.heartbeatList = {};
         },
 
