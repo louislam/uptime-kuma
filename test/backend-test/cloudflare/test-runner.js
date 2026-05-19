@@ -46,6 +46,18 @@ describe("Cloudflare monitor runner", () => {
         assert.strictEqual(proxyRequests, 0);
     });
 
+    test("direct HTTP checks reject hostnames that resolve to private addresses", async () => {
+        const { resolveDirectTarget } = require("../../../cloudflare/runner/checker");
+
+        await assert.rejects(
+            resolveDirectTarget("metadata.public.example", null, async () => ({
+                address: "169.254.169.254",
+                family: 4,
+            })),
+            /Direct Worker checks cannot target private, loopback, link-local, or metadata hosts/
+        );
+    });
+
     test("Twingate HTTP checks use the configured HTTP proxy", async () => {
         const { runCheck } = require("../../../cloudflare/runner/checker");
         let proxyRequests = 0;
@@ -64,6 +76,7 @@ describe("Cloudflare monitor runner", () => {
                 type: "http",
                 url: "http://private.example.test/health",
                 timeout: 5,
+                saveResponse: true,
             },
             networkProfile: { slug: "twingate", type: "twingate" },
             twingateProxyUrl: `http://127.0.0.1:${proxy.port}`,
@@ -73,6 +86,56 @@ describe("Cloudflare monitor runner", () => {
         assert.strictEqual(result.msg, "200 - OK");
         assert.strictEqual(result.response, "proxied ok");
         assert.strictEqual(proxyRequests, 1);
+    });
+
+    test("HTTP checks do not return response bodies unless response saving is enabled", async () => {
+        const { runCheck } = require("../../../cloudflare/runner/checker");
+        const target = await listen(
+            http.createServer((req, res) => {
+                res.writeHead(200, { "content-type": "text/plain" });
+                res.end("sensitive response body");
+            })
+        );
+
+        const result = await runCheck({
+            monitor: {
+                id: 10,
+                type: "http",
+                url: `http://public.example.test:${target.port}/health`,
+                timeout: 5,
+            },
+            lookup: async () => ({ address: "127.0.0.1", family: 4 }),
+            allowPrivateResolvedForTest: true,
+        });
+
+        assert.strictEqual(result.status, UP);
+        assert.strictEqual(result.response, null);
+    });
+
+    test("HTTP checks cap saved response bodies to the configured maximum", async () => {
+        const { runCheck } = require("../../../cloudflare/runner/checker");
+        const target = await listen(
+            http.createServer((req, res) => {
+                res.writeHead(200, { "content-type": "text/plain" });
+                res.end("0123456789abcdef");
+            })
+        );
+
+        const result = await runCheck({
+            monitor: {
+                id: 11,
+                type: "http",
+                url: `http://public.example.test:${target.port}/health`,
+                timeout: 5,
+                saveResponse: true,
+                responseMaxLength: 8,
+            },
+            lookup: async () => ({ address: "127.0.0.1", family: 4 }),
+            allowPrivateResolvedForTest: true,
+        });
+
+        assert.strictEqual(result.status, UP);
+        assert.strictEqual(result.response, "01234567");
     });
 
     test("HTTP checks use assigned active user proxy with basic auth", async () => {
@@ -94,6 +157,7 @@ describe("Cloudflare monitor runner", () => {
                 type: "http",
                 url: "http://public.example.test/health",
                 timeout: 5,
+                saveResponse: true,
                 proxy: {
                     protocol: "http",
                     host: "127.0.0.1",
@@ -295,7 +359,7 @@ describe("Cloudflare monitor runner", () => {
             1000,
             async (command, args) => {
                 assert.strictEqual(command, "ping");
-                assert.deepStrictEqual(args, ["-c", "3", "-W", "2", "-w", "5", "-s", "56", "-n", "example.com"]);
+                assert.deepStrictEqual(args, ["-c", "3", "-W", "2", "-w", "5", "-s", "56", "-n", "93.184.216.34"]);
                 return {
                     stdout:
                         "PING example.com (93.184.216.34) 56(84) bytes of data.\n" +
@@ -305,7 +369,9 @@ describe("Cloudflare monitor runner", () => {
                         "rtt min/avg/max/mdev = 10.100/12.345/14.900/1.200 ms\n",
                 };
             },
-            () => 1015
+            () => 1015,
+            null,
+            { lookup: async () => ({ address: "93.184.216.34", family: 4 }) }
         );
 
         assert.deepStrictEqual(result, {

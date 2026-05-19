@@ -34,6 +34,7 @@ const PENDING = 2;
 const MAINTENANCE = 3;
 const WORKER_AUTH_USER_SETTING = "workerAuthUser";
 const WORKER_AUTH_SESSION_SECRET_SETTING = "workerAuthSessionSecret";
+const WORKER_AUTH_REVOKED_SESSIONS_SETTING = "workerAuthRevokedSessions";
 const WORKER_AUTH_TOTP_SETTING = "workerAuthTotp";
 const WORKER_STATUS_PAGE_CONFIG_SETTING = "statusPageConfig:default";
 const WORKER_STATUS_PAGE_PUBLIC_GROUP_LIST_SETTING = "statusPagePublicGroupList:default";
@@ -41,6 +42,7 @@ const DEPLOY_MONITOR_PAUSE_SETTING = "deployMonitorPause";
 const SENSITIVE_SETTING_KEYS = new Set([
     WORKER_AUTH_USER_SETTING,
     WORKER_AUTH_SESSION_SECRET_SETTING,
+    WORKER_AUTH_REVOKED_SESSIONS_SETTING,
     WORKER_AUTH_TOTP_SETTING,
     DEPLOY_MONITOR_PAUSE_SETTING,
 ]);
@@ -49,6 +51,7 @@ const WORKER_AUTH_SESSION_TTL_SECONDS = 7 * 24 * 60 * 60;
 const WORKER_AUTH_REMEMBER_SESSION_TTL_SECONDS = 30 * 24 * 60 * 60;
 const WORKER_AUTH_TOTP_PERIOD_SECONDS = 30;
 const WORKER_AUTH_TOTP_WINDOW = 1;
+const WORKER_HEARTBEAT_RESPONSE_MAX_CHARS = 64 * 1024;
 const DEFAULT_DEPLOY_MONITOR_PAUSE_SECONDS = 120;
 const ACCESS_SECRET_HEADER = "X-Uptime-Worker-Token";
 const ACCESS_SECRET_MONITOR_TYPES = new Set(["http", "keyword", "json-query"]);
@@ -236,7 +239,7 @@ export async function handleApiRequest(request, env) {
         }
 
         if (route.name === "auth-logout") {
-            return json({ ok: true });
+            return json(await logoutWorkerAuthSession(request, env));
         }
 
         if (route.name === "auth-local-user") {
@@ -2081,9 +2084,12 @@ async function formatRunnerError(response) {
 
 async function writeHeartbeat(env, monitorId, result) {
     let responseR2Key = null;
-    if (result.response && env.ARTIFACTS) {
+    const responseBody = result.response == null
+        ? ""
+        : String(result.response).slice(0, WORKER_HEARTBEAT_RESPONSE_MAX_CHARS);
+    if (responseBody && env.ARTIFACTS) {
         responseR2Key = `responses/${monitorId}/${Date.now()}.txt`;
-        await env.ARTIFACTS.put(responseR2Key, result.response);
+        await env.ARTIFACTS.put(responseR2Key, responseBody);
     }
 
     const status = result.status ?? DOWN;
@@ -2285,6 +2291,9 @@ function sanitizeMonitor(monitor) {
         jsonPath: monitor.json_path,
         expectedValue: monitor.expected_value,
         timeout: monitor.timeout,
+        saveResponse: normalizeBoolean(config.saveResponse),
+        saveErrorResponse: normalizeBoolean(config.saveErrorResponse),
+        responseMaxLength: normalizeRunnerResponseMaxLength(config.responseMaxLength),
         packetSize: config.packetSize,
         ping_count: config.ping_count,
         ping_numeric: config.ping_numeric,
@@ -2423,7 +2432,11 @@ async function saveWorkerAuthUser(env, body) {
         updatedAt: new Date().toISOString(),
     };
     await setStoredSetting(env, WORKER_AUTH_USER_SETTING, authUser);
-    await ensureWorkerAuthSessionSecret(env);
+    if (existingAuthUser) {
+        await rotateWorkerAuthSessionSecret(env);
+    } else {
+        await ensureWorkerAuthSessionSecret(env);
+    }
     return {
         ok: true,
         msg: "Local admin login saved",
@@ -2431,6 +2444,16 @@ async function saveWorkerAuthUser(env, body) {
         username,
         localAuthConfigured: true,
     };
+}
+
+async function logoutWorkerAuthSession(request, env) {
+    const authorization = request.headers.get("authorization") || "";
+    const suppliedToken = authorization.startsWith("Bearer ") ? authorization.slice(7) : "";
+    const session = await verifyWorkerAuthSessionToken(suppliedToken, env);
+    if (session) {
+        await revokeWorkerAuthSession(env, session, suppliedToken);
+    }
+    return { ok: true };
 }
 
 async function loginWorkerAuthUser(env, body) {
@@ -2674,11 +2697,19 @@ async function ensureWorkerAuthSessionSecret(env) {
     return secret;
 }
 
+async function rotateWorkerAuthSessionSecret(env) {
+    const secret = bytesToBase64Url(crypto.getRandomValues(new Uint8Array(32)));
+    await setStoredSetting(env, WORKER_AUTH_SESSION_SECRET_SETTING, secret);
+    await setStoredSetting(env, WORKER_AUTH_REVOKED_SESSIONS_SETTING, {});
+    return secret;
+}
+
 async function createWorkerAuthSessionToken(env, username, ttlSeconds) {
     const header = bytesToBase64Url(new TextEncoder().encode(JSON.stringify({ alg: "HS256", typ: "JWT" })));
     const payload = bytesToBase64Url(new TextEncoder().encode(JSON.stringify({
         typ: "worker-session",
         username,
+        jti: crypto.randomUUID ? crypto.randomUUID() : bytesToBase64Url(crypto.getRandomValues(new Uint8Array(16))),
         exp: Math.floor(Date.now() / 1000) + ttlSeconds,
     })));
     const signature = await signWorkerAuthSession(`${header}.${payload}`, await ensureWorkerAuthSessionSecret(env));
@@ -2710,10 +2741,53 @@ async function verifyWorkerAuthSessionToken(token, env) {
         if (!authUser || authUser.username !== payload.username) {
             return null;
         }
+        if (await isWorkerAuthSessionRevoked(env, payload, parts[2])) {
+            return null;
+        }
         return payload;
     } catch (_) {
         return null;
     }
+}
+
+async function revokeWorkerAuthSession(env, payload, token) {
+    const exp = Number(payload?.exp || 0);
+    const now = Math.floor(Date.now() / 1000);
+    if (!Number.isFinite(exp) || exp <= now) {
+        return;
+    }
+    const revokedSessions = await getWorkerAuthRevokedSessions(env);
+    revokedSessions[workerAuthSessionRevocationKey(payload, token?.split(".")?.[2])] = exp;
+    await setStoredSetting(env, WORKER_AUTH_REVOKED_SESSIONS_SETTING, revokedSessions);
+}
+
+async function isWorkerAuthSessionRevoked(env, payload, signature) {
+    const revokedSessions = await getWorkerAuthRevokedSessions(env);
+    const key = workerAuthSessionRevocationKey(payload, signature);
+    return Number(revokedSessions[key] || 0) > Math.floor(Date.now() / 1000);
+}
+
+async function getWorkerAuthRevokedSessions(env) {
+    const stored = await getStoredSetting(env, WORKER_AUTH_REVOKED_SESSIONS_SETTING);
+    const revokedSessions = stored && typeof stored === "object" && !Array.isArray(stored) ? stored : {};
+    const now = Math.floor(Date.now() / 1000);
+    let pruned = false;
+    for (const [key, exp] of Object.entries(revokedSessions)) {
+        if (!Number.isFinite(Number(exp)) || Number(exp) <= now) {
+            delete revokedSessions[key];
+            pruned = true;
+        }
+    }
+    if (pruned) {
+        await setStoredSetting(env, WORKER_AUTH_REVOKED_SESSIONS_SETTING, revokedSessions);
+    }
+    return revokedSessions;
+}
+
+function workerAuthSessionRevocationKey(payload, signature) {
+    return typeof payload?.jti === "string" && payload.jti
+        ? `jti:${payload.jti}`
+        : `sig:${signature || ""}`;
 }
 
 async function signWorkerAuthSession(data, secret) {
@@ -3670,6 +3744,14 @@ function normalizeBoolean(value) {
         return value === "1" || value.toLowerCase() === "true";
     }
     return Boolean(value);
+}
+
+function normalizeRunnerResponseMaxLength(value) {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed) || parsed <= 0) {
+        return 1024;
+    }
+    return Math.min(Math.trunc(parsed), WORKER_HEARTBEAT_RESPONSE_MAX_CHARS);
 }
 
 /**

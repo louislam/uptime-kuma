@@ -1126,6 +1126,102 @@ describe("Cloudflare Worker API", () => {
         });
     });
 
+    test("Worker local password changes revoke existing session tokens", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [],
+        });
+        await createLocalUser(handleApiRequest, env);
+        const loginResponse = await handleApiRequest(
+            new Request("https://example.com/api/auth/login", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({
+                    username: "admin",
+                    password: "password123",
+                }),
+            }),
+            env
+        );
+        const { token: oldToken } = await loginResponse.json();
+
+        const updateResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/auth/local-user", {
+                method: "PUT",
+                body: JSON.stringify({
+                    currentPassword: "password123",
+                    newPassword: "newpassword123",
+                }),
+            }),
+            env
+        );
+        const { token: newToken } = await updateResponse.json();
+
+        const oldTokenResponse = await handleApiRequest(
+            new Request("https://example.com/api/monitors", {
+                headers: {
+                    authorization: `Bearer ${oldToken}`,
+                },
+            }),
+            env
+        );
+        const newTokenResponse = await handleApiRequest(
+            new Request("https://example.com/api/monitors", {
+                headers: {
+                    authorization: `Bearer ${newToken}`,
+                },
+            }),
+            env
+        );
+
+        assert.strictEqual(oldTokenResponse.status, 401);
+        assert.deepStrictEqual(await oldTokenResponse.json(), { error: "Unauthorized" });
+        assert.strictEqual(newTokenResponse.status, 200);
+    });
+
+    test("Worker logout revokes the submitted local auth session token", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [],
+        });
+        await createLocalUser(handleApiRequest, env);
+        const loginResponse = await handleApiRequest(
+            new Request("https://example.com/api/auth/login", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({
+                    username: "admin",
+                    password: "password123",
+                }),
+            }),
+            env
+        );
+        const { token } = await loginResponse.json();
+
+        const logoutResponse = await handleApiRequest(
+            new Request("https://example.com/api/auth/logout", {
+                method: "POST",
+                headers: {
+                    authorization: `Bearer ${token}`,
+                },
+            }),
+            env
+        );
+        const monitorsResponse = await handleApiRequest(
+            new Request("https://example.com/api/monitors", {
+                headers: {
+                    authorization: `Bearer ${token}`,
+                },
+            }),
+            env
+        );
+
+        assert.strictEqual(logoutResponse.status, 200);
+        assert.deepStrictEqual(await logoutResponse.json(), { ok: true });
+        assert.strictEqual(monitorsResponse.status, 401);
+        assert.deepStrictEqual(await monitorsResponse.json(), { error: "Unauthorized" });
+    });
+
     test("Worker 2FA setup verifies TOTP codes and requires them at login", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({});
@@ -1771,6 +1867,9 @@ describe("Cloudflare Worker API", () => {
             jsonPath: "$",
             expectedValue: null,
             timeout: 30,
+            saveResponse: false,
+            saveErrorResponse: true,
+            responseMaxLength: 1024,
             packetSize: 56,
             ping_count: 3,
             ping_numeric: true,

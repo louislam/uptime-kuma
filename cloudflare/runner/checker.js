@@ -1,6 +1,7 @@
 /* eslint-disable jsdoc/require-jsdoc */
 const http = require("node:http");
 const https = require("node:https");
+const dns = require("node:dns").promises;
 const net = require("node:net");
 const tls = require("node:tls");
 const { execFile } = require("node:child_process");
@@ -15,6 +16,8 @@ const DEFAULT_TIMEOUT_SECONDS = 30;
 const DEFAULT_PING_COUNT = 1;
 const DEFAULT_PING_PACKET_SIZE = 56;
 const DEFAULT_PING_PER_REQUEST_TIMEOUT_SECONDS = 2;
+const DEFAULT_RESPONSE_MAX_BYTES = 1024;
+const MAX_RESPONSE_MAX_BYTES = 64 * 1024;
 const SYSTEM_TWINGATE_PROXY_URL = "http://127.0.0.1:9999";
 const PRIVATE_WORKER_HOST_ERROR =
     "Direct Worker checks cannot target private, loopback, link-local, or metadata hosts";
@@ -25,6 +28,10 @@ async function runCheck(job) {
     const networkProfile = job.networkProfile || null;
     const twingateProxyUrl = resolveTwingateProxyUrl(job);
     const start = Date.now();
+    const options = {
+        lookup: typeof job.lookup === "function" ? job.lookup : dns.lookup,
+        allowPrivateResolvedForTest: job.allowPrivateResolvedForTest === true,
+    };
 
     try {
         if (isTwingateProfile(networkProfile) && monitor.type === "ping" && job.twingateTunMode === "off") {
@@ -32,15 +39,15 @@ async function runCheck(job) {
         }
 
         if (["http", "keyword", "json-query"].includes(monitor.type)) {
-            return await runHttpCheck(monitor, networkProfile, twingateProxyUrl, start);
+            return await runHttpCheck(monitor, networkProfile, twingateProxyUrl, start, options);
         }
 
         if (monitor.type === "port") {
-            return await runTcpCheck(monitor, networkProfile, twingateProxyUrl, start);
+            return await runTcpCheck(monitor, networkProfile, twingateProxyUrl, start, options);
         }
 
         if (monitor.type === "ping") {
-            return await runPingCheck(monitor, start, execFileAsync, Date.now, networkProfile);
+            return await runPingCheck(monitor, start, execFileAsync, Date.now, networkProfile, options);
         }
 
         if (monitor.type === "websocket-upgrade") {
@@ -58,18 +65,20 @@ async function runCheck(job) {
     }
 }
 
-async function runHttpCheck(monitor, networkProfile, twingateProxyUrl, start) {
+async function runHttpCheck(monitor, networkProfile, twingateProxyUrl, start, options = {}) {
     const targetUrl = new URL(monitor.url);
     const useTwingateProxy = isTwingateProfile(networkProfile);
     const userProxy = useTwingateProxy ? null : activeUserProxy(monitor.proxy);
+    let resolvedTarget = null;
     if (!useTwingateProxy && !userProxy) {
-        assertDirectTargetAllowed(targetUrl.hostname, networkProfile);
+        resolvedTarget = await resolveDirectTarget(targetUrl.hostname, networkProfile, options.lookup, options);
     }
+    const responseMaxBytes = resolveResponseMaxBytes(monitor);
     const response = useTwingateProxy
-        ? await requestViaHttpProxy(targetUrl, twingateProxyUrl, monitor)
+        ? await requestViaHttpProxy(targetUrl, twingateProxyUrl, monitor, responseMaxBytes)
         : userProxy
-            ? await requestViaUserProxy(targetUrl, userProxy, monitor)
-            : await requestDirect(targetUrl, monitor);
+            ? await requestViaUserProxy(targetUrl, userProxy, monitor, responseMaxBytes)
+            : await requestDirect(targetUrl, monitor, resolvedTarget, responseMaxBytes);
 
     const statusOk = response.statusCode >= 200 && response.statusCode < 400;
     if (!statusOk) {
@@ -97,24 +106,24 @@ async function runHttpCheck(monitor, networkProfile, twingateProxyUrl, start) {
         status: UP,
         ping: Date.now() - start,
         msg: `${response.statusCode} - ${response.statusMessage}`,
-        response: response.body,
+        response: shouldReturnResponseBody(monitor, true) ? response.body : null,
     };
 }
 
-async function runTcpCheck(monitor, networkProfile, twingateProxyUrl, start) {
+async function runTcpCheck(monitor, networkProfile, twingateProxyUrl, start, options = {}) {
     const hostname = monitor.hostname;
     const port = Number(monitor.port);
 
     if (!hostname || !port) {
         throw new Error("TCP monitor requires hostname and port");
     }
-    assertDirectTargetAllowed(hostname, networkProfile);
 
     if (isTwingateProfile(networkProfile)) {
         const socket = await connectViaHttpProxy(hostname, port, twingateProxyUrl, monitor.timeout);
         socket.end();
     } else {
-        await connectDirect(hostname, port, monitor.timeout);
+        const resolvedTarget = await resolveDirectTarget(hostname, networkProfile, options.lookup, options);
+        await connectDirect(resolvedTarget.address || hostname, port, monitor.timeout);
     }
 
     const ping = Date.now() - start;
@@ -137,12 +146,21 @@ async function runWebSocketReachabilityCheck(monitor, networkProfile, twingatePr
     return await runTcpCheck(tcpMonitor, networkProfile, twingateProxyUrl, start);
 }
 
-async function runPingCheck(monitor, start, execFileFn = execFileAsync, now = Date.now, networkProfile = null) {
+async function runPingCheck(
+    monitor,
+    start,
+    execFileFn = execFileAsync,
+    now = Date.now,
+    networkProfile = null,
+    options = {}
+) {
     const hostname = monitor.hostname;
     if (!hostname) {
         throw new Error("Ping monitor requires hostname");
     }
-    assertDirectTargetAllowed(hostname, networkProfile);
+    const resolvedTarget = isTwingateProfile(networkProfile)
+        ? { hostname }
+        : await resolveDirectTarget(hostname, networkProfile, options.lookup, options);
 
     const args = [
         "-c",
@@ -158,7 +176,7 @@ async function runPingCheck(monitor, start, execFileFn = execFileAsync, now = Da
     if (monitor.ping_numeric !== false) {
         args.push("-n");
     }
-    args.push(hostname);
+    args.push(resolvedTarget.address || hostname);
 
     const result = await execFileFn("ping", args);
     const output = String(result.stdout || "");
@@ -177,7 +195,7 @@ function parseAveragePing(output) {
     return match ? Number(match[2]) : null;
 }
 
-function requestDirect(targetUrl, monitor) {
+function requestDirect(targetUrl, monitor, resolvedTarget = null, responseMaxBytes = DEFAULT_RESPONSE_MAX_BYTES) {
     return new Promise((resolve, reject) => {
         const client = targetUrl.protocol === "https:" ? https : http;
         const req = client.request(
@@ -186,8 +204,9 @@ function requestDirect(targetUrl, monitor) {
                 method: monitor.method || "GET",
                 timeout: getTimeoutMs(monitor.timeout),
                 headers: parseHeaders(monitor.headers),
+                lookup: pinnedLookup(resolvedTarget),
             },
-            (res) => collectResponse(res, resolve)
+            (res) => collectResponse(res, resolve, responseMaxBytes)
         );
         req.on("timeout", () => req.destroy(new Error("Request timed out")));
         req.on("error", reject);
@@ -198,9 +217,9 @@ function requestDirect(targetUrl, monitor) {
     });
 }
 
-function requestViaHttpProxy(targetUrl, proxyUrlString, monitor) {
+function requestViaHttpProxy(targetUrl, proxyUrlString, monitor, responseMaxBytes = DEFAULT_RESPONSE_MAX_BYTES) {
     if (targetUrl.protocol === "https:") {
-        return requestHttpsViaConnectProxy(targetUrl, proxyUrlString, monitor);
+        return requestHttpsViaConnectProxy(targetUrl, proxyUrlString, monitor, responseMaxBytes);
     }
 
     return new Promise((resolve, reject) => {
@@ -217,7 +236,7 @@ function requestViaHttpProxy(targetUrl, proxyUrlString, monitor) {
                     Host: targetUrl.host,
                 },
             },
-            (res) => collectResponse(res, resolve)
+            (res) => collectResponse(res, resolve, responseMaxBytes)
         );
         req.on("timeout", () => req.destroy(new Error("Request timed out")));
         req.on("error", reject);
@@ -228,7 +247,7 @@ function requestViaHttpProxy(targetUrl, proxyUrlString, monitor) {
     });
 }
 
-function requestViaUserProxy(targetUrl, proxy, monitor) {
+function requestViaUserProxy(targetUrl, proxy, monitor, responseMaxBytes = DEFAULT_RESPONSE_MAX_BYTES) {
     return new Promise((resolve, reject) => {
         const transport = targetUrl.protocol === "https:" ? https : http;
         const req = transport.request(
@@ -241,7 +260,7 @@ function requestViaUserProxy(targetUrl, proxy, monitor) {
                 headers: parseHeaders(monitor.headers),
                 agent: createUserProxyAgent(proxy, targetUrl.protocol),
             },
-            (res) => collectResponse(res, resolve)
+            (res) => collectResponse(res, resolve, responseMaxBytes)
         );
         req.on("timeout", () => req.destroy(new Error("Request timed out")));
         req.on("error", reject);
@@ -271,7 +290,12 @@ function proxyToUrl(proxy) {
     return proxyUrl.toString();
 }
 
-async function requestHttpsViaConnectProxy(targetUrl, proxyUrlString, monitor) {
+async function requestHttpsViaConnectProxy(
+    targetUrl,
+    proxyUrlString,
+    monitor,
+    responseMaxBytes = DEFAULT_RESPONSE_MAX_BYTES
+) {
     const socket = await connectViaHttpProxy(
         targetUrl.hostname,
         Number(targetUrl.port || 443),
@@ -294,7 +318,7 @@ async function requestHttpsViaConnectProxy(targetUrl, proxyUrlString, monitor) {
                 headers: parseHeaders(monitor.headers),
                 timeout: getTimeoutMs(monitor.timeout),
             },
-            (res) => collectResponse(res, resolve)
+            (res) => collectResponse(res, resolve, responseMaxBytes)
         );
         req.on("timeout", () => req.destroy(new Error("Request timed out")));
         req.on("error", reject);
@@ -365,14 +389,23 @@ function connectViaHttpProxy(hostname, port, proxyUrlString, timeoutSeconds) {
     });
 }
 
-function collectResponse(res, resolve) {
+function collectResponse(res, resolve, maxBytes = DEFAULT_RESPONSE_MAX_BYTES) {
     const chunks = [];
-    res.on("data", (chunk) => chunks.push(chunk));
+    let receivedBytes = 0;
+    const cappedMaxBytes = Math.max(0, Math.min(maxBytes, MAX_RESPONSE_MAX_BYTES));
+    res.on("data", (chunk) => {
+        const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+        if (receivedBytes < cappedMaxBytes) {
+            chunks.push(buffer.subarray(0, cappedMaxBytes - receivedBytes));
+        }
+        receivedBytes += buffer.length;
+    });
     res.on("end", () => {
         resolve({
             statusCode: res.statusCode,
             statusMessage: res.statusMessage || "OK",
             body: Buffer.concat(chunks).toString("utf8"),
+            truncated: receivedBytes > cappedMaxBytes,
         });
     });
 }
@@ -425,13 +458,60 @@ function toPositiveInteger(value, fallback) {
     return Number.isFinite(parsed) && parsed > 0 ? Math.trunc(parsed) : fallback;
 }
 
-function assertDirectTargetAllowed(hostname, networkProfile) {
+async function resolveDirectTarget(hostname, networkProfile, lookup = dns.lookup, options = {}) {
     if (isTwingateProfile(networkProfile)) {
-        return;
+        return { hostname };
     }
     if (isPrivateWorkerHost(hostname)) {
         throw new Error(PRIVATE_WORKER_HOST_ERROR);
     }
+
+    if (net.isIP(String(hostname || ""))) {
+        return {
+            hostname,
+            address: hostname,
+            family: net.isIP(hostname),
+        };
+    }
+
+    const lookupResult = await lookup(hostname, { all: true });
+    const addresses = Array.isArray(lookupResult) ? lookupResult : [lookupResult];
+    if (!options.allowPrivateResolvedForTest) {
+        for (const result of addresses) {
+            if (isPrivateWorkerHost(result?.address)) {
+                throw new Error(PRIVATE_WORKER_HOST_ERROR);
+            }
+        }
+    }
+    const first = addresses.find((result) => result?.address);
+    return first ? { hostname, address: first.address, family: first.family } : { hostname };
+}
+
+function pinnedLookup(resolvedTarget) {
+    if (!resolvedTarget?.address) {
+        return undefined;
+    }
+    return (_hostname, options, callback) => {
+        const done = typeof options === "function" ? options : callback;
+        const family = Number(resolvedTarget.family || net.isIP(resolvedTarget.address));
+        if (options?.all) {
+            done(null, [{ address: resolvedTarget.address, family }]);
+            return;
+        }
+        done(null, resolvedTarget.address, family);
+    };
+}
+
+function shouldReturnResponseBody(monitor, statusOk) {
+    return statusOk ? monitor.saveResponse === true : monitor.saveErrorResponse === true;
+}
+
+function resolveResponseMaxBytes(monitor) {
+    const parsed = Number(monitor?.responseMaxLength);
+    if (!Number.isFinite(parsed) || parsed <= 0) {
+        return DEFAULT_RESPONSE_MAX_BYTES;
+    }
+    return Math.max(0, Math.min(Math.trunc(parsed), MAX_RESPONSE_MAX_BYTES));
 }
 
 function isPrivateWorkerHost(hostname) {
@@ -473,6 +553,7 @@ function isPrivateWorkerHost(hostname) {
 module.exports = {
     SYSTEM_TWINGATE_PROXY_URL,
     resolveTwingateProxyUrl,
+    resolveDirectTarget,
     runCheck,
     runHttpCheck,
     runPingCheck,
