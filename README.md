@@ -6,6 +6,67 @@
 
 Uptime Kuma is an easy-to-use self-hosted monitoring tool.
 
+## TokenFleet 本地交接运行说明
+
+把这份代码传给其他 Codex 使用者时，可以让对方按下面步骤下载、打开并在本地运行 TokenFleet API 多路算力网关监控台。
+
+### 1. 下载代码并打开项目
+
+> 当前 TokenFleet 页面代码位于 `main` 分支。远端默认分支可能不是 `main`，建议显式指定分支下载。
+
+```bash
+git clone -b main https://github.com/Seep2026/uptime-kuma-tf.git
+cd uptime-kuma-tf
+```
+
+然后用 Codex 打开这个项目目录：
+
+```text
+/path/to/uptime-kuma-tf
+```
+
+### 2. 安装依赖
+
+环境要求：
+
+- Node.js >= 20.4
+- npm
+
+安装项目依赖：
+
+```bash
+npm ci
+```
+
+### 3. 启动本地预览
+
+```bash
+npm run dev
+```
+
+启动后访问：
+
+```text
+http://localhost:3000/tokenfleet-gateway
+```
+
+TokenFleet 页面是前端展示页面，主要涉及：
+
+- `src/pages/TokenFleetGatewayObservatory.vue`
+- `src/assets/tokenfleet-gateway-timeline.js`
+- `src/assets/tokenfleet-logo.png`
+- `src/router.js` 中的 `/tokenfleet-gateway` 路由
+
+查看这个页面不需要单独配置数据库。
+
+### 4. 交接前建议检查
+
+```bash
+npx eslint --ext ".vue" src/pages/TokenFleetGatewayObservatory.vue
+npx stylelint src/pages/TokenFleetGatewayObservatory.vue
+npm run build
+```
+
 <a target="_blank" href="https://github.com/louislam/uptime-kuma"><img src="https://img.shields.io/github/stars/louislam/uptime-kuma?style=flat" /></a> <a target="_blank" href="https://hub.docker.com/r/louislam/uptime-kuma"><img src="https://img.shields.io/docker/pulls/louislam/uptime-kuma" /></a> <a target="_blank" href="https://hub.docker.com/r/louislam/uptime-kuma"><img src="https://img.shields.io/docker/v/louislam/uptime-kuma/2?label=docker%20image%20ver." /></a> <a target="_blank" href="https://github.com/louislam/uptime-kuma"><img src="https://img.shields.io/github/last-commit/louislam/uptime-kuma" /></a> <a target="_blank" href="https://opencollective.com/uptime-kuma"><img src="https://opencollective.com/uptime-kuma/total/badge.svg?label=Open%20Collective%20Backers&color=brightgreen" /></a>
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/louislam?label=GitHub%20Sponsors)](https://github.com/sponsors/louislam) <a href="https://weblate.kuma.pet/projects/uptime-kuma/uptime-kuma/">
 <img src="https://weblate.kuma.pet/widgets/uptime-kuma/-/svg-badge.svg" alt="Translation status" />
