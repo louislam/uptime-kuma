@@ -1248,6 +1248,72 @@ async function applyNotificationToAllMonitors(env, notificationId) {
     );
 }
 
+/**
+ * Check whether a monitor save request includes notification selections.
+ * @param {object} input Monitor save request body.
+ * @returns {boolean} True when notification selections were submitted.
+ */
+function hasMonitorNotificationSelection(input) {
+    return Boolean(input && Object.prototype.hasOwnProperty.call(input, "notificationIDList"));
+}
+
+/**
+ * Convert a submitted notification checkbox map into enabled notification IDs.
+ * @param {object} notificationIDList Submitted notification checkbox state.
+ * @returns {number[]} Enabled notification IDs.
+ */
+function normalizeMonitorNotificationIds(notificationIDList) {
+    if (!notificationIDList || typeof notificationIDList !== "object" || Array.isArray(notificationIDList)) {
+        return [];
+    }
+    return Object.entries(notificationIDList)
+        .filter(([, enabled]) => isMonitorNotificationEnabled(enabled))
+        .map(([notificationId]) => Number(notificationId))
+        .filter((notificationId) => Number.isInteger(notificationId) && notificationId > 0);
+}
+
+/**
+ * Normalize checkbox-style notification enabled values.
+ * @param {unknown} value Submitted checkbox value.
+ * @returns {boolean} True when the value represents an enabled notification.
+ */
+function isMonitorNotificationEnabled(value) {
+    if (typeof value === "string") {
+        const normalized = value.trim().toLowerCase();
+        return normalized === "1" || normalized === "true" || normalized === "on" || normalized === "yes";
+    }
+    return Boolean(value);
+}
+
+/**
+ * Replace the notification relationships for a monitor.
+ * @param {object} env Cloudflare Worker environment bindings.
+ * @param {number} monitorId Monitor ID to update.
+ * @param {object} notificationIDList Submitted notification checkbox state.
+ * @returns {Promise<void>}
+ */
+async function updateMonitorNotifications(env, monitorId, notificationIDList) {
+    await ensureNotificationTables(env);
+    const normalizedMonitorId = Number(monitorId);
+    await env.DB.prepare("DELETE FROM monitor_notification WHERE monitor_id = ?").bind(normalizedMonitorId).run();
+
+    const notificationIds = normalizeMonitorNotificationIds(notificationIDList);
+    await Promise.all(
+        notificationIds.map((notificationId) =>
+            env.DB.prepare(
+                `INSERT INTO monitor_notification (monitor_id, notification_id)
+                 SELECT ?, ?
+                 WHERE NOT EXISTS (
+                    SELECT 1 FROM monitor_notification
+                    WHERE monitor_id = ? AND notification_id = ?
+                 )`
+            )
+                .bind(normalizedMonitorId, notificationId, normalizedMonitorId, notificationId)
+                .run()
+        )
+    );
+}
+
 export async function listTags(env) {
     await ensureTagTables(env);
     const result = await env.DB.prepare("SELECT id, name, color FROM tag ORDER BY name").all();
@@ -1351,7 +1417,11 @@ function serializeTag(row) {
 export async function listMonitors(env) {
     const monitors = await listMonitorRows(env);
     const relationshipData = buildMonitorRelationshipData(monitors);
-    const tagsByMonitorId = await listTagsByMonitorId(env, monitors.map((monitor) => Number(monitor.id)));
+    const monitorIds = monitors.map((monitor) => Number(monitor.id));
+    const [tagsByMonitorId, notificationsByMonitorId] = await Promise.all([
+        listTagsByMonitorId(env, monitorIds),
+        listMonitorNotificationsByMonitorId(env, monitorIds),
+    ]);
 
     const heartbeatResult = await env.DB.prepare(
         `SELECT h.monitor_id, h.status, h.ping, h.msg, h.checked_at
@@ -1370,8 +1440,40 @@ export async function listMonitors(env) {
 
     return monitors.map((monitor) => {
         const latestHeartbeat = heartbeatsByMonitorId.get(Number(monitor.id));
-        return serializeMonitor(monitor, latestHeartbeat, relationshipData, tagsByMonitorId);
+        return serializeMonitor(monitor, latestHeartbeat, relationshipData, tagsByMonitorId, notificationsByMonitorId);
     });
+}
+
+/**
+ * Load monitor notification checkbox maps for the supplied monitors.
+ * @param {object} env Cloudflare Worker environment bindings.
+ * @param {number[]} monitorIds Monitor IDs to hydrate.
+ * @returns {Promise<Map<number, object>>} Notification checkbox maps keyed by monitor ID.
+ */
+async function listMonitorNotificationsByMonitorId(env, monitorIds) {
+    await ensureNotificationTables(env);
+    const ids = [...new Set((monitorIds || []).map((id) => Number(id)).filter(Number.isInteger))];
+    if (ids.length === 0) {
+        return new Map();
+    }
+
+    const placeholders = ids.map(() => "?").join(", ");
+    const result = await env.DB.prepare(
+        `SELECT monitor_id, notification_id
+         FROM monitor_notification
+         WHERE monitor_id IN (${placeholders})`
+    )
+        .bind(...ids)
+        .all();
+    const notificationsByMonitorId = new Map();
+    for (const row of result.results || []) {
+        const monitorId = Number(row.monitor_id);
+        if (!notificationsByMonitorId.has(monitorId)) {
+            notificationsByMonitorId.set(monitorId, {});
+        }
+        notificationsByMonitorId.get(monitorId)[Number(row.notification_id)] = true;
+    }
+    return notificationsByMonitorId;
 }
 
 async function listTagsByMonitorId(env, monitorIds) {
@@ -1539,8 +1641,11 @@ export async function getSerializedMonitor(env, monitorId) {
         .bind(monitorId)
         .first();
     const rows = await listMonitorRows(env);
-    const tagsByMonitorId = await listTagsByMonitorId(env, [monitorId]);
-    return serializeMonitor(monitor, heartbeat, buildMonitorRelationshipData(rows), tagsByMonitorId);
+    const [tagsByMonitorId, notificationsByMonitorId] = await Promise.all([
+        listTagsByMonitorId(env, [monitorId]),
+        listMonitorNotificationsByMonitorId(env, [monitorId]),
+    ]);
+    return serializeMonitor(monitor, heartbeat, buildMonitorRelationshipData(rows), tagsByMonitorId, notificationsByMonitorId);
 }
 
 export async function createMonitor(env, monitorInput) {
@@ -1574,7 +1679,11 @@ export async function createMonitor(env, monitorInput) {
             .bind(...monitorValues(monitor, true, false), monitorConfigJson(monitorInput, {}, monitor), monitor.proxyId)
             .run();
     }
-    return Number(result.meta?.last_row_id || result.meta?.last_rowid || result.lastRowId || result.last_row_id);
+    const monitorId = Number(result.meta?.last_row_id || result.meta?.last_rowid || result.lastRowId || result.last_row_id);
+    if (hasMonitorNotificationSelection(monitorInput)) {
+        await updateMonitorNotifications(env, monitorId, monitorInput.notificationIDList);
+    }
+    return monitorId;
 }
 
 /**
@@ -1755,6 +1864,9 @@ export async function updateMonitor(env, monitorId, monitorInput) {
         )
             .bind(...monitorValues(monitor, false, false), monitorConfigJson(monitorInput, existing, monitor), monitor.proxyId, monitorId)
             .run();
+    }
+    if (hasMonitorNotificationSelection(monitorInput)) {
+        await updateMonitorNotifications(env, monitorId, monitorInput.notificationIDList);
     }
 }
 
@@ -4138,7 +4250,8 @@ function serializeMonitor(
     monitor,
     latestHeartbeat = null,
     relationshipData = buildMonitorRelationshipData([monitor]),
-    tagsByMonitorId = new Map()
+    tagsByMonitorId = new Map(),
+    notificationsByMonitorId = new Map()
 ) {
     const name = monitor.name || "";
     const config = {
@@ -4168,7 +4281,7 @@ function serializeMonitor(
         pathName: (relationshipData.paths.get(Number(monitor.id)) || [name]).join(" / "),
         childrenIDs: relationshipData.childrenIDs.get(Number(monitor.id)) || [],
         tags: tagsByMonitorId.get(Number(monitor.id)) || [],
-        notificationIDList: {},
+        notificationIDList: notificationsByMonitorId.get(Number(monitor.id)) || {},
         networkProfileId: monitor.network_profile_id ?? monitor.networkProfileId ?? null,
         proxyId: monitor.proxy_id == null ? null : Number(monitor.proxy_id),
         accepted_statuscodes: Array.isArray(config.accepted_statuscodes)

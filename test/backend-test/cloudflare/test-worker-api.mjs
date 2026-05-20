@@ -1816,6 +1816,69 @@ describe("Cloudflare Worker API", () => {
         assert.strictEqual(rereadBody.monitor.basic_auth_pass, "worker-pass");
     });
 
+    test("round-trips Worker monitor notification selections", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                {
+                    id: 7,
+                    name: "Sales OS",
+                    type: "http",
+                    url: "https://sales.wgsglobal.app",
+                    active: 1,
+                    timeout: 30,
+                    interval: 60,
+                    network_profile_id: null,
+                },
+            ],
+            notifications: [
+                {
+                    id: 2,
+                    name: "Pushover Alert",
+                    active: 1,
+                    user_id: 1,
+                    is_default: 1,
+                    config: JSON.stringify({ type: "pushover" }),
+                },
+                {
+                    id: 3,
+                    name: "Pushover Urgent",
+                    active: 1,
+                    user_id: 1,
+                    is_default: 0,
+                    config: JSON.stringify({ type: "pushover" }),
+                },
+            ],
+            monitorNotifications: [{ monitor_id: 7, notification_id: 2 }],
+        });
+
+        const readResponse = await handleApiRequest(adminRequest("https://example.com/api/monitors/7"), env);
+        const readBody = await readResponse.json();
+        assert.strictEqual(readResponse.status, 200);
+        assert.deepStrictEqual(readBody.monitor.notificationIDList, { 2: true });
+
+        const updateResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/7", {
+                method: "PUT",
+                body: JSON.stringify({
+                    ...readBody.monitor,
+                    notificationIDList: {
+                        2: false,
+                        3: true,
+                    },
+                }),
+            }),
+            env
+        );
+        assert.strictEqual(updateResponse.status, 200);
+        assert.deepStrictEqual(env.state.monitorNotifications, [{ monitor_id: 7, notification_id: 3 }]);
+
+        const rereadResponse = await handleApiRequest(adminRequest("https://example.com/api/monitors/7"), env);
+        const rereadBody = await rereadResponse.json();
+        assert.strictEqual(rereadResponse.status, 200);
+        assert.deepStrictEqual(rereadBody.monitor.notificationIDList, { 3: true });
+    });
+
     test("accepts Ping worker monitor types", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({
@@ -3797,6 +3860,17 @@ function createStatement(sql, state) {
                         value: JSON.stringify(value),
                     })),
                 };
+            }
+            if (sql.includes("FROM monitor_notification")) {
+                if (state.missingNotificationTables) {
+                    throw new Error("no such table: monitor_notification");
+                }
+                let results = [...state.monitorNotifications];
+                if (sql.includes("WHERE monitor_id IN")) {
+                    const ids = this.values.map(Number);
+                    results = results.filter((row) => ids.includes(Number(row.monitor_id)));
+                }
+                return { results };
             }
             if (sql.includes("FROM notification")) {
                 if (state.missingNotificationTables) {

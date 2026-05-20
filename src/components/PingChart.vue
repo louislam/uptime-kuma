@@ -127,6 +127,7 @@ export default {
                 scales: {
                     x: {
                         type: "time",
+                        ...this.chartXAxisRange,
                         time: {
                             minUnit: "minute",
                             round: "second",
@@ -223,6 +224,20 @@ export default {
             } else {
                 return this.getChartDatapointsFromStats();
             }
+        },
+        chartXAxisRange() {
+            const period = Number(this.chartPeriodHrs);
+            if (!Number.isFinite(period) || period <= 0) {
+                return {};
+            }
+
+            const max = this.$root.toDayjs(new Date().toISOString());
+            const min = max.subtract(period, "hour");
+
+            return {
+                min: min.format("YYYY-MM-DD HH:mm:ss"),
+                max: max.format("YYYY-MM-DD HH:mm:ss"),
+            };
         },
         currentMonitor() {
             return this.$root.monitorList[this.monitorId];

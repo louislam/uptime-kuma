@@ -22,6 +22,9 @@ const cloudflareWorkerHostnames = new Set([
     "uptime.wgsglobal.app",
     "up.wgsglobal.app",
 ]);
+const CLOUDFLARE_RECENT_HEARTBEAT_LIMIT = 150;
+const CLOUDFLARE_CHART_HEARTBEAT_PAGE_SIZE = 500;
+const CLOUDFLARE_CHART_HEARTBEAT_MAX_ROWS = 10000;
 
 const noSocketIOPages = [
     /^\/status-page$/, //  /status-page
@@ -1460,7 +1463,7 @@ function createCloudflareSocketStub(app) {
 
                 if (event === "getMonitorChartData") {
                     const [monitorID, period] = args;
-                    callback?.({ ok: true, data: getCloudflareChartData(app, monitorID, period) });
+                    callback?.({ ok: true, data: await getCloudflareChartData(app, monitorID, period) });
                     return;
                 }
 
@@ -1499,9 +1502,48 @@ function createCloudflareSocketStub(app) {
  * @param {number} count Number of rows to fetch.
  * @returns {Promise<object[]>} Heartbeat rows.
  */
-async function fetchCloudflareMonitorHeartbeats(monitorID, offset = 0, count = 150) {
+async function fetchCloudflareMonitorHeartbeats(monitorID, offset = 0, count = CLOUDFLARE_RECENT_HEARTBEAT_LIMIT) {
     const body = await requestCloudflareJson(`/api/monitors/${monitorID}/heartbeats?offset=${offset}&count=${count}`);
     return body.heartbeats || [];
+}
+
+/**
+ * Fetch enough Worker heartbeat rows to cover a selected chart period.
+ * @param {number} monitorID Monitor ID.
+ * @param {number} periodHours Requested chart period in hours.
+ * @returns {Promise<object[]>} Heartbeat rows ordered oldest-to-newest.
+ */
+async function fetchCloudflareMonitorHeartbeatsForPeriod(monitorID, periodHours) {
+    const period = Number(periodHours || 24);
+    const validPeriodHours = Number.isFinite(period) && period > 0 ? period : 24;
+    const since = Date.now() - validPeriodHours * 60 * 60 * 1000;
+    const heartbeats = [];
+    let offset = 0;
+
+    while (heartbeats.length < CLOUDFLARE_CHART_HEARTBEAT_MAX_ROWS) {
+        const count = Math.min(
+            CLOUDFLARE_CHART_HEARTBEAT_PAGE_SIZE,
+            CLOUDFLARE_CHART_HEARTBEAT_MAX_ROWS - heartbeats.length
+        );
+        const page = await fetchCloudflareMonitorHeartbeats(monitorID, offset, count);
+        if (page.length === 0) {
+            break;
+        }
+
+        heartbeats.push(...page);
+
+        const oldestHeartbeatTime = new Date(page[page.length - 1].time).getTime();
+        if (Number.isFinite(oldestHeartbeatTime) && oldestHeartbeatTime < since) {
+            break;
+        }
+        if (page.length < count) {
+            break;
+        }
+
+        offset += page.length;
+    }
+
+    return normalizeCloudflareHeartbeatHistory(heartbeats);
 }
 
 /**
@@ -1582,20 +1624,25 @@ function calculateUptime(heartbeats) {
 }
 
 /**
- * Build simple chart datapoints from loaded heartbeat rows.
+ * Build simple chart datapoints from Worker heartbeat rows.
  * @param {object} app Vue root component instance.
  * @param {number} monitorID Monitor ID.
  * @param {number} periodHours Requested chart period in hours.
- * @returns {object[]} Chart datapoints.
+ * @returns {Promise<object[]>} Chart datapoints.
  */
-function getCloudflareChartData(app, monitorID, periodHours) {
-    const since = Date.now() - Number(periodHours || 24) * 60 * 60 * 1000;
-    return (app.heartbeatList[monitorID] || [])
+async function getCloudflareChartData(app, monitorID, periodHours) {
+    void app;
+    const period = Number(periodHours || 24);
+    const validPeriodHours = Number.isFinite(period) && period > 0 ? period : 24;
+    const since = Date.now() - validPeriodHours * 60 * 60 * 1000;
+    const heartbeats = await fetchCloudflareMonitorHeartbeatsForPeriod(monitorID, periodHours);
+
+    return heartbeats
         .filter((beat) => new Date(beat.time).getTime() >= since)
         .map((beat) => ({
             timestamp: Math.floor(new Date(beat.time).getTime() / 1000),
             up: beat.status === UP ? 1 : 0,
-            down: beat.status === DOWN ? 1 : 0,
+            down: beat.status === DOWN || beat.status === PENDING ? 1 : 0,
             maintenance: beat.status === MAINTENANCE ? 1 : 0,
             avgPing: beat.ping,
             minPing: beat.ping,
