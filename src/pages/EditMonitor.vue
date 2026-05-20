@@ -2751,7 +2751,9 @@
                                 </template>
                                 <template v-else-if="monitor.authMethod === 'bearer'">
                                     <div class="my-3">
-                                        <label for="bearer-token-globalping" class="form-label">{{ $t("Token") }}</label>
+                                        <label for="bearer-token-globalping" class="form-label">
+                                            {{ $t("Token") }}
+                                        </label>
                                         <HiddenInput
                                             id="bearer-token-globalping"
                                             v-model="monitor.bearer_token"
