@@ -359,7 +359,7 @@ describe("Cloudflare monitor runner", () => {
             1000,
             async (command, args) => {
                 assert.strictEqual(command, "ping");
-                assert.deepStrictEqual(args, ["-c", "3", "-W", "2", "-w", "5", "-s", "56", "-n", "93.184.216.34"]);
+                assert.deepStrictEqual(args, ["-c", "3", "-W", "2", "-w", "5", "-s", "56", "-n", "example.com"]);
                 return {
                     stdout:
                         "PING example.com (93.184.216.34) 56(84) bytes of data.\n" +
@@ -378,6 +378,48 @@ describe("Cloudflare monitor runner", () => {
             status: UP,
             ping: 12.345,
             msg: "12.345 ms",
+            response: null,
+        });
+    });
+
+    test("direct Ping checks do not reject private DNS answers before ping runs", async () => {
+        const { runPingCheck } = require("../../../cloudflare/runner/checker");
+
+        const result = await runPingCheck(
+            {
+                hostname: "ring-ha.wgs",
+                timeout: 5,
+                ping_count: 1,
+                ping_per_request_timeout: 2,
+                packetSize: 56,
+                ping_numeric: true,
+            },
+            1000,
+            async (command, args) => {
+                assert.strictEqual(command, "ping");
+                assert.deepStrictEqual(args, ["-c", "1", "-W", "2", "-w", "5", "-s", "56", "-n", "ring-ha.wgs"]);
+                return {
+                    stdout:
+                        "PING ring-ha.wgs (192.168.10.20) 56(84) bytes of data.\n" +
+                        "64 bytes from 192.168.10.20: icmp_seq=1 ttl=63 time=1.8 ms\n\n" +
+                        "--- ring-ha.wgs ping statistics ---\n" +
+                        "1 packets transmitted, 1 received, 0% packet loss, time 0ms\n" +
+                        "rtt min/avg/max/mdev = 1.800/1.800/1.800/0.000 ms\n",
+                };
+            },
+            () => 1015,
+            null,
+            {
+                lookup: async () => {
+                    throw new Error("ping checks should not pre-resolve targets");
+                },
+            }
+        );
+
+        assert.deepStrictEqual(result, {
+            status: UP,
+            ping: 1.8,
+            msg: "1.8 ms",
             response: null,
         });
     });

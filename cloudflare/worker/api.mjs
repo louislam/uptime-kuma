@@ -1984,7 +1984,7 @@ export async function executeMonitorCheck(env, monitorId) {
         return buildDeployPauseSkippedResult(deployPause);
     }
 
-    const networkProfile = monitor.network_profile_id ? await getNetworkProfile(env, monitor.network_profile_id) : null;
+    const networkProfile = await resolveMonitorNetworkProfileForCheck(env, monitor);
     const proxy = await getActiveProxy(env, monitor.proxy_id);
     const jobMonitor = proxy ? sanitizeMonitor(monitor) : withAccessSecretHeader(sanitizeMonitor(monitor), env);
     if (proxy) {
@@ -2006,9 +2006,51 @@ export async function executeMonitorCheck(env, monitorId) {
             response: null,
         };
     }
+    result = await retryPrivatePingThroughTwingate(env, monitor, job, result);
     result = await applyMonitorRetryStatus(env, monitor, result);
     await writeHeartbeat(env, monitorId, result);
     return result;
+}
+
+async function resolveMonitorNetworkProfileForCheck(env, monitor) {
+    if (monitor.network_profile_id) {
+        return await getNetworkProfile(env, monitor.network_profile_id);
+    }
+    if (!["ping", "port"].includes(monitor.type) || !shouldUseImportPrivateNetworkProfile(monitor)) {
+        return null;
+    }
+
+    const networkProfileId = await getImportPrivateNetworkProfileId(env);
+    return networkProfileId ? await getNetworkProfile(env, networkProfileId) : null;
+}
+
+async function retryPrivatePingThroughTwingate(env, monitor, job, result = {}) {
+    if (
+        monitor.network_profile_id ||
+        monitor.type !== "ping" ||
+        Number(result.status) !== DOWN ||
+        result.msg !== PRIVATE_WORKER_HOST_ERROR
+    ) {
+        return result;
+    }
+
+    const networkProfileId = await getImportPrivateNetworkProfileId(env);
+    if (!networkProfileId) {
+        return result;
+    }
+    const networkProfile = await getNetworkProfile(env, networkProfileId);
+    if (!networkProfile) {
+        return result;
+    }
+
+    try {
+        return await callRunner(env, {
+            ...job,
+            networkProfile,
+        });
+    } catch (_) {
+        return result;
+    }
 }
 
 function withAccessSecretHeader(monitor, env) {
@@ -3721,7 +3763,7 @@ async function getImportPrivateNetworkProfileId(env) {
  */
 function shouldUseImportPrivateNetworkProfile(monitor) {
     const host = getMonitorTargetHost(monitor);
-    return isPrivateNetworkHost(host);
+    return isPrivateNetworkHost(host) || isPrivateNetworkHostname(host);
 }
 
 /**
@@ -3744,6 +3786,22 @@ function isPrivateNetworkHost(host) {
 
     const ipv6 = normalized.replace(/^\[/, "").replace(/\]$/, "");
     return ipv6.startsWith("fc") || ipv6.startsWith("fd");
+}
+
+function isPrivateNetworkHostname(host) {
+    const normalized = String(host || "").trim().toLowerCase();
+    if (!normalized || normalized.includes("://") || parseIPv4(normalized)) {
+        return false;
+    }
+
+    return (
+        !normalized.includes(".") ||
+        normalized.endsWith(".home") ||
+        normalized.endsWith(".internal") ||
+        normalized.endsWith(".lan") ||
+        normalized.endsWith(".local") ||
+        normalized.endsWith(".wgs")
+    );
 }
 
 /**

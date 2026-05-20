@@ -158,10 +158,6 @@ async function runPingCheck(
     if (!hostname) {
         throw new Error("Ping monitor requires hostname");
     }
-    const resolvedTarget = isTwingateProfile(networkProfile)
-        ? { hostname }
-        : await resolveDirectTarget(hostname, networkProfile, options.lookup, options);
-
     const args = [
         "-c",
         String(toPositiveInteger(monitor.ping_count, DEFAULT_PING_COUNT)),
@@ -176,7 +172,7 @@ async function runPingCheck(
     if (monitor.ping_numeric !== false) {
         args.push("-n");
     }
-    args.push(resolvedTarget.address || hostname);
+    args.push(hostname);
 
     const result = await execFileFn("ping", args);
     const output = String(result.stdout || "");

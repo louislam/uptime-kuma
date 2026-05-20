@@ -2512,6 +2512,125 @@ describe("Cloudflare Worker API", () => {
         );
     });
 
+    test("routes imported private hostname monitors through Twingate by default", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            profiles: [
+                { id: "twingate", slug: "twingate", name: "Twingate", type: "twingate", enabled: 1 },
+            ],
+        });
+
+        const response = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/import", {
+                method: "POST",
+                body: JSON.stringify({
+                    monitors: [
+                        {
+                            name: "Ring HA",
+                            type: "ping",
+                            hostname: "ring-ha.wgs",
+                            active: 1,
+                        },
+                    ],
+                }),
+            }),
+            env
+        );
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(body.imported, 1);
+        assert.strictEqual(body.failed, 0);
+        assert.strictEqual(env.state.monitors[0].network_profile_id, "twingate");
+    });
+
+    test("check-now routes private Ping hostnames through Twingate before running", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            profiles: [
+                { id: "twingate", slug: "twingate", name: "Twingate", type: "twingate", enabled: 1 },
+            ],
+            monitors: [
+                {
+                    id: 211,
+                    name: "Ring HA",
+                    type: "ping",
+                    url: null,
+                    hostname: "ring-ha.wgs",
+                    port: null,
+                    timeout: 5,
+                    network_profile_id: null,
+                },
+            ],
+            runnerResult: { status: 1, ping: 1.8, msg: "1.8 ms", response: null },
+        });
+
+        const response = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/211/check-now", { method: "POST" }),
+            env
+        );
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.deepStrictEqual(body.result, { status: 1, ping: 1.8, msg: "1.8 ms", response: null });
+        assert.strictEqual(env.state.runnerJobs.length, 1);
+        assert.strictEqual(env.state.runnerJobs[0].networkProfile.slug, "twingate");
+        assert.deepStrictEqual(env.state.heartbeats[0], {
+            monitor_id: 211,
+            status: 1,
+            ping: 1.8,
+            msg: "1.8 ms",
+        });
+    });
+
+    test("check-now retries direct Ping private-target failures through Twingate", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            profiles: [
+                { id: "twingate", slug: "twingate", name: "Twingate", type: "twingate", enabled: 1 },
+            ],
+            monitors: [
+                {
+                    id: 212,
+                    name: "Private DNS",
+                    type: "ping",
+                    url: null,
+                    hostname: "private.example.test",
+                    port: null,
+                    timeout: 5,
+                    network_profile_id: null,
+                },
+            ],
+            runnerResults: [
+                {
+                    status: 0,
+                    ping: 1,
+                    msg: "Direct Worker checks cannot target private, loopback, link-local, or metadata hosts",
+                    response: null,
+                },
+                { status: 1, ping: 2.4, msg: "2.4 ms", response: null },
+            ],
+        });
+
+        const response = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/212/check-now", { method: "POST" }),
+            env
+        );
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.deepStrictEqual(body.result, { status: 1, ping: 2.4, msg: "2.4 ms", response: null });
+        assert.strictEqual(env.state.runnerJobs.length, 2);
+        assert.strictEqual(env.state.runnerJobs[0].networkProfile, null);
+        assert.strictEqual(env.state.runnerJobs[1].networkProfile.slug, "twingate");
+        assert.deepStrictEqual(env.state.heartbeats[0], {
+            monitor_id: 212,
+            status: 1,
+            ping: 2.4,
+            msg: "2.4 ms",
+        });
+    });
+
     test("lists and clears monitor heartbeats", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({
@@ -3626,6 +3745,7 @@ function createEnv(initial) {
         settings: initial.settings || {},
         runnerJobs: [],
         runnerResult: initial.runnerResult,
+        runnerResults: initial.runnerResults ? [...initial.runnerResults] : null,
         runnerResponseStatus: initial.runnerResponseStatus || 200,
         runnerStatusResponseStatus: initial.runnerStatusResponseStatus || 200,
         runnerStatus: initial.runnerStatus || {
@@ -3683,7 +3803,10 @@ function createEnv(initial) {
                             return Response.json(state.runnerStatus, { status: state.runnerStatusResponseStatus });
                         }
                         state.runnerJobs.push(await request.json());
-                        return Response.json(state.runnerResult, { status: state.runnerResponseStatus });
+                        const runnerResult = state.runnerResults
+                            ? state.runnerResults.shift()
+                            : state.runnerResult;
+                        return Response.json(runnerResult, { status: state.runnerResponseStatus });
                     },
                 };
             },
