@@ -89,6 +89,18 @@ describe("PingChart legend styling", () => {
 
         assert.match(source, /usePointStyle:\s*true/);
         assert.match(source, /pointStyle:\s*"line"/);
-        assert.match(source, /pointStyleWidth:\s*28/);
+        assert.match(source, /pointStyleWidth:\s*34/);
+        assert.match(source, /padding:\s*18/);
+    });
+
+    test("stat ping datasets use distinct visual styles", () => {
+        const source = fs.readFileSync(repoFile("src/components/PingChart.vue"), "utf8");
+
+        assert.match(source, /min:\s*{[\s\S]*?borderColor:\s*"#38BDF8"[\s\S]*?borderDash:\s*\[4,\s*4\]/);
+        assert.match(source, /avg:\s*{[\s\S]*?borderColor:\s*"#5CDD8B"[\s\S]*?borderDash:\s*\[\]/);
+        assert.match(source, /max:\s*{[\s\S]*?borderColor:\s*"#F59E0B"[\s\S]*?borderDash:\s*\[10,\s*5\]/);
+        assert.match(source, /\.\.\.PING_CHART_LINE_STYLES\.min/);
+        assert.match(source, /\.\.\.PING_CHART_LINE_STYLES\.avg/);
+        assert.match(source, /\.\.\.PING_CHART_LINE_STYLES\.max/);
     });
 });

@@ -49,6 +49,27 @@ import groupStatus from "../util/group-status";
 
 const { buildGroupHeartbeatList, getGroupChildMonitors } = groupStatus;
 
+const PING_CHART_LINE_STYLES = {
+    min: {
+        borderColor: "#38BDF8",
+        backgroundColor: "#38BDF814",
+        borderDash: [4, 4],
+        borderWidth: 2,
+    },
+    avg: {
+        borderColor: "#5CDD8B",
+        backgroundColor: "#5CDD8B10",
+        borderDash: [],
+        borderWidth: 3,
+    },
+    max: {
+        borderColor: "#F59E0B",
+        backgroundColor: "#F59E0B18",
+        borderDash: [10, 5],
+        borderWidth: 2,
+    },
+};
+
 Chart.register(
     LineController,
     BarController,
@@ -209,9 +230,10 @@ export default {
                         labels: {
                             color: this.$root.theme === "light" ? "rgba(12,12,18,1.0)" : "rgba(220,220,220,1.0)",
                             boxHeight: 8,
-                            boxWidth: 28,
+                            boxWidth: 34,
                             pointStyle: "line",
-                            pointStyleWidth: 28,
+                            pointStyleWidth: 34,
+                            padding: 18,
                             usePointStyle: true,
                             // Filter to display only the lines in the legend
                             filter: function (legendItem, data) {
@@ -454,8 +476,7 @@ export default {
                         data: pingData,
                         fill: "origin",
                         tension: 0.2,
-                        borderColor: "#4ABF74",
-                        backgroundColor: "#4ABF7438",
+                        ...PING_CHART_LINE_STYLES.avg,
                         yAxisID: "y",
                         label: this.$t("avgPing"),
                     },
@@ -584,8 +605,7 @@ export default {
                         data: minPingData,
                         fill: "origin",
                         tension: 0.2,
-                        borderColor: "#126331",
-                        backgroundColor: "#2F9C5914",
+                        ...PING_CHART_LINE_STYLES.min,
                         yAxisID: "y",
                         label: this.$t("minPing"),
                     },
@@ -594,8 +614,7 @@ export default {
                         data: avgPingData,
                         fill: "origin",
                         tension: 0.2,
-                        borderColor: "#5CDD8B",
-                        backgroundColor: "#5CDD8B06",
+                        ...PING_CHART_LINE_STYLES.avg,
                         yAxisID: "y",
                         label: this.$t("avgPing"),
                     },
@@ -604,8 +623,7 @@ export default {
                         data: maxPingData,
                         fill: "origin",
                         tension: 0.2,
-                        borderColor: "#21b55a",
-                        backgroundColor: "#1E7A4214",
+                        ...PING_CHART_LINE_STYLES.max,
                         yAxisID: "y",
                         label: this.$t("maxPing"),
                     },
