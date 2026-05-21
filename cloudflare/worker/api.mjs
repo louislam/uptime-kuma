@@ -38,6 +38,8 @@ const WORKER_AUTH_REVOKED_SESSIONS_SETTING = "workerAuthRevokedSessions";
 const WORKER_AUTH_TOTP_SETTING = "workerAuthTotp";
 const WORKER_STATUS_PAGE_CONFIG_SETTING = "statusPageConfig:default";
 const WORKER_STATUS_PAGE_PUBLIC_GROUP_LIST_SETTING = "statusPagePublicGroupList:default";
+const WORKER_STATUS_PAGE_ALIAS_SLUGS = new Set(["", "default", "status-page"]);
+const WORKER_STATUS_PAGE_SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const DEPLOY_MONITOR_PAUSE_SETTING = "deployMonitorPause";
 const SENSITIVE_SETTING_KEYS = new Set([
     WORKER_AUTH_USER_SETTING,
@@ -287,7 +289,8 @@ export async function handleApiRequest(request, env) {
         }
 
         if (route.name === "status-page-incident-history") {
-            assertDefaultStatusPageSlug(route.params.slug);
+            const config = await getWorkerStatusPageConfig(env);
+            assertWorkerStatusPageSlug(route.params.slug, config);
             return json({ ok: true, incidents: [], nextCursor: null, hasMore: false });
         }
 
@@ -1556,9 +1559,9 @@ export async function listStatusPages(env) {
 }
 
 export async function getStatusPageData(env, slug) {
-    assertDefaultStatusPageSlug(slug);
-    const monitors = await listMonitors(env);
     const config = await getWorkerStatusPageConfig(env);
+    assertWorkerStatusPageSlug(slug, config);
+    const monitors = await listMonitors(env);
     return {
         config,
         incidents: [],
@@ -1568,7 +1571,8 @@ export async function getStatusPageData(env, slug) {
 }
 
 export async function getStatusPageHeartbeatData(env, slug) {
-    assertDefaultStatusPageSlug(slug);
+    const config = await getWorkerStatusPageConfig(env);
+    assertWorkerStatusPageSlug(slug, config);
     const monitors = await listMonitors(env);
     const monitorsById = new Map(monitors.map((monitor) => [Number(monitor.id), monitor]));
     const publicGroupList = await getWorkerPublicGroupList(env, monitors);
@@ -1603,10 +1607,14 @@ export async function getStatusPageHeartbeatData(env, slug) {
 }
 
 export async function saveStatusPageData(env, slug, input) {
-    assertDefaultStatusPageSlug(slug);
+    const currentConfig = await getWorkerStatusPageConfig(env);
+    assertWorkerStatusPageSlug(slug, currentConfig);
+    const providedConfig = input?.config && typeof input.config === "object" ? input.config : {};
     const configInput = {
-        ...(input?.config || {}),
+        ...currentConfig,
+        ...providedConfig,
     };
+    configInput.slug = assertWorkerStatusPageInputSlug(configInput.slug);
     if (typeof input?.imgDataUrl === "string" && input.imgDataUrl.trim()) {
         configInput.icon = input.imgDataUrl;
     }
@@ -4046,9 +4054,9 @@ function normalizeWorkerStatusPageConfig(config) {
         ...defaults,
         ...(config && typeof config === "object" ? config : {}),
         id: 1,
-        slug: "default",
     };
 
+    normalized.slug = normalizeWorkerStatusPageSlug(normalized.slug, defaults.slug);
     normalized.title = String(normalized.title || defaults.title);
     normalized.description = String(normalized.description || "");
     normalized.icon = String(normalized.icon || defaults.icon);
@@ -4134,8 +4142,28 @@ function hydrateWorkerPublicGroupList(publicGroupList, monitors) {
     }));
 }
 
-function assertDefaultStatusPageSlug(slug) {
-    if (!["default", "status-page", ""].includes(slug || "default")) {
+function normalizeWorkerStatusPageSlug(value, fallback = "default") {
+    const slug = typeof value === "string" ? value.trim().toLowerCase() : "";
+    if (!slug || !WORKER_STATUS_PAGE_SLUG_PATTERN.test(slug)) {
+        return fallback;
+    }
+    return slug;
+}
+
+function assertWorkerStatusPageInputSlug(value) {
+    const slug = typeof value === "string" ? value.trim().toLowerCase() : "";
+    if (!slug) {
+        throw httpError(400, "Status page slug is required");
+    }
+    if (!WORKER_STATUS_PAGE_SLUG_PATTERN.test(slug)) {
+        throw httpError(400, "Status page slug can only contain letters, numbers, and hyphens");
+    }
+    return slug;
+}
+
+function assertWorkerStatusPageSlug(slug, config) {
+    const routeSlug = typeof slug === "string" ? slug.trim().toLowerCase() : "";
+    if (!WORKER_STATUS_PAGE_ALIAS_SLUGS.has(routeSlug) && routeSlug !== config.slug) {
         throw httpError(404, "Status Page Not Found");
     }
 }

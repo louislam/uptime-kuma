@@ -606,6 +606,84 @@ describe("Cloudflare Worker API", () => {
         assert.strictEqual(publicBody.publicGroupList[0].monitorList[1].sendUrl, true);
     });
 
+    test("saves and serves a custom Worker status page slug", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                {
+                    id: 7,
+                    name: "Customer Site",
+                    type: "http",
+                    url: "https://customer.example.test",
+                    active: 1,
+                },
+            ],
+            heartbeats: [
+                {
+                    monitor_id: 7,
+                    status: 1,
+                    ping: 15,
+                    msg: "200 - OK",
+                    checked_at: "2026-05-20 12:00:00",
+                },
+            ],
+        });
+
+        const saveResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/status-page/default", {
+                method: "PUT",
+                body: JSON.stringify({
+                    config: {
+                        slug: "Page-Not-Found",
+                        title: "Customer Status",
+                    },
+                    publicGroupList: [
+                        {
+                            id: 1,
+                            name: "Customer Services",
+                            monitorList: [{ id: 7 }],
+                        },
+                    ],
+                }),
+            }),
+            env
+        );
+        const saveBody = await saveResponse.json();
+
+        assert.strictEqual(saveResponse.status, 200);
+        assert.strictEqual(saveBody.config.slug, "page-not-found");
+        assert.strictEqual(env.state.settings["statusPageConfig:default"].slug, "page-not-found");
+
+        const listResponse = await handleApiRequest(new Request("https://example.com/api/status-pages"), env);
+        const listBody = await listResponse.json();
+        assert.strictEqual(listBody.statusPages[1].slug, "page-not-found");
+
+        const publicResponse = await handleApiRequest(
+            new Request("https://example.com/api/status-page/page-not-found"),
+            env
+        );
+        const publicBody = await publicResponse.json();
+
+        assert.strictEqual(publicResponse.status, 200);
+        assert.strictEqual(publicBody.config.slug, "page-not-found");
+        assert.strictEqual(publicBody.config.title, "Customer Status");
+        assert.strictEqual(publicBody.publicGroupList[0].monitorList[0].name, "Customer Site");
+
+        const heartbeatResponse = await handleApiRequest(
+            new Request("https://example.com/api/status-page/heartbeat/page-not-found"),
+            env
+        );
+        const heartbeatBody = await heartbeatResponse.json();
+        assert.strictEqual(heartbeatResponse.status, 200);
+        assert.strictEqual(heartbeatBody.heartbeatList[7][0].msg, "200 - OK");
+
+        const incidentHistoryResponse = await handleApiRequest(
+            new Request("https://example.com/api/status-page/page-not-found/incident-history"),
+            env
+        );
+        assert.strictEqual(incidentHistoryResponse.status, 200);
+    });
+
     test("serves aggregate Worker heartbeat data for selected status page groups", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({
