@@ -35,10 +35,23 @@
                 <template v-if="activeTab.value === 'overview'">
                     <div class="overview-layout">
                         <section class="metrics-grid" aria-label="网关总览指标">
-                            <article v-for="metric in summaryCards" :key="metric.label" class="metric-card">
-                                <span>{{ metric.label }}</span>
+                            <article
+                                v-for="metric in summaryCards"
+                                :key="metric.label"
+                                class="metric-card"
+                                :class="'metric-tone-' + metric.tone"
+                            >
+                                <div class="metric-card-head">
+                                    <span>{{ metric.label }}</span>
+                                    <i></i>
+                                </div>
                                 <strong>{{ metric.value }}</strong>
-                                <small>{{ metric.hint }}</small>
+                                <div class="metric-card-foot">
+                                    <small>{{ metric.hint }}</small>
+                                    <svg class="mini-sparkline" viewBox="0 0 78 28" preserveAspectRatio="none" aria-hidden="true">
+                                        <polyline :points="miniSparklinePoints(metric.trend, 78, 28)" />
+                                    </svg>
+                                </div>
                             </article>
                         </section>
 
@@ -151,6 +164,19 @@
                                 </section>
                             </aside>
                         </div>
+
+                        <section class="overview-value-strip" aria-label="关键趋势指标">
+                            <article v-for="card in overviewValueCards" :key="card.label" class="mini-chart-card value-trend-card">
+                                <div>
+                                    <span class="section-kicker">{{ card.kicker }}</span>
+                                    <strong>{{ card.value }}</strong>
+                                    <small>{{ card.label }}</small>
+                                </div>
+                                <svg viewBox="0 0 160 48" preserveAspectRatio="none" aria-hidden="true">
+                                    <polyline :class="'trend-line trend-' + card.tone" :points="miniSparklinePoints(card.trend, 160, 48)" />
+                                </svg>
+                            </article>
+                        </section>
                     </div>
                 </template>
 
@@ -185,6 +211,9 @@
                                     </span>
                                     <span>{{ provider.endpoint }}</span>
                                 </div>
+                                <svg class="provider-sparkline" viewBox="0 0 220 44" preserveAspectRatio="none" aria-hidden="true">
+                                    <polyline :points="providerSparklinePoints(provider)" />
+                                </svg>
                                 <div class="provider-stats">
                                     <div>
                                         <span>路由权重</span>
@@ -251,7 +280,13 @@
                                     <span><i class="area-openai-dot"></i>OpenAI {{ currentRoutingSnapshot.openai }}%</span>
                                     <span><i class="area-claude-dot"></i>Claude {{ currentRoutingSnapshot.claude }}%</span>
                                     <span><i class="area-gemini-dot"></i>Gemini {{ currentRoutingSnapshot.gemini }}%</span>
-                                    <span><i class="area-china-dot"></i>China Pool {{ currentRoutingSnapshot.chinaPool }}%</span>
+                                    <span><i class="area-china-dot"></i>国产模型池 {{ currentRoutingSnapshot.chinaPool }}%</span>
+                                </div>
+                                <div class="policy-stack-list">
+                                    <strong>当前策略栈</strong>
+                                    <span v-for="strategy in currentFrame.agentMetrics.strategyStack" :key="strategy">
+                                        {{ strategy }}
+                                    </span>
                                 </div>
                             </section>
 
@@ -283,23 +318,23 @@
                         </div>
                         <div class="agent-metrics-grid">
                             <article>
-                                <span>Active Agents</span>
+                                <span>活跃 Agent</span>
                                 <strong>{{ currentFrame.agentMetrics.activeAgents }}</strong>
                             </article>
                             <article>
-                                <span>Running Workflows</span>
+                                <span>运行中工作流</span>
                                 <strong>{{ currentFrame.agentMetrics.runningWorkflows }}</strong>
                             </article>
                             <article>
-                                <span>Queued Tasks</span>
+                                <span>排队任务</span>
                                 <strong>{{ currentFrame.agentMetrics.queuedTasks }}</strong>
                             </article>
                             <article>
-                                <span>SLA Met Rate</span>
+                                <span>SLA 达成率</span>
                                 <strong>{{ currentFrame.agentMetrics.slaMetRate }}%</strong>
                             </article>
                             <article>
-                                <span>Cost Saved Today</span>
+                                <span>今日节省成本</span>
                                 <strong>{{ formatCurrency(currentFrame.agentMetrics.costSavedToday) }}</strong>
                             </article>
                         </div>
@@ -449,7 +484,7 @@
                                         <small>Token 占比</small>
                                     </div>
                                     <div>
-                                        <div class="pie-chart small" :style="costPieStyle"><span>Cost</span></div>
+                                        <div class="pie-chart small" :style="costPieStyle"><span>成本</span></div>
                                         <small>成本占比</small>
                                     </div>
                                 </div>
@@ -493,14 +528,21 @@
                                         { fresh: currentIncidentIds.includes(incident.id) },
                                     ]"
                                 >
+                                    <div class="incident-marker">
+                                        <span>{{ incidentLevelIcon(incident.level) }}</span>
+                                    </div>
+                                    <div class="incident-body">
                                     <div class="incident-top">
                                         <strong>{{ incident.title }}</strong>
                                         <span>{{ incident.time }}</span>
                                     </div>
                                     <p>{{ incident.description }}</p>
-                                    <div class="incident-meta">
-                                        <span>{{ incident.provider }}</span>
-                                        <span>{{ incident.action }}</span>
+                                    <div class="incident-detail-grid">
+                                        <span><b>触发条件</b>{{ incidentTrigger(incident) }}</span>
+                                        <span><b>策略动作</b>{{ incident.action }}</span>
+                                        <span><b>影响范围</b>{{ incidentImpact(incident) }}</span>
+                                        <span><b>恢复结果</b>{{ incidentRecovery(incident) }}</span>
+                                    </div>
                                     </div>
                                 </div>
                             </div>
@@ -526,6 +568,7 @@ import tokenfleetLogo from "../assets/tokenfleet-logo.png";
 
 const FRAME_INTERVAL = 10000;
 const TAB_INTERVAL = 3000;
+const STATE_REFRESH_INTERVAL = 5000;
 
 export default {
     data() {
@@ -537,9 +580,11 @@ export default {
             isPlaying: true,
             playbackTimer: null,
             tabTimer: null,
+            gatewayStateTimer: null,
             manualPauseTimer: null,
             tabStartedAt: Date.now(),
             chartNow: new Date(),
+            gatewayFrame: null,
             tabs: [
                 { label: "总览", value: "overview" },
                 { label: "API状态", value: "providers" },
@@ -552,13 +597,13 @@ export default {
     },
     computed: {
         currentFrame() {
-            return this.timeline[this.currentFrameIndex];
+            return this.gatewayFrame || this.timeline[this.currentFrameIndex];
         },
         activeTab() {
             return this.tabs[this.activeTabIndex];
         },
         shortStageHint() {
-            const source = this.currentFrame.headline || this.currentFrame.narrative || "";
+            const source = this.currentFrame.stageHint || this.currentFrame.headline || this.currentFrame.narrative || "";
             const compactText = Array.from(source.replace(/\s+/g, ""));
             if (compactText.length <= 20) {
                 return compactText.join("");
@@ -570,15 +615,42 @@ export default {
             const billing = this.currentFrame.billingMetrics;
             const agent = this.currentFrame.agentMetrics;
             return [
-                { label: "网关健康状态", value: this.gatewayHealthLabel(metrics.gatewayHealth), hint: "全局策略状态" },
-                { label: "在线供应商", value: metrics.providersOnline, hint: "在线上游" },
-                { label: "平均延迟", value: this.latencyText(metrics.avgLatency), hint: "加权 P50" },
-                { label: "今日请求量", value: this.formatCompact(metrics.requestsToday), hint: "网关入口" },
-                { label: "今日 Token", value: this.formatTokens(metrics.tokensToday), hint: "已处理用量" },
-                { label: "活跃异常", value: metrics.activeIncidents, hint: "未关闭事件" },
-                { label: "可信计费评分", value: `${billing.fairBillingScore}%`, hint: "可信计量" },
-                { label: "路由效率", value: `${agent.routingEfficiency}%`, hint: "策略匹配度" },
-                { label: "Agent SLA 达成率", value: `${agent.slaMetRate}%`, hint: "工作流目标" },
+                { label: "网关健康状态", value: this.gatewayHealthLabel(metrics.gatewayHealth), hint: "全局策略状态", tone: "blue", trend: [99.92, 99.94, 99.95, 99.93, 99.96, Number.parseFloat(this.currentHealthValue)] },
+                { label: "在线供应商", value: metrics.providersOnline, hint: "在线上游", tone: "cyan", trend: [8, 8, 9, 9, 8.7, Number.parseFloat(metrics.providersOnline) || 9] },
+                { label: "平均延迟", value: this.latencyText(metrics.avgLatency), hint: "加权 P50", tone: "purple", trend: [318, 305, 292, 310, 286, metrics.avgLatency] },
+                { label: "今日请求量", value: this.formatCompact(metrics.requestsToday), hint: "网关入口", tone: "blue", trend: [62, 66, 71, 78, 83, 91] },
+                { label: "今日 Token", value: this.formatTokens(metrics.tokensToday), hint: "已处理用量", tone: "cyan", trend: [58, 64, 69, 76, 82, 90] },
+                { label: "活跃异常", value: metrics.activeIncidents, hint: "未关闭事件", tone: "amber", trend: [1, 2, 2, 3, 2, metrics.activeIncidents] },
+                { label: "可信计费评分", value: `${billing.fairBillingScore}%`, hint: "可信计量", tone: "green", trend: [99.88, 99.91, 99.94, 99.96, 99.98, billing.fairBillingScore] },
+                { label: "路由效率", value: `${agent.routingEfficiency}%`, hint: "策略匹配度", tone: "blue", trend: [94, 95, 96, 95.6, 96.8, agent.routingEfficiency] },
+                { label: "Agent SLA 达成率", value: `${agent.slaMetRate}%`, hint: "工作流目标", tone: "green", trend: [97.6, 98.1, 98.4, 98.2, 98.8, agent.slaMetRate] },
+            ];
+        },
+        overviewValueCards() {
+            const billing = this.currentFrame.billingMetrics;
+            const agent = this.currentFrame.agentMetrics;
+            return [
+                {
+                    kicker: "可信计量",
+                    label: "可信计费评分",
+                    value: `${billing.fairBillingScore}%`,
+                    tone: "green",
+                    trend: [99.88, 99.9, 99.93, 99.96, 99.98, billing.fairBillingScore],
+                },
+                {
+                    kicker: "路由质量",
+                    label: "路由效率",
+                    value: `${agent.routingEfficiency}%`,
+                    tone: "blue",
+                    trend: [94.2, 95.1, 96.4, 96.1, 97.2, agent.routingEfficiency],
+                },
+                {
+                    kicker: "Agent SLA",
+                    label: "Agent SLA 达成率",
+                    value: `${agent.slaMetRate}%`,
+                    tone: "purple",
+                    trend: [97.4, 97.9, 98.3, 98.6, 98.7, agent.slaMetRate],
+                },
             ];
         },
         latencyRanking() {
@@ -587,6 +659,9 @@ export default {
                 .sort((a, b) => a.latencyP50 - b.latencyP50);
         },
         incidentFeed() {
+            if (this.gatewayFrame) {
+                return [...this.gatewayFrame.incidents].reverse();
+            }
             return this.timeline
                 .slice(0, this.currentFrameIndex + 1)
                 .flatMap((frame) => frame.incidents)
@@ -599,6 +674,9 @@ export default {
             return this.currentFrame.gatewaySummary.split("。")[0] + "。";
         },
         fullAvailabilitySeries() {
+            if (this.currentFrame.availabilitySeries?.length) {
+                return this.currentFrame.availabilitySeries;
+            }
             const pointCount = this.timeline.length;
             return this.timeline.map((frame, index) => {
                 const offsetMinutes = -480 + index * (480 / (pointCount - 1));
@@ -660,18 +738,18 @@ export default {
             return this.visibleAvailabilitySeries[this.visibleAvailabilitySeries.length - 1];
         },
         currentHealthValue() {
-            return `${this.currentHealthPoint.value}%`;
+            return `${Number(this.currentHealthPoint.value).toFixed(3)}%`;
         },
         currentRoutingSnapshot() {
             return this.currentFrame.routingSeries[this.currentFrame.routingSeries.length - 1];
         },
         routingPieStyle() {
             return this.pieStyle([
-                { value: this.currentRoutingSnapshot.openai, color: "#1f7ae0" },
-                { value: this.currentRoutingSnapshot.claude, color: "#7c5cff" },
-                { value: this.currentRoutingSnapshot.gemini, color: "#2fb5c8" },
-                { value: this.currentRoutingSnapshot.chinaPool, color: "#19a974" },
-                { value: this.currentRoutingSnapshot.other, color: "#9fb2c9" },
+                { value: this.currentRoutingSnapshot.openai, color: "#2563eb" },
+                { value: this.currentRoutingSnapshot.claude, color: "#7c3aed" },
+                { value: this.currentRoutingSnapshot.gemini, color: "#06b6d4" },
+                { value: this.currentRoutingSnapshot.chinaPool, color: "#10b981" },
+                { value: this.currentRoutingSnapshot.other, color: "#94a3b8" },
             ]);
         },
         tokenPieStyle() {
@@ -696,10 +774,12 @@ export default {
             }));
         },
         providerColors() {
-            return ["#1f7ae0", "#7c5cff", "#2fb5c8", "#19a974", "#f2b84b", "#5b8def", "#7ac7a5", "#9fb2c9", "#42526e"];
+            return ["#2563eb", "#7c3aed", "#06b6d4", "#10b981", "#f59e0b", "#3b82f6", "#14b8a6", "#94a3b8", "#475569"];
         },
     },
     mounted() {
+        this.loadGatewayState();
+        this.gatewayStateTimer = setInterval(this.loadGatewayState, STATE_REFRESH_INTERVAL);
         this.startPlayback();
     },
     beforeUnmount() {
@@ -744,6 +824,10 @@ export default {
                 clearTimeout(this.manualPauseTimer);
                 this.manualPauseTimer = null;
             }
+            if (this.gatewayStateTimer) {
+                clearInterval(this.gatewayStateTimer);
+                this.gatewayStateTimer = null;
+            }
         },
         togglePlayback() {
             this.isPlaying = !this.isPlaying;
@@ -754,6 +838,103 @@ export default {
         selectTab(index) {
             this.activeTabIndex = index;
             this.pauseAutoPlayForReview();
+        },
+        async loadGatewayState() {
+            try {
+                const response = await fetch(`/tokenfleet-data/current-state.json?t=${Date.now()}`, {
+                    cache: "no-store",
+                });
+                if (!response.ok) {
+                    return;
+                }
+                const state = await response.json();
+                const frame = this.normalizeGatewayState(state);
+                if (frame) {
+                    this.gatewayFrame = frame;
+                    this.currentFrameIndex = Math.max(0, Math.min(this.timeline.length - 1, frame.frame - 1));
+                    this.chartNow = state.meta?.updatedAt ? new Date(state.meta.updatedAt) : new Date();
+                }
+            } catch {
+            }
+        },
+        normalizeGatewayState(state) {
+            if (!state?.summary || !Array.isArray(state.providers)) {
+                return null;
+            }
+            const providerCount = state.providers.length || 1;
+            const billingProviders = state.billing?.providers || state.calibration?.providers || [];
+            const calibration = {
+                averageDeltaRate: state.billing?.averageDeltaRate ?? state.calibration?.averageDeltaRate ?? 0,
+                maxDeltaRate: state.billing?.maxDeltaRate ?? state.calibration?.maxDeltaRate ?? 0,
+                convergedApis: state.calibration?.convergedApis ?? billingProviders.filter((provider) => provider.deltaRate <= 0.0025).length,
+                cycle: state.calibration?.cycle || "实时转接对账",
+                providers: billingProviders,
+            };
+            const routingSeries = state.routing?.series?.length ? state.routing.series : [
+                {
+                    second: 0,
+                    openai: state.providers.find((provider) => provider.id === "openai")?.routeWeight || 0,
+                    claude: state.providers.find((provider) => provider.id === "claude")?.routeWeight || 0,
+                    gemini: state.providers.find((provider) => provider.id === "gemini")?.routeWeight || 0,
+                    chinaPool: state.providers
+                        .filter((provider) => provider.group === "China")
+                        .reduce((sum, provider) => sum + provider.routeWeight, 0),
+                    other: state.providers.find((provider) => provider.id === "grok")?.routeWeight || 0,
+                    action: state.summaryText || "",
+                },
+            ];
+            const agent = state.agent || {};
+            return {
+                frame: state.meta?.frame || this.currentFrameIndex + 1,
+                second: state.meta?.frame ? (state.meta.frame - 1) * 10 : this.currentFrame.second,
+                headline: state.meta?.stage || this.currentFrame.headline,
+                narrative: state.summaryText || this.currentFrame.narrative,
+                stageHint: state.meta?.stageHint,
+                summaryMetrics: {
+                    gatewayHealth: state.summary.gatewayHealth,
+                    providersOnline: state.summary.providersOnline || `${state.providers.filter((provider) => provider.status !== "maintenance").length} / ${providerCount}`,
+                    avgLatency: state.summary.avgLatencyMs,
+                    requestsToday: state.summary.requestsToday,
+                    tokensToday: state.summary.tokensToday,
+                    activeIncidents: state.summary.activeIncidents,
+                },
+                providers: state.providers,
+                calibration,
+                incidents: state.incidents || [],
+                gatewaySummary: state.summaryText || "",
+                billingMetrics: {
+                    fairBillingScore: state.summary.fairBillingScore ?? state.billing?.fairBillingScore ?? 0,
+                    failedRequestsFree: state.billing?.failedRequestsFree || 0,
+                    retryDeduped: state.billing?.retryDeduped || 0,
+                    reconciledBills: state.billing?.reconciledBills || providerCount,
+                    explainableRequests: state.billing?.explainableRequests || 0,
+                },
+                calibrationSeries: state.billing?.calibrationSeries || this.timeline[this.currentFrameIndex]?.calibrationSeries || [],
+                agentMetrics: {
+                    activeAgents: agent.activeAgents || 0,
+                    runningWorkflows: agent.runningWorkflows || 0,
+                    queuedTasks: agent.queuedTasks || 0,
+                    completedToday: agent.completedToday || 0,
+                    slaMetRate: state.summary.agentSlaMetRate ?? agent.slaMetRate ?? 0,
+                    costSavedRate: agent.costSavedRate || 0,
+                    routingEfficiency: state.summary.routingEfficiency ?? agent.routingEfficiency ?? 0,
+                    costSavedToday: agent.costSavedToday || 0,
+                    throughput: agent.throughput || 0,
+                    priority: agent.priority || { P0: 0, P1: 0, P2: 0, P3: 0 },
+                    strategyStack: agent.strategyStack || [],
+                },
+                routingSeries,
+                fairnessEvents: [
+                    { label: "失败请求免计", value: state.billing?.failedRequestsFree || 0, tone: "green" },
+                    { label: "重试请求去重", value: state.billing?.retryDeduped || 0, tone: "blue" },
+                    { label: "供应商账单对账", value: state.billing?.reconciledBills || providerCount, tone: "amber" },
+                ],
+                workflowRouting: agent.workflowRoutes || [],
+                availabilitySeries: (state.availabilitySeries || []).map((point) => ({
+                    ...point,
+                    timestamp: point.timestamp ? new Date(point.timestamp) : null,
+                })),
+            };
         },
         pauseAutoPlayForReview() {
             this.isPlaying = false;
@@ -787,10 +968,10 @@ export default {
         },
         statusLabel(status) {
             const labels = {
-                healthy: "Healthy",
-                degraded: "Degraded",
-                down: "Down",
-                maintenance: "Maintenance",
+                healthy: "健康",
+                degraded: "降级",
+                down: "中断",
+                maintenance: "维护",
             };
             return labels[status] || status;
         },
@@ -878,6 +1059,55 @@ export default {
                 return `${x.toFixed(1)},${y.toFixed(1)}`;
             }).join(" ");
         },
+        miniSparklinePoints(values, width = 78, height = 28) {
+            if (!values?.length) {
+                return "";
+            }
+            const minValue = Math.min(...values);
+            const maxValue = Math.max(...values);
+            const range = maxValue - minValue || 1;
+            return values.map((value, index) => {
+                const x = values.length === 1 ? width : (index / (values.length - 1)) * width;
+                const y = height - ((value - minValue) / range) * (height - 4) - 2;
+                return `${x.toFixed(1)},${y.toFixed(1)}`;
+            }).join(" ");
+        },
+        providerSparklinePoints(provider) {
+            const latency = provider.latencyP50 || 120;
+            const volatility = provider.status === "healthy" ? 7 : provider.status === "maintenance" ? 16 : 24;
+            const weightBias = provider.routeWeight / 10;
+            const values = Array.from({ length: 12 }, (_, index) => (
+                latency + Math.sin((index + this.currentFrameIndex) * 0.75) * volatility + index * 1.6 - weightBias
+            ));
+            return this.miniSparklinePoints(values, 220, 44);
+        },
+        incidentLevelIcon(level) {
+            const icons = {
+                info: "i",
+                warning: "!",
+                critical: "×",
+                resolved: "✓",
+            };
+            return icons[level] || "i";
+        },
+        incidentTrigger(incident) {
+            return incident.type || incident.provider || "策略观测";
+        },
+        incidentImpact(incident) {
+            if (incident.level === "critical") {
+                return "主路由保护";
+            }
+            if (incident.level === "warning") {
+                return "部分流量切换";
+            }
+            if (incident.level === "resolved") {
+                return "权重逐步恢复";
+            }
+            return "策略记录";
+        },
+        incidentRecovery(incident) {
+            return incident.status || (incident.level === "resolved" ? "已恢复" : "观察中");
+        },
         stackedPolygon(key) {
             const series = this.currentFrame.routingSeries;
             const keys = ["openai", "claude", "gemini", "chinaPool", "other"];
@@ -919,15 +1149,28 @@ export default {
 
 <style lang="scss" scoped>
 .tokenfleet-page {
+    --tf-bg: #f6fafd;
+    --tf-card: #ffffff;
+    --tf-text: #0f172a;
+    --tf-muted: #64748b;
+    --tf-border: #e2e8f0;
+    --tf-blue: #2563eb;
+    --tf-cyan: #06b6d4;
+    --tf-purple: #7c3aed;
+    --tf-green: #10b981;
+    --tf-amber: #f59e0b;
+    --tf-red: #ef4444;
+
     display: flex;
     min-height: 100vh;
     flex-direction: column;
     gap: 12px;
     padding: 20px;
-    color: #152033;
+    color: var(--tf-text);
     background:
-        radial-gradient(circle at 20% 0%, rgba(47, 145, 225, 0.12), transparent 32%),
-        linear-gradient(180deg, #f7fbff 0%, #eef5f8 48%, #f8fafc 100%);
+        radial-gradient(circle at 18% 0%, rgba(37, 99, 235, 0.1), transparent 30%),
+        radial-gradient(circle at 82% 8%, rgba(6, 182, 212, 0.08), transparent 34%),
+        linear-gradient(180deg, var(--tf-bg) 0%, #f8fbff 54%, #f6fafd 100%);
 }
 
 .brand-bar,
@@ -937,10 +1180,10 @@ export default {
 .intelligence-card,
 .metric-card,
 .provider-card {
-    border: 1px solid rgba(137, 155, 178, 0.18);
+    border: 1px solid var(--tf-border);
     border-radius: 18px;
-    background: rgba(255, 255, 255, 0.94);
-    box-shadow: 0 18px 50px rgba(46, 72, 104, 0.09);
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 18px 42px rgba(15, 23, 42, 0.06);
 }
 
 .brand-bar {
@@ -987,7 +1230,7 @@ export default {
     flex: 0 0 auto;
     justify-content: flex-start;
     margin-right: 4px;
-    color: #101c2d;
+    color: var(--tf-text);
     font-size: 22px;
     font-weight: 850;
 }
@@ -1003,7 +1246,7 @@ export default {
     border: 0;
     padding: 0 0 5px;
     background: transparent;
-    color: #7a8aa1;
+    color: #7587a0;
     cursor: pointer;
     font-size: 14px;
     font-style: italic;
@@ -1014,11 +1257,11 @@ export default {
 }
 
 .brand-tab:hover {
-    color: #4b647f;
+    color: #334155;
 }
 
 .brand-tab.active {
-    color: #1676c9;
+    color: var(--tf-blue);
     font-weight: 700;
 }
 
@@ -1029,7 +1272,7 @@ export default {
     left: 0;
     height: 2px;
     border-radius: 999px;
-    background: linear-gradient(90deg, #1f7ae0, #2fb5c8);
+    background: linear-gradient(90deg, var(--tf-blue), var(--tf-cyan));
     content: "";
 }
 
@@ -1054,7 +1297,7 @@ export default {
 .stage-hint {
     max-width: 190px;
     overflow: hidden;
-    color: #6b7f97;
+    color: var(--tf-muted);
     font-size: 12px;
     font-weight: 800;
     text-overflow: ellipsis;
@@ -1068,27 +1311,27 @@ export default {
     white-space: nowrap;
     padding: 8px 12px;
     border-radius: 999px;
-    color: #0f6b47;
-    background: #eaf8f1;
+    color: #047857;
+    background: #ecfdf5;
     font-weight: 800;
 }
 
 .brand-status strong {
-    color: #152033;
+    color: var(--tf-text);
 }
 
 .live-dot {
     width: 8px;
     height: 8px;
     border-radius: 999px;
-    background: #18a66a;
-    box-shadow: 0 0 0 5px rgba(24, 166, 106, 0.13);
+    background: var(--tf-green);
+    box-shadow: 0 0 0 5px rgba(16, 185, 129, 0.13);
 }
 
 .section-kicker {
     display: block;
     margin-bottom: 5px;
-    color: #66768d;
+    color: var(--tf-muted);
     font-size: 11px;
     font-weight: 800;
     letter-spacing: 0;
@@ -1123,7 +1366,7 @@ export default {
 
 .overview-layout {
     display: grid;
-    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
     gap: 14px;
     height: 100%;
 }
@@ -1135,24 +1378,93 @@ export default {
 }
 
 .metric-card {
+    position: relative;
+    overflow: hidden;
+    min-height: 122px;
     padding: 15px;
+    transition:
+        border-color 180ms ease,
+        box-shadow 180ms ease;
+}
+
+.metric-card:hover {
+    border-color: rgba(37, 99, 235, 0.26);
+    box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
 }
 
 .metric-card span,
 .metric-card small {
-    display: block;
-    color: #748197;
+    color: var(--tf-muted);
 }
 
 .metric-card strong {
     display: block;
     margin: 7px 0 4px;
-    font-size: 23px;
+    color: var(--tf-text);
+    font-size: 24px;
     line-height: 1.1;
 }
 
 .metric-card small {
     font-size: 12px;
+}
+
+.metric-card-head,
+.metric-card-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.metric-card-head span {
+    display: block;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.metric-card-head i {
+    width: 8px;
+    height: 8px;
+    flex: 0 0 auto;
+    border-radius: 999px;
+    background: var(--metric-tone, var(--tf-blue));
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--metric-tone, var(--tf-blue)) 14%, transparent);
+}
+
+.metric-tone-blue {
+    --metric-tone: var(--tf-blue);
+}
+
+.metric-tone-cyan {
+    --metric-tone: var(--tf-cyan);
+}
+
+.metric-tone-purple {
+    --metric-tone: var(--tf-purple);
+}
+
+.metric-tone-green {
+    --metric-tone: var(--tf-green);
+}
+
+.metric-tone-amber {
+    --metric-tone: var(--tf-amber);
+}
+
+.mini-sparkline {
+    width: 78px;
+    height: 28px;
+    flex: 0 0 78px;
+}
+
+.mini-sparkline polyline {
+    fill: none;
+    stroke: var(--metric-tone, var(--tf-blue));
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 2.4;
+    opacity: 0.86;
 }
 
 .event-card,
@@ -1254,6 +1566,56 @@ h3 {
     max-height: 11.2em;
 }
 
+.overview-value-strip {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.value-trend-card {
+    display: grid;
+    grid-template-columns: minmax(0, 0.72fr) minmax(120px, 1fr);
+    align-items: center;
+    gap: 12px;
+}
+
+.value-trend-card strong {
+    display: block;
+    color: var(--tf-text);
+    font-size: 24px;
+    line-height: 1.1;
+}
+
+.value-trend-card small {
+    color: var(--tf-muted);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.value-trend-card svg {
+    width: 100%;
+    height: 48px;
+}
+
+.trend-line {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 3;
+}
+
+.trend-green {
+    stroke: var(--tf-green);
+}
+
+.trend-blue {
+    stroke: var(--tf-blue);
+}
+
+.trend-purple {
+    stroke: var(--tf-purple);
+}
+
 .tab-panel {
     height: 100%;
 }
@@ -1294,9 +1656,9 @@ h3 {
 .mini-chart-card,
 .health-hero-card,
 .chart-card {
-    border: 1px solid #e3ebf4;
-    border-radius: 16px;
-    background: #ffffff;
+    border: 1px solid var(--tf-border);
+    border-radius: 18px;
+    background: var(--tf-card);
 }
 
 .mini-chart-card {
@@ -1306,7 +1668,8 @@ h3 {
 .chart-card {
     min-width: 0;
     padding: 14px;
-    background: #f9fbfe;
+    background:
+        linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
 }
 
 .health-hero-card {
@@ -1316,8 +1679,9 @@ h3 {
     min-height: 460px;
     padding: 20px 22px 16px;
     background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(247, 251, 255, 0.98)),
-        radial-gradient(circle at 74% 10%, rgba(47, 181, 200, 0.12), transparent 36%);
+        linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(248, 252, 255, 0.99)),
+        radial-gradient(circle at 76% 10%, rgba(6, 182, 212, 0.13), transparent 36%);
+    box-shadow: 0 22px 54px rgba(15, 23, 42, 0.07);
 }
 
 .health-chart-header {
@@ -1349,16 +1713,16 @@ h3 {
 .health-value-stack strong {
     padding: 8px 12px;
     border-radius: 999px;
-    color: #1269c6;
-    background: #eaf5ff;
+    color: var(--tf-blue);
+    background: #eff6ff;
     font-size: 18px;
 }
 
 .health-value-stack span {
     padding: 5px 9px;
     border-radius: 999px;
-    color: #245f93;
-    background: #edf7ff;
+    color: #075985;
+    background: #ecfeff;
     font-size: 12px;
     font-weight: 900;
 }
@@ -1371,12 +1735,12 @@ h3 {
 }
 
 .chart-grid-lines line {
-    stroke: rgba(126, 148, 174, 0.22);
-    stroke-width: 1;
+    stroke: rgba(148, 163, 184, 0.2);
+    stroke-width: 0.8;
 }
 
 .chart-axis-labels text {
-    fill: #7a879a;
+    fill: #64748b;
     font-size: 11px;
     font-weight: 700;
 }
@@ -1387,7 +1751,7 @@ h3 {
 
 .health-hero-line {
     fill: none;
-    stroke: #1f7ae0;
+    stroke: var(--tf-blue);
     stroke-linecap: round;
     stroke-linejoin: round;
     stroke-width: 4.4;
@@ -1396,12 +1760,12 @@ h3 {
 
 .health-current-dot {
     fill: #ffffff;
-    stroke: #1f7ae0;
+    stroke: var(--tf-blue);
     stroke-width: 4;
 }
 
 .health-current-label {
-    fill: #1269c6;
+    fill: var(--tf-blue);
     font-size: 13px;
     font-weight: 900;
 }
@@ -1453,15 +1817,15 @@ h3 {
 }
 
 .actual-line {
-    stroke: #19a974;
+    stroke: var(--tf-green);
 }
 
 .billed-line {
-    stroke: #f2b84b;
+    stroke: var(--tf-amber);
 }
 
 .delta-line {
-    stroke: #2f91e1;
+    stroke: var(--tf-blue);
 }
 
 .area-chart {
@@ -1474,19 +1838,19 @@ h3 {
 }
 
 .area-openai {
-    fill: rgba(31, 122, 224, 0.82);
+    fill: rgba(37, 99, 235, 0.84);
 }
 
 .area-claude {
-    fill: rgba(124, 92, 255, 0.74);
+    fill: rgba(124, 58, 237, 0.76);
 }
 
 .area-gemini {
-    fill: rgba(47, 181, 200, 0.72);
+    fill: rgba(6, 182, 212, 0.72);
 }
 
 .area-china {
-    fill: rgba(25, 169, 116, 0.78);
+    fill: rgba(16, 185, 129, 0.78);
 }
 
 .area-other {
@@ -1510,7 +1874,8 @@ h3 {
 }
 
 .provider-card:hover {
-    transform: translateY(-2px);
+    border-color: rgba(37, 99, 235, 0.22);
+    box-shadow: 0 18px 38px rgba(15, 23, 42, 0.08);
 }
 
 .provider-card::before {
@@ -1524,22 +1889,22 @@ h3 {
 .provider-card.status-healthy::before,
 .status-pill.status-healthy,
 .progress-line div {
-    background: #19a974;
+    background: var(--tf-green);
 }
 
 .provider-card.status-degraded::before,
 .status-pill.status-degraded {
-    background: #f2b84b;
+    background: var(--tf-amber);
 }
 
 .provider-card.status-down::before,
 .status-pill.status-down {
-    background: #e45858;
+    background: var(--tf-red);
 }
 
 .provider-card.status-maintenance::before,
 .status-pill.status-maintenance {
-    background: #7c8da6;
+    background: #64748b;
 }
 
 .provider-card.status-degraded {
@@ -1578,19 +1943,39 @@ h3 {
 .provider-meta span {
     padding: 5px 7px;
     border-radius: 999px;
-    background: #f1f5f9;
-    color: #596b82;
+    background: #f8fafc;
+    color: var(--tf-muted);
     font-size: 11px;
 }
 
 .group-tag.group-international {
-    background: #edf5ff;
-    color: #2369b3;
+    background: #eff6ff;
+    color: #1d4ed8;
 }
 
 .group-tag.group-china {
-    background: #edf8f2;
-    color: #14734e;
+    background: #ecfdf5;
+    color: #047857;
+}
+
+.provider-sparkline {
+    display: block;
+    width: 100%;
+    height: 44px;
+    margin-top: 10px;
+    border-radius: 12px;
+    background:
+        linear-gradient(#eef4fa 1px, transparent 1px) 0 0 / 100% 22px,
+        linear-gradient(90deg, #eef4fa 1px, transparent 1px) 0 0 / 44px 100%;
+}
+
+.provider-sparkline polyline {
+    fill: none;
+    stroke: var(--tf-blue);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 2.8;
+    opacity: 0.84;
 }
 
 .provider-stats {
@@ -1658,8 +2043,8 @@ h3 {
     margin-top: 10px;
     padding: 10px 12px;
     border-radius: 12px;
-    background: #edf7ff;
-    color: #245f93;
+    background: #eff6ff;
+    color: #1d4ed8;
     font-size: 13px;
     font-weight: 800;
     line-height: 1.5;
@@ -1713,6 +2098,31 @@ h3 {
     margin-top: 12px;
 }
 
+.policy-stack-list {
+    display: grid;
+    width: 100%;
+    gap: 8px;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--tf-border);
+}
+
+.policy-stack-list strong {
+    color: var(--tf-text);
+    font-size: 12px;
+}
+
+.policy-stack-list span {
+    display: inline-block;
+    padding: 7px 10px;
+    border: 1px solid rgba(37, 99, 235, 0.12);
+    border-radius: 12px;
+    background: #f8fafc;
+    color: var(--tf-muted);
+    font-size: 12px;
+    font-weight: 800;
+}
+
 .pie-legend span,
 .strategy-stack span {
     padding: 6px 9px;
@@ -1732,19 +2142,19 @@ h3 {
 }
 
 .area-openai-dot {
-    background: #1f7ae0;
+    background: var(--tf-blue);
 }
 
 .area-claude-dot {
-    background: #7c5cff;
+    background: var(--tf-purple);
 }
 
 .area-gemini-dot {
-    background: #2fb5c8;
+    background: var(--tf-cyan);
 }
 
 .area-china-dot {
-    background: #19a974;
+    background: var(--tf-green);
 }
 
 .bar-label {
@@ -1773,7 +2183,7 @@ h3 {
 .route-bar {
     position: absolute;
     inset: 0 auto 0 0;
-    background: rgba(31, 122, 224, 0.82);
+    background: rgba(37, 99, 235, 0.86);
 }
 
 .traffic-bar {
@@ -1781,7 +2191,7 @@ h3 {
     inset: 0 auto 0 0;
     height: 4px;
     margin: 3px 0;
-    background: #19a974;
+    background: var(--tf-green);
 }
 
 .latency-table {
@@ -1825,9 +2235,17 @@ h3 {
 .agent-metrics-grid article,
 .trust-summary-grid article {
     padding: 12px;
-    border: 1px solid #e3ebf4;
+    border: 1px solid var(--tf-border);
     border-radius: 14px;
-    background: #ffffff;
+    background:
+        linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+}
+
+.trust-summary-grid article:first-child {
+    border-color: rgba(37, 99, 235, 0.24);
+    background:
+        linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(6, 182, 212, 0.08)),
+        #ffffff;
 }
 
 .agent-metrics-grid span,
@@ -1841,8 +2259,13 @@ h3 {
 .trust-summary-grid strong {
     display: block;
     margin-top: 5px;
-    color: #253247;
+    color: var(--tf-text);
     font-size: 17px;
+}
+
+.trust-summary-grid article:first-child strong {
+    color: var(--tf-blue);
+    font-size: 24px;
 }
 
 .workflow-flow {
@@ -1860,6 +2283,7 @@ h3 {
 .workflow-step > div {
     min-width: 0;
     padding: 10px;
+    border: 1px solid var(--tf-border);
     border-radius: 13px;
     background: #ffffff;
 }
@@ -1884,7 +2308,7 @@ h3 {
 .workflow-step i {
     position: relative;
     height: 2px;
-    background: #9fb2c9;
+    background: linear-gradient(90deg, var(--tf-blue), var(--tf-cyan));
 }
 
 .workflow-step i::after {
@@ -1895,7 +2319,7 @@ h3 {
     height: 0;
     border-top: 5px solid transparent;
     border-bottom: 5px solid transparent;
-    border-left: 7px solid #9fb2c9;
+    border-left: 7px solid var(--tf-cyan);
     content: "";
 }
 
@@ -1932,19 +2356,19 @@ h3 {
 }
 
 .priority-track div {
-    background: linear-gradient(90deg, #2fb5c8, #1f7ae0);
+    background: linear-gradient(90deg, var(--tf-cyan), var(--tf-blue));
 }
 
 .tone-green {
-    background: #19a974;
+    background: var(--tf-green);
 }
 
 .tone-blue {
-    background: #1f7ae0;
+    background: var(--tf-blue);
 }
 
 .tone-amber {
-    background: #f2b84b;
+    background: var(--tf-amber);
 }
 
 .strategy-card p {
@@ -2019,18 +2443,18 @@ h3 {
 }
 
 .status-calibrating {
-    color: #185fb3;
-    background: #eaf3ff;
+    color: #1d4ed8;
+    background: #eff6ff;
 }
 
 .status-converged {
-    color: #14734e;
-    background: #edf8f2;
+    color: #047857;
+    background: #ecfdf5;
 }
 
 .status-precise {
-    color: #0f6b47;
-    background: #ddf8ec;
+    color: #047857;
+    background: #d1fae5;
 }
 
 .calibration-bars {
@@ -2063,11 +2487,11 @@ h3 {
 }
 
 .actual-bar {
-    background: #19a974;
+    background: var(--tf-green);
 }
 
 .billed-bar {
-    background: #f2b84b;
+    background: var(--tf-amber);
 }
 
 .reconciliation-list {
@@ -2117,33 +2541,69 @@ h3 {
 }
 
 .incident-item {
+    position: relative;
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr);
+    gap: 12px;
     padding: 12px;
-    border: 1px solid #e4ebf3;
-    border-radius: 14px;
+    border: 1px solid var(--tf-border);
+    border-radius: 16px;
     background: #ffffff;
     animation: calm-in 260ms ease;
 }
 
+.incident-item::before {
+    position: absolute;
+    top: 44px;
+    bottom: -12px;
+    left: 28px;
+    width: 1px;
+    background: #dbe5ef;
+    content: "";
+}
+
 .incident-item.fresh {
-    border-color: rgba(31, 122, 224, 0.32);
+    border-color: rgba(37, 99, 235, 0.32);
     background: #f4f9ff;
-    box-shadow: 0 10px 24px rgba(31, 122, 224, 0.08);
+    box-shadow: 0 10px 24px rgba(37, 99, 235, 0.08);
 }
 
-.incident-warning {
-    border-left: 4px solid #f2b84b;
+.incident-marker {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    width: 34px;
+    height: 34px;
+    place-items: center;
+    border-radius: 999px;
+    background: #eff6ff;
+    color: var(--tf-blue);
+    font-size: 13px;
+    font-weight: 900;
 }
 
-.incident-critical {
-    border-left: 4px solid #e45858;
+.incident-body {
+    min-width: 0;
 }
 
-.incident-resolved {
-    border-left: 4px solid #19a974;
+.incident-warning .incident-marker {
+    background: #fffbeb;
+    color: var(--tf-amber);
 }
 
-.incident-info {
-    border-left: 4px solid #1f7ae0;
+.incident-critical .incident-marker {
+    background: #fef2f2;
+    color: var(--tf-red);
+}
+
+.incident-resolved .incident-marker {
+    background: #ecfdf5;
+    color: var(--tf-green);
+}
+
+.incident-info .incident-marker {
+    background: #eff6ff;
+    color: var(--tf-blue);
 }
 
 .incident-item p {
@@ -2153,8 +2613,27 @@ h3 {
     line-height: 1.55;
 }
 
-.incident-meta {
-    align-items: flex-start;
+.incident-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.incident-detail-grid span {
+    min-width: 0;
+    padding: 8px;
+    border-radius: 12px;
+    background: #f8fafc;
+    color: var(--tf-muted);
+    font-size: 11px;
+    line-height: 1.35;
+}
+
+.incident-detail-grid b {
+    display: block;
+    margin-bottom: 3px;
+    color: var(--tf-text);
+    font-size: 11px;
 }
 
 .intelligence-card.full {
@@ -2216,6 +2695,14 @@ h3 {
     .metering-dashboard,
     .overview-main {
         grid-template-columns: 1fr;
+    }
+
+    .overview-value-strip {
+        grid-template-columns: 1fr;
+    }
+
+    .incident-detail-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .reconciliation-row {
@@ -2283,6 +2770,14 @@ h3 {
         grid-template-columns: 1fr;
     }
 
+    .incident-item {
+        grid-template-columns: 30px minmax(0, 1fr);
+    }
+
+    .incident-detail-grid {
+        grid-template-columns: 1fr;
+    }
+
     .workflow-step i {
         display: none;
     }
@@ -2301,6 +2796,10 @@ h3 {
 
     .provider-stats {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .value-trend-card {
+        grid-template-columns: 1fr;
     }
 }
 </style>

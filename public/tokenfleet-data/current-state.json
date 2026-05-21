@@ -1,0 +1,882 @@
+{
+  "meta": {
+    "updatedAt": "2026-05-21T04:44:05.002Z",
+    "stage": "Gemini 5xx 波动",
+    "stageHint": "Gemini错误波动",
+    "frame": 6,
+    "frameTotal": 9
+  },
+  "summary": {
+    "gatewayHealth": "Degraded",
+    "providersOnline": "8 / 9",
+    "avgLatencyMs": 323,
+    "requestsToday": 3649933,
+    "tokensToday": 5438979769,
+    "activeIncidents": 3,
+    "fairBillingScore": 99.987,
+    "routingEfficiency": 94.9,
+    "agentSlaMetRate": 99.24
+  },
+  "providers": [
+    {
+      "id": "openai",
+      "name": "OpenAI API",
+      "company": "OpenAI",
+      "endpoint": "api.openai.com/v1",
+      "group": "International",
+      "models": [
+        "gpt-4.1",
+        "gpt-4o",
+        "o3-mini"
+      ],
+      "status": "healthy",
+      "routeWeight": 27,
+      "actualTrafficShare": 24,
+      "uptime24h": 99.98,
+      "latencyP50": 294,
+      "latencyP95": 739,
+      "requestsToday": 555169,
+      "tokensToday": 823942308,
+      "tokensMonth": 7337300000,
+      "errorRate": 0.08,
+      "costToday": 13183,
+      "trend": "absorbing traffic",
+      "lastIncident": "No active impact"
+    },
+    {
+      "id": "claude",
+      "name": "Claude API / Anthropic",
+      "company": "Anthropic",
+      "endpoint": "api.anthropic.com/v1",
+      "group": "International",
+      "models": [
+        "claude-3.5-sonnet",
+        "claude-3-opus",
+        "claude-3-haiku"
+      ],
+      "status": "degraded",
+      "routeWeight": 8,
+      "actualTrafficShare": 8,
+      "uptime24h": 99.85,
+      "latencyP50": 468,
+      "latencyP95": 1139,
+      "requestsToday": 421059,
+      "tokensToday": 620472462,
+      "tokensMonth": 6460850000,
+      "errorRate": 0.14,
+      "costToday": 13030,
+      "trend": "protected routing",
+      "lastIncident": "Gemini 5xx 波动"
+    },
+    {
+      "id": "gemini",
+      "name": "Gemini API / Google",
+      "company": "Google",
+      "endpoint": "generativelanguage.googleapis.com",
+      "group": "International",
+      "models": [
+        "gemini-1.5-pro",
+        "gemini-1.5-flash",
+        "embedding-001"
+      ],
+      "status": "degraded",
+      "routeWeight": 10,
+      "actualTrafficShare": 17.9,
+      "uptime24h": 99.84,
+      "latencyP50": 428,
+      "latencyP95": 1036,
+      "requestsToday": 421485,
+      "tokensToday": 623391077,
+      "tokensMonth": 5978200000,
+      "errorRate": 1.84,
+      "costToday": 7481,
+      "trend": "protected routing",
+      "lastIncident": "Gemini 5xx 波动"
+    },
+    {
+      "id": "deepseek",
+      "name": "DeepSeek API",
+      "company": "DeepSeek",
+      "endpoint": "api.deepseek.com/v1",
+      "group": "China",
+      "models": [
+        "deepseek-chat",
+        "deepseek-reasoner",
+        "deepseek-coder"
+      ],
+      "status": "healthy",
+      "routeWeight": 18,
+      "actualTrafficShare": 18,
+      "uptime24h": 99.96,
+      "latencyP50": 256,
+      "latencyP95": 647,
+      "requestsToday": 449522,
+      "tokensToday": 678313538,
+      "tokensMonth": 5374550000,
+      "errorRate": 0.09,
+      "costToday": 4070,
+      "trend": "absorbing traffic",
+      "lastIncident": "No active impact"
+    },
+    {
+      "id": "kimi",
+      "name": "Kimi API / Moonshot AI",
+      "company": "Moonshot AI",
+      "endpoint": "api.moonshot.cn/v1",
+      "group": "China",
+      "models": [
+        "moonshot-v1-8k",
+        "moonshot-v1-32k",
+        "moonshot-v1-128k"
+      ],
+      "status": "healthy",
+      "routeWeight": 15,
+      "actualTrafficShare": 15,
+      "uptime24h": 99.96,
+      "latencyP50": 271,
+      "latencyP95": 688,
+      "requestsToday": 426632,
+      "tokensToday": 642070615,
+      "tokensMonth": 5037100000,
+      "errorRate": 0.11,
+      "costToday": 3852,
+      "trend": "absorbing traffic",
+      "lastIncident": "No active impact"
+    },
+    {
+      "id": "minimax",
+      "name": "MiniMax API",
+      "company": "MiniMax",
+      "endpoint": "api.minimax.chat/v1",
+      "group": "China",
+      "models": [
+        "abab6.5s-chat",
+        "abab6.5g-chat",
+        "embo-01"
+      ],
+      "status": "healthy",
+      "routeWeight": 9,
+      "actualTrafficShare": 9,
+      "uptime24h": 99.95,
+      "latencyP50": 295,
+      "latencyP95": 734,
+      "requestsToday": 382811,
+      "tokensToday": 568325769,
+      "tokensMonth": 4545650000,
+      "errorRate": 0.13,
+      "costToday": 3978,
+      "trend": "absorbing traffic",
+      "lastIncident": "No active impact"
+    },
+    {
+      "id": "zhipu",
+      "name": "Zhipu GLM API / 智谱 AI",
+      "company": "智谱 AI",
+      "endpoint": "open.bigmodel.cn/api/paas/v4",
+      "group": "China",
+      "models": [
+        "glm-4-plus",
+        "glm-4-air",
+        "embedding-3"
+      ],
+      "status": "healthy",
+      "routeWeight": 12,
+      "actualTrafficShare": 7.1,
+      "uptime24h": 99.94,
+      "latencyP50": 304,
+      "latencyP95": 756,
+      "requestsToday": 398837,
+      "tokensToday": 596111692,
+      "tokensMonth": 4355600000,
+      "errorRate": 0.15,
+      "costToday": 4173,
+      "trend": "absorbing traffic",
+      "lastIncident": "No active impact"
+    },
+    {
+      "id": "seedance",
+      "name": "SeeDance API",
+      "company": "SeeDance",
+      "endpoint": "api.seedance.com/v1",
+      "group": "China",
+      "models": [
+        "seedance-pro",
+        "seedance-lite",
+        "seedance-vision"
+      ],
+      "status": "maintenance",
+      "routeWeight": 0,
+      "actualTrafficShare": 0,
+      "uptime24h": 99.79,
+      "latencyP50": 0,
+      "latencyP95": 0,
+      "requestsToday": 295456,
+      "tokensToday": 439838000,
+      "tokensMonth": 3448350000,
+      "errorRate": 0,
+      "costToday": 3959,
+      "trend": "maintenance window",
+      "lastIncident": "Gemini 5xx 波动"
+    },
+    {
+      "id": "grok",
+      "name": "Grok API / xAI",
+      "company": "xAI",
+      "endpoint": "api.x.ai/v1",
+      "group": "International",
+      "models": [
+        "grok-2",
+        "grok-2-mini",
+        "grok-vision"
+      ],
+      "status": "healthy",
+      "routeWeight": 1,
+      "actualTrafficShare": 1,
+      "uptime24h": 99.93,
+      "latencyP50": 354,
+      "latencyP95": 888,
+      "requestsToday": 298962,
+      "tokensToday": 446514308,
+      "tokensMonth": 3260500000,
+      "errorRate": 0.17,
+      "costToday": 6251,
+      "trend": "stable",
+      "lastIncident": "No active impact"
+    }
+  ],
+  "routing": {
+    "current": {
+      "second": 50,
+      "openai": 27,
+      "claude": 8,
+      "gemini": 10,
+      "chinaPool": 54,
+      "other": 1,
+      "action": "Gemini 5xx 波动期间，失败请求不进入计费用量，重试链路按幂等键去重并可解释。"
+    },
+    "series": [
+      {
+        "second": 0,
+        "openai": 22,
+        "claude": 18,
+        "gemini": 16,
+        "chinaPool": 41,
+        "other": 3,
+        "action": "TokenFleet 数据中台保持多路 API 接入稳定，可信计量、重试去重、失败免计和供应商对账链路均处于稳定采样状态。"
+      },
+      {
+        "second": 10,
+        "openai": 23,
+        "claude": 18,
+        "gemini": 16,
+        "chinaPool": 41,
+        "other": 2,
+        "action": "Claude 链路延迟升高后，数据中台继续保留请求链路解释，计量差异进入快速收敛窗口。"
+      },
+      {
+        "second": 20,
+        "openai": 25,
+        "claude": 9,
+        "gemini": 18,
+        "chinaPool": 45,
+        "other": 3,
+        "action": "路由器降低 Claude 权重后，实际流量以轻微滞后方式跟随策略权重变化，失败请求继续免计。"
+      },
+      {
+        "second": 30,
+        "openai": 23,
+        "claude": 8,
+        "gemini": 17,
+        "chinaPool": 51,
+        "other": 1,
+        "action": "国产模型池开始承接更多工作流节点，成本、延迟、中文能力和稳定性策略共同参与调度决策。"
+      },
+      {
+        "second": 40,
+        "openai": 24,
+        "claude": 8,
+        "gemini": 18,
+        "chinaPool": 49,
+        "other": 1,
+        "action": "SeeDance 维护窗口被隔离，网关保留健康探测，计量对账不受维护窗口影响。"
+      },
+      {
+        "second": 50,
+        "openai": 27,
+        "claude": 8,
+        "gemini": 10,
+        "chinaPool": 54,
+        "other": 1,
+        "action": "Gemini 5xx 波动期间，失败请求不进入计费用量，重试链路按幂等键去重并可解释。"
+      }
+    ]
+  },
+  "billing": {
+    "fairBillingScore": 99.987,
+    "averageDeltaRate": 0.0004,
+    "maxDeltaRate": 0.0007,
+    "failedRequestsFree": 20900,
+    "retryDeduped": 12400,
+    "reconciledBills": 9,
+    "explainableRequests": 99.91,
+    "providers": [
+      {
+        "id": "openai",
+        "name": "OpenAI API",
+        "actualUsage": 823942308,
+        "billedUsage": 823944780,
+        "deltaRate": 0.0003,
+        "calibrationStatus": "精准同步"
+      },
+      {
+        "id": "claude",
+        "name": "Claude API / Anthropic",
+        "actualUsage": 620472462,
+        "billedUsage": 620474323,
+        "deltaRate": 0.0003,
+        "calibrationStatus": "精准同步"
+      },
+      {
+        "id": "gemini",
+        "name": "Gemini API / Google",
+        "actualUsage": 623391077,
+        "billedUsage": 623392947,
+        "deltaRate": 0.0003,
+        "calibrationStatus": "精准同步"
+      },
+      {
+        "id": "deepseek",
+        "name": "DeepSeek API",
+        "actualUsage": 678313538,
+        "billedUsage": 678316251,
+        "deltaRate": 0.0004,
+        "calibrationStatus": "精准同步"
+      },
+      {
+        "id": "kimi",
+        "name": "Kimi API / Moonshot AI",
+        "actualUsage": 642070615,
+        "billedUsage": 642073183,
+        "deltaRate": 0.0004,
+        "calibrationStatus": "精准同步"
+      },
+      {
+        "id": "minimax",
+        "name": "MiniMax API",
+        "actualUsage": 568325769,
+        "billedUsage": 568328042,
+        "deltaRate": 0.0004,
+        "calibrationStatus": "精准同步"
+      },
+      {
+        "id": "zhipu",
+        "name": "Zhipu GLM API / 智谱 AI",
+        "actualUsage": 596111692,
+        "billedUsage": 596114076,
+        "deltaRate": 0.0004,
+        "calibrationStatus": "精准同步"
+      },
+      {
+        "id": "seedance",
+        "name": "SeeDance API",
+        "actualUsage": 439838000,
+        "billedUsage": 439839759,
+        "deltaRate": 0.0004,
+        "calibrationStatus": "精准同步"
+      },
+      {
+        "id": "grok",
+        "name": "Grok API / xAI",
+        "actualUsage": 446514308,
+        "billedUsage": 446516541,
+        "deltaRate": 0.0005,
+        "calibrationStatus": "精准同步"
+      }
+    ],
+    "calibrationSeries": [
+      {
+        "second": 0,
+        "actualUsage": 500.39,
+        "billedUsage": 500.4,
+        "deltaRate": 0.0022
+      },
+      {
+        "second": 10,
+        "actualUsage": 506.91,
+        "billedUsage": 506.92,
+        "deltaRate": 0.0018
+      },
+      {
+        "second": 20,
+        "actualUsage": 513.44,
+        "billedUsage": 513.45,
+        "deltaRate": 0.0014
+      },
+      {
+        "second": 30,
+        "actualUsage": 519.97,
+        "billedUsage": 519.98,
+        "deltaRate": 0.0011
+      },
+      {
+        "second": 40,
+        "actualUsage": 526.49,
+        "billedUsage": 526.49,
+        "deltaRate": 0.0008
+      },
+      {
+        "second": 50,
+        "actualUsage": 533.02,
+        "billedUsage": 533.02,
+        "deltaRate": 0.0004
+      }
+    ]
+  },
+  "calibration": {
+    "averageDeltaRate": 0.0004,
+    "maxDeltaRate": 0.0007,
+    "convergedApis": 9,
+    "cycle": "十万分之一级校准",
+    "providers": [
+      {
+        "id": "openai",
+        "name": "OpenAI API",
+        "actualUsage": 823942308,
+        "billedUsage": 823944780,
+        "deltaRate": 0.0003,
+        "calibrationStatus": "精准同步"
+      },
+      {
+        "id": "claude",
+        "name": "Claude API / Anthropic",
+        "actualUsage": 620472462,
+        "billedUsage": 620474323,
+        "deltaRate": 0.0003,
+        "calibrationStatus": "精准同步"
+      },
+      {
+        "id": "gemini",
+        "name": "Gemini API / Google",
+        "actualUsage": 623391077,
+        "billedUsage": 623392947,
+        "deltaRate": 0.0003,
+        "calibrationStatus": "精准同步"
+      },
+      {
+        "id": "deepseek",
+        "name": "DeepSeek API",
+        "actualUsage": 678313538,
+        "billedUsage": 678316251,
+        "deltaRate": 0.0004,
+        "calibrationStatus": "精准同步"
+      },
+      {
+        "id": "kimi",
+        "name": "Kimi API / Moonshot AI",
+        "actualUsage": 642070615,
+        "billedUsage": 642073183,
+        "deltaRate": 0.0004,
+        "calibrationStatus": "精准同步"
+      },
+      {
+        "id": "minimax",
+        "name": "MiniMax API",
+        "actualUsage": 568325769,
+        "billedUsage": 568328042,
+        "deltaRate": 0.0004,
+        "calibrationStatus": "精准同步"
+      },
+      {
+        "id": "zhipu",
+        "name": "Zhipu GLM API / 智谱 AI",
+        "actualUsage": 596111692,
+        "billedUsage": 596114076,
+        "deltaRate": 0.0004,
+        "calibrationStatus": "精准同步"
+      },
+      {
+        "id": "seedance",
+        "name": "SeeDance API",
+        "actualUsage": 439838000,
+        "billedUsage": 439839759,
+        "deltaRate": 0.0004,
+        "calibrationStatus": "精准同步"
+      },
+      {
+        "id": "grok",
+        "name": "Grok API / xAI",
+        "actualUsage": 446514308,
+        "billedUsage": 446516541,
+        "deltaRate": 0.0005,
+        "calibrationStatus": "精准同步"
+      }
+    ]
+  },
+  "agent": {
+    "activeAgents": 148,
+    "runningWorkflows": 53,
+    "queuedTasks": 388,
+    "completedToday": 99200,
+    "slaMetRate": 99.24,
+    "costSavedRate": 19.11,
+    "routingEfficiency": 94.9,
+    "costSavedToday": 6090,
+    "throughput": 1850,
+    "priority": {
+      "P0": 22,
+      "P1": 106,
+      "P2": 179,
+      "P3": 77
+    },
+    "strategyStack": [
+      "SLA 优先",
+      "质量阈值",
+      "延迟保护",
+      "可信计量"
+    ],
+    "workflowRoutes": [
+      {
+        "node": "Agent Intake",
+        "target": "SLA Classifier",
+        "modelPool": "Gateway Policy",
+        "reason": "识别优先级、语言和上下文长度"
+      },
+      {
+        "node": "Plan",
+        "target": "Reasoning Pool",
+        "modelPool": "Claude + OpenAI",
+        "reason": "质量阈值与长上下文能力优先"
+      },
+      {
+        "node": "Retrieve",
+        "target": "Fast Pool",
+        "modelPool": "OpenAI + Gemini",
+        "reason": "低延迟检索与中文语义匹配"
+      },
+      {
+        "node": "Execute",
+        "target": "Cost Pool",
+        "modelPool": "DeepSeek + MiniMax + GLM",
+        "reason": "批量任务按成本与稳定性调度"
+      },
+      {
+        "node": "Verify",
+        "target": "Audit Pool",
+        "modelPool": "OpenAI + Kimi",
+        "reason": "结果回看、链路解释与计量校准"
+      }
+    ]
+  },
+  "availabilitySeries": [
+    {
+      "timestamp": "2026-05-20T20:44:05.002Z",
+      "time": "04:44",
+      "offsetMinutes": -480,
+      "value": 99.91
+    },
+    {
+      "timestamp": "2026-05-20T20:50:50.635Z",
+      "time": "04:50",
+      "offsetMinutes": -473.24,
+      "value": 99.911
+    },
+    {
+      "timestamp": "2026-05-20T20:57:36.269Z",
+      "time": "04:57",
+      "offsetMinutes": -466.48,
+      "value": 99.913
+    },
+    {
+      "timestamp": "2026-05-20T21:04:21.903Z",
+      "time": "05:04",
+      "offsetMinutes": -459.72,
+      "value": 99.914
+    },
+    {
+      "timestamp": "2026-05-20T21:11:07.537Z",
+      "time": "05:11",
+      "offsetMinutes": -452.96,
+      "value": 99.916
+    },
+    {
+      "timestamp": "2026-05-20T21:17:53.171Z",
+      "time": "05:17",
+      "offsetMinutes": -446.2,
+      "value": 99.917
+    },
+    {
+      "timestamp": "2026-05-20T21:24:38.804Z",
+      "time": "05:24",
+      "offsetMinutes": -439.44,
+      "value": 99.918
+    },
+    {
+      "timestamp": "2026-05-20T21:31:24.438Z",
+      "time": "05:31",
+      "offsetMinutes": -432.68,
+      "value": 99.92
+    },
+    {
+      "timestamp": "2026-05-20T21:38:10.072Z",
+      "time": "05:38",
+      "offsetMinutes": -425.92,
+      "value": 99.921
+    },
+    {
+      "timestamp": "2026-05-20T21:44:55.706Z",
+      "time": "05:44",
+      "offsetMinutes": -419.15,
+      "value": 99.923
+    },
+    {
+      "timestamp": "2026-05-20T21:51:41.340Z",
+      "time": "05:51",
+      "offsetMinutes": -412.39,
+      "value": 99.924
+    },
+    {
+      "timestamp": "2026-05-20T21:58:26.973Z",
+      "time": "05:58",
+      "offsetMinutes": -405.63,
+      "value": 99.925
+    },
+    {
+      "timestamp": "2026-05-20T22:05:12.607Z",
+      "time": "06:05",
+      "offsetMinutes": -398.87,
+      "value": 99.926
+    },
+    {
+      "timestamp": "2026-05-20T22:11:58.241Z",
+      "time": "06:11",
+      "offsetMinutes": -392.11,
+      "value": 99.927
+    },
+    {
+      "timestamp": "2026-05-20T22:18:43.875Z",
+      "time": "06:18",
+      "offsetMinutes": -385.35,
+      "value": 99.928
+    },
+    {
+      "timestamp": "2026-05-20T22:25:29.509Z",
+      "time": "06:25",
+      "offsetMinutes": -378.59,
+      "value": 99.929
+    },
+    {
+      "timestamp": "2026-05-20T22:32:15.142Z",
+      "time": "06:32",
+      "offsetMinutes": -371.83,
+      "value": 99.93
+    },
+    {
+      "timestamp": "2026-05-20T22:39:00.776Z",
+      "time": "06:39",
+      "offsetMinutes": -365.07,
+      "value": 99.931
+    },
+    {
+      "timestamp": "2026-05-20T22:45:46.410Z",
+      "time": "06:45",
+      "offsetMinutes": -358.31,
+      "value": 99.932
+    },
+    {
+      "timestamp": "2026-05-20T22:52:32.044Z",
+      "time": "06:52",
+      "offsetMinutes": -351.55,
+      "value": 99.933
+    },
+    {
+      "timestamp": "2026-05-20T22:59:17.678Z",
+      "time": "06:59",
+      "offsetMinutes": -344.79,
+      "value": 99.934
+    },
+    {
+      "timestamp": "2026-05-20T23:06:03.311Z",
+      "time": "07:06",
+      "offsetMinutes": -338.03,
+      "value": 99.917
+    },
+    {
+      "timestamp": "2026-05-20T23:12:48.945Z",
+      "time": "07:12",
+      "offsetMinutes": -331.27,
+      "value": 99.918
+    },
+    {
+      "timestamp": "2026-05-20T23:19:34.579Z",
+      "time": "07:19",
+      "offsetMinutes": -324.51,
+      "value": 99.918
+    },
+    {
+      "timestamp": "2026-05-20T23:26:20.213Z",
+      "time": "07:26",
+      "offsetMinutes": -317.75,
+      "value": 99.919
+    },
+    {
+      "timestamp": "2026-05-20T23:33:05.847Z",
+      "time": "07:33",
+      "offsetMinutes": -310.99,
+      "value": 99.92
+    },
+    {
+      "timestamp": "2026-05-20T23:39:51.480Z",
+      "time": "07:39",
+      "offsetMinutes": -304.23,
+      "value": 99.92
+    },
+    {
+      "timestamp": "2026-05-20T23:46:37.114Z",
+      "time": "07:46",
+      "offsetMinutes": -297.46,
+      "value": 99.921
+    },
+    {
+      "timestamp": "2026-05-20T23:53:22.748Z",
+      "time": "07:53",
+      "offsetMinutes": -290.7,
+      "value": 99.922
+    },
+    {
+      "timestamp": "2026-05-21T00:00:08.382Z",
+      "time": "08:00",
+      "offsetMinutes": -283.94,
+      "value": 99.923
+    },
+    {
+      "timestamp": "2026-05-21T00:06:54.016Z",
+      "time": "08:06",
+      "offsetMinutes": -277.18,
+      "value": 99.923
+    },
+    {
+      "timestamp": "2026-05-21T00:13:39.649Z",
+      "time": "08:13",
+      "offsetMinutes": -270.42,
+      "value": 99.924
+    },
+    {
+      "timestamp": "2026-05-21T00:20:25.283Z",
+      "time": "08:20",
+      "offsetMinutes": -263.66,
+      "value": 99.943
+    },
+    {
+      "timestamp": "2026-05-21T00:27:10.917Z",
+      "time": "08:27",
+      "offsetMinutes": -256.9,
+      "value": 99.944
+    },
+    {
+      "timestamp": "2026-05-21T00:33:56.551Z",
+      "time": "08:33",
+      "offsetMinutes": -250.14,
+      "value": 99.945
+    },
+    {
+      "timestamp": "2026-05-21T00:40:42.185Z",
+      "time": "08:40",
+      "offsetMinutes": -243.38,
+      "value": 99.946
+    },
+    {
+      "timestamp": "2026-05-21T00:47:27.818Z",
+      "time": "08:47",
+      "offsetMinutes": -236.62,
+      "value": 99.947
+    },
+    {
+      "timestamp": "2026-05-21T00:54:13.452Z",
+      "time": "08:54",
+      "offsetMinutes": -229.86,
+      "value": 99.948
+    },
+    {
+      "timestamp": "2026-05-21T01:00:59.086Z",
+      "time": "09:00",
+      "offsetMinutes": -223.1,
+      "value": 99.949
+    },
+    {
+      "timestamp": "2026-05-21T01:07:44.720Z",
+      "time": "09:07",
+      "offsetMinutes": -216.34,
+      "value": 99.95
+    },
+    {
+      "timestamp": "2026-05-21T01:14:30.354Z",
+      "time": "09:14",
+      "offsetMinutes": -209.58,
+      "value": 99.951
+    },
+    {
+      "timestamp": "2026-05-21T01:21:15.987Z",
+      "time": "09:21",
+      "offsetMinutes": -202.82,
+      "value": 99.987
+    }
+  ],
+  "incidents": [
+    {
+      "id": "tf-000",
+      "time": "12:43",
+      "provider": "Claude API / Anthropic",
+      "type": "routing",
+      "level": "resolved",
+      "title": "P95 延迟超过阈值",
+      "description": "Claude API 延迟升高，网关提高采样频率并准备切流。",
+      "action": "Claude 链路延迟升高后，数据中台继续保留请求链路解释，计量差异进入快速收敛窗口。",
+      "status": "resolved"
+    },
+    {
+      "id": "tf-001",
+      "time": "12:43",
+      "provider": "Gateway",
+      "type": "routing",
+      "level": "resolved",
+      "title": "Claude 路由权重已自动下调",
+      "description": "高优先级请求转入低延迟模型池，入口 SLA 保持稳定。",
+      "action": "路由器降低 Claude 权重后，实际流量以轻微滞后方式跟随策略权重变化，失败请求继续免计。",
+      "status": "resolved"
+    },
+    {
+      "id": "tf-002",
+      "time": "12:43",
+      "provider": "DeepSeek API, Kimi API / Moonshot AI",
+      "type": "routing",
+      "level": "resolved",
+      "title": "国产模型池承接流量提升",
+      "description": "DeepSeek 与 Kimi 承接更多批量任务与中文任务。",
+      "action": "国产模型池开始承接更多工作流节点，成本、延迟、中文能力和稳定性策略共同参与调度决策。",
+      "status": "resolved"
+    },
+    {
+      "id": "tf-003",
+      "time": "12:43",
+      "provider": "SeeDance API",
+      "type": "routing",
+      "level": "resolved",
+      "title": "计划维护窗口已开始",
+      "description": "SeeDance 权重置零，多模态请求转交到可用模型池。",
+      "action": "SeeDance 维护窗口被隔离，网关保留健康探测，计量对账不受维护窗口影响。",
+      "status": "resolved"
+    },
+    {
+      "id": "tf-004",
+      "time": "12:43",
+      "provider": "Gemini API / Google",
+      "type": "routing",
+      "level": "resolved",
+      "title": "短时 5xx 错误率波动",
+      "description": "Gemini 5xx 波动触发幂等重试、失败免计和熔断转交。",
+      "action": "Gemini 5xx 波动期间，失败请求不进入计费用量，重试链路按幂等键去重并可解释。",
+      "status": "resolved"
+    }
+  ],
+  "summaryText": "Gemini 5xx 波动期间，失败请求不进入计费用量，重试链路按幂等键去重并可解释。"
+}
