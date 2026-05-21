@@ -324,7 +324,103 @@ function buildCalibration(frameIndex) {
     };
 }
 
-export const timeline = [
+const routingSnapshots = [
+    { openai: 22, claude: 18, gemini: 16, chinaPool: 41, other: 3, action: "均衡分发：质量、延迟与成本权重保持稳定。" },
+    { openai: 23, claude: 18, gemini: 16, chinaPool: 40, other: 3, action: "延迟观察：Claude 被纳入性能保护窗口。" },
+    { openai: 25, claude: 9, gemini: 18, chinaPool: 47, other: 1, action: "自动切流：高优先级请求从 Claude 转向低延迟池。" },
+    { openai: 23, claude: 8, gemini: 17, chinaPool: 51, other: 1, action: "国产模型池承接：DeepSeek 与 Kimi 吸收更多批量任务。" },
+    { openai: 24, claude: 8, gemini: 18, chinaPool: 49, other: 1, action: "维护隔离：SeeDance 权重归零，多模态请求转移。" },
+    { openai: 27, claude: 8, gemini: 10, chinaPool: 54, other: 1, action: "错误保护：Gemini 5xx 触发重试去重与熔断转交。" },
+    { openai: 21, claude: 7, gemini: 8, chinaPool: 63, other: 1, action: "成本守护：批量任务转向国产模型池，保留质量阈值。" },
+    { openai: 22, claude: 13, gemini: 9, chinaPool: 55, other: 1, action: "阶梯恢复：Claude 权重逐步回升，避免瞬时回流。" },
+    { openai: 22, claude: 16, gemini: 15, chinaPool: 46, other: 1, action: "恢复稳定：策略总结写入日间路由基线。" },
+];
+
+const agentMetricFrames = [
+    { activeAgents: 128, runningWorkflows: 42, queuedTasks: 318, slaMetRate: 99.12, routingEfficiency: 93.4, costSavedToday: 1840, throughput: 1240, priority: { P0: 18, P1: 86, P2: 142, P3: 72 }, strategyStack: ["SLA 优先", "质量阈值", "成本守护", "中文能力匹配"] },
+    { activeAgents: 133, runningWorkflows: 45, queuedTasks: 336, slaMetRate: 98.74, routingEfficiency: 91.8, costSavedToday: 1910, throughput: 1276, priority: { P0: 22, P1: 94, P2: 148, P3: 72 }, strategyStack: ["延迟保护", "SLA 优先", "重试去重", "长上下文兜底"] },
+    { activeAgents: 141, runningWorkflows: 49, queuedTasks: 352, slaMetRate: 98.92, routingEfficiency: 92.6, costSavedToday: 2060, throughput: 1328, priority: { P0: 20, P1: 98, P2: 158, P3: 76 }, strategyStack: ["自动切流", "低延迟池", "质量阈值", "重试去重"] },
+    { activeAgents: 148, runningWorkflows: 53, queuedTasks: 374, slaMetRate: 99.04, routingEfficiency: 94.1, costSavedToday: 2380, throughput: 1396, priority: { P0: 19, P1: 104, P2: 172, P3: 79 }, strategyStack: ["国产模型承接", "成本守护", "中文能力匹配", "批量任务降本"] },
+    { activeAgents: 146, runningWorkflows: 51, queuedTasks: 361, slaMetRate: 98.86, routingEfficiency: 93.7, costSavedToday: 2490, throughput: 1378, priority: { P0: 17, P1: 101, P2: 166, P3: 77 }, strategyStack: ["维护隔离", "视觉任务转交", "容量保护", "计量校准"] },
+    { activeAgents: 153, runningWorkflows: 56, queuedTasks: 388, slaMetRate: 98.68, routingEfficiency: 92.9, costSavedToday: 2630, throughput: 1442, priority: { P0: 25, P1: 112, P2: 174, P3: 77 }, strategyStack: ["5xx 熔断", "幂等重试", "失败免计", "供应商对账"] },
+    { activeAgents: 161, runningWorkflows: 61, queuedTasks: 416, slaMetRate: 99.18, routingEfficiency: 95.6, costSavedToday: 3180, throughput: 1534, priority: { P0: 21, P1: 118, P2: 196, P3: 81 }, strategyStack: ["任务优先级调度", "成本守护", "国产模型池", "质量回看"] },
+    { activeAgents: 158, runningWorkflows: 58, queuedTasks: 392, slaMetRate: 99.31, routingEfficiency: 96.4, costSavedToday: 3260, throughput: 1510, priority: { P0: 18, P1: 110, P2: 184, P3: 80 }, strategyStack: ["阶梯恢复", "SLA 稳定", "质量阈值", "长上下文能力"] },
+    { activeAgents: 162, runningWorkflows: 60, queuedTasks: 376, slaMetRate: 99.46, routingEfficiency: 97.1, costSavedToday: 3420, throughput: 1568, priority: { P0: 16, P1: 106, P2: 178, P3: 76 }, strategyStack: ["稳定基线", "可信计量", "成本核对", "策略解释"] },
+];
+
+const billingMetricFrames = [
+    { fairBillingScore: 99.91, failedRequestsFree: 8420, retryDeduped: 3180, reconciledBills: 9, explainableRequests: 99.82 },
+    { fairBillingScore: 99.93, failedRequestsFree: 8940, retryDeduped: 3420, reconciledBills: 9, explainableRequests: 99.84 },
+    { fairBillingScore: 99.95, failedRequestsFree: 9360, retryDeduped: 3860, reconciledBills: 9, explainableRequests: 99.87 },
+    { fairBillingScore: 99.96, failedRequestsFree: 9820, retryDeduped: 4210, reconciledBills: 9, explainableRequests: 99.9 },
+    { fairBillingScore: 99.97, failedRequestsFree: 10160, retryDeduped: 4380, reconciledBills: 9, explainableRequests: 99.92 },
+    { fairBillingScore: 99.975, failedRequestsFree: 11840, retryDeduped: 5260, reconciledBills: 9, explainableRequests: 99.94 },
+    { fairBillingScore: 99.982, failedRequestsFree: 12320, retryDeduped: 5480, reconciledBills: 9, explainableRequests: 99.96 },
+    { fairBillingScore: 99.986, failedRequestsFree: 12680, retryDeduped: 5620, reconciledBills: 9, explainableRequests: 99.97 },
+    { fairBillingScore: 99.991, failedRequestsFree: 12940, retryDeduped: 5740, reconciledBills: 9, explainableRequests: 99.98 },
+];
+
+/**
+ * Build routing trend snapshots up to the current frame.
+ * @param {number} frameIndex Zero-based timeline frame index.
+ * @returns {object[]} Routing trend snapshots.
+ */
+function buildRoutingSeries(frameIndex) {
+    return routingSnapshots.slice(0, frameIndex + 1).map((snapshot, index) => ({
+        second: index * 10,
+        ...snapshot,
+    }));
+}
+
+/**
+ * Build metering convergence points up to the current frame.
+ * @param {number} frameIndex Zero-based timeline frame index.
+ * @returns {object[]} Metering convergence points.
+ */
+function buildCalibrationSeries(frameIndex) {
+    return calibrationFrameConfigs.slice(0, frameIndex + 1).map((config, index) => {
+        const baseActual = 100 + index * 9.8;
+        return {
+            second: index * 10,
+            actualUsage: Number(baseActual.toFixed(2)),
+            billedUsage: Number((baseActual * (1 + config.averageDeltaRate / 100)).toFixed(2)),
+            deltaRate: config.averageDeltaRate,
+        };
+    });
+}
+
+/**
+ * Build fair billing event counters for the current frame.
+ * @param {number} frameIndex Zero-based timeline frame index.
+ * @returns {object[]} Fair billing events.
+ */
+function buildFairnessEvents(frameIndex) {
+    const metrics = billingMetricFrames[frameIndex];
+    return [
+        { label: "失败请求免计", value: metrics.failedRequestsFree, tone: "green" },
+        { label: "重试请求去重", value: metrics.retryDeduped, tone: "blue" },
+        { label: "供应商账单对账", value: metrics.reconciledBills, tone: "amber" },
+    ];
+}
+
+/**
+ * Build workflow routing explanation rows for the current frame.
+ * @param {number} frameIndex Zero-based timeline frame index.
+ * @returns {object[]} Workflow routing rows.
+ */
+function buildWorkflowRouting(frameIndex) {
+    const fastPool = frameIndex >= 6 ? "DeepSeek + Kimi" : "OpenAI + Gemini";
+    const reasoningPool = frameIndex >= 7 ? "Claude + GLM" : "Claude + OpenAI";
+    return [
+        { node: "Agent Intake", target: "SLA Classifier", modelPool: "Gateway Policy", reason: "识别优先级、语言、上下文长度" },
+        { node: "Plan", target: "Reasoning Pool", modelPool: reasoningPool, reason: "质量阈值与长上下文能力优先" },
+        { node: "Retrieve", target: "Fast Pool", modelPool: fastPool, reason: "低延迟检索与中文语义匹配" },
+        { node: "Execute", target: "Cost Pool", modelPool: "DeepSeek + MiniMax + GLM", reason: "批量任务按成本与稳定性调度" },
+        { node: "Verify", target: "Audit Pool", modelPool: "OpenAI + Kimi", reason: "结果回看、链路解释与计量校准" },
+    ];
+}
+
+const rawTimeline = [
     {
         frame: 1,
         second: 0,
@@ -751,7 +847,7 @@ export const timeline = [
             },
         ],
         gatewaySummary:
-            "转接校准进入主力 API 精准同步阶段，平均差异率为 0.0007%。实际转接用量与供应商计价用量高度贴合，可支撑高精度算力结算与多供应商对账。",
+            "可信计量进入主力 API 精准同步阶段，平均差异率为 0.0007%。实际转接用量与供应商计价用量高度贴合，可支撑高精度算力结算与多供应商对账。",
     },
     {
         frame: 8,
@@ -913,8 +1009,18 @@ export const timeline = [
             },
         ],
         gatewaySummary:
-            "TokenFleet 已完成转接校准闭环。当前平均差异率为 0.0005%，实际用量与计价用量稳定贴合，可用于高精度算力结算、成本核对与多供应商对账。",
+            "TokenFleet 已完成可信计量闭环。当前平均差异率为 0.0005%，实际用量与计价用量稳定贴合，可用于高精度算力结算、成本核对与多供应商对账。",
     },
 ];
+
+export const timeline = rawTimeline.map((frame, index) => ({
+    ...frame,
+    billingMetrics: billingMetricFrames[index],
+    calibrationSeries: buildCalibrationSeries(index),
+    agentMetrics: agentMetricFrames[index],
+    routingSeries: buildRoutingSeries(index),
+    fairnessEvents: buildFairnessEvents(index),
+    workflowRouting: buildWorkflowRouting(index),
+}));
 
 export default timeline;
