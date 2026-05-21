@@ -48,7 +48,12 @@
                                 <strong>{{ metric.value }}</strong>
                                 <div class="metric-card-foot">
                                     <small>{{ metric.hint }}</small>
-                                    <svg class="mini-sparkline" viewBox="0 0 78 28" preserveAspectRatio="none" aria-hidden="true">
+                                    <svg
+                                        class="mini-sparkline"
+                                        viewBox="0 0 78 28"
+                                        preserveAspectRatio="none"
+                                        aria-hidden="true"
+                                    >
                                         <polyline :points="miniSparklinePoints(metric.trend, 78, 28)" />
                                     </svg>
                                 </div>
@@ -68,7 +73,12 @@
                                         <span>{{ gatewayHealthLabel(currentFrame.summaryMetrics.gatewayHealth) }}</span>
                                     </div>
                                 </div>
-                                <svg class="health-chart" viewBox="0 0 680 320" preserveAspectRatio="none" aria-label="高可用指标">
+                                <svg
+                                    class="health-chart"
+                                    viewBox="0 0 680 320"
+                                    preserveAspectRatio="none"
+                                    aria-label="高可用指标"
+                                >
                                     <defs>
                                         <linearGradient id="healthGradient" x1="0" x2="0" y1="0" y2="1">
                                             <stop offset="0%" stop-color="#1f7ae0" stop-opacity="0.24" />
@@ -166,14 +176,21 @@
                         </div>
 
                         <section class="overview-value-strip" aria-label="关键趋势指标">
-                            <article v-for="card in overviewValueCards" :key="card.label" class="mini-chart-card value-trend-card">
+                            <article
+                                v-for="card in overviewValueCards"
+                                :key="card.label"
+                                class="mini-chart-card value-trend-card"
+                            >
                                 <div>
                                     <span class="section-kicker">{{ card.kicker }}</span>
                                     <strong>{{ card.value }}</strong>
                                     <small>{{ card.label }}</small>
                                 </div>
                                 <svg viewBox="0 0 160 48" preserveAspectRatio="none" aria-hidden="true">
-                                    <polyline :class="'trend-line trend-' + card.tone" :points="miniSparklinePoints(card.trend, 160, 48)" />
+                                    <polyline
+                                        :class="'trend-line trend-' + card.tone"
+                                        :points="miniSparklinePoints(card.trend, 160, 48)"
+                                    />
                                 </svg>
                             </article>
                         </section>
@@ -211,7 +228,12 @@
                                     </span>
                                     <span>{{ provider.endpoint }}</span>
                                 </div>
-                                <svg class="provider-sparkline" viewBox="0 0 220 44" preserveAspectRatio="none" aria-hidden="true">
+                                <svg
+                                    class="provider-sparkline"
+                                    viewBox="0 0 220 44"
+                                    preserveAspectRatio="none"
+                                    aria-hidden="true"
+                                >
                                     <polyline :points="providerSparklinePoints(provider)" />
                                 </svg>
                                 <div class="provider-stats">
@@ -248,8 +270,14 @@
                                 <h2>策略权重、实际流量与自动切流</h2>
                             </div>
                             <div class="legend">
-                                <span><i class="legend-route"></i>路由权重</span>
-                                <span><i class="legend-traffic"></i>实际流量</span>
+                                <span>
+                                    <i class="legend-route"></i>
+                                    路由权重
+                                </span>
+                                <span>
+                                    <i class="legend-traffic"></i>
+                                    实际流量
+                                </span>
                             </div>
                         </div>
                         <div class="routing-dashboard">
@@ -258,7 +286,12 @@
                                     <span class="section-kicker">路由权重变化趋势</span>
                                     <strong>堆叠面积趋势图</strong>
                                 </div>
-                                <svg class="area-chart" viewBox="0 0 320 120" preserveAspectRatio="none" aria-label="Routing weight trend">
+                                <svg
+                                    class="area-chart"
+                                    viewBox="0 0 320 120"
+                                    preserveAspectRatio="none"
+                                    aria-label="Routing weight trend"
+                                >
                                     <polygon class="area-openai" :points="stackedPolygon('openai')" />
                                     <polygon class="area-claude" :points="stackedPolygon('claude')" />
                                     <polygon class="area-gemini" :points="stackedPolygon('gemini')" />
@@ -277,10 +310,22 @@
                                     <span>{{ currentRoutingSnapshot.chinaPool }}%</span>
                                 </div>
                                 <div class="pie-legend">
-                                    <span><i class="area-openai-dot"></i>OpenAI {{ currentRoutingSnapshot.openai }}%</span>
-                                    <span><i class="area-claude-dot"></i>Claude {{ currentRoutingSnapshot.claude }}%</span>
-                                    <span><i class="area-gemini-dot"></i>Gemini {{ currentRoutingSnapshot.gemini }}%</span>
-                                    <span><i class="area-china-dot"></i>国产模型池 {{ currentRoutingSnapshot.chinaPool }}%</span>
+                                    <span>
+                                        <i class="area-openai-dot"></i>
+                                        OpenAI {{ currentRoutingSnapshot.openai }}%
+                                    </span>
+                                    <span>
+                                        <i class="area-claude-dot"></i>
+                                        Claude {{ currentRoutingSnapshot.claude }}%
+                                    </span>
+                                    <span>
+                                        <i class="area-gemini-dot"></i>
+                                        Gemini {{ currentRoutingSnapshot.gemini }}%
+                                    </span>
+                                    <span>
+                                        <i class="area-china-dot"></i>
+                                        国产模型池 {{ currentRoutingSnapshot.chinaPool }}%
+                                    </span>
                                 </div>
                                 <div class="policy-stack-list">
                                     <strong>当前策略栈</strong>
@@ -295,11 +340,17 @@
                                     <div v-for="provider in currentFrame.providers" :key="provider.id" class="bar-row">
                                         <div class="bar-label">
                                             <strong>{{ provider.name }}</strong>
-                                            <span>路由权重 {{ provider.routeWeight }}% · 实际流量 {{ provider.actualTrafficShare }}%</span>
+                                            <span>
+                                                路由权重 {{ provider.routeWeight }}% · 实际流量
+                                                {{ provider.actualTrafficShare }}%
+                                            </span>
                                         </div>
                                         <div class="dual-bar">
                                             <div class="route-bar" :style="{ width: provider.routeWeight + '%' }"></div>
-                                            <div class="traffic-bar" :style="{ width: provider.actualTrafficShare + '%' }"></div>
+                                            <div
+                                                class="traffic-bar"
+                                                :style="{ width: provider.actualTrafficShare + '%' }"
+                                            ></div>
                                         </div>
                                     </div>
                                 </div>
@@ -407,8 +458,14 @@
                                 <h2>实际用量、计价用量与可信计费评分</h2>
                             </div>
                             <div class="legend">
-                                <span><i class="legend-actual"></i>实际用量</span>
-                                <span><i class="legend-billed"></i>计价用量</span>
+                                <span>
+                                    <i class="legend-actual"></i>
+                                    实际用量
+                                </span>
+                                <span>
+                                    <i class="legend-billed"></i>
+                                    计价用量
+                                </span>
                             </div>
                         </div>
 
@@ -441,9 +498,38 @@
                                     <span class="section-kicker">实际用量 vs 计价用量</span>
                                     <strong>双曲线贴合趋势</strong>
                                 </div>
-                                <svg class="line-chart dual-line-chart" viewBox="0 0 320 112" preserveAspectRatio="none" aria-label="Actual and billed usage trend">
-                                    <polyline class="chart-line actual-line" :points="linePoints(currentFrame.calibrationSeries, 'actualUsage', 320, 112, 100, 180)" />
-                                    <polyline class="chart-line billed-line" :points="linePoints(currentFrame.calibrationSeries, 'billedUsage', 320, 112, 100, 180)" />
+                                <svg
+                                    class="line-chart dual-line-chart"
+                                    viewBox="0 0 320 112"
+                                    preserveAspectRatio="none"
+                                    aria-label="Actual and billed usage trend"
+                                >
+                                    <polyline
+                                        class="chart-line actual-line"
+                                        :points="
+                                            linePoints(
+                                                currentFrame.calibrationSeries,
+                                                'actualUsage',
+                                                320,
+                                                112,
+                                                100,
+                                                180
+                                            )
+                                        "
+                                    />
+                                    <polyline
+                                        class="chart-line billed-line"
+                                        :points="
+                                            linePoints(
+                                                currentFrame.calibrationSeries,
+                                                'billedUsage',
+                                                320,
+                                                112,
+                                                100,
+                                                180
+                                            )
+                                        "
+                                    />
                                 </svg>
                             </section>
 
@@ -452,8 +538,16 @@
                                     <span class="section-kicker">差异率收敛曲线</span>
                                     <strong>{{ formatDeltaRate(currentFrame.calibration.averageDeltaRate) }}</strong>
                                 </div>
-                                <svg class="line-chart" viewBox="0 0 320 112" preserveAspectRatio="none" aria-label="Delta convergence trend">
-                                    <polyline class="chart-line delta-line" :points="linePoints(currentFrame.calibrationSeries, 'deltaRate')" />
+                                <svg
+                                    class="line-chart"
+                                    viewBox="0 0 320 112"
+                                    preserveAspectRatio="none"
+                                    aria-label="Delta convergence trend"
+                                >
+                                    <polyline
+                                        class="chart-line delta-line"
+                                        :points="linePoints(currentFrame.calibrationSeries, 'deltaRate')"
+                                    />
                                 </svg>
                             </section>
 
@@ -463,10 +557,23 @@
                                     <strong>不成功不乱计</strong>
                                 </div>
                                 <div class="fairness-bars">
-                                    <div v-for="event in currentFrame.fairnessEvents" :key="event.label" class="fairness-row">
+                                    <div
+                                        v-for="event in currentFrame.fairnessEvents"
+                                        :key="event.label"
+                                        class="fairness-row"
+                                    >
                                         <span>{{ event.label }}</span>
                                         <div class="fairness-track">
-                                            <div :class="'tone-' + event.tone" :style="{ width: share(event.value, currentFrame.billingMetrics.failedRequestsFree) + '%' }"></div>
+                                            <div
+                                                :class="'tone-' + event.tone"
+                                                :style="{
+                                                    width:
+                                                        share(
+                                                            event.value,
+                                                            currentFrame.billingMetrics.failedRequestsFree
+                                                        ) + '%',
+                                                }"
+                                            ></div>
                                         </div>
                                         <strong>{{ formatNumber(event.value) }}</strong>
                                     </div>
@@ -532,17 +639,29 @@
                                         <span>{{ incidentLevelIcon(incident.level) }}</span>
                                     </div>
                                     <div class="incident-body">
-                                    <div class="incident-top">
-                                        <strong>{{ incident.title }}</strong>
-                                        <span>{{ incident.time }}</span>
-                                    </div>
-                                    <p>{{ incident.description }}</p>
-                                    <div class="incident-detail-grid">
-                                        <span><b>触发条件</b>{{ incidentTrigger(incident) }}</span>
-                                        <span><b>策略动作</b>{{ incident.action }}</span>
-                                        <span><b>影响范围</b>{{ incidentImpact(incident) }}</span>
-                                        <span><b>恢复结果</b>{{ incidentRecovery(incident) }}</span>
-                                    </div>
+                                        <div class="incident-top">
+                                            <strong>{{ incident.title }}</strong>
+                                            <span>{{ incident.time }}</span>
+                                        </div>
+                                        <p>{{ incident.description }}</p>
+                                        <div class="incident-detail-grid">
+                                            <span>
+                                                <b>触发条件</b>
+                                                {{ incidentTrigger(incident) }}
+                                            </span>
+                                            <span>
+                                                <b>策略动作</b>
+                                                {{ incident.action }}
+                                            </span>
+                                            <span>
+                                                <b>影响范围</b>
+                                                {{ incidentImpact(incident) }}
+                                            </span>
+                                            <span>
+                                                <b>恢复结果</b>
+                                                {{ incidentRecovery(incident) }}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -603,7 +722,8 @@ export default {
             return this.tabs[this.activeTabIndex];
         },
         shortStageHint() {
-            const source = this.currentFrame.stageHint || this.currentFrame.headline || this.currentFrame.narrative || "";
+            const source =
+                this.currentFrame.stageHint || this.currentFrame.headline || this.currentFrame.narrative || "";
             const compactText = Array.from(source.replace(/\s+/g, ""));
             if (compactText.length <= 20) {
                 return compactText.join("");
@@ -615,15 +735,69 @@ export default {
             const billing = this.currentFrame.billingMetrics;
             const agent = this.currentFrame.agentMetrics;
             return [
-                { label: "网关健康状态", value: this.gatewayHealthLabel(metrics.gatewayHealth), hint: "全局策略状态", tone: "blue", trend: [99.92, 99.94, 99.95, 99.93, 99.96, Number.parseFloat(this.currentHealthValue)] },
-                { label: "在线供应商", value: metrics.providersOnline, hint: "在线上游", tone: "cyan", trend: [8, 8, 9, 9, 8.7, Number.parseFloat(metrics.providersOnline) || 9] },
-                { label: "平均延迟", value: this.latencyText(metrics.avgLatency), hint: "加权 P50", tone: "purple", trend: [318, 305, 292, 310, 286, metrics.avgLatency] },
-                { label: "今日请求量", value: this.formatCompact(metrics.requestsToday), hint: "网关入口", tone: "blue", trend: [62, 66, 71, 78, 83, 91] },
-                { label: "今日 Token", value: this.formatTokens(metrics.tokensToday), hint: "已处理用量", tone: "cyan", trend: [58, 64, 69, 76, 82, 90] },
-                { label: "活跃异常", value: metrics.activeIncidents, hint: "未关闭事件", tone: "amber", trend: [1, 2, 2, 3, 2, metrics.activeIncidents] },
-                { label: "可信计费评分", value: `${billing.fairBillingScore}%`, hint: "可信计量", tone: "green", trend: [99.88, 99.91, 99.94, 99.96, 99.98, billing.fairBillingScore] },
-                { label: "路由效率", value: `${agent.routingEfficiency}%`, hint: "策略匹配度", tone: "blue", trend: [94, 95, 96, 95.6, 96.8, agent.routingEfficiency] },
-                { label: "Agent SLA 达成率", value: `${agent.slaMetRate}%`, hint: "工作流目标", tone: "green", trend: [97.6, 98.1, 98.4, 98.2, 98.8, agent.slaMetRate] },
+                {
+                    label: "网关健康状态",
+                    value: this.gatewayHealthLabel(metrics.gatewayHealth),
+                    hint: "全局策略状态",
+                    tone: "blue",
+                    trend: [99.92, 99.94, 99.95, 99.93, 99.96, Number.parseFloat(this.currentHealthValue)],
+                },
+                {
+                    label: "在线供应商",
+                    value: metrics.providersOnline,
+                    hint: "在线上游",
+                    tone: "cyan",
+                    trend: [8, 8, 9, 9, 8.7, Number.parseFloat(metrics.providersOnline) || 9],
+                },
+                {
+                    label: "平均延迟",
+                    value: this.latencyText(metrics.avgLatency),
+                    hint: "加权 P50",
+                    tone: "purple",
+                    trend: [318, 305, 292, 310, 286, metrics.avgLatency],
+                },
+                {
+                    label: "今日请求量",
+                    value: this.formatCompact(metrics.requestsToday),
+                    hint: "网关入口",
+                    tone: "blue",
+                    trend: [62, 66, 71, 78, 83, 91],
+                },
+                {
+                    label: "今日 Token",
+                    value: this.formatTokens(metrics.tokensToday),
+                    hint: "已处理用量",
+                    tone: "cyan",
+                    trend: [58, 64, 69, 76, 82, 90],
+                },
+                {
+                    label: "活跃异常",
+                    value: metrics.activeIncidents,
+                    hint: "未关闭事件",
+                    tone: "amber",
+                    trend: [1, 2, 2, 3, 2, metrics.activeIncidents],
+                },
+                {
+                    label: "可信计费评分",
+                    value: `${billing.fairBillingScore}%`,
+                    hint: "可信计量",
+                    tone: "green",
+                    trend: [99.88, 99.91, 99.94, 99.96, 99.98, billing.fairBillingScore],
+                },
+                {
+                    label: "路由效率",
+                    value: `${agent.routingEfficiency}%`,
+                    hint: "策略匹配度",
+                    tone: "blue",
+                    trend: [94, 95, 96, 95.6, 96.8, agent.routingEfficiency],
+                },
+                {
+                    label: "Agent SLA 达成率",
+                    value: `${agent.slaMetRate}%`,
+                    hint: "工作流目标",
+                    tone: "green",
+                    trend: [97.6, 98.1, 98.4, 98.2, 98.8, agent.slaMetRate],
+                },
             ];
         },
         overviewValueCards() {
@@ -709,15 +883,19 @@ export default {
             });
         },
         healthChartPoints() {
-            return this.visibleAvailabilitySeries.map((item) => (
-                `${this.healthChartXByOffset(item.offsetMinutes).toFixed(1)},${this.healthChartY(item.value).toFixed(1)}`
-            )).join(" ");
+            return this.visibleAvailabilitySeries
+                .map(
+                    (item) =>
+                        `${this.healthChartXByOffset(item.offsetMinutes).toFixed(1)},${this.healthChartY(item.value).toFixed(1)}`
+                )
+                .join(" ");
         },
         healthAreaPoints() {
             const baseline = 250;
-            const points = this.visibleAvailabilitySeries.map((item) => (
-                `${this.healthChartXByOffset(item.offsetMinutes).toFixed(1)},${this.healthChartY(item.value).toFixed(1)}`
-            ));
+            const points = this.visibleAvailabilitySeries.map(
+                (item) =>
+                    `${this.healthChartXByOffset(item.offsetMinutes).toFixed(1)},${this.healthChartY(item.value).toFixed(1)}`
+            );
             const lastPoint = this.visibleAvailabilitySeries[this.visibleAvailabilitySeries.length - 1];
             const lastX = this.healthChartXByOffset(lastPoint.offsetMinutes).toFixed(1);
             return [`58,${baseline}`, ...points, `${lastX},${baseline}`].join(" ");
@@ -753,16 +931,20 @@ export default {
             ]);
         },
         tokenPieStyle() {
-            return this.pieStyle(this.currentFrame.providers.map((provider, index) => ({
-                value: provider.tokensToday,
-                color: this.providerColors[index % this.providerColors.length],
-            })));
+            return this.pieStyle(
+                this.currentFrame.providers.map((provider, index) => ({
+                    value: provider.tokensToday,
+                    color: this.providerColors[index % this.providerColors.length],
+                }))
+            );
         },
         costPieStyle() {
-            return this.pieStyle(this.currentFrame.providers.map((provider, index) => ({
-                value: provider.costToday,
-                color: this.providerColors[index % this.providerColors.length],
-            })));
+            return this.pieStyle(
+                this.currentFrame.providers.map((provider, index) => ({
+                    value: provider.costToday,
+                    color: this.providerColors[index % this.providerColors.length],
+                }))
+            );
         },
         agentPriorityBars() {
             const priority = this.currentFrame.agentMetrics.priority;
@@ -854,8 +1036,7 @@ export default {
                     this.currentFrameIndex = Math.max(0, Math.min(this.timeline.length - 1, frame.frame - 1));
                     this.chartNow = state.meta?.updatedAt ? new Date(state.meta.updatedAt) : new Date();
                 }
-            } catch {
-            }
+            } catch {}
         },
         normalizeGatewayState(state) {
             if (!state?.summary || !Array.isArray(state.providers)) {
@@ -866,23 +1047,27 @@ export default {
             const calibration = {
                 averageDeltaRate: state.billing?.averageDeltaRate ?? state.calibration?.averageDeltaRate ?? 0,
                 maxDeltaRate: state.billing?.maxDeltaRate ?? state.calibration?.maxDeltaRate ?? 0,
-                convergedApis: state.calibration?.convergedApis ?? billingProviders.filter((provider) => provider.deltaRate <= 0.0025).length,
+                convergedApis:
+                    state.calibration?.convergedApis ??
+                    billingProviders.filter((provider) => provider.deltaRate <= 0.0025).length,
                 cycle: state.calibration?.cycle || "实时转接对账",
                 providers: billingProviders,
             };
-            const routingSeries = state.routing?.series?.length ? state.routing.series : [
-                {
-                    second: 0,
-                    openai: state.providers.find((provider) => provider.id === "openai")?.routeWeight || 0,
-                    claude: state.providers.find((provider) => provider.id === "claude")?.routeWeight || 0,
-                    gemini: state.providers.find((provider) => provider.id === "gemini")?.routeWeight || 0,
-                    chinaPool: state.providers
-                        .filter((provider) => provider.group === "China")
-                        .reduce((sum, provider) => sum + provider.routeWeight, 0),
-                    other: state.providers.find((provider) => provider.id === "grok")?.routeWeight || 0,
-                    action: state.summaryText || "",
-                },
-            ];
+            const routingSeries = state.routing?.series?.length
+                ? state.routing.series
+                : [
+                      {
+                          second: 0,
+                          openai: state.providers.find((provider) => provider.id === "openai")?.routeWeight || 0,
+                          claude: state.providers.find((provider) => provider.id === "claude")?.routeWeight || 0,
+                          gemini: state.providers.find((provider) => provider.id === "gemini")?.routeWeight || 0,
+                          chinaPool: state.providers
+                              .filter((provider) => provider.group === "China")
+                              .reduce((sum, provider) => sum + provider.routeWeight, 0),
+                          other: state.providers.find((provider) => provider.id === "grok")?.routeWeight || 0,
+                          action: state.summaryText || "",
+                      },
+                  ];
             const agent = state.agent || {};
             return {
                 frame: state.meta?.frame || this.currentFrameIndex + 1,
@@ -892,7 +1077,9 @@ export default {
                 stageHint: state.meta?.stageHint,
                 summaryMetrics: {
                     gatewayHealth: state.summary.gatewayHealth,
-                    providersOnline: state.summary.providersOnline || `${state.providers.filter((provider) => provider.status !== "maintenance").length} / ${providerCount}`,
+                    providersOnline:
+                        state.summary.providersOnline ||
+                        `${state.providers.filter((provider) => provider.status !== "maintenance").length} / ${providerCount}`,
                     avgLatency: state.summary.avgLatencyMs,
                     requestsToday: state.summary.requestsToday,
                     tokensToday: state.summary.tokensToday,
@@ -909,7 +1096,8 @@ export default {
                     reconciledBills: state.billing?.reconciledBills || providerCount,
                     explainableRequests: state.billing?.explainableRequests || 0,
                 },
-                calibrationSeries: state.billing?.calibrationSeries || this.timeline[this.currentFrameIndex]?.calibrationSeries || [],
+                calibrationSeries:
+                    state.billing?.calibrationSeries || this.timeline[this.currentFrameIndex]?.calibrationSeries || [],
                 agentMetrics: {
                     activeAgents: agent.activeAgents || 0,
                     runningWorkflows: agent.runningWorkflows || 0,
@@ -963,8 +1151,7 @@ export default {
             this.currentFrameIndex = (this.currentFrameIndex + 1) % this.timeline.length;
         },
         previousFrame() {
-            this.currentFrameIndex =
-                (this.currentFrameIndex - 1 + this.timeline.length) % this.timeline.length;
+            this.currentFrameIndex = (this.currentFrameIndex - 1 + this.timeline.length) % this.timeline.length;
         },
         statusLabel(status) {
             const labels = {
@@ -1053,11 +1240,13 @@ export default {
             const minValue = minOverride ?? Math.min(...values);
             const maxValue = maxOverride ?? Math.max(...values);
             const range = maxValue - minValue || 1;
-            return series.map((item, index) => {
-                const x = series.length === 1 ? width : (index / (series.length - 1)) * width;
-                const y = height - ((item[field] - minValue) / range) * height;
-                return `${x.toFixed(1)},${y.toFixed(1)}`;
-            }).join(" ");
+            return series
+                .map((item, index) => {
+                    const x = series.length === 1 ? width : (index / (series.length - 1)) * width;
+                    const y = height - ((item[field] - minValue) / range) * height;
+                    return `${x.toFixed(1)},${y.toFixed(1)}`;
+                })
+                .join(" ");
         },
         miniSparklinePoints(values, width = 78, height = 28) {
             if (!values?.length) {
@@ -1066,19 +1255,23 @@ export default {
             const minValue = Math.min(...values);
             const maxValue = Math.max(...values);
             const range = maxValue - minValue || 1;
-            return values.map((value, index) => {
-                const x = values.length === 1 ? width : (index / (values.length - 1)) * width;
-                const y = height - ((value - minValue) / range) * (height - 4) - 2;
-                return `${x.toFixed(1)},${y.toFixed(1)}`;
-            }).join(" ");
+            return values
+                .map((value, index) => {
+                    const x = values.length === 1 ? width : (index / (values.length - 1)) * width;
+                    const y = height - ((value - minValue) / range) * (height - 4) - 2;
+                    return `${x.toFixed(1)},${y.toFixed(1)}`;
+                })
+                .join(" ");
         },
         providerSparklinePoints(provider) {
             const latency = provider.latencyP50 || 120;
             const volatility = provider.status === "healthy" ? 7 : provider.status === "maintenance" ? 16 : 24;
             const weightBias = provider.routeWeight / 10;
-            const values = Array.from({ length: 12 }, (_, index) => (
-                latency + Math.sin((index + this.currentFrameIndex) * 0.75) * volatility + index * 1.6 - weightBias
-            ));
+            const values = Array.from(
+                { length: 12 },
+                (_, index) =>
+                    latency + Math.sin((index + this.currentFrameIndex) * 0.75) * volatility + index * 1.6 - weightBias
+            );
             return this.miniSparklinePoints(values, 220, 44);
         },
         incidentLevelIcon(level) {
@@ -1120,8 +1313,8 @@ export default {
                 const x = series.length === 1 ? width : (index / (series.length - 1)) * width;
                 const before = keys.slice(0, keyIndex).reduce((sum, itemKey) => sum + item[itemKey], 0);
                 const current = before + item[key];
-                topPoints.push(`${x.toFixed(1)},${(height - current / 100 * height).toFixed(1)}`);
-                bottomPoints.unshift(`${x.toFixed(1)},${(height - before / 100 * height).toFixed(1)}`);
+                topPoints.push(`${x.toFixed(1)},${(height - (current / 100) * height).toFixed(1)}`);
+                bottomPoints.unshift(`${x.toFixed(1)},${(height - (before / 100) * height).toFixed(1)}`);
             });
             return [...topPoints, ...bottomPoints].join(" ");
         },
@@ -1355,7 +1548,9 @@ export default {
 .traffic-bar {
     height: 100%;
     border-radius: inherit;
-    transition: width 420ms ease, background-color 420ms ease;
+    transition:
+        width 420ms ease,
+        background-color 420ms ease;
 }
 
 .tab-stage {
@@ -1668,8 +1863,7 @@ h3 {
 .chart-card {
     min-width: 0;
     padding: 14px;
-    background:
-        linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+    background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
 }
 
 .health-hero-card {
@@ -1834,7 +2028,9 @@ h3 {
 }
 
 .area-chart polygon {
-    transition: points 420ms ease, opacity 420ms ease;
+    transition:
+        points 420ms ease,
+        opacity 420ms ease;
 }
 
 .area-openai {
@@ -2237,15 +2433,12 @@ h3 {
     padding: 12px;
     border: 1px solid var(--tf-border);
     border-radius: 14px;
-    background:
-        linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+    background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
 }
 
 .trust-summary-grid article:first-child {
     border-color: rgba(37, 99, 235, 0.24);
-    background:
-        linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(6, 182, 212, 0.08)),
-        #ffffff;
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(6, 182, 212, 0.08)), #ffffff;
 }
 
 .agent-metrics-grid span,

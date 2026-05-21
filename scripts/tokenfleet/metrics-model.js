@@ -87,9 +87,16 @@ function buildProviders(frame, frameIndex, progressInFrame, tick, cycle) {
         const requestsToday = Math.round(base.requests + growth * (0.72 + routeWeight / 55));
         const tokensToday = Math.round(base.tokens + tokenGrowth * (0.74 + routeWeight / 52));
         const latencyWave = Math.sin((tick + index) / 3) * 8;
-        const latencyP50 = status === "maintenance" ? 0 : Math.round(Math.max(180, base.latencyP50 + latencyShift + latencyWave));
-        const latencyP95 = status === "maintenance" ? 0 : Math.round(Math.max(380, base.latencyP95 + latencyShift * 2.15 + latencyWave * 2.8));
-        const errorRate = status === "maintenance" ? 0 : round(Math.max(0.02, base.errorRate + errorShift + Math.abs(Math.sin((tick + index) / 4)) * 0.03), 2);
+        const latencyP50 =
+            status === "maintenance" ? 0 : Math.round(Math.max(180, base.latencyP50 + latencyShift + latencyWave));
+        const latencyP95 =
+            status === "maintenance"
+                ? 0
+                : Math.round(Math.max(380, base.latencyP95 + latencyShift * 2.15 + latencyWave * 2.8));
+        const errorRate =
+            status === "maintenance"
+                ? 0
+                : round(Math.max(0.02, base.errorRate + errorShift + Math.abs(Math.sin((tick + index) / 4)) * 0.03), 2);
         return {
             ...provider,
             status,
@@ -103,7 +110,14 @@ function buildProviders(frame, frameIndex, progressInFrame, tick, cycle) {
             tokensMonth: Math.round(base.tokens * 22 + tokenGrowth * 4.5),
             errorRate,
             costToday: Math.round(tokensToday * base.costUnit),
-            trend: status === "maintenance" ? "maintenance window" : routeWeight > base.routeWeight ? "absorbing traffic" : status === "degraded" ? "protected routing" : "stable",
+            trend:
+                status === "maintenance"
+                    ? "maintenance window"
+                    : routeWeight > base.routeWeight
+                      ? "absorbing traffic"
+                      : status === "degraded"
+                        ? "protected routing"
+                        : "stable",
             lastIncident: status === "healthy" ? "No active impact" : frame.stage,
         };
     });
@@ -190,7 +204,12 @@ function buildRouting(frameIndex) {
         openai: frame.routeWeights.openai,
         claude: frame.routeWeights.claude,
         gemini: frame.routeWeights.gemini,
-        chinaPool: frame.routeWeights.deepseek + frame.routeWeights.kimi + frame.routeWeights.minimax + frame.routeWeights.zhipu + frame.routeWeights.seedance,
+        chinaPool:
+            frame.routeWeights.deepseek +
+            frame.routeWeights.kimi +
+            frame.routeWeights.minimax +
+            frame.routeWeights.zhipu +
+            frame.routeWeights.seedance,
         other: frame.routeWeights.grok,
         action: frame.summaryText,
     }));
@@ -227,11 +246,36 @@ function buildAgent(frameIndex, tick) {
         },
         strategyStack: ["SLA 优先", "质量阈值", frameIndex >= 6 ? "成本守护" : "延迟保护", "可信计量"],
         workflowRoutes: [
-            { node: "Agent Intake", target: "SLA Classifier", modelPool: "Gateway Policy", reason: "识别优先级、语言和上下文长度" },
-            { node: "Plan", target: "Reasoning Pool", modelPool: frameIndex >= 7 ? "Claude + GLM" : "Claude + OpenAI", reason: "质量阈值与长上下文能力优先" },
-            { node: "Retrieve", target: "Fast Pool", modelPool: frameIndex >= 6 ? "DeepSeek + Kimi" : "OpenAI + Gemini", reason: "低延迟检索与中文语义匹配" },
-            { node: "Execute", target: "Cost Pool", modelPool: "DeepSeek + MiniMax + GLM", reason: "批量任务按成本与稳定性调度" },
-            { node: "Verify", target: "Audit Pool", modelPool: "OpenAI + Kimi", reason: "结果回看、链路解释与计量校准" },
+            {
+                node: "Agent Intake",
+                target: "SLA Classifier",
+                modelPool: "Gateway Policy",
+                reason: "识别优先级、语言和上下文长度",
+            },
+            {
+                node: "Plan",
+                target: "Reasoning Pool",
+                modelPool: frameIndex >= 7 ? "Claude + GLM" : "Claude + OpenAI",
+                reason: "质量阈值与长上下文能力优先",
+            },
+            {
+                node: "Retrieve",
+                target: "Fast Pool",
+                modelPool: frameIndex >= 6 ? "DeepSeek + Kimi" : "OpenAI + Gemini",
+                reason: "低延迟检索与中文语义匹配",
+            },
+            {
+                node: "Execute",
+                target: "Cost Pool",
+                modelPool: "DeepSeek + MiniMax + GLM",
+                reason: "批量任务按成本与稳定性调度",
+            },
+            {
+                node: "Verify",
+                target: "Audit Pool",
+                modelPool: "OpenAI + Kimi",
+                reason: "结果回看、链路解释与计量校准",
+            },
         ],
     };
 }
@@ -250,11 +294,22 @@ function buildAvailabilitySeries(now, frameIndex, tick, fairBillingScore) {
     const startOffset = -480;
     const endOffset = -480 + (visiblePoints - 1) * (480 / 71);
     return Array.from({ length: visiblePoints }, (_, index) => {
-        const offsetMinutes = visiblePoints === 1 ? startOffset : startOffset + (index / Math.max(1, visiblePoints - 1)) * (endOffset - startOffset);
+        const offsetMinutes =
+            visiblePoints === 1
+                ? startOffset
+                : startOffset + (index / Math.max(1, visiblePoints - 1)) * (endOffset - startOffset);
         const timestamp = new Date(now.getTime() + offsetMinutes * 60000);
         const recoveryCurve = 99.91 + index * 0.0011;
-        const incidentDip = frameIndex >= 5 && index > visiblePoints * 0.48 && index < visiblePoints * 0.76 ? -0.018 : 0;
-        const value = round(clamp(recoveryCurve + incidentDip + Math.sin((tick + index) / 8) * 0.003, 99.9, Math.min(100, fairBillingScore)), 3);
+        const incidentDip =
+            frameIndex >= 5 && index > visiblePoints * 0.48 && index < visiblePoints * 0.76 ? -0.018 : 0;
+        const value = round(
+            clamp(
+                recoveryCurve + incidentDip + Math.sin((tick + index) / 8) * 0.003,
+                99.9,
+                Math.min(100, fairBillingScore)
+            ),
+            3
+        );
         return {
             timestamp: timestamp.toISOString(),
             time: formatTime(timestamp),
@@ -271,7 +326,8 @@ function buildAvailabilitySeries(now, frameIndex, tick, fairBillingScore) {
  * @returns {object[]} Incident rows.
  */
 function buildIncidents(frameIndex, now) {
-    return scenarioFrames.slice(0, frameIndex + 1)
+    return scenarioFrames
+        .slice(0, frameIndex + 1)
         .filter((frame) => frame.incident)
         .map((frame, index) => {
             const occurredAt = new Date(now.getTime() - (frameIndex - index) * FRAME_DURATION_MS);
@@ -280,7 +336,12 @@ function buildIncidents(frameIndex, now) {
                 time: formatTime(occurredAt),
                 provider: frame.incident[0],
                 type: index >= 5 ? "protection" : "routing",
-                level: index === frameIndex && frame.activeIncidents > 1 ? "warning" : index === frameIndex ? "info" : "resolved",
+                level:
+                    index === frameIndex && frame.activeIncidents > 1
+                        ? "warning"
+                        : index === frameIndex
+                          ? "info"
+                          : "resolved",
                 title: frame.incident[1],
                 description: frame.incident[2],
                 action: frame.summaryText,
@@ -306,7 +367,8 @@ function buildState(options = {}) {
     const agent = buildAgent(frameIndex, tick);
     const totalRequests = providers.reduce((sum, provider) => sum + provider.requestsToday, 0);
     const totalTokens = providers.reduce((sum, provider) => sum + provider.tokensToday, 0);
-    const weightedLatency = providers.reduce((sum, provider) => sum + provider.latencyP50 * provider.actualTrafficShare, 0) / 100;
+    const weightedLatency =
+        providers.reduce((sum, provider) => sum + provider.latencyP50 * provider.actualTrafficShare, 0) / 100;
     const availabilitySeries = buildAvailabilitySeries(now, frameIndex, tick, billing.fairBillingScore);
     return {
         meta: {
