@@ -308,6 +308,26 @@ describe("Cloudflare Worker API", () => {
         assert.match(apiHelperSource, /Worker API request timed out/);
     });
 
+    test("Worker UI hydrates monitors before slower heartbeat history requests", async () => {
+        const socketMixinPath = path.join(__dirname, "../../../src/mixins/socket.js");
+        const socketMixinSource = fs.readFileSync(socketMixinPath, "utf8");
+        const monitorApplyIndex = socketMixinSource.indexOf(
+            "this.applyCloudflareWorkerDashboardState(buildCloudflareWorkerMonitorState(monitors, this.heartbeatList));"
+        );
+        const heartbeatRefreshIndex = socketMixinSource.indexOf(
+            "await this.refreshCloudflareWorkerHeartbeatHistories(monitors);"
+        );
+
+        assert.match(socketMixinSource, /CLOUDFLARE_DASHBOARD_CACHE_KEY/);
+        assert.match(socketMixinSource, /void this\.loadCloudflareWorkerInfo\(\);\s+await this\.refreshCloudflareWorkerAuthSession\(\);/);
+        assert.match(socketMixinSource, /this\.applyCloudflareWorkerDashboardCache\(\);\s+await this\.loadCloudflareWorkerData\(\);/);
+        assert.match(socketMixinSource, /Promise\.allSettled\(\[/);
+        assert.match(socketMixinSource, /writeCloudflareWorkerDashboardCache/);
+        assert.notStrictEqual(monitorApplyIndex, -1);
+        assert.notStrictEqual(heartbeatRefreshIndex, -1);
+        assert.ok(monitorApplyIndex < heartbeatRefreshIndex);
+    });
+
     test("entry page routes the deployed web UI to the dashboard", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({});
@@ -2807,6 +2827,98 @@ describe("Cloudflare Worker API", () => {
 
         assert.strictEqual(response.status, 200);
         assert.deepStrictEqual(body.heartbeats.map((heartbeat) => heartbeat.status), [0, 1]);
+    });
+
+    test("lists only important Worker monitor heartbeats for event logs", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [{ id: 7, name: "Private HTTP", type: "http", active: 1 }],
+            heartbeats: [
+                {
+                    monitor_id: 7,
+                    status: 1,
+                    ping: 12,
+                    msg: "initial up",
+                    checked_at: "2026-05-11 02:00:00",
+                },
+                {
+                    monitor_id: 7,
+                    status: 1,
+                    ping: 11,
+                    msg: "routine up",
+                    checked_at: "2026-05-11 02:01:00",
+                },
+                {
+                    monitor_id: 7,
+                    status: 2,
+                    ping: null,
+                    msg: "retry pending",
+                    checked_at: "2026-05-11 02:02:00",
+                },
+                {
+                    monitor_id: 7,
+                    status: 2,
+                    ping: null,
+                    msg: "still pending",
+                    checked_at: "2026-05-11 02:03:00",
+                },
+                {
+                    monitor_id: 7,
+                    status: 1,
+                    ping: 10,
+                    msg: "recovered from pending",
+                    checked_at: "2026-05-11 02:04:00",
+                },
+                {
+                    monitor_id: 7,
+                    status: 1,
+                    ping: 9,
+                    msg: "routine up after recovery",
+                    checked_at: "2026-05-11 02:05:00",
+                },
+                {
+                    monitor_id: 7,
+                    status: 0,
+                    ping: null,
+                    msg: "down",
+                    checked_at: "2026-05-11 02:06:00",
+                },
+                {
+                    monitor_id: 7,
+                    status: 0,
+                    ping: null,
+                    msg: "still down",
+                    checked_at: "2026-05-11 02:07:00",
+                },
+                {
+                    monitor_id: 7,
+                    status: 1,
+                    ping: 8,
+                    msg: "recovered from down",
+                    checked_at: "2026-05-11 02:08:00",
+                },
+            ],
+        });
+
+        const response = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/7/heartbeats?important=1&offset=0&count=20"),
+            env
+        );
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(body.count, 6);
+        assert.deepStrictEqual(
+            body.heartbeats.map((heartbeat) => heartbeat.msg),
+            [
+                "recovered from down",
+                "still down",
+                "down",
+                "recovered from pending",
+                "still pending",
+                "retry pending",
+            ]
+        );
     });
 
     test("lists direct and Twingate network profiles", async () => {

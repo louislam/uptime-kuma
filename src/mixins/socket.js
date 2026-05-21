@@ -25,6 +25,8 @@ const cloudflareWorkerHostnames = new Set([
 const CLOUDFLARE_RECENT_HEARTBEAT_LIMIT = 150;
 const CLOUDFLARE_CHART_HEARTBEAT_PAGE_SIZE = 500;
 const CLOUDFLARE_CHART_HEARTBEAT_MAX_ROWS = 10000;
+const CLOUDFLARE_DASHBOARD_CACHE_KEY = "uptimeworker.cloudflare.dashboard.cache.v1";
+const CLOUDFLARE_DASHBOARD_CACHE_MAX_AGE_MS = 15 * 60 * 1000;
 
 const noSocketIOPages = [
     /^\/status-page$/, //  /status-page
@@ -322,7 +324,7 @@ export default {
             this.allowLoginDialog = false;
             this.username = null;
             socket = createCloudflareSocketStub(this);
-            await this.loadCloudflareWorkerInfo();
+            void this.loadCloudflareWorkerInfo();
             await this.refreshCloudflareWorkerAuthSession();
         },
 
@@ -354,12 +356,15 @@ export default {
                     this.allowLoginDialog = false;
                     this.username = session.username;
                     this.socket.token = this.storage().token || (session.localAuthConfigured ? null : "bootstrap");
+                    this.applyCloudflareWorkerDashboardCache();
                     await this.loadCloudflareWorkerData();
                 } else {
                     this.loggedIn = false;
                     this.username = null;
                     this.socket.token = null;
                     this.allowLoginDialog = true;
+                    clearCloudflareWorkerDashboardCache();
+                    this.clearCloudflareWorkerDashboardData();
                 }
             } catch (error) {
                 console.error(`Failed to load Cloudflare Worker auth session: ${error.message}`);
@@ -375,59 +380,159 @@ export default {
          */
         async loadCloudflareWorkerData() {
             try {
-                const [body, notificationBody, proxyBody, dockerHostBody, remoteBrowserBody] = await Promise.all([
-                    requestCloudflareJson("/api/monitors"),
+                const sidecarDataPromise = Promise.allSettled([
                     requestCloudflareJson("/api/notifications"),
                     requestCloudflareJson("/api/proxies"),
                     requestCloudflareJson("/api/docker-hosts"),
                     requestCloudflareJson("/api/remote-browsers"),
+                    fetchCloudflareStatusPages(),
                 ]);
-                const monitorList = {};
-                const heartbeatList = {};
-                const avgPingList = {};
-                const uptimeList = {};
 
-                await Promise.all((body.monitors || []).map(async (monitor) => {
-                    const lastHeartbeat = monitor.lastHeartbeat;
-                    delete monitor.lastHeartbeat;
-                    monitor.getUrl = () => {
-                        try {
-                            return new URL(monitor.url);
-                        } catch (_) {
-                            return null;
-                        }
-                    };
-                    monitorList[monitor.id] = monitor;
-                    const heartbeats = normalizeCloudflareHeartbeatHistory(
-                        await fetchCloudflareMonitorHeartbeats(monitor.id)
-                    );
-                    if (heartbeats.length > 0) {
-                        heartbeatList[monitor.id] = heartbeats;
-                    } else if (lastHeartbeat) {
-                        heartbeatList[monitor.id] = [lastHeartbeat];
-                    }
-                    avgPingList[monitor.id] = calculateAveragePing(heartbeatList[monitor.id] || []);
-                    for (const type of ["24", "720", "1y"]) {
-                        uptimeList[`${monitor.id}_${type}`] = calculateUptime(heartbeatList[monitor.id] || []);
-                    }
-                }));
+                const body = await requestCloudflareJson("/api/monitors");
+                const monitors = body.monitors || [];
+                this.applyCloudflareWorkerDashboardState(buildCloudflareWorkerMonitorState(monitors, this.heartbeatList));
+                this.persistCloudflareWorkerDashboardCache();
 
-                this.monitorList = monitorList;
-                this.heartbeatList = heartbeatList;
-                this.avgPingList = avgPingList;
-                this.uptimeList = uptimeList;
-                this.notificationList = notificationBody.notifications || [];
-                this.proxyList = normalizeProxyList(proxyBody.proxies || []);
-                this.dockerHostList = dockerHostBody.dockerHosts || [];
-                this.remoteBrowserList = remoteBrowserBody.remoteBrowsers || [];
-                this.statusPageList = await fetchCloudflareStatusPages();
+                const [notificationBody, proxyBody, dockerHostBody, remoteBrowserBody, statusPageList] = await sidecarDataPromise;
+                if (notificationBody.status === "fulfilled") {
+                    this.notificationList = notificationBody.value.notifications || [];
+                } else {
+                    console.warn(`Failed to load Worker notifications: ${notificationBody.reason.message}`);
+                }
+                if (proxyBody.status === "fulfilled") {
+                    this.proxyList = normalizeProxyList(proxyBody.value.proxies || []);
+                } else {
+                    console.warn(`Failed to load Worker proxies: ${proxyBody.reason.message}`);
+                }
+                if (dockerHostBody.status === "fulfilled") {
+                    this.dockerHostList = dockerHostBody.value.dockerHosts || [];
+                } else {
+                    console.warn(`Failed to load Worker Docker hosts: ${dockerHostBody.reason.message}`);
+                }
+                if (remoteBrowserBody.status === "fulfilled") {
+                    this.remoteBrowserList = remoteBrowserBody.value.remoteBrowsers || [];
+                } else {
+                    console.warn(`Failed to load Worker remote browsers: ${remoteBrowserBody.reason.message}`);
+                }
+                if (statusPageList.status === "fulfilled") {
+                    this.statusPageList = statusPageList.value;
+                } else {
+                    console.warn(`Failed to load Worker status pages: ${statusPageList.reason.message}`);
+                }
                 this.statusPageListLoaded = true;
+                this.persistCloudflareWorkerDashboardCache();
+
+                await this.refreshCloudflareWorkerHeartbeatHistories(monitors);
             } catch (error) {
                 console.error(`Failed to load Cloudflare Worker monitor data: ${error.message}`);
                 this.connectionErrorMsg = `Cannot load Cloudflare Worker monitor data. [${error.message}]`;
                 this.socket.connected = false;
                 this.statusPageListLoaded = true;
             }
+        },
+
+        /**
+         * Apply the cached Worker dashboard snapshot while the live API refreshes.
+         * @returns {boolean} True when a cached snapshot was applied.
+         */
+        applyCloudflareWorkerDashboardCache() {
+            const snapshot = readCloudflareWorkerDashboardCache();
+            if (!snapshot) {
+                return false;
+            }
+            this.applyCloudflareWorkerDashboardState(snapshot);
+            return true;
+        },
+
+        /**
+         * Apply Worker dashboard state to the Vue root instance.
+         * @param {object} state Worker dashboard state.
+         * @returns {void}
+         */
+        applyCloudflareWorkerDashboardState(state) {
+            const monitorList = state.monitorList || {};
+            this.assignMonitorUrlParser(monitorList);
+            this.monitorList = monitorList;
+            this.heartbeatList = state.heartbeatList || {};
+            this.avgPingList = state.avgPingList || {};
+            this.uptimeList = state.uptimeList || {};
+            this.notificationList = Array.isArray(state.notificationList) ? state.notificationList : this.notificationList;
+            this.proxyList = normalizeProxyList(state.proxyList || this.proxyList);
+            this.dockerHostList = Array.isArray(state.dockerHostList) ? state.dockerHostList : this.dockerHostList;
+            this.remoteBrowserList = Array.isArray(state.remoteBrowserList) ? state.remoteBrowserList : this.remoteBrowserList;
+            this.statusPageList = state.statusPageList || this.statusPageList;
+            this.statusPageListLoaded = state.statusPageListLoaded ?? this.statusPageListLoaded;
+        },
+
+        /**
+         * Clear Worker dashboard data that may have been hydrated from cache.
+         * @returns {void}
+         */
+        clearCloudflareWorkerDashboardData() {
+            this.monitorList = {};
+            this.heartbeatList = {};
+            this.avgPingList = {};
+            this.uptimeList = {};
+            this.notificationList = [];
+            this.proxyList = [];
+            this.dockerHostList = [];
+            this.remoteBrowserList = [];
+            this.statusPageList = [];
+            this.statusPageListLoaded = false;
+        },
+
+        /**
+         * Persist the current Worker dashboard state for a fast reload hydrate.
+         * @returns {void}
+         */
+        persistCloudflareWorkerDashboardCache() {
+            writeCloudflareWorkerDashboardCache({
+                monitorList: this.monitorList,
+                heartbeatList: this.heartbeatList,
+                avgPingList: this.avgPingList,
+                uptimeList: this.uptimeList,
+                notificationList: this.notificationList,
+                proxyList: this.proxyList,
+                dockerHostList: this.dockerHostList,
+                remoteBrowserList: this.remoteBrowserList,
+                statusPageList: this.statusPageList,
+                statusPageListLoaded: this.statusPageListLoaded,
+            });
+        },
+
+        /**
+         * Refresh full heartbeat histories after the monitor list is already visible.
+         * @param {object[]} monitors Monitors returned by the Worker API.
+         * @returns {Promise<void>}
+         */
+        async refreshCloudflareWorkerHeartbeatHistories(monitors) {
+            const entries = await Promise.all(monitors.map(async (monitor) => {
+                const heartbeats = await fetchCloudflareMonitorHeartbeats(monitor.id)
+                    .then(normalizeCloudflareHeartbeatHistory)
+                    .catch((error) => {
+                        console.warn(`Failed to load heartbeat history for monitor ${monitor.id}: ${error.message}`);
+                        return this.heartbeatList[monitor.id] || [];
+                    });
+                return [monitor.id, mergeCloudflareHeartbeatHistory(heartbeats, monitor.lastHeartbeat)];
+            }));
+
+            const heartbeatList = {};
+            const avgPingList = {};
+            const uptimeList = {};
+            for (const [monitorID, heartbeats] of entries) {
+                if (heartbeats.length > 0) {
+                    heartbeatList[monitorID] = heartbeats;
+                }
+                avgPingList[monitorID] = calculateAveragePing(heartbeats);
+                for (const type of ["24", "720", "1y"]) {
+                    uptimeList[`${monitorID}_${type}`] = calculateUptime(heartbeats);
+                }
+            }
+
+            this.heartbeatList = heartbeatList;
+            this.avgPingList = avgPingList;
+            this.uptimeList = uptimeList;
+            this.persistCloudflareWorkerDashboardCache();
         },
         /**
          * parse all urls from list.
@@ -599,7 +704,11 @@ export default {
             this.socket.token = null;
             this.loggedIn = false;
             this.username = null;
+            clearCloudflareWorkerDashboardCache();
             this.clearData();
+            if (this.isCloudflareWorkerUI) {
+                this.clearCloudflareWorkerDashboardData();
+            }
         },
 
         /**
@@ -1503,8 +1612,27 @@ function createCloudflareSocketStub(app) {
  * @returns {Promise<object[]>} Heartbeat rows.
  */
 async function fetchCloudflareMonitorHeartbeats(monitorID, offset = 0, count = CLOUDFLARE_RECENT_HEARTBEAT_LIMIT) {
-    const body = await requestCloudflareJson(`/api/monitors/${monitorID}/heartbeats?offset=${offset}&count=${count}`);
+    const body = await requestCloudflareJson(buildCloudflareHeartbeatsUrl(monitorID, offset, count));
     return body.heartbeats || [];
+}
+
+/**
+ * Build the Worker heartbeat API URL with optional event-log filtering.
+ * @param {number} monitorID Monitor ID.
+ * @param {number} offset Pagination offset.
+ * @param {number} count Page size.
+ * @param {object} options URL options.
+ * @returns {string} API URL.
+ */
+function buildCloudflareHeartbeatsUrl(monitorID, offset, count, options = {}) {
+    const params = new URLSearchParams({
+        offset: String(offset),
+        count: String(count),
+    });
+    if (options.importantOnly) {
+        params.set("important", "1");
+    }
+    return `/api/monitors/${monitorID}/heartbeats?${params.toString()}`;
 }
 
 /**
@@ -1566,6 +1694,128 @@ async function fetchCloudflareStatusPages() {
 }
 
 /**
+ * Build immediately renderable Worker dashboard state from the monitor list API.
+ * @param {object[]} monitors Worker monitor API rows.
+ * @param {object} previousHeartbeatList Previously cached or loaded heartbeat rows.
+ * @returns {object} Dashboard state.
+ */
+function buildCloudflareWorkerMonitorState(monitors, previousHeartbeatList = {}) {
+    const monitorList = {};
+    const heartbeatList = {};
+    const avgPingList = {};
+    const uptimeList = {};
+
+    for (const sourceMonitor of monitors) {
+        const monitor = { ...sourceMonitor };
+        const lastHeartbeat = monitor.lastHeartbeat;
+        delete monitor.lastHeartbeat;
+        monitorList[monitor.id] = monitor;
+
+        const heartbeats = mergeCloudflareHeartbeatHistory(previousHeartbeatList[monitor.id], lastHeartbeat);
+        if (heartbeats.length > 0) {
+            heartbeatList[monitor.id] = heartbeats;
+        }
+        avgPingList[monitor.id] = calculateAveragePing(heartbeats);
+        for (const type of ["24", "720", "1y"]) {
+            uptimeList[`${monitor.id}_${type}`] = calculateUptime(heartbeats);
+        }
+    }
+
+    return {
+        monitorList,
+        heartbeatList,
+        avgPingList,
+        uptimeList,
+    };
+}
+
+/**
+ * Merge cached heartbeat history with the latest heartbeat from the monitor list.
+ * @param {object[]} heartbeats Previously loaded heartbeat rows.
+ * @param {object|null} lastHeartbeat Latest heartbeat from the monitor list API.
+ * @returns {object[]} Heartbeat rows ordered oldest-to-newest.
+ */
+function mergeCloudflareHeartbeatHistory(heartbeats = [], lastHeartbeat = null) {
+    const merged = Array.isArray(heartbeats) ? heartbeats.filter(Boolean).slice() : [];
+    if (
+        lastHeartbeat
+        && !merged.some((beat) => beat.monitorID === lastHeartbeat.monitorID && beat.time === lastHeartbeat.time)
+    ) {
+        merged.push(lastHeartbeat);
+    }
+
+    return merged
+        .sort(compareCloudflareHeartbeatTime)
+        .slice(-CLOUDFLARE_RECENT_HEARTBEAT_LIMIT);
+}
+
+/**
+ * Compare Worker heartbeat rows by timestamp.
+ * @param {object} a First heartbeat.
+ * @param {object} b Second heartbeat.
+ * @returns {number} Sort order.
+ */
+function compareCloudflareHeartbeatTime(a, b) {
+    const aTime = new Date(a?.time).getTime();
+    const bTime = new Date(b?.time).getTime();
+    if (Number.isFinite(aTime) && Number.isFinite(bTime)) {
+        return aTime - bTime;
+    }
+    return String(a?.time || "").localeCompare(String(b?.time || ""));
+}
+
+/**
+ * Read a recent Worker dashboard snapshot from browser storage.
+ * @returns {object|null} Cached dashboard state.
+ */
+function readCloudflareWorkerDashboardCache() {
+    try {
+        const raw = globalThis.localStorage?.getItem(CLOUDFLARE_DASHBOARD_CACHE_KEY);
+        if (!raw) {
+            return null;
+        }
+        const cached = JSON.parse(raw);
+        if (!cached || Date.now() - Number(cached.generatedAt) > CLOUDFLARE_DASHBOARD_CACHE_MAX_AGE_MS) {
+            return null;
+        }
+        return cached.state || null;
+    } catch (_) {
+        return null;
+    }
+}
+
+/**
+ * Write a Worker dashboard snapshot to browser storage.
+ * @param {object} state Dashboard state.
+ * @returns {void}
+ */
+function writeCloudflareWorkerDashboardCache(state) {
+    try {
+        globalThis.localStorage?.setItem(
+            CLOUDFLARE_DASHBOARD_CACHE_KEY,
+            JSON.stringify({
+                generatedAt: Date.now(),
+                state,
+            })
+        );
+    } catch (_) {
+        // Storage can be unavailable or full; the live API refresh still works.
+    }
+}
+
+/**
+ * Clear the cached Worker dashboard snapshot.
+ * @returns {void}
+ */
+function clearCloudflareWorkerDashboardCache() {
+    try {
+        globalThis.localStorage?.removeItem(CLOUDFLARE_DASHBOARD_CACHE_KEY);
+    } catch (_) {
+        // Ignore storage failures during logout or auth changes.
+    }
+}
+
+/**
  * Count heartbeat rows for one monitor or all loaded monitors.
  * @param {object} app Vue root component instance.
  * @param {number|null} monitorID Monitor ID, or null for all loaded monitors.
@@ -1573,10 +1823,12 @@ async function fetchCloudflareStatusPages() {
  */
 async function countCloudflareHeartbeats(app, monitorID) {
     if (monitorID != null) {
-        const body = await requestCloudflareJson(`/api/monitors/${monitorID}/heartbeats?offset=0&count=1`);
+        const body = await requestCloudflareJson(buildCloudflareHeartbeatsUrl(monitorID, 0, 1, {
+            importantOnly: true,
+        }));
         return body.count || 0;
     }
-    return Object.values(app.heartbeatList).reduce((total, beats) => total + beats.length, 0);
+    return getCloudflareImportantHeartbeatRows(app).length;
 }
 
 /**
@@ -1589,12 +1841,52 @@ async function countCloudflareHeartbeats(app, monitorID) {
  */
 async function getCloudflareHeartbeatPage(app, monitorID, offset = 0, count = 25) {
     if (monitorID != null) {
-        return await fetchCloudflareMonitorHeartbeats(monitorID, offset, count);
+        const body = await requestCloudflareJson(buildCloudflareHeartbeatsUrl(monitorID, offset, count, {
+            importantOnly: true,
+        }));
+        return body.heartbeats || [];
     }
-    return Object.values(app.heartbeatList)
-        .flat()
+    return getCloudflareImportantHeartbeatRows(app)
         .sort((a, b) => String(b.time).localeCompare(String(a.time)))
         .slice(offset, offset + count);
+}
+
+/**
+ * Get Worker event-log heartbeat rows for all loaded monitors.
+ * @param {object} app Vue root component instance.
+ * @returns {object[]} Important heartbeat rows.
+ */
+function getCloudflareImportantHeartbeatRows(app) {
+    return Object.values(app.heartbeatList).flatMap((heartbeats) => filterImportantCloudflareHeartbeats(heartbeats));
+}
+
+/**
+ * Filter Worker heartbeat rows down to down, pending, and single recovery up rows.
+ * @param {object[]} heartbeats Heartbeat rows ordered oldest-to-newest.
+ * @returns {object[]} Important heartbeat rows.
+ */
+function filterImportantCloudflareHeartbeats(heartbeats) {
+    const importantHeartbeats = [];
+    let previousStatus = null;
+
+    for (const heartbeat of heartbeats || []) {
+        const status = Number(heartbeat.status);
+        if (status === DOWN || status === PENDING || (status === UP && isCloudflareDegradedStatus(previousStatus))) {
+            importantHeartbeats.push(heartbeat);
+        }
+        previousStatus = status;
+    }
+
+    return importantHeartbeats;
+}
+
+/**
+ * Check if a status is degraded for recovery-log purposes.
+ * @param {number|null} status Previous heartbeat status.
+ * @returns {boolean} True when the status is down or pending.
+ */
+function isCloudflareDegradedStatus(status) {
+    return status === DOWN || status === PENDING;
 }
 
 /**

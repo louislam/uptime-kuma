@@ -1419,13 +1419,14 @@ class Monitor extends BeanModel {
      * @returns {boolean} True if is an important beat else false
      */
     static isImportantBeat(isFirstBeat, previousBeatStatus, currentBeatStatus) {
-        // * ? -> ANY STATUS = important [isFirstBeat]
-        // UP -> PENDING = not important
+        // ? -> UP = not important
+        // * ? -> DOWN/PENDING = important [isFirstBeat]
+        // * UP -> PENDING = important
         // * UP -> DOWN = important
         // UP -> UP = not important
         // PENDING -> PENDING = not important
         // * PENDING -> DOWN = important
-        // PENDING -> UP = not important
+        // * PENDING -> UP = important
         // DOWN -> PENDING = this case not exists
         // DOWN -> DOWN = not important
         // * DOWN -> UP = important
@@ -1435,13 +1436,15 @@ class Monitor extends BeanModel {
         // * DOWN -> MAINTENANCE = important
         // * UP -> MAINTENANCE = important
         return (
-            isFirstBeat ||
+            (isFirstBeat && currentBeatStatus !== UP) ||
             (previousBeatStatus === DOWN && currentBeatStatus === MAINTENANCE) ||
             (previousBeatStatus === UP && currentBeatStatus === MAINTENANCE) ||
             (previousBeatStatus === MAINTENANCE && currentBeatStatus === DOWN) ||
             (previousBeatStatus === MAINTENANCE && currentBeatStatus === UP) ||
+            (previousBeatStatus === UP && currentBeatStatus === PENDING) ||
             (previousBeatStatus === UP && currentBeatStatus === DOWN) ||
             (previousBeatStatus === DOWN && currentBeatStatus === UP) ||
+            (previousBeatStatus === PENDING && currentBeatStatus === UP) ||
             (previousBeatStatus === PENDING && currentBeatStatus === DOWN)
         );
     }

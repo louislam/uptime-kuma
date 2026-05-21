@@ -467,7 +467,12 @@ export async function handleApiRequest(request, env) {
             if (request.method === "GET") {
                 const offset = Number(url.searchParams.get("offset") || 0);
                 const count = Number(url.searchParams.get("count") || 100);
-                return json(await listMonitorHeartbeats(env, Number(route.params.monitorId), offset, count));
+                const importantOnly = ["1", "true"].includes(
+                    String(url.searchParams.get("important") || "").toLowerCase()
+                );
+                return json(await listMonitorHeartbeats(env, Number(route.params.monitorId), offset, count, {
+                    importantOnly,
+                }));
             }
             await clearMonitorHeartbeats(env, Number(route.params.monitorId));
             return json({ ok: true, msg: "Heartbeats cleared" });
@@ -1902,8 +1907,21 @@ export async function deleteMonitor(env, monitorId) {
         .run();
 }
 
-export async function listMonitorHeartbeats(env, monitorId, offset = 0, count = 100) {
+/**
+ * List heartbeat rows for a Worker monitor.
+ * @param {object} env Worker environment bindings.
+ * @param {number} monitorId Monitor ID.
+ * @param {number} offset Pagination offset.
+ * @param {number} count Page size.
+ * @param {object} options Listing options.
+ * @returns {Promise<object>} Count and heartbeat rows.
+ */
+export async function listMonitorHeartbeats(env, monitorId, offset = 0, count = 100, options = {}) {
     const monitor = await getMonitor(env, monitorId);
+    if (options.importantOnly) {
+        return await listImportantMonitorHeartbeats(env, monitorId, monitor, offset, count);
+    }
+
     const total = await env.DB.prepare("SELECT COUNT(*) AS count FROM heartbeats WHERE monitor_id = ?")
         .bind(monitorId)
         .first();
@@ -1920,6 +1938,81 @@ export async function listMonitorHeartbeats(env, monitorId, offset = 0, count = 
         count: Number(total?.count || 0),
         heartbeats: (result.results || []).map((heartbeat) => serializeHeartbeat(heartbeat, monitor)),
     };
+}
+
+/**
+ * List only Worker monitor heartbeats that should appear in the event log.
+ * @param {object} env Worker environment bindings.
+ * @param {number} monitorId Monitor ID.
+ * @param {object|null} monitor Monitor row.
+ * @param {number} offset Pagination offset.
+ * @param {number} count Page size.
+ * @returns {Promise<object>} Count and important heartbeat rows.
+ */
+async function listImportantMonitorHeartbeats(env, monitorId, monitor, offset = 0, count = 100) {
+    const result = await env.DB.prepare(
+        `SELECT monitor_id, status, ping, msg, checked_at
+         FROM heartbeats
+         WHERE monitor_id = ?
+         ORDER BY checked_at ASC, id ASC`
+    )
+        .bind(monitorId)
+        .all();
+    const heartbeats = sortHeartbeatsOldestFirst(result.results || [])
+        .map((heartbeat) => serializeHeartbeat(heartbeat, monitor));
+    const importantHeartbeats = filterImportantHeartbeats(heartbeats).reverse();
+    const limit = Math.max(1, Math.min(500, count));
+    const start = Math.max(0, offset);
+
+    return {
+        count: importantHeartbeats.length,
+        heartbeats: importantHeartbeats.slice(start, start + limit),
+    };
+}
+
+/**
+ * Sort heartbeat database rows from oldest to newest.
+ * @param {object[]} heartbeats Heartbeat rows.
+ * @returns {object[]} Sorted heartbeat rows.
+ */
+function sortHeartbeatsOldestFirst(heartbeats) {
+    return heartbeats.slice().sort((a, b) => {
+        const timeCompare = String(a.checked_at ?? a.time ?? "")
+            .localeCompare(String(b.checked_at ?? b.time ?? ""));
+        if (timeCompare !== 0) {
+            return timeCompare;
+        }
+        return Number(a.id || 0) - Number(b.id || 0);
+    });
+}
+
+/**
+ * Filter heartbeat rows down to down, pending, and single recovery up rows.
+ * @param {object[]} heartbeats Heartbeat rows ordered oldest-to-newest.
+ * @returns {object[]} Important heartbeat rows.
+ */
+function filterImportantHeartbeats(heartbeats) {
+    const importantHeartbeats = [];
+    let previousStatus = null;
+
+    for (const heartbeat of heartbeats) {
+        const status = Number(heartbeat.status);
+        if (status === DOWN || status === PENDING || (status === UP && isDegradedStatus(previousStatus))) {
+            importantHeartbeats.push(heartbeat);
+        }
+        previousStatus = status;
+    }
+
+    return importantHeartbeats;
+}
+
+/**
+ * Check if a status is degraded for recovery-log purposes.
+ * @param {number|null} status Previous heartbeat status.
+ * @returns {boolean} True when the status is down or pending.
+ */
+function isDegradedStatus(status) {
+    return status === DOWN || status === PENDING;
 }
 
 export async function clearMonitorHeartbeats(env, monitorId) {

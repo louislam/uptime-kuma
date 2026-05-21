@@ -2,7 +2,7 @@ const { describe, test } = require("node:test");
 const assert = require("node:assert");
 const Monitor = require("../../server/model/monitor");
 const Heartbeat = require("../../server/model/heartbeat");
-const { RESPONSE_BODY_LENGTH_DEFAULT } = require("../../src/util");
+const { DOWN, PENDING, RESPONSE_BODY_LENGTH_DEFAULT, UP } = require("../../src/util");
 
 describe("Monitor response saving", () => {
     test("getSaveResponse and getSaveErrorResponse parse booleans", () => {
@@ -32,5 +32,19 @@ describe("Monitor response saving", () => {
         await monitor.saveResponseData(bean, { ok: true });
 
         assert.strictEqual(await Heartbeat.decodeResponseValue(bean.response), JSON.stringify({ ok: true }));
+    });
+});
+
+describe("Monitor important heartbeat classification", () => {
+    test("logs down, pending, and one recovery up while suppressing routine up beats", () => {
+        assert.strictEqual(Monitor.isImportantBeat(true, undefined, UP), false);
+        assert.strictEqual(Monitor.isImportantBeat(true, undefined, DOWN), true);
+        assert.strictEqual(Monitor.isImportantBeat(true, undefined, PENDING), true);
+        assert.strictEqual(Monitor.isImportantBeat(false, UP, UP), false);
+        assert.strictEqual(Monitor.isImportantBeat(false, UP, PENDING), true);
+        assert.strictEqual(Monitor.isImportantBeat(false, PENDING, PENDING), false);
+        assert.strictEqual(Monitor.isImportantBeat(false, PENDING, UP), true);
+        assert.strictEqual(Monitor.isImportantBeat(false, DOWN, DOWN), false);
+        assert.strictEqual(Monitor.isImportantBeat(false, DOWN, UP), true);
     });
 });
