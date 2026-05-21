@@ -82,3 +82,13 @@ describe("PingChart period scaling", () => {
         assert.match(source, /await fetchCloudflareMonitorHeartbeatsForPeriod\(monitorID, periodHours\)/);
     });
 });
+
+describe("PingChart legend styling", () => {
+    test("ping datasets use line legend icons instead of filled boxes", () => {
+        const source = fs.readFileSync(repoFile("src/components/PingChart.vue"), "utf8");
+
+        assert.match(source, /usePointStyle:\s*true/);
+        assert.match(source, /pointStyle:\s*"line"/);
+        assert.match(source, /pointStyleWidth:\s*28/);
+    });
+});
