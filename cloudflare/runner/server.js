@@ -21,7 +21,7 @@ function createServer(options = {}) {
             }
 
             if (req.method === "GET" && req.url === "/twingate/status") {
-                return sendJson(res, 200, status);
+                return sendJson(res, 200, sanitizeTwingateStatus(status));
             }
 
             if (req.method === "POST" && req.url === "/check") {
@@ -74,6 +74,17 @@ function getTwingateNotReadyResult(status = {}) {
     };
 }
 
+function sanitizeTwingateStatus(status = {}) {
+    return {
+        configured: Boolean(status.configured),
+        starting: Boolean(status.starting),
+        running: Boolean(status.running),
+        proxyUrl: status.proxyUrl || null,
+        tunMode: status.tunMode || null,
+        lastError: status.lastError || null,
+    };
+}
+
 function readJson(req) {
     return new Promise((resolve, reject) => {
         const chunks = [];
@@ -99,5 +110,6 @@ module.exports = {
     createServer,
     getTwingateNotReadyResult,
     isTwingateJob,
+    sanitizeTwingateStatus,
     startServer,
 };

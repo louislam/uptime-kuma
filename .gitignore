@@ -16,6 +16,7 @@ dist-ssr
 /private
 /out
 /tmp
+/test/manual-test-radius-tls/certs/
 .env
 .wrangler-home/
 .wrangler-logs/

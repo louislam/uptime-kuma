@@ -6,6 +6,7 @@ const {
     createServer,
     getTwingateNotReadyResult,
     isTwingateJob,
+    sanitizeTwingateStatus,
 } = require("../../../cloudflare/runner/server");
 
 describe("Cloudflare monitor runner server", () => {
@@ -62,6 +63,11 @@ describe("Cloudflare monitor runner server", () => {
             proxyUrl: "http://127.0.0.1:9999",
             tunMode: "on",
             lastError: "not started yet",
+            serviceKeyInspection: {
+                privateKeyShape: {
+                    sha256Prefix: "123456789abc",
+                },
+            },
         };
         const server = createServer({
             twingateStatus,
@@ -76,10 +82,37 @@ describe("Cloudflare monitor runner server", () => {
             assert.strictEqual(healthResponse.status, 200);
             assert.deepStrictEqual(await healthResponse.json(), { ok: true, version: "1.0.0" });
             assert.strictEqual(statusResponse.status, 200);
-            assert.deepStrictEqual(await statusResponse.json(), twingateStatus);
+            assert.deepStrictEqual(await statusResponse.json(), sanitizeTwingateStatus(twingateStatus));
         } finally {
             await close(server);
         }
+    });
+
+    test("sanitizes Twingate service-key inspection from direct runner status", () => {
+        assert.deepStrictEqual(
+            sanitizeTwingateStatus({
+                configured: true,
+                starting: true,
+                running: false,
+                proxyUrl: "http://127.0.0.1:9999",
+                tunMode: "on",
+                lastError: null,
+                serviceKeyInspection: {
+                    validJson: true,
+                    privateKeyShape: {
+                        sha256Prefix: "123456789abc",
+                    },
+                },
+            }),
+            {
+                configured: true,
+                starting: true,
+                running: false,
+                proxyUrl: "http://127.0.0.1:9999",
+                tunMode: "on",
+                lastError: null,
+            }
+        );
     });
 });
 

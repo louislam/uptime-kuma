@@ -172,8 +172,11 @@ from the `X-Uptime-Worker-Token` single header and store that single-header
 service token value in `ACCESS_SECRET`.
 
 If your deployment account or resource names differ from this repository's
-defaults, update `wrangler.jsonc` before deploying. Keep the binding names stable
-unless the Worker code is updated at the same time.
+defaults, update the public resource bindings in `wrangler.jsonc` before
+deploying. Keep the binding names stable unless the Worker code is updated at
+the same time. Keep account-specific application IDs, service-key metadata, and
+secrets in Cloudflare dashboard variables or Worker secrets instead of source
+control.
 
 ## Cloudflare Resources
 
@@ -215,8 +218,15 @@ npx wrangler secret delete TWINGATE_PRIVATE_KEY_B64
 npx wrangler secret delete TWINGATE_SERVICE_KEY_B64
 ```
 
-If you want to keep the discrete metadata fields in `wrangler.jsonc`, the
-alternative is to set only the PEM private key value:
+If you do not use `TWINGATE_SERVICE_KEY_JSON`, configure the discrete
+non-secret metadata fields as Cloudflare dashboard variables:
+
+- `TWINGATE_NETWORK`
+- `TWINGATE_SERVICE_ACCOUNT_ID`
+- `TWINGATE_KEY_ID`
+- Optional: `TWINGATE_SERVICE_KEY_VERSION`, `TWINGATE_EXPIRES_AT`, `TWINGATE_LOGIN_PATH`
+
+Then set only the PEM private key value as a Worker secret:
 
 ```bash
 jq -r '.private_key' service_key.json | npx wrangler secret put TWINGATE_PRIVATE_KEY
@@ -237,6 +247,11 @@ Cloudflare-hosted Twingate checks support private HTTP, keyword, JSON query,
 TCP port, and WebSocket reachability checks through the userspace proxy.
 Twingate ICMP ping checks run through the Twingate TUN route; the default
 container setting is `TWINGATE_TUN=on`.
+
+If you use Cloudflare Access as the initial admin gate, configure
+`CF_ACCESS_TEAM_DOMAIN` and `CF_ACCESS_AUD` as dashboard variables for the
+deployment. Do not commit deployment-specific Access application audiences to
+`wrangler.jsonc`.
 
 ## Testing
 

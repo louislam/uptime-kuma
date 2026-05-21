@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1.4
 ARG BASE_IMAGE=louislam/uptime-kuma:base2
 
 ############################################
@@ -100,7 +101,6 @@ RUN apt update && \
 COPY --from=build /app /app
 
 ARG VERSION
-ARG GITHUB_TOKEN
 ARG TARGETARCH
 ARG PLATFORM=debian
 ARG FILE=$PLATFORM-$TARGETARCH-$VERSION.tar.gz
@@ -110,9 +110,8 @@ RUN chmod +x /app/extra/upload-github-release-asset.sh
 
 # Full Build
 # RUN tar -zcvf $FILE app
-# RUN /app/extra/upload-github-release-asset.sh github_api_token=$GITHUB_TOKEN owner=louislam repo=uptime-kuma tag=$VERSION filename=$FILE
+# RUN --mount=type=secret,id=github_token /app/extra/upload-github-release-asset.sh github_api_token="$(cat /run/secrets/github_token)" owner=louislam repo=uptime-kuma tag=$VERSION filename=$FILE
 
 # Dist only
 RUN cd /app && tar -zcvf $DIST dist
-RUN /app/extra/upload-github-release-asset.sh github_api_token=$GITHUB_TOKEN owner=louislam repo=uptime-kuma tag=$VERSION filename=/app/$DIST
-
+RUN --mount=type=secret,id=github_token /app/extra/upload-github-release-asset.sh github_api_token="$(cat /run/secrets/github_token)" owner=louislam repo=uptime-kuma tag=$VERSION filename=/app/$DIST

@@ -159,28 +159,29 @@ describe("Cloudflare Worker API", () => {
 
         assert.ok(wranglerConfig.vars);
         assert.strictEqual(wranglerConfig.vars.APP_VERSION, "1.0.0");
-        assert.strictEqual("TWINGATE_PROXY_URL" in wranglerConfig.vars, false);
-        assert.strictEqual(wranglerConfig.vars.TWINGATE_NETWORK, "wgs.twingate.com");
-        assert.strictEqual(
-            wranglerConfig.vars.TWINGATE_SERVICE_ACCOUNT_ID,
-            "72b53d66-51da-4b90-9f61-4c8bfd83b2a6"
-        );
-        assert.strictEqual(
-            wranglerConfig.vars.TWINGATE_KEY_ID,
-            "O0ORCtbn8BPjempoVgaW7KDypjrscs-7U8B7bp1jGqU"
-        );
-        assert.strictEqual("TWINGATE_PRIVATE_KEY" in wranglerConfig.vars, false);
+        for (const name of [
+            "TWINGATE_PROXY_URL",
+            "TWINGATE_SERVICE_KEY_B64",
+            "TWINGATE_SERVICE_KEY_JSON",
+            "TWINGATE_NETWORK",
+            "TWINGATE_SERVICE_ACCOUNT_ID",
+            "TWINGATE_KEY_ID",
+            "TWINGATE_PRIVATE_KEY",
+            "TWINGATE_PRIVATE_KEY_B64",
+            "TWINGATE_EXPIRES_AT",
+        ]) {
+            assert.strictEqual(name in wranglerConfig.vars, false, `${name} should not be committed in wrangler vars`);
+        }
         assert.strictEqual(wranglerConfig.vars.TWINGATE_TUN, "on");
     });
 
-    test("Worker admin API accepts the configured Cloudflare Access application", async () => {
+    test("Worker admin API keeps Cloudflare Access application identifiers out of checked-in vars", async () => {
         const wranglerPath = path.join(__dirname, "../../../wrangler.jsonc");
         const wranglerConfig = JSON.parse(fs.readFileSync(wranglerPath, "utf8"));
 
-        assert.strictEqual(wranglerConfig.vars.CF_ACCESS_TEAM_DOMAIN, "https://wgs.cloudflareaccess.com");
-        const audiences = wranglerConfig.vars.CF_ACCESS_AUD.split(",");
-        assert.ok(audiences.includes("e06744dbe3c5a7aa46503b6e518b0fbfb7f6ff38cfc751f5f5a4bfc56974fae6"));
-        assert.ok(audiences.includes("31798319d7ee654c37ed0a90f07e7c26d87cdbe50014aaa1718b13d195101734"));
+        assert.strictEqual("CF_ACCESS_TEAM_DOMAIN" in wranglerConfig.vars, false);
+        assert.strictEqual("CF_ACCESS_AUD" in wranglerConfig.vars, false);
+        assert.strictEqual("CF_ACCESS_CERTS_JSON" in wranglerConfig.vars, false);
     });
 
     test("runner container image installs runtime dependencies and includes Twingate lifecycle helper", async () => {

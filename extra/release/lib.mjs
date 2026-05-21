@@ -193,7 +193,7 @@ export function ver(version, identifier) {
 
 /**
  * Upload artifacts to GitHub
- * docker buildx build -f docker/dockerfile --platform linux/amd64 -t louislam/uptime-kuma:upload-artifact --build-arg VERSION --build-arg GITHUB_TOKEN --target upload-artifact . --progress plain
+ * docker buildx build -f docker/dockerfile --platform linux/amd64 -t louislam/uptime-kuma:upload-artifact --build-arg VERSION --secret id=github_token,env=GITHUB_TOKEN --target upload-artifact . --progress plain
  * @param {string} version Version
  * @param {string} githubToken GitHub token
  * @returns {void}
@@ -211,8 +211,8 @@ export function uploadArtifacts(version, githubToken) {
         "louislam/uptime-kuma:upload-artifact",
         "--build-arg",
         `VERSION=${version}`,
-        "--build-arg",
-        "GITHUB_TOKEN",
+        "--secret",
+        "id=github_token,env=GITHUB_TOKEN",
         "--target",
         "upload-artifact",
         ".",

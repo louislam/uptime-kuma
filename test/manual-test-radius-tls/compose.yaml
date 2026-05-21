@@ -5,11 +5,14 @@ services:
     image: redis:latest
     ports:
       - "6380:6380"
-    volumes:
-      - ./certs:/certs
     command: >
+      sh -c 'mkdir -p /tmp/redis-certs &&
+      openssl req -x509 -newkey rsa:2048 -nodes
+      -keyout /tmp/redis-certs/redis.key
+      -out /tmp/redis-certs/redis.crt
+      -subj "/CN=localhost" -days 1 &&
       redis-server
       --tls-port 6380 --port 0
-      --tls-cert-file /certs/redis.crt
-      --tls-key-file /certs/redis.key
-      --tls-auth-clients no
+      --tls-cert-file /tmp/redis-certs/redis.crt
+      --tls-key-file /tmp/redis-certs/redis.key
+      --tls-auth-clients no'
