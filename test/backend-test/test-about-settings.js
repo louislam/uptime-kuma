@@ -22,6 +22,10 @@ describe("About settings page branding and versioning", () => {
         path.join(__dirname, "../../cloudflare/worker/api.mjs"),
         "utf8"
     );
+    const statusPageSource = fs.readFileSync(
+        path.join(__dirname, "../../src/pages/StatusPage.vue"),
+        "utf8"
+    );
 
     test("uses the Uptime Worker GitHub repository for update links", () => {
         assert.strictEqual(packageJson.repository.url, "https://github.com/esaueng/uptimeworker.git");
@@ -54,5 +58,10 @@ describe("About settings page branding and versioning", () => {
         assert.match(aboutSource, /Forked from/);
         assert.doesNotMatch(aboutSource, /Font Twemoji/);
         assert.doesNotMatch(aboutSource, /creativecommons\.org\/licenses\/by\/4\.0/);
+    });
+
+    test("links the public powered-by footer to the Uptime Worker fork", () => {
+        assert.match(statusPageSource, /data-testid="powered-by"/);
+        assert.match(statusPageSource, /href="https:\/\/github\.com\/esaueng\/uptimeworker"/);
     });
 });
