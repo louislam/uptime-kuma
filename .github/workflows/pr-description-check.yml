@@ -11,6 +11,7 @@ permissions:
 
 jobs:
   check-pr-description:
+    if: github.repository == 'louislam/uptime-kuma'
     name: Check PR description and close if missing template phrase
     runs-on: ubuntu-latest
     permissions:
