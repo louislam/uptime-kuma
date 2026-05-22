@@ -993,7 +993,7 @@ class Monitor extends BeanModel {
             bean.retries = retries;
 
             log.debug("monitor", `[${this.name}] Check isImportant`);
-            let isImportant = Monitor.isImportantBeat(isFirstBeat, previousBeat?.status, bean.status);
+            let isImportant = Monitor.isImportantBeat(isFirstBeat, previousBeat?.status, bean.status, previousBeat?.retries ?? 0);
 
             // Mark as important if status changed, ignore pending pings,
             // Don't notify if disrupted changes to up
@@ -1415,16 +1415,18 @@ class Monitor extends BeanModel {
      * @param {boolean} isFirstBeat Is this the first beat of this monitor?
      * @param {const} previousBeatStatus Status of the previous beat
      * @param {const} currentBeatStatus Status of the current beat
+     * @param {number} previousBeatRetries Retry counter of the previous beat (used to tell a stable PENDING from a retry-cycle PENDING)
      * @returns {boolean} True if is an important beat else false
      */
-    static isImportantBeat(isFirstBeat, previousBeatStatus, currentBeatStatus) {
+    static isImportantBeat(isFirstBeat, previousBeatStatus, currentBeatStatus, previousBeatRetries = 0) {
         // * ? -> ANY STATUS = important [isFirstBeat]
         // UP -> PENDING = not important
         // * UP -> DOWN = important
         // UP -> UP = not important
         // PENDING -> PENDING = not important
         // * PENDING -> DOWN = important
-        // PENDING -> UP = not important
+        // PENDING (retry-cycle, retries > 0) -> UP = not important (transient recovery)
+        // * PENDING (stable, retries = 0) -> UP = important (e.g. group filled, manual status set)
         // DOWN -> PENDING = this case not exists
         // DOWN -> DOWN = not important
         // * DOWN -> UP = important
@@ -1441,7 +1443,8 @@ class Monitor extends BeanModel {
             (previousBeatStatus === MAINTENANCE && currentBeatStatus === UP) ||
             (previousBeatStatus === UP && currentBeatStatus === DOWN) ||
             (previousBeatStatus === DOWN && currentBeatStatus === UP) ||
-            (previousBeatStatus === PENDING && currentBeatStatus === DOWN)
+            (previousBeatStatus === PENDING && currentBeatStatus === DOWN) ||
+            (previousBeatStatus === PENDING && currentBeatStatus === UP && previousBeatRetries === 0)
         );
     }
 

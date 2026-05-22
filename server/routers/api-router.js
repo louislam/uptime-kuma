@@ -97,7 +97,7 @@ router.all("/api/push/:pushToken", async (request, response) => {
         log.debug("router", "PreviousStatus: " + previousHeartbeat?.status);
         log.debug("router", "Current Status: " + bean.status);
 
-        bean.important = Monitor.isImportantBeat(isFirstBeat, previousHeartbeat?.status, bean.status);
+        bean.important = Monitor.isImportantBeat(isFirstBeat, previousHeartbeat?.status, bean.status, previousHeartbeat?.retries ?? 0);
 
         if (Monitor.isImportantForNotification(isFirstBeat, previousHeartbeat?.status, bean.status)) {
             // Reset down count
