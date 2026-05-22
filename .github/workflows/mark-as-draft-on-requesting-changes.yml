@@ -20,12 +20,14 @@ jobs:
     permissions:
       pull-requests: write
     if: |
+      github.repository == 'louislam/uptime-kuma' &&
       (
-        github.repository == 'louislam/uptime-kuma'
-        && (
+        (
           github.event.action == 'review_submitted' &&
           github.event.review.state == 'changes_requested'
-        ) || (
+        )
+        ||
+        (
           github.event.action == 'labeled' &&
           github.event.label.name == 'pr:please address review comments'
         )
