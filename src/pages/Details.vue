@@ -381,11 +381,17 @@
                                     <div class="p-3 small">
                                         <div v-if="failureDetail(beat).headers" class="mb-2">
                                             <div class="fw-semibold text-body-secondary mb-1">{{ $t("Headers") }}</div>
-                                            <pre class="failure-detail-pre">{{ formatHeaders(failureDetail(beat).headers) }}</pre>
+                                            <pre class="failure-detail-pre">{{
+                                                formatHeaders(failureDetail(beat).headers)
+                                            }}</pre>
                                         </div>
                                         <div v-if="failureDetail(beat).body">
-                                            <div class="fw-semibold text-body-secondary mb-1">{{ $t("Response Body") }}</div>
-                                            <pre class="failure-detail-pre">{{ formatBody(failureDetail(beat).body) }}</pre>
+                                            <div class="fw-semibold text-body-secondary mb-1">
+                                                {{ $t("Response Body") }}
+                                            </div>
+                                            <pre class="failure-detail-pre">{{
+                                                formatBody(failureDetail(beat).body)
+                                            }}</pre>
                                         </div>
                                     </div>
                                 </td>
@@ -885,10 +891,19 @@ export default {
 
             // Backward compat: rows created before status/headers were split off
             // had a JSON blob in `response`. Unpack it for display.
-            if (detail.statusCode == null && detail.headers == null && typeof detail.body === "string" && detail.body.startsWith("{")) {
+            if (
+                detail.statusCode == null &&
+                detail.headers == null &&
+                typeof detail.body === "string" &&
+                detail.body.startsWith("{")
+            ) {
                 try {
                     const parsed = JSON.parse(detail.body);
-                    if (parsed && typeof parsed === "object" && ("status" in parsed || "headers" in parsed || "body" in parsed)) {
+                    if (
+                        parsed &&
+                        typeof parsed === "object" &&
+                        ("status" in parsed || "headers" in parsed || "body" in parsed)
+                    ) {
                         if (typeof parsed.status === "number") {
                             detail.statusCode = parsed.status;
                         }

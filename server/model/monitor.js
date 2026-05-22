@@ -958,7 +958,9 @@ class Monitor extends BeanModel {
                         bean.status_code = error.response.status;
                     }
                     if (error.response.headers) {
-                        bean.response_headers = Buffer.from(JSON.stringify(error.response.headers), "utf8").toString("base64");
+                        bean.response_headers = Buffer.from(JSON.stringify(error.response.headers), "utf8").toString(
+                            "base64"
+                        );
                     }
                     if (error.response.data !== undefined) {
                         await this.saveResponseData(bean, error.response.data);
