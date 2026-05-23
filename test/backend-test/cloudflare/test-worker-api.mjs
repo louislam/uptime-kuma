@@ -3771,6 +3771,73 @@ describe("Cloudflare Worker API", () => {
         assert.deepStrictEqual(env.state.heartbeats, []);
     });
 
+    test("check-now skips paused monitors without runner checks or heartbeat writes", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                {
+                    id: 7,
+                    name: "Paused LTE",
+                    type: "ping",
+                    hostname: "192.0.2.7",
+                    active: 0,
+                },
+            ],
+            runnerResult: { status: 0, ping: 120, msg: "Request timed out", response: null },
+        });
+
+        const response = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/7/check-now", { method: "POST" }),
+            env
+        );
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.deepStrictEqual(body.result, {
+            skipped: true,
+            status: null,
+            ping: null,
+            msg: "Monitor is paused",
+            response: null,
+        });
+        assert.deepStrictEqual(env.state.runnerJobs, []);
+        assert.deepStrictEqual(env.state.heartbeats, []);
+    });
+
+    test("queue consumer skips stale messages for paused monitors", async () => {
+        const { consumeQueue } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                {
+                    id: 7,
+                    name: "Paused LTE",
+                    type: "ping",
+                    hostname: "192.0.2.7",
+                    active: 0,
+                },
+            ],
+            runnerResult: { status: 0, ping: 120, msg: "Request timed out", response: null },
+        });
+        const acknowledged = [];
+
+        const result = await consumeQueue({
+            messages: [
+                {
+                    body: { monitorId: 7 },
+                    ack() {
+                        acknowledged.push(7);
+                    },
+                },
+            ],
+        }, env);
+
+        assert.strictEqual(result.paused, false);
+        assert.strictEqual(result.consumed, 1);
+        assert.deepStrictEqual(acknowledged, [7]);
+        assert.deepStrictEqual(env.state.runnerJobs, []);
+        assert.deepStrictEqual(env.state.heartbeats, []);
+    });
+
     test("new Worker versions pause scheduled monitor enqueueing", async () => {
         const { enqueueDueMonitors } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({

@@ -60,6 +60,7 @@ const ACCESS_SECRET_MONITOR_TYPES = new Set(["http", "keyword", "json-query"]);
 const NOTIFICATION_OK_MESSAGE = "Sent Successfully.";
 const DEFAULT_APP_VERSION = "1.0.0";
 const DEPLOY_MONITOR_PAUSE_MESSAGE = "Monitor checks are paused during Worker deployment";
+const MONITOR_PAUSED_MESSAGE = "Monitor is paused";
 
 const WORKER_MONITOR_TYPES = new Set([
     "group",
@@ -2213,6 +2214,9 @@ export async function executeMonitorCheck(env, monitorId) {
     if (monitor.type === "group") {
         throw httpError(400, "Group monitors do not run checks");
     }
+    if (monitor.active !== undefined && !normalizeBoolean(monitor.active)) {
+        return buildMonitorPausedSkippedResult();
+    }
     const deployPause = await getDeployMonitorPauseState(env);
     if (deployPause.paused) {
         return buildDeployPauseSkippedResult(deployPause);
@@ -2608,6 +2612,16 @@ function buildDeployPauseSkippedResult(deployPause) {
         msg: deployPause.pauseUntil
             ? `${DEPLOY_MONITOR_PAUSE_MESSAGE} until ${deployPause.pauseUntil}`
             : DEPLOY_MONITOR_PAUSE_MESSAGE,
+        response: null,
+    };
+}
+
+function buildMonitorPausedSkippedResult() {
+    return {
+        skipped: true,
+        status: null,
+        ping: null,
+        msg: MONITOR_PAUSED_MESSAGE,
         response: null,
     };
 }
