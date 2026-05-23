@@ -32,7 +32,6 @@ describe("Twingate Worker status helpers", () => {
     test("builds a sanitized starting status for transient container bootstrap failures", () => {
         const status = buildStartingTwingateStatus({
             TWINGATE_PRIVATE_KEY_B64: "configured-secret",
-            TWINGATE_TUN: "on",
         });
 
         assert.deepStrictEqual(status, {
@@ -40,7 +39,7 @@ describe("Twingate Worker status helpers", () => {
             starting: true,
             running: false,
             proxyUrl: "http://127.0.0.1:9999",
-            tunMode: "on",
+            tunMode: "off",
             lastError: "Twingate runner container is starting or provisioning. Refresh in a few seconds.",
         });
     });

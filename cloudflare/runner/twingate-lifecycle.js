@@ -12,7 +12,7 @@ const TWINGATE_PROXY_READY_HOST = "127.0.0.1";
 const TWINGATE_PROXY_READY_PORT = 9999;
 const DEFAULT_RETRY_DELAY_MS = 250;
 const MAX_CAPTURED_OUTPUT_LENGTH = 4000;
-const DEFAULT_TWINGATE_TUN_MODE = "on";
+const DEFAULT_TWINGATE_TUN_MODE = "off";
 
 class TwingateLifecycle {
     constructor(options = {}) {

@@ -33,6 +33,7 @@ export class MonitorRunner extends Container {
             APP_VERSION: resolveAppVersion(env),
             PORT: "8788",
             TWINGATE_READY_TIMEOUT_MS: "60000",
+            TWINGATE_TUN: "off",
         };
 
         copyOptionalEnv(this.envVars, env, [

@@ -2,6 +2,7 @@ const SYSTEM_TWINGATE_PROXY_URL = "http://127.0.0.1:9999";
 const DEFAULT_TWINGATE_STATUS_REQUEST_TIMEOUT_MS = 10000;
 const MIN_TWINGATE_STATUS_REQUEST_TIMEOUT_MS = 1000;
 const MAX_TWINGATE_STATUS_REQUEST_TIMEOUT_MS = 30000;
+const DEFAULT_TWINGATE_TUN_MODE = "off";
 const TWINGATE_CONTAINER_STARTING_MESSAGE =
     "Twingate runner container is starting or provisioning. Refresh in a few seconds.";
 const TWINGATE_ENV_INPUTS = [
@@ -47,7 +48,7 @@ function sanitizeRunnerStatus(status = {}) {
         starting: Boolean(status.starting),
         running: Boolean(status.running),
         proxyUrl: status.proxyUrl || null,
-        tunMode: status.tunMode || null,
+        tunMode: status.tunMode || DEFAULT_TWINGATE_TUN_MODE,
         lastError: status.lastError || null,
     };
 }
@@ -80,7 +81,7 @@ function buildStartingTwingateStatus(env = {}, lastError = TWINGATE_CONTAINER_ST
         starting: true,
         running: false,
         proxyUrl: SYSTEM_TWINGATE_PROXY_URL,
-        tunMode: env.TWINGATE_TUN || null,
+        tunMode: env.TWINGATE_TUN || DEFAULT_TWINGATE_TUN_MODE,
         lastError,
     });
 }
@@ -97,7 +98,7 @@ function buildUnavailableTwingateStatus(env = {}, lastError) {
         starting: false,
         running: false,
         proxyUrl: SYSTEM_TWINGATE_PROXY_URL,
-        tunMode: env.TWINGATE_TUN || null,
+        tunMode: env.TWINGATE_TUN || DEFAULT_TWINGATE_TUN_MODE,
         lastError,
     });
 }
@@ -117,6 +118,7 @@ function buildTwingateStatusFromRunnerFailure(env = {}, lastError) {
 
 export {
     SYSTEM_TWINGATE_PROXY_URL,
+    DEFAULT_TWINGATE_TUN_MODE,
     TWINGATE_CONTAINER_STARTING_MESSAGE,
     buildStartingTwingateStatus,
     buildTwingateStatusFromRunnerFailure,
