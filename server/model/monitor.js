@@ -993,7 +993,12 @@ class Monitor extends BeanModel {
             bean.retries = retries;
 
             log.debug("monitor", `[${this.name}] Check isImportant`);
-            let isImportant = Monitor.isImportantBeat(isFirstBeat, previousBeat?.status, bean.status, previousBeat?.retries ?? 0);
+            let isImportant = Monitor.isImportantBeat(
+                isFirstBeat,
+                previousBeat?.status,
+                bean.status,
+                previousBeat?.retries ?? 0
+            );
 
             // Mark as important if status changed, ignore pending pings,
             // Don't notify if disrupted changes to up
