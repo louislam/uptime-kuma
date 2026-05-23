@@ -193,6 +193,7 @@ const ADMIN_ROUTE_NAMES = new Set([
     "update-monitor",
     "set-monitor-active",
     "delete-monitor",
+    "heartbeats",
     "monitor-heartbeats",
     "network-profiles",
     "patch-network-route",
@@ -270,6 +271,17 @@ export async function handleApiRequest(request, env) {
 
         if (route.name === "monitors") {
             return json({ monitors: await listMonitors(env) });
+        }
+
+        if (route.name === "heartbeats") {
+            const offset = Number(url.searchParams.get("offset") || 0);
+            const count = Number(url.searchParams.get("count") || 100);
+            const importantOnly = ["1", "true"].includes(
+                String(url.searchParams.get("important") || "").toLowerCase()
+            );
+            return json(await listHeartbeats(env, offset, count, {
+                importantOnly,
+            }));
         }
 
         if (route.name === "status-pages") {
@@ -1941,6 +1953,98 @@ export async function listMonitorHeartbeats(env, monitorId, offset = 0, count = 
 }
 
 /**
+ * List heartbeat rows across Worker monitors.
+ * @param {object} env Worker environment bindings.
+ * @param {number} offset Pagination offset.
+ * @param {number} count Page size.
+ * @param {object} options Listing options.
+ * @returns {Promise<object>} Count and heartbeat rows.
+ */
+export async function listHeartbeats(env, offset = 0, count = 100, options = {}) {
+    if (options.importantOnly) {
+        return await listImportantHeartbeats(env, offset, count);
+    }
+    throw httpError(400, "Only important heartbeat listing is supported");
+}
+
+/**
+ * List important heartbeat rows across all active Worker monitors.
+ * @param {object} env Worker environment bindings.
+ * @param {number} offset Pagination offset.
+ * @param {number} count Page size.
+ * @returns {Promise<object>} Count and important heartbeat rows.
+ */
+export async function listImportantHeartbeats(env, offset = 0, count = 100) {
+    const monitors = await listMonitorRows(env);
+    const activeMonitorById = new Map(
+        monitors
+            .filter((monitor) => monitor.active === undefined || Boolean(monitor.active))
+            .map((monitor) => [Number(monitor.id), monitor])
+    );
+    const activeMonitorIds = [...activeMonitorById.keys()];
+    if (activeMonitorIds.length === 0) {
+        return {
+            count: 0,
+            heartbeats: [],
+        };
+    }
+
+    const placeholders = activeMonitorIds.map(() => "?").join(", ");
+    const result = await env.DB.prepare(
+        `SELECT id, monitor_id, status, ping, msg, checked_at
+         FROM heartbeats
+         WHERE monitor_id IN (${placeholders})
+         ORDER BY monitor_id ASC, checked_at ASC, id ASC`
+    )
+        .bind(...activeMonitorIds)
+        .all();
+    const heartbeats = (result.results || [])
+        .filter((heartbeat) => activeMonitorById.has(Number(heartbeat.monitor_id)))
+        .sort((a, b) => {
+            const monitorCompare = Number(a.monitor_id) - Number(b.monitor_id);
+            if (monitorCompare !== 0) {
+                return monitorCompare;
+            }
+            return compareHeartbeatRowsOldestFirst(a, b);
+        });
+    const importantHeartbeats = [];
+    let currentMonitorId = null;
+    let currentMonitorHeartbeats = [];
+
+    const pushCurrentMonitorEvents = () => {
+        if (currentMonitorId == null || currentMonitorHeartbeats.length === 0) {
+            return;
+        }
+        const monitor = activeMonitorById.get(currentMonitorId);
+        importantHeartbeats.push(
+            ...filterImportantHeartbeats(
+                currentMonitorHeartbeats.map((heartbeat) => serializeHeartbeat(heartbeat, monitor))
+            )
+        );
+    };
+
+    for (const heartbeat of heartbeats) {
+        const monitorId = Number(heartbeat.monitor_id);
+        if (currentMonitorId !== monitorId) {
+            pushCurrentMonitorEvents();
+            currentMonitorId = monitorId;
+            currentMonitorHeartbeats = [];
+        }
+        currentMonitorHeartbeats.push(heartbeat);
+    }
+    pushCurrentMonitorEvents();
+
+    const sortedHeartbeats = importantHeartbeats.sort(compareSerializedHeartbeatsNewestFirst);
+    const limit = Math.max(1, Math.min(500, count));
+    const start = Math.max(0, offset);
+
+    return {
+        count: sortedHeartbeats.length,
+        heartbeats: sortedHeartbeats.slice(start, start + limit),
+    };
+}
+
+/**
  * List only Worker monitor heartbeats that should appear in the event log.
  * @param {object} env Worker environment bindings.
  * @param {number} monitorId Monitor ID.
@@ -1983,14 +2087,36 @@ async function listImportantMonitorHeartbeats(env, monitorId, monitor, offset = 
  * @returns {object[]} Sorted heartbeat rows.
  */
 function sortHeartbeatsOldestFirst(heartbeats) {
-    return heartbeats.slice().sort((a, b) => {
-        const timeCompare = String(a.checked_at ?? a.time ?? "")
-            .localeCompare(String(b.checked_at ?? b.time ?? ""));
-        if (timeCompare !== 0) {
-            return timeCompare;
-        }
-        return Number(a.id || 0) - Number(b.id || 0);
-    });
+    return heartbeats.slice().sort(compareHeartbeatRowsOldestFirst);
+}
+
+/**
+ * Compare heartbeat database rows from oldest to newest.
+ * @param {object} a First heartbeat.
+ * @param {object} b Second heartbeat.
+ * @returns {number} Sort order.
+ */
+function compareHeartbeatRowsOldestFirst(a, b) {
+    const timeCompare = String(a.checked_at ?? a.time ?? "")
+        .localeCompare(String(b.checked_at ?? b.time ?? ""));
+    if (timeCompare !== 0) {
+        return timeCompare;
+    }
+    return Number(a.id || 0) - Number(b.id || 0);
+}
+
+/**
+ * Compare serialized heartbeat rows from newest to oldest.
+ * @param {object} a First heartbeat.
+ * @param {object} b Second heartbeat.
+ * @returns {number} Sort order.
+ */
+function compareSerializedHeartbeatsNewestFirst(a, b) {
+    const timeCompare = String(b.time || "").localeCompare(String(a.time || ""));
+    if (timeCompare !== 0) {
+        return timeCompare;
+    }
+    return Number(b.monitorID || 0) - Number(a.monitorID || 0);
 }
 
 /**
@@ -4677,6 +4803,9 @@ function matchRoute(method, pathname) {
     }
     if (method === "GET" && pathname === "/api/monitors") {
         return { name: "monitors", params: {} };
+    }
+    if (method === "GET" && pathname === "/api/heartbeats") {
+        return { name: "heartbeats", params: {} };
     }
     if (method === "GET" && pathname === "/api/status-pages") {
         return { name: "status-pages", params: {} };

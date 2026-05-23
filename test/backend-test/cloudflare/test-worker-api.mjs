@@ -2922,6 +2922,92 @@ describe("Cloudflare Worker API", () => {
         );
     });
 
+    test("lists aggregate important Worker heartbeats for dashboard event logs", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                { id: 7, name: "Primary WAN", type: "ping", active: 1 },
+                { id: 8, name: "VPN Edge", type: "ping", active: 1 },
+                { id: 9, name: "Paused LTE", type: "ping", active: 0 },
+            ],
+            heartbeats: [
+                {
+                    monitor_id: 7,
+                    status: 1,
+                    ping: 12,
+                    msg: "primary up",
+                    checked_at: "2026-05-12 04:00:00",
+                },
+                {
+                    monitor_id: 7,
+                    status: 0,
+                    ping: null,
+                    msg: "primary older down",
+                    checked_at: "2026-05-12 04:15:00",
+                },
+                {
+                    monitor_id: 7,
+                    status: 1,
+                    ping: 10,
+                    msg: "primary older recovered",
+                    checked_at: "2026-05-12 04:16:00",
+                },
+                {
+                    monitor_id: 8,
+                    status: 1,
+                    ping: 8,
+                    msg: "vpn up",
+                    checked_at: "2026-05-22 08:00:00",
+                },
+                {
+                    monitor_id: 8,
+                    status: 2,
+                    ping: null,
+                    msg: "vpn newer pending",
+                    checked_at: "2026-05-22 08:10:00",
+                },
+                {
+                    monitor_id: 8,
+                    status: 1,
+                    ping: 7,
+                    msg: "vpn newer recovered",
+                    checked_at: "2026-05-22 08:11:00",
+                },
+                {
+                    monitor_id: 7,
+                    status: 0,
+                    ping: null,
+                    msg: "primary newest down",
+                    checked_at: "2026-05-23 10:00:00",
+                },
+                {
+                    monitor_id: 9,
+                    status: 0,
+                    ping: null,
+                    msg: "paused newest down",
+                    checked_at: "2026-05-23 11:00:00",
+                },
+            ],
+        });
+
+        const response = await handleApiRequest(
+            adminRequest("https://example.com/api/heartbeats?important=1&offset=0&count=3"),
+            env
+        );
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(body.count, 5);
+        assert.deepStrictEqual(
+            body.heartbeats.map((heartbeat) => heartbeat.msg),
+            [
+                "primary newest down",
+                "vpn newer recovered",
+                "vpn newer pending",
+            ]
+        );
+    });
+
     test("does not list important event-log heartbeats for paused Worker monitors", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({
@@ -2955,13 +3041,13 @@ describe("Cloudflare Worker API", () => {
         assert.deepStrictEqual(body.heartbeats, []);
     });
 
-    test("Worker dashboard event aggregation skips paused monitors", () => {
+    test("Worker dashboard event aggregation uses the aggregate Worker heartbeat API", () => {
         const socketMixinPath = path.join(__dirname, "../../../src/mixins/socket.js");
         const socketMixinSource = fs.readFileSync(socketMixinPath, "utf8");
 
-        assert.match(socketMixinSource, /Object\.entries\(app\.heartbeatList\)/);
-        assert.match(socketMixinSource, /app\.monitorList\?\.?\[monitorID\]/);
-        assert.match(socketMixinSource, /!monitor\?\.active/);
+        assert.match(socketMixinSource, /monitorID == null \? "\/api\/heartbeats"/);
+        assert.match(socketMixinSource, /requestCloudflareJson\(buildCloudflareHeartbeatsUrl\(monitorID, 0, 1, \{\s*importantOnly: true,/);
+        assert.doesNotMatch(socketMixinSource, /return getCloudflareImportantHeartbeatRows\(app\)\.length/);
     });
 
     test("lists direct and Twingate network profiles", async () => {

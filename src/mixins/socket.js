@@ -1540,7 +1540,7 @@ function createCloudflareSocketStub(app) {
 
                 if (event === "monitorImportantHeartbeatListCount") {
                     const monitorID = args[0];
-                    callback?.({ ok: true, count: await countCloudflareHeartbeats(app, monitorID) });
+                    callback?.({ ok: true, count: await countCloudflareHeartbeats(monitorID) });
                     return;
                 }
 
@@ -1548,7 +1548,7 @@ function createCloudflareSocketStub(app) {
                     const [monitorID, offset, count] = args;
                     callback?.({
                         ok: true,
-                        data: await getCloudflareHeartbeatPage(app, monitorID, offset, count),
+                        data: await getCloudflareHeartbeatPage(monitorID, offset, count),
                     });
                     return;
                 }
@@ -1626,6 +1626,7 @@ async function fetchCloudflareMonitorHeartbeats(monitorID, offset = 0, count = C
  * @returns {string} API URL.
  */
 function buildCloudflareHeartbeatsUrl(monitorID, offset, count, options = {}) {
+    const basePath = monitorID == null ? "/api/heartbeats" : `/api/monitors/${monitorID}/heartbeats`;
     const params = new URLSearchParams({
         offset: String(offset),
         count: String(count),
@@ -1633,7 +1634,7 @@ function buildCloudflareHeartbeatsUrl(monitorID, offset, count, options = {}) {
     if (options.importantOnly) {
         params.set("important", "1");
     }
-    return `/api/monitors/${monitorID}/heartbeats?${params.toString()}`;
+    return `${basePath}?${params.toString()}`;
 }
 
 /**
@@ -1818,82 +1819,28 @@ function clearCloudflareWorkerDashboardCache() {
 
 /**
  * Count heartbeat rows for one monitor or all loaded monitors.
- * @param {object} app Vue root component instance.
  * @param {number|null} monitorID Monitor ID, or null for all loaded monitors.
  * @returns {Promise<number>} Heartbeat row count.
  */
-async function countCloudflareHeartbeats(app, monitorID) {
-    if (monitorID != null) {
-        const body = await requestCloudflareJson(buildCloudflareHeartbeatsUrl(monitorID, 0, 1, {
-            importantOnly: true,
-        }));
-        return body.count || 0;
-    }
-    return getCloudflareImportantHeartbeatRows(app).length;
+async function countCloudflareHeartbeats(monitorID) {
+    const body = await requestCloudflareJson(buildCloudflareHeartbeatsUrl(monitorID, 0, 1, {
+        importantOnly: true,
+    }));
+    return body.count || 0;
 }
 
 /**
  * Fetch a page of heartbeats for one monitor or all loaded monitors.
- * @param {object} app Vue root component instance.
  * @param {number|null} monitorID Monitor ID, or null for all loaded monitors.
  * @param {number} offset Pagination offset.
  * @param {number} count Number of rows to fetch.
  * @returns {Promise<object[]>} Heartbeat rows.
  */
-async function getCloudflareHeartbeatPage(app, monitorID, offset = 0, count = 25) {
-    if (monitorID != null) {
-        const body = await requestCloudflareJson(buildCloudflareHeartbeatsUrl(monitorID, offset, count, {
-            importantOnly: true,
-        }));
-        return body.heartbeats || [];
-    }
-    return getCloudflareImportantHeartbeatRows(app)
-        .sort((a, b) => String(b.time).localeCompare(String(a.time)))
-        .slice(offset, offset + count);
-}
-
-/**
- * Get Worker event-log heartbeat rows for all loaded monitors.
- * @param {object} app Vue root component instance.
- * @returns {object[]} Important heartbeat rows.
- */
-function getCloudflareImportantHeartbeatRows(app) {
-    return Object.entries(app.heartbeatList).flatMap(([monitorID, heartbeats]) => {
-        const monitor = app.monitorList?.[monitorID];
-        if (!monitor?.active) {
-            return [];
-        }
-        return filterImportantCloudflareHeartbeats(heartbeats);
-    });
-}
-
-/**
- * Filter Worker heartbeat rows down to down, pending, and single recovery up rows.
- * @param {object[]} heartbeats Heartbeat rows ordered oldest-to-newest.
- * @returns {object[]} Important heartbeat rows.
- */
-function filterImportantCloudflareHeartbeats(heartbeats) {
-    const importantHeartbeats = [];
-    let previousStatus = null;
-
-    for (const heartbeat of heartbeats || []) {
-        const status = Number(heartbeat.status);
-        if (status === DOWN || status === PENDING || (status === UP && isCloudflareDegradedStatus(previousStatus))) {
-            importantHeartbeats.push(heartbeat);
-        }
-        previousStatus = status;
-    }
-
-    return importantHeartbeats;
-}
-
-/**
- * Check if a status is degraded for recovery-log purposes.
- * @param {number|null} status Previous heartbeat status.
- * @returns {boolean} True when the status is down or pending.
- */
-function isCloudflareDegradedStatus(status) {
-    return status === DOWN || status === PENDING;
+async function getCloudflareHeartbeatPage(monitorID, offset = 0, count = 25) {
+    const body = await requestCloudflareJson(buildCloudflareHeartbeatsUrl(monitorID, offset, count, {
+        importantOnly: true,
+    }));
+    return body.heartbeats || [];
 }
 
 /**
