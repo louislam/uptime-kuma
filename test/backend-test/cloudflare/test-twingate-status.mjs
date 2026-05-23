@@ -39,7 +39,7 @@ describe("Twingate Worker status helpers", () => {
             starting: true,
             running: false,
             proxyUrl: "http://127.0.0.1:9999",
-            tunMode: "off",
+            tunMode: "on",
             lastError: "Twingate runner container is starting or provisioning. Refresh in a few seconds.",
         });
     });

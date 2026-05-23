@@ -172,7 +172,7 @@ describe("Cloudflare Worker API", () => {
         ]) {
             assert.strictEqual(name in wranglerConfig.vars, false, `${name} should not be committed in wrangler vars`);
         }
-        assert.strictEqual(wranglerConfig.vars.TWINGATE_TUN, "off");
+        assert.strictEqual(wranglerConfig.vars.TWINGATE_TUN, "on");
     });
 
     test("Worker admin API keeps Cloudflare Access application identifiers out of checked-in vars", async () => {
@@ -194,13 +194,13 @@ describe("Cloudflare Worker API", () => {
         assert.match(dockerfile, /COPY checker\.js server\.js twingate-lifecycle\.js twingate-service-key\.js \.\//);
     });
 
-    test("runner container receives Twingate userspace defaults and readiness timeout env", async () => {
+    test("runner container receives Twingate TUN defaults and readiness timeout env", async () => {
         const workerPath = path.join(__dirname, "../../../cloudflare/worker/index.mjs");
         const workerSource = fs.readFileSync(workerPath, "utf8");
 
         assert.match(workerSource, /APP_VERSION:\s*resolveAppVersion\(env\)/);
         assert.match(workerSource, /TWINGATE_READY_TIMEOUT_MS:\s*"60000"/);
-        assert.match(workerSource, /TWINGATE_TUN:\s*"off"/);
+        assert.match(workerSource, /TWINGATE_TUN:\s*"on"/);
         assert.match(workerSource, /"TWINGATE_READY_TIMEOUT_MS"/);
         assert.match(workerSource, /"TWINGATE_TUN"/);
         assert.match(workerSource, /JSON\.stringify\(value\)/);
