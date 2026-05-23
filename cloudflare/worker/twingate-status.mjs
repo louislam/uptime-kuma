@@ -81,7 +81,7 @@ function buildStartingTwingateStatus(env = {}, lastError = TWINGATE_CONTAINER_ST
         starting: true,
         running: false,
         proxyUrl: SYSTEM_TWINGATE_PROXY_URL,
-        tunMode: env.TWINGATE_TUN || DEFAULT_TWINGATE_TUN_MODE,
+        tunMode: DEFAULT_TWINGATE_TUN_MODE,
         lastError,
     });
 }
@@ -98,7 +98,7 @@ function buildUnavailableTwingateStatus(env = {}, lastError) {
         starting: false,
         running: false,
         proxyUrl: SYSTEM_TWINGATE_PROXY_URL,
-        tunMode: env.TWINGATE_TUN || DEFAULT_TWINGATE_TUN_MODE,
+        tunMode: DEFAULT_TWINGATE_TUN_MODE,
         lastError,
     });
 }

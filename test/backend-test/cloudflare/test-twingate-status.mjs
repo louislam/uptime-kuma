@@ -32,6 +32,7 @@ describe("Twingate Worker status helpers", () => {
     test("builds a sanitized starting status for transient container bootstrap failures", () => {
         const status = buildStartingTwingateStatus({
             TWINGATE_PRIVATE_KEY_B64: "configured-secret",
+            TWINGATE_TUN: "off",
         });
 
         assert.deepStrictEqual(status, {

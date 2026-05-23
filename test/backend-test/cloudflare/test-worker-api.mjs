@@ -197,12 +197,16 @@ describe("Cloudflare Worker API", () => {
     test("runner container receives Twingate TUN defaults and readiness timeout env", async () => {
         const workerPath = path.join(__dirname, "../../../cloudflare/worker/index.mjs");
         const workerSource = fs.readFileSync(workerPath, "utf8");
+        const optionalEnvBlock = workerSource.slice(
+            workerSource.indexOf("copyOptionalEnv(this.envVars, env, ["),
+            workerSource.indexOf("]);", workerSource.indexOf("copyOptionalEnv(this.envVars, env, ["))
+        );
 
         assert.match(workerSource, /APP_VERSION:\s*resolveAppVersion\(env\)/);
         assert.match(workerSource, /TWINGATE_READY_TIMEOUT_MS:\s*"60000"/);
         assert.match(workerSource, /TWINGATE_TUN:\s*"on"/);
         assert.match(workerSource, /"TWINGATE_READY_TIMEOUT_MS"/);
-        assert.match(workerSource, /"TWINGATE_TUN"/);
+        assert.doesNotMatch(optionalEnvBlock, /"TWINGATE_TUN"/);
         assert.match(workerSource, /JSON\.stringify\(value\)/);
     });
 

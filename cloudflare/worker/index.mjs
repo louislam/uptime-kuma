@@ -49,7 +49,6 @@ export class MonitorRunner extends Container {
             "TWINGATE_LOGIN_PATH",
             "TWINGATE_READY_TIMEOUT_MS",
             "TWINGATE_STATUS_REQUEST_TIMEOUT_MS",
-            "TWINGATE_TUN",
         ]);
     }
 
