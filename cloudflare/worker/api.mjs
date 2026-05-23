@@ -2211,11 +2211,11 @@ export async function executeMonitorCheck(env, monitorId) {
     if (!monitor) {
         throw httpError(404, "Monitor not found");
     }
-    if (monitor.type === "group") {
-        throw httpError(400, "Group monitors do not run checks");
-    }
     if (monitor.active !== undefined && !normalizeBoolean(monitor.active)) {
         return buildMonitorPausedSkippedResult();
+    }
+    if (monitor.type === "group") {
+        return await executeGroupMonitorCheck(env, monitor);
     }
     const deployPause = await getDeployMonitorPauseState(env);
     if (deployPause.paused) {
@@ -2248,6 +2248,65 @@ export async function executeMonitorCheck(env, monitorId) {
     result = await applyMonitorRetryStatus(env, monitor, result);
     await writeHeartbeat(env, monitorId, result);
     return result;
+}
+
+async function executeGroupMonitorCheck(env, groupMonitor) {
+    const monitors = await listMonitorRows(env);
+    const monitorsById = new Map(monitors.map((monitor) => [Number(monitor.id), monitor]));
+    const childMonitors = getActiveWorkerLeafMonitors(groupMonitor, monitorsById);
+    if (childMonitors.length === 0) {
+        return {
+            skipped: true,
+            status: null,
+            ping: null,
+            msg: "No active monitors in group",
+            response: null,
+            checked: 0,
+            checks: [],
+        };
+    }
+
+    const checks = [];
+    for (const childMonitor of childMonitors) {
+        const result = await executeMonitorCheck(env, Number(childMonitor.id));
+        checks.push({
+            monitorId: Number(childMonitor.id),
+            name: childMonitor.name,
+            ...result,
+        });
+    }
+
+    const statuses = checks
+        .map((check) => check.status)
+        .filter((status) => status !== undefined && status !== null)
+        .map((status) => Number(status));
+    const status = aggregateGroupCheckStatus(statuses);
+
+    return {
+        skipped: status === null,
+        status,
+        ping: null,
+        msg: `Checked ${childMonitors.length} ${childMonitors.length === 1 ? "monitor" : "monitors"}`,
+        response: null,
+        checked: childMonitors.length,
+        checks,
+    };
+}
+
+function aggregateGroupCheckStatus(statuses) {
+    if (statuses.length === 0) {
+        return null;
+    }
+    if (statuses.includes(DOWN)) {
+        return DOWN;
+    }
+    if (statuses.includes(PENDING)) {
+        return PENDING;
+    }
+    if (statuses.every((status) => status === UP)) {
+        return UP;
+    }
+    return Math.min(...statuses);
 }
 
 async function resolveMonitorNetworkProfileForCheck(env, monitor) {

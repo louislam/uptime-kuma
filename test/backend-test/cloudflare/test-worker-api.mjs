@@ -3642,6 +3642,72 @@ describe("Cloudflare Worker API", () => {
         });
     });
 
+    test("check-now on a group runs all active child monitor checks", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                { id: 70, name: "Endpoints", type: "group", active: 1, parent: null },
+                {
+                    id: 71,
+                    name: "API",
+                    type: "http",
+                    url: "https://api.example.test",
+                    active: 1,
+                    parent: 70,
+                    network_profile_id: null,
+                },
+                {
+                    id: 72,
+                    name: "Nested",
+                    type: "group",
+                    active: 1,
+                    parent: 70,
+                },
+                {
+                    id: 73,
+                    name: "Ping",
+                    type: "ping",
+                    hostname: "192.0.2.73",
+                    active: 1,
+                    parent: 72,
+                    network_profile_id: null,
+                },
+                {
+                    id: 74,
+                    name: "Paused",
+                    type: "http",
+                    url: "https://paused.example.test",
+                    active: 0,
+                    parent: 70,
+                    network_profile_id: null,
+                },
+            ],
+            runnerResults: [
+                { status: 1, ping: 12, msg: "200 - OK", response: null },
+                { status: 1, ping: 18, msg: "pong", response: null },
+            ],
+        });
+
+        const response = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/70/check-now", { method: "POST" }),
+            env
+        );
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(body.result.checked, 2);
+        assert.strictEqual(body.result.status, 1);
+        assert.strictEqual(body.result.msg, "Checked 2 monitors");
+        assert.deepStrictEqual(
+            env.state.runnerJobs.map((job) => job.monitor.id),
+            [71, 73]
+        );
+        assert.deepStrictEqual(
+            env.state.heartbeats.map((heartbeat) => heartbeat.monitor_id),
+            [71, 73]
+        );
+    });
+
     test("check-now records failed checks as pending until monitor retries are exhausted", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({
