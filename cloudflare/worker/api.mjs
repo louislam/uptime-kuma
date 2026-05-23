@@ -1950,6 +1950,13 @@ export async function listMonitorHeartbeats(env, monitorId, offset = 0, count = 
  * @returns {Promise<object>} Count and important heartbeat rows.
  */
 async function listImportantMonitorHeartbeats(env, monitorId, monitor, offset = 0, count = 100) {
+    if (monitor && !monitor.active) {
+        return {
+            count: 0,
+            heartbeats: [],
+        };
+    }
+
     const result = await env.DB.prepare(
         `SELECT monitor_id, status, ping, msg, checked_at
          FROM heartbeats

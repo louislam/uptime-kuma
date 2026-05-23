@@ -2922,6 +2922,48 @@ describe("Cloudflare Worker API", () => {
         );
     });
 
+    test("does not list important event-log heartbeats for paused Worker monitors", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [{ id: 7, name: "Archived Ping", type: "ping", active: 0 }],
+            heartbeats: [
+                {
+                    monitor_id: 7,
+                    status: 0,
+                    ping: null,
+                    msg: "down while archived",
+                    checked_at: "2026-05-11 02:06:00",
+                },
+                {
+                    monitor_id: 7,
+                    status: 1,
+                    ping: 8,
+                    msg: "recovered while archived",
+                    checked_at: "2026-05-11 02:08:00",
+                },
+            ],
+        });
+
+        const response = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/7/heartbeats?important=1&offset=0&count=20"),
+            env
+        );
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(body.count, 0);
+        assert.deepStrictEqual(body.heartbeats, []);
+    });
+
+    test("Worker dashboard event aggregation skips paused monitors", () => {
+        const socketMixinPath = path.join(__dirname, "../../../src/mixins/socket.js");
+        const socketMixinSource = fs.readFileSync(socketMixinPath, "utf8");
+
+        assert.match(socketMixinSource, /Object\.entries\(app\.heartbeatList\)/);
+        assert.match(socketMixinSource, /app\.monitorList\?\.?\[monitorID\]/);
+        assert.match(socketMixinSource, /!monitor\?\.active/);
+    });
+
     test("lists direct and Twingate network profiles", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({

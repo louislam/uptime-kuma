@@ -226,18 +226,19 @@ export default {
 
                 // Add to important list if it is important
                 // Also toast
-                if (data.important) {
-                    if (this.monitorList[data.monitorID] !== undefined) {
+                const monitor = this.monitorList[data.monitorID];
+                if (data.important && monitor?.active) {
+                    if (monitor !== undefined) {
                         if (data.status === 0) {
-                            toast.error(`[${this.monitorList[data.monitorID].name}] [DOWN] ${data.msg}`, {
+                            toast.error(`[${monitor.name}] [DOWN] ${data.msg}`, {
                                 timeout: getToastErrorTimeout(),
                             });
                         } else if (data.status === 1) {
-                            toast.success(`[${this.monitorList[data.monitorID].name}] [Up] ${data.msg}`, {
+                            toast.success(`[${monitor.name}] [Up] ${data.msg}`, {
                                 timeout: getToastSuccessTimeout(),
                             });
                         } else {
-                            toast(`[${this.monitorList[data.monitorID].name}] ${data.msg}`);
+                            toast(`[${monitor.name}] ${data.msg}`);
                         }
                     }
 
@@ -1857,7 +1858,13 @@ async function getCloudflareHeartbeatPage(app, monitorID, offset = 0, count = 25
  * @returns {object[]} Important heartbeat rows.
  */
 function getCloudflareImportantHeartbeatRows(app) {
-    return Object.values(app.heartbeatList).flatMap((heartbeats) => filterImportantCloudflareHeartbeats(heartbeats));
+    return Object.entries(app.heartbeatList).flatMap(([monitorID, heartbeats]) => {
+        const monitor = app.monitorList?.[monitorID];
+        if (!monitor?.active) {
+            return [];
+        }
+        return filterImportantCloudflareHeartbeats(heartbeats);
+    });
 }
 
 /**

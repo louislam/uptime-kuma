@@ -1365,9 +1365,16 @@ let needSetup = false;
 
                 let count;
                 if (monitorID == null) {
-                    count = await R.count("heartbeat", "important = 1");
+                    count = await R.count(
+                        "heartbeat",
+                        "important = 1 AND monitor_id IN (SELECT id FROM monitor WHERE active = 1)"
+                    );
                 } else {
-                    count = await R.count("heartbeat", "monitor_id = ? AND important = 1", [monitorID]);
+                    count = await R.count(
+                        "heartbeat",
+                        "monitor_id = ? AND important = 1 AND monitor_id IN (SELECT id FROM monitor WHERE active = 1)",
+                        [monitorID]
+                    );
                 }
 
                 callback({
@@ -1392,6 +1399,7 @@ let needSetup = false;
                         "heartbeat",
                         `
                         important = 1
+                        AND monitor_id IN (SELECT id FROM monitor WHERE active = 1)
                         ORDER BY time DESC
                         LIMIT ?
                         OFFSET ?
@@ -1404,6 +1412,7 @@ let needSetup = false;
                         `
                         monitor_id = ?
                         AND important = 1
+                        AND monitor_id IN (SELECT id FROM monitor WHERE active = 1)
                         ORDER BY time DESC
                         LIMIT ?
                         OFFSET ?
