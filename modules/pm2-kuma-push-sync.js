@@ -4,10 +4,12 @@ const { execSync } = require("child_process");
 const fs = require("fs");
 const path = require("path");
 
-const KUMA_PUSH_BASE_URL = "http://127.0.0.1:3011/api/push";
-const LOOP_INTERVAL_MS = 60000;
-const PUSH_RETRIES = 3;
-const PUSH_RETRY_DELAY_MS = 2000;
+const KUMA_PUSH_BASE_URL = process.env.KUMA_PUSH_BASE_URL || "http://127.0.0.1:3011/api/push";
+const LOOP_INTERVAL_MS = Number(process.env.KUMA_PUSH_LOOP_MS) || 60000;
+const PUSH_RETRIES = Number(process.env.KUMA_PUSH_RETRIES) || 3;
+const PUSH_RETRY_DELAY_MS = Number(process.env.KUMA_PUSH_RETRY_DELAY_MS) || 2000;
+const FETCH_TIMEOUT_MS = Number(process.env.KUMA_PUSH_FETCH_TIMEOUT_MS) || 15000;
+const PUSH_CONCURRENCY = Number(process.env.KUMA_PUSH_CONCURRENCY) || 10;
 
 const DB_CONFIG_PATH = path.join(__dirname, "..", "data", "db-config.json");
 
@@ -80,13 +82,54 @@ function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+/**
+ * Format a fetch() error for logs. Node 18+ wraps the underlying socket
+ * error in `error.cause`, so the bare message is almost always just
+ * "fetch failed" with no actionable detail. Surface code/syscall/address
+ * so we can tell ECONNREFUSED / ETIMEDOUT / EPIPE / etc. apart.
+ *
+ * @param {unknown} error
+ * @returns {string}
+ */
+function describeFetchError(error) {
+    if (!error) {
+        return "unknown";
+    }
+    const msg = error instanceof Error ? error.message : String(error);
+    const cause = (error && error.cause) || null;
+    if (!cause) {
+        return msg;
+    }
+    const code = cause.code || cause.errno || "?";
+    const causeMsg = cause.message || String(cause);
+    return `${msg} [${code}] ${causeMsg}`;
+}
+
+/**
+ * Send a single push to Kuma with bounded total time.
+ *
+ * Each attempt is wrapped in an AbortController + timer so a hung
+ * connection (e.g. when MariaDB is locked up by another tenant) cannot
+ * keep the request open indefinitely. Without this, fetch() inherits
+ * Undici's default headersTimeout and the helper's loop eventually
+ * stacks under load.
+ *
+ * @param {string} token
+ * @param {string} status
+ * @param {string} message
+ * @param {number} pingMs
+ * @returns {Promise<void>}
+ */
 async function sendPush(token, status, message, pingMs) {
     const url = `${KUMA_PUSH_BASE_URL}/${encodeURIComponent(token)}?status=${encodeURIComponent(status)}&msg=${encodeURIComponent(message)}&ping=${encodeURIComponent(String(pingMs))}`;
 
     let lastError = null;
     for (let attempt = 1; attempt <= PUSH_RETRIES; attempt++) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(new Error(`timeout after ${FETCH_TIMEOUT_MS} ms`)), FETCH_TIMEOUT_MS);
+
         try {
-            const response = await fetch(url, { method: "GET" });
+            const response = await fetch(url, { method: "GET", signal: controller.signal });
             if (response.ok) {
                 return;
             }
@@ -102,6 +145,8 @@ async function sendPush(token, status, message, pingMs) {
             lastError = new Error(`Push failed (${response.status})${detail}`);
         } catch (error) {
             lastError = error instanceof Error ? error : new Error(String(error));
+        } finally {
+            clearTimeout(timer);
         }
 
         if (attempt < PUSH_RETRIES) {
@@ -112,27 +157,105 @@ async function sendPush(token, status, message, pingMs) {
     throw lastError || new Error("Push failed");
 }
 
+/**
+ * Run async work over a list with at most `limit` tasks in flight at once.
+ * The original helper awaited each fetch sequentially, which made one
+ * sync pass over 33 monitors take ~165 s under DB load and cause the
+ * outer setInterval to stack overlapping loops. With a small worker
+ * pool the same 33 pushes finish in roughly max(per_call) * (N / limit).
+ *
+ * @template T
+ * @param {T[]} items
+ * @param {number} limit
+ * @param {(item: T) => Promise<void>} worker
+ * @returns {Promise<void>}
+ */
+async function runWithConcurrency(items, limit, worker) {
+    let cursor = 0;
+    const runners = [];
+    const safeLimit = Math.max(1, Math.min(limit, items.length));
+
+    for (let i = 0; i < safeLimit; i++) {
+        runners.push((async () => {
+            while (true) {
+                const idx = cursor++;
+                if (idx >= items.length) {
+                    return;
+                }
+                await worker(items[idx]);
+            }
+        })());
+    }
+
+    await Promise.all(runners);
+}
+
+let syncRunning = false;
+let consecutiveFailureLogs = 0;
+
 async function syncOnce() {
-    const pm2States = getPm2StateMap();
-    const monitors = getPm2PushMonitors();
+    if (syncRunning) {
+        // Skip rather than stack: if MariaDB or Kuma are slow, queueing
+        // another full pass on top of a still-running one only deepens
+        // the contention. Lost pushes are recovered on the next tick.
+        process.stderr.write("[pm2-kuma-push-sync] previous sync still running, skipping this tick\n");
+        return;
+    }
+    syncRunning = true;
 
-    for (const monitor of monitors) {
-        const state = pm2States.get(monitor.appName) || "missing";
-        const isUp = state === "online";
-        const status = isUp ? "up" : "down";
-        const message = isUp ? `PM2 ${monitor.appName} online` : `PM2 ${monitor.appName} ${state}`;
-        const ping = isUp ? 50 : 0;
+    const startedAt = Date.now();
+    let okCount = 0;
+    let failCount = 0;
+    const errorSummary = new Map(); // appName -> last error description
 
-        try {
-            await sendPush(monitor.token, status, message, ping);
-        } catch (error) {
-            const messageText = error instanceof Error ? error.message : String(error);
-            process.stderr.write(`[pm2-kuma-push-sync] ${monitor.appName}: ${messageText}\n`);
+    try {
+        const pm2States = getPm2StateMap();
+        const monitors = getPm2PushMonitors();
+
+        await runWithConcurrency(monitors, PUSH_CONCURRENCY, async (monitor) => {
+            const state = pm2States.get(monitor.appName) || "missing";
+            const isUp = state === "online";
+            const status = isUp ? "up" : "down";
+            const message = isUp ? `PM2 ${monitor.appName} online` : `PM2 ${monitor.appName} ${state}`;
+            const ping = isUp ? 50 : 0;
+
+            try {
+                await sendPush(monitor.token, status, message, ping);
+                okCount += 1;
+            } catch (error) {
+                failCount += 1;
+                errorSummary.set(monitor.appName, describeFetchError(error));
+            }
+        });
+
+        const elapsed = Date.now() - startedAt;
+        if (failCount === 0) {
+            consecutiveFailureLogs = 0;
+            process.stdout.write(`[pm2-kuma-push-sync] ok ${okCount}/${monitors.length} in ${elapsed} ms\n`);
+        } else {
+            // Avoid log spam: when Kuma's /api/push is slow because of
+            // unrelated MariaDB contention, every monitor will fail
+            // every loop. After 3 consecutive failing loops, summarise
+            // instead of dumping every monitor name on every minute.
+            consecutiveFailureLogs += 1;
+            if (consecutiveFailureLogs <= 3) {
+                process.stderr.write(`[pm2-kuma-push-sync] ${okCount} ok, ${failCount} fail in ${elapsed} ms\n`);
+                for (const [name, detail] of errorSummary) {
+                    process.stderr.write(`[pm2-kuma-push-sync]   ${name}: ${detail}\n`);
+                }
+            } else if (consecutiveFailureLogs % 10 === 0) {
+                const sample = errorSummary.entries().next().value;
+                const sampleStr = sample ? `${sample[0]}: ${sample[1]}` : "n/a";
+                process.stderr.write(`[pm2-kuma-push-sync] still failing for ${consecutiveFailureLogs} loops, ${failCount}/${monitors.length} this tick. Sample: ${sampleStr}\n`);
+            }
         }
+    } finally {
+        syncRunning = false;
     }
 }
 
 async function main() {
+    process.stdout.write(`[pm2-kuma-push-sync] starting (loop=${LOOP_INTERVAL_MS}ms concurrency=${PUSH_CONCURRENCY} fetch_timeout=${FETCH_TIMEOUT_MS}ms)\n`);
     await syncOnce();
     setInterval(() => {
         syncOnce().catch((error) => {
