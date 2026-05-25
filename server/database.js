@@ -170,7 +170,9 @@ class Database {
     static getDevDataDir() {
         if (isDev) {
             const gitBranch = this.getCurrentGitBranch();
-            if (gitBranch !== "" && gitBranch !== "master") {
+
+            // HEAD means detached head. Don't handle this case, becasuse it is not common.
+            if (gitBranch !== "" && gitBranch !== "master" && gitBranch !== "HEAD") {
                 log.info("server", `Using development data directory for branch ${gitBranch}`);
                 return path.join("./data/dev-data/", gitBranch, "/");
             } else {
