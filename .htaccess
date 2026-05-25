@@ -4,17 +4,29 @@ RewriteEngine On
 RewriteCond %{HTTPS} !=on
 RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
 
-# Preserve ACME challenge access
+# Preserve ACME challenge access (Let's Encrypt)
 RewriteRule ^\.well-known/ - [L]
 
-# Proxy all app traffic to Uptime Kuma local port
-RewriteCond %{REQUEST_URI} !^/\.well-known/
-RewriteRule ^(.*)$ http://127.0.0.1:3011/$1 [P,L]
+# Note: there is intentionally NO [P] proxy rewrite here. This site is
+# served by LiteSpeed (CyberPanel) and the vhost config at
+# /usr/local/lsws/conf/vhosts/status.newstargeted.com/vhost.conf
+# already proxies everything to 127.0.0.1:3011 via:
+#   - context / { type proxy; handler status_uptime_kuma }
+#   - websocket /socket.io/ { address 127.0.0.1:3011 }
+# An [P] rewrite here would conflict with LiteSpeed's proxy handling
+# and could break Socket.IO WebSocket upgrades.
+
+# Tell upstream (Kuma) that the client used HTTPS, so generated URLs
+# (like RSS feed self-link) come out as https:// not http://.
+<IfModule mod_headers.c>
+    RequestHeader set X-Forwarded-Proto "https" env=HTTPS
+</IfModule>
 
 # Basic security headers
 <IfModule mod_headers.c>
     Header always set X-Content-Type-Options "nosniff"
-    # Allow embedding on main site /status (CSP frame-ancestors; omit X-Frame-Options SAMEORIGIN)
+    # Allow embedding on main site /status (CSP frame-ancestors;
+    # omit X-Frame-Options SAMEORIGIN so the embed works).
     Header always unset X-Frame-Options
     Header always set Content-Security-Policy "frame-ancestors 'self' https://newstargeted.com https://www.newstargeted.com"
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
