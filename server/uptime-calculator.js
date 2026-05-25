@@ -31,10 +31,9 @@ const { R } = require("redbean-node");
  * UPDATE on next `R.store` instead of re-INSERTing.
  *
  * Compatible with SQLite (`SQLITE_CONSTRAINT`) and MariaDB (`ER_DUP_ENTRY`).
- *
- * @param {string} table Table name ("stat_minutely", "stat_hourly", "stat_daily")
- * @param {import("redbean-node").Bean} bean Bean with monitor_id + timestamp + aggregate fields set
- * @returns {Promise<import("redbean-node").Bean>} Persisted bean
+ * @param {string} table Table name ("stat_minutely", "stat_hourly", or "stat_daily").
+ * @param {import("redbean-node").Bean} bean Bean with monitor_id, timestamp, and aggregate fields set.
+ * @returns {Promise<import("redbean-node").Bean>} The persisted bean (with `id` populated).
  */
 async function safeStoreStatBean(table, bean) {
     try {

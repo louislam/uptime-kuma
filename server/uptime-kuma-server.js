@@ -539,8 +539,9 @@ class UptimeKumaServer {
 
     /**
      * Reload dist/index.html when the build output changes (after npm run build).
-     * @param {boolean} [force=false] Read even when mtime is unchanged
+     * @param {boolean} force When true, re-read regardless of mtime (default false).
      * @returns {void}
+     * @throws {Error} If the file cannot be read and no shell is cached yet.
      */
     reloadIndexHTMLIfChanged(force = false) {
         try {

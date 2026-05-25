@@ -1872,11 +1872,10 @@ async function afterLogin(socket, user) {
  * bad monitor cannot cancel the rest of the batch.
  *
  * Callers should *not* await this; it is fire-and-forget by design.
- *
- * @param {Socket} socket Connected socket for the logged-in user
- * @param {object} monitorList Map of monitorID -> monitor (from sendMonitorList)
- * @param {number} userID ID of the user (for sendStats fan-out)
- * @returns {Promise<void>}
+ * @param {Socket} socket Connected socket for the logged-in user.
+ * @param {object} monitorList Map of monitorID to monitor (from sendMonitorList).
+ * @param {number} userID ID of the user (for sendStats fan-out).
+ * @returns {Promise<void>} Resolves once every chunk has finished pushing.
  */
 async function sendPerMonitorDataInBackground(socket, monitorList, userID) {
     const CHUNK_SIZE = 10;
@@ -2032,8 +2031,7 @@ async function startMonitors() {
  *
  * Runs in chunks of 5 so we don't saturate the DB pool while
  * `startMonitors` is still scheduling its initial heartbeats.
- *
- * @returns {Promise<void>}
+ * @returns {Promise<void>} Resolves once every chunk has primed its cache.
  */
 async function preWarmUptimeCalculators() {
     const list = await R.find("monitor", " active = 1 ");
