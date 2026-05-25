@@ -1756,12 +1756,26 @@ let needSetup = false;
     server.httpServer.listen(port, hostname, async () => {
         printServerUrls("server", port, hostname, config.isSSL);
 
+        // Pre-warm UptimeCalculator caches in parallel with startMonitors so
+        // the first admin login after a restart does not pay the cold-init
+        // cost (3 stat_* queries per monitor on first getUptimeCalculator
+        // call). Both code paths are idempotent and share the DB pool;
+        // pre-warm uses chunks of 5 to be polite while heartbeats schedule.
+        const preWarmPromise = preWarmUptimeCalculators().catch((e) => {
+            log.warn("server", `UptimeCalculator pre-warm failed: ${e?.message || e}`);
+        });
+
         await startMonitors();
 
         // Put this here. Start background jobs after the db and server is ready to prevent clear up during db migration.
         await initBackgroundJobs();
 
         checkVersion.startInterval();
+
+        // Don't await pre-warm on the boot path; let it finish in background
+        // if it has not already. We just keep a reference so the promise
+        // does not become an "unhandled rejection" candidate.
+        void preWarmPromise;
     });
 
     // Start cloudflared at the end if configured
@@ -1828,19 +1842,77 @@ async function afterLogin(socket, user) {
 
     await StatusPage.sendStatusPageList(io, socket);
 
-    const monitorPromises = [];
-    for (let monitorID in monitorList) {
-        monitorPromises.push(sendHeartbeatList(socket, monitorID));
-        monitorPromises.push(Monitor.sendStats(io, monitorID, user.id));
-    }
 
-    await Promise.all(monitorPromises);
+    // Per-monitor heartbeat lists and stats are heavy: 2 SQL queries per
+    // monitor (sendHeartbeatList) plus stats fan-out from sendStats. With
+    // 49 monitors that is ~150 queries. We *intentionally do not await*
+    // this work so the loginByToken / login callback resolves quickly
+    // and the page (e.g. /manage-status-page) renders right away.
+    //
+    // Events stream out as each chunk completes; the Vue client handlers
+    // (heartbeatList, importantHeartbeatList, avgPing, uptime, certInfo,
+    // domainInfo) populate `$root` reactively as data arrives, so the
+    // dashboard "fills in" rather than waiting for a single big payload.
+    sendPerMonitorDataInBackground(socket, monitorList, user.id).catch((e) => {
+        log.error("server", `afterLogin background fan-out failed: ${e?.message || e}`);
+    });
 
     // Set server timezone from client browser if not set
     // It should be run once only
     if (!(await Settings.get("initServerTimezone"))) {
         log.debug("server", "emit initServerTimezone");
         socket.emit("initServerTimezone");
+    }
+}
+
+/**
+ * Stream sendHeartbeatList + Monitor.sendStats for every monitor in
+ * `monitorList`, batched in chunks of `CHUNK_SIZE` to avoid hammering
+ * the DB pool. Errors per monitor are logged and swallowed so a single
+ * bad monitor cannot cancel the rest of the batch.
+ *
+ * Callers should *not* await this; it is fire-and-forget by design.
+ *
+ * @param {Socket} socket Connected socket for the logged-in user
+ * @param {object} monitorList Map of monitorID -> monitor (from sendMonitorList)
+ * @param {number} userID ID of the user (for sendStats fan-out)
+ * @returns {Promise<void>}
+ */
+async function sendPerMonitorDataInBackground(socket, monitorList, userID) {
+    const CHUNK_SIZE = 10;
+    const monitorIDs = Object.keys(monitorList);
+
+    if (monitorIDs.length === 0) {
+        return;
+    }
+
+    log.debug("server", `Streaming heartbeat+stats for ${monitorIDs.length} monitors in background (chunks of ${CHUNK_SIZE})`);
+
+    for (let i = 0; i < monitorIDs.length; i += CHUNK_SIZE) {
+        const chunk = monitorIDs.slice(i, i + CHUNK_SIZE);
+        const promises = [];
+
+        for (const monitorID of chunk) {
+            promises.push(
+                sendHeartbeatList(socket, monitorID).catch((e) =>
+                    log.error("server", `sendHeartbeatList(${monitorID}) failed: ${e?.message || e}`)
+                )
+            );
+            promises.push(
+                Monitor.sendStats(io, monitorID, userID).catch((e) =>
+                    log.error("server", `Monitor.sendStats(${monitorID}) failed: ${e?.message || e}`)
+                )
+            );
+        }
+
+        await Promise.all(promises);
+
+        // Bail early if the socket dropped while we were streaming
+        // (e.g. user closed the tab). No need to keep doing DB work.
+        if (socket.disconnected) {
+            log.debug("server", `Socket disconnected mid-stream; aborting after monitor chunk ${i / CHUNK_SIZE + 1}`);
+            return;
+        }
     }
 }
 
@@ -1949,6 +2021,47 @@ async function startMonitors() {
         // Give some delays, so all monitors won't make request at the same moment when just start the server.
         await sleep(getRandomInt(300, 1000));
     }
+}
+
+/**
+ * Pre-warm the in-memory UptimeCalculator cache for every active
+ * monitor. UptimeCalculator.init() runs 3 SELECTs per monitor against
+ * stat_minutely / stat_hourly / stat_daily; doing this lazily on first
+ * admin login adds ~150 cold queries to that login. Pre-warming at boot
+ * pushes that cost off the user-visible path.
+ *
+ * Runs in chunks of 5 so we don't saturate the DB pool while
+ * `startMonitors` is still scheduling its initial heartbeats.
+ *
+ * @returns {Promise<void>}
+ */
+async function preWarmUptimeCalculators() {
+    const list = await R.find("monitor", " active = 1 ");
+    if (list.length === 0) {
+        return;
+    }
+
+    const CHUNK_SIZE = 5;
+    log.info("server", `Pre-warming UptimeCalculator for ${list.length} active monitors`);
+
+    const startedAt = Date.now();
+    let warmed = 0;
+
+    for (let i = 0; i < list.length; i += CHUNK_SIZE) {
+        const chunk = list.slice(i, i + CHUNK_SIZE);
+        await Promise.all(
+            chunk.map(async (monitor) => {
+                try {
+                    await UptimeCalculator.getUptimeCalculator(monitor.id);
+                    warmed += 1;
+                } catch (e) {
+                    log.warn("server", `Pre-warm failed for monitor ${monitor.id}: ${e?.message || e}`);
+                }
+            })
+        );
+    }
+
+    log.info("server", `UptimeCalculator pre-warm done: ${warmed}/${list.length} in ${Date.now() - startedAt} ms`);
 }
 
 /**
