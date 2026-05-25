@@ -12,7 +12,7 @@ const dayjs = require("dayjs");
 const childProcessAsync = require("promisify-child-process");
 const path = require("path");
 const axios = require("axios");
-const { isSSL, sslKey, sslCert, sslKeyPassphrase } = require("./config");
+const { isSSL, sslKey, sslCert, sslKeyPassphrase, scriptDir } = require("./config");
 // DO NOT IMPORT HERE IF THE MODULES USED `UptimeKumaServer.getInstance()`, put at the bottom of this file instead.
 
 /**
@@ -76,6 +76,8 @@ class UptimeKumaServer {
      *
      */
     constructor() {
+        log.info("server", "Directory for script monitors is " + scriptDir);
+
         // Set axios default user-agent to Uptime-Kuma/version
         axios.defaults.headers.common["User-Agent"] = this.getUserAgent();
 
@@ -131,6 +133,7 @@ class UptimeKumaServer {
         UptimeKumaServer.monitorTypeList["system-service"] = new SystemServiceMonitorType();
         UptimeKumaServer.monitorTypeList["sqlserver"] = new MssqlMonitorType();
         UptimeKumaServer.monitorTypeList["mysql"] = new MysqlMonitorType();
+        UptimeKumaServer.monitorTypeList["script"] = new ScriptMonitorType(scriptDir);
         UptimeKumaServer.monitorTypeList["oracledb"] = new OracleDbMonitorType();
 
         // Allow all CORS origins (polling) in development
@@ -583,5 +586,6 @@ const { RedisMonitorType } = require("./monitor-types/redis");
 const { SystemServiceMonitorType } = require("./monitor-types/system-service");
 const { MssqlMonitorType } = require("./monitor-types/mssql");
 const { MysqlMonitorType } = require("./monitor-types/mysql");
+const { ScriptMonitorType } = require("./monitor-types/script");
 const { OracleDbMonitorType } = require("./monitor-types/oracledb");
 const Monitor = require("./model/monitor");
