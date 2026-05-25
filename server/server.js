@@ -840,6 +840,7 @@ let needSetup = false;
                 bean.headers = monitor.headers;
                 bean.basic_auth_user = monitor.basic_auth_user;
                 bean.basic_auth_pass = monitor.basic_auth_pass;
+                bean.bearer_token = monitor.bearer_token;
                 bean.timeout = monitor.timeout;
                 bean.oauth_client_id = monitor.oauth_client_id;
                 bean.oauth_client_secret = monitor.oauth_client_secret;
