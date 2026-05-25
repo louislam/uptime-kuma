@@ -19,6 +19,7 @@ const RadiusClient = require("./radius-client");
 const oidc = require("openid-client");
 const tls = require("tls");
 const { exists } = require("fs");
+const { networkInterfaces } = require("os");
 
 const {
     dictionaries: {
@@ -388,6 +389,32 @@ exports.getSettings = async function (type) {
 exports.setSettings = async function (type, data) {
     await Settings.setSettings(type, data);
 };
+
+// ssl-checker by @dyaa
+//https://github.com/dyaa/ssl-checker/blob/master/src/index.ts
+
+/**
+ * Get number of days between two dates
+ * @param {Date} validFrom Start date
+ * @param {Date} validTo End date
+ * @returns {number} Number of days
+ */
+const getDaysBetween = (validFrom, validTo) => Math.round(Math.abs(+validFrom - +validTo) / 8.64e7);
+
+/**
+ * Get days remaining from a time range
+ * @param {Date} validFrom Start date
+ * @param {Date} validTo End date
+ * @returns {number} Number of days remaining
+ */
+const getDaysRemaining = (validFrom, validTo) => {
+    const daysRemaining = getDaysBetween(validFrom, validTo);
+    if (new Date(validTo).getTime() < new Date().getTime()) {
+        return -daysRemaining;
+    }
+    return daysRemaining;
+};
+module.exports.getDaysRemaining = getDaysRemaining;
 
 /**
  * Fix certificate info for display
@@ -845,6 +872,81 @@ function fsExists(path) {
 module.exports.fsExists = fsExists;
 
 /**
+ * Encode user and password to Base64 encoding
+ * for HTTP "basic" auth, as per RFC-7617
+ * @param {string|null} user - The username (defaults to empty string if null/undefined)
+ * @param {string|null} pass - The password (defaults to empty string if null/undefined)
+ * @returns {string} Encoded Base64 string
+ */
+function encodeBase64(user, pass) {
+    return Buffer.from(`${user || ""}:${pass || ""}`).toString("base64");
+}
+module.exports.encodeBase64 = encodeBase64;
+
+/**
+ * checks certificate chain for expiring certificates
+ * @param {object} monitor - The monitor object
+ * @param {object} tlsInfoObject Information about certificate
+ * @returns {Promise<void>}
+ */
+async function checkCertExpiryNotifications(monitor, tlsInfoObject) {
+    if (!tlsInfoObject || !tlsInfoObject.certInfo || !tlsInfoObject.certInfo.daysRemaining) {
+        return;
+    }
+
+    let notificationList = await R.getAll(
+        "SELECT notification.* FROM notification, monitor_notification WHERE monitor_id = ? AND monitor_notification.notification_id = notification.id ",
+        [monitor.id]
+    );
+
+    if (!notificationList.length > 0) {
+        // fail fast. If no notification is set, all the following checks can be skipped.
+        log.debug("monitor", "No notification, no need to send cert notification");
+        return;
+    }
+
+    let notifyDays = await Settings.get("tlsExpiryNotifyDays");
+    if (notifyDays == null || !Array.isArray(notifyDays)) {
+        // Reset Default
+        await Settings.set("tlsExpiryNotifyDays", [7, 14, 21], "general");
+        notifyDays = [7, 14, 21];
+    }
+
+    for (const targetDays of notifyDays) {
+        let certInfo = tlsInfoObject.certInfo;
+        while (certInfo) {
+            let subjectCN = certInfo.subject["CN"];
+            if (monitor.rootCertificates.has(certInfo.fingerprint256)) {
+                log.debug(
+                    "monitor",
+                    `Known root cert: ${certInfo.certType} certificate "${subjectCN}" (${certInfo.daysRemaining} days valid) on ${targetDays} deadline.`
+                );
+                break;
+            } else if (certInfo.daysRemaining > targetDays) {
+                log.debug(
+                    "monitor",
+                    `No need to send cert notification for ${certInfo.certType} certificate "${subjectCN}" (${certInfo.daysRemaining} days valid) on ${targetDays} deadline.`
+                );
+            } else {
+                log.debug(
+                    "monitor",
+                    `call sendCertNotificationByTargetDays for ${targetDays} deadline on certificate ${subjectCN}.`
+                );
+                await monitor.sendCertNotificationByTargetDays(
+                    subjectCN,
+                    certInfo.certType,
+                    certInfo.daysRemaining,
+                    targetDays,
+                    notificationList
+                );
+            }
+            certInfo = certInfo.issuerCertificate;
+        }
+    }
+}
+module.exports.checkCertExpiryNotifications = checkCertExpiryNotifications;
+
+/**
  * By default, command-exists will throw a null error if the command does not exist, which is ugly. The function makes it better.
  * Read more: https://github.com/mathisonian/command-exists/issues/22
  * @param {string} command Command to check
@@ -859,3 +961,74 @@ async function commandExists(command) {
     }
 }
 module.exports.commandExists = commandExists;
+
+/**
+ * Log the server's listening URLs, similar to Vite's dev server output.
+ * When no hostname is specified (bound to all interfaces), it prints
+ * localhost plus every non-internal network address.
+ * @param {string} tag Log tag (e.g. "server", "setup-database")
+ * @param {number} port Port number
+ * @param {string} hostname Bound hostname, if any
+ * @param {boolean} isHTTPS Whether the server is using HTTPS
+ * @returns {void}
+ */
+module.exports.printServerUrls = (tag, port, hostname, isHTTPS = false) => {
+    try {
+        // If hostname is specified, just print that one.
+        if (hostname) {
+            log.info(tag, `Listening on: `, createURL(isHTTPS, hostname, port));
+            return;
+        }
+
+        // Since no hostname is specified, which means the server is bound to all interfaces, we need to print all possible URLs.
+        const nets = networkInterfaces();
+
+        log.info(tag, "Listening on:");
+        log.info(tag, `- `, createURL(isHTTPS, "localhost", port));
+
+        // Prepare a list of valid address
+        const addressList = [];
+        for (const iface of Object.values(nets)) {
+            for (const addr of iface) {
+                if (!addr.internal) {
+                    addressList.push(addr);
+                }
+            }
+        }
+
+        // Sort IPv4 addresses first
+        addressList.sort((a, b) => {
+            if (a.family === "IPv4" && b.family === "IPv6") {
+                return -1;
+            } else if (a.family === "IPv6" && b.family === "IPv4") {
+                return 1;
+            } else {
+                return a.address.localeCompare(b.address);
+            }
+        });
+
+        for (const address of addressList) {
+            if (!address.internal) {
+                const host = address.family === "IPv6" ? `[${address.address}]` : address.address;
+                log.info(tag, `- `, createURL(isHTTPS, host, port));
+            }
+        }
+    } catch (e) {
+        log.error(tag, "Error printing server URLs: " + e.message);
+    }
+};
+
+/**
+ * Construct a URL a bit more safely
+ * @param {boolean} isHTTPS Whether the URL should use HTTPS protocol
+ * @param {string} hostname The hostname to use in the URL
+ * @param {number} port The port
+ * @returns {string} The constructed URL as a string
+ */
+function createURL(isHTTPS, hostname, port = 80) {
+    const url = new URL((isHTTPS ? "https" : "http") + `://` + hostname);
+    url.port = String(port);
+
+    // Prefer origin if available, it doesn't contain the trailing slash
+    return url.origin || url.toString();
+}

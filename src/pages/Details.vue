@@ -35,6 +35,22 @@
                 </a>
                 <span v-if="monitor.type === 'port'">TCP Port {{ monitor.hostname }}:{{ monitor.port }}</span>
                 <span v-if="monitor.type === 'ping'">Ping: {{ monitor.hostname }}</span>
+                <span v-if="monitor.type === 'globalping'">
+                    <a v-if="monitor.subtype === 'http'" :href="monitor.url" target="_blank" rel="noopener noreferrer">
+                        {{ filterPassword(monitor.url) }}
+                    </a>
+                    <span v-if="monitor.hostname">{{ monitor.hostname }}</span>
+                    <br />
+                    <span>{{ $t("Location") }}:</span>
+                    <span class="keyword">{{ monitor.location }}</span>
+                    <br />
+                    <span v-if="monitor.subtype === 'dns'">
+                        [{{ monitor.dns_resolve_type }}]
+                        <br />
+                        <span>{{ $t("Last Result") }}:</span>
+                        <span class="keyword">{{ monitor.dns_last_result }}</span>
+                    </span>
+                </span>
                 <span v-if="monitor.type === 'keyword'">
                     <br />
                     <span>{{ $t("Keyword") }}:</span>
@@ -70,6 +86,13 @@
                     MQTT: {{ monitor.hostname }}:{{ monitor.port }}/{{ monitor.mqttTopic }}
                 </span>
                 <span v-if="monitor.type === 'mysql'">{{ filterPassword(monitor.databaseConnectionString) }}</span>
+                <span v-if="monitor.type === 'oracledb'">
+                    {{
+                        $t("oracledbConnectionString", {
+                            connectionString: filterPassword(monitor.databaseConnectionString),
+                        })
+                    }}
+                </span>
                 <span v-if="monitor.type === 'postgres'">{{ filterPassword(monitor.databaseConnectionString) }}</span>
                 <span v-if="monitor.type === 'push'">
                     Push:

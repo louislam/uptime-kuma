@@ -1,5 +1,8 @@
 # Security Policy
 
+> [!CAUTION]
+> Unfortunately, AI slop reports keep wasting my time. It will be closed and you will get banned immediately if you try to do that.
+
 ## Reporting a Vulnerability
 
 1. Please report security issues to
@@ -11,6 +14,7 @@
 - Do not report any upstream dependency issues / scan result by any tools. It will be closed immediately without explanations. Unless you have PoC to prove that the upstream issue affected Uptime Kuma.
 - Do not use the public issue tracker or discuss it in public as it will cause
   more damage.
+- Do not report any SSRF issues.
 
 ## Do you accept other 3rd-party bug bounty platforms?
 

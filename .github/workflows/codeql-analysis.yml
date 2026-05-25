@@ -10,6 +10,8 @@ on:
 
 jobs:
   analyze:
+    # Only run scheduled analysis on the original repository, not on forks
+    if: github.event_name != 'schedule' || github.repository == 'louislam/uptime-kuma'
     name: Analyze
     runs-on: ubuntu-latest
     timeout-minutes: 360
@@ -42,6 +44,8 @@ jobs:
         with:
           category: "/language:${{matrix.language}}"
   zizmor:
+    # Only run scheduled analysis on the original repository, not on forks
+    if: github.event_name != 'schedule' || github.repository == 'louislam/uptime-kuma'
     runs-on: ubuntu-latest
     permissions:
       security-events: write

@@ -209,9 +209,12 @@ export default {
         },
 
         monitorListStyle() {
-            let listHeaderHeight = 107;
+            // The header height has to be changed in case it is modified in the future.
+            // +10px is the margin-bottom of the header
+            let listHeaderHeight = 58 + 10;
 
-            if (this.selectMode) {
+            // Only add extra height when selection row is visible
+            if (this.selectMode && this.selectedMonitorCount > 0) {
                 listHeaderHeight += 42;
             }
 
@@ -287,6 +290,9 @@ export default {
                     this.sortedMonitorList.forEach((item) => {
                         this.selectedMonitors[item.id] = true;
                     });
+                } else {
+                    // Exit select mode when unchecking "select all"
+                    this.selectMode = false;
                 }
             } else {
                 this.disableSelectAllWatcher = false;
@@ -733,11 +739,6 @@ export default {
     }
 }
 
-.actions-row {
-    display: flex;
-    align-items: center;
-}
-
 .selection-controls {
     margin-top: 5px;
     display: flex;
@@ -816,21 +817,12 @@ export default {
     transition: none !important;
 }
 
-.monitor-item {
-    width: 100%;
-}
-
 .tags {
     margin-top: 4px;
     padding-left: 67px;
     display: flex;
     flex-wrap: wrap;
     gap: 0;
-}
-
-.bottom-style {
-    padding-left: 67px;
-    margin-top: 5px;
 }
 
 @media (max-width: 549px), (min-width: 770px) and (max-width: 1149px), (min-width: 1200px) and (max-width: 1499px) {

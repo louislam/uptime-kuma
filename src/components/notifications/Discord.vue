@@ -1,11 +1,10 @@
 <template>
     <div class="mb-3">
         <label for="discord-webhook-url" class="form-label">{{ $t("Discord Webhook URL") }}</label>
-        <input
+        <HiddenInput
             id="discord-webhook-url"
             v-model="$parent.notification.discordWebhookUrl"
             type="text"
-            class="form-control"
             required
             autocomplete="false"
         />
@@ -36,6 +35,28 @@
             autocomplete="false"
             :placeholder="$t('Hello @everyone is...')"
         />
+    </div>
+
+    <div class="mb-3">
+        <label for="discord-message-format" class="form-label">{{ $t("discordMessageFormat") }}</label>
+        <select id="discord-message-format" v-model="$parent.notification.discordMessageFormat" class="form-select">
+            <option value="normal">{{ $t("discordMessageFormatNormal") }}</option>
+            <option value="minimalist">{{ $t("discordMessageFormatMinimalist") }}</option>
+            <option value="custom">{{ $t("discordMessageFormatCustom") }}</option>
+        </select>
+    </div>
+
+    <div v-show="$parent.notification.discordMessageFormat === 'custom'">
+        <div class="mb-3">
+            <label for="discord-message-template" class="form-label">{{ $t("discordMessageTemplate") }}</label>
+            <TemplatedTextarea
+                id="discord-message-template"
+                v-model="$parent.notification.discordMessageTemplate"
+                :required="false"
+                placeholder=""
+            ></TemplatedTextarea>
+            <div class="form-text">{{ $t("discordUseMessageTemplateDescription") }}</div>
+        </div>
     </div>
 
     <div class="mb-3">
@@ -122,7 +143,14 @@
     </div>
 </template>
 <script>
+import HiddenInput from "../HiddenInput.vue";
+import TemplatedTextarea from "../TemplatedTextarea.vue";
+
 export default {
+    components: {
+        TemplatedTextarea,
+        HiddenInput,
+    },
     mounted() {
         if (!this.$parent.notification.discordChannelType) {
             this.$parent.notification.discordChannelType = "channel";
@@ -132,6 +160,13 @@ export default {
         }
         if (this.$parent.notification.discordSuppressNotifications === undefined) {
             this.$parent.notification.discordSuppressNotifications = false;
+        }
+        // Message format: default "normal"; migrate from old checkbox
+        if (typeof this.$parent.notification.discordMessageFormat === "undefined") {
+            const hadCustom =
+                this.$parent.notification.discordUseMessageTemplate === true ||
+                !!this.$parent.notification.discordMessageTemplate?.trim();
+            this.$parent.notification.discordMessageFormat = hadCustom ? "custom" : "normal";
         }
     },
 };

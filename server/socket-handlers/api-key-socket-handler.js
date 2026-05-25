@@ -59,7 +59,7 @@ module.exports.apiKeySocketHandler = (socket) => {
                 ok: true,
             });
         } catch (e) {
-            console.error(e);
+            log.error("apikeys", e);
             callback({
                 ok: false,
                 msg: e.message,

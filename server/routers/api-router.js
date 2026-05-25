@@ -1,6 +1,5 @@
 let express = require("express");
 const {
-    setting,
     allowDevAllOrigin,
     allowAllOrigin,
     percentageToColor,
@@ -18,6 +17,7 @@ const { makeBadge } = require("badge-maker");
 const { Prometheus } = require("../prometheus");
 const Database = require("../database");
 const { UptimeCalculator } = require("../uptime-calculator");
+const { Settings } = require("../settings");
 
 let router = express.Router();
 
@@ -30,7 +30,7 @@ router.get("/api/entry-page", async (request, response) => {
 
     let result = {};
     let hostname = request.hostname;
-    if ((await setting("trustProxy")) && request.headers["x-forwarded-host"]) {
+    if ((await Settings.get("trustProxy")) && request.headers["x-forwarded-host"]) {
         hostname = request.headers["x-forwarded-host"];
     }
 
@@ -51,6 +51,10 @@ router.all("/api/push/:pushToken", async (request, response) => {
         let ping = parseFloat(request.query.ping) || null;
         let statusString = request.query.status || "up";
         const statusFromParam = statusString === "up" ? UP : DOWN;
+
+        // Check if status=down was explicitly provided (not defaulting to "up")
+        // When explicitly pushing down, bypass retry logic and go directly to DOWN
+        const isExplicitDown = request.query.status === "down";
 
         // Validate ping value - max 100 billion ms (~3.17 years)
         // Fits safely in both BIGINT and FLOAT(20,2)
@@ -85,7 +89,14 @@ router.all("/api/push/:pushToken", async (request, response) => {
             msg = "Monitor under maintenance";
             bean.status = MAINTENANCE;
         } else {
-            determineStatus(statusFromParam, previousHeartbeat, monitor.maxretries, monitor.isUpsideDown(), bean);
+            determineStatus(
+                statusFromParam,
+                previousHeartbeat,
+                monitor.maxretries,
+                monitor.isUpsideDown(),
+                bean,
+                isExplicitDown
+            );
         }
 
         // Calculate uptime
@@ -129,7 +140,7 @@ router.all("/api/push/:pushToken", async (request, response) => {
         Monitor.sendStats(io, monitor.id, monitor.user_id);
 
         try {
-            new Prometheus(monitor, []).update(bean, undefined);
+            new Prometheus(monitor, await monitor.getTags()).update(bean, undefined);
         } catch (e) {
             log.error("prometheus", "Please submit an issue to our GitHub repo. Prometheus update error: ", e.message);
         }
@@ -168,17 +179,7 @@ router.get("/api/badge/:id/status", cache("5 minutes"), async (request, response
             throw new Error("Invalid monitor ID");
         }
         const overrideValue = value !== undefined ? parseInt(value) : undefined;
-
-        let publicMonitor = await R.getRow(
-            `
-                SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
-                WHERE monitor_group.group_id = \`group\`.id
-                AND monitor_group.monitor_id = ?
-                AND public = 1
-            `,
-            [requestedMonitorId]
-        );
-
+        const publicMonitor = await isMonitorPublic(requestedMonitorId);
         const badgeValues = { style };
 
         if (!publicMonitor) {
@@ -256,16 +257,7 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
             requestedDuration = `${requestedDuration}h`;
         }
 
-        let publicMonitor = await R.getRow(
-            `
-                SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
-                WHERE monitor_group.group_id = \`group\`.id
-                AND monitor_group.monitor_id = ?
-                AND public = 1
-            `,
-            [requestedMonitorId]
-        );
-
+        const publicMonitor = await isMonitorPublic(requestedMonitorId);
         const badgeValues = { style };
 
         if (!publicMonitor) {
@@ -331,19 +323,20 @@ router.get("/api/badge/:id/ping/:duration?", cache("5 minutes"), async (request,
         }
 
         // Check if monitor is public
+        const publicMonitor = await isMonitorPublic(requestedMonitorId);
 
         const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(requestedMonitorId);
-        const publicAvgPing = uptimeCalculator.getDataByDuration(requestedDuration).avgPing;
+        const avgPing = uptimeCalculator.getDataByDuration(requestedDuration).avgPing;
 
         const badgeValues = { style };
 
-        if (!publicAvgPing) {
+        if (!publicMonitor) {
             // return a "N/A" badge in naColor (grey), if monitor is not public / not available / non exsitant
 
             badgeValues.message = "N/A";
             badgeValues.color = badgeConstants.naColor;
         } else {
-            const avgPing = parseInt(overrideValue ?? publicAvgPing);
+            const avgPingValue = parseInt(overrideValue ?? avgPing);
 
             badgeValues.color = color;
             // use a given, custom labelColor or use the default badge label color (defined by badge-maker)
@@ -353,7 +346,7 @@ router.get("/api/badge/:id/ping/:duration?", cache("5 minutes"), async (request,
                 labelPrefix,
                 label ?? `Avg. Ping (${requestedDuration.slice(0, -1)}${labelSuffix})`,
             ]);
-            badgeValues.message = filterAndJoin([prefix, avgPing, suffix]);
+            badgeValues.message = filterAndJoin([prefix, avgPingValue, suffix]);
         }
 
         // build the SVG based on given values
@@ -467,17 +460,7 @@ router.get("/api/badge/:id/cert-exp", cache("5 minutes"), async (request, respon
         }
 
         const overrideValue = value && parseFloat(value);
-
-        let publicMonitor = await R.getRow(
-            `
-            SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
-            WHERE monitor_group.group_id = \`group\`.id
-            AND monitor_group.monitor_id = ?
-            AND public = 1
-            `,
-            [requestedMonitorId]
-        );
-
+        const publicMonitor = await isMonitorPublic(requestedMonitorId);
         const badgeValues = { style };
 
         if (!publicMonitor) {
@@ -554,17 +537,7 @@ router.get("/api/badge/:id/response", cache("5 minutes"), async (request, respon
         }
 
         const overrideValue = value && parseFloat(value);
-
-        let publicMonitor = await R.getRow(
-            `
-            SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
-            WHERE monitor_group.group_id = \`group\`.id
-            AND monitor_group.monitor_id = ?
-            AND public = 1
-            `,
-            [requestedMonitorId]
-        );
-
+        const publicMonitor = await isMonitorPublic(requestedMonitorId);
         const badgeValues = { style };
 
         if (!publicMonitor) {
@@ -609,11 +582,19 @@ router.get("/api/badge/:id/response", cache("5 minutes"), async (request, respon
  * @param {number} maxretries - The maximum number of retries allowed.
  * @param {boolean} isUpsideDown - Indicates if the monitor is upside down.
  * @param {object} bean - The new heartbeat object.
+ * @param {boolean} isExplicitDown - If status=down was explicitly pushed, bypass retries.
  * @returns {void}
  */
-function determineStatus(status, previousHeartbeat, maxretries, isUpsideDown, bean) {
+function determineStatus(status, previousHeartbeat, maxretries, isUpsideDown, bean, isExplicitDown) {
     if (isUpsideDown) {
         status = flipStatus(status);
+    }
+
+    // If status=down was explicitly pushed, bypass retry logic and go directly to DOWN
+    if (isExplicitDown && status === DOWN) {
+        bean.retries = 0;
+        bean.status = DOWN;
+        return;
     }
 
     if (previousHeartbeat) {
@@ -654,6 +635,24 @@ function determineStatus(status, previousHeartbeat, maxretries, isUpsideDown, be
             bean.status = status;
         }
     }
+}
+
+/**
+ * Check whether a monitor is publc
+ * @param {number} monitorID - Monitor id
+ * @returns {Promise<boolean>} true if the monitor is public, otherwise false
+ */
+async function isMonitorPublic(monitorID) {
+    let publicMonitor = await R.getRow(
+        `
+            SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
+            WHERE monitor_group.group_id = \`group\`.id
+            AND monitor_group.monitor_id = ?
+            AND public = 1
+        `,
+        [monitorID]
+    );
+    return !!publicMonitor;
 }
 
 module.exports = router;
