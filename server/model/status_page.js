@@ -98,9 +98,9 @@ class StatusPage extends BeanModel {
         incidents.forEach((incident) => {
             let lastUpdatedDate = incident.lastUpdatedDate || incident.createdDate;
             feed.addItem({
-                title: `${incident.title}`,
-                description: `${incident.content}`,
-                id: `${incident.id}-${lastUpdatedDate}`,
+                title: incident.title,
+                description: incident.content,
+                id: `i${incident.id}-${lastUpdatedDate}`,
                 link: feedUrl,
                 date: dayjs.utc(lastUpdatedDate).toDate(),
             });
