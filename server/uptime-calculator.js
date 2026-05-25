@@ -5,6 +5,79 @@ const { log } = require("../src/util");
 const { R } = require("redbean-node");
 
 /**
+ * Race-safe `R.store(bean)` for stat_daily / stat_hourly / stat_minutely.
+ *
+ * The natural pattern in `update()` is:
+ *   bean = R.findOne(...)
+ *   if (!bean) { bean = R.dispense(...); bean.monitor_id=...; bean.timestamp=...; }
+ *   bean.up=...; bean.down=...; ...
+ *   R.store(bean)
+ *
+ * That is a textbook check-then-act race. When two parallel `update()` calls
+ * land for the same monitor in the same minute (e.g. PM2 push monitors get
+ * hit by both the external push HTTP endpoint and Kuma's internal scheduler)
+ * both find no existing row, both dispense fresh beans, and both INSERT.
+ * One wins, the other dies with:
+ *   Duplicate entry 'X-NNNNNNNN' for key 'stat_minutely_monitor_id_timestamp_unique'
+ *
+ * This helper catches the duplicate, fetches the now-existing row, copies
+ * the caller's aggregate values onto it, and stores. Aggregate values are
+ * cumulative (read from `minutelyUptimeDataList` which already includes
+ * both heartbeats by the time the second `update()` resolves), so
+ * overwriting is correct: it keeps the up-to-date aggregate.
+ *
+ * Returns the bean that is actually persisted (with `id` set), so the caller
+ * can refresh its `lastMinutelyStatBean` / etc. cache to a bean that will
+ * UPDATE on next `R.store` instead of re-INSERTing.
+ *
+ * Compatible with SQLite (`SQLITE_CONSTRAINT`) and MariaDB (`ER_DUP_ENTRY`).
+ *
+ * @param {string} table Table name ("stat_minutely", "stat_hourly", "stat_daily")
+ * @param {import("redbean-node").Bean} bean Bean with monitor_id + timestamp + aggregate fields set
+ * @returns {Promise<import("redbean-node").Bean>} Persisted bean
+ */
+async function safeStoreStatBean(table, bean) {
+    try {
+        await R.store(bean);
+        return bean;
+    } catch (e) {
+        const msg = String((e && (e.code || e.errno || e.message)) || "");
+        const isDup = e?.code === "ER_DUP_ENTRY"
+            || /Duplicate entry/i.test(msg)
+            || /SQLITE_CONSTRAINT/i.test(msg)
+            || /UNIQUE constraint failed/i.test(msg);
+
+        if (!isDup) {
+            throw e;
+        }
+
+        // Race: another async path inserted (monitor_id, timestamp) between
+        // our findOne and our store. Re-fetch and re-apply our values.
+        const existing = await R.findOne(table, " monitor_id = ? AND timestamp = ?", [
+            bean.monitor_id,
+            bean.timestamp,
+        ]);
+
+        if (!existing) {
+            // Should be unreachable: duplicate without an existing row.
+            throw e;
+        }
+
+        existing.up = bean.up;
+        existing.down = bean.down;
+        existing.ping = bean.ping;
+        existing.pingMin = bean.pingMin;
+        existing.pingMax = bean.pingMax;
+        if (bean.extras !== undefined) {
+            existing.extras = bean.extras;
+        }
+
+        await R.store(existing);
+        return existing;
+    }
+}
+
+/**
  * Calculates the uptime of a monitor.
  */
 class UptimeCalculator {
@@ -312,7 +385,7 @@ class UptimeCalculator {
                 dailyStatBean.extras = JSON.stringify(extras);
             }
         }
-        await R.store(dailyStatBean);
+        this.lastDailyStatBean = await safeStoreStatBean("stat_daily", dailyStatBean);
 
         let currentDate = this.getCurrentDate();
 
@@ -332,7 +405,7 @@ class UptimeCalculator {
                     hourlyStatBean.extras = JSON.stringify(extras);
                 }
             }
-            await R.store(hourlyStatBean);
+            this.lastHourlyStatBean = await safeStoreStatBean("stat_hourly", hourlyStatBean);
         }
 
         // For migration mode, we don't need to store old hourly and minutely data, but we need 24-hour's minutely data
@@ -351,7 +424,7 @@ class UptimeCalculator {
                     minutelyStatBean.extras = JSON.stringify(extras);
                 }
             }
-            await R.store(minutelyStatBean);
+            this.lastMinutelyStatBean = await safeStoreStatBean("stat_minutely", minutelyStatBean);
         }
 
         // No need to remove old data in migration mode

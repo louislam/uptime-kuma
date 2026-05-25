@@ -410,8 +410,13 @@ class Database {
         }
 
         // Set to utf8mb4 for MariaDB
+        // NOTE: must spread the existing pool config (min/max/idleTimeoutMillis
+        // from mariadbPoolConfig); a plain reassignment here clobbers
+        // UPTIME_KUMA_DB_POOL_MAX_CONNECTIONS and pins knex to the default
+        // max of 10, which throttles afterLogin to ~60 s on busy installs.
         if (dbConfig.type.endsWith("mariadb")) {
             config.pool = {
+                ...config.pool,
                 afterCreate(conn, done) {
                     conn.query("SET CHARACTER SET utf8mb4;", (err) => done(err, conn));
                 },
