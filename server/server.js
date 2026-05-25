@@ -654,7 +654,9 @@ let needSetup = false;
                     );
                 }
 
-                await auth.api.signUpEmail({
+                // TODO: httpOnly cookie cannot be created via Websocket or frontend js
+                // So probably need to change to http endpoint for any auth operations
+                const data = await auth.api.signUpEmail({
                     body: {
                         name: username,
                         email: `${username}@noreply.uptime-kuma.internal`,
