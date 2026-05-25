@@ -165,6 +165,7 @@ class Database {
      * Development + non-master branch + no custom only
      * To avoid database migration issue during different pull request testing.
      * Path: ./data/dev-data/<git branch name>/
+     * @returns {string|null} The dev data dir, null if not in dev mode or in master branch
      */
     static getDevDataDir() {
         if (isDev) {
