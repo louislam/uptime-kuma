@@ -8,6 +8,12 @@ permissions: {}
 
 jobs:
   autofix:
+    # The autofix-ci/action step posts diffs back through the autofix.ci GitHub
+    # App, which is only installed on the upstream repo. On forks (this one
+    # included) the action exits with failure for every push because there is
+    # no app to receive the diff. Gating by repository keeps upstream behavior
+    # intact while making the run a clean skip on forks.
+    if: github.repository == 'louislam/uptime-kuma'
     runs-on: ubuntu-latest
     permissions:
       contents: read
