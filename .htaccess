@@ -1,0 +1,23 @@
+RewriteEngine On
+
+# Enforce HTTPS
+RewriteCond %{HTTPS} !=on
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+# Preserve ACME challenge access
+RewriteRule ^\.well-known/ - [L]
+
+# Proxy all app traffic to Uptime Kuma local port
+RewriteCond %{REQUEST_URI} !^/\.well-known/
+RewriteRule ^(.*)$ http://127.0.0.1:3011/$1 [P,L]
+
+# Basic security headers
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    # Allow embedding on main site /status (CSP frame-ancestors; omit X-Frame-Options SAMEORIGIN)
+    Header always unset X-Frame-Options
+    Header always set Content-Security-Policy "frame-ancestors 'self' https://newstargeted.com https://www.newstargeted.com"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+    Header always set X-XSS-Protection "1; mode=block"
+</IfModule>
