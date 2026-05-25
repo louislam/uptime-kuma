@@ -2,11 +2,12 @@ let express = require("express");
 const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const StatusPage = require("../model/status_page");
-const { allowDevAllOrigin, sendHttpError } = require("../util-server");
+const { allowDevAllOrigin, allowStatusEmbedOrigin, sendHttpError } = require("../util-server");
 const { R } = require("redbean-node");
 const { badgeConstants } = require("../../src/util");
 const { makeBadge } = require("badge-maker");
 const { UptimeCalculator } = require("../uptime-calculator");
+const { fetchWebhookPipelineMetrics } = require("../modules/webhook-pipeline-metrics");
 
 let router = express.Router();
 
@@ -35,8 +36,24 @@ router.get("/status-page", cache("5 minutes"), async (request, response) => {
     await StatusPage.handleStatusPageResponse(response, server.indexHTML, slug);
 });
 
+// Webhook proxy Recv-Q + RabbitMQ queue (NewsTargeted status page panel)
+// Must be registered before /api/status-page/:slug so "webhook-pipeline" is not treated as a slug.
+router.get("/api/status-page/webhook-pipeline", async (request, response) => {
+    allowStatusEmbedOrigin(request, response);
+    allowDevAllOrigin(response);
+
+    try {
+        response.setHeader("Cache-Control", "public, max-age=3, stale-while-revalidate=10");
+        const metrics = await fetchWebhookPipelineMetrics();
+        response.json(metrics);
+    } catch (error) {
+        sendHttpError(response, error.message || "Failed to load webhook pipeline metrics");
+    }
+});
+
 // Status page config, incident, monitor list
 router.get("/api/status-page/:slug", cache("5 minutes"), async (request, response) => {
+    allowStatusEmbedOrigin(request, response);
     allowDevAllOrigin(response);
     let slug = request.params.slug;
     slug = slug.toLowerCase();
@@ -62,6 +79,7 @@ router.get("/api/status-page/:slug", cache("5 minutes"), async (request, respons
 // Status Page Polling Data
 // Can fetch only if published
 router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (request, response) => {
+    allowStatusEmbedOrigin(request, response);
     allowDevAllOrigin(response);
 
     try {

@@ -618,6 +618,23 @@ exports.allowDevAllOrigin = (res) => {
 };
 
 /**
+ * CORS for public status-page API when embedded on the main site.
+ * @param {import("express").Request} req
+ * @param {import("express").Response} res
+ * @returns {void}
+ */
+exports.allowStatusEmbedOrigin = (req, res) => {
+    const origin = req.headers.origin || "";
+    const allowed = ["https://newstargeted.com", "https://www.newstargeted.com"];
+    if (allowed.includes(origin)) {
+        res.header("Access-Control-Allow-Origin", origin);
+        res.header("Access-Control-Allow-Methods", "GET, OPTIONS");
+        res.header("Access-Control-Allow-Headers", "Origin, Accept");
+        res.header("Vary", "Origin");
+    }
+};
+
+/**
  * Allow CORS all origins
  * @param {object} res Response object from axios
  * @returns {void}

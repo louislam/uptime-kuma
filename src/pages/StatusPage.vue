@@ -409,6 +409,8 @@
                 </template>
             </div>
 
+            <WebhookPipelineMetrics :slug="slug" />
+
             <!-- Maintenance -->
             <template v-if="maintenanceList.length > 0">
                 <div
@@ -618,6 +620,7 @@ import { marked } from "marked";
 import DOMPurify from "dompurify";
 import Confirm from "../components/Confirm.vue";
 import PublicGroupList from "../components/PublicGroupList.vue";
+import WebhookPipelineMetrics from "../components/WebhookPipelineMetrics.vue";
 import MaintenanceTime from "../components/MaintenanceTime.vue";
 import IncidentHistory from "../components/IncidentHistory.vue";
 import IncidentManageModal from "../components/IncidentManageModal.vue";
@@ -649,6 +652,7 @@ const favicon = new Favico({
 export default {
     components: {
         PublicGroupList,
+        WebhookPipelineMetrics,
         ImageCropUpload,
         Confirm,
         PrismEditor,
