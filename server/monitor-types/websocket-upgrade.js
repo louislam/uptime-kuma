@@ -81,6 +81,10 @@ class WebSocketMonitorType extends MonitorType {
                 ).toString("base64");
                 options.headers.Authorization = `Basic ${credentials}`;
             }
+        } else if (monitor.authMethod === "bearer") {
+            if (monitor.bearer_token) {
+                options.headers.Authorization = `Bearer ${monitor.bearer_token}`;
+            }
         } else if (monitor.authMethod === "oauth2-cc") {
             if (new Date((monitor.oauthAccessToken?.expires_at || 0) * 1000) <= new Date()) {
                 monitor.oauthAccessToken = await getOidcTokenClientCredentials(
