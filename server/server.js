@@ -648,16 +648,20 @@ let needSetup = false;
                     throw new TranslatableError("passwordTooWeak");
                 }
 
-                if ((await R.knex("user").count("id as count").first()).count !== 0) {
+                if ((await R.knex("better_auth_user").count("id as count").first()).count !== 0) {
                     throw new Error(
                         "Uptime Kuma has been initialized. If you want to run setup again, please delete the database."
                     );
                 }
 
-                let user = R.dispense("user");
-                user.username = username;
-                user.password = await passwordHash.generate(password);
-                await R.store(user);
+                await auth.api.signUpEmail({
+                    body: {
+                        name: username,
+                        email: `${username}@noreply.uptime-kuma.internal`,
+                        password,
+                        username,
+                    },
+                });
 
                 needSetup = false;
 
@@ -1809,6 +1813,12 @@ async function initDatabase(testMode = false) {
 
     // Patch the database
     await Database.patch(port, hostname);
+
+    // If there is no record in user table, it is a new Uptime Kuma instance, need to setup
+    if ((await R.knex("better_auth_user").count("id as count").first()).count === 0) {
+        log.info("server", "No user, need setup");
+        needSetup = true;
+    }
 }
 
 /**

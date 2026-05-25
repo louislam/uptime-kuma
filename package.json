@@ -71,7 +71,7 @@
         "axios": "~0.31.0",
         "badge-maker": "~3.3.1",
         "bcryptjs": "~2.4.3",
-        "better-auth": "~1.4.17",
+        "better-auth": "~1.6.11",
         "chardet": "~1.4.0",
         "check-password-strength": "~2.0.10",
         "cheerio": "~1.0.0",
@@ -147,9 +147,9 @@
         "tough-cookie": "~4.1.4",
         "validator": "~13.15.26",
         "web-push": "~3.6.7",
-        "tsx": "~4.20.6",
+        "tsx": "~4.22.3",
         "ws": "~8.19.0",
-        "zod": "~4.1.12"
+        "zod": "~4.4.3"
     },
     "devDependencies": {
         "@actions/github": "~6.0.1",
@@ -205,7 +205,7 @@
         "terser": "~5.15.1",
         "test": "~3.3.0",
         "testcontainers": "^11.12.0",
-        "typescript": "~4.4.4",
+        "typescript": "~6.0.3",
         "v-pagination-3": "~0.1.7",
         "vite": "~5.4.21",
         "vite-plugin-compression": "^0.5.1",

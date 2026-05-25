@@ -123,6 +123,9 @@ class Database {
 
     static noReject = true;
 
+    /**
+     * @type {Record<string, string>}
+     */
     static dbConfig = {};
 
     static knexMigrationsPath = "./db/knex_migrations";
@@ -220,7 +223,7 @@ class Database {
 
     /**
      * @typedef {string|undefined} envString
-     * @param {{type: "sqlite"} | {type:envString, hostname:envString, port:envString, database:envString, username:envString, password:envString, socketPath:envString}} dbConfig the database configuration that should be written
+     * @param {Record<string, string>} dbConfig the database configuration that should be written
      * @returns {void}
      */
     static writeDBConfig(dbConfig) {

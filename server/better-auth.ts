@@ -4,6 +4,7 @@ import * as Database from "./database.js";
 import { genSecret, log } from "../src/util";
 import { R } from "redbean-node";
 import { KyselyKnexDialect, MySQL2ColdDialect, SQLite3ColdDialect } from "kysely-knex";
+import { username } from "better-auth/plugins";
 
 // Check if Database.initDataDir() has been called before using this function
 if (!Database.dataDir) {
@@ -29,9 +30,8 @@ export const auth = betterAuth({
     trustedOrigins: ["*"],
     emailAndPassword: {
         enabled: true,
-        // disableSignUp: true,
     },
-
+    plugins: [username()],
     user: {
         modelName: "better_auth_user",
     },
@@ -74,24 +74,8 @@ export function getSession(cookie: string) {
         headers: new Headers(),
     };
     context.headers.set("cookie", cookie || "");
-    return auth.api.getSession();
+    return auth.api.getSession(context);
 }
-
-/**
- * TODO
- */
-export async function createUser() {
-    await auth.api.signUpEmail({
-        body: {
-            email: "john@doe.com",
-            password: "password",
-            name: "John Doe",
-        },
-    });
-}
-
-// TODO
-createUser();
 
 /**
  * TODO
