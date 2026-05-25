@@ -71,7 +71,7 @@ describe("StatusPage", () => {
             ];
 
             mock.method(StatusPage, "getRSSPageData", async () => ({
-                incidents: mockIncidents;
+                incidents: mockIncidents,
                 heartbeats: mockHeartbeats,
                 statusDescription: "All Systems Operational",
             }));
