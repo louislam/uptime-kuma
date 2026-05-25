@@ -61,12 +61,25 @@ class StatusPage extends BeanModel {
             slug = "default";
         }
 
-        let statusPage = await R.findOne("status_page", " slug = ? ", [slug]);
+        try {
+            let statusPage = await R.findOne("status_page", " slug = ? ", [slug]);
+            const server = UptimeKumaServer.getInstance();
+            server.reloadIndexHTMLIfChanged();
+            server.setSpaShellCacheHeaders(response);
 
-        if (statusPage) {
-            response.send(await StatusPage.renderHTML(indexHTML, statusPage));
-        } else {
-            response.status(404).send(UptimeKumaServer.getInstance().indexHTML);
+            if (statusPage) {
+                response.type("html");
+                response.send(await StatusPage.renderHTML(server.indexHTML, statusPage));
+            } else {
+                response.status(404).type("html");
+                response.send(server.indexHTML);
+            }
+        } catch (error) {
+            const { log } = require("../../src/util");
+            log.error("status-page", `Failed to render status page "${slug}": ${error.message}`);
+            if (!response.headersSent) {
+                response.status(500).type("text/plain").send("Status page temporarily unavailable");
+            }
         }
     }
 

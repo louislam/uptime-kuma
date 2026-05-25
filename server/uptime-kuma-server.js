@@ -49,6 +49,12 @@ class UptimeKumaServer {
      */
     indexHTML = "";
 
+    /** @type {string} */
+    indexHTMLPath = path.join(__dirname, "../dist/index.html");
+
+    /** @type {number} */
+    indexHTMLMtimeMs = 0;
+
     /**
      * @type {{}}
      */
@@ -100,7 +106,7 @@ class UptimeKumaServer {
         }
 
         try {
-            this.indexHTML = fs.readFileSync("./dist/index.html").toString();
+            this.reloadIndexHTMLIfChanged(true);
         } catch (e) {
             // "dist/index.html" is not necessary for development
             if (process.env.NODE_ENV !== "development") {
@@ -527,6 +533,60 @@ class UptimeKumaServer {
                 await childProcessAsync.exec("sudo service nscd stop");
             } catch (e) {
                 log.info("services", "Failed to stop nscd");
+            }
+        }
+    }
+
+    /**
+     * Reload dist/index.html when the build output changes (after npm run build).
+     * @param {boolean} [force=false] Read even when mtime is unchanged
+     * @returns {void}
+     */
+    reloadIndexHTMLIfChanged(force = false) {
+        try {
+            const stat = fs.statSync(this.indexHTMLPath);
+            if (force || stat.mtimeMs !== this.indexHTMLMtimeMs) {
+                this.indexHTML = fs.readFileSync(this.indexHTMLPath).toString();
+                this.indexHTMLMtimeMs = stat.mtimeMs;
+                if (!force) {
+                    log.info("server", "Reloaded dist/index.html after build change");
+                }
+            }
+        } catch (error) {
+            if (this.indexHTML) {
+                log.warn("server", `Could not reload dist/index.html, using cached shell: ${error.message}`);
+                return;
+            }
+            throw error;
+        }
+    }
+
+    /**
+     * Prevent CDN/browser from caching the SPA shell (stale hashed /assets/ refs after deploy).
+     * @param {import("express").Response} response Express response
+     * @returns {void}
+     */
+    setSpaShellCacheHeaders(response) {
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        response.setHeader("Pragma", "no-cache");
+        response.setHeader("Expires", "0");
+    }
+
+    /**
+     * Send the Vue SPA index shell with no-store cache headers.
+     * @param {import("express").Response} response Express response
+     * @returns {void}
+     */
+    sendSpaShell(response) {
+        try {
+            this.reloadIndexHTMLIfChanged();
+            this.setSpaShellCacheHeaders(response);
+            response.type("html");
+            response.send(this.indexHTML || "");
+        } catch (error) {
+            log.error("server", `sendSpaShell failed: ${error.message}`);
+            if (!response.headersSent) {
+                response.status(500).type("text/plain").send("Application temporarily unavailable");
             }
         }
     }

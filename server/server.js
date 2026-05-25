@@ -198,6 +198,11 @@ app.use(express.json());
 app.use(function (req, res, next) {
     if (!disableFrameSameOrigin) {
         res.setHeader("X-Frame-Options", "SAMEORIGIN");
+    } else {
+        res.setHeader(
+            "Content-Security-Policy",
+            "frame-ancestors 'self' https://newstargeted.com https://www.newstargeted.com"
+        );
     }
     res.removeHeader("X-Powered-By");
     next();
@@ -359,11 +364,13 @@ let needSetup = false;
     app.use(statusPageRouter);
 
     // Universal Route Handler, must be at the end of all express routes.
-    app.get("*", async (_request, response) => {
-        if (_request.originalUrl.startsWith("/upload/")) {
+    app.get("*", async (request, response) => {
+        if (request.originalUrl.startsWith("/upload/")) {
             response.status(404).send("File not found.");
+        } else if (request.originalUrl.startsWith("/assets/")) {
+            response.status(404).type("text/plain").send("Asset not found.");
         } else {
-            response.send(server.indexHTML);
+            server.sendSpaShell(response);
         }
     });
 
