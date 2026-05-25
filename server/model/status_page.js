@@ -90,7 +90,7 @@ class StatusPage extends BeanModel {
      * @returns {Promise<string>} The rendered RSS XML
      */
     static async renderRSS(statusPage, feedUrl) {
-        const { heartbeats, statusDescription } = await StatusPage.getRSSPageData(statusPage);
+        const { incidents, heartbeats, statusDescription } = await StatusPage.getRSSPageData(statusPage);
 
         // Use custom RSS title if set, otherwise fall back to status page title
         let feedTitle = "Uptime Kuma RSS Feed";
@@ -106,6 +106,17 @@ class StatusPage extends BeanModel {
             link: feedUrl,
             language: "en", // optional, used only in RSS 2.0, possible values: http://www.w3.org/TR/REC-html40/struct/dirlang.html#langcodes
             updated: new Date(), // optional, default = today
+        });
+
+        incidents.forEach((incident) => {
+            let lastUpdatedDate = incident.lastUpdatedDate || incident.createdDate;
+            feed.addItem({
+                title: incident.title,
+                description: incident.content,
+                id: `i${incident.id}-${lastUpdatedDate}`,
+                link: feedUrl,
+                date: dayjs.utc(lastUpdatedDate).toDate(),
+            });
         });
 
         heartbeats.forEach((heartbeat) => {
@@ -277,18 +288,11 @@ class StatusPage extends BeanModel {
      * @returns {object} Status page data
      */
     static async getRSSPageData(statusPage) {
-        // get all heartbeats that correspond to this statusPage
-        const config = await statusPage.toPublicJSON();
-
-        // Public Group List
-        const showTags = !!statusPage.show_tags;
-
-        const list = await R.find("group", " public = 1 AND status_page_id = ? ORDER BY weight ", [statusPage.id]);
+        const { incidents, publicGroupList } = await StatusPage.getStatusPageData(statusPage);
 
         let heartbeats = [];
 
-        for (let groupBean of list) {
-            let monitorGroup = await groupBean.toPublicJSON(showTags, config?.showCertificateExpiry);
+        for (let monitorGroup of publicGroupList) {
             for (const monitor of monitorGroup.monitorList) {
                 const heartbeat = await R.findOne("heartbeat", "monitor_id = ? ORDER BY time DESC", [monitor.id]);
                 if (heartbeat) {
@@ -301,14 +305,15 @@ class StatusPage extends BeanModel {
             }
         }
 
+        // keep only DOWN heartbeats in the RSS feed
+        heartbeats = heartbeats.filter((heartbeat) => heartbeat.status === DOWN);
+
         // calculate RSS feed description
         let status = StatusPage.overallStatus(heartbeats);
         let statusDescription = StatusPage.getStatusDescription(status);
 
-        // keep only DOWN heartbeats in the RSS feed
-        heartbeats = heartbeats.filter((heartbeat) => heartbeat.status === DOWN);
-
         return {
+            incidents,
             heartbeats,
             statusDescription,
         };
@@ -325,7 +330,7 @@ class StatusPage extends BeanModel {
         // All active incidents
         let incidents = await R.find(
             "incident",
-            " pin = 1 AND active = 1 AND status_page_id = ? ORDER BY created_date DESC",
+            "pin = 1 AND active = 1 AND status_page_id = ? ORDER BY created_date DESC",
             [statusPage.id]
         );
         incidents = incidents.map((i) => i.toPublicJSON());
@@ -336,7 +341,7 @@ class StatusPage extends BeanModel {
         const publicGroupList = [];
         const showTags = !!statusPage.show_tags;
 
-        const list = await R.find("group", " public = 1 AND status_page_id = ? ORDER BY weight ", [statusPage.id]);
+        const list = await R.find("group", "public = 1 AND status_page_id = ? ORDER BY weight", [statusPage.id]);
 
         for (let groupBean of list) {
             let monitorGroup = await groupBean.toPublicJSON(showTags, config?.showCertificateExpiry);
