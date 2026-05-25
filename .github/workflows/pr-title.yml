@@ -21,6 +21,7 @@ permissions:
 
 jobs:
   pr-title:
+    if: github.repository == 'louislam/uptime-kuma'
     name: Validate PR title follows https://conventionalcommits.org
     runs-on: ubuntu-latest
     permissions:
