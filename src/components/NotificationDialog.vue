@@ -267,6 +267,7 @@ export default {
             // SMS Services - SMS and voice call providers
             let smsServices = {
                 clicksendsms: "ClickSend SMS",
+                egosms: "EgoSMS (Uganda)",
                 Elks: "46elks",
                 Cellsynt: "Cellsynt",
                 gtxmessaging: "GtxMessaging",
