@@ -165,7 +165,7 @@ class Database {
      * Development + non-master branch + no custom only
      * To avoid database migration issue during different pull request testing.
      * Path: ./data/dev-data/<git branch name>/
-     * @returns {string|null} The dev data dir, null if not in dev mode or in master branch
+     * @returns {string} The dev data dir, empty string if not in dev mode or in master branch
      */
     static getDevDataDir() {
         if (isDev) {
@@ -177,12 +177,12 @@ class Database {
                 log.debug("server", "Do not use development data directory because it is master branch");
             }
         }
-        return null;
+        return "";
     }
 
     /**
      * Get the current git branch name
-     * @returns {string} The current git branch name, or null if it cannot be determined
+     * @returns {string} The current git branch name, or empty string if it cannot be determined
      */
     static getCurrentGitBranch() {
         try {
