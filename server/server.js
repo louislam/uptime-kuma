@@ -361,6 +361,10 @@ let needSetup = false;
     const statusPageRouter = require("./routers/status-page-router");
     app.use(statusPageRouter);
 
+    // better auth API Router
+    const { betterAuthRouter } = await import("./routers/better-auth");
+    app.use(betterAuthRouter);
+
     // Universal Route Handler, must be at the end of all express routes.
     app.get("*", async (_request, response) => {
         if (_request.originalUrl.startsWith("/upload/")) {

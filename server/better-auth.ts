@@ -5,6 +5,7 @@ import { genSecret, log } from "../src/util";
 import { R } from "redbean-node";
 import { KyselyKnexDialect, MySQL2ColdDialect, SQLite3ColdDialect } from "kysely-knex";
 import { username } from "better-auth/plugins";
+import { createAuthMiddleware } from "better-auth/api";
 
 // Check if Database.initDataDir() has been called before using this function
 if (!Database.dataDir) {
@@ -30,6 +31,7 @@ export const auth = betterAuth({
     trustedOrigins: ["*"],
     emailAndPassword: {
         enabled: true,
+        disableSignUp: await isDisableSignUp(),
     },
     plugins: [username()],
     user: {
@@ -44,7 +46,33 @@ export const auth = betterAuth({
     verification: {
         modelName: "better_auth_verification",
     },
+    hooks: {
+        after: createAuthMiddleware(async (ctx) => {
+            if (ctx.path.startsWith("/sign-up")) {
+                const newSession = ctx.context.newSession;
+                if (newSession) {
+                    log.debug("better", "First user created: ", newSession.user.username);
+                    log.debug("better", "Disable sign up after first user created");
+                    disableSignUp();
+                }
+            }
+        }),
+    },
 });
+
+/**
+ *
+ */
+export async function isDisableSignUp() {
+    return (await R.knex("better_auth_user").count("id as count").first()).count === 0;
+}
+
+/**
+ *
+ */
+export function disableSignUp() {
+    auth.options.emailAndPassword.disableSignUp = true;
+}
 
 /**
  * Get the authentication secret for better-auth
