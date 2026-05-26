@@ -18,6 +18,7 @@ import NotFound from "./pages/NotFound.vue";
 import DockerHosts from "./components/settings/Docker.vue";
 import ManageMaintenance from "./pages/ManageMaintenance.vue";
 import SetupDatabase from "./pages/SetupDatabase.vue";
+const NotificationLogs = () => import("./pages/NotificationLogs.vue");
 
 // Settings - Sub Pages
 import Appearance from "./components/settings/Appearance.vue";
@@ -160,6 +161,10 @@ const routes = [
                     {
                         path: "/maintenance/clone/:id",
                         component: EditMaintenance,
+                    },
+                    {
+                        path: "/logs",
+                        component: NotificationLogs,
                     },
                 ],
             },

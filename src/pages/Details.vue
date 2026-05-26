@@ -766,8 +766,9 @@ export default {
                 } else {
                     this.$root.toastSuccess(body.result?.msg || "Check complete");
                 }
-                await this.$root.loadCloudflareWorkerData();
-                this.getImportantHeartbeatListLength();
+                void this.$root.loadCloudflareWorkerData({ refreshSidecars: false }).then(() => {
+                    this.getImportantHeartbeatListLength();
+                });
             } catch (error) {
                 this.$root.toastError(error.message);
             } finally {

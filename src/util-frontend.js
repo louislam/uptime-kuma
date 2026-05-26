@@ -2,6 +2,7 @@ import dayjs from "dayjs";
 import { getTimeZones } from "@vvo/tzdb";
 import { localeDirection, currentLocale } from "./i18n";
 import { POSITION } from "vue-toastification";
+import { recordToastNotification } from "./util/notification-log.mjs";
 
 /**
  * Returns the offset from UTC in hours for the current locale.
@@ -137,10 +138,11 @@ export function loadToastSettings() {
         containerClassName: "toast-container mb-5",
         showCloseButtonOnHover: true,
 
-        filterBeforeCreate: (toast, toasts) => {
+        filterBeforeCreate: (toast) => {
             if (toast.timeout === 0) {
                 return false;
             } else {
+                recordToastNotification(toast);
                 return toast;
             }
         },

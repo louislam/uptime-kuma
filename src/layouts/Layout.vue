@@ -94,6 +94,17 @@
                             </li>
 
                             <li>
+                                <router-link
+                                    to="/logs"
+                                    class="dropdown-item"
+                                    :class="{ active: $route.path.includes('logs') }"
+                                >
+                                    <font-awesome-icon icon="file" />
+                                    {{ $t("Logs") }}
+                                </router-link>
+                            </li>
+
+                            <li>
                                 <a
                                     href="https://github.com/louislam/uptime-kuma/wiki"
                                     class="dropdown-item"

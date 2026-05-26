@@ -444,7 +444,8 @@ export async function handleApiRequest(request, env) {
 
         if (route.name === "create-monitor") {
             const monitorID = await createMonitor(env, await request.json());
-            return json({ ok: true, msg: "Monitor saved", monitorID });
+            const monitor = await getSerializedMonitor(env, monitorID);
+            return json({ ok: true, msg: "Monitor saved", monitorID, monitor });
         }
 
         if (route.name === "import-monitors") {
@@ -460,15 +461,19 @@ export async function handleApiRequest(request, env) {
         }
 
         if (route.name === "update-monitor") {
-            await updateMonitor(env, Number(route.params.monitorId), await request.json());
-            return json({ ok: true, msg: "Monitor saved" });
+            const monitorId = Number(route.params.monitorId);
+            await updateMonitor(env, monitorId, await request.json());
+            const monitor = await getSerializedMonitor(env, monitorId);
+            return json({ ok: true, msg: "Monitor saved", monitor });
         }
 
         if (route.name === "set-monitor-active") {
+            const monitorId = Number(route.params.monitorId);
             const body = await request.json();
             const active = Boolean(body.active);
-            await setMonitorActive(env, Number(route.params.monitorId), active);
-            return json({ ok: true, active });
+            await setMonitorActive(env, monitorId, active);
+            const monitor = await getSerializedMonitor(env, monitorId);
+            return json({ ok: true, active, monitor });
         }
 
         if (route.name === "delete-monitor") {

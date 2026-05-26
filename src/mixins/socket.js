@@ -16,6 +16,8 @@ import { requestCloudflareJson } from "../cloudflare-worker-api.js";
 const toast = useToast();
 
 let socket;
+let cloudflareWorkerDataRefreshTimeout = null;
+let cloudflareWorkerDataRefreshOptions = null;
 
 const cloudflareWorkerHostnames = new Set([
     "uptimeworker.wgsglobal.workers.dev",
@@ -379,51 +381,62 @@ export default {
          * Load monitor state from the Cloudflare Worker REST API.
          * @returns {Promise<void>}
          */
-        async loadCloudflareWorkerData() {
+        async loadCloudflareWorkerData(options = {}) {
+            const {
+                refreshSidecars = true,
+                refreshHeartbeatHistories = true,
+            } = options;
+
             try {
-                const sidecarDataPromise = Promise.allSettled([
-                    requestCloudflareJson("/api/notifications"),
-                    requestCloudflareJson("/api/proxies"),
-                    requestCloudflareJson("/api/docker-hosts"),
-                    requestCloudflareJson("/api/remote-browsers"),
-                    fetchCloudflareStatusPages(),
-                ]);
+                const sidecarDataPromise = refreshSidecars
+                    ? Promise.allSettled([
+                        requestCloudflareJson("/api/notifications"),
+                        requestCloudflareJson("/api/proxies"),
+                        requestCloudflareJson("/api/docker-hosts"),
+                        requestCloudflareJson("/api/remote-browsers"),
+                        fetchCloudflareStatusPages(),
+                    ])
+                    : Promise.resolve([]);
 
                 const body = await requestCloudflareJson("/api/monitors");
                 const monitors = body.monitors || [];
                 this.applyCloudflareWorkerDashboardState(buildCloudflareWorkerMonitorState(monitors, this.heartbeatList));
                 this.persistCloudflareWorkerDashboardCache();
 
-                const [notificationBody, proxyBody, dockerHostBody, remoteBrowserBody, statusPageList] = await sidecarDataPromise;
-                if (notificationBody.status === "fulfilled") {
-                    this.notificationList = notificationBody.value.notifications || [];
-                } else {
-                    console.warn(`Failed to load Worker notifications: ${notificationBody.reason.message}`);
+                if (refreshSidecars) {
+                    const [notificationBody, proxyBody, dockerHostBody, remoteBrowserBody, statusPageList] = await sidecarDataPromise;
+                    if (notificationBody.status === "fulfilled") {
+                        this.notificationList = notificationBody.value.notifications || [];
+                    } else {
+                        console.warn(`Failed to load Worker notifications: ${notificationBody.reason.message}`);
+                    }
+                    if (proxyBody.status === "fulfilled") {
+                        this.proxyList = normalizeProxyList(proxyBody.value.proxies || []);
+                    } else {
+                        console.warn(`Failed to load Worker proxies: ${proxyBody.reason.message}`);
+                    }
+                    if (dockerHostBody.status === "fulfilled") {
+                        this.dockerHostList = dockerHostBody.value.dockerHosts || [];
+                    } else {
+                        console.warn(`Failed to load Worker Docker hosts: ${dockerHostBody.reason.message}`);
+                    }
+                    if (remoteBrowserBody.status === "fulfilled") {
+                        this.remoteBrowserList = remoteBrowserBody.value.remoteBrowsers || [];
+                    } else {
+                        console.warn(`Failed to load Worker remote browsers: ${remoteBrowserBody.reason.message}`);
+                    }
+                    if (statusPageList.status === "fulfilled") {
+                        this.statusPageList = statusPageList.value;
+                    } else {
+                        console.warn(`Failed to load Worker status pages: ${statusPageList.reason.message}`);
+                    }
+                    this.statusPageListLoaded = true;
+                    this.persistCloudflareWorkerDashboardCache();
                 }
-                if (proxyBody.status === "fulfilled") {
-                    this.proxyList = normalizeProxyList(proxyBody.value.proxies || []);
-                } else {
-                    console.warn(`Failed to load Worker proxies: ${proxyBody.reason.message}`);
-                }
-                if (dockerHostBody.status === "fulfilled") {
-                    this.dockerHostList = dockerHostBody.value.dockerHosts || [];
-                } else {
-                    console.warn(`Failed to load Worker Docker hosts: ${dockerHostBody.reason.message}`);
-                }
-                if (remoteBrowserBody.status === "fulfilled") {
-                    this.remoteBrowserList = remoteBrowserBody.value.remoteBrowsers || [];
-                } else {
-                    console.warn(`Failed to load Worker remote browsers: ${remoteBrowserBody.reason.message}`);
-                }
-                if (statusPageList.status === "fulfilled") {
-                    this.statusPageList = statusPageList.value;
-                } else {
-                    console.warn(`Failed to load Worker status pages: ${statusPageList.reason.message}`);
-                }
-                this.statusPageListLoaded = true;
-                this.persistCloudflareWorkerDashboardCache();
 
-                await this.refreshCloudflareWorkerHeartbeatHistories(monitors);
+                if (refreshHeartbeatHistories) {
+                    void this.refreshCloudflareWorkerHeartbeatHistories(monitors);
+                }
             } catch (error) {
                 console.error(`Failed to load Cloudflare Worker monitor data: ${error.message}`);
                 this.connectionErrorMsg = `Cannot load Cloudflare Worker monitor data. [${error.message}]`;
@@ -1285,8 +1298,9 @@ function createCloudflareSocketStub(app) {
                             publicGroupList,
                         }),
                     });
-                    await app.loadCloudflareWorkerData();
-                    callback?.(body);
+                    finishCloudflareWorkerMutation(app, callback, body, {
+                        refreshSidecars: true,
+                    });
                     return;
                 }
 
@@ -1308,8 +1322,9 @@ function createCloudflareSocketStub(app) {
                             body: JSON.stringify(dockerHost || {}),
                         }
                     );
-                    await app.loadCloudflareWorkerData();
-                    callback?.(body);
+                    finishCloudflareWorkerMutation(app, callback, body, {
+                        refreshSidecars: true,
+                    });
                     return;
                 }
 
@@ -1317,8 +1332,9 @@ function createCloudflareSocketStub(app) {
                     const body = await requestCloudflareJson(`/api/docker-hosts/${args[0]}`, {
                         method: "DELETE",
                     });
-                    await app.loadCloudflareWorkerData();
-                    callback?.(body);
+                    finishCloudflareWorkerMutation(app, callback, body, {
+                        refreshSidecars: true,
+                    });
                     return;
                 }
 
@@ -1340,8 +1356,9 @@ function createCloudflareSocketStub(app) {
                             body: JSON.stringify(remoteBrowser || {}),
                         }
                     );
-                    await app.loadCloudflareWorkerData();
-                    callback?.(body);
+                    finishCloudflareWorkerMutation(app, callback, body, {
+                        refreshSidecars: true,
+                    });
                     return;
                 }
 
@@ -1349,8 +1366,9 @@ function createCloudflareSocketStub(app) {
                     const body = await requestCloudflareJson(`/api/remote-browsers/${args[0]}`, {
                         method: "DELETE",
                     });
-                    await app.loadCloudflareWorkerData();
-                    callback?.(body);
+                    finishCloudflareWorkerMutation(app, callback, body, {
+                        refreshSidecars: true,
+                    });
                     return;
                 }
 
@@ -1372,8 +1390,9 @@ function createCloudflareSocketStub(app) {
                             body: JSON.stringify(notification || {}),
                         }
                     );
-                    await app.loadCloudflareWorkerData();
-                    callback?.(body);
+                    finishCloudflareWorkerMutation(app, callback, body, {
+                        refreshSidecars: true,
+                    });
                     return;
                 }
 
@@ -1381,8 +1400,9 @@ function createCloudflareSocketStub(app) {
                     const body = await requestCloudflareJson(`/api/notifications/${args[0]}`, {
                         method: "DELETE",
                     });
-                    await app.loadCloudflareWorkerData();
-                    callback?.(body);
+                    finishCloudflareWorkerMutation(app, callback, body, {
+                        refreshSidecars: true,
+                    });
                     return;
                 }
 
@@ -1392,8 +1412,9 @@ function createCloudflareSocketStub(app) {
                         method: proxyID ? "PUT" : "POST",
                         body: JSON.stringify(proxy || {}),
                     });
-                    await app.loadCloudflareWorkerData();
-                    callback?.(body);
+                    finishCloudflareWorkerMutation(app, callback, body, {
+                        refreshSidecars: true,
+                    });
                     return;
                 }
 
@@ -1401,8 +1422,9 @@ function createCloudflareSocketStub(app) {
                     const body = await requestCloudflareJson(`/api/proxies/${args[0]}`, {
                         method: "DELETE",
                     });
-                    await app.loadCloudflareWorkerData();
-                    callback?.(body);
+                    finishCloudflareWorkerMutation(app, callback, body, {
+                        refreshSidecars: true,
+                    });
                     return;
                 }
 
@@ -1427,8 +1449,7 @@ function createCloudflareSocketStub(app) {
                         method: "PUT",
                         body: JSON.stringify(tag),
                     });
-                    await app.loadCloudflareWorkerData();
-                    callback?.(body);
+                    finishCloudflareWorkerMutation(app, callback, body);
                     return;
                 }
 
@@ -1436,8 +1457,7 @@ function createCloudflareSocketStub(app) {
                     const body = await requestCloudflareJson(`/api/tags/${args[0]}`, {
                         method: "DELETE",
                     });
-                    await app.loadCloudflareWorkerData();
-                    callback?.(body);
+                    finishCloudflareWorkerMutation(app, callback, body);
                     return;
                 }
 
@@ -1447,8 +1467,7 @@ function createCloudflareSocketStub(app) {
                         method: "POST",
                         body: JSON.stringify({ tagId, value }),
                     });
-                    await app.loadCloudflareWorkerData();
-                    callback?.(body);
+                    finishCloudflareWorkerMutation(app, callback, body);
                     return;
                 }
 
@@ -1462,8 +1481,12 @@ function createCloudflareSocketStub(app) {
                         method: "POST",
                         body: JSON.stringify({ tagId, value }),
                     });
-                    await app.loadCloudflareWorkerData();
-                    callback?.({ ok: true, msg: "successEdited", msgi18n: true, ...body });
+                    finishCloudflareWorkerMutation(app, callback, {
+                        ok: true,
+                        msg: "successEdited",
+                        msgi18n: true,
+                        ...body,
+                    });
                     return;
                 }
 
@@ -1473,8 +1496,7 @@ function createCloudflareSocketStub(app) {
                         method: "DELETE",
                         body: JSON.stringify({ tagId, value }),
                     });
-                    await app.loadCloudflareWorkerData();
-                    callback?.(body);
+                    finishCloudflareWorkerMutation(app, callback, body);
                     return;
                 }
 
@@ -1489,8 +1511,9 @@ function createCloudflareSocketStub(app) {
                         method: "POST",
                         body: JSON.stringify(args[0] || {}),
                     });
-                    await app.loadCloudflareWorkerData();
-                    callback?.(body);
+                    finishCloudflareWorkerMutation(app, callback, body, {
+                        monitor: body.monitor,
+                    });
                     return;
                 }
 
@@ -1503,8 +1526,7 @@ function createCloudflareSocketStub(app) {
                             importHandle,
                         }),
                     });
-                    await app.loadCloudflareWorkerData();
-                    callback?.(body);
+                    finishCloudflareWorkerMutation(app, callback, body);
                     return;
                 }
 
@@ -1514,18 +1536,29 @@ function createCloudflareSocketStub(app) {
                         method: "PUT",
                         body: JSON.stringify(monitor),
                     });
-                    await app.loadCloudflareWorkerData();
-                    callback?.(body);
+                    finishCloudflareWorkerMutation(app, callback, body, {
+                        monitor: body.monitor || monitor,
+                    });
                     return;
                 }
 
                 if (event === "pauseMonitor" || event === "resumeMonitor") {
+                    const monitorID = Number(args[0]);
                     const body = await requestCloudflareJson(`/api/monitors/${args[0]}/active`, {
                         method: "PATCH",
                         body: JSON.stringify({ active: event === "resumeMonitor" }),
                     });
-                    await app.loadCloudflareWorkerData();
-                    callback?.({ ok: true, msg: event === "resumeMonitor" ? "Resumed" : "Paused", ...body });
+                    finishCloudflareWorkerMutation(app, callback, {
+                        ok: true,
+                        msg: event === "resumeMonitor" ? "Resumed" : "Paused",
+                        ...body,
+                    }, {
+                        monitor: body.monitor,
+                        monitorPatch: {
+                            id: monitorID,
+                            active: event === "resumeMonitor",
+                        },
+                    });
                     return;
                 }
 
@@ -1533,8 +1566,13 @@ function createCloudflareSocketStub(app) {
                     const body = await requestCloudflareJson(`/api/monitors/${args[0]}`, {
                         method: "DELETE",
                     });
-                    await app.loadCloudflareWorkerData();
-                    callback?.({ ok: true, msg: "Deleted", ...body });
+                    finishCloudflareWorkerMutation(app, callback, {
+                        ok: true,
+                        msg: "Deleted",
+                        ...body,
+                    }, {
+                        deleteMonitorID: args[0],
+                    });
                     return;
                 }
 
@@ -1554,11 +1592,16 @@ function createCloudflareSocketStub(app) {
                 }
 
                 if (event === "clearEvents" || event === "clearHeartbeats") {
+                    const monitorID = args[0];
                     await requestCloudflareJson(`/api/monitors/${args[0]}/heartbeats`, {
                         method: "DELETE",
                     });
-                    await app.loadCloudflareWorkerData();
-                    callback?.({ ok: true, msg: "Heartbeats cleared" });
+                    finishCloudflareWorkerMutation(app, callback, {
+                        ok: true,
+                        msg: "Heartbeats cleared",
+                    }, {
+                        clearMonitorHeartbeatsID: monitorID,
+                    });
                     return;
                 }
 
@@ -1566,8 +1609,9 @@ function createCloudflareSocketStub(app) {
                     const body = await requestCloudflareJson("/api/statistics", {
                         method: "DELETE",
                     });
-                    await app.loadCloudflareWorkerData();
-                    callback?.(body);
+                    finishCloudflareWorkerMutation(app, callback, body, {
+                        clearAllHeartbeats: true,
+                    });
                     return;
                 }
 
@@ -1603,6 +1647,162 @@ function createCloudflareSocketStub(app) {
             }
         },
     };
+}
+
+/**
+ * Finish a Worker UI mutation without blocking the visible action on a full reload.
+ * @param {object} app Vue root component instance.
+ * @param {Function|undefined} callback Socket-style callback.
+ * @param {object} body Response body to return to the caller.
+ * @param {object} options Local update and refresh options.
+ * @returns {void}
+ */
+function finishCloudflareWorkerMutation(app, callback, body, options = {}) {
+    if (options.monitor) {
+        applyCloudflareWorkerMonitor(app, options.monitor);
+    } else if (options.monitorPatch) {
+        patchCloudflareWorkerMonitor(app, options.monitorPatch);
+    }
+
+    if (options.deleteMonitorID != null) {
+        removeCloudflareWorkerMonitor(app, options.deleteMonitorID);
+    }
+    if (options.clearMonitorHeartbeatsID != null) {
+        clearCloudflareWorkerMonitorHeartbeats(app, options.clearMonitorHeartbeatsID);
+    }
+    if (options.clearAllHeartbeats) {
+        clearAllCloudflareWorkerHeartbeats(app);
+    }
+
+    callback?.(body);
+    scheduleCloudflareWorkerDataRefresh(app, {
+        refreshSidecars: options.refreshSidecars === true,
+        refreshHeartbeatHistories: options.refreshHeartbeatHistories === true,
+    });
+}
+
+/**
+ * Debounce Worker dashboard refreshes triggered after mutation acknowledgements.
+ * @param {object} app Vue root component instance.
+ * @param {object} options Refresh options for loadCloudflareWorkerData.
+ * @returns {void}
+ */
+function scheduleCloudflareWorkerDataRefresh(app, options = {}) {
+    cloudflareWorkerDataRefreshOptions = {
+        refreshSidecars: Boolean(cloudflareWorkerDataRefreshOptions?.refreshSidecars || options.refreshSidecars),
+        refreshHeartbeatHistories: Boolean(
+            cloudflareWorkerDataRefreshOptions?.refreshHeartbeatHistories || options.refreshHeartbeatHistories
+        ),
+    };
+
+    if (cloudflareWorkerDataRefreshTimeout != null) {
+        clearTimeout(cloudflareWorkerDataRefreshTimeout);
+    }
+
+    cloudflareWorkerDataRefreshTimeout = setTimeout(() => {
+        const refreshOptions = cloudflareWorkerDataRefreshOptions || {};
+        cloudflareWorkerDataRefreshTimeout = null;
+        cloudflareWorkerDataRefreshOptions = null;
+        void app.loadCloudflareWorkerData(refreshOptions);
+    }, 100);
+}
+
+/**
+ * Apply one serialized monitor to the local Worker dashboard state.
+ * @param {object} app Vue root component instance.
+ * @param {object} monitor Serialized monitor payload.
+ * @returns {void}
+ */
+function applyCloudflareWorkerMonitor(app, monitor) {
+    if (!monitor || monitor.id == null) {
+        return;
+    }
+
+    const state = buildCloudflareWorkerMonitorState([monitor], app.heartbeatList);
+    app.monitorList = {
+        ...app.monitorList,
+        ...state.monitorList,
+    };
+    app.heartbeatList = {
+        ...app.heartbeatList,
+        ...state.heartbeatList,
+    };
+    app.avgPingList = {
+        ...app.avgPingList,
+        ...state.avgPingList,
+    };
+    app.uptimeList = {
+        ...app.uptimeList,
+        ...state.uptimeList,
+    };
+    app.assignMonitorUrlParser(app.monitorList);
+    app.persistCloudflareWorkerDashboardCache();
+}
+
+/**
+ * Apply a small local patch when the API response does not contain a monitor.
+ * @param {object} app Vue root component instance.
+ * @param {object} patch Monitor fields to patch.
+ * @returns {void}
+ */
+function patchCloudflareWorkerMonitor(app, patch) {
+    if (!patch || patch.id == null || !app.monitorList?.[patch.id]) {
+        return;
+    }
+    applyCloudflareWorkerMonitor(app, {
+        ...app.monitorList[patch.id],
+        ...patch,
+    });
+}
+
+/**
+ * Remove one monitor from local Worker dashboard state.
+ * @param {object} app Vue root component instance.
+ * @param {number|string} monitorID Monitor ID to remove.
+ * @returns {void}
+ */
+function removeCloudflareWorkerMonitor(app, monitorID) {
+    const id = String(monitorID);
+    const monitorList = { ...app.monitorList };
+    delete monitorList[id];
+    app.monitorList = monitorList;
+    clearCloudflareWorkerMonitorHeartbeats(app, id);
+}
+
+/**
+ * Clear one monitor's cached heartbeat-derived state.
+ * @param {object} app Vue root component instance.
+ * @param {number|string} monitorID Monitor ID to clear.
+ * @returns {void}
+ */
+function clearCloudflareWorkerMonitorHeartbeats(app, monitorID) {
+    const id = String(monitorID);
+    const heartbeatList = { ...app.heartbeatList };
+    const avgPingList = { ...app.avgPingList };
+    const uptimeList = { ...app.uptimeList };
+    delete heartbeatList[id];
+    delete avgPingList[id];
+    for (const key of Object.keys(uptimeList)) {
+        if (key.startsWith(`${id}_`)) {
+            delete uptimeList[key];
+        }
+    }
+    app.heartbeatList = heartbeatList;
+    app.avgPingList = avgPingList;
+    app.uptimeList = uptimeList;
+    app.persistCloudflareWorkerDashboardCache();
+}
+
+/**
+ * Clear all locally cached Worker heartbeat-derived state.
+ * @param {object} app Vue root component instance.
+ * @returns {void}
+ */
+function clearAllCloudflareWorkerHeartbeats(app) {
+    app.heartbeatList = {};
+    app.avgPingList = {};
+    app.uptimeList = {};
+    app.persistCloudflareWorkerDashboardCache();
 }
 
 /**

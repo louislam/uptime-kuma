@@ -29,7 +29,7 @@ describe("Cloudflare Worker socket delete shim", () => {
         assert.match(deleteBlock, /method:\s*"DELETE"/, "deleteMonitor should still call the REST DELETE endpoint");
         assert.match(
             deleteBlock,
-            /callback\?\.\(\{\s*ok:\s*true,\s*msg:\s*"Deleted",\s*\.\.\.body\s*\}\)/,
+            /finishCloudflareWorkerMutation\(app, callback, \{\s*ok:\s*true,\s*msg:\s*"Deleted",\s*\.\.\.body,\s*\}/,
             "successful REST delete responses must be normalized to Socket.IO's ok:true response shape"
         );
     });
@@ -102,6 +102,31 @@ describe("Cloudflare Worker socket delete shim", () => {
         assert.match(
             source,
             /if \(event === "deleteMonitorTag"\) \{[\s\S]*?`\/api\/monitors\/\$\{monitorId\}\/tags`/
+        );
+    });
+
+    test("acknowledges Worker UI mutations before scheduling dashboard refreshes", () => {
+        const source = fs.readFileSync(
+            path.join(__dirname, "../../src/mixins/socket.js"),
+            "utf8"
+        );
+        const stubStart = source.indexOf("function createCloudflareSocketStub");
+        const stubEnd = source.indexOf("/**\n * Fetch heartbeat rows", stubStart);
+        const stubSource = source.slice(stubStart, stubEnd);
+        const editBlockMatch = stubSource.match(/if \(event === "editMonitor"\) \{[\s\S]*?return;\n\s+\}/);
+
+        assert.ok(editBlockMatch, "editMonitor handler should exist in the Worker socket shim");
+        assert.doesNotMatch(
+            stubSource,
+            /await app\.loadCloudflareWorkerData\(\)/,
+            "Worker UI action callbacks should not wait for a full dashboard reload"
+        );
+        assert.match(stubSource, /scheduleCloudflareWorkerDataRefresh\(app/);
+        assert.match(stubSource, /finishCloudflareWorkerMutation\(app, callback, body/);
+        assert.ok(
+            editBlockMatch[0].indexOf("finishCloudflareWorkerMutation(app, callback, body") <
+                editBlockMatch[0].indexOf("return;"),
+            "editMonitor should finish the user action before returning"
         );
     });
 

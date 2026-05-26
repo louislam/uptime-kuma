@@ -321,7 +321,7 @@ describe("Cloudflare Worker API", () => {
             "this.applyCloudflareWorkerDashboardState(buildCloudflareWorkerMonitorState(monitors, this.heartbeatList));"
         );
         const heartbeatRefreshIndex = socketMixinSource.indexOf(
-            "await this.refreshCloudflareWorkerHeartbeatHistories(monitors);"
+            "void this.refreshCloudflareWorkerHeartbeatHistories(monitors);"
         );
 
         assert.match(socketMixinSource, /CLOUDFLARE_DASHBOARD_CACHE_KEY/);
@@ -329,6 +329,7 @@ describe("Cloudflare Worker API", () => {
         assert.match(socketMixinSource, /this\.applyCloudflareWorkerDashboardCache\(\);\s+await this\.loadCloudflareWorkerData\(\);/);
         assert.match(socketMixinSource, /Promise\.allSettled\(\[/);
         assert.match(socketMixinSource, /writeCloudflareWorkerDashboardCache/);
+        assert.match(socketMixinSource, /refreshHeartbeatHistories = true/);
         assert.notStrictEqual(monitorApplyIndex, -1);
         assert.notStrictEqual(heartbeatRefreshIndex, -1);
         assert.ok(monitorApplyIndex < heartbeatRefreshIndex);
@@ -1792,6 +1793,9 @@ describe("Cloudflare Worker API", () => {
         assert.strictEqual(createResponse.status, 200);
         assert.strictEqual(createBody.ok, true);
         assert.strictEqual(createBody.monitorID, 1);
+        assert.strictEqual(createBody.monitor.id, 1);
+        assert.strictEqual(createBody.monitor.name, "Example HTTP");
+        assert.strictEqual(createBody.monitor.interval, 90);
 
         const readResponse = await handleApiRequest(adminRequest("https://example.com/api/monitors/1"), env);
         const readBody = await readResponse.json();
@@ -1813,7 +1817,12 @@ describe("Cloudflare Worker API", () => {
         );
 
         assert.strictEqual(updateResponse.status, 200);
-        assert.deepStrictEqual(await updateResponse.json(), { ok: true, msg: "Monitor saved" });
+        const updateBody = await updateResponse.json();
+        assert.strictEqual(updateBody.ok, true);
+        assert.strictEqual(updateBody.msg, "Monitor saved");
+        assert.strictEqual(updateBody.monitor.id, 1);
+        assert.strictEqual(updateBody.monitor.name, "Renamed HTTP");
+        assert.strictEqual(updateBody.monitor.method, "POST");
         assert.strictEqual(env.state.monitors[0].name, "Renamed HTTP");
         assert.strictEqual(env.state.monitors[0].method, "POST");
 
@@ -1825,7 +1834,11 @@ describe("Cloudflare Worker API", () => {
             env
         );
         assert.strictEqual(pauseResponse.status, 200);
-        assert.deepStrictEqual(await pauseResponse.json(), { ok: true, active: false });
+        const pauseBody = await pauseResponse.json();
+        assert.strictEqual(pauseBody.ok, true);
+        assert.strictEqual(pauseBody.active, false);
+        assert.strictEqual(pauseBody.monitor.id, 1);
+        assert.strictEqual(pauseBody.monitor.active, false);
         assert.strictEqual(env.state.monitors[0].active, 0);
 
         const deleteResponse = await handleApiRequest(

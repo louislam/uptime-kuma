@@ -28,7 +28,7 @@ describe("Status page group and monitor selection UI", () => {
         assert.match(source, /\/api\/status-page\/\$\{slug \|\| "default"\}/);
         assert.match(source, /method: "PUT"/);
         assert.match(source, /publicGroupList/);
-        assert.match(source, /await app\.loadCloudflareWorkerData\(\)/);
+        assert.match(source, /scheduleCloudflareWorkerDataRefresh\(app/);
     });
 
     test("public group rows pass monitor metadata to the heartbeat bar", () => {
