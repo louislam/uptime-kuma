@@ -227,7 +227,13 @@ export default {
          * @returns {void}
          */
         setPage(page) {
-            this.page = Math.min(Math.max(Number(page) || 1, 1), this.totalPages);
+            const parsedPage = Number(page);
+
+            if (!Number.isFinite(parsedPage)) {
+                return;
+            }
+
+            this.page = Math.min(Math.max(Math.trunc(parsedPage), 1), this.totalPages);
         },
 
         /**
@@ -300,19 +306,20 @@ export default {
 
 .log-list {
     display: grid;
-    gap: 10px;
+    gap: 6px;
 }
 
 .log-entry {
     display: grid;
-    grid-template-columns: minmax(92px, max-content) minmax(0, 1fr) max-content;
-    gap: 12px;
     align-items: start;
+    grid-template-columns: minmax(92px, max-content) minmax(0, 1fr) max-content;
+    column-gap: 12px;
     border: 1px solid #d8dee4;
     border-left-width: 4px;
-    border-radius: 8px;
-    padding: 12px;
+    border-radius: 6px;
+    padding: 7px 10px;
     background-color: #fff;
+    line-height: 1.3;
 
     .dark & {
         background-color: $dark-bg2;
@@ -341,7 +348,9 @@ export default {
 }
 
 .log-entry-type {
+    font-size: 12px;
     font-weight: 700;
+    line-height: 1.4;
     text-transform: uppercase;
 }
 
@@ -351,42 +360,45 @@ export default {
 
 .log-entry-message {
     overflow-wrap: anywhere;
-    white-space: pre-wrap;
+    white-space: pre-line;
 }
 
 .log-entry-source {
-    margin-top: 4px;
     color: $dark-font-color2;
-    font-size: 13px;
+    font-size: 12px;
 }
 
 .log-entry-time {
     color: $dark-font-color2;
-    font-size: 13px;
+    font-size: 12px;
     text-align: right;
+    white-space: nowrap;
 }
 
 .log-pagination {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
     align-items: center;
-    justify-content: space-between;
+    grid-template-columns: auto minmax(120px, 1fr) auto;
     gap: 12px;
-    margin-top: 16px;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid #d8dee4;
     color: $dark-font-color2;
     font-size: 13px;
-}
 
-.log-page-size,
-.log-page-controls {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
+    .dark & {
+        border-color: $dark-border-color;
+    }
 }
 
 .log-page-size {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
     select {
         width: auto;
+        min-width: 76px;
     }
 }
 
@@ -394,7 +406,29 @@ export default {
     text-align: center;
 }
 
-@media (max-width: 550px) {
+.log-page-controls {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 32px;
+        height: 32px;
+        padding: 4px 8px;
+    }
+
+    .btn.active {
+        border-color: $primary;
+        background-color: $primary;
+        color: #000;
+    }
+}
+
+@media (max-width: 700px) {
     .notification-logs {
         padding: 12px;
     }
@@ -408,8 +442,17 @@ export default {
     }
 
     .log-pagination {
+        grid-template-columns: 1fr;
         align-items: flex-start;
-        flex-direction: column;
+    }
+
+    .log-page-summary {
+        text-align: left;
+    }
+
+    .log-page-controls {
+        flex-wrap: wrap;
+        justify-content: flex-start;
     }
 }
 </style>
