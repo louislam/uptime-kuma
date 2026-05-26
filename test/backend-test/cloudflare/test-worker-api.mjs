@@ -3834,6 +3834,50 @@ describe("Cloudflare Worker API", () => {
         });
     });
 
+    test("check-now records Twingate service outages as pending", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            profiles: [
+                { id: "twingate", slug: "twingate", name: "Twingate", type: "twingate", enabled: 1 },
+            ],
+            monitors: [
+                {
+                    id: 7,
+                    name: "Private HTTP",
+                    type: "http",
+                    url: "http://private.example.test",
+                    hostname: null,
+                    port: null,
+                    timeout: 5,
+                    network_profile_id: "twingate",
+                    config_json: JSON.stringify({ maxretries: 0 }),
+                },
+            ],
+            runnerResult: {
+                status: 0,
+                ping: 0,
+                msg: "Twingate proxy is not ready",
+                response: null,
+            },
+        });
+
+        const response = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/7/check-now", { method: "POST" }),
+            env
+        );
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(body.result.status, 2);
+        assert.strictEqual(body.result.msg, "Twingate service isn't running");
+        assert.deepStrictEqual(env.state.heartbeats[0], {
+            monitor_id: 7,
+            status: 2,
+            ping: 0,
+            msg: "Twingate service isn't running",
+        });
+    });
+
     test("check-now records down after configured pending retries are exhausted", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({

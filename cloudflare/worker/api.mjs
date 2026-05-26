@@ -61,6 +61,7 @@ const NOTIFICATION_OK_MESSAGE = "Sent Successfully.";
 const DEFAULT_APP_VERSION = "1.0.0";
 const DEPLOY_MONITOR_PAUSE_MESSAGE = "Monitor checks are paused during Worker deployment";
 const MONITOR_PAUSED_MESSAGE = "Monitor is paused";
+const TWINGATE_SERVICE_NOT_RUNNING_MESSAGE = "Twingate service isn't running";
 const LATEST_HEARTBEAT_LOOKUP_CHUNK_SIZE = 100;
 
 const WORKER_MONITOR_TYPES = new Set([
@@ -2273,6 +2274,7 @@ export async function executeMonitorCheck(env, monitorId) {
         };
     }
     result = await retryPrivatePingThroughTwingate(env, monitor, job, result);
+    result = applyTwingateServiceStatus(networkProfile, result);
     result = await applyMonitorRetryStatus(env, monitor, result);
     await writeHeartbeat(env, monitorId, result);
     return result;
@@ -2376,6 +2378,30 @@ async function retryPrivatePingThroughTwingate(env, monitor, job, result = {}) {
     } catch (_) {
         return result;
     }
+}
+
+function applyTwingateServiceStatus(networkProfile, result = {}) {
+    if (!isTwingateNetworkProfile(networkProfile) || !isTwingateServiceUnavailableResult(result)) {
+        return result;
+    }
+
+    return {
+        ...result,
+        status: PENDING,
+        msg: TWINGATE_SERVICE_NOT_RUNNING_MESSAGE,
+    };
+}
+
+function isTwingateNetworkProfile(networkProfile) {
+    return networkProfile?.slug === "twingate" || networkProfile?.type === "twingate";
+}
+
+function isTwingateServiceUnavailableResult(result = {}) {
+    if (Number(result.status) !== DOWN) {
+        return false;
+    }
+    const message = String(result.msg || "");
+    return /Twingate (?:proxy|service) (?:is )?(?:not ready|not running|isn't running|starting)/i.test(message);
 }
 
 function withAccessSecretHeader(monitor, env) {

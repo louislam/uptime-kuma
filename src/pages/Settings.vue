@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="settings-page">
         <div v-if="$root.isMobile" class="shadow-box mb-3">
             <router-link to="/manage-status-page" class="nav-link">
                 <font-awesome-icon icon="stream" />
@@ -16,7 +16,7 @@
         </h1>
 
         <div class="shadow-box shadow-box-settings">
-            <div class="row">
+            <div class="row settings-layout">
                 <div v-if="showSubMenu" class="settings-menu col-lg-3 col-md-5">
                     <router-link v-for="(item, key) in subMenus" :key="key" :to="`/settings/${key}`">
                         <div class="menu-item">
@@ -275,6 +275,15 @@ export default {
     min-height: calc(100vh - 155px);
 }
 
+.settings-page {
+    max-width: 100%;
+    overflow-x: clip;
+}
+
+.settings-layout {
+    --bs-gutter-x: 0;
+}
+
 footer {
     color: $secondary-text;
     font-size: 13px;
@@ -284,6 +293,8 @@ footer {
 }
 
 .settings-menu {
+    min-width: 0;
+
     a {
         text-decoration: none !important;
     }
@@ -318,6 +329,8 @@ footer {
 }
 
 .settings-content {
+    min-width: 0;
+
     .settings-content-header {
         width: calc(100% + 20px);
         border-bottom: 1px solid #dee2e6;

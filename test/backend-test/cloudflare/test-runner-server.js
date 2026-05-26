@@ -17,7 +17,7 @@ describe("Cloudflare monitor runner server", () => {
         assert.strictEqual(isTwingateJob({ networkProfile: null }), false);
     });
 
-    test("returns starting message when Twingate proxy is still starting", () => {
+    test("returns pending notice when Twingate proxy is still starting", () => {
         const result = getTwingateNotReadyResult({
             configured: true,
             starting: true,
@@ -26,9 +26,9 @@ describe("Cloudflare monitor runner server", () => {
         });
 
         assert.deepStrictEqual(result, {
-            status: 0,
+            status: 2,
             ping: 0,
-            msg: "Twingate proxy is starting",
+            msg: "Twingate service isn't running",
             response: null,
         });
     });
@@ -41,10 +41,11 @@ describe("Cloudflare monitor runner server", () => {
             lastError: "failed to load key",
         });
 
-        assert.strictEqual(result.msg, "failed to load key");
+        assert.strictEqual(result.status, 2);
+        assert.strictEqual(result.msg, "Twingate service isn't running: failed to load key");
     });
 
-    test("returns generic not-ready message when Twingate is stopped without an error", () => {
+    test("returns generic pending notice when Twingate is stopped without an error", () => {
         const result = getTwingateNotReadyResult({
             configured: true,
             starting: false,
@@ -52,7 +53,8 @@ describe("Cloudflare monitor runner server", () => {
             lastError: null,
         });
 
-        assert.strictEqual(result.msg, "Twingate proxy is not ready");
+        assert.strictEqual(result.status, 2);
+        assert.strictEqual(result.msg, "Twingate service isn't running");
     });
 
     test("serves health and Twingate status before Twingate lifecycle starts", async () => {

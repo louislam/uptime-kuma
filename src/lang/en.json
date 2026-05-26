@@ -1580,5 +1580,16 @@
     "twingateLogCopied": "Copied",
     "twingateLogCopyFailed": "Failed",
     "twingateClearLog": "Clear",
+    "twingateLogStyleLabel": "Log view style",
+    "twingateLogStyleConsole": "Console",
+    "twingateLogStyleConsoleDescription": "Terminal-style rows with line numbers, severity, timestamp, and wrapped output.",
+    "twingateLogStyleTimeline": "Timeline",
+    "twingateLogStyleTimelineDescription": "Event timeline with severity dots and stacked log detail.",
+    "twingateLogStyleInspector": "Inspector",
+    "twingateLogStyleInspectorDescription": "Structured inspection rows with severity rails and full metadata columns.",
+    "twingateLogStyleCards": "Cards",
+    "twingateLogStyleCardsDescription": "Separated log cards for scanning individual startup events.",
+    "twingateLogStyleCompact": "Compact",
+    "twingateLogStyleCompactDescription": "Dense log rows for reviewing more startup output at once.",
     "refreshTwingateStatus": "Refresh"
 }

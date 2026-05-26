@@ -8,6 +8,8 @@ const { TwingateLifecycle } = require("./twingate-lifecycle");
 
 const port = Number(process.env.PORT || 8788);
 const DEFAULT_APP_VERSION = "1.0.0";
+const PENDING = 2;
+const TWINGATE_SERVICE_NOT_RUNNING_MESSAGE = "Twingate service isn't running";
 const twingateServiceKey = resolveTwingateServiceKey();
 const twingateLifecycle = new TwingateLifecycle({ serviceKey: twingateServiceKey });
 const twingateStatus = twingateLifecycle.status;
@@ -67,9 +69,11 @@ function isTwingateJob(job = {}) {
 
 function getTwingateNotReadyResult(status = {}) {
     return {
-        status: 0,
+        status: PENDING,
         ping: 0,
-        msg: status.lastError || (status.starting ? "Twingate proxy is starting" : "Twingate proxy is not ready"),
+        msg: status.lastError
+            ? `${TWINGATE_SERVICE_NOT_RUNNING_MESSAGE}: ${status.lastError}`
+            : TWINGATE_SERVICE_NOT_RUNNING_MESSAGE,
         response: null,
     };
 }
