@@ -7,7 +7,7 @@
         "url": "https://github.com/louislam/uptime-kuma.git"
     },
     "engines": {
-        "node": ">= 26.0.0"
+        "node": ">= 26.2.0"
     },
     "scripts": {
         "lint:js": "eslint --ext \".js,.vue\" --ignore-path .gitignore .",
@@ -83,7 +83,6 @@
         "croner": "~8.1.2",
         "dayjs": "~1.11.19",
         "dev-null": "~0.1.1",
-        "dotenv": "~16.0.3",
         "express": "~4.22.1",
         "express-basic-auth": "~1.2.1",
         "express-static-gzip": "~2.1.8",

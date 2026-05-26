@@ -4,6 +4,10 @@
  * DO NOT require("./server") in other modules, it likely creates circular dependency!
  */
 import { genSecret, getRandomInt, isDev, log, sleep } from "../src/util";
+import { auth, getSession } from "./better-auth";
+import { createBetterAuthRouter, needSetup } from "./routers/better-auth-router";
+import { betterAuthSocketHandler } from "./socket-handlers/better-auth-socket-handler";
+import { loadEnvFile } from "node:process";
 
 console.log("Welcome to Uptime Kuma");
 
@@ -14,14 +18,14 @@ dayjs.extend(require("./modules/dayjs/plugin/timezone"));
 dayjs.extend(require("dayjs/plugin/customParseFormat"));
 
 // Load environment variables from `.env`
-require("dotenv").config();
+loadEnvFile();
 
 // Check Node.js Version
 const nodeVersion = process.versions.node;
 
 // Get the required Node.js version from package.json
 const requiredNodeVersions = require("../package.json").engines.node;
-const bannedNodeVersions = " < 18 || 20.0.* || 20.1.* || 20.2.* || 20.3.* ";
+const bannedNodeVersions = "<= 23";
 console.log(`Your Node.js version: ${nodeVersion}`);
 
 const semver = require("semver");
@@ -80,8 +84,6 @@ const express = require("express");
 const expressStaticGzip = require("express-static-gzip");
 log.debug("server", "Importing redbean-node");
 const { R } = require("redbean-node");
-log.debug("server", "Importing jsonwebtoken");
-const jwt = require("jsonwebtoken");
 log.debug("server", "Importing http-graceful-shutdown");
 const gracefulShutdown = require("http-graceful-shutdown");
 log.debug("server", "Importing prometheus-api-metrics");
@@ -109,8 +111,6 @@ const {
     setting,
     checkLogin,
     doubleCheckPassword,
-    shake256,
-    SHAKE256_LENGTH,
     allowDevAllOrigin,
     printServerUrls,
 } = require("./util-server");
@@ -130,7 +130,6 @@ const { loginRateLimiter, twoFaRateLimiter } = require("./rate-limiter");
 
 const { apiAuth } = require("./auth");
 const { login } = require("./auth");
-const passwordHash = require("./password-hash");
 
 const { Prometheus } = require("./prometheus");
 const { UptimeCalculator } = require("./uptime-calculator");
@@ -203,12 +202,6 @@ app.use(function (req, res, next) {
     next();
 });
 
-/**
- * Show Setup Page
- * @type {boolean}
- */
-let needSetup = false;
-
 (async () => {
     // Create a data directory
     Database.initDataDir(args);
@@ -229,7 +222,7 @@ let needSetup = false;
     }
 
     // Init Better Auth
-    const { auth, getSession } = await import("./better-auth");
+    auth();
 
     // Database should be ready now
     await server.initAfterDatabaseReady();
@@ -362,8 +355,7 @@ let needSetup = false;
     app.use(statusPageRouter);
 
     // better auth API Router
-    const { betterAuthRouter } = await import("./routers/better-auth");
-    app.use(betterAuthRouter);
+    app.use(createBetterAuthRouter());
 
     // Universal Route Handler, must be at the end of all express routes.
     app.get("*", async (_request, response) => {
@@ -378,7 +370,7 @@ let needSetup = false;
     io.on("connection", async (socket) => {
         await sendInfo(socket, true);
 
-        if (needSetup) {
+        if (needSetup()) {
             log.info("server", "Redirect to setup page");
             socket.emit("setup");
         }
@@ -642,22 +634,8 @@ let needSetup = false;
             }
         });
 
-        socket.on("needSetup", async (callback) => {
-            callback(needSetup);
-        });
-
         socket.on("setup", async (username, password, callback) => {
             try {
-                if (passwordStrength(password).value === "Too weak") {
-                    throw new TranslatableError("passwordTooWeak");
-                }
-
-                if ((await R.knex("better_auth_user").count("id as count").first()).count !== 0) {
-                    throw new Error(
-                        "Uptime Kuma has been initialized. If you want to run setup again, please delete the database."
-                    );
-                }
-
                 // TODO: httpOnly cookie cannot be created via Websocket or frontend js
                 // So probably need to change to http endpoint for any auth operations
                 const data = await auth.api.signUpEmail({
@@ -1676,6 +1654,8 @@ let needSetup = false;
             }
         });
 
+        betterAuthSocketHandler(socket);
+
         // Status Page Socket Handler for admin only
         statusPageSocketHandler(socket);
         cloudflaredSocketHandler(socket);
@@ -1819,12 +1799,6 @@ async function initDatabase(testMode = false) {
 
     // Patch the database
     await Database.patch(port, hostname);
-
-    // If there is no record in user table, it is a new Uptime Kuma instance, need to setup
-    if ((await R.knex("better_auth_user").count("id as count").first()).count === 0) {
-        log.info("server", "No user, need setup");
-        needSetup = true;
-    }
 }
 
 /**

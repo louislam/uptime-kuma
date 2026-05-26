@@ -5,73 +5,61 @@ import { genSecret, log } from "../src/util";
 import { R } from "redbean-node";
 import { KyselyKnexDialect, MySQL2ColdDialect, SQLite3ColdDialect } from "kysely-knex";
 import { username } from "better-auth/plugins";
-import { createAuthMiddleware } from "better-auth/api";
 
-// Check if Database.initDataDir() has been called before using this function
-if (!Database.dataDir) {
-    throw new Error(
-        "Database data directory is not initialized. Please call Database.initDataDir() before using auth."
-    );
-}
-
-const knex = R.knex;
-
-const kyselySubDialect = Database.dbConfig.type.includes("mariadb")
-    ? new MySQL2ColdDialect()
-    : new SQLite3ColdDialect();
-
-const database = new KyselyKnexDialect({
-    kyselySubDialect,
-    knex,
-});
-
-export const auth = betterAuth({
-    database,
-    secret: getAuthSecret(),
-    trustedOrigins: ["*"],
-    emailAndPassword: {
-        enabled: true,
-        disableSignUp: await isDisableSignUp(),
-    },
-    plugins: [username()],
-    user: {
-        modelName: "better_auth_user",
-    },
-    account: {
-        modelName: "better_auth_account",
-    },
-    session: {
-        modelName: "better_auth_session",
-    },
-    verification: {
-        modelName: "better_auth_verification",
-    },
-    hooks: {
-        after: createAuthMiddleware(async (ctx) => {
-            if (ctx.path.startsWith("/sign-up")) {
-                const newSession = ctx.context.newSession;
-                if (newSession) {
-                    log.debug("better", "First user created: ", newSession.user.username);
-                    log.debug("better", "Disable sign up after first user created");
-                    disableSignUp();
-                }
-            }
-        }),
-    },
-});
+let authInstance: ReturnType<typeof createAuthInstance>;
 
 /**
  *
  */
-export async function isDisableSignUp() {
-    return (await R.knex("better_auth_user").count("id as count").first()).count === 0;
+export function auth() {
+    if (authInstance) {
+        return authInstance;
+    }
+    authInstance = createAuthInstance();
+    return authInstance;
 }
 
 /**
  *
  */
-export function disableSignUp() {
-    auth.options.emailAndPassword.disableSignUp = true;
+function createAuthInstance() {
+    // Check if Database.initDataDir() has been called before using this function
+    if (!Database.dataDir) {
+        throw new Error(
+            "Database data directory is not initialized. Please call Database.initDataDir() before using auth."
+        );
+    }
+    const knex = R.knex;
+    const kyselySubDialect = Database.dbConfig.type.includes("mariadb")
+        ? new MySQL2ColdDialect()
+        : new SQLite3ColdDialect();
+    const database = new KyselyKnexDialect({
+        kyselySubDialect,
+        knex,
+    });
+
+    return betterAuth({
+        database,
+        secret: getAuthSecret(),
+        trustedOrigins: ["*"],
+        emailAndPassword: {
+            enabled: true,
+            disableSignUp: false,
+        },
+        plugins: [username()],
+        user: {
+            modelName: "better_auth_user",
+        },
+        account: {
+            modelName: "better_auth_account",
+        },
+        session: {
+            modelName: "better_auth_session",
+        },
+        verification: {
+            modelName: "better_auth_verification",
+        },
+    });
 }
 
 /**
