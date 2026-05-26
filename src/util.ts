@@ -263,7 +263,7 @@ class Logger {
      * @param msg Message to write
      * @returns {void}
      */
-    private log(module: string, level: LogLevel, ...msg: unknown[]) {
+    log(module: string, level: LogLevel, ...msg: unknown[]) {
         if (level === "debug" && !isDev) {
             return;
         }
@@ -802,3 +802,33 @@ export const TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD = {
     "tailscale-ping": "hostname",
     "sip-options": "hostname",
 } as const;
+
+/**
+ * @param res
+ */
+export async function checkFetch(res: Response): Promise<void> {
+    let data;
+
+    try {
+        if (!res.ok) {
+            data = await res.json();
+        }
+    } catch (e) {
+        throw new Error("Failed to fetch without message: " + res.status);
+    }
+
+    if (data) {
+        if (data.msg) {
+            throw new Error(data.msg);
+        } else {
+            throw new Error(JSON.stringify(data));
+        }
+    }
+
+    const contentType = res.headers.get("content-type");
+
+    // if response is not in json type
+    if (!contentType || !contentType.startsWith("application/json")) {
+        throw new Error("Response is not in JSON format");
+    }
+}

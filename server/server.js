@@ -115,6 +115,7 @@ const {
     doubleCheckPassword,
     allowDevAllOrigin,
     printServerUrls,
+    allowDevOrigin,
 } = require("./util-server");
 
 log.debug("server", "Importing Notification");
@@ -274,6 +275,11 @@ app.use(function (req, res, next) {
     });
 
     if (isDev) {
+        app.options("/*", async (request, response) => {
+            allowDevOrigin(request, response);
+            response.end();
+        });
+
         app.use(express.urlencoded({ extended: true }));
         app.post("/test-webhook", async (request, response) => {
             log.debug("test", request.headers);
@@ -357,7 +363,8 @@ app.use(function (req, res, next) {
     app.use(statusPageRouter);
 
     // better auth API Router
-    app.use(createBetterAuthRouter());
+    const betterAuthRouter = await createBetterAuthRouter();
+    app.use(betterAuthRouter);
 
     // Universal Route Handler, must be at the end of all express routes.
     app.get("*", async (_request, response) => {
@@ -372,7 +379,7 @@ app.use(function (req, res, next) {
     io.on("connection", async (socket) => {
         await sendInfo(socket, true);
 
-        if (needSetup()) {
+        if (await needSetup()) {
             log.info("server", "Redirect to setup page");
             socket.emit("setup");
         }
@@ -632,35 +639,6 @@ app.use(function (req, res, next) {
                 callback({
                     ok: false,
                     msg: error.message,
-                });
-            }
-        });
-
-        socket.on("setup", async (username, password, callback) => {
-            try {
-                // TODO: httpOnly cookie cannot be created via Websocket or frontend js
-                // So probably need to change to http endpoint for any auth operations
-                const data = await auth.api.signUpEmail({
-                    body: {
-                        name: username,
-                        email: `${username}@noreply.uptime-kuma.internal`,
-                        password,
-                        username,
-                    },
-                });
-
-                needSetup = false;
-
-                callback({
-                    ok: true,
-                    msg: "successAdded",
-                    msgi18n: true,
-                });
-            } catch (e) {
-                callback({
-                    ok: false,
-                    msg: e.message,
-                    msgi18n: !!e.msgi18n,
                 });
             }
         });

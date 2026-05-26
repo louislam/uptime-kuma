@@ -582,6 +582,7 @@ exports.getTotalClientInRoom = (io, roomName) => {
 };
 
 /**
+ * @deprecated Use allowDevOrigin
  * Allow CORS all origins if development
  * @param {object} res Response object from axios
  * @returns {void}
@@ -593,6 +594,7 @@ exports.allowDevAllOrigin = (res) => {
 };
 
 /**
+ * @deprecated Use allowOrigin
  * Allow CORS all origins
  * @param {object} res Response object from axios
  * @returns {void}
@@ -601,6 +603,32 @@ exports.allowAllOrigin = (res) => {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE, OPTIONS");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+};
+
+/**
+ * Allow CORS all origins if development
+ * @param {Request} req Express request object
+ * @param {Response} res Express response object
+ * @returns {void}
+ */
+exports.allowDevOrigin = (req, res) => {
+    if (process.env.NODE_ENV === "development") {
+        exports.allowOrigin(req, res);
+    }
+};
+
+/**
+ * Allow CORS all origins
+ * Since Allow-Credentials is set to true, the Access-Control-Allow-Origin cannot be *, so we will set it to the request origin.
+ * @param {Request} req Express request object
+ * @param {Response} res Response object
+ * @returns {void}
+ */
+exports.allowOrigin = (req, res) => {
+    res.header("Access-Control-Allow-Origin", req.get("origin"));
+    res.header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE, OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    res.header("Access-Control-Allow-Credentials", "true");
 };
 
 /**

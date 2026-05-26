@@ -5,6 +5,7 @@ import { genSecret, log } from "../src/util";
 import { R } from "redbean-node";
 import { KyselyKnexDialect, MySQL2ColdDialect, SQLite3ColdDialect } from "kysely-knex";
 import { username } from "better-auth/plugins";
+import { admin } from "better-auth/plugins";
 
 let authInstance: ReturnType<typeof createAuthInstance>;
 
@@ -46,7 +47,7 @@ function createAuthInstance() {
             enabled: true,
             disableSignUp: false,
         },
-        plugins: [username()],
+        plugins: [username(), admin()],
         user: {
             modelName: "better_auth_user",
         },
@@ -90,7 +91,7 @@ export function getSession(cookie: string) {
         headers: new Headers(),
     };
     context.headers.set("cookie", cookie || "");
-    return auth.api.getSession(context);
+    return authInstance.api.getSession(context);
 }
 
 /**

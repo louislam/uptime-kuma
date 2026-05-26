@@ -6,12 +6,7 @@ import dayjs from "dayjs";
 import mitt from "mitt";
 
 import { DOWN, MAINTENANCE, PENDING, UP } from "../util.ts";
-import {
-    getDevContainerServerHostname,
-    isDevContainer,
-    getToastSuccessTimeout,
-    getToastErrorTimeout,
-} from "../util-frontend.js";
+import { getToastSuccessTimeout, getToastErrorTimeout } from "../util-frontend.js";
 const toast = useToast();
 
 let socket;
@@ -108,9 +103,7 @@ export default {
 
             let url;
             const env = process.env.NODE_ENV || "production";
-            if (env === "development" && isDevContainer()) {
-                url = protocol + getDevContainerServerHostname();
-            } else if (env === "development" || localStorage.dev === "dev") {
+            if (env === "development" || localStorage.dev === "dev") {
                 url = protocol + location.hostname + ":3001";
             } else {
                 // Connect to the current url
