@@ -30,6 +30,14 @@ describe("About settings page branding and versioning", () => {
         path.join(__dirname, "../../src/layouts/Layout.vue"),
         "utf8"
     );
+    const licenseSource = fs.readFileSync(
+        path.join(__dirname, "../../LICENSE"),
+        "utf8"
+    );
+    const readmeSource = fs.readFileSync(
+        path.join(__dirname, "../../README.md"),
+        "utf8"
+    );
 
     test("uses the Uptime Worker GitHub repository for update links", () => {
         assert.strictEqual(packageJson.repository.url, "https://github.com/esaueng/uptimeworker.git");
@@ -62,6 +70,14 @@ describe("About settings page branding and versioning", () => {
         assert.match(aboutSource, /Forked from/);
         assert.doesNotMatch(aboutSource, /Font Twemoji/);
         assert.doesNotMatch(aboutSource, /creativecommons\.org\/licenses\/by\/4\.0/);
+    });
+
+    test("shows Esau Engineering on the project license surfaces", () => {
+        assert.match(aboutSource, /MIT License/);
+        assert.match(aboutSource, /Copyright \(c\) 2026 Esau Engineering/);
+        assert.match(licenseSource, /Copyright \(c\) 2026 Esau Engineering/);
+        assert.match(licenseSource, /Copyright \(c\) 2021 Louis Lam/);
+        assert.match(readmeSource, /Esau Engineering/);
     });
 
     test("links the public powered-by footer to the Uptime Worker fork", () => {

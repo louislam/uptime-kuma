@@ -11,6 +11,11 @@ async function loadHelpers() {
     return import("../../src/util/notification-log.mjs");
 }
 
+/**
+ * Create an in-memory localStorage-compatible object for notification log tests.
+ * @param {string|undefined} initialValue Initial serialized storage value.
+ * @returns {object} Storage-like test double.
+ */
 function createStorage(initialValue) {
     const values = new Map();
     if (initialValue !== undefined) {

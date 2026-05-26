@@ -23,6 +23,12 @@
                     </label>
                 </div>
             </div>
+            <div class="mt-4 license-note">
+                <a href="https://github.com/esaueng/uptimeworker/blob/master/LICENSE" target="_blank" rel="noopener">
+                    MIT License
+                </a>
+                <div>Copyright (c) 2026 Esau Engineering</div>
+            </div>
             <div class="mt-4 fork-note">
                 Forked from
                 <a href="https://github.com/louislam/uptime-kuma" target="_blank" rel="noopener">
@@ -61,6 +67,10 @@ export default {
 
 .update-link {
     font-size: 0.8em;
+}
+
+.license-note {
+    font-size: 0.9em;
 }
 
 .fork-note {

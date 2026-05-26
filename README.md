@@ -310,5 +310,6 @@ For the upstream project, see:
 
 ## License
 
-This project is distributed under the MIT license. See `LICENSE` for the full
-license text.
+This project is distributed under the MIT license. Uptime Worker project
+changes are copyright 2026 Esau Engineering, and retained upstream Uptime Kuma
+code remains attributed to Louis Lam. See `LICENSE` for the full license text.

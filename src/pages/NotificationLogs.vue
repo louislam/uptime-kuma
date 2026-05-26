@@ -79,16 +79,16 @@
                             <font-awesome-icon icon="chevron-left" />
                         </button>
                         <button
-                            v-for="page in visiblePageNumbers"
-                            :key="page"
+                            v-for="pageNumber in visiblePageNumbers"
+                            :key="pageNumber"
                             type="button"
                             class="btn btn-sm btn-outline-normal"
-                            :class="{ active: currentPage === page }"
-                            :aria-current="currentPage === page ? 'page' : undefined"
-                            :aria-label="$t('Go to page {page}', { page })"
-                            @click="setPage(page)"
+                            :class="{ active: currentPage === pageNumber }"
+                            :aria-current="currentPage === pageNumber ? 'page' : undefined"
+                            :aria-label="$t('Go to page {page}', { page: pageNumber })"
+                            @click="setPage(pageNumber)"
                         >
-                            {{ page }}
+                            {{ pageNumber }}
                         </button>
                         <button
                             type="button"
