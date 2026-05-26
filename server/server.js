@@ -27,7 +27,7 @@ const nodeVersion = process.versions.node;
 
 // Get the required Node.js version from package.json
 const requiredNodeVersions = require("../package.json").engines.node;
-const bannedNodeVersions = "<= 23";
+const bannedNodeVersions = "< 24";
 console.log(`Your Node.js version: ${nodeVersion}`);
 
 const semver = require("semver");
