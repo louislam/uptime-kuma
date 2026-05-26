@@ -130,4 +130,24 @@ describe("Cloudflare Worker socket delete shim", () => {
         );
     });
 
+    test("falls back to cached Worker heartbeat history when event-log API requests fail", () => {
+        const source = fs.readFileSync(
+            path.join(__dirname, "../../src/mixins/socket.js"),
+            "utf8"
+        );
+
+        assert.match(source, /import \{\s*buildCloudflareImportantHeartbeatResult,\s*\} from "\.\.\/util\/cloudflare-important-heartbeats\.mjs";/);
+        assert.match(source, /countCloudflareHeartbeats\(app, monitorID\)/);
+        assert.match(source, /getCloudflareHeartbeatPage\(app, monitorID, offset, count\)/);
+        assert.match(
+            source,
+            /buildCloudflareImportantHeartbeatResult\(app\.monitorList, app\.heartbeatList, monitorID, 0, 1\)\.count/,
+            "event count fallback should derive from cached dashboard heartbeat history"
+        );
+        assert.match(
+            source,
+            /buildCloudflareImportantHeartbeatResult\(app\.monitorList, app\.heartbeatList, monitorID, offset, count\)\s*\.heartbeats/,
+            "event page fallback should derive rows from cached dashboard heartbeat history"
+        );
+    });
 });

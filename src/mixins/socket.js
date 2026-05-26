@@ -13,6 +13,9 @@ import {
     getToastErrorTimeout,
 } from "../util-frontend.js";
 import { requestCloudflareJson } from "../cloudflare-worker-api.js";
+import {
+    buildCloudflareImportantHeartbeatResult,
+} from "../util/cloudflare-important-heartbeats.mjs";
 const toast = useToast();
 
 let socket;
@@ -379,6 +382,9 @@ export default {
 
         /**
          * Load monitor state from the Cloudflare Worker REST API.
+         * @param {object} options Load options.
+         * @param {boolean} options.refreshSidecars Whether to refresh sidecar lists.
+         * @param {boolean} options.refreshHeartbeatHistories Whether to refresh heartbeat histories.
          * @returns {Promise<void>}
          */
         async loadCloudflareWorkerData(options = {}) {
@@ -1578,7 +1584,7 @@ function createCloudflareSocketStub(app) {
 
                 if (event === "monitorImportantHeartbeatListCount") {
                     const monitorID = args[0];
-                    callback?.({ ok: true, count: await countCloudflareHeartbeats(monitorID) });
+                    callback?.({ ok: true, count: await countCloudflareHeartbeats(app, monitorID) });
                     return;
                 }
 
@@ -1586,7 +1592,7 @@ function createCloudflareSocketStub(app) {
                     const [monitorID, offset, count] = args;
                     callback?.({
                         ok: true,
-                        data: await getCloudflareHeartbeatPage(monitorID, offset, count),
+                        data: await getCloudflareHeartbeatPage(app, monitorID, offset, count),
                     });
                     return;
                 }
@@ -1652,7 +1658,7 @@ function createCloudflareSocketStub(app) {
 /**
  * Finish a Worker UI mutation without blocking the visible action on a full reload.
  * @param {object} app Vue root component instance.
- * @param {Function|undefined} callback Socket-style callback.
+ * @param {function(object):void|undefined} callback Socket-style callback.
  * @param {object} body Response body to return to the caller.
  * @param {object} options Local update and refresh options.
  * @returns {void}
@@ -2019,28 +2025,41 @@ function clearCloudflareWorkerDashboardCache() {
 
 /**
  * Count heartbeat rows for one monitor or all loaded monitors.
+ * @param {object} app Vue root component instance.
  * @param {number|null} monitorID Monitor ID, or null for all loaded monitors.
  * @returns {Promise<number>} Heartbeat row count.
  */
-async function countCloudflareHeartbeats(monitorID) {
-    const body = await requestCloudflareJson(buildCloudflareHeartbeatsUrl(monitorID, 0, 1, {
-        importantOnly: true,
-    }));
-    return body.count || 0;
+async function countCloudflareHeartbeats(app, monitorID) {
+    try {
+        const body = await requestCloudflareJson(buildCloudflareHeartbeatsUrl(monitorID, 0, 1, {
+            importantOnly: true,
+        }));
+        return body.count || 0;
+    } catch (error) {
+        console.warn(`Failed to load Worker important event count; using cached heartbeat history: ${error.message}`);
+        return buildCloudflareImportantHeartbeatResult(app.monitorList, app.heartbeatList, monitorID, 0, 1).count;
+    }
 }
 
 /**
  * Fetch a page of heartbeats for one monitor or all loaded monitors.
+ * @param {object} app Vue root component instance.
  * @param {number|null} monitorID Monitor ID, or null for all loaded monitors.
  * @param {number} offset Pagination offset.
  * @param {number} count Number of rows to fetch.
  * @returns {Promise<object[]>} Heartbeat rows.
  */
-async function getCloudflareHeartbeatPage(monitorID, offset = 0, count = 25) {
-    const body = await requestCloudflareJson(buildCloudflareHeartbeatsUrl(monitorID, offset, count, {
-        importantOnly: true,
-    }));
-    return body.heartbeats || [];
+async function getCloudflareHeartbeatPage(app, monitorID, offset = 0, count = 25) {
+    try {
+        const body = await requestCloudflareJson(buildCloudflareHeartbeatsUrl(monitorID, offset, count, {
+            importantOnly: true,
+        }));
+        return body.heartbeats || [];
+    } catch (error) {
+        console.warn(`Failed to load Worker important event page; using cached heartbeat history: ${error.message}`);
+        return buildCloudflareImportantHeartbeatResult(app.monitorList, app.heartbeatList, monitorID, offset, count)
+            .heartbeats;
+    }
 }
 
 /**
