@@ -19,18 +19,18 @@ describe("Twingate settings layout", () => {
 
         assert.match(twingateSource, /\.twingate-log-panel\s*\{[^}]*max-width:\s*100%;/);
         assert.match(twingateSource, /\.twingate-log-panel\s*\{[^}]*min-width:\s*0;/);
-        assert.match(twingateSource, /\.twingate-log-toolbar\s*\{[^}]*min-width:\s*0;/);
-        assert.match(twingateSource, /\.twingate-log-style-picker\s*\{[^}]*flex-wrap:\s*wrap;/);
-        assert.match(twingateSource, /grid-template-columns:\s*3rem 4\.5rem minmax\(0,\s*17rem\) minmax\(0,\s*1fr\);/);
+        assert.match(twingateSource, /\.twingate-log-actions\s*\{[^}]*flex-wrap:\s*wrap;/);
+        assert.match(twingateSource, /grid-template-columns:\s*2\.25rem 3\.5rem minmax\(0,\s*1fr\);/);
         assert.doesNotMatch(twingateSource, /grid-template-columns:[^;]*max-content/);
     });
 
-    test("offers five distinct Twingate startup log view styles", () => {
+    test("uses compact Twingate startup log view without style choices", () => {
         const twingateSource = readSource("src/components/settings/Twingate.vue");
+        const languageSource = readSource("src/lang/en.json");
 
-        for (const style of ["console", "timeline", "inspector", "cards", "compact"]) {
-            assert.match(twingateSource, new RegExp(`id:\\s*"${style}"`));
-            assert.match(twingateSource, new RegExp(`is-style-${style}`));
-        }
+        assert.match(twingateSource, /\.twingate-log-time\s*\{[^}]*display:\s*none;/);
+        assert.doesNotMatch(twingateSource, /twingate-log-style-picker/);
+        assert.doesNotMatch(twingateSource, /selectedLogStyle|logStyleOptions|is-style-/);
+        assert.doesNotMatch(languageSource, /twingateLogStyle/);
     });
 });
