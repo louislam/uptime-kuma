@@ -27,7 +27,7 @@ h2 {
 }
 
 textarea.form-control {
-    border-radius: 19px;
+    border-radius: $border-radius-lg;
 }
 
 ::-webkit-scrollbar {
@@ -92,7 +92,7 @@ optgroup {
 }
 
 .modal-content {
-    border-radius: 1rem;
+    border-radius: $border-radius-lg;
     box-shadow: 0 15px 70px rgba(0, 0, 0, 0.1);
 
     .dark & {
@@ -120,10 +120,11 @@ optgroup {
 .btn {
     padding-left: 14px;
     padding-right: 14px;
+    border-radius: $button-border-radius;
 }
 
 .btn-sm {
-    border-radius: 25px;
+    border-radius: $button-border-radius-sm;
 }
 
 .btn-primary {
@@ -185,7 +186,7 @@ optgroup {
 .btn-outline-normal {
     padding: 3px 8px;
     border: 1px solid #ced4da;
-    border-radius: 25px;
+    border-radius: $button-border-radius-sm;
     background-color: transparent;
 
     .dark & {
@@ -244,6 +245,133 @@ optgroup {
                     display: block;
                     width: 30%;
                 }
+            }
+        }
+    }
+}
+
+// Light Theme override here
+.light {
+    background-color: $light-page-bg;
+    color: $light-font-color;
+
+    &::-webkit-scrollbar-thumb,
+    ::-webkit-scrollbar-thumb {
+        background: #cbd6da;
+    }
+
+    .shadow-box {
+        &:not(.alert) {
+            background-color: $light-bg;
+            border: 1px solid $light-border-color;
+            box-shadow: 0 14px 40px rgba(24, 37, 44, 0.08);
+        }
+    }
+
+    .list-group-item {
+        background-color: $light-bg;
+        color: $light-font-color;
+        border-color: $light-border-color;
+    }
+
+    .form-check-input {
+        background-color: $light-bg;
+        border-color: $light-border-color;
+    }
+
+    .form-check-input:checked {
+        border-color: $primary;
+    }
+
+    .input-group-text {
+        background-color: $light-bg2;
+        border-color: $light-border-color;
+        color: $light-font-color;
+    }
+
+    a:not(.btn),
+    .table,
+    .nav-link {
+        color: $light-font-color;
+
+        &.btn-info {
+            color: white;
+        }
+    }
+
+    .form-control,
+    .form-control:focus,
+    .form-select,
+    .form-select:focus {
+        color: $light-font-color;
+        background-color: $light-bg;
+    }
+
+    .form-control,
+    .form-select {
+        border-color: $light-border-color;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: rgba($primary, 0.75);
+        box-shadow: 0 0 0 0.2rem rgba($primary, 0.18);
+    }
+
+    .form-control::placeholder {
+        color: $light-muted-font-color;
+    }
+
+    .form-select:disabled,
+    .form-control:disabled,
+    .form-control[readonly] {
+        color: rgba($light-font-color, 0.72);
+        background-color: $light-bg2;
+        opacity: 1;
+    }
+
+    .table-hover > tbody > tr:hover > * {
+        --bs-table-accent-bg: #edf7f1;
+        color: $light-font-color;
+    }
+
+    .btn-normal {
+        $bg-color: #edf3f4;
+
+        color: $light-font-color;
+        background-color: $bg-color;
+        border-color: $bg-color;
+
+        &:hover {
+            $hover-color: darken($bg-color, 4%);
+            color: $light-font-color;
+            background-color: $hover-color;
+            border-color: $hover-color;
+        }
+    }
+
+    .btn-outline-normal {
+        color: $light-font-color;
+        border-color: $light-border-color;
+
+        &:hover {
+            background-color: $light-bg2;
+        }
+
+        &.active {
+            background-color: $highlight-white;
+            border-color: rgba($primary, 0.55);
+        }
+    }
+
+    .monitor-list {
+        .item {
+            &:hover {
+                background-color: #ebfbf1;
+            }
+
+            &.active {
+                background-color: #dcf7e7;
             }
         }
     }

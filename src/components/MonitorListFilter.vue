@@ -295,7 +295,7 @@ export default {
     display: flex;
     align-items: center;
     padding: 2px 10px;
-    border-radius: 16px;
+    border-radius: $button-border-radius-sm;
     background-color: transparent;
 
     .dark & {

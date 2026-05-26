@@ -44,6 +44,17 @@
                         {{ $t("Dashboard") }}
                     </router-link>
                 </li>
+                <li v-if="$root.loggedIn" class="nav-item me-1">
+                    <button
+                        type="button"
+                        class="nav-link theme-toggle-button"
+                        :aria-label="themeToggleLabel"
+                        :title="themeToggleLabel"
+                        @click="toggleUserTheme"
+                    >
+                        <font-awesome-icon :icon="$root.isDark ? 'sun' : 'moon'" />
+                    </button>
+                </li>
                 <li v-if="$root.loggedIn" class="nav-item">
                     <div class="dropdown dropdown-profile-pic">
                         <div class="nav-link" data-bs-toggle="dropdown">
@@ -128,11 +139,21 @@
         </header>
 
         <!-- Mobile header -->
-        <header v-else class="mobile-header d-flex flex-wrap justify-content-center">
+        <header v-else class="mobile-header d-flex flex-wrap align-items-center justify-content-between">
             <router-link to="/dashboard" class="d-flex align-items-center text-dark text-decoration-none">
                 <object class="bi" width="34" height="34" data="/icon.svg" />
                 <span class="title ms-2">Uptime Worker</span>
             </router-link>
+            <button
+                v-if="$root.loggedIn"
+                type="button"
+                class="btn btn-normal mobile-theme-toggle"
+                :aria-label="themeToggleLabel"
+                :title="themeToggleLabel"
+                @click="toggleUserTheme"
+            >
+                <font-awesome-icon :icon="$root.isDark ? 'sun' : 'moon'" />
+            </button>
         </header>
 
         <main>
@@ -215,6 +236,10 @@ export default {
         isDashboardNavActive() {
             return isDashboardNavRoute(this.$route.path);
         },
+
+        themeToggleLabel() {
+            return this.$root.isDark ? "Switch to light mode" : "Switch to dark mode";
+        },
     },
 
     watch: {},
@@ -247,6 +272,13 @@ export default {
          */
         clearToasts() {
             toast.clear();
+        },
+        /**
+         * Toggle between explicit light and dark app themes.
+         * @returns {void}
+         */
+        toggleUserTheme() {
+            this.$root.userTheme = this.$root.isDark ? "light" : "dark";
         },
     },
 };
@@ -329,11 +361,20 @@ main {
 
 .mobile-header {
     margin-bottom: 10px;
-    padding: 8px 0;
+    padding: 8px 12px;
 
     .title {
         font-size: 1.3rem;
     }
+}
+
+.mobile-theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
 }
 
 .nav {
@@ -346,6 +387,12 @@ main {
     .nav-link {
         padding: 0.35rem 0.75rem;
     }
+}
+
+.theme-toggle-button {
+    min-width: 2.25rem;
+    border: 0;
+    background-color: rgba(200, 200, 200, 0.18);
 }
 
 .lost-connection {
@@ -429,6 +476,38 @@ main {
         border-radius: 50rem;
         font-weight: bold;
         font-size: 10px;
+    }
+}
+
+.light {
+    header {
+        background-color: $light-header-bg;
+        border-bottom-color: $light-border-color !important;
+        box-shadow: 0 1px 0 rgba(24, 37, 44, 0.02);
+
+        .title,
+        span {
+            color: $light-font-color;
+        }
+    }
+
+    .nav-link {
+        color: $light-font-color;
+    }
+
+    .theme-toggle-button {
+        color: $light-font-color;
+        background-color: #edf3f4;
+
+        &:hover {
+            color: $light-font-color;
+            background-color: #dfe9eb;
+        }
+    }
+
+    .bottom-nav {
+        background-color: $light-header-bg;
+        border-top: 1px solid $light-border-color;
     }
 }
 

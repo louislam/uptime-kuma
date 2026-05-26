@@ -331,7 +331,7 @@ export default {
 
 .twingate-log-button {
     min-width: 4.75rem;
-    border-radius: 999px;
+    border-radius: $button-border-radius-sm;
 }
 
 .twingate-log-list {

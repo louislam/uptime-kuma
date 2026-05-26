@@ -448,7 +448,7 @@ export default {
 .security-pill-button {
     min-width: 196px;
     min-height: 48px;
-    border-radius: 999px;
+    border-radius: $button-border-radius;
     font-size: 1rem;
 }
 
@@ -459,7 +459,7 @@ export default {
 
 .form-control {
     min-height: 52px;
-    border-radius: 999px;
+    border-radius: $border-radius-lg;
 }
 
 @media (max-width: 770px) {

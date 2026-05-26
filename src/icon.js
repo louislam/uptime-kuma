@@ -55,6 +55,8 @@ import {
     faColumns,
     faFolder,
     faFolderOpen,
+    faMoon,
+    faSun,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -107,6 +109,8 @@ library.add(
     faColumns,
     faFolder,
     faFolderOpen,
+    faMoon,
+    faSun,
 );
 
 export { FontAwesomeIcon };
