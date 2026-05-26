@@ -2,43 +2,52 @@
 
 ## Reporting a Vulnerability
 
-1. Please report security issues to
-   <https://github.com/louislam/uptime-kuma/security/advisories/new>.
-2. Please also create an empty security issue to alert me, as GitHub Advisories
-   do not send a notification, I probably will miss it without this.
-   <https://github.com/louislam/uptime-kuma/issues/new?assignees=&labels=help&template=security.md>
+Please report suspected security issues privately through GitHub Security
+Advisories:
 
-- Do not report any upstream dependency issues / scan result by any tools. It will be closed immediately without explanations. Unless you have PoC to prove that the upstream issue affected uptimeworker.
-- Do not use the public issue tracker or discuss it in public as it will cause
-  more damage.
-- Do not report any SSRF issues.
+<https://github.com/esaueng/uptimeworker/security/advisories/new>
 
-## Do you accept other 3rd-party bug bounty platforms?
+Include enough detail to validate the issue:
 
-At this moment, I DO NOT accept other bug bounty platforms, because I am not
-familiar with these platforms and someone has tried to send a phishing link to
-me by doing this already. To minimize my own risk, please report through GitHub
-Advisories only. I will ignore all 3rd-party bug bounty platforms emails.
+- A clear description of the vulnerability and expected impact.
+- Reproduction steps or a working proof of impact.
+- The affected deployment mode, such as Cloudflare Worker, runner container, or
+  dashboard UI.
+- Relevant logs, requests, configuration, or screenshots with secrets redacted.
+
+Do not open a public issue, discussion, pull request, or social post for an
+undisclosed vulnerability.
+
+Automated scan output and third-party package advisories are only useful when
+they explain how the issue is exploitable in Uptime Worker. Reports without a
+project-specific impact may be closed.
+
+## Scope
+
+In scope:
+
+- Uptime Worker dashboard, API, and Cloudflare Worker code.
+- Runner container code, direct checks, and Twingate integration.
+- Database migrations, release workflows, and repository-owned deployment
+  configuration.
+
+Out of scope:
+
+- Unrelated third-party services or infrastructure not controlled by this
+  repository.
+- Social engineering, phishing, spam, or physical attacks.
+- Denial-of-service reports based only on excessive traffic volume.
+- Issues that require already-compromised administrator access unless they
+  create a meaningful new privilege escalation path.
+
+## Bug Bounty Platforms
+
+Uptime Worker does not run a paid bug bounty program and does not accept reports
+through third-party bug bounty platforms. Use GitHub Security Advisories for
+private security reports.
 
 ## Supported Versions
 
-### Uptime Kuma Versions
-
-You should use or upgrade to the latest version of Uptime Kuma.
-All versions are upgradable to the latest version.
-
-### Upgradable Docker Tags
-
-| Tag             | Supported                                                                             |
-| --------------- | ------------------------------------------------------------------------------------- |
-| 2               | :white_check_mark:                                                                    |
-| 2-slim          | :white_check_mark:                                                                    |
-| next            | :white_check_mark:                                                                    |
-| next-slim       | :white_check_mark:                                                                    |
-| 2-rootless      | :white_check_mark:                                                                    |
-| 2-slim-rootless | :white_check_mark:                                                                    |
-| 1               | [⚠️ Deprecated](https://github.com/louislam/uptime-kuma/wiki/Migration-From-v1-To-v2) |
-| 1-debian        | [⚠️ Deprecated](https://github.com/louislam/uptime-kuma/wiki/Migration-From-v1-To-v2) |
-| latest          | [⚠️ Deprecated](https://github.com/louislam/uptime-kuma/wiki/Migration-From-v1-To-v2) |
-| debian          | [⚠️ Deprecated](https://github.com/louislam/uptime-kuma/wiki/Migration-From-v1-To-v2) |
-| All other tags  | ❌                                                                                    |
+Security fixes target the current Uptime Worker codebase and the latest
+published release from this repository. Older releases are not maintained; please
+upgrade before reporting an issue that has already been fixed.
