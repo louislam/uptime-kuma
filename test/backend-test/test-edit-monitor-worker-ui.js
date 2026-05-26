@@ -16,4 +16,25 @@ describe("EditMonitor Worker UI rendering guards", () => {
             "Worker UI does not receive Socket.IO info.runtime; Ping-only fields must guard runtime access"
         );
     });
+
+    test("Edit form hydrates from loaded monitor list before fetching fresh details", () => {
+        const source = fs.readFileSync(
+            path.join(__dirname, "../../src/pages/EditMonitor.vue"),
+            "utf8"
+        );
+
+        const cachedHydrationIndex = source.indexOf("this.hydrateMonitorFromList();");
+        const fetchIndex = source.indexOf("this.$root.getSocket().emit(\"getMonitor\"");
+
+        assert.notStrictEqual(
+            cachedHydrationIndex,
+            -1,
+            "EditMonitor should show the selected monitor from $root.monitorList immediately"
+        );
+        assert.notStrictEqual(fetchIndex, -1, "EditMonitor should still fetch fresh monitor details");
+        assert.ok(
+            cachedHydrationIndex < fetchIndex,
+            "Cached monitor hydration must happen before the slower per-monitor fetch starts"
+        );
+    });
 });

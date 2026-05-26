@@ -2,7 +2,11 @@
     <transition name="slide-fade" appear>
         <div>
             <h1 class="mb-3">{{ pageName }}</h1>
-            <form @submit.prevent="submit">
+            <form
+                @submit.prevent="submit"
+                @input="monitorFormTouched = true"
+                @change="monitorFormTouched = true"
+            >
                 <div
                     class="shadow-box shadow-box-with-fixed-bottom-bar"
                     :class="{ 'group-edit-box': monitor.type === 'group' }"
@@ -3187,6 +3191,19 @@ const defaultNetworkProfiles = [
 
 const networkRouteMonitorTypes = ["http", "keyword", "json-query", "port", "websocket-upgrade", "ping"];
 
+/**
+ * Clone a monitor payload for form editing without keeping reactive list references.
+ * @param {object|null} monitor Monitor payload from the list or detail API.
+ * @returns {object|null} Cloned monitor payload.
+ */
+function cloneMonitorForEdit(monitor) {
+    if (!monitor) {
+        return null;
+    }
+
+    return JSON.parse(JSON.stringify(monitor));
+}
+
 export default {
     components: {
         HiddenInput,
@@ -3208,6 +3225,7 @@ export default {
             minInterval: MIN_INTERVAL_SECOND,
             maxInterval: MAX_INTERVAL_SECOND,
             processing: false,
+            monitorFormTouched: false,
             monitor: {
                 notificationIDList: {},
                 // Do not add default value here, please check init() method
@@ -3830,6 +3848,7 @@ message HealthCheckResponse {
          * @returns {void}
          */
         init() {
+            this.monitorFormTouched = false;
             if (this.isAdd) {
                 this.monitor = {
                     ...monitorDefaults,
@@ -3853,67 +3872,15 @@ message HealthCheckResponse {
                     }
                 }
             } else if (this.isEdit || this.isClone) {
-                this.$root.getSocket().emit("getMonitor", this.$route.params.id, (res) => {
+                this.hydrateMonitorFromList();
+                const routeMonitorID = this.$route.params.id;
+                this.$root.getSocket().emit("getMonitor", routeMonitorID, (res) => {
+                    if (this.$route.params.id !== routeMonitorID) {
+                        return;
+                    }
                     if (res.ok) {
-                        if (this.isClone) {
-                            // Reset push token for cloned monitors
-                            if (res.monitor.type === "push") {
-                                res.monitor.pushToken = undefined;
-                            }
-                        }
-
-                        this.monitor = res.monitor;
-
-                        if (this.isClone) {
-                            /*
-                             * Cloning a monitor will include properties that can not be posted to backend
-                             * as they are not valid columns in the SQLite table.
-                             */
-                            this.monitor.id = undefined; // Remove id when cloning as we want a new id
-                            this.monitor.includeSensitiveData = undefined;
-                            this.monitor.maintenance = undefined;
-                            // group monitor fields
-                            this.monitor.childrenIDs = undefined;
-                            this.monitor.forceInactive = undefined;
-                            this.monitor.path = undefined;
-                            this.monitor.pathName = undefined;
-                            this.monitor.screenshot = undefined;
-
-                            this.monitor.name = this.$t("cloneOf", [this.monitor.name]);
-                            this.$refs.tagsManager.newTags = this.monitor.tags.map((monitorTag) => {
-                                return {
-                                    id: monitorTag.tag_id,
-                                    name: monitorTag.name,
-                                    color: monitorTag.color,
-                                    value: monitorTag.value,
-                                    new: true,
-                                };
-                            });
-                            this.monitor.tags = undefined;
-                        }
-
-                        if (this.monitor.type === "globalping" && this.monitor.subtype === "http") {
-                            if (this.monitor.keyword) {
-                                this.monitor.responsecheck = "keyword";
-                            } else if (this.monitor.expectedValue) {
-                                this.monitor.responsecheck = "json-query";
-                            } else {
-                                this.monitor.responsecheck = null;
-                            }
-                        }
-
-                        // Handling for monitors that are created before 1.7.0
-                        if (this.monitor.retryInterval === 0) {
-                            this.monitor.retryInterval = this.monitor.interval;
-                        }
-                        // Handling for monitors that are missing/zeroed timeout
-                        if (!this.monitor.timeout) {
-                            if (this.monitor.type === "ping") {
-                                // set to default
-                                this.monitor.timeout = 10;
-                            } else {
-                                this.monitor.timeout = ~~(this.monitor.interval * 8) / 10;
-                            }
+                        if (!this.monitorFormTouched || this.isClone || !this.monitor.id) {
+                            this.applyMonitorDetails(res.monitor);
                         }
                     } else {
                         this.$root.toastError(res.msg);
@@ -3922,6 +3889,87 @@ message HealthCheckResponse {
             }
 
             this.draftGroupName = null;
+        },
+
+        hydrateMonitorFromList() {
+            if (!this.isEdit) {
+                return;
+            }
+
+            const cachedMonitor = this.$root.monitorList?.[this.$route.params.id];
+            if (!cachedMonitor) {
+                return;
+            }
+
+            this.applyMonitorDetails(cachedMonitor);
+        },
+
+        applyMonitorDetails(monitor) {
+            const nextMonitor = cloneMonitorForEdit(monitor);
+            if (!nextMonitor) {
+                return;
+            }
+
+            this.monitor = nextMonitor;
+
+            if (this.isClone) {
+                // Reset push token for cloned monitors
+                if (this.monitor.type === "push") {
+                    this.monitor.pushToken = undefined;
+                }
+
+                /*
+                 * Cloning a monitor will include properties that can not be posted to backend
+                 * as they are not valid columns in the SQLite table.
+                 */
+                this.monitor.id = undefined; // Remove id when cloning as we want a new id
+                this.monitor.includeSensitiveData = undefined;
+                this.monitor.maintenance = undefined;
+                // group monitor fields
+                this.monitor.childrenIDs = undefined;
+                this.monitor.forceInactive = undefined;
+                this.monitor.path = undefined;
+                this.monitor.pathName = undefined;
+                this.monitor.screenshot = undefined;
+
+                this.monitor.name = this.$t("cloneOf", [this.monitor.name]);
+                if (this.$refs.tagsManager && Array.isArray(this.monitor.tags)) {
+                    this.$refs.tagsManager.newTags = this.monitor.tags.map((monitorTag) => {
+                        return {
+                            id: monitorTag.tag_id,
+                            name: monitorTag.name,
+                            color: monitorTag.color,
+                            value: monitorTag.value,
+                            new: true,
+                        };
+                    });
+                }
+                this.monitor.tags = undefined;
+            }
+
+            if (this.monitor.type === "globalping" && this.monitor.subtype === "http") {
+                if (this.monitor.keyword) {
+                    this.monitor.responsecheck = "keyword";
+                } else if (this.monitor.expectedValue) {
+                    this.monitor.responsecheck = "json-query";
+                } else {
+                    this.monitor.responsecheck = null;
+                }
+            }
+
+            // Handling for monitors that are created before 1.7.0
+            if (this.monitor.retryInterval === 0) {
+                this.monitor.retryInterval = this.monitor.interval;
+            }
+            // Handling for monitors that are missing/zeroed timeout
+            if (!this.monitor.timeout) {
+                if (this.monitor.type === "ping") {
+                    // set to default
+                    this.monitor.timeout = 10;
+                } else {
+                    this.monitor.timeout = ~~(this.monitor.interval * 8) / 10;
+                }
+            }
         },
 
         addKafkaProducerBroker(newBroker) {

@@ -44,7 +44,18 @@
                                 />
                             </span>
                             <div class="flex-fill text-truncate" style="min-width: 0">
-                                <div class="text-truncate">{{ monitor.name }}</div>
+                                <div class="monitor-name-line">
+                                    <div class="monitor-name text-truncate">{{ monitor.name }}</div>
+                                    <span
+                                        v-if="hasActiveNotification"
+                                        class="notification-active-indicator"
+                                        data-testid="monitor-notification-active"
+                                        :title="activeNotificationTitle"
+                                        :aria-label="activeNotificationTitle"
+                                    >
+                                        <font-awesome-icon icon="bell" />
+                                    </span>
+                                </div>
                                 <div v-if="monitor.tags.length > 0" class="tags gap-1">
                                     <Tag v-for="tag in monitor.tags" :key="tag" :item="tag" :size="'sm'" />
                                 </div>
@@ -91,7 +102,10 @@
 import HeartbeatBar from "../components/HeartbeatBar.vue";
 import Tag from "../components/Tag.vue";
 import Uptime from "../components/Uptime.vue";
+import monitorNotifications from "../util/monitor-notifications";
 import { getMonitorRelativeURL } from "../util.ts";
+
+const { getActiveMonitorNotificationNames, hasActiveMonitorNotification } = monitorNotifications;
 
 export default {
     name: "MonitorListItem",
@@ -164,6 +178,21 @@ export default {
         },
         hasChildren() {
             return this.sortedChildMonitorList.length > 0;
+        },
+        activeNotificationNames() {
+            return getActiveMonitorNotificationNames(this.monitor, this.$root.notificationList);
+        },
+        hasActiveNotification() {
+            return hasActiveMonitorNotification(this.monitor, this.$root.notificationList);
+        },
+        activeNotificationTitle() {
+            const title = `${this.$t("Notifications")} ${this.$t("Active")}`;
+
+            if (this.activeNotificationNames.length === 0) {
+                return title;
+            }
+
+            return `${title}: ${this.activeNotificationNames.join(", ")}`;
         },
         isFullWidth() {
             return this.$root.userHeartbeatBar === "bottom" || this.$root.userHeartbeatBar === "none";
@@ -349,6 +378,29 @@ export default {
 .monitor-main,
 .monitor-heartbeat {
     min-width: 0;
+}
+
+.monitor-name-line {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-width: 0;
+}
+
+.monitor-name {
+    min-width: 0;
+}
+
+.notification-active-indicator {
+    color: $primary;
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    width: 1rem;
+    height: 1rem;
+    font-size: 0.8rem;
+    line-height: 1;
 }
 
 .tags {
