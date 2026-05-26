@@ -350,7 +350,12 @@
                         </li>
                     </ul>
                 </div>
-                <table class="table table-borderless table-hover">
+                <table class="table table-borderless table-hover important-events-table">
+                    <colgroup>
+                        <col class="event-status-column" />
+                        <col class="event-time-column" />
+                        <col class="event-message-column" />
+                    </colgroup>
                     <thead>
                         <tr>
                             <th>{{ $t("Status") }}</th>
@@ -364,7 +369,9 @@
                             <td :class="{ 'border-0': !beat.msg }">
                                 <Datetime :value="beat.time" />
                             </td>
-                            <td class="border-0">{{ beat.msg }}</td>
+                            <td class="border-0 event-message-cell">
+                                <EventMessage :message="beat.msg" />
+                            </td>
                         </tr>
 
                         <tr v-if="importantHeartBeatListLength === 0">
@@ -465,6 +472,7 @@ import "prismjs/components/prism-css";
 import { PrismEditor } from "vue-prism-editor";
 import "vue-prism-editor/dist/prismeditor.min.css";
 import ScreenshotDialog from "../components/ScreenshotDialog.vue";
+import EventMessage from "../components/EventMessage.vue";
 import {
     isDoubleClickConfirmArmed,
     requireDoubleClickConfirm,
@@ -484,6 +492,7 @@ export default {
         Status,
         Pagination,
         PingChart,
+        EventMessage,
         Tag,
         CertificateInfo,
         PrismEditor,
@@ -1034,6 +1043,23 @@ table {
     }
 }
 
+.important-events-table {
+    width: 100%;
+    table-layout: fixed;
+
+    .event-status-column {
+        width: 96px;
+    }
+
+    .event-time-column {
+        width: 150px;
+    }
+
+    .event-message-cell {
+        max-width: 0;
+    }
+}
+
 .stats p {
     font-size: 13px;
     color: $secondary-text;
@@ -1048,6 +1074,14 @@ table {
 }
 
 @media (max-width: 550px) {
+    .important-events-table {
+        table-layout: auto;
+
+        .event-message-cell {
+            max-width: none;
+        }
+    }
+
     .stats {
         .col {
             margin: 10px 0 !important;

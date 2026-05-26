@@ -1,10 +1,5 @@
 # Security Policy
 
-> [!CAUTION]
-> LLMs and AI tools are allowed for security research and report preparation.
-> Reports may be closed if they are unverified, low-quality, irrelevant, or
-> generated without a working proof of impact.
-
 ## Reporting a Vulnerability
 
 1. Please report security issues to

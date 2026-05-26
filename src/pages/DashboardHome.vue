@@ -47,7 +47,14 @@
                         {{ isClearAllEventsArmed ? $t("Click again to confirm") : $t("Clear All Events") }}
                     </button>
                 </div>
-                <table class="table table-borderless table-hover">
+                <table class="table table-borderless table-hover important-events-table">
+                    <colgroup>
+                        <col v-if="showGroupColumn" class="event-group-column" />
+                        <col class="event-monitor-column" />
+                        <col class="event-status-column" />
+                        <col class="event-time-column" />
+                        <col class="event-message-column" />
+                    </colgroup>
                     <thead>
                         <tr>
                             <th v-if="showGroupColumn">{{ $t("Group Name") }}</th>
@@ -79,7 +86,9 @@
                             </td>
                             <td><Status :status="beat.status" /></td>
                             <td :class="{ 'border-0': !beat.msg }"><Datetime :value="beat.time" /></td>
-                            <td class="border-0">{{ beat.msg }}</td>
+                            <td class="border-0 event-message-cell">
+                                <EventMessage :message="beat.msg" />
+                            </td>
                         </tr>
 
                         <tr v-if="importantHeartBeatListLength === 0">
@@ -118,6 +127,7 @@ import Status from "../components/Status.vue";
 import Datetime from "../components/Datetime.vue";
 import Pagination from "v-pagination-3";
 import Confirm from "../components/Confirm.vue";
+import EventMessage from "../components/EventMessage.vue";
 import {
     isDoubleClickConfirmArmed,
     requireDoubleClickConfirm,
@@ -130,6 +140,7 @@ export default {
         Status,
         Pagination,
         Confirm,
+        EventMessage,
     },
     props: {
         calculatedHeight: {
@@ -369,6 +380,31 @@ table {
     }
 }
 
+.important-events-table {
+    width: 100%;
+    table-layout: fixed;
+
+    .event-group-column {
+        width: 14%;
+    }
+
+    .event-monitor-column {
+        width: 18%;
+    }
+
+    .event-status-column {
+        width: 106px;
+    }
+
+    .event-time-column {
+        width: 132px;
+    }
+
+    .event-message-cell {
+        max-width: 0;
+    }
+}
+
 @media screen and (max-width: 1280px) {
     .name-column {
         min-width: 150px;
@@ -429,6 +465,14 @@ table {
 
         > .mb-3 {
             margin-bottom: 8px !important;
+        }
+    }
+
+    .important-events-table {
+        table-layout: auto;
+
+        .event-message-cell {
+            max-width: none;
         }
     }
 }

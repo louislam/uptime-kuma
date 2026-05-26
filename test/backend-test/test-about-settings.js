@@ -26,6 +26,10 @@ describe("About settings page branding and versioning", () => {
         path.join(__dirname, "../../src/pages/StatusPage.vue"),
         "utf8"
     );
+    const layoutSource = fs.readFileSync(
+        path.join(__dirname, "../../src/layouts/Layout.vue"),
+        "utf8"
+    );
 
     test("uses the Uptime Worker GitHub repository for update links", () => {
         assert.strictEqual(packageJson.repository.url, "https://github.com/esaueng/uptimeworker.git");
@@ -63,5 +67,10 @@ describe("About settings page branding and versioning", () => {
     test("links the public powered-by footer to the Uptime Worker fork", () => {
         assert.match(statusPageSource, /data-testid="powered-by"/);
         assert.match(statusPageSource, /href="https:\/\/github\.com\/esaueng\/uptimeworker"/);
+    });
+
+    test("links account menu help to the Uptime Worker wiki", () => {
+        assert.match(layoutSource, /href="https:\/\/github\.com\/esaueng\/uptimeworker\/wiki\/Uptime-Worker-Help"/);
+        assert.doesNotMatch(layoutSource, /https:\/\/github\.com\/louislam\/uptime-kuma\/wiki/);
     });
 });

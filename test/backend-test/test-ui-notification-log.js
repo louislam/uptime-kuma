@@ -127,4 +127,19 @@ describe("UI notification log", () => {
         assert.match(layoutSource, /to="\/logs"/);
         assert.match(layoutSource, /\$t\("Logs"\)/);
     });
+
+    test("renders compact paginated log entries with page-size controls", () => {
+        const logPageSource = fs.readFileSync(path.join(__dirname, "../../src/pages/NotificationLogs.vue"), "utf8");
+        const englishMessages = fs.readFileSync(path.join(__dirname, "../../src/lang/en.json"), "utf8");
+
+        assert.match(logPageSource, /v-for="entry in paginatedEntries"/);
+        assert.match(logPageSource, /pageSizeOptions:\s*\[10,\s*25,\s*50,\s*100\]/);
+        assert.match(logPageSource, /v-model\.number="pageSize"/);
+        assert.match(logPageSource, /class="log-pagination"/);
+        assert.match(logPageSource, /visiblePageNumbers/);
+        assert.match(logPageSource, /setPage\(page\)/);
+        assert.match(logPageSource, /grid-template-columns:\s*minmax\(92px,\s*max-content\)\s*minmax\(0,\s*1fr\)\s*max-content/);
+        assert.match(englishMessages, /"Shown per page":\s*"Shown per page"/);
+        assert.match(englishMessages, /"Showing \{from\}-\{to\} of \{total\}":\s*"Showing \{from\}-\{to\} of \{total\}"/);
+    });
 });

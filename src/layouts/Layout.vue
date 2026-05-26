@@ -117,7 +117,7 @@
 
                             <li>
                                 <a
-                                    href="https://github.com/louislam/uptime-kuma/wiki"
+                                    href="https://github.com/esaueng/uptimeworker/wiki/Uptime-Worker-Help"
                                     class="dropdown-item"
                                     target="_blank"
                                 >
