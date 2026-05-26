@@ -4125,6 +4125,75 @@ describe("Cloudflare Worker API", () => {
         ]);
     });
 
+    test("scheduled monitor enqueueing only sends monitors due by interval", async () => {
+        const { enqueueDueMonitors } = await import("../../../cloudflare/worker/api.mjs");
+        const now = Date.parse("2026-05-26T12:00:00Z");
+        const env = createEnv({
+            now,
+            monitors: [
+                {
+                    id: 7,
+                    name: "Recently checked",
+                    type: "http",
+                    url: "https://recent.example.test",
+                    interval: 300,
+                    active: 1,
+                },
+                {
+                    id: 8,
+                    name: "Due check",
+                    type: "http",
+                    url: "https://due.example.test",
+                    interval: 60,
+                    active: 1,
+                },
+                {
+                    id: 9,
+                    name: "Never checked",
+                    type: "ping",
+                    hostname: "192.0.2.9",
+                    interval: 300,
+                    active: 1,
+                },
+                {
+                    id: 10,
+                    name: "Group",
+                    type: "group",
+                    interval: 60,
+                    active: 1,
+                },
+                {
+                    id: 11,
+                    name: "Paused",
+                    type: "http",
+                    url: "https://paused.example.test",
+                    interval: 60,
+                    active: 0,
+                },
+            ],
+            heartbeats: [
+                {
+                    id: 1,
+                    monitor_id: 7,
+                    status: 1,
+                    checked_at: new Date(now - 60_000).toISOString(),
+                },
+                {
+                    id: 2,
+                    monitor_id: 8,
+                    status: 1,
+                    checked_at: new Date(now - 61_000).toISOString(),
+                },
+            ],
+        });
+
+        const result = await enqueueDueMonitors(env);
+
+        assert.strictEqual(result.paused, false);
+        assert.strictEqual(result.enqueued, 2);
+        assert.deepStrictEqual(env.MONITOR_QUEUE.sent.map((message) => message.monitorId), [8, 9]);
+    });
+
     test("queue consumer acknowledges messages without runner checks during deploy pause", async () => {
         const { consumeQueue } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({
@@ -4320,6 +4389,7 @@ describe("Cloudflare Worker API", () => {
  */
 function createEnv(initial) {
     const state = {
+        now: initial.now,
         profiles: initial.profiles || [],
         monitors: initial.monitors || [],
         heartbeats: initial.heartbeats || [],
@@ -4346,6 +4416,7 @@ function createEnv(initial) {
             lastError: null,
         },
         nextMonitorId: initial.nextMonitorId || 1,
+        nextHeartbeatId: initial.nextHeartbeatId || 1,
         nextNotificationId: initial.nextNotificationId || 1,
         nextTagId: initial.nextTagId || 1,
         nextMonitorTagId: initial.nextMonitorTagId || 1,
@@ -4641,6 +4712,9 @@ function createStatement(sql, state) {
                     }
                 }
                 return { results };
+            }
+            if (sql.includes("FROM monitors") && sql.includes("NOT EXISTS") && sql.includes("FROM heartbeats")) {
+                return { results: state.monitors.filter((monitor) => isMonitorDueForEnqueue(monitor, state)) };
             }
             if (sql.includes("FROM monitors")) {
                 if (sql.includes("WHERE id = ?")) {
@@ -5162,19 +5236,60 @@ function createStatement(sql, state) {
                 return { success: true };
             }
             if (sql.includes("INSERT INTO heartbeats")) {
-                const [monitorId, status, ping, msg] = this.values;
-                state.heartbeats.push({
+                const [monitorId, status, ping, msg, responseR2Key] = this.values;
+                const heartbeat = {
                     monitor_id: Number(monitorId),
                     status,
                     ping,
                     msg,
+                };
+                Object.defineProperties(heartbeat, {
+                    id: {
+                        value: state.nextHeartbeatId++,
+                    },
+                    response_r2_key: {
+                        value: responseR2Key,
+                    },
+                    checked_at: {
+                        value: new Date(state.now || Date.now()).toISOString(),
+                    },
                 });
+                state.heartbeats.push(heartbeat);
                 return { success: true };
             }
             return { success: true };
         },
     };
     return statement;
+}
+
+function isMonitorDueForEnqueue(monitor, state) {
+    if (Number(monitor.active) !== 1 || monitor.type === "group") {
+        return false;
+    }
+    const latestHeartbeat = latestHeartbeatForMonitor(state.heartbeats, monitor.id);
+    if (!latestHeartbeat) {
+        return true;
+    }
+    const checkedAt = new Date(latestHeartbeat.checked_at).getTime();
+    if (!Number.isFinite(checkedAt)) {
+        return true;
+    }
+    const intervalSeconds = Number(monitor.interval) > 0 ? Number(monitor.interval) : 60;
+    const now = state.now || Date.now();
+    return now - checkedAt >= intervalSeconds * 1000;
+}
+
+function latestHeartbeatForMonitor(heartbeats, monitorId) {
+    return heartbeats
+        .filter((heartbeat) => Number(heartbeat.monitor_id) === Number(monitorId))
+        .toSorted((a, b) => {
+            const checkedAtCompare = String(b.checked_at || "").localeCompare(String(a.checked_at || ""));
+            if (checkedAtCompare !== 0) {
+                return checkedAtCompare;
+            }
+            return Number(b.id || 0) - Number(a.id || 0);
+        })[0] || null;
 }
 
 /**

@@ -54,6 +54,7 @@ const WORKER_AUTH_REMEMBER_SESSION_TTL_SECONDS = 30 * 24 * 60 * 60;
 const WORKER_AUTH_TOTP_PERIOD_SECONDS = 30;
 const WORKER_AUTH_TOTP_WINDOW = 1;
 const WORKER_HEARTBEAT_RESPONSE_MAX_CHARS = 64 * 1024;
+const DEFAULT_MONITOR_INTERVAL_SECONDS = 60;
 const DEFAULT_DEPLOY_MONITOR_PAUSE_SECONDS = 120;
 const ACCESS_SECRET_HEADER = "X-Uptime-Worker-Token";
 const ACCESS_SECRET_MONITOR_TYPES = new Set(["http", "keyword", "json-query"]);
@@ -2448,10 +2449,7 @@ export async function enqueueDueMonitors(env) {
         };
     }
 
-    const result = await env.DB.prepare(
-        "SELECT id FROM monitors WHERE active = 1 AND type != 'group' ORDER BY id"
-    ).all();
-    const monitors = result.results || [];
+    const monitors = await listDueMonitorsForEnqueue(env);
 
     await Promise.all(
         monitors.map((monitor) =>
@@ -2466,6 +2464,36 @@ export async function enqueueDueMonitors(env) {
         paused: false,
         enqueued: monitors.length,
     };
+}
+
+async function listDueMonitorsForEnqueue(env) {
+    const result = await env.DB.prepare(
+        `SELECT id
+         FROM monitors
+         WHERE active = 1
+           AND type != 'group'
+           AND (
+                NOT EXISTS (
+                    SELECT 1
+                    FROM heartbeats h
+                    WHERE h.monitor_id = monitors.id
+                )
+                OR (
+                    strftime('%s', 'now') - strftime('%s', (
+                        SELECT latest.checked_at
+                        FROM heartbeats latest
+                        WHERE latest.monitor_id = monitors.id
+                        ORDER BY latest.checked_at DESC, latest.id DESC
+                        LIMIT 1
+                    ))
+                ) >= CASE
+                    WHEN "interval" IS NOT NULL AND "interval" > 0 THEN "interval"
+                    ELSE ${DEFAULT_MONITOR_INTERVAL_SECONDS}
+                END
+           )
+         ORDER BY id`
+    ).all();
+    return result.results || [];
 }
 
 export async function consumeQueue(batch, env) {
