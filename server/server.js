@@ -18,7 +18,9 @@ dayjs.extend(require("./modules/dayjs/plugin/timezone"));
 dayjs.extend(require("dayjs/plugin/customParseFormat"));
 
 // Load environment variables from `.env`
-loadEnvFile();
+try {
+    loadEnvFile();
+} catch (_) {}
 
 // Check Node.js Version
 const nodeVersion = process.versions.node;
