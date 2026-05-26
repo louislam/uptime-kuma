@@ -23,6 +23,17 @@ describe("Cloudflare Worker API", () => {
         assert.match(migrationSql, /'twingate'/);
     });
 
+    test("D1 migration adds latest-heartbeat lookup index", async () => {
+        const migrationPath = path.join(
+            __dirname,
+            "../../../cloudflare/migrations/0010_latest_heartbeat_lookup_index.sql"
+        );
+        const migrationSql = fs.readFileSync(migrationPath, "utf8");
+
+        assert.match(migrationSql, /CREATE INDEX IF NOT EXISTS idx_heartbeats_monitor_checked_at_id/);
+        assert.match(migrationSql, /heartbeats\(monitor_id, checked_at DESC, id DESC\)/);
+    });
+
     test("D1 migration adds monitor config JSON for edit form fields", async () => {
         const migrationPath = path.join(
             __dirname,
@@ -835,6 +846,69 @@ describe("Cloudflare Worker API", () => {
                     time: "2026-05-11 02:30:00",
                 },
             }
+        );
+    });
+
+    test("lists monitor latest heartbeats without a table-wide heartbeat aggregate", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                {
+                    id: 7,
+                    name: "Private HTTP",
+                    type: "http",
+                    url: "http://private.example.test",
+                    active: 1,
+                },
+                {
+                    id: 8,
+                    name: "Public HTTP",
+                    type: "http",
+                    url: "https://example.test",
+                    active: 1,
+                },
+            ],
+            heartbeats: [
+                {
+                    id: 101,
+                    monitor_id: 7,
+                    status: 0,
+                    ping: null,
+                    msg: "Timeout",
+                    checked_at: "2026-05-11 02:30:00",
+                },
+                {
+                    id: 102,
+                    monitor_id: 7,
+                    status: 1,
+                    ping: 18,
+                    msg: "200 - OK",
+                    checked_at: "2026-05-11 02:31:00",
+                },
+                {
+                    id: 103,
+                    monitor_id: 8,
+                    status: 1,
+                    ping: 22,
+                    msg: "200 - OK",
+                    checked_at: "2026-05-11 02:31:00",
+                },
+            ],
+        });
+
+        const response = await handleApiRequest(adminRequest("https://example.com/api/monitors"), env);
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(body.monitors.find((monitor) => monitor.id === 7).lastHeartbeat.msg, "200 - OK");
+        assert.strictEqual(body.monitors.find((monitor) => monitor.id === 8).lastHeartbeat.ping, 22);
+        assert.ok(
+            env.state.queries.some((sql) => sql.includes("WITH requested_monitor_ids")),
+            "monitor list should use the per-monitor latest heartbeat lookup"
+        );
+        assert.ok(
+            env.state.queries.every((sql) => !sql.includes("MAX(checked_at)") && !sql.includes("GROUP BY monitor_id")),
+            "monitor list should not scan and aggregate all retained heartbeats"
         );
     });
 
@@ -4213,6 +4287,7 @@ function createEnv(initial) {
         dockerHosts: initial.dockerHosts || [],
         remoteBrowsers: initial.remoteBrowsers || [],
         settings: initial.settings || {},
+        queries: [],
         runnerJobs: [],
         runnerResult: initial.runnerResult,
         runnerResults: initial.runnerResults ? [...initial.runnerResults] : null,
@@ -4252,6 +4327,7 @@ function createEnv(initial) {
         CF_ACCESS_CERTS_JSON: initial.accessAuth?.certsJson,
         DB: {
             prepare(sql) {
+                state.queries.push(sql);
                 return createStatement(sql, state);
             },
         },
@@ -4502,6 +4578,25 @@ function createStatement(sql, state) {
             }
             if (sql.includes("FROM remote_browser")) {
                 return { results: [...state.remoteBrowsers] };
+            }
+            if (sql.includes("WITH requested_monitor_ids") && sql.includes("FROM requested_monitor_ids")) {
+                const ids = this.values.map(Number);
+                const results = [];
+                for (const id of ids) {
+                    const latestHeartbeat = state.heartbeats
+                        .filter((heartbeat) => Number(heartbeat.monitor_id) === id)
+                        .toSorted((a, b) => {
+                            const checkedAtCompare = String(b.checked_at).localeCompare(String(a.checked_at));
+                            if (checkedAtCompare !== 0) {
+                                return checkedAtCompare;
+                            }
+                            return Number(b.id || 0) - Number(a.id || 0);
+                        })[0];
+                    if (latestHeartbeat) {
+                        results.push(latestHeartbeat);
+                    }
+                }
+                return { results };
             }
             if (sql.includes("FROM monitors")) {
                 if (sql.includes("WHERE id = ?")) {

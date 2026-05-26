@@ -61,6 +61,7 @@ const NOTIFICATION_OK_MESSAGE = "Sent Successfully.";
 const DEFAULT_APP_VERSION = "1.0.0";
 const DEPLOY_MONITOR_PAUSE_MESSAGE = "Monitor checks are paused during Worker deployment";
 const MONITOR_PAUSED_MESSAGE = "Monitor is paused";
+const LATEST_HEARTBEAT_LOOKUP_CHUNK_SIZE = 100;
 
 const WORKER_MONITOR_TYPES = new Set([
     "group",
@@ -1444,30 +1445,52 @@ export async function listMonitors(env) {
     const monitors = await listMonitorRows(env);
     const relationshipData = buildMonitorRelationshipData(monitors);
     const monitorIds = monitors.map((monitor) => Number(monitor.id));
-    const [tagsByMonitorId, notificationsByMonitorId] = await Promise.all([
+    const [tagsByMonitorId, notificationsByMonitorId, heartbeatsByMonitorId] = await Promise.all([
         listTagsByMonitorId(env, monitorIds),
         listMonitorNotificationsByMonitorId(env, monitorIds),
+        listLatestHeartbeatsByMonitorId(env, monitorIds),
     ]);
-
-    const heartbeatResult = await env.DB.prepare(
-        `SELECT h.monitor_id, h.status, h.ping, h.msg, h.checked_at
-         FROM heartbeats h
-         INNER JOIN (
-             SELECT monitor_id, MAX(checked_at) AS checked_at
-             FROM heartbeats
-             GROUP BY monitor_id
-         ) latest
-             ON latest.monitor_id = h.monitor_id
-             AND latest.checked_at = h.checked_at`
-    ).all();
-    const heartbeatsByMonitorId = new Map(
-        (heartbeatResult.results || []).map((heartbeat) => [Number(heartbeat.monitor_id), heartbeat])
-    );
 
     return monitors.map((monitor) => {
         const latestHeartbeat = heartbeatsByMonitorId.get(Number(monitor.id));
         return serializeMonitor(monitor, latestHeartbeat, relationshipData, tagsByMonitorId, notificationsByMonitorId);
     });
+}
+
+/**
+ * Load the latest heartbeat for each requested monitor without scanning the
+ * entire retained heartbeat history table.
+ * @param {object} env Cloudflare Worker environment bindings.
+ * @param {number[]} monitorIds Monitor IDs to hydrate.
+ * @returns {Promise<Map<number, object>>} Latest heartbeat rows keyed by monitor ID.
+ */
+async function listLatestHeartbeatsByMonitorId(env, monitorIds) {
+    const ids = [...new Set((monitorIds || []).map((id) => Number(id)).filter(Number.isInteger))];
+    const heartbeatsByMonitorId = new Map();
+    for (let index = 0; index < ids.length; index += LATEST_HEARTBEAT_LOOKUP_CHUNK_SIZE) {
+        const chunk = ids.slice(index, index + LATEST_HEARTBEAT_LOOKUP_CHUNK_SIZE);
+        const result = await env.DB.prepare(
+            `WITH requested_monitor_ids(monitor_id) AS (
+                VALUES ${chunk.map(() => "(?)").join(", ")}
+             )
+             SELECT h.monitor_id, h.status, h.ping, h.msg, h.checked_at
+             FROM requested_monitor_ids requested
+             INNER JOIN heartbeats h
+                 ON h.id = (
+                     SELECT latest.id
+                     FROM heartbeats latest
+                     WHERE latest.monitor_id = requested.monitor_id
+                     ORDER BY latest.checked_at DESC, latest.id DESC
+                     LIMIT 1
+                 )`
+        )
+            .bind(...chunk)
+            .all();
+        for (const heartbeat of result.results || []) {
+            heartbeatsByMonitorId.set(Number(heartbeat.monitor_id), heartbeat);
+        }
+    }
+    return heartbeatsByMonitorId;
 }
 
 /**
