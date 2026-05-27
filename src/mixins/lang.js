@@ -22,7 +22,7 @@ export default {
         },
         async statusPageLanguage(lang) {
             await this.changeLang(lang, false);
-        }
+        },
     },
 
     methods: {
