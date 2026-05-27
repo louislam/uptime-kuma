@@ -56,6 +56,27 @@ describe("Worker monitor save with older D1 schema", () => {
  * @returns {object} Minimal Worker environment mock.
  */
 function createLegacyParentEnv(state) {
+    state.monitorColumns = new Set([
+        "id",
+        "name",
+        "type",
+        "url",
+        "hostname",
+        "port",
+        "method",
+        "headers",
+        "body",
+        "keyword",
+        "invert_keyword",
+        "json_path",
+        "expected_value",
+        "timeout",
+        "interval",
+        "active",
+        "network_profile_id",
+        "config_json",
+    ]);
+
     return {
         DB: {
             prepare(sql) {
@@ -65,6 +86,14 @@ function createLegacyParentEnv(state) {
                         this.values = values;
                         return this;
                     },
+                    async all() {
+                        if (sql.includes("PRAGMA table_info(monitors)")) {
+                            return {
+                                results: [...state.monitorColumns].map((name, cid) => ({ cid, name })),
+                            };
+                        }
+                        return { results: [] };
+                    },
                     async first() {
                         if (sql.includes("FROM monitors")) {
                             return state.monitors.find((monitor) => monitor.id === Number(this.values[0])) || null;
@@ -72,6 +101,18 @@ function createLegacyParentEnv(state) {
                         return null;
                     },
                     async run() {
+                        if (sql.includes("ALTER TABLE monitors ADD COLUMN proxy_id")) {
+                            state.monitorColumns.add("proxy_id");
+                            for (const monitor of state.monitors) {
+                                monitor.proxy_id = monitor.proxy_id ?? null;
+                            }
+                            return { success: true };
+                        }
+                        if (sql.includes("CREATE TABLE IF NOT EXISTS proxy")
+                            || sql.includes("CREATE INDEX IF NOT EXISTS idx_proxy_default")
+                            || sql.includes("CREATE INDEX IF NOT EXISTS idx_monitors_proxy_id")) {
+                            return { success: true };
+                        }
                         if (/INSERT INTO monitors[\s\S]*parent/.test(sql)) {
                             throw new Error("D1_ERROR: table monitors has no column named parent: SQLITE_ERROR");
                         }
@@ -97,9 +138,10 @@ function createLegacyParentEnv(state) {
                                 active,
                                 networkProfileId,
                                 configJson,
+                                proxyId,
                             ] = this.values;
                             const id = state.nextMonitorId++;
-                            state.monitors.push({
+                            const row = {
                                 id,
                                 name,
                                 type,
@@ -118,7 +160,11 @@ function createLegacyParentEnv(state) {
                                 active,
                                 network_profile_id: networkProfileId,
                                 config_json: configJson,
-                            });
+                            };
+                            if (state.monitorColumns.has("proxy_id")) {
+                                row.proxy_id = proxyId ?? null;
+                            }
+                            state.monitors.push(row);
                             return { meta: { last_row_id: id } };
                         }
                         if (sql.includes("UPDATE monitors SET")) {
@@ -126,6 +172,9 @@ function createLegacyParentEnv(state) {
                             if (monitor) {
                                 monitor.name = this.values[0];
                                 monitor.type = this.values[1];
+                                if (state.monitorColumns.has("proxy_id")) {
+                                    monitor.proxy_id = this.values.at(-2) ?? null;
+                                }
                             }
                             return { success: true };
                         }
