@@ -232,6 +232,8 @@ class Monitor extends BeanModel {
                 oauth_scopes: this.oauth_scopes,
                 oauth_audience: this.oauth_audience,
                 oauth_auth_method: this.oauth_auth_method,
+                bearer_token: this.bearer_token,
+                gamedigToken: this.gamedigToken,
                 pushToken: this.pushToken,
                 databaseConnectionString: this.databaseConnectionString,
                 radiusUsername: this.radiusUsername,
@@ -483,6 +485,14 @@ class Monitor extends BeanModel {
                         };
                     }
 
+                    // Bearer token auth
+                    let bearerAuthHeader = {};
+                    if (this.auth_method === "bearer") {
+                        bearerAuthHeader = {
+                            Authorization: "Bearer " + this.bearer_token,
+                        };
+                    }
+
                     // OIDC: Basic client credential flow.
                     // Additional grants might be implemented in the future
                     let oauth2AuthHeader = {};
@@ -556,6 +566,7 @@ class Monitor extends BeanModel {
                             Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
                             ...(contentType ? { "Content-Type": contentType } : {}),
                             ...basicAuthHeader,
+                            ...bearerAuthHeader,
                             ...oauth2AuthHeader,
                             ...(this.headers ? JSON.parse(this.headers) : {}),
                         },
@@ -1195,6 +1206,7 @@ class Monitor extends BeanModel {
             let res;
             if (this.auth_method === "ntlm") {
                 options.httpsAgent.keepAlive = true;
+                options.httpAgent.keepAlive = true;
 
                 res = await httpNtlm(options, {
                     username: this.basic_auth_user,
@@ -2065,7 +2077,7 @@ class Monitor extends BeanModel {
         }
 
         const parentActive = await Monitor.isParentActive(parent.id);
-        return parent.active && parentActive;
+        return parent.active === 1 && parentActive;
     }
 
     /**

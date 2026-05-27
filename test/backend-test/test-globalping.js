@@ -165,6 +165,63 @@ describe("GlobalpingMonitorType", () => {
                 return true;
             });
         });
+
+        test("should retry create measurement on status 500", async () => {
+            const monitorType = new GlobalpingMonitorType("test-agent/1.0");
+            const mockClient = createGlobalpingClientMock();
+            const createResponse = createMockResponse({
+                id: "2g8T7V3OwXG3JV6Y10011zF2v",
+            });
+            const measurement = createPingMeasurement();
+            const awaitResponse = createMockResponse(measurement);
+
+            mockClient.createMeasurement.mock.mockImplementationOnce(() => ({
+                ok: false,
+                response: {
+                    status: 500,
+                },
+            }));
+            mockClient.createMeasurement.mock.mockImplementation(() => createResponse);
+            mockClient.awaitMeasurement.mock.mockImplementation(() => awaitResponse);
+
+            const monitor = {
+                hostname: "example.com",
+                location: "North America",
+                ping_count: 3,
+                protocol: "ICMP",
+                ipFamily: "ipv4",
+            };
+
+            const heartbeat = {
+                status: PENDING,
+                msg: "",
+                ping: 0,
+            };
+
+            await monitorType.ping(mockClient, monitor, heartbeat, true);
+
+            const expectedCreateMeasurement = {
+                type: "ping",
+                target: "example.com",
+                inProgressUpdates: false,
+                limit: 1,
+                locations: [{ magic: "North America" }],
+                measurementOptions: {
+                    packets: 3,
+                    protocol: "ICMP",
+                    ipVersion: 4,
+                },
+            };
+            assert.strictEqual(mockClient.createMeasurement.mock.calls.length, 2);
+            assert.deepStrictEqual(mockClient.createMeasurement.mock.calls[0].arguments[0], expectedCreateMeasurement);
+            assert.deepStrictEqual(mockClient.createMeasurement.mock.calls[1].arguments[0], expectedCreateMeasurement);
+
+            assert.deepStrictEqual(heartbeat, {
+                status: UP,
+                msg: "Ashburn (VA), US, NA, Amazon.com (AS14618), (aws-us-east-1) : OK",
+                ping: 2.169,
+            });
+        });
     });
 
     describe("http", () => {
@@ -579,6 +636,80 @@ describe("GlobalpingMonitorType", () => {
                 return true;
             });
         });
+
+        test("should retry create measurement on status 500", async () => {
+            const monitorType = new GlobalpingMonitorType("test-agent/1.0");
+            const mockClient = createGlobalpingClientMock();
+            const createResponse = createMockResponse({
+                id: "2g8T7V3OwXG3JV6Y10011zF2v",
+            });
+            const measurement = createHttpMeasurement();
+            const awaitResponse = createMockResponse(measurement);
+
+            mockClient.createMeasurement.mock.mockImplementationOnce(() => ({
+                ok: false,
+                response: {
+                    status: 500,
+                },
+            }));
+            mockClient.createMeasurement.mock.mockImplementation(() => createResponse);
+            mockClient.awaitMeasurement.mock.mockImplementation(() => awaitResponse);
+
+            const monitor = {
+                url: "https://example.com:444/api/test?test=1",
+                location: "North America",
+                method: "GET",
+                accepted_statuscodes_json: JSON.stringify(["200-299", "300-399"]),
+                headers: '{"Test-Header": "Test-Value"}',
+                ipFamily: "ipv4",
+                dns_resolve_server: "8.8.8.8",
+                auth_method: "basic",
+                basic_auth_user: "username",
+                basic_auth_pass: "password",
+            };
+
+            const heartbeat = {
+                status: PENDING,
+                msg: "",
+                ping: 0,
+            };
+
+            await monitorType.http(mockClient, monitor, heartbeat, true);
+
+            const expectedToken = encodeBase64(monitor.basic_auth_user, monitor.basic_auth_pass);
+            const expectedCreateMeasurement = {
+                type: "http",
+                target: "example.com",
+                inProgressUpdates: false,
+                limit: 1,
+                locations: [{ magic: "North America" }],
+                measurementOptions: {
+                    request: {
+                        host: "example.com",
+                        path: "/api/test",
+                        query: "test=1",
+                        method: "GET",
+                        headers: {
+                            "Test-Header": "Test-Value",
+                            Authorization: `Basic ${expectedToken}`,
+                        },
+                    },
+                    port: 444,
+                    protocol: "HTTPS",
+                    ipVersion: 4,
+                    resolver: "8.8.8.8",
+                },
+            };
+            assert.strictEqual(mockClient.createMeasurement.mock.calls.length, 2);
+            assert.deepStrictEqual(mockClient.createMeasurement.mock.calls[0].arguments[0], expectedCreateMeasurement);
+            assert.deepStrictEqual(mockClient.createMeasurement.mock.calls[1].arguments[0], expectedCreateMeasurement);
+
+            assert.deepStrictEqual(heartbeat, {
+                status: UP,
+                msg: "New York (NY), US, NA, MASSIVEGRID (AS49683) : OK",
+                ping: 1440,
+            });
+        });
     });
 
     describe("dns", () => {
@@ -839,6 +970,73 @@ describe("GlobalpingMonitorType", () => {
                 return true;
             });
 
+            assert.deepStrictEqual(redbeanMock.exec.mock.calls[0].arguments, [
+                "UPDATE `monitor` SET dns_last_result = ? WHERE id = ? ",
+                ["93.184.216.34", "1"],
+            ]);
+        });
+
+        test("should retry create measurement on status 500", async () => {
+            const monitorType = new GlobalpingMonitorType("test-agent/1.0");
+            const mockClient = createGlobalpingClientMock();
+            const createResponse = createMockResponse({
+                id: "2g8T7V3OwXG3JV6Y10011zF2v",
+            });
+            const measurement = createDnsMeasurement();
+            const awaitResponse = createMockResponse(measurement);
+
+            mockClient.createMeasurement.mock.mockImplementationOnce(() => ({
+                ok: false,
+                response: {
+                    status: 500,
+                },
+            }));
+            mockClient.createMeasurement.mock.mockImplementation(() => createMockResponse(createResponse));
+            mockClient.awaitMeasurement.mock.mockImplementation(() => awaitResponse);
+
+            const redbeanMock = createRedbeanMock();
+            redbeanMock.exec.mock.mockImplementation(() => Promise.resolve());
+
+            const monitor = {
+                id: "1",
+                hostname: "example.com",
+                location: "us-east-1",
+                dns_resolve_type: "A",
+                port: 53,
+                protocol: "udp",
+            };
+
+            const heartbeat = {
+                status: PENDING,
+                msg: "",
+                ping: null,
+            };
+
+            await monitorType.dns(mockClient, monitor, heartbeat, false, redbeanMock);
+
+            const expectedCreateMeasurement = {
+                type: "dns",
+                target: "example.com",
+                inProgressUpdates: false,
+                limit: 1,
+                locations: [{ magic: "us-east-1" }],
+                measurementOptions: {
+                    query: { type: "A" },
+                    port: 53,
+                    protocol: "udp",
+                },
+            };
+            assert.strictEqual(mockClient.createMeasurement.mock.calls.length, 2);
+            assert.deepStrictEqual(mockClient.createMeasurement.mock.calls[0].arguments[0], expectedCreateMeasurement);
+            assert.deepStrictEqual(mockClient.createMeasurement.mock.calls[1].arguments[0], expectedCreateMeasurement);
+
+            assert.deepStrictEqual(heartbeat, {
+                status: UP,
+                msg: "New York (NY), US, NA, MASSIVEGRID (AS49683) : 93.184.216.34",
+                ping: 25,
+            });
+
+            assert.strictEqual(redbeanMock.exec.mock.calls.length, 1);
             assert.deepStrictEqual(redbeanMock.exec.mock.calls[0].arguments, [
                 "UPDATE `monitor` SET dns_last_result = ? WHERE id = ? ",
                 ["93.184.216.34", "1"],

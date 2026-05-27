@@ -30,8 +30,10 @@ jobs:
         with:
           node-version: 20
 
-      - name: Run npm update
-        run: npm update --package-lock-only
+      - name: Generate lockfile from scratch
+        run: |
+          rm -f package-lock.json
+          npm install --package-lock-only
 
       - name: Check if there are changes
         id: check_changes

@@ -739,11 +739,6 @@ export default {
     }
 }
 
-.actions-row {
-    display: flex;
-    align-items: center;
-}
-
 .selection-controls {
     margin-top: 5px;
     display: flex;
@@ -822,21 +817,12 @@ export default {
     transition: none !important;
 }
 
-.monitor-item {
-    width: 100%;
-}
-
 .tags {
     margin-top: 4px;
     padding-left: 67px;
     display: flex;
     flex-wrap: wrap;
     gap: 0;
-}
-
-.bottom-style {
-    padding-left: 67px;
-    margin-top: 5px;
 }
 
 @media (max-width: 549px), (min-width: 770px) and (max-width: 1149px), (min-width: 1200px) and (max-width: 1499px) {

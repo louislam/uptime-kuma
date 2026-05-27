@@ -68,6 +68,79 @@ describe("Uptime Calculator", () => {
         assert.strictEqual(divisionKey, dayjs.utc("2023-08-12 20:46:00").unix());
     });
 
+    test("missing cleanup buckets are not created when createIfMissing is false", () => {
+        let c2 = new UptimeCalculator();
+
+        c2.getMinutelyKey(dayjs.utc("2023-08-12 20:46:59"));
+        c2.getHourlyKey(dayjs.utc("2023-08-12 20:46:59"));
+        c2.getDailyKey(dayjs.utc("2023-08-12 20:46:59"));
+
+        let minutelyCleanupKey = c2.getMinutelyKey(dayjs.utc("2023-08-11 20:46:59"), false);
+        let hourlyCleanupKey = c2.getHourlyKey(dayjs.utc("2023-07-13 20:46:59"), false);
+        let dailyCleanupKey = c2.getDailyKey(dayjs.utc("2022-08-12 20:46:59"), false);
+
+        assert.strictEqual(c2.minutelyUptimeDataList.length(), 1);
+        assert.strictEqual(c2.hourlyUptimeDataList.length(), 1);
+        assert.strictEqual(c2.dailyUptimeDataList.length(), 1);
+        assert.strictEqual(c2.minutelyUptimeDataList[minutelyCleanupKey], undefined);
+        assert.strictEqual(c2.hourlyUptimeDataList[hourlyCleanupKey], undefined);
+        assert.strictEqual(c2.dailyUptimeDataList[dailyCleanupKey], undefined);
+    });
+
+    test("cleanup lookup should not create missing minutely/hourly buckets", () => {
+        let startDate = dayjs.utc("2023-08-12 00:00:00");
+
+        // First test the broken version that creates missing buckets during cleanup lookup.
+        let broken = new UptimeCalculator();
+        let minutelyQueueLimit = broken.minutelyUptimeDataList.__limit;
+        let hourlyQueueLimit = broken.hourlyUptimeDataList.__limit;
+        let totalTicks = Math.max(minutelyQueueLimit, hourlyQueueLimit);
+
+        let minutelyEndDate = startDate;
+        let hourlyEndDate = startDate;
+        for (let tick = 0; tick < totalTicks; tick++) {
+            minutelyEndDate = startDate.add(tick, "minute");
+            hourlyEndDate = startDate.add(tick, "hour");
+
+            // Simulate normal key lookup that creates buckets.
+            broken.getMinutelyKey(minutelyEndDate);
+            broken.getHourlyKey(hourlyEndDate);
+
+            // Simulate pre-fix cleanup key lookup that accidentally creates missing buckets.
+            broken.getMinutelyKey(minutelyEndDate.subtract(broken.statMinutelyKeepHour, "hour"));
+            broken.getHourlyKey(hourlyEndDate.subtract(broken.statHourlyKeepDay, "day"));
+        }
+
+        UptimeCalculator.currentDate = minutelyEndDate;
+        assert.strictEqual(broken.getDataArray(minutelyQueueLimit, "minute").length, minutelyQueueLimit / 2);
+
+        UptimeCalculator.currentDate = hourlyEndDate;
+        assert.strictEqual(broken.getDataArray(hourlyQueueLimit, "hour").length, hourlyQueueLimit / 2);
+
+        // Now test the fixed version that should not create missing buckets.
+        let fixed = new UptimeCalculator();
+        let fixedMinutelyTickDate = startDate;
+        let fixedHourlyTickDate = startDate;
+        for (let tick = 0; tick < totalTicks; tick++) {
+            fixedMinutelyTickDate = startDate.add(tick, "minute");
+            fixedHourlyTickDate = startDate.add(tick, "hour");
+
+            // Simulate normal key lookup that creates buckets.
+            fixed.getMinutelyKey(fixedMinutelyTickDate);
+            fixed.getHourlyKey(fixedHourlyTickDate);
+
+            // Simulate pre-fix cleanup key lookup that should not create missing buckets.
+            fixed.getMinutelyKey(fixedMinutelyTickDate.subtract(fixed.statMinutelyKeepHour, "hour"), false);
+            fixed.getHourlyKey(fixedHourlyTickDate.subtract(fixed.statHourlyKeepDay, "day"), false);
+        }
+
+        UptimeCalculator.currentDate = minutelyEndDate;
+        assert.strictEqual(fixed.getDataArray(minutelyQueueLimit, "minute").length, minutelyQueueLimit);
+
+        UptimeCalculator.currentDate = hourlyEndDate;
+        assert.strictEqual(fixed.getDataArray(hourlyQueueLimit, "hour").length, hourlyQueueLimit);
+    });
+
     test("getDailyKey() returns correct timestamp for start of day", () => {
         let c2 = new UptimeCalculator();
         let dailyKey = c2.getDailyKey(dayjs.utc("2023-08-12 20:46:00"));

@@ -220,17 +220,11 @@ class DomainExpiry extends BeanModel {
 
         const tld = parseTld(target);
 
-        // Avoid logging for incomplete/invalid input while editing monitors.
-        if (tld.isIp) {
-            throw new TranslatableError("domain_expiry_unsupported_is_ip", { hostname: tld.hostname });
-        }
-        // No one-letter public suffix exists; treat this as an incomplete/invalid input while typing.
-        if (tld.publicSuffix.length < 2) {
-            throw new TranslatableError("domain_expiry_public_suffix_too_short", { publicSuffix: tld.publicSuffix });
-        }
+        // It must be checked first, filter out non-ICANN domains.
         if (!tld.isIcann) {
             throw new TranslatableError("domain_expiry_unsupported_is_icann", {
-                domain: tld.domain,
+                // If domain is null, use hostname as fallback for better error message.
+                domain: tld.domain ?? tld.hostname ?? "EMPTY DOMAIN",
                 publicSuffix: tld.publicSuffix,
             });
         }
@@ -285,7 +279,7 @@ class DomainExpiry extends BeanModel {
         let bean = await DomainExpiry.findByDomainNameOrCreate(domainName);
         let expiryDate;
 
-        if (bean?.lastCheck && dayjs.utc(bean.lastCheck).diff(dayjs.utc(), "day") < 1) {
+        if (bean?.lastCheck && dayjs.utc().diff(dayjs.utc(bean.lastCheck), "day") < 1) {
             log.debug("domain_expiry", `Domain expiry already checked recently for ${bean.domain}, won't re-check.`);
             return bean.expiry;
         } else if (bean) {

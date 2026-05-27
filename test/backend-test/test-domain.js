@@ -96,38 +96,6 @@ describe("Domain Expiry", () => {
         });
 
         describe("Domain Parsing", () => {
-            test("throws error for IP address (isIp check)", async () => {
-                const monitor = {
-                    type: "http",
-                    url: "https://127.0.0.1",
-                    domainExpiryNotification: true,
-                };
-                await assert.rejects(
-                    async () => await DomainExpiry.checkSupport(monitor),
-                    (error) => {
-                        assert.strictEqual(error.constructor.name, "TranslatableError");
-                        assert.strictEqual(error.message, "domain_expiry_unsupported_is_ip");
-                        return true;
-                    }
-                );
-            });
-
-            test("throws error for too short suffix(example.a)", async () => {
-                const monitor = {
-                    type: "http",
-                    url: "https://example.a",
-                    domainExpiryNotification: true,
-                };
-                await assert.rejects(
-                    async () => await DomainExpiry.checkSupport(monitor),
-                    (error) => {
-                        assert.strictEqual(error.constructor.name, "TranslatableError");
-                        assert.strictEqual(error.message, "domain_expiry_public_suffix_too_short");
-                        return true;
-                    }
-                );
-            });
-
             test("throws error for non-ICANN TLD (e.g. .local)", async () => {
                 const monitor = {
                     type: "http",

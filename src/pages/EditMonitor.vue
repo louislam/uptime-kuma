@@ -100,6 +100,7 @@
                                         <option value="sqlserver">Microsoft SQL Server</option>
                                         <option value="mongodb">MongoDB</option>
                                         <option value="mysql">MySQL/MariaDB</option>
+                                        <option value="oracledb">Oracle Database</option>
                                         <option value="postgres">PostgreSQL</option>
                                         <option value="radius">Radius</option>
                                         <option value="redis">Redis</option>
@@ -203,28 +204,43 @@
                                 />
                             </div>
 
-                            <!-- Websocket Subprotocol Docs: https://www.iana.org/assignments/websocket/websocket.xml#subprotocol-name -->
-                            <div v-if="monitor.type === 'websocket-upgrade'" class="my-3">
-                                <label for="ws_subprotocol" class="form-label">{{ $t("Subprotocol(s)") }}</label>
-                                <input
-                                    id="ws_subprotocol"
-                                    v-model="monitor.wsSubprotocol"
-                                    type="text"
-                                    class="form-control"
-                                    placeholder="mielecloudconnect,soap"
-                                />
-                                <i18n-t tag="div" class="form-text" keypath="wsSubprotocolDescription">
-                                    <template #documentation>
-                                        <a
-                                            href="https://www.iana.org/assignments/websocket/websocket.xml#subprotocol-name"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                        >
-                                            {{ $t("documentationOf", ["IANA"]) }}
-                                        </a>
-                                    </template>
-                                </i18n-t>
-                            </div>
+                            <template v-if="monitor.type === 'websocket-upgrade'">
+                                <h2 class="mt-5 mb-2">{{ $t("WebSocket Options") }}</h2>
+
+                                <!-- Websocket Subprotocol Docs: https://www.iana.org/assignments/websocket/websocket.xml#subprotocol-name -->
+                                <div class="my-3">
+                                    <label for="ws_subprotocol" class="form-label">{{ $t("Subprotocol(s)") }}</label>
+                                    <input
+                                        id="ws_subprotocol"
+                                        v-model="monitor.wsSubprotocol"
+                                        type="text"
+                                        class="form-control"
+                                        placeholder="mielecloudconnect,soap"
+                                    />
+                                    <i18n-t tag="div" class="form-text" keypath="wsSubprotocolDescription">
+                                        <template #documentation>
+                                            <a
+                                                href="https://www.iana.org/assignments/websocket/websocket.xml#subprotocol-name"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                {{ $t("documentationOf", ["IANA"]) }}
+                                            </a>
+                                        </template>
+                                    </i18n-t>
+                                </div>
+
+                                <!-- Custom Headers -->
+                                <div class="my-3">
+                                    <label for="ws-headers" class="form-label">{{ $t("Headers") }}</label>
+                                    <textarea
+                                        id="ws-headers"
+                                        v-model="monitor.headers"
+                                        class="form-control"
+                                        :placeholder="headersPlaceholder"
+                                    ></textarea>
+                                </div>
+                            </template>
 
                             <!-- gRPC URL -->
                             <div v-if="monitor.type === 'grpc-keyword'" class="my-3">
@@ -539,7 +555,7 @@
                                         class="form-control"
                                         required
                                     />
-                                    <i18n-t keypath="GlobalpingLocation" tag="div" class="form-text">
+                                    <i18n-t keypath="GlobalpingLocationDescription" tag="div" class="form-text">
                                         <template #plus>
                                             <code>+</code>
                                         </template>
@@ -548,6 +564,9 @@
                                         </template>
                                         <template #comcastPlusCalifornia>
                                             <code>comcast+california</code>
+                                        </template>
+                                        <template #datacenter>
+                                            <code>+datacenter</code>
                                         </template>
                                         <template #fullDocs>
                                             <a
@@ -699,6 +718,21 @@
                                     max="65535"
                                     step="1"
                                 />
+                            </div>
+
+                            <!-- Gamedig Token -->
+                            <div v-if="monitor.type === 'gamedig'" class="my-3">
+                                <label for="gamedig-token" class="form-label">{{ $t("gamedigToken") }}</label>
+                                <input
+                                    id="gamedig-token"
+                                    v-model="monitor.gamedigToken"
+                                    type="password"
+                                    class="form-control"
+                                    :placeholder="$t('gamedigToken')"
+                                />
+                                <div class="form-text">
+                                    {{ $t("gamedigTokenDescription") }}
+                                </div>
                             </div>
 
                             <!-- SNMP Monitor Type -->
@@ -1242,12 +1276,13 @@
                                 </div>
                             </template>
 
-                            <!-- SQL Server / PostgreSQL / MySQL / Redis / MongoDB -->
+                            <!-- SQL Server / PostgreSQL / MySQL / Oracle / Redis / MongoDB -->
                             <template
                                 v-if="
                                     monitor.type === 'sqlserver' ||
                                     monitor.type === 'postgres' ||
                                     monitor.type === 'mysql' ||
+                                    monitor.type === 'oracledb' ||
                                     monitor.type === 'redis' ||
                                     monitor.type === 'mongodb'
                                 "
@@ -1262,6 +1297,29 @@
                                         type="text"
                                         class="form-control"
                                         required
+                                    />
+                                </div>
+                            </template>
+
+                            <template v-if="monitor.type === 'oracledb'">
+                                <div class="my-3">
+                                    <label for="oracledb-user" class="form-label">{{ $t("Username") }}</label>
+                                    <input
+                                        id="oracledb-user"
+                                        v-model="monitor.basic_auth_user"
+                                        type="text"
+                                        class="form-control"
+                                        required
+                                    />
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="oracledb-pass" class="form-label">{{ $t("Password") }}</label>
+                                    <HiddenInput
+                                        id="oracledb-pass"
+                                        v-model="monitor.basic_auth_pass"
+                                        autocomplete="new-password"
+                                        :required="true"
                                     />
                                 </div>
                             </template>
@@ -1357,12 +1415,13 @@
                                 </div>
                             </template>
 
-                            <!-- SQL Server / PostgreSQL / MySQL -->
+                            <!-- SQL Server / PostgreSQL / MySQL / Oracle -->
                             <template
                                 v-if="
                                     monitor.type === 'sqlserver' ||
                                     monitor.type === 'postgres' ||
-                                    monitor.type === 'mysql'
+                                    monitor.type === 'mysql' ||
+                                    monitor.type === 'oracledb'
                                 "
                             >
                                 <div class="my-3">
@@ -1371,7 +1430,11 @@
                                         id="sqlQuery"
                                         v-model="monitor.databaseQuery"
                                         class="form-control"
-                                        :placeholder="$t('Example:', ['SELECT 1'])"
+                                        :placeholder="
+                                            $t('Example:', [
+                                                monitor.type === 'oracledb' ? 'SELECT 1 FROM DUAL' : 'SELECT 1',
+                                            ])
+                                        "
                                     ></textarea>
                                 </div>
                             </template>
@@ -1514,7 +1577,6 @@
                             <!-- Timeout: HTTP / JSON query / Keyword / Ping / RabbitMQ / SNMP / Websocket Upgrade only -->
                             <div
                                 v-if="
-                                    monitor.type === 'dns' ||
                                     monitor.type === 'http' ||
                                     monitor.type === 'json-query' ||
                                     monitor.type === 'keyword' ||
@@ -1630,15 +1692,17 @@
                                     v-model="monitor.domainExpiryNotification"
                                     class="form-check-input"
                                     type="checkbox"
-                                    :disabled="!hasDomain"
                                 />
                                 <label class="form-check-label" for="domain-expiry-notification">
                                     {{ $t("labelDomainNameExpiryNotification") }}
                                 </label>
-                                <div v-if="hasDomain" class="form-text">
+                                <div class="form-text">
                                     {{ $t("domainExpiryNotificationHelp") }}
                                 </div>
-                                <div v-if="!hasDomain && domainExpiryUnsupportedReason" class="form-text">
+                                <div
+                                    v-if="monitor.domainExpiryNotification && domainExpiryUnsupportedReason"
+                                    class="form-text"
+                                >
                                     {{ domainExpiryUnsupportedReason }}
                                 </div>
                             </div>
@@ -1801,6 +1865,12 @@
                                     :max="65500"
                                     step="1"
                                 />
+                                <div
+                                    v-if="$root.info.runtime.platform === 'linux' && monitor.packetSize < 16"
+                                    class="form-text text-warning"
+                                >
+                                    {{ $t("pingPacketSizeWarning") }}
+                                </div>
                             </div>
 
                             <!-- per-request timeout -->
@@ -2108,6 +2178,191 @@
                                 {{ $t("Setup Notification") }}
                             </button>
 
+                            <!-- WebSocket Authentication -->
+                            <template v-if="monitor.type === 'websocket-upgrade'">
+                                <h2 class="mt-5 mb-2">{{ $t("Authentication") }}</h2>
+
+                                <!-- Auth Method -->
+                                <div class="my-3">
+                                    <label for="ws-auth-method" class="form-label">{{ $t("Method") }}</label>
+                                    <select id="ws-auth-method" v-model="monitor.authMethod" class="form-select">
+                                        <option :value="null">
+                                            {{ $t("None") }}
+                                        </option>
+                                        <option value="basic">
+                                            {{ $t("HTTP Basic Auth") }}
+                                        </option>
+                                        <option value="bearer">
+                                            {{ $t("Bearer Token") }}
+                                        </option>
+                                        <option value="oauth2-cc">
+                                            {{ $t("OAuth2: Client Credentials") }}
+                                        </option>
+                                        <option value="mtls">mTLS</option>
+                                    </select>
+                                </div>
+
+                                <template v-if="monitor.authMethod === 'basic'">
+                                    <div class="my-3">
+                                        <label for="ws-basicauth-user" class="form-label">{{ $t("Username") }}</label>
+                                        <input
+                                            id="ws-basicauth-user"
+                                            v-model="monitor.basic_auth_user"
+                                            type="text"
+                                            class="form-control"
+                                            :placeholder="$t('Username')"
+                                        />
+                                    </div>
+                                    <div class="my-3">
+                                        <label for="ws-basicauth-pass" class="form-label">{{ $t("Password") }}</label>
+                                        <HiddenInput
+                                            id="ws-basicauth-pass"
+                                            v-model="monitor.basic_auth_pass"
+                                            autocomplete="new-password"
+                                            :placeholder="$t('Password')"
+                                        />
+                                    </div>
+                                </template>
+
+                                <template v-else-if="monitor.authMethod === 'bearer'">
+                                    <div class="my-3">
+                                        <label for="ws-bearer-token" class="form-label">{{ $t("Token") }}</label>
+                                        <HiddenInput
+                                            id="ws-bearer-token"
+                                            v-model="monitor.bearer_token"
+                                            autocomplete="new-password"
+                                            :placeholder="$t('Token')"
+                                        />
+                                    </div>
+                                </template>
+
+                                <template v-else-if="monitor.authMethod === 'oauth2-cc'">
+                                    <div class="my-3">
+                                        <label for="ws-oauth-auth-method" class="form-label">
+                                            {{ $t("Authentication Method") }}
+                                        </label>
+                                        <select
+                                            id="ws-oauth-auth-method"
+                                            v-model="monitor.oauth_auth_method"
+                                            class="form-select"
+                                        >
+                                            <option value="client_secret_basic">
+                                                {{ $t("Authorization Header") }}
+                                            </option>
+                                            <option value="client_secret_post">
+                                                {{ $t("Form Data Body") }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="my-3">
+                                        <label for="ws-oauth-token-url" class="form-label">
+                                            {{ $t("OAuth Token URL") }}
+                                        </label>
+                                        <input
+                                            id="ws-oauth-token-url"
+                                            v-model="monitor.oauth_token_url"
+                                            type="text"
+                                            class="form-control"
+                                            :placeholder="$t('OAuth Token URL')"
+                                            required
+                                        />
+                                    </div>
+                                    <div class="my-3">
+                                        <label for="ws-oauth-client-id" class="form-label">
+                                            {{ $t("Client ID") }}
+                                        </label>
+                                        <input
+                                            id="ws-oauth-client-id"
+                                            v-model="monitor.oauth_client_id"
+                                            type="text"
+                                            class="form-control"
+                                            :placeholder="$t('Client ID')"
+                                            required
+                                        />
+                                    </div>
+                                    <template
+                                        v-if="
+                                            monitor.oauth_auth_method === 'client_secret_post' ||
+                                            monitor.oauth_auth_method === 'client_secret_basic'
+                                        "
+                                    >
+                                        <div class="my-3">
+                                            <label for="ws-oauth-client-secret" class="form-label">
+                                                {{ $t("Client Secret") }}
+                                            </label>
+                                            <HiddenInput
+                                                id="ws-oauth-client-secret"
+                                                v-model="monitor.oauth_client_secret"
+                                                :placeholder="$t('Client Secret')"
+                                                :required="true"
+                                            />
+                                        </div>
+                                        <div class="my-3">
+                                            <label for="ws-oauth-scopes" class="form-label">
+                                                {{ $t("OAuth Scope") }}
+                                            </label>
+                                            <input
+                                                id="ws-oauth-scopes"
+                                                v-model="monitor.oauth_scopes"
+                                                type="text"
+                                                class="form-control"
+                                                :placeholder="$t('Optional: Space separated list of scopes')"
+                                            />
+                                        </div>
+                                        <div class="my-3">
+                                            <label for="ws-oauth-audience" class="form-label">
+                                                {{ $t("OAuth Audience") }}
+                                            </label>
+                                            <input
+                                                id="ws-oauth-audience"
+                                                v-model="monitor.oauth_audience"
+                                                type="text"
+                                                class="form-control"
+                                                :placeholder="$t('Optional: The audience to request the JWT for')"
+                                            />
+                                        </div>
+                                    </template>
+                                </template>
+
+                                <template v-else-if="monitor.authMethod === 'mtls'">
+                                    <div class="my-3">
+                                        <label for="ws-tls-cert" class="form-label">
+                                            {{ $t("mtls-auth-server-cert-label") }}
+                                        </label>
+                                        <textarea
+                                            id="ws-tls-cert"
+                                            v-model="monitor.tlsCert"
+                                            class="form-control"
+                                            :placeholder="$t('mtls-auth-server-cert-placeholder')"
+                                            required
+                                        ></textarea>
+                                    </div>
+                                    <div class="my-3">
+                                        <label for="ws-tls-key" class="form-label">
+                                            {{ $t("mtls-auth-server-key-label") }}
+                                        </label>
+                                        <textarea
+                                            id="ws-tls-key"
+                                            v-model="monitor.tlsKey"
+                                            class="form-control"
+                                            :placeholder="$t('mtls-auth-server-key-placeholder')"
+                                            required
+                                        ></textarea>
+                                    </div>
+                                    <div class="my-3">
+                                        <label for="ws-tls-ca" class="form-label">
+                                            {{ $t("mtls-auth-server-ca-label") }}
+                                        </label>
+                                        <textarea
+                                            id="ws-tls-ca"
+                                            v-model="monitor.tlsCa"
+                                            class="form-control"
+                                            :placeholder="$t('mtls-auth-server-ca-placeholder')"
+                                        ></textarea>
+                                    </div>
+                                </template>
+                            </template>
+
                             <!-- Proxies -->
                             <div
                                 v-if="
@@ -2326,6 +2581,9 @@
                                         <option value="basic">
                                             {{ $t("HTTP Basic Auth") }}
                                         </option>
+                                        <option value="bearer">
+                                            {{ $t("Bearer Token") }}
+                                        </option>
                                         <option value="oauth2-cc">
                                             {{ $t("OAuth2: Client Credentials") }}
                                         </option>
@@ -2369,6 +2627,17 @@
                                                 class="form-control"
                                                 :placeholder="$t('mtls-auth-server-ca-placeholder')"
                                             ></textarea>
+                                        </div>
+                                    </template>
+                                    <template v-else-if="monitor.authMethod === 'bearer'">
+                                        <div class="my-3">
+                                            <label for="bearer-token" class="form-label">{{ $t("Token") }}</label>
+                                            <HiddenInput
+                                                id="bearer-token"
+                                                v-model="monitor.bearer_token"
+                                                autocomplete="new-password"
+                                                :placeholder="$t('Token')"
+                                            />
                                         </div>
                                     </template>
                                     <template v-else-if="monitor.authMethod === 'oauth2-cc'">
@@ -2546,6 +2815,9 @@
                                         <option value="basic">
                                             {{ $t("HTTP Basic Auth") }}
                                         </option>
+                                        <option value="bearer">
+                                            {{ $t("Bearer Token") }}
+                                        </option>
                                         <option value="oauth2-cc">
                                             {{ $t("OAuth2: Client Credentials") }}
                                         </option>
@@ -2573,6 +2845,19 @@
                                             autocomplete="new-password"
                                             class="form-control"
                                             :placeholder="$t('Password')"
+                                        />
+                                    </div>
+                                </template>
+                                <template v-else-if="monitor.authMethod === 'bearer'">
+                                    <div class="my-3">
+                                        <label for="bearer-token-globalping" class="form-label">
+                                            {{ $t("Token") }}
+                                        </label>
+                                        <HiddenInput
+                                            id="bearer-token-globalping"
+                                            v-model="monitor.bearer_token"
+                                            autocomplete="new-password"
+                                            :placeholder="$t('Token')"
                                         />
                                     </div>
                                 </template>
@@ -2949,7 +3234,7 @@ const monitorDefaults = {
     ignoreTls: false,
     upsideDown: false,
     expiryNotification: false,
-    domainExpiryNotification: false,
+    domainExpiryNotification: true,
     maxredirects: 10,
     accepted_statuscodes: defaultValueList.http.accepted_statuscodes,
     saveResponse: false,
@@ -2960,6 +3245,9 @@ const monitorDefaults = {
     docker_container: "",
     docker_host: null,
     proxyId: null,
+    basic_auth_user: "",
+    basic_auth_pass: "",
+    bearer_token: "",
     mqttUsername: "",
     mqttPassword: "",
     mqttTopic: "",
@@ -2977,6 +3265,7 @@ const monitorDefaults = {
     kafkaProducerSsl: false,
     kafkaProducerAllowAutoTopicCreation: false,
     gamedigGivenPortOnly: true,
+    gamedigToken: "",
     remote_browser: null,
     screenshot_delay: 0,
     rabbitmqNodes: [],
@@ -3012,9 +3301,8 @@ export default {
                 notificationIDList: {},
                 // Do not add default value here, please check init() method
             },
-            hasDomain: false,
             domainExpiryUnsupportedReason: null,
-            checkMonitorDebounce: null,
+            checkDomainDebounce: null,
             acceptedStatusCodeOptions: [],
             acceptedWebsocketCodeOptions: [],
             dnsresolvetypeOptions: [],
@@ -3026,6 +3314,7 @@ export default {
                     "Server=<hostname>,<port>;Database=<your database>;User Id=<your user id>;Password=<your password>;Encrypt=<true/false>;TrustServerCertificate=<Yes/No>;Connection Timeout=<int>",
                 postgres: "postgres://username:password@host:port/database",
                 mysql: "mysql://username:password@host:port/database",
+                oracledb: "localhost:1521/FREEPDB1",
                 redis: "redis://user:password@host:port",
                 mongodb: "mongodb://username:password@host:port/database",
             },
@@ -3071,16 +3360,6 @@ export default {
             }
             // Default placeholder if neither hostname nor URL is available
             return this.$t("defaultFriendlyName");
-        },
-
-        monitorTypeUrlHost() {
-            const { type, url, hostname, grpcUrl } = this.monitor;
-            return {
-                type,
-                url,
-                hostname,
-                grpcUrl,
-            };
         },
 
         showDomainExpiryNotification() {
@@ -3376,30 +3655,25 @@ message HealthCheckResponse {
             }
         },
 
-        monitorTypeUrlHost(data) {
-            if (this.checkMonitorDebounce != null) {
-                clearTimeout(this.checkMonitorDebounce);
-            }
+        showDomainExpiryNotification() {
+            this.checkDomain();
+        },
 
-            if (!this.showDomainExpiryNotification) {
-                this.hasDomain = false;
-                this.domainExpiryUnsupportedReason = null;
-                return;
-            }
+        "monitor.hostname"() {
+            this.checkDomain();
+        },
 
-            this.checkMonitorDebounce = setTimeout(() => {
-                this.$root.getSocket().emit("checkMointor", data, (res) => {
-                    const wasSupported = this.hasDomain;
-                    this.hasDomain = !!res?.ok;
-                    if (this.hasDomain !== wasSupported) {
-                        this.monitor.domainExpiryNotification = this.hasDomain;
-                    }
-                    this.domainExpiryUnsupportedReason = res.msgi18n ? this.$t(res.msg, res.meta) : res.msg;
-                });
-            }, 500);
+        "monitor.url"() {
+            this.checkDomain();
+        },
+
+        "monitor.grpcUrl"() {
+            this.checkDomain();
         },
 
         "monitor.type"(newType, oldType) {
+            this.checkDomain();
+
             if (newType === "globalping" && !this.monitor.subtype) {
                 this.monitor.subtype = "ping";
             }
@@ -3789,6 +4063,14 @@ message HealthCheckResponse {
                 }
             }
 
+            // Validate Globalping location if present
+            if (this.monitor.type === "globalping" && this.monitor.location) {
+                if (this.monitor.location.includes(",")) {
+                    toast.error(this.$t("GlobalpingMultipleLocationsError"));
+                    return false;
+                }
+            }
+
             // Validate hostname field input for various monitors
             if (
                 ["dns", "port", "ping", "steam", "gamedig", "radius", "tailscale-ping", "smtp", "snmp"].includes(
@@ -3798,7 +4080,7 @@ message HealthCheckResponse {
             ) {
                 let hostname = this.monitor.hostname.trim();
 
-                if (this.monitor.type === "dns" && isIP(hostname)) {
+                if (this.monitor.type === "dns" && this.monitor.dns_resolve_type !== "PTR" && isIP(hostname)) {
                     toast.error(this.$t("hostnameCannotBeIP"));
                     return false;
                 }
@@ -3929,6 +4211,20 @@ message HealthCheckResponse {
 
             if (this.monitor.url) {
                 this.monitor.url = this.monitor.url.trim();
+            }
+
+            if (this.monitor.databaseConnectionString) {
+                this.monitor.databaseConnectionString = this.monitor.databaseConnectionString.trim();
+            }
+
+            if (this.monitor.type === "oracledb") {
+                if (this.monitor.basic_auth_user) {
+                    this.monitor.basic_auth_user = this.monitor.basic_auth_user.trim();
+                }
+
+                if (this.monitor.basic_auth_pass) {
+                    this.monitor.basic_auth_pass = this.monitor.basic_auth_pass.trim();
+                }
             }
 
             let createdNewParent = false;
@@ -4089,6 +4385,39 @@ message HealthCheckResponse {
                     this.monitor.timeout = clampedValue;
                 }
             }
+        },
+
+        // Check Domain
+        // Do nothing if not checked
+        checkDomain() {
+            console.log("checkDomain called");
+            if (this.checkDomainDebounce != null) {
+                clearTimeout(this.checkDomainDebounce);
+            }
+
+            if (!this.showDomainExpiryNotification) {
+                this.domainExpiryUnsupportedReason = null;
+                return;
+            }
+
+            this.checkDomainDebounce = setTimeout(() => {
+                const { type, url, hostname, grpcUrl } = this.monitor;
+                const data = {
+                    type,
+                    url,
+                    hostname,
+                    grpcUrl,
+                };
+
+                this.$root.getSocket().emit("checkDomain", data, (res) => {
+                    console.log(data);
+                    if (!res.ok) {
+                        this.domainExpiryUnsupportedReason = res.msgi18n ? this.$t(res.msg, res.meta) : res.msg;
+                    } else {
+                        this.domainExpiryUnsupportedReason = null;
+                    }
+                });
+            }, 500);
         },
     },
 };

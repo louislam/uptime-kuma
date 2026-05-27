@@ -128,12 +128,14 @@ const consoleModuleColors = [
     CONSOLE_STYLE_FgPink,
 ];
 
-const consoleLevelColors: Record<string, string> = {
-    INFO: CONSOLE_STYLE_FgCyan,
-    WARN: CONSOLE_STYLE_FgYellow,
-    ERROR: CONSOLE_STYLE_FgRed,
-    DEBUG: CONSOLE_STYLE_FgGray,
-};
+type LogLevel = "info" | "warn" | "error" | "debug";
+
+const consoleLevelColors = {
+    info: CONSOLE_STYLE_FgCyan,
+    warn: CONSOLE_STYLE_FgYellow,
+    error: CONSOLE_STYLE_FgRed,
+    debug: CONSOLE_STYLE_FgGray,
+} as const;
 
 /**
  * Flip the status of s
@@ -250,12 +252,12 @@ class Logger {
     /**
      * Write a message to the log
      * @param module The module the log comes from
-     * @param level Log level. One of INFO, WARN, ERROR, DEBUG or can be customized.
+     * @param level Log level. One of info, warn, error, debug.
      * @param msg Message to write
      * @returns {void}
      */
-    log(module: string, level: string, ...msg: unknown[]) {
-        if (level === "DEBUG" && !isDev) {
+    log(module: string, level: LogLevel, ...msg: unknown[]) {
+        if (level === "debug" && !isDev) {
             return;
         }
 
@@ -264,13 +266,39 @@ class Logger {
         }
 
         module = module.toUpperCase();
-        level = level.toUpperCase();
+        const levelLabel = level.toUpperCase();
 
         let now;
         if (dayjs.tz) {
             now = dayjs.tz(new Date()).format();
         } else {
             now = dayjs().format();
+        }
+
+        if (process.env.UPTIME_KUMA_LOG_FORMAT === "json") {
+            const msgString = msg
+                .map((m) => {
+                    if (typeof m === "string") {
+                        return m;
+                    } else {
+                        try {
+                            return JSON.stringify(m);
+                        } catch {
+                            return String(m);
+                        }
+                    }
+                })
+                .join(" ");
+
+            console.log(
+                JSON.stringify({
+                    time: now,
+                    module: module,
+                    level: level,
+                    msg: msgString,
+                })
+            );
+            return;
         }
 
         const levelColor = consoleLevelColors[level];
@@ -283,7 +311,7 @@ class Logger {
         if (isNode) {
             // Add console colors
             switch (level) {
-                case "DEBUG":
+                case "debug":
                     timePart = CONSOLE_STYLE_FgGray + now + CONSOLE_STYLE_Reset;
                     break;
                 default:
@@ -292,26 +320,26 @@ class Logger {
             }
 
             modulePart = "[" + moduleColor + module + CONSOLE_STYLE_Reset + "]";
-            levelPart = levelColor + `${level}:` + CONSOLE_STYLE_Reset;
+            levelPart = levelColor + `${levelLabel}:` + CONSOLE_STYLE_Reset;
         } else {
             // No console colors
             timePart = now;
             modulePart = `[${module}]`;
-            levelPart = `${level}:`;
+            levelPart = `${levelLabel}:`;
         }
 
         // Write to console
         switch (level) {
-            case "ERROR":
+            case "error":
                 console.error(timePart, modulePart, levelPart, ...msg);
                 break;
-            case "WARN":
+            case "warn":
                 console.warn(timePart, modulePart, levelPart, ...msg);
                 break;
-            case "INFO":
+            case "info":
                 console.info(timePart, modulePart, levelPart, ...msg);
                 break;
-            case "DEBUG":
+            case "debug":
                 if (isDev) {
                     console.debug(timePart, modulePart, levelPart, ...msg);
                 }
@@ -418,7 +446,7 @@ export class TimeLogger {
      * @param name Name of monitor
      * @returns {void}
      */
-    print(name: string) {
+    print(name: string): void {
         if (isDev && process.env.TIMELOGGER === "1") {
             console.log(name + ": " + (dayjs().valueOf() - this.startTime) + "ms");
         }
