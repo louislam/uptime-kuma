@@ -6,6 +6,7 @@ export default {
     data() {
         return {
             language: currentLocale(),
+            statusPageLanguage: null,
         };
     },
 
@@ -17,21 +18,27 @@ export default {
 
     watch: {
         async language(lang) {
-            await this.changeLang(lang);
+            await this.changeLang(lang, true);
         },
+        async statusPageLanguage(lang) {
+            await this.changeLang(lang, false);
+        }
     },
 
     methods: {
         /**
          * Change the application language
          * @param {string} lang Language code to switch to
+         * @param {boolean} persist Whether to persist the language selection in localStorage
          * @returns {Promise<void>}
          */
-        async changeLang(lang) {
+        async changeLang(lang, persist = true) {
             let message = (await langModules["../lang/" + lang + ".json"]()).default;
             this.$i18n.setLocaleMessage(lang, message);
             this.$i18n.locale = lang;
-            localStorage.locale = lang;
+            if (persist) {
+                localStorage.locale = lang;
+            }
             setPageLocale();
             timeDurationFormatter.updateLocale(lang);
         },
