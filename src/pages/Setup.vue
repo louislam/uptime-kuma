@@ -122,18 +122,19 @@ export default {
                 await checkFetch(response);
 
                 // Login
-                const { data, error } = await authClient.signIn.username({
+                const { error } = await authClient.signIn.username({
                     username: this.username,
                     password: this.password,
                 });
 
-                console.log(data, error);
-                return;
-                if (res.ok) {
-                    this.$router.push("/");
-                } else {
-                    this.$root.toastRes(res);
+                console.log(error);
+
+                if (error) {
+                    throw error;
                 }
+
+                // Redirect to home page without vue-router, so that WebSocket can be reconnected with new token
+                location.href = "/";
             } catch (error) {
                 this.$root.toastRes({
                     ok: false,

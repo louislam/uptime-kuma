@@ -1,8 +1,9 @@
+import { checkLogin as betterAuthCheckLogin } from "./better-auth";
+
 const ping = require("@louislam/ping");
 const { R } = require("redbean-node");
 const {
     log,
-    genSecret,
     badgeConstants,
     PING_PACKET_SIZE_DEFAULT,
     PING_GLOBAL_TIMEOUT_DEFAULT,
@@ -632,15 +633,14 @@ exports.allowOrigin = (req, res) => {
 };
 
 /**
+ * @deprecated Use better-auth's checkLogin
  * Check if a user is logged in
  * @param {Socket} socket Socket instance
  * @returns {void}
  * @throws The user is not logged in
  */
 exports.checkLogin = (socket) => {
-    if (!socket.userID) {
-        throw new Error("You are not logged in.");
-    }
+    betterAuthCheckLogin(socket);
 };
 
 /**

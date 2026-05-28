@@ -10,6 +10,16 @@ import { generalErrorResponse } from "../util2";
 
 let processingSetup = false;
 let hasUser = false;
+let expired = false;
+
+const expiredMsg = "Setup has expired. Please restart the server to try again.";
+setTimeout(
+    () => {
+        expired = true;
+        log.error("auth", expiredMsg);
+    },
+    1000 * 60 * 10
+);
 
 /**
  * For testing: http://localhost:3001/api/auth/ok
@@ -28,6 +38,11 @@ export async function createBetterAuthRouter() {
         allowDevOrigin(req, res);
 
         try {
+            if (expired) {
+                log.error("auth", expiredMsg);
+                throw new Error(expiredMsg);
+            }
+
             if (processingSetup) {
                 throw new Error("Setup is already in progress. Please wait.");
             }
@@ -74,6 +89,9 @@ export async function createBetterAuthRouter() {
  * @returns Whether setup is needed.
  */
 export async function needSetup() {
+    if (expired) {
+        return false;
+    }
     if (processingSetup) {
         return false;
     }

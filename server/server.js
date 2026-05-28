@@ -384,8 +384,14 @@ app.use(function (req, res, next) {
             socket.emit("setup");
         }
 
-        // Auth Session
         const session = await getSession(socket.request.headers.cookie);
+
+        if (session) {
+            socket.userID = session.user.id;
+            socket.session = session;
+            socket.emit("session", session.user.username);
+            log.debug("auth", `Session active:`, session.session.ipAddress, session.user.username);
+        }
 
         // ***************************
         // Public Socket API
@@ -403,12 +409,6 @@ app.use(function (req, res, next) {
             }
 
             if (!data) {
-                return;
-            }
-
-            // Login Rate Limit
-            if (!(await loginRateLimiter.pass(callback))) {
-                log.info("auth", `Too many failed requests for user ${data.username}. IP=${clientIP}`);
                 return;
             }
 
@@ -1659,6 +1659,9 @@ app.use(function (req, res, next) {
             log.info("auth", "Disabled Auth: auto login to admin");
             await afterLogin(socket, await R.findOne("user"));
             socket.emit("autoLogin");
+        } else if (session) {
+            log.info("auth", "Logged in with httpOnly cookie session");
+            await afterLogin(socket, session.user);
         } else {
             socket.emit("loginRequired");
             log.debug("auth", "need auth");

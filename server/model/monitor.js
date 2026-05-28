@@ -1356,7 +1356,7 @@ class Monitor extends BeanModel {
      * @param {Server} io Socket server instance
      * @param {number} monitorID ID of monitor to send
      * @param {number} userID ID of user to send to
-     * @returns {void}
+     * @returns {Promise<void>}
      */
     static async sendStats(io, monitorID, userID) {
         const hasClients = getTotalClientInRoom(io, userID) > 0;

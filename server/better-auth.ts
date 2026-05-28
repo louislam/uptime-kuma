@@ -6,6 +6,7 @@ import { R } from "redbean-node";
 import { KyselyKnexDialect, MySQL2ColdDialect, SQLite3ColdDialect } from "kysely-knex";
 import { username } from "better-auth/plugins";
 import { admin } from "better-auth/plugins";
+import { Socket } from "socket.io";
 
 let authInstance: ReturnType<typeof createAuthInstance>;
 
@@ -46,6 +47,13 @@ function createAuthInstance() {
         emailAndPassword: {
             enabled: true,
             disableSignUp: false,
+        },
+        rateLimit: {
+            // Seconds
+            window: 60,
+
+            // Requests per window
+            max: 10,
         },
         plugins: [username(), admin()],
         user: {
@@ -92,6 +100,16 @@ export function getSession(cookie: string) {
     };
     context.headers.set("cookie", cookie || "");
     return authInstance.api.getSession(context);
+}
+
+/**
+ * @param socket
+ */
+export function checkLogin(socket: Socket) {
+    // @ts-ignore
+    if (!socket.session) {
+        throw new Error("You are not logged in.");
+    }
 }
 
 /**
