@@ -3730,7 +3730,7 @@ message HealthCheckResponse {
                 }
             }
 
-            if (newSubtype !== oldSubtype) {
+            if (newSubtype !== oldSubtype && !this.monitor.protocol) {
                 if (newSubtype === "ping") {
                     this.monitor.protocol = "ICMP";
                     this.monitor.port = "80";
