@@ -138,7 +138,7 @@ describe("Cloudflare Worker socket delete shim", () => {
 
         assert.match(source, /import \{\s*buildCloudflareImportantHeartbeatResult,\s*\} from "\.\.\/util\/cloudflare-important-heartbeats\.mjs";/);
         assert.match(source, /countCloudflareHeartbeats\(app, monitorID\)/);
-        assert.match(source, /getCloudflareHeartbeatPage\(app, monitorID, offset, count\)/);
+        assert.match(source, /getCloudflareHeartbeatPageResult\(app, monitorID, offset, count\)/);
         assert.match(
             source,
             /buildCloudflareImportantHeartbeatResult\(app\.monitorList, app\.heartbeatList, monitorID, 0, 1\)\.count/,
@@ -146,8 +146,8 @@ describe("Cloudflare Worker socket delete shim", () => {
         );
         assert.match(
             source,
-            /buildCloudflareImportantHeartbeatResult\(app\.monitorList, app\.heartbeatList, monitorID, offset, count\)\s*\.heartbeats/,
-            "event page fallback should derive rows from cached dashboard heartbeat history"
+            /return buildCloudflareImportantHeartbeatResult\(app\.monitorList, app\.heartbeatList, monitorID, offset, count\);/,
+            "event page fallback should derive rows and count from cached dashboard heartbeat history"
         );
     });
 });

@@ -103,7 +103,7 @@ const MONITOR_CONFIG_EXCLUDED_FIELDS = new Set([
     "__derivedGroupPath",
 ]);
 
-const MISSING_CONFIG_JSON_COLUMN = /no such column:\s*config_json/i;
+const MISSING_CONFIG_JSON_COLUMN = /no such column:\s*(?:\w+\.)?config_json/i;
 const MISSING_PARENT_COLUMN = /(?:no such column:\s*parent|no column named parent)/i;
 const NOTIFICATION_TABLE_SQL = `CREATE TABLE IF NOT EXISTS notification (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -2166,73 +2166,10 @@ export async function listHeartbeats(env, offset = 0, count = 100, options = {})
  * @returns {Promise<object>} Count and important heartbeat rows.
  */
 export async function listImportantHeartbeats(env, offset = 0, count = 100) {
-    const monitors = await listMonitorRows(env);
-    const activeMonitorById = new Map(
-        monitors
-            .filter((monitor) => monitor.active === undefined || Boolean(monitor.active))
-            .map((monitor) => [Number(monitor.id), monitor])
-    );
-    const activeMonitorIds = [...activeMonitorById.keys()];
-    if (activeMonitorIds.length === 0) {
-        return {
-            count: 0,
-            heartbeats: [],
-        };
-    }
-
-    const placeholders = activeMonitorIds.map(() => "?").join(", ");
-    const result = await env.DB.prepare(
-        `SELECT id, monitor_id, status, ping, msg, checked_at
-         FROM heartbeats
-         WHERE monitor_id IN (${placeholders})
-         ORDER BY monitor_id ASC, checked_at ASC, id ASC`
-    )
-        .bind(...activeMonitorIds)
-        .all();
-    const heartbeats = (result.results || [])
-        .filter((heartbeat) => activeMonitorById.has(Number(heartbeat.monitor_id)))
-        .sort((a, b) => {
-            const monitorCompare = Number(a.monitor_id) - Number(b.monitor_id);
-            if (monitorCompare !== 0) {
-                return monitorCompare;
-            }
-            return compareHeartbeatRowsOldestFirst(a, b);
-        });
-    const importantHeartbeats = [];
-    let currentMonitorId = null;
-    let currentMonitorHeartbeats = [];
-
-    const pushCurrentMonitorEvents = () => {
-        if (currentMonitorId == null || currentMonitorHeartbeats.length === 0) {
-            return;
-        }
-        const monitor = activeMonitorById.get(currentMonitorId);
-        importantHeartbeats.push(
-            ...filterImportantHeartbeats(
-                currentMonitorHeartbeats.map((heartbeat) => serializeHeartbeat(heartbeat, monitor))
-            )
-        );
-    };
-
-    for (const heartbeat of heartbeats) {
-        const monitorId = Number(heartbeat.monitor_id);
-        if (currentMonitorId !== monitorId) {
-            pushCurrentMonitorEvents();
-            currentMonitorId = monitorId;
-            currentMonitorHeartbeats = [];
-        }
-        currentMonitorHeartbeats.push(heartbeat);
-    }
-    pushCurrentMonitorEvents();
-
-    const sortedHeartbeats = importantHeartbeats.sort(compareSerializedHeartbeatsNewestFirst);
-    const limit = Math.max(1, Math.min(500, count));
-    const start = Math.max(0, offset);
-
-    return {
-        count: sortedHeartbeats.length,
-        heartbeats: sortedHeartbeats.slice(start, start + limit),
-    };
+    return await queryImportantHeartbeatEvents(env, {
+        offset,
+        count,
+    });
 }
 
 /**
@@ -2252,91 +2189,121 @@ async function listImportantMonitorHeartbeats(env, monitorId, monitor, offset = 
         };
     }
 
-    const result = await env.DB.prepare(
-        `SELECT monitor_id, status, ping, msg, checked_at
-         FROM heartbeats
-         WHERE monitor_id = ?
-         ORDER BY checked_at ASC, id ASC`
-    )
-        .bind(monitorId)
-        .all();
-    const heartbeats = sortHeartbeatsOldestFirst(result.results || [])
-        .map((heartbeat) => serializeHeartbeat(heartbeat, monitor));
-    const importantHeartbeats = filterImportantHeartbeats(heartbeats).reverse();
+    return await queryImportantHeartbeatEvents(env, {
+        monitorId,
+        offset,
+        count,
+    });
+}
+
+/**
+ * List event-log heartbeat rows using D1-side transition detection.
+ * @param {object} env Worker environment bindings.
+ * @param {object} options Query options.
+ * @param {number|null} options.monitorId Optional monitor ID filter.
+ * @param {number} options.offset Pagination offset.
+ * @param {number} options.count Page size.
+ * @returns {Promise<object>} Count and important heartbeat rows.
+ */
+async function queryImportantHeartbeatEvents(env, {
+    monitorId = null,
+    offset = 0,
+    count = 100,
+} = {}) {
     const limit = Math.max(1, Math.min(500, count));
     const start = Math.max(0, offset);
-
-    return {
-        count: importantHeartbeats.length,
-        heartbeats: importantHeartbeats.slice(start, start + limit),
+    const monitorFilter = monitorId == null ? "" : "AND h.monitor_id = ?";
+    const values = monitorId == null ? [] : [monitorId];
+    const runQuery = async (includeConfigJson) => {
+        const result = await env.DB.prepare(buildImportantHeartbeatEventsSql(monitorFilter, includeConfigJson))
+            .bind(...values, limit, start)
+            .all();
+        const rows = result.results || [];
+        const countRow = rows[0];
+        return {
+            count: Number(countRow?.total_count || 0),
+            heartbeats: rows
+                .filter((heartbeat) => heartbeat.monitor_id != null)
+                .map((heartbeat) => serializeHeartbeat(heartbeat)),
+        };
     };
-}
 
-/**
- * Sort heartbeat database rows from oldest to newest.
- * @param {object[]} heartbeats Heartbeat rows.
- * @returns {object[]} Sorted heartbeat rows.
- */
-function sortHeartbeatsOldestFirst(heartbeats) {
-    return heartbeats.slice().sort(compareHeartbeatRowsOldestFirst);
-}
-
-/**
- * Compare heartbeat database rows from oldest to newest.
- * @param {object} a First heartbeat.
- * @param {object} b Second heartbeat.
- * @returns {number} Sort order.
- */
-function compareHeartbeatRowsOldestFirst(a, b) {
-    const timeCompare = String(a.checked_at ?? a.time ?? "")
-        .localeCompare(String(b.checked_at ?? b.time ?? ""));
-    if (timeCompare !== 0) {
-        return timeCompare;
-    }
-    return Number(a.id || 0) - Number(b.id || 0);
-}
-
-/**
- * Compare serialized heartbeat rows from newest to oldest.
- * @param {object} a First heartbeat.
- * @param {object} b Second heartbeat.
- * @returns {number} Sort order.
- */
-function compareSerializedHeartbeatsNewestFirst(a, b) {
-    const timeCompare = String(b.time || "").localeCompare(String(a.time || ""));
-    if (timeCompare !== 0) {
-        return timeCompare;
-    }
-    return Number(b.monitorID || 0) - Number(a.monitorID || 0);
-}
-
-/**
- * Filter heartbeat rows down to down, pending, and single recovery up rows.
- * @param {object[]} heartbeats Heartbeat rows ordered oldest-to-newest.
- * @returns {object[]} Important heartbeat rows.
- */
-function filterImportantHeartbeats(heartbeats) {
-    const importantHeartbeats = [];
-    let previousStatus = null;
-
-    for (const heartbeat of heartbeats) {
-        const status = Number(heartbeat.status);
-        if (status === DOWN || status === PENDING || (status === UP && isDegradedStatus(previousStatus))) {
-            importantHeartbeats.push(heartbeat);
+    try {
+        return await runQuery(true);
+    } catch (error) {
+        if (!MISSING_CONFIG_JSON_COLUMN.test(error.message || "")) {
+            throw error;
         }
-        previousStatus = status;
+        return await runQuery(false);
     }
-
-    return importantHeartbeats;
 }
 
 /**
- * Check if a status is degraded for recovery-log purposes.
- * @param {number|null} status Previous heartbeat status.
- * @returns {boolean} True when the status is down or pending.
+ * Build the D1 query for event-log heartbeat rows.
+ * @param {string} monitorFilter Optional SQL filter for one monitor.
+ * @param {boolean} includeConfigJson Whether monitor config_json is available.
+ * @returns {string} SQL query.
  */
-function isDegradedStatus(status) {
-    return status === DOWN || status === PENDING;
+function buildImportantHeartbeatEventsSql(monitorFilter, includeConfigJson) {
+    const upsideDownExpression = includeConfigJson
+        ? "json_valid(m.config_json) AND json_extract(m.config_json, '$.upsideDown') = 1"
+        : "0";
+    return `WITH normalized_heartbeats AS (
+            SELECT
+                h.id,
+                h.monitor_id,
+                CASE
+                    WHEN ${upsideDownExpression} THEN
+                        CASE
+                            WHEN h.status = ${UP} THEN ${DOWN}
+                            WHEN h.status = ${DOWN} THEN ${UP}
+                            ELSE h.status
+                        END
+                    ELSE h.status
+                END AS status,
+                h.ping,
+                h.msg,
+                h.checked_at
+            FROM heartbeats h
+            INNER JOIN monitors m ON m.id = h.monitor_id
+            WHERE m.active = 1
+            ${monitorFilter}
+        ),
+        ordered_heartbeats AS (
+            SELECT
+                id,
+                monitor_id,
+                status,
+                ping,
+                msg,
+                checked_at,
+                LAG(status) OVER (
+                    PARTITION BY monitor_id
+                    ORDER BY checked_at ASC, id ASC
+                ) AS previous_status
+            FROM normalized_heartbeats
+        ),
+        important_events AS (
+            SELECT id, monitor_id, status, ping, msg, checked_at
+            FROM ordered_heartbeats
+            WHERE status IN (${DOWN}, ${PENDING})
+               OR (status = ${UP} AND previous_status IN (${DOWN}, ${PENDING}))
+        ),
+        event_page AS (
+            SELECT id, monitor_id, status, ping, msg, checked_at
+            FROM important_events
+            ORDER BY checked_at DESC, monitor_id DESC, id DESC
+            LIMIT ? OFFSET ?
+        )
+        SELECT
+            total.total_count,
+            event_page.monitor_id,
+            event_page.status,
+            event_page.ping,
+            event_page.msg,
+            event_page.checked_at
+        FROM (SELECT COUNT(*) AS total_count FROM important_events) total
+        LEFT JOIN event_page ON 1 = 1`;
 }
 
 export async function clearMonitorHeartbeats(env, monitorId) {

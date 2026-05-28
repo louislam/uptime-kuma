@@ -188,7 +188,7 @@ export default {
     },
 
     mounted() {
-        this.getImportantHeartbeatListLength();
+        this.getImportantHeartbeatListPaged({ refreshCount: true });
 
         this.$root.emitter.on("newImportantHeartbeat", this.onNewImportantHeartbeat);
 
@@ -253,20 +253,26 @@ export default {
             this.$root.getSocket().emit("monitorImportantHeartbeatListCount", null, (res) => {
                 if (res.ok) {
                     this.importantHeartBeatListLength = res.count;
-                    this.getImportantHeartbeatListPaged();
                 }
             });
         },
 
         /**
          * Retrieves the important heartbeat list for the current page.
+         * @param {object} options - Fetch options.
+         * @param {boolean} options.refreshCount - Fetch the count separately if the page response does not include one.
          * @returns {void}
          */
-        getImportantHeartbeatListPaged() {
+        getImportantHeartbeatListPaged({ refreshCount = false } = {}) {
             const offset = (this.page - 1) * this.perPage;
             this.$root.getSocket().emit("monitorImportantHeartbeatListPaged", null, offset, this.perPage, (res) => {
                 if (res.ok) {
                     this.displayedRecords = res.data;
+                    if (Number.isFinite(res.count)) {
+                        this.importantHeartBeatListLength = res.count;
+                    } else if (refreshCount) {
+                        this.getImportantHeartbeatListLength();
+                    }
                 }
             });
         },
@@ -314,7 +320,7 @@ export default {
             });
             this.clearingAllEvents = false;
             this.page = 1;
-            this.getImportantHeartbeatListLength();
+            this.getImportantHeartbeatListPaged({ refreshCount: true });
             if (failed === 0) {
                 this.$root.toastSuccess(this.$t("Events cleared successfully"));
             } else {

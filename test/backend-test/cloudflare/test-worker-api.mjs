@@ -3135,6 +3135,56 @@ describe("Cloudflare Worker API", () => {
         );
     });
 
+    test("lists aggregate important Worker heartbeats without returning all retained heartbeats to the Worker", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                { id: 7, name: "Primary WAN", type: "ping", active: 1 },
+                { id: 8, name: "VPN Edge", type: "ping", active: 1 },
+            ],
+            heartbeats: [
+                { id: 101, monitor_id: 7, status: 1, ping: 12, msg: "primary up", checked_at: "2026-05-12 04:00:00" },
+                { id: 102, monitor_id: 7, status: 1, ping: 11, msg: "primary routine up", checked_at: "2026-05-12 04:01:00" },
+                { id: 103, monitor_id: 7, status: 0, ping: null, msg: "primary down", checked_at: "2026-05-12 04:02:00" },
+                { id: 104, monitor_id: 7, status: 1, ping: 10, msg: "primary recovered", checked_at: "2026-05-12 04:03:00" },
+                { id: 201, monitor_id: 8, status: 1, ping: 9, msg: "vpn up", checked_at: "2026-05-12 04:00:00" },
+                { id: 202, monitor_id: 8, status: 2, ping: null, msg: "vpn pending", checked_at: "2026-05-12 04:04:00" },
+            ],
+        });
+
+        const response = await handleApiRequest(
+            adminRequest("https://example.com/api/heartbeats?important=1&offset=0&count=2"),
+            env
+        );
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(body.count, 3);
+        assert.deepStrictEqual(
+            body.heartbeats.map((heartbeat) => heartbeat.msg),
+            [
+                "vpn pending",
+                "primary recovered",
+            ]
+        );
+
+        const aggregateHeartbeatQueries = env.state.queries.filter(
+            (sql) => sql.includes("FROM heartbeats") && sql.includes("important_events")
+        );
+        assert.ok(
+            aggregateHeartbeatQueries.some((sql) => sql.includes("LAG(status) OVER")),
+            "aggregate event log should classify transitions in D1 instead of in Worker JavaScript"
+        );
+        assert.ok(
+            aggregateHeartbeatQueries.some((sql) => sql.includes("COUNT(*) AS total_count FROM important_events")),
+            "aggregate event log should return the total count with the requested page"
+        );
+        assert.ok(
+            env.state.queries.every((sql) => !sql.includes("ORDER BY monitor_id ASC, checked_at ASC, id ASC")),
+            "aggregate event log should not fetch every retained active heartbeat before pagination"
+        );
+    });
+
     test("does not list important event-log heartbeats for paused Worker monitors", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({
@@ -5090,6 +5140,9 @@ function createStatement(sql, state) {
                 }
                 return { results: [...state.monitors] };
             }
+            if (sql.includes("important_events") && sql.includes("LAG(status) OVER")) {
+                return { results: buildImportantHeartbeatQueryResults(sql, this.values, state) };
+            }
             if (sql.includes("FROM heartbeats")) {
                 let results = [...state.heartbeats];
                 if (sql.includes("WHERE monitor_id = ?")) {
@@ -5658,6 +5711,96 @@ function latestHeartbeatForMonitor(heartbeats, monitorId) {
             }
             return Number(b.id || 0) - Number(a.id || 0);
         })[0] || null;
+}
+
+function buildImportantHeartbeatQueryResults(sql, values, state) {
+    const monitorIdFilter = sql.includes("AND h.monitor_id = ?") ? Number(values[0]) : null;
+    const limit = Number(values.at(-2));
+    const offset = Number(values.at(-1));
+    const activeMonitorById = new Map(
+        state.monitors
+            .filter((monitor) => Number(monitor.active) === 1)
+            .map((monitor) => [Number(monitor.id), monitor])
+    );
+    const rowsByMonitorId = new Map();
+
+    for (const heartbeat of state.heartbeats) {
+        const monitorId = Number(heartbeat.monitor_id);
+        const monitor = activeMonitorById.get(monitorId);
+        if (!monitor || (monitorIdFilter != null && monitorId !== monitorIdFilter)) {
+            continue;
+        }
+        const rows = rowsByMonitorId.get(monitorId) || [];
+        rows.push({
+            ...heartbeat,
+            status: effectiveTestHeartbeatStatus(heartbeat.status, monitor),
+        });
+        rowsByMonitorId.set(monitorId, rows);
+    }
+
+    const importantHeartbeats = [];
+    for (const rows of rowsByMonitorId.values()) {
+        let previousStatus = null;
+        for (const heartbeat of rows.toSorted(compareTestHeartbeatsOldestFirst)) {
+            const status = Number(heartbeat.status);
+            if (status === 0 || status === 2 || (status === 1 && (previousStatus === 0 || previousStatus === 2))) {
+                importantHeartbeats.push(heartbeat);
+            }
+            previousStatus = status;
+        }
+    }
+
+    const sortedHeartbeats = importantHeartbeats.toSorted(compareTestHeartbeatsNewestFirst);
+    return sortedHeartbeats.slice(offset, offset + limit).map((heartbeat) => ({
+        total_count: sortedHeartbeats.length,
+        monitor_id: heartbeat.monitor_id,
+        status: heartbeat.status,
+        ping: heartbeat.ping,
+        msg: heartbeat.msg,
+        checked_at: heartbeat.checked_at,
+    }));
+}
+
+function effectiveTestHeartbeatStatus(status, monitor) {
+    if (!testMonitorIsUpsideDown(monitor)) {
+        return status;
+    }
+    const numericStatus = Number(status);
+    if (numericStatus === 1) {
+        return 0;
+    }
+    if (numericStatus === 0) {
+        return 1;
+    }
+    return status;
+}
+
+function testMonitorIsUpsideDown(monitor) {
+    try {
+        return Boolean(JSON.parse(monitor.config_json || "{}").upsideDown);
+    } catch (_) {
+        return false;
+    }
+}
+
+function compareTestHeartbeatsOldestFirst(a, b) {
+    const checkedAtCompare = String(a.checked_at || "").localeCompare(String(b.checked_at || ""));
+    if (checkedAtCompare !== 0) {
+        return checkedAtCompare;
+    }
+    return Number(a.id || 0) - Number(b.id || 0);
+}
+
+function compareTestHeartbeatsNewestFirst(a, b) {
+    const checkedAtCompare = String(b.checked_at || "").localeCompare(String(a.checked_at || ""));
+    if (checkedAtCompare !== 0) {
+        return checkedAtCompare;
+    }
+    const monitorCompare = Number(b.monitor_id || 0) - Number(a.monitor_id || 0);
+    if (monitorCompare !== 0) {
+        return monitorCompare;
+    }
+    return Number(b.id || 0) - Number(a.id || 0);
 }
 
 /**

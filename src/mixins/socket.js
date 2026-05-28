@@ -1590,9 +1590,11 @@ function createCloudflareSocketStub(app) {
 
                 if (event === "monitorImportantHeartbeatListPaged") {
                     const [monitorID, offset, count] = args;
+                    const result = await getCloudflareHeartbeatPageResult(app, monitorID, offset, count);
                     callback?.({
                         ok: true,
-                        data: await getCloudflareHeartbeatPage(app, monitorID, offset, count),
+                        count: result.count,
+                        data: result.heartbeats,
                     });
                     return;
                 }
@@ -2047,18 +2049,20 @@ async function countCloudflareHeartbeats(app, monitorID) {
  * @param {number|null} monitorID Monitor ID, or null for all loaded monitors.
  * @param {number} offset Pagination offset.
  * @param {number} count Number of rows to fetch.
- * @returns {Promise<object[]>} Heartbeat rows.
+ * @returns {Promise<{ count: number, heartbeats: object[] }>} Heartbeat rows and total count.
  */
-async function getCloudflareHeartbeatPage(app, monitorID, offset = 0, count = 25) {
+async function getCloudflareHeartbeatPageResult(app, monitorID, offset = 0, count = 25) {
     try {
         const body = await requestCloudflareJson(buildCloudflareHeartbeatsUrl(monitorID, offset, count, {
             importantOnly: true,
         }));
-        return body.heartbeats || [];
+        return {
+            count: body.count || 0,
+            heartbeats: body.heartbeats || [],
+        };
     } catch (error) {
         console.warn(`Failed to load Worker important event page; using cached heartbeat history: ${error.message}`);
-        return buildCloudflareImportantHeartbeatResult(app.monitorList, app.heartbeatList, monitorID, offset, count)
-            .heartbeats;
+        return buildCloudflareImportantHeartbeatResult(app.monitorList, app.heartbeatList, monitorID, offset, count);
     }
 }
 
