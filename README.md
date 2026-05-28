@@ -244,6 +244,11 @@ address internally. Do not configure a proxy URL for Twingate; only the service
 account fields and private-key secret are operator-provided.
 Cloudflare-hosted Twingate checks support private HTTP, keyword, JSON query,
 TCP port, and WebSocket reachability checks through the userspace proxy.
+When Twingate is configured, the runner keeps the Cloudflare container alive
+after idle activity expiry and supervises `twingated` inside the container.
+Unexpected non-authentication exits are restarted after `TWINGATE_RESTART_DELAY_MS`
+(`1000` by default) so deploy rollovers or clean client exits do not leave the
+service stuck in a configured-but-not-running state.
 The default Cloudflare container setting is `TWINGATE_TUN=off` because the
 userspace HTTP proxy does not require container TUN device capabilities. In
 that mode, Twingate-routed ping monitors use TCP fallback probes through the

@@ -10,6 +10,7 @@ import {
 import {
     buildStartingTwingateStatus,
     buildUnavailableTwingateStatus,
+    hasTwingateServiceKeyInput,
     isTransientContainerStartupError,
     resolveTwingateStatusTimeoutMs,
 } from "./twingate-status.mjs";
@@ -40,6 +41,7 @@ export class MonitorRunner extends Container {
             APP_VERSION: resolveAppVersion(env),
             PORT: "8788",
             TWINGATE_READY_TIMEOUT_MS: "60000",
+            TWINGATE_RESTART_DELAY_MS: "1000",
             TWINGATE_TUN: "off",
             TWINGATE_PING_FALLBACK_PORTS: "80,443",
         };
@@ -56,6 +58,7 @@ export class MonitorRunner extends Container {
             "TWINGATE_EXPIRES_AT",
             "TWINGATE_LOGIN_PATH",
             "TWINGATE_READY_TIMEOUT_MS",
+            "TWINGATE_RESTART_DELAY_MS",
             "TWINGATE_STATUS_REQUEST_TIMEOUT_MS",
             "TWINGATE_PING_FALLBACK_PORTS",
         ]);
@@ -158,6 +161,14 @@ export class MonitorRunner extends Container {
                 waitInterval: RUNNER_FETCH_RETRY_DELAY_MS,
             },
         });
+    }
+
+    /**
+     * Keep the runner warm when Twingate is configured so private routing stays available.
+     * @returns {boolean} True when Cloudflare should keep the container alive.
+     */
+    onActivityExpired() {
+        return hasTwingateServiceKeyInput(this.env);
     }
 
     /**

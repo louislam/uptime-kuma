@@ -216,9 +216,11 @@ describe("Cloudflare Worker API", () => {
 
         assert.match(workerSource, /APP_VERSION:\s*resolveAppVersion\(env\)/);
         assert.match(workerSource, /TWINGATE_READY_TIMEOUT_MS:\s*"60000"/);
+        assert.match(workerSource, /TWINGATE_RESTART_DELAY_MS:\s*"1000"/);
         assert.match(workerSource, /TWINGATE_TUN:\s*"off"/);
         assert.match(workerSource, /TWINGATE_PING_FALLBACK_PORTS:\s*"80,443"/);
         assert.match(workerSource, /"TWINGATE_READY_TIMEOUT_MS"/);
+        assert.match(workerSource, /"TWINGATE_RESTART_DELAY_MS"/);
         assert.match(workerSource, /"TWINGATE_PING_FALLBACK_PORTS"/);
         assert.doesNotMatch(optionalEnvBlock, /"TWINGATE_TUN"/);
         assert.match(workerSource, /JSON\.stringify\(value\)/);
@@ -242,6 +244,8 @@ describe("Cloudflare Worker API", () => {
 
         assert.match(workerSource, /this\.requiredPorts = \[8788\]/);
         assert.match(workerSource, /pingEndpoint = "localhost\/health"/);
+        assert.match(workerSource, /onActivityExpired\(\)/);
+        assert.match(workerSource, /hasTwingateServiceKeyInput\(this\.env\)/);
         assert.match(workerSource, /onStop\(\{/);
         assert.match(workerSource, /onError\(error\)/);
         assert.match(workerSource, /buildUnavailableTwingateStatus/);

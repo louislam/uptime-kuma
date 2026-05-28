@@ -11,6 +11,7 @@ const TWINGATE_PROXY_LISTEN_ADDRESS = "0.0.0.0:9999";
 const TWINGATE_PROXY_READY_HOST = "127.0.0.1";
 const TWINGATE_PROXY_READY_PORT = 9999;
 const DEFAULT_RETRY_DELAY_MS = 250;
+const DEFAULT_TWINGATE_RESTART_DELAY_MS = 1000;
 const MAX_CAPTURED_OUTPUT_LENGTH = 4000;
 const DEFAULT_TWINGATE_TUN_MODE = "off";
 
@@ -23,9 +24,12 @@ class TwingateLifecycle {
         this.waitForProxyReady = options.waitForProxyReady || waitForProxyReady;
         this.readyTimeoutMs = options.readyTimeoutMs ?? getDefaultReadyTimeoutMs();
         this.retryDelayMs = options.retryDelayMs ?? DEFAULT_RETRY_DELAY_MS;
+        this.restartDelayMs = options.restartDelayMs ?? getDefaultRestartDelayMs();
         this.delay = options.delay || delay;
+        this.scheduleRestart = options.scheduleRestart || scheduleRestart;
         this.output = "";
         this.exited = false;
+        this.restartScheduled = false;
         this.child = null;
         this.status = {
             configured: Boolean(this.serviceKey.configured),
@@ -51,6 +55,15 @@ class TwingateLifecycle {
             return this.status;
         }
 
+        if (this.status.running || this.status.starting || this.restartScheduled) {
+            return this.status;
+        }
+
+        this.startTwingated();
+        return this.status;
+    }
+
+    startTwingated() {
         try {
             this.writeServiceKey();
             const command = buildTwingatedCommand(this.tunMode);
@@ -58,6 +71,9 @@ class TwingateLifecycle {
                 stdio: ["ignore", "pipe", "pipe"],
             });
             this.child = child;
+            this.exited = false;
+            this.restartScheduled = false;
+            this.output = "";
             this.status.starting = true;
             this.status.running = false;
             this.status.lastError = null;
@@ -65,22 +81,33 @@ class TwingateLifecycle {
             child.stdout?.on("data", (chunk) => this.captureOutput(chunk));
             child.stderr?.on("data", (chunk) => this.captureOutput(chunk));
             child.once("error", (error) => {
+                if (child !== this.child) {
+                    return;
+                }
                 this.exited = true;
-                this.status.starting = false;
-                this.status.running = false;
-                this.status.lastError = `twingated failed to start: ${error.message}${this.formatOutputSuffix()}`;
+                this.scheduleTwingateRestart(
+                    `twingated failed to start: ${error.message}${this.formatOutputSuffix()}`
+                );
             });
             child.once("exit", (code, signal) => {
+                if (child !== this.child) {
+                    return;
+                }
                 const wasReady = this.status.running;
                 this.exited = true;
-                this.status.starting = false;
                 this.status.running = false;
                 const exitValue = signal || code;
                 const readinessText = wasReady ? "" : " before proxy became ready";
                 const fatalError = extractTwingateFatalError(this.output);
-                this.status.lastError = fatalError
-                    ? `twingated authentication failed: ${fatalError}${this.formatOutputSuffix()}`
-                    : `twingated exited with ${exitValue}${readinessText}${this.formatOutputSuffix()}`;
+                if (fatalError) {
+                    this.status.starting = false;
+                    this.status.lastError =
+                        `twingated authentication failed: ${fatalError}${this.formatOutputSuffix()}`;
+                    return;
+                }
+                this.scheduleTwingateRestart(
+                    `twingated exited with ${exitValue}${readinessText}${this.formatOutputSuffix()}`
+                );
             });
 
             this.pollForReadiness();
@@ -91,6 +118,23 @@ class TwingateLifecycle {
         }
 
         return this.status;
+    }
+
+    scheduleTwingateRestart(lastError) {
+        if (this.restartScheduled) {
+            return;
+        }
+
+        this.restartScheduled = true;
+        this.status.starting = true;
+        this.status.running = false;
+        this.status.lastError = `${lastError}; restarting in ${this.restartDelayMs}ms`;
+        const timer = this.scheduleRestart(() => {
+            this.restartScheduled = false;
+            this.status.starting = false;
+            this.start();
+        }, this.restartDelayMs);
+        timer?.unref?.();
     }
 
     writeServiceKey() {
@@ -252,8 +296,19 @@ function delay(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function scheduleRestart(callback, delayMs) {
+    return setTimeout(callback, delayMs);
+}
+
 function getDefaultReadyTimeoutMs() {
     return Number(process.env.TWINGATE_READY_TIMEOUT_MS || 60000);
+}
+
+function getDefaultRestartDelayMs() {
+    const parsed = Number(process.env.TWINGATE_RESTART_DELAY_MS || DEFAULT_TWINGATE_RESTART_DELAY_MS);
+    return Number.isFinite(parsed) && parsed >= 0
+        ? Math.round(parsed)
+        : DEFAULT_TWINGATE_RESTART_DELAY_MS;
 }
 
 module.exports = {
@@ -262,6 +317,7 @@ module.exports = {
     buildTwingatedCommand,
     extractTwingateFatalError,
     getDefaultReadyTimeoutMs,
+    getDefaultRestartDelayMs,
     inspectServiceKeyJson,
     resolveTwingateTunMode,
     validateServiceKeyJson,

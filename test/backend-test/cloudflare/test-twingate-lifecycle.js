@@ -80,11 +80,16 @@ describe("Twingate runner lifecycle", () => {
     test("reports clean early exit before proxy readiness with captured output", async () => {
         const child = createChild();
         const memoryFs = createMemoryFs();
+        const scheduledRestarts = [];
         const lifecycle = new TwingateLifecycle({
             serviceKey: createServiceKey(),
             fs: memoryFs,
             spawn: () => child,
             waitForProxyReady: async () => false,
+            restartDelayMs: 1000,
+            scheduleRestart: (callback, delayMs) => {
+                scheduledRestarts.push({ callback, delayMs });
+            },
         });
 
         lifecycle.start();
@@ -96,20 +101,26 @@ describe("Twingate runner lifecycle", () => {
 
         assert.strictEqual(lifecycle.status.configured, true);
         assert.strictEqual(memoryFs.writes.get("/etc/twingate/service_key.json").options.mode, 0o600);
-        assert.strictEqual(lifecycle.status.starting, false);
+        assert.strictEqual(lifecycle.status.starting, true);
         assert.strictEqual(lifecycle.status.running, false);
         assert.match(lifecycle.status.lastError, /twingated exited with 0 before proxy became ready/);
         assert.match(lifecycle.status.lastError, /starting twingate/);
         assert.match(lifecycle.status.lastError, /service key accepted/);
+        assert.match(lifecycle.status.lastError, /restarting in 1000ms$/);
+        assert.deepStrictEqual(scheduledRestarts.map((restart) => restart.delayMs), [1000]);
     });
 
     test("reports authentication fatal errors before proxy readiness wrappers", async () => {
         const child = createChild();
+        let restartScheduled = false;
         const lifecycle = new TwingateLifecycle({
             serviceKey: createServiceKey(),
             fs: createMemoryFs(),
             spawn: () => child,
             waitForProxyReady: async () => false,
+            scheduleRestart: () => {
+                restartScheduled = true;
+            },
         });
 
         lifecycle.start();
@@ -130,6 +141,7 @@ describe("Twingate runner lifecycle", () => {
         );
         assert.match(lifecycle.status.lastError, /failed to get an access token/);
         assert.doesNotMatch(lifecycle.status.lastError, /^twingated exited with 0 before proxy became ready/);
+        assert.strictEqual(restartScheduled, false);
     });
 
     test("extracts Twingate authentication failures from multi-line output", () => {
@@ -253,11 +265,16 @@ describe("Twingate runner lifecycle", () => {
 
     test("reports post-readiness exit without before-ready wording", async () => {
         const child = createChild();
+        const scheduledRestarts = [];
         const lifecycle = new TwingateLifecycle({
             serviceKey: createServiceKey(),
             fs: createMemoryFs(),
             spawn: () => child,
             waitForProxyReady: async () => true,
+            restartDelayMs: 1000,
+            scheduleRestart: (callback, delayMs) => {
+                scheduledRestarts.push({ callback, delayMs });
+            },
         });
 
         lifecycle.start();
@@ -265,8 +282,45 @@ describe("Twingate runner lifecycle", () => {
         child.emit("exit", 1, null);
 
         assert.strictEqual(lifecycle.status.running, false);
-        assert.match(lifecycle.status.lastError, /twingated exited with 1$/);
+        assert.strictEqual(lifecycle.status.starting, true);
+        assert.match(lifecycle.status.lastError, /twingated exited with 1; restarting in 1000ms$/);
         assert.doesNotMatch(lifecycle.status.lastError, /before proxy became ready/);
+        assert.deepStrictEqual(scheduledRestarts.map((restart) => restart.delayMs), [1000]);
+    });
+
+    test("restarts twingated after a post-readiness clean exit", async () => {
+        const children = [createChild(), createChild()];
+        let spawnCount = 0;
+        const scheduledRestarts = [];
+        const lifecycle = new TwingateLifecycle({
+            serviceKey: createServiceKey(),
+            fs: createMemoryFs(),
+            spawn: () => children[spawnCount++],
+            waitForProxyReady: async () => true,
+            restartDelayMs: 1000,
+            scheduleRestart: (callback, delayMs) => {
+                scheduledRestarts.push({ callback, delayMs });
+            },
+        });
+
+        lifecycle.start();
+        await waitForTick();
+        children[0].emit("exit", 0, null);
+        await waitForTick();
+
+        assert.strictEqual(spawnCount, 1);
+        assert.strictEqual(lifecycle.status.running, false);
+        assert.strictEqual(lifecycle.status.starting, true);
+        assert.match(lifecycle.status.lastError, /twingated exited with 0; restarting in 1000ms$/);
+        assert.deepStrictEqual(scheduledRestarts.map((restart) => restart.delayMs), [1000]);
+
+        scheduledRestarts.shift().callback();
+        await waitForTick();
+
+        assert.strictEqual(spawnCount, 2);
+        assert.strictEqual(lifecycle.status.running, true);
+        assert.strictEqual(lifecycle.status.starting, false);
+        assert.strictEqual(lifecycle.status.lastError, null);
     });
 });
 
