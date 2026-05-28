@@ -1133,9 +1133,10 @@ async function sendPushoverNotification(notification, msg, options = {}) {
 }
 
 /**
- * Send a Microsoft Teams test card through an Incoming Webhook URL.
+ * Send a Microsoft Teams card through an Incoming Webhook URL.
  * @param {object} notification Notification settings from the UI.
- * @param {string} msg Message to include in the test card.
+ * @param {object} payload Teams webhook payload.
+ * @param {object} options Send options.
  * @returns {Promise<void>}
  */
 async function sendTeamsNotification(notification, payload, options = {}) {
@@ -1196,6 +1197,12 @@ function buildTeamsTestNotificationPayload(msg) {
     };
 }
 
+/**
+ * Build a Pushover message with heartbeat time details when available.
+ * @param {string} msg Base notification message.
+ * @param {object|null} heartbeatJSON Serialized heartbeat data.
+ * @returns {string} Pushover message body.
+ */
 function buildPushoverMessage(msg, heartbeatJSON) {
     if (!heartbeatJSON?.localDateTime) {
         return msg;
@@ -1203,6 +1210,13 @@ function buildPushoverMessage(msg, heartbeatJSON) {
     return `${msg}\n<b>Time (${heartbeatJSON.timezone || "UTC"})</b>: ${heartbeatJSON.localDateTime}`;
 }
 
+/**
+ * Build the adaptive-card payload for monitor status notifications.
+ * @param {object} monitorJSON Serialized monitor data.
+ * @param {object} heartbeatJSON Serialized heartbeat data.
+ * @param {object} settings Worker UI settings.
+ * @returns {object} Teams webhook payload.
+ */
 function buildTeamsMonitorNotificationPayload(monitorJSON, heartbeatJSON, settings) {
     const summary = buildTeamsStatusSummary(monitorJSON?.name, heartbeatJSON?.status);
     const facts = [];
@@ -2777,10 +2791,25 @@ async function writeHeartbeat(env, monitorId, result) {
     };
 }
 
+/**
+ * Load the latest heartbeat for a single monitor.
+ * @param {object} env Cloudflare Worker environment bindings.
+ * @param {number} monitorId Monitor ID.
+ * @returns {Promise<object|null>} Latest heartbeat row, if one exists.
+ */
 async function getLatestHeartbeatForMonitor(env, monitorId) {
     return (await listLatestHeartbeatsByMonitorId(env, [Number(monitorId)])).get(Number(monitorId)) || null;
 }
 
+/**
+ * Send assigned notifications when a Worker check changes monitor status.
+ * @param {object} env Cloudflare Worker environment bindings.
+ * @param {object} monitor Monitor row.
+ * @param {object} result Current check result.
+ * @param {object|null} previousHeartbeat Previous heartbeat row.
+ * @param {object} heartbeat New heartbeat row.
+ * @returns {Promise<void>}
+ */
 async function sendMonitorStatusNotifications(env, monitor, result, previousHeartbeat, heartbeat) {
     const currentStatus = Number(result.status ?? DOWN);
     const previousStatus = previousHeartbeat ? Number(previousHeartbeat.status) : null;
@@ -2818,6 +2847,13 @@ async function sendMonitorStatusNotifications(env, monitor, result, previousHear
     );
 }
 
+/**
+ * Decide if a status transition should notify users.
+ * @param {boolean} isFirstHeartbeat Whether this is the first heartbeat.
+ * @param {number|null} previousStatus Previous heartbeat status.
+ * @param {number} currentStatus Current heartbeat status.
+ * @returns {boolean} True when notification delivery should run.
+ */
 function shouldSendStatusNotification(isFirstHeartbeat, previousStatus, currentStatus) {
     if (isFirstHeartbeat) {
         return currentStatus === DOWN;
@@ -2831,6 +2867,12 @@ function shouldSendStatusNotification(isFirstHeartbeat, previousStatus, currentS
     );
 }
 
+/**
+ * Load active notifications assigned to a monitor.
+ * @param {object} env Cloudflare Worker environment bindings.
+ * @param {number} monitorId Monitor ID.
+ * @returns {Promise<object[]>} Active notification configs.
+ */
 async function listActiveMonitorNotifications(env, monitorId) {
     const [notificationsByMonitorId, notifications] = await Promise.all([
         listMonitorNotificationsByMonitorId(env, [monitorId]),
@@ -2843,6 +2885,11 @@ async function listActiveMonitorNotifications(env, monitorId) {
         .filter(isStoredNotificationActive);
 }
 
+/**
+ * Merge stored row metadata with notification provider config.
+ * @param {object} notification Stored notification row.
+ * @returns {object} Hydrated notification config.
+ */
 function hydrateStoredNotification(notification) {
     const config = parseNotificationConfig(notification.config);
     return {
@@ -2854,6 +2901,11 @@ function hydrateStoredNotification(notification) {
     };
 }
 
+/**
+ * Parse stored notification config JSON.
+ * @param {string|null} value Stored JSON string.
+ * @returns {object} Parsed config.
+ */
 function parseNotificationConfig(value) {
     if (!value || typeof value !== "string") {
         return {};
@@ -2861,15 +2913,29 @@ function parseNotificationConfig(value) {
     try {
         const parsed = JSON.parse(value);
         return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
-    } catch (_) {
+    } catch {
         return {};
     }
 }
 
+/**
+ * Check whether a stored notification is active.
+ * @param {object} notification Hydrated notification config.
+ * @returns {boolean} True when active.
+ */
 function isStoredNotificationActive(notification) {
     return notification.active === undefined || normalizeBoolean(notification.active);
 }
 
+/**
+ * Send a monitor status notification through a supported Worker provider.
+ * @param {object} notification Hydrated notification config.
+ * @param {string} msg Notification message.
+ * @param {object} monitorJSON Serialized monitor data.
+ * @param {object} heartbeatJSON Serialized heartbeat data.
+ * @param {object} settings Worker UI settings.
+ * @returns {Promise<void>}
+ */
 async function sendWorkerMonitorNotification(notification, msg, monitorJSON, heartbeatJSON, settings) {
     if (notification.type === "pushover") {
         await sendPushoverNotification(notification, msg, {
@@ -2894,6 +2960,12 @@ async function sendWorkerMonitorNotification(notification, msg, monitorJSON, hea
     console.warn(`Notification type "${notification.type}" is not supported by Worker status delivery yet.`);
 }
 
+/**
+ * Serialize monitor data for notification providers.
+ * @param {object} monitor Monitor row.
+ * @param {object[]} tags Monitor tags.
+ * @returns {object} Serialized monitor.
+ */
 function buildNotificationMonitorJSON(monitor, tags = []) {
     return {
         id: Number(monitor.id),
@@ -2907,6 +2979,12 @@ function buildNotificationMonitorJSON(monitor, tags = []) {
     };
 }
 
+/**
+ * Serialize heartbeat data for notification providers.
+ * @param {object} heartbeat Heartbeat row.
+ * @param {object} settings Worker UI settings.
+ * @returns {object} Serialized heartbeat.
+ */
 function buildNotificationHeartbeatJSON(heartbeat, settings) {
     const status = Number(heartbeat.status ?? DOWN);
     const time = heartbeat.checked_at || formatSqliteDateTime(new Date());
@@ -2924,10 +3002,21 @@ function buildNotificationHeartbeatJSON(heartbeat, settings) {
     };
 }
 
+/**
+ * Build the provider-neutral monitor status message.
+ * @param {object} monitorJSON Serialized monitor data.
+ * @param {object} heartbeatJSON Serialized heartbeat data.
+ * @returns {string} Notification message.
+ */
 function buildMonitorStatusMessage(monitorJSON, heartbeatJSON) {
     return `[${monitorJSON.name}] [${heartbeatJSON.status === UP ? "Up" : "Down"}] ${heartbeatJSON.msg || "N/A"}`;
 }
 
+/**
+ * Parse Worker heartbeat timestamps as UTC instants.
+ * @param {string} value Stored heartbeat time.
+ * @returns {Date} Parsed date.
+ */
 function parseWorkerHeartbeatDate(value) {
     const text = String(value || "").trim();
     if (!text) {
@@ -2938,21 +3027,38 @@ function parseWorkerHeartbeatDate(value) {
     return Number.isFinite(parsed.getTime()) ? parsed : new Date();
 }
 
+/**
+ * Resolve the configured notification timezone.
+ * @param {string} value Configured timezone.
+ * @returns {string} Valid timezone name.
+ */
 function resolveNotificationTimezone(value) {
     const timezone = String(value || "UTC").trim() || "UTC";
     try {
         new Intl.DateTimeFormat("en-US", { timeZone: timezone }).format(new Date());
         return timezone;
-    } catch (_) {
+    } catch {
         return "UTC";
     }
 }
 
+/**
+ * Format a date in the configured timezone.
+ * @param {Date} date Date to format.
+ * @param {string} timezone Timezone name.
+ * @returns {string} SQL-style local date/time string.
+ */
 function formatDateTimeInTimezone(date, timezone) {
     const parts = getTimeZoneDateParts(date, timezone);
     return `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute}:${parts.second}`;
 }
 
+/**
+ * Format the timezone offset for a date.
+ * @param {Date} date Date to inspect.
+ * @param {string} timezone Timezone name.
+ * @returns {string} Offset in +/-HH:mm form.
+ */
 function formatTimezoneOffset(date, timezone) {
     const parts = getTimeZoneDateParts(date, timezone);
     const localAsUtc = Date.UTC(
@@ -2969,6 +3075,12 @@ function formatTimezoneOffset(date, timezone) {
     return `${sign}${String(Math.floor(absoluteMinutes / 60)).padStart(2, "0")}:${String(absoluteMinutes % 60).padStart(2, "0")}`;
 }
 
+/**
+ * Get date/time parts for a timezone.
+ * @param {Date} date Date to format.
+ * @param {string} timezone Timezone name.
+ * @returns {object} Date/time parts keyed by part type.
+ */
 function getTimeZoneDateParts(date, timezone) {
     const formatter = new Intl.DateTimeFormat("en-CA", {
         timeZone: timezone,
@@ -2984,6 +3096,12 @@ function getTimeZoneDateParts(date, timezone) {
     return Object.fromEntries(formatter.formatToParts(date).map((part) => [part.type, part.value]));
 }
 
+/**
+ * Build a dashboard URL for a monitor.
+ * @param {string} primaryBaseURL Configured base URL.
+ * @param {number} monitorId Monitor ID.
+ * @returns {string} Dashboard URL, or an empty string.
+ */
 function buildMonitorDashboardUrl(primaryBaseURL, monitorId) {
     const baseURL = String(primaryBaseURL || "").trim().replace(/\/+$/, "");
     if (!baseURL || !monitorId) {
@@ -2992,6 +3110,11 @@ function buildMonitorDashboardUrl(primaryBaseURL, monitorId) {
     return `${baseURL}/dashboard/${monitorId}`;
 }
 
+/**
+ * Build a human-readable monitor target.
+ * @param {object} monitor Serialized monitor data.
+ * @returns {string} Target URL or host.
+ */
 function buildMonitorTargetUrl(monitor) {
     if (monitor?.url) {
         return String(monitor.url);
@@ -3002,10 +3125,21 @@ function buildMonitorTargetUrl(monitor) {
     return monitor?.hostname ? String(monitor.hostname) : "";
 }
 
+/**
+ * Check if a value is an HTTP URL.
+ * @param {string} value Value to check.
+ * @returns {boolean} True when value starts with HTTP or HTTPS.
+ */
 function isHttpUrl(value) {
     return /^https?:\/\//i.test(String(value || ""));
 }
 
+/**
+ * Build the Teams summary for a status notification.
+ * @param {string} monitorName Monitor name.
+ * @param {number} status Heartbeat status.
+ * @returns {string} Teams summary.
+ */
 function buildTeamsStatusSummary(monitorName, status) {
     if (Number(status) === DOWN) {
         return `[${monitorName || "Monitor"}] went down`;
@@ -3016,6 +3150,11 @@ function buildTeamsStatusSummary(monitorName, status) {
     return `[${monitorName || "Monitor"}] status changed`;
 }
 
+/**
+ * Format a monitor tag for notification text.
+ * @param {object} tag Monitor tag.
+ * @returns {string} Display text.
+ */
 function formatTagForNotification(tag) {
     if (tag.value === "" || tag.value === undefined || tag.value === null) {
         return tag.name;
