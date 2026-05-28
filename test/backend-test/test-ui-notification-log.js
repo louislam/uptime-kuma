@@ -147,4 +147,14 @@ describe("UI notification log", () => {
         assert.match(englishMessages, /"Shown per page":\s*"Shown per page"/);
         assert.match(englishMessages, /"Showing \{from\}-\{to\} of \{total\}":\s*"Showing \{from\}-\{to\} of \{total\}"/);
     });
+
+    test("keeps log timestamps visible in dark mode", () => {
+        const logPageSource = fs.readFileSync(path.join(__dirname, "../../src/pages/NotificationLogs.vue"), "utf8");
+
+        assert.match(logPageSource, /<time class="log-entry-time" :datetime="entry\.createdAt">/);
+        assert.match(
+            logPageSource,
+            /\.log-entry-time\s*\{[\s\S]*?color:\s*\$light-muted-font-color;[\s\S]*?\.dark &\s*\{[\s\S]*?color:\s*\$dark-font-color;[\s\S]*?\}/
+        );
+    });
 });

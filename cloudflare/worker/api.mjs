@@ -179,9 +179,68 @@ const REMOTE_BROWSER_TABLE_SQL = `CREATE TABLE IF NOT EXISTS remote_browser (
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 )`;
+const MONITOR_RUNTIME_SUMMARY_TABLE_SQL = `CREATE TABLE IF NOT EXISTS monitor_runtime_summary (
+    monitor_id INTEGER PRIMARY KEY,
+    latest_heartbeat_id INTEGER,
+    status INTEGER,
+    ping INTEGER,
+    msg TEXT,
+    checked_at TEXT,
+    avg_ping REAL,
+    uptime_24 REAL,
+    uptime_720 REAL,
+    uptime_1y REAL,
+    heartbeat_bar_json TEXT,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (monitor_id) REFERENCES monitors(id) ON DELETE CASCADE,
+    FOREIGN KEY (latest_heartbeat_id) REFERENCES heartbeats(id) ON DELETE SET NULL
+)`;
+const MONITOR_EVENT_LOG_TABLE_SQL = `CREATE TABLE IF NOT EXISTS monitor_event_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    heartbeat_id INTEGER NOT NULL UNIQUE,
+    monitor_id INTEGER NOT NULL,
+    status INTEGER NOT NULL,
+    ping INTEGER,
+    msg TEXT,
+    checked_at TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (monitor_id) REFERENCES monitors(id) ON DELETE CASCADE,
+    FOREIGN KEY (heartbeat_id) REFERENCES heartbeats(id) ON DELETE CASCADE
+)`;
+const MONITOR_EVENT_LOG_CHECKED_AT_INDEX_SQL =
+    "CREATE INDEX IF NOT EXISTS idx_monitor_event_log_checked_at ON monitor_event_log(checked_at DESC, id DESC)";
+const MONITOR_EVENT_LOG_MONITOR_CHECKED_AT_INDEX_SQL =
+    "CREATE INDEX IF NOT EXISTS idx_monitor_event_log_monitor_checked_at ON monitor_event_log(monitor_id, checked_at DESC, id DESC)";
+const MONITOR_METRIC_BUCKET_TABLE_SQL = `CREATE TABLE IF NOT EXISTS monitor_metric_bucket (
+    monitor_id INTEGER NOT NULL,
+    resolution_seconds INTEGER NOT NULL,
+    bucket_start TEXT NOT NULL,
+    up_count INTEGER NOT NULL DEFAULT 0,
+    down_count INTEGER NOT NULL DEFAULT 0,
+    pending_count INTEGER NOT NULL DEFAULT 0,
+    maintenance_count INTEGER NOT NULL DEFAULT 0,
+    total_count INTEGER NOT NULL DEFAULT 0,
+    ping_sum REAL NOT NULL DEFAULT 0,
+    min_ping REAL,
+    max_ping REAL,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (monitor_id, resolution_seconds, bucket_start),
+    FOREIGN KEY (monitor_id) REFERENCES monitors(id) ON DELETE CASCADE
+)`;
+const MONITOR_METRIC_BUCKET_LOOKUP_INDEX_SQL =
+    "CREATE INDEX IF NOT EXISTS idx_monitor_metric_bucket_lookup ON monitor_metric_bucket(monitor_id, resolution_seconds, bucket_start)";
+const DASHBOARD_RUNTIME_CACHE_SCHEMA_SQL = [
+    MONITOR_RUNTIME_SUMMARY_TABLE_SQL,
+    MONITOR_EVENT_LOG_TABLE_SQL,
+    MONITOR_EVENT_LOG_CHECKED_AT_INDEX_SQL,
+    MONITOR_EVENT_LOG_MONITOR_CHECKED_AT_INDEX_SQL,
+    MONITOR_METRIC_BUCKET_TABLE_SQL,
+    MONITOR_METRIC_BUCKET_LOOKUP_INDEX_SQL,
+];
 const ACCESS_CERT_CACHE_TTL_MS = 60 * 60 * 1000;
 const DEFAULT_ACCESS_CERT_LOOKUP_TIMEOUT_MS = 5000;
 const accessCertCache = new Map();
+const dashboardRuntimeCacheSchemaReady = new WeakMap();
 const SUPPORTED_PROXY_PROTOCOLS = new Set(["http", "https", "socks", "socks5", "socks5h", "socks4"]);
 const ADMIN_ROUTE_NAMES = new Set([
     "monitors",
@@ -786,6 +845,25 @@ async function getRemoteBrowser(env, remoteBrowserId) {
 
 async function ensureRemoteBrowserTable(env) {
     await env.DB.prepare(REMOTE_BROWSER_TABLE_SQL).run();
+}
+
+async function ensureDashboardRuntimeCacheTables(env) {
+    let ready = dashboardRuntimeCacheSchemaReady.get(env.DB);
+    if (!ready) {
+        ready = (async () => {
+            for (const sql of DASHBOARD_RUNTIME_CACHE_SCHEMA_SQL) {
+                await env.DB.prepare(sql).run();
+            }
+        })();
+        dashboardRuntimeCacheSchemaReady.set(env.DB, ready);
+    }
+
+    try {
+        await ready;
+    } catch (error) {
+        dashboardRuntimeCacheSchemaReady.delete(env.DB);
+        throw error;
+    }
 }
 
 function normalizeRemoteBrowserInput(remoteBrowserInput = {}) {
@@ -1751,6 +1829,7 @@ async function listRuntimeSummariesByMonitorId(env, monitorIds) {
     if (ids.length === 0) {
         return summariesByMonitorId;
     }
+    await ensureDashboardRuntimeCacheTables(env);
 
     for (let index = 0; index < ids.length; index += LATEST_HEARTBEAT_LOOKUP_CHUNK_SIZE) {
         const chunk = ids.slice(index, index + LATEST_HEARTBEAT_LOOKUP_CHUNK_SIZE);
@@ -2475,6 +2554,7 @@ async function queryMonitorEventLog(env, {
     offset = 0,
     count = 100,
 } = {}) {
+    await ensureDashboardRuntimeCacheTables(env);
     const limit = Math.max(1, Math.min(500, Number(count) || 100));
     const start = Math.max(0, Number(offset) || 0);
     const monitorFilter = monitorId == null ? "" : "AND e.monitor_id = ?";
@@ -2581,6 +2661,7 @@ function normalizeDashboardChartPeriod(periodHours) {
 }
 
 async function listMonitorMetricBuckets(env, monitorId, resolutionSeconds, since) {
+    await ensureDashboardRuntimeCacheTables(env);
     const result = await env.DB.prepare(
         `SELECT monitor_id, resolution_seconds, bucket_start, up_count, down_count,
                 pending_count, maintenance_count, total_count, ping_sum, min_ping, max_ping
@@ -2658,6 +2739,7 @@ async function rebuildMonitorRuntimeCache(env, monitor) {
 }
 
 async function clearDashboardDerivedDataForMonitor(env, monitorId) {
+    await ensureDashboardRuntimeCacheTables(env);
     await env.DB.prepare("DELETE FROM monitor_runtime_summary WHERE monitor_id = ?")
         .bind(Number(monitorId))
         .run();
@@ -2682,6 +2764,7 @@ export async function clearMonitorHeartbeats(env, monitorId) {
  * @returns {Promise<void>} Completion promise.
  */
 export async function clearAllStatistics(env) {
+    await ensureDashboardRuntimeCacheTables(env);
     await env.DB.prepare("DELETE FROM heartbeats").run();
     await env.DB.prepare("DELETE FROM monitor_runtime_summary").run();
     await env.DB.prepare("DELETE FROM monitor_event_log").run();
@@ -2701,6 +2784,7 @@ export async function purgeOldMonitorHistory(env, now = new Date()) {
         return { deleted: false };
     }
 
+    await ensureDashboardRuntimeCacheTables(env);
     const cutoff = new Date(now.getTime() - keepDataPeriodDays * 24 * 60 * 60 * 1000);
     await env.DB.prepare("DELETE FROM heartbeats WHERE checked_at < ?")
         .bind(formatSqliteDateTime(cutoff))
@@ -3233,6 +3317,7 @@ async function writeHeartbeat(env, monitorId, result, previousHeartbeat = null, 
 }
 
 async function updateDashboardRuntimeCachesForHeartbeat(env, monitor, heartbeat, previousHeartbeat = null) {
+    await ensureDashboardRuntimeCacheTables(env);
     await upsertDashboardMetricBuckets(env, monitor, heartbeat);
     await upsertDashboardEventLog(env, monitor, heartbeat, previousHeartbeat);
     await refreshMonitorRuntimeSummary(env, monitor, heartbeat);

@@ -1115,6 +1115,52 @@ describe("Cloudflare Worker API", () => {
         assert.ok(env.state.monitorMetricBuckets.length >= 3);
     });
 
+    test("dashboard bootstrap creates missing runtime cache tables before reading summaries", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            missingDashboardRuntimeCacheTables: true,
+            monitors: [
+                {
+                    id: 7,
+                    name: "Private HTTP",
+                    type: "http",
+                    url: "http://private.example.test",
+                    active: 1,
+                },
+            ],
+            heartbeats: [
+                {
+                    id: 1001,
+                    monitor_id: 7,
+                    status: 1,
+                    ping: 12,
+                    msg: "200 - OK",
+                    checked_at: "2026-05-11 02:31:00",
+                },
+            ],
+        });
+
+        const response = await handleApiRequest(adminRequest("https://example.com/api/dashboard/bootstrap"), env);
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(body.monitors.length, 1);
+        assert.strictEqual(body.monitors[0].lastHeartbeat.msg, "200 - OK");
+        assert.strictEqual(env.state.missingDashboardRuntimeCacheTables, false);
+        assert.ok(
+            env.state.queries.some((sql) => sql.includes("CREATE TABLE IF NOT EXISTS monitor_runtime_summary")),
+            "missing runtime summary table should be created"
+        );
+        assert.ok(
+            env.state.queries.some((sql) => sql.includes("CREATE TABLE IF NOT EXISTS monitor_event_log")),
+            "missing event-log table should be created"
+        );
+        assert.ok(
+            env.state.queries.some((sql) => sql.includes("CREATE TABLE IF NOT EXISTS monitor_metric_bucket")),
+            "missing metric bucket table should be created"
+        );
+    });
+
     test("lists Worker monitors with upside-down latest heartbeat status applied", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({
@@ -5284,6 +5330,7 @@ function createEnv(initial) {
         missingProxyColumn: Boolean(initial.missingProxyColumn),
         missingNotificationTables: Boolean(initial.missingNotificationTables),
         missingTagTables: Boolean(initial.missingTagTables),
+        missingDashboardRuntimeCacheTables: Boolean(initial.missingDashboardRuntimeCacheTables),
         runnerStatusNeverResolves: Boolean(initial.runnerStatusNeverResolves),
     };
 
@@ -5568,6 +5615,9 @@ function createStatement(sql, state) {
                 return { results: [...state.remoteBrowsers] };
             }
             if (sql.includes("FROM monitor_runtime_summary")) {
+                if (state.missingDashboardRuntimeCacheTables) {
+                    throw new Error("D1_ERROR: no such table: monitor_runtime_summary: SQLITE_ERROR");
+                }
                 let results = [...state.monitorRuntimeSummaries];
                 if (sql.includes("WHERE monitor_id IN")) {
                     const ids = this.values.map(Number);
@@ -5578,9 +5628,15 @@ function createStatement(sql, state) {
                 return { results };
             }
             if (sql.includes("FROM monitor_event_log")) {
+                if (state.missingDashboardRuntimeCacheTables) {
+                    throw new Error("D1_ERROR: no such table: monitor_event_log: SQLITE_ERROR");
+                }
                 return { results: buildMonitorEventLogQueryResults(this.values, state) };
             }
             if (sql.includes("FROM monitor_metric_bucket")) {
+                if (state.missingDashboardRuntimeCacheTables) {
+                    throw new Error("D1_ERROR: no such table: monitor_metric_bucket: SQLITE_ERROR");
+                }
                 const [monitorId, resolutionSeconds, since] = this.values;
                 const results = state.monitorMetricBuckets
                     .filter((bucket) =>
@@ -5721,6 +5777,9 @@ function createStatement(sql, state) {
                 return state.remoteBrowsers.find((remoteBrowser) => remoteBrowser.id === id) || null;
             }
             if (sql.includes("FROM monitor_metric_bucket")) {
+                if (state.missingDashboardRuntimeCacheTables) {
+                    throw new Error("D1_ERROR: no such table: monitor_metric_bucket: SQLITE_ERROR");
+                }
                 const [monitorId, resolutionSeconds, since] = this.values;
                 const buckets = state.monitorMetricBuckets.filter((bucket) =>
                     Number(bucket.monitor_id) === Number(monitorId) &&
@@ -5769,6 +5828,27 @@ function createStatement(sql, state) {
                 return { success: true };
             }
             if (sql.includes("CREATE INDEX IF NOT EXISTS monitor_tag_tag_id_index")) {
+                return { success: true };
+            }
+            if (sql.includes("CREATE TABLE IF NOT EXISTS monitor_runtime_summary")) {
+                state.missingDashboardRuntimeCacheTables = false;
+                return { success: true };
+            }
+            if (sql.includes("CREATE TABLE IF NOT EXISTS monitor_event_log")) {
+                state.missingDashboardRuntimeCacheTables = false;
+                return { success: true };
+            }
+            if (sql.includes("CREATE INDEX IF NOT EXISTS idx_monitor_event_log_checked_at")) {
+                return { success: true };
+            }
+            if (sql.includes("CREATE INDEX IF NOT EXISTS idx_monitor_event_log_monitor_checked_at")) {
+                return { success: true };
+            }
+            if (sql.includes("CREATE TABLE IF NOT EXISTS monitor_metric_bucket")) {
+                state.missingDashboardRuntimeCacheTables = false;
+                return { success: true };
+            }
+            if (sql.includes("CREATE INDEX IF NOT EXISTS idx_monitor_metric_bucket_lookup")) {
                 return { success: true };
             }
             if (sql.includes("CREATE TABLE IF NOT EXISTS proxy")) {

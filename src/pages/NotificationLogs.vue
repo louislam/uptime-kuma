@@ -369,10 +369,15 @@ export default {
 }
 
 .log-entry-time {
-    color: $dark-font-color2;
+    color: $light-muted-font-color;
     font-size: 12px;
+    font-weight: 600;
     text-align: right;
     white-space: nowrap;
+
+    .dark & {
+        color: $dark-font-color;
+    }
 }
 
 .log-pagination {
