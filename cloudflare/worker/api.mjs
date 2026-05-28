@@ -847,6 +847,11 @@ async function ensureRemoteBrowserTable(env) {
     await env.DB.prepare(REMOTE_BROWSER_TABLE_SQL).run();
 }
 
+/**
+ * Ensure the derived dashboard cache tables exist before reading or writing them.
+ * @param {object} env Cloudflare Worker environment bindings.
+ * @returns {Promise<void>} Completion promise.
+ */
 async function ensureDashboardRuntimeCacheTables(env) {
     let ready = dashboardRuntimeCacheSchemaReady.get(env.DB);
     if (!ready) {
