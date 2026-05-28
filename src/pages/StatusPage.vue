@@ -14,7 +14,7 @@
                 <div class="my-3">
                     <label for="statusPageLanguage" class="form-label">{{ $t("Language") }}</label>
                     <select id="statusPageLanguage" v-model="config.statusPageLanguage" class="form-select">
-                        <option v-for="(lang, i) in $i18n.availableLocales" :key="`Lang${i}`" :value="lang">
+                        <option v-for="lang in $i18n.availableLocales" :key="lang" :value="lang">
                             {{ $i18n.messages[lang].languageName }}
                         </option>
                     </select>
