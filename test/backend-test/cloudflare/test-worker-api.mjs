@@ -255,6 +255,14 @@ describe("Cloudflare Worker API", () => {
         assert.match(workerSource, /persistStartingTwingateStatus/);
     });
 
+    test("scheduled Worker checks Twingate health alerts", async () => {
+        const workerPath = path.join(__dirname, "../../../cloudflare/worker/index.mjs");
+        const workerSource = fs.readFileSync(workerPath, "utf8");
+
+        assert.match(workerSource, /checkTwingateHealthAlert/);
+        assert.match(workerSource, /await checkTwingateHealthAlert\(env\)/);
+    });
+
     test("runner monitor checks use startup-aware forwarding instead of the default container fetch", async () => {
         const workerPath = path.join(__dirname, "../../../cloudflare/worker/index.mjs");
         const workerSource = fs.readFileSync(workerPath, "utf8");
@@ -1010,6 +1018,9 @@ describe("Cloudflare Worker API", () => {
         assert.strictEqual(getBody.data.entryPage, "dashboard");
         assert.strictEqual(getBody.data.checkUpdate, true);
         assert.strictEqual(getBody.data.keepDataPeriodDays, 180);
+        assert.strictEqual(getBody.data.twingateAlertEnabled, false);
+        assert.deepStrictEqual(getBody.data.twingateAlertNotificationIDList, {});
+        assert.strictEqual(getBody.data.twingateAlertThresholdMinutes, 5);
 
         const putResponse = await handleApiRequest(
             adminRequest("https://example.com/api/settings", {
@@ -1018,6 +1029,11 @@ describe("Cloudflare Worker API", () => {
                     primaryBaseURL: "https://uptime.example.com",
                     checkUpdate: false,
                     searchEngineIndex: true,
+                    twingateAlertEnabled: true,
+                    twingateAlertNotificationIDList: {
+                        3: true,
+                    },
+                    twingateAlertThresholdMinutes: 2,
                 }),
             }),
             env
@@ -1028,6 +1044,9 @@ describe("Cloudflare Worker API", () => {
         assert.strictEqual(env.state.settings.primaryBaseURL, "https://uptime.example.com");
         assert.strictEqual(env.state.settings.checkUpdate, false);
         assert.strictEqual(env.state.settings.searchEngineIndex, true);
+        assert.strictEqual(env.state.settings.twingateAlertEnabled, true);
+        assert.deepStrictEqual(env.state.settings.twingateAlertNotificationIDList, { 3: true });
+        assert.strictEqual(env.state.settings.twingateAlertThresholdMinutes, 2);
     });
 
     test("clears all Worker monitor statistics", async () => {
@@ -4487,6 +4506,158 @@ describe("Cloudflare Worker API", () => {
         assert.strictEqual(env.MONITOR_QUEUE.sent.length, 0);
         assert.strictEqual(env.state.settings.deployMonitorPause.versionId, "version-b");
         assert.notStrictEqual(env.state.settings.deployMonitorPause.pauseUntil, oldPauseUntil);
+    });
+
+    test("Twingate health alert sends selected notifications after the startup threshold", async () => {
+        const workerApi = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            settings: {
+                primaryBaseURL: "https://uptime.worker",
+                serverTimezone: "UTC",
+                twingateAlertEnabled: true,
+                twingateAlertNotificationIDList: {
+                    3: true,
+                    4: false,
+                },
+                twingateAlertThresholdMinutes: 5,
+            },
+            runnerStatus: {
+                configured: true,
+                starting: true,
+                running: false,
+                proxyUrl: "http://127.0.0.1:9999",
+                tunMode: "off",
+                lastError: "twingated exited before proxy became ready",
+            },
+            notifications: [
+                {
+                    id: 3,
+                    name: "Pushover Alert",
+                    active: 1,
+                    user_id: 1,
+                    is_default: 1,
+                    config: JSON.stringify({
+                        type: "pushover",
+                        pushoveruserkey: "user-key",
+                        pushoverapptoken: "app-token",
+                        pushoversounds: "siren",
+                        pushoverpriority: "1",
+                        pushovertitle: "Worker Alert",
+                    }),
+                },
+                {
+                    id: 4,
+                    name: "Teams Alert",
+                    active: 1,
+                    user_id: 1,
+                    is_default: 0,
+                    config: JSON.stringify({
+                        type: "teams",
+                        webhookUrl: "https://example.webhook.office.com/services/example",
+                    }),
+                },
+            ],
+        });
+        const originalFetch = globalThis.fetch;
+        const sentRequests = [];
+        globalThis.fetch = async (url, init = {}) => {
+            sentRequests.push({ url, init });
+            return Response.json({ ok: true });
+        };
+
+        try {
+            assert.strictEqual(typeof workerApi.checkTwingateHealthAlert, "function");
+
+            const firstResult = await workerApi.checkTwingateHealthAlert(env, new Date("2026-05-27T12:00:00Z"));
+            assert.strictEqual(firstResult.degraded, true);
+            assert.strictEqual(firstResult.notified, false);
+            assert.strictEqual(env.state.settings.twingateAlertState.firstDegradedAt, "2026-05-27T12:00:00.000Z");
+            assert.strictEqual(sentRequests.length, 0);
+
+            const secondResult = await workerApi.checkTwingateHealthAlert(env, new Date("2026-05-27T12:06:00Z"));
+            assert.strictEqual(secondResult.degraded, true);
+            assert.strictEqual(secondResult.notified, true);
+            assert.strictEqual(env.state.settings.twingateAlertState.notifiedStatus, "degraded");
+            assert.strictEqual(env.state.settings.twingateAlertState.lastNotificationAt, "2026-05-27T12:06:00.000Z");
+            assert.strictEqual(sentRequests.length, 1);
+            assert.strictEqual(sentRequests[0].url, "https://api.pushover.net/1/messages.json");
+            assert.match(sentRequests[0].init.body.get("message"), /^\[Twingate\] \[Down\]/);
+            assert.match(sentRequests[0].init.body.get("message"), /twingated exited before proxy became ready/);
+
+            const thirdResult = await workerApi.checkTwingateHealthAlert(env, new Date("2026-05-27T12:07:00Z"));
+            assert.strictEqual(thirdResult.degraded, true);
+            assert.strictEqual(thirdResult.notified, false);
+            assert.strictEqual(sentRequests.length, 1);
+        } finally {
+            globalThis.fetch = originalFetch;
+        }
+    });
+
+    test("Twingate health alert sends a recovery notification after a degraded alert", async () => {
+        const { checkTwingateHealthAlert } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            settings: {
+                serverTimezone: "UTC",
+                twingateAlertEnabled: true,
+                twingateAlertNotificationIDList: {
+                    4: true,
+                },
+                twingateAlertThresholdMinutes: 5,
+                twingateAlertState: {
+                    firstDegradedAt: "2026-05-27T12:00:00.000Z",
+                    notifiedStatus: "degraded",
+                    lastNotificationAt: "2026-05-27T12:06:00.000Z",
+                },
+            },
+            runnerStatus: {
+                configured: true,
+                starting: false,
+                running: true,
+                proxyUrl: "http://127.0.0.1:9999",
+                tunMode: "off",
+                lastError: null,
+            },
+            notifications: [
+                {
+                    id: 4,
+                    name: "Teams Alert",
+                    active: 1,
+                    user_id: 1,
+                    is_default: 0,
+                    config: JSON.stringify({
+                        type: "teams",
+                        webhookUrl: "https://example.webhook.office.com/services/example",
+                    }),
+                },
+            ],
+        });
+        const originalFetch = globalThis.fetch;
+        const sentRequests = [];
+        globalThis.fetch = async (url, init = {}) => {
+            sentRequests.push({ url, init });
+            return Response.json({ ok: true });
+        };
+
+        try {
+            assert.strictEqual(typeof checkTwingateHealthAlert, "function");
+
+            const result = await checkTwingateHealthAlert(env, new Date("2026-05-27T12:08:00Z"));
+
+            assert.strictEqual(result.degraded, false);
+            assert.strictEqual(result.notified, true);
+            assert.strictEqual(env.state.settings.twingateAlertState.notifiedStatus, "healthy");
+            assert.strictEqual(sentRequests.length, 1);
+            assert.strictEqual(sentRequests[0].url, "https://example.webhook.office.com/services/example");
+
+            const payload = JSON.parse(sentRequests[0].init.body);
+            assert.strictEqual(payload.summary, "[Twingate] is back online");
+            assert.deepStrictEqual(payload.attachments[0].content.body[1].facts.slice(0, 2), [
+                { title: "Description", value: "Twingate is running again." },
+                { title: "Monitor", value: "Twingate" },
+            ]);
+        } finally {
+            globalThis.fetch = originalFetch;
+        }
     });
 
     test("check-now adds ACCESS_SECRET header to HTTP monitor jobs without saving it", async () => {

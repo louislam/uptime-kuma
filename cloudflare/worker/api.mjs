@@ -27,6 +27,9 @@ const DEFAULT_SETTINGS = {
     steamAPIKey: "",
     globalpingApiToken: "",
     chromeExecutable: "",
+    twingateAlertEnabled: false,
+    twingateAlertNotificationIDList: {},
+    twingateAlertThresholdMinutes: 5,
 };
 const DOWN = 0;
 const UP = 1;
@@ -41,12 +44,14 @@ const WORKER_STATUS_PAGE_PUBLIC_GROUP_LIST_SETTING = "statusPagePublicGroupList:
 const WORKER_STATUS_PAGE_ALIAS_SLUGS = new Set(["", "default", "status-page"]);
 const WORKER_STATUS_PAGE_SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const DEPLOY_MONITOR_PAUSE_SETTING = "deployMonitorPause";
+const TWINGATE_ALERT_STATE_SETTING = "twingateAlertState";
 const SENSITIVE_SETTING_KEYS = new Set([
     WORKER_AUTH_USER_SETTING,
     WORKER_AUTH_SESSION_SECRET_SETTING,
     WORKER_AUTH_REVOKED_SESSIONS_SETTING,
     WORKER_AUTH_TOTP_SETTING,
     DEPLOY_MONITOR_PAUSE_SETTING,
+    TWINGATE_ALERT_STATE_SETTING,
 ]);
 const WORKER_AUTH_PASSWORD_ITERATIONS = 100000;
 const WORKER_AUTH_SESSION_TTL_SECONDS = 7 * 24 * 60 * 60;
@@ -56,6 +61,9 @@ const WORKER_AUTH_TOTP_WINDOW = 1;
 const WORKER_HEARTBEAT_RESPONSE_MAX_CHARS = 64 * 1024;
 const DEFAULT_MONITOR_INTERVAL_SECONDS = 60;
 const DEFAULT_DEPLOY_MONITOR_PAUSE_SECONDS = 120;
+const DEFAULT_TWINGATE_ALERT_THRESHOLD_MINUTES = 5;
+const MIN_TWINGATE_ALERT_THRESHOLD_MINUTES = 1;
+const MAX_TWINGATE_ALERT_THRESHOLD_MINUTES = 1440;
 const ACCESS_SECRET_HEADER = "X-Uptime-Worker-Token";
 const ACCESS_SECRET_MONITOR_TYPES = new Set(["http", "keyword", "json-query"]);
 const NOTIFICATION_OK_MESSAGE = "Sent Successfully.";
@@ -1449,6 +1457,10 @@ function normalizeMonitorNotificationIds(notificationIDList) {
         .filter((notificationId) => Number.isInteger(notificationId) && notificationId > 0);
 }
 
+function normalizeNotificationIdList(notificationIDList) {
+    return normalizeMonitorNotificationIds(notificationIDList);
+}
+
 /**
  * Normalize checkbox-style notification enabled values.
  * @param {unknown} value Submitted checkbox value.
@@ -2362,6 +2374,89 @@ export async function purgeOldMonitorHistory(env, now = new Date()) {
     return { deleted: true };
 }
 
+export async function checkTwingateHealthAlert(env, now = new Date()) {
+    const settings = await getUiSettings(env);
+    if (!settings.twingateAlertEnabled) {
+        return {
+            enabled: false,
+            degraded: false,
+            notified: false,
+        };
+    }
+
+    const notificationIds = normalizeNotificationIdList(settings.twingateAlertNotificationIDList);
+    if (notificationIds.length === 0) {
+        return {
+            enabled: true,
+            degraded: false,
+            notified: false,
+            reason: "no-notifications",
+        };
+    }
+
+    const [status, previousState] = await Promise.all([
+        fetchRunnerStatus(env),
+        getStoredSetting(env, TWINGATE_ALERT_STATE_SETTING),
+    ]);
+    const nowIso = now.toISOString();
+    const degraded = isTwingateAlertStatusDegraded(status);
+    const alertState = normalizeTwingateAlertState(previousState);
+
+    if (degraded) {
+        const firstDegradedAt = alertState.firstDegradedAt || nowIso;
+        const thresholdMet = isTwingateAlertThresholdMet(firstDegradedAt, settings, now);
+        const nextState = {
+            firstDegradedAt,
+            lastStatusAt: nowIso,
+            lastError: status.lastError || null,
+            notifiedStatus: alertState.notifiedStatus,
+            lastNotificationAt: alertState.lastNotificationAt || null,
+        };
+        let notified = false;
+
+        if (thresholdMet && alertState.notifiedStatus !== "degraded") {
+            const notifications = await listActiveNotificationsByIds(env, notificationIds);
+            await sendTwingateStatusNotifications(env, notifications, "degraded", status, settings, now);
+            nextState.notifiedStatus = "degraded";
+            nextState.lastNotificationAt = nowIso;
+            notified = notifications.length > 0;
+        }
+
+        await setStoredSetting(env, TWINGATE_ALERT_STATE_SETTING, nextState);
+        return {
+            enabled: true,
+            degraded: true,
+            notified,
+            thresholdMet,
+        };
+    }
+
+    let notified = false;
+    const nextState = {
+        firstDegradedAt: null,
+        lastStatusAt: nowIso,
+        lastError: null,
+        notifiedStatus: alertState.notifiedStatus,
+        lastNotificationAt: alertState.lastNotificationAt || null,
+    };
+
+    if (alertState.notifiedStatus === "degraded") {
+        const notifications = await listActiveNotificationsByIds(env, notificationIds);
+        await sendTwingateStatusNotifications(env, notifications, "healthy", status, settings, now);
+        nextState.notifiedStatus = "healthy";
+        nextState.lastNotificationAt = nowIso;
+        notified = notifications.length > 0;
+    }
+
+    await setStoredSetting(env, TWINGATE_ALERT_STATE_SETTING, nextState);
+    return {
+        enabled: true,
+        degraded: false,
+        notified,
+        thresholdMet: false,
+    };
+}
+
 export async function updateMonitorNetworkRoute(env, monitorId, networkProfileId) {
     const monitor = await getMonitor(env, monitorId);
     if (!monitor) {
@@ -2883,6 +2978,104 @@ async function listActiveMonitorNotifications(env, monitorId) {
         .filter((notification) => assignedNotifications[Number(notification.id)])
         .map(hydrateStoredNotification)
         .filter(isStoredNotificationActive);
+}
+
+async function listActiveNotificationsByIds(env, notificationIds) {
+    const idSet = new Set((notificationIds || []).map(Number).filter((id) => Number.isInteger(id) && id > 0));
+    if (idSet.size === 0) {
+        return [];
+    }
+    const notifications = await listNotifications(env);
+    return notifications
+        .filter((notification) => idSet.has(Number(notification.id)))
+        .map(hydrateStoredNotification)
+        .filter(isStoredNotificationActive);
+}
+
+async function sendTwingateStatusNotifications(env, notifications, state, status, settings, now) {
+    if (notifications.length === 0) {
+        return;
+    }
+
+    const monitorJSON = {
+        id: null,
+        active: true,
+        name: "Twingate",
+        type: "twingate",
+        url: null,
+        hostname: null,
+        port: null,
+        tags: [],
+    };
+    const heartbeatJSON = buildNotificationHeartbeatJSON({
+        monitor_id: 0,
+        status: state === "healthy" ? UP : DOWN,
+        ping: null,
+        msg: state === "healthy" ? "Twingate is running again." : buildTwingateAlertMessage(status),
+        checked_at: formatSqliteDateTime(now),
+    }, settings);
+    const msg = buildMonitorStatusMessage(monitorJSON, heartbeatJSON);
+
+    await Promise.all(
+        notifications.map(async (notification) => {
+            try {
+                await sendWorkerMonitorNotification(notification, msg, monitorJSON, heartbeatJSON, settings);
+            } catch (error) {
+                console.error(
+                    `Cannot send Twingate alert to ${notification.name || notification.type || notification.id}: ${
+                        error?.message || String(error)
+                    }`
+                );
+            }
+        })
+    );
+}
+
+function buildTwingateAlertMessage(status = {}) {
+    const base = status.starting
+        ? "Twingate is still starting after the alert threshold."
+        : "Twingate is configured but not running.";
+    const details = String(status.lastError || "").trim();
+    return details ? `${base} ${details}` : base;
+}
+
+function isTwingateAlertStatusDegraded(status = {}) {
+    return Boolean(status.configured) && !Boolean(status.running);
+}
+
+function isTwingateAlertThresholdMet(firstDegradedAt, settings, now) {
+    const firstDegradedTime = Date.parse(firstDegradedAt);
+    if (!Number.isFinite(firstDegradedTime)) {
+        return false;
+    }
+    return now.getTime() - firstDegradedTime >= resolveTwingateAlertThresholdMs(settings);
+}
+
+function resolveTwingateAlertThresholdMs(settings = {}) {
+    const requestedMinutes = Number.parseInt(settings.twingateAlertThresholdMinutes, 10);
+    const minutes = Number.isFinite(requestedMinutes)
+        ? Math.min(MAX_TWINGATE_ALERT_THRESHOLD_MINUTES, Math.max(MIN_TWINGATE_ALERT_THRESHOLD_MINUTES, requestedMinutes))
+        : DEFAULT_TWINGATE_ALERT_THRESHOLD_MINUTES;
+    return minutes * 60 * 1000;
+}
+
+function normalizeTwingateAlertState(value) {
+    const state = value && typeof value === "object" && !Array.isArray(value) ? value : {};
+    return {
+        firstDegradedAt: normalizeIsoDateString(state.firstDegradedAt),
+        lastStatusAt: normalizeIsoDateString(state.lastStatusAt),
+        lastError: typeof state.lastError === "string" ? state.lastError : null,
+        notifiedStatus: ["degraded", "healthy"].includes(state.notifiedStatus) ? state.notifiedStatus : null,
+        lastNotificationAt: normalizeIsoDateString(state.lastNotificationAt),
+    };
+}
+
+function normalizeIsoDateString(value) {
+    if (typeof value !== "string" || !value) {
+        return null;
+    }
+    const timestamp = Date.parse(value);
+    return Number.isFinite(timestamp) ? new Date(timestamp).toISOString() : null;
 }
 
 /**

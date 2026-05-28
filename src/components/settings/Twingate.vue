@@ -60,10 +60,93 @@
         <button class="btn btn-primary" type="button" :disabled="loading" @click="loadStatus">
             {{ $t("refreshTwingateStatus") }}
         </button>
+
+        <div v-if="settingsLoaded" class="twingate-alert-settings my-4 pt-4">
+            <h5 class="my-4 settings-subheading">{{ $t("twingateAlertSettings") }}</h5>
+
+            <div class="form-check form-switch my-3">
+                <input
+                    id="twingate-alert-enabled"
+                    v-model="settings.twingateAlertEnabled"
+                    class="form-check-input"
+                    type="checkbox"
+                    @change="onTwingateAlertEnabledChange"
+                />
+                <label class="form-check-label" for="twingate-alert-enabled">
+                    {{ $t("twingateAlertEnabled") }}
+                </label>
+            </div>
+            <p class="form-text">
+                {{ $t("twingateAlertDescription") }}
+            </p>
+
+            <div v-if="settings.twingateAlertEnabled" class="twingate-alert-options">
+                <div class="my-3 col-12 col-xl-6">
+                    <label for="twingate-alert-threshold" class="form-label">
+                        {{ $t("twingateAlertThresholdMinutes") }}
+                    </label>
+                    <input
+                        id="twingate-alert-threshold"
+                        v-model="settings.twingateAlertThresholdMinutes"
+                        type="number"
+                        min="1"
+                        max="1440"
+                        step="1"
+                        class="form-control"
+                    />
+                    <div class="form-text">
+                        {{ $t("twingateAlertThresholdDescription") }}
+                    </div>
+                </div>
+
+                <div class="my-4">
+                    <h6 class="mb-2">{{ $t("Notifications") }}</h6>
+                    <p v-if="$root.notificationList.length === 0">
+                        {{ $t("Not available, please setup.") }}
+                    </p>
+
+                    <div
+                        v-for="notification in $root.notificationList"
+                        :key="notification.id"
+                        class="form-check form-switch my-3"
+                    >
+                        <input
+                            :id="'twingate-alert-notification' + notification.id"
+                            v-model="settings.twingateAlertNotificationIDList[notification.id]"
+                            class="form-check-input"
+                            type="checkbox"
+                        />
+                        <label
+                            class="form-check-label"
+                            :for="'twingate-alert-notification' + notification.id"
+                        >
+                            {{ notification.name }}
+                            <a href="#" @click.prevent="$refs.notificationDialog.show(notification.id)">
+                                {{ $t("Edit") }}
+                            </a>
+                        </label>
+                        <span v-if="notification.isDefault == true" class="badge bg-primary ms-2">
+                            {{ $t("Default") }}
+                        </span>
+                    </div>
+
+                    <button class="btn btn-primary me-2" type="button" @click="$refs.notificationDialog.show()">
+                        {{ $t("Setup Notification") }}
+                    </button>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" type="button" @click="saveSettings()">
+                {{ $t("Save") }}
+            </button>
+        </div>
+
+        <NotificationDialog ref="notificationDialog" />
     </div>
 </template>
 
 <script>
+import NotificationDialog from "../../components/NotificationDialog.vue";
 import { cloudflareWorkerApiHeaders } from "../../cloudflare-worker-api";
 
 const DEFAULT_TWINGATE_STATUS_BROWSER_TIMEOUT_MS = 12000;
@@ -77,6 +160,10 @@ function resolveTwingateStatusBrowserTimeoutMs() {
 }
 
 export default {
+    components: {
+        NotificationDialog,
+    },
+
     data() {
         return {
             loading: false,
@@ -93,6 +180,18 @@ export default {
     },
 
     computed: {
+        settings() {
+            return this.$parent.$parent.$parent.settings;
+        },
+
+        saveSettings() {
+            return this.$parent.$parent.$parent.saveSettings;
+        },
+
+        settingsLoaded() {
+            return this.$parent.$parent.$parent.settingsLoaded;
+        },
+
         showLogPanel() {
             return Boolean(this.status.lastError) && !this.logsCleared;
         },
@@ -154,7 +253,16 @@ export default {
         },
     },
 
+    watch: {
+        settingsLoaded(loaded) {
+            if (loaded) {
+                this.ensureTwingateAlertSettings();
+            }
+        },
+    },
+
     mounted() {
+        this.ensureTwingateAlertSettings();
         this.loadStatus();
     },
 
@@ -163,6 +271,40 @@ export default {
     },
 
     methods: {
+        ensureTwingateAlertSettings() {
+            if (!this.settings) {
+                return;
+            }
+            if (this.settings.twingateAlertEnabled === undefined) {
+                this.settings.twingateAlertEnabled = false;
+            }
+            if (
+                !this.settings.twingateAlertNotificationIDList ||
+                typeof this.settings.twingateAlertNotificationIDList !== "object" ||
+                Array.isArray(this.settings.twingateAlertNotificationIDList)
+            ) {
+                this.settings.twingateAlertNotificationIDList = {};
+            }
+            const threshold = Number.parseInt(this.settings.twingateAlertThresholdMinutes, 10);
+            this.settings.twingateAlertThresholdMinutes = Number.isFinite(threshold) && threshold > 0 ? threshold : 5;
+        },
+
+        onTwingateAlertEnabledChange() {
+            this.ensureTwingateAlertSettings();
+            if (!this.settings.twingateAlertEnabled || this.hasSelectedTwingateAlertNotification()) {
+                return;
+            }
+            for (const notification of this.$root.notificationList) {
+                if (notification.isDefault === true) {
+                    this.settings.twingateAlertNotificationIDList[notification.id] = true;
+                }
+            }
+        },
+
+        hasSelectedTwingateAlertNotification() {
+            return Object.values(this.settings.twingateAlertNotificationIDList || {}).some((enabled) => enabled === true);
+        },
+
         clearLogs() {
             this.logsCleared = true;
             this.copyState = "idle";

@@ -1580,5 +1580,10 @@
     "twingateLogCopied": "Copied",
     "twingateLogCopyFailed": "Failed",
     "twingateClearLog": "Clear",
-    "refreshTwingateStatus": "Refresh"
+    "refreshTwingateStatus": "Refresh",
+    "twingateAlertSettings": "Alerts",
+    "twingateAlertEnabled": "Alert when Twingate is stuck or not running",
+    "twingateAlertDescription": "Send a notification when the configured Twingate runner keeps starting or remains stopped after the alert threshold.",
+    "twingateAlertThresholdMinutes": "Alert threshold (minutes)",
+    "twingateAlertThresholdDescription": "Twingate must stay unavailable for this long before the first alert is sent."
 }

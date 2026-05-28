@@ -33,4 +33,18 @@ describe("Twingate settings layout", () => {
         assert.doesNotMatch(twingateSource, /selectedLogStyle|logStyleOptions|is-style-/);
         assert.doesNotMatch(languageSource, /twingateLogStyle/);
     });
+
+    test("exposes Twingate startup alert settings with notification selection", () => {
+        const twingateSource = readSource("src/components/settings/Twingate.vue");
+        const languageSource = readSource("src/lang/en.json");
+
+        assert.match(twingateSource, /v-model="settings\.twingateAlertEnabled"/);
+        assert.match(twingateSource, /v-model="settings\.twingateAlertThresholdMinutes"/);
+        assert.match(twingateSource, /v-model="settings\.twingateAlertNotificationIDList\[notification\.id\]"/);
+        assert.match(twingateSource, /\$root\.notificationList/);
+        assert.match(twingateSource, /NotificationDialog/);
+        assert.match(twingateSource, /@click="saveSettings\(\)"/);
+        assert.match(languageSource, /twingateAlertEnabled/);
+        assert.match(languageSource, /twingateAlertThresholdMinutes/);
+    });
 });

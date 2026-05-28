@@ -1,5 +1,12 @@
 import { Container, ContainerProxy } from "@cloudflare/containers";
-import { consumeQueue, enqueueDueMonitors, handleApiRequest, purgeOldMonitorHistory, resolveAppVersion } from "./api.mjs";
+import {
+    checkTwingateHealthAlert,
+    consumeQueue,
+    enqueueDueMonitors,
+    handleApiRequest,
+    purgeOldMonitorHistory,
+    resolveAppVersion,
+} from "./api.mjs";
 import {
     buildStartingTwingateStatus,
     buildUnavailableTwingateStatus,
@@ -236,6 +243,7 @@ export default {
     async scheduled(_controller, env, _ctx) {
         await enqueueDueMonitors(env);
         await purgeOldMonitorHistory(env);
+        await checkTwingateHealthAlert(env);
     },
 
     async queue(batch, env) {
