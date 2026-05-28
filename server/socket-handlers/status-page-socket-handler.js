@@ -321,10 +321,10 @@ module.exports.statusPageSocketHandler = (socket) => {
                 config.logo = imgDataUrl;
             }
 
-            // Check language
-            checkLanguage(config.statusPageLanguage);
-
             statusPage.slug = config.slug;
+            if (typeof lang !== "string" || !lang.match(/^[A-Za-z0-9@_-]+$/)) {
+                throw new Error(`Invalid language ${lang}`);
+            }
             statusPage.status_page_language = config.statusPageLanguage;
             statusPage.title = config.title;
             statusPage.description = config.description;
