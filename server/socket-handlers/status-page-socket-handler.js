@@ -550,19 +550,3 @@ function checkSlug(slug) {
         throw new Error("Invalid Slug");
     }
 }
-
-/**
- * Check if the language is valid
- * @param {string} lang Language code to test
- * @returns {void}
- * @throws Language is not valid
- */
-function checkLanguage(lang) {
-    if (typeof lang !== "string") {
-        throw new Error("Language must be string");
-    }
-
-    if (!lang.match(/^[A-Za-z0-9@_-]+$/)) {
-        throw new Error("Invalid Language");
-    }
-}
