@@ -3945,6 +3945,187 @@ describe("Cloudflare Worker API", () => {
         });
     });
 
+    test("check-now sends assigned Pushover notifications on down transitions", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            settings: {
+                primaryBaseURL: "https://uptime.worker",
+                serverTimezone: "America/Detroit",
+            },
+            monitors: [
+                {
+                    id: 215,
+                    name: "Ring | Inseego 5G",
+                    type: "ping",
+                    hostname: "ring-inseego.wgs",
+                    active: 1,
+                    timeout: 48,
+                    interval: 60,
+                    network_profile_id: null,
+                    config_json: JSON.stringify({ maxretries: 0 }),
+                },
+            ],
+            heartbeats: [
+                {
+                    monitor_id: 215,
+                    status: 1,
+                    ping: 120,
+                    msg: "120 ms",
+                    checked_at: "2026-05-27 20:25:36",
+                },
+            ],
+            notifications: [
+                {
+                    id: 3,
+                    name: "Pushover Alert",
+                    active: 1,
+                    user_id: 1,
+                    is_default: 1,
+                    config: JSON.stringify({
+                        type: "pushover",
+                        pushoveruserkey: "user-key",
+                        pushoverapptoken: "app-token",
+                        pushoversounds: "siren",
+                        pushoversounds_up: "pushover",
+                        pushoverpriority: "1",
+                        pushovertitle: "Worker Alert",
+                        pushoverdevice: "phone",
+                    }),
+                },
+            ],
+            monitorNotifications: [{ monitor_id: 215, notification_id: 3 }],
+            runnerResult: {
+                status: 0,
+                ping: 48005,
+                msg: "Command failed: ping -c 1 -W 2 -w 48 -s 56 -n ring-inseego.wgs",
+                response: null,
+            },
+        });
+        const originalFetch = globalThis.fetch;
+        const sentRequests = [];
+        globalThis.fetch = async (url, init = {}) => {
+            sentRequests.push({ url, init });
+            return Response.json({ status: 1 });
+        };
+
+        try {
+            const response = await handleApiRequest(
+                adminRequest("https://example.com/api/monitors/215/check-now", { method: "POST" }),
+                env
+            );
+            const body = await response.json();
+
+            assert.strictEqual(response.status, 200);
+            assert.strictEqual(body.result.status, 0);
+            assert.strictEqual(sentRequests.length, 1);
+            assert.strictEqual(sentRequests[0].url, "https://api.pushover.net/1/messages.json");
+
+            const requestBody = sentRequests[0].init.body;
+            assert.strictEqual(requestBody.get("user"), "user-key");
+            assert.strictEqual(requestBody.get("token"), "app-token");
+            assert.strictEqual(requestBody.get("sound"), "siren");
+            assert.strictEqual(requestBody.get("priority"), "1");
+            assert.strictEqual(requestBody.get("title"), "Worker Alert");
+            assert.strictEqual(requestBody.get("device"), "phone");
+            assert.strictEqual(requestBody.get("url"), "https://uptime.worker/dashboard/215");
+            assert.match(
+                requestBody.get("message"),
+                /^\[Ring \| Inseego 5G\] \[Down\] Command failed: ping -c 1 -W 2 -w 48 -s 56 -n ring-inseego\.wgs/
+            );
+            assert.match(requestBody.get("message"), /<b>Time \(America\/Detroit\)<\/b>:/);
+        } finally {
+            globalThis.fetch = originalFetch;
+        }
+    });
+
+    test("check-now sends assigned Teams notifications on recovery transitions", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            settings: {
+                primaryBaseURL: "https://uptime.worker/",
+                serverTimezone: "UTC",
+            },
+            monitors: [
+                {
+                    id: 216,
+                    name: "Corporate",
+                    type: "http",
+                    url: "https://corp.example.test/health",
+                    active: 1,
+                    timeout: 30,
+                    interval: 60,
+                    network_profile_id: null,
+                    config_json: JSON.stringify({ maxretries: 0 }),
+                },
+            ],
+            heartbeats: [
+                {
+                    monitor_id: 216,
+                    status: 0,
+                    ping: 30000,
+                    msg: "Timeout",
+                    checked_at: "2026-05-27 20:25:36",
+                },
+            ],
+            notifications: [
+                {
+                    id: 4,
+                    name: "Teams Alert",
+                    active: 1,
+                    user_id: 1,
+                    is_default: 0,
+                    config: JSON.stringify({
+                        type: "teams",
+                        webhookUrl: "https://example.webhook.office.com/services/example",
+                    }),
+                },
+            ],
+            monitorNotifications: [{ monitor_id: 216, notification_id: 4 }],
+            runnerResult: {
+                status: 1,
+                ping: 42,
+                msg: "200 - OK",
+                response: null,
+            },
+        });
+        const originalFetch = globalThis.fetch;
+        const sentRequests = [];
+        globalThis.fetch = async (url, init = {}) => {
+            sentRequests.push({ url, init });
+            return Response.json({ ok: true });
+        };
+
+        try {
+            const response = await handleApiRequest(
+                adminRequest("https://example.com/api/monitors/216/check-now", { method: "POST" }),
+                env
+            );
+            const body = await response.json();
+
+            assert.strictEqual(response.status, 200);
+            assert.strictEqual(body.result.status, 1);
+            assert.strictEqual(sentRequests.length, 1);
+            assert.strictEqual(sentRequests[0].url, "https://example.webhook.office.com/services/example");
+            assert.strictEqual(sentRequests[0].init.headers["content-type"], "application/json");
+
+            const payload = JSON.parse(sentRequests[0].init.body);
+            assert.strictEqual(payload.summary, "[Corporate] is back online");
+            assert.strictEqual(payload.attachments[0].content.body[0].items[0].text, "**[Corporate] is back online**");
+            assert.deepStrictEqual(payload.attachments[0].content.body[1].facts.slice(0, 3), [
+                { title: "Description", value: "200 - OK" },
+                { title: "Monitor", value: "Corporate" },
+                { title: "Target", value: "[https://corp.example.test/health](https://corp.example.test/health)" },
+            ]);
+            assert.deepStrictEqual(payload.attachments[0].content.body.at(-1).actions[0], {
+                type: "Action.OpenUrl",
+                title: "Visit Uptime Worker",
+                url: "https://uptime.worker/dashboard/216",
+            });
+        } finally {
+            globalThis.fetch = originalFetch;
+        }
+    });
+
     test("check-now skips heartbeat writes when the runner call fails", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({

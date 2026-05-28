@@ -2777,6 +2777,252 @@ async function writeHeartbeat(env, monitorId, result) {
     };
 }
 
+async function getLatestHeartbeatForMonitor(env, monitorId) {
+    return (await listLatestHeartbeatsByMonitorId(env, [Number(monitorId)])).get(Number(monitorId)) || null;
+}
+
+async function sendMonitorStatusNotifications(env, monitor, result, previousHeartbeat, heartbeat) {
+    const currentStatus = Number(result.status ?? DOWN);
+    const previousStatus = previousHeartbeat ? Number(previousHeartbeat.status) : null;
+    const isFirstHeartbeat = previousHeartbeat == null;
+
+    if (!shouldSendStatusNotification(isFirstHeartbeat, previousStatus, currentStatus)) {
+        return;
+    }
+
+    const [settings, notifications, tagsByMonitorId] = await Promise.all([
+        getUiSettings(env),
+        listActiveMonitorNotifications(env, Number(monitor.id)),
+        listTagsByMonitorId(env, [Number(monitor.id)]),
+    ]);
+    if (notifications.length === 0) {
+        return;
+    }
+
+    const monitorJSON = buildNotificationMonitorJSON(monitor, tagsByMonitorId.get(Number(monitor.id)) || []);
+    const heartbeatJSON = buildNotificationHeartbeatJSON(heartbeat, settings);
+    const msg = buildMonitorStatusMessage(monitorJSON, heartbeatJSON);
+
+    await Promise.all(
+        notifications.map(async (notification) => {
+            try {
+                await sendWorkerMonitorNotification(notification, msg, monitorJSON, heartbeatJSON, settings);
+            } catch (error) {
+                console.error(
+                    `Cannot send notification to ${notification.name || notification.type || notification.id}: ${
+                        error?.message || String(error)
+                    }`
+                );
+            }
+        })
+    );
+}
+
+function shouldSendStatusNotification(isFirstHeartbeat, previousStatus, currentStatus) {
+    if (isFirstHeartbeat) {
+        return currentStatus === DOWN;
+    }
+
+    return (
+        (previousStatus === MAINTENANCE && currentStatus === DOWN) ||
+        (previousStatus === UP && currentStatus === DOWN) ||
+        (previousStatus === DOWN && currentStatus === UP) ||
+        (previousStatus === PENDING && currentStatus === DOWN)
+    );
+}
+
+async function listActiveMonitorNotifications(env, monitorId) {
+    const [notificationsByMonitorId, notifications] = await Promise.all([
+        listMonitorNotificationsByMonitorId(env, [monitorId]),
+        listNotifications(env),
+    ]);
+    const assignedNotifications = notificationsByMonitorId.get(Number(monitorId)) || {};
+    return notifications
+        .filter((notification) => assignedNotifications[Number(notification.id)])
+        .map(hydrateStoredNotification)
+        .filter(isStoredNotificationActive);
+}
+
+function hydrateStoredNotification(notification) {
+    const config = parseNotificationConfig(notification.config);
+    return {
+        ...config,
+        id: Number(notification.id),
+        name: notification.name || config.name || config.type || "Notification",
+        active: notification.active,
+        isDefault: notification.isDefault,
+    };
+}
+
+function parseNotificationConfig(value) {
+    if (!value || typeof value !== "string") {
+        return {};
+    }
+    try {
+        const parsed = JSON.parse(value);
+        return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+    } catch (_) {
+        return {};
+    }
+}
+
+function isStoredNotificationActive(notification) {
+    return notification.active === undefined || normalizeBoolean(notification.active);
+}
+
+async function sendWorkerMonitorNotification(notification, msg, monitorJSON, heartbeatJSON, settings) {
+    if (notification.type === "pushover") {
+        await sendPushoverNotification(notification, msg, {
+            heartbeatJSON,
+            monitorJSON,
+            primaryBaseURL: settings.primaryBaseURL,
+        });
+        return;
+    }
+
+    if (notification.type === "teams") {
+        await sendTeamsNotification(
+            notification,
+            buildTeamsMonitorNotificationPayload(monitorJSON, heartbeatJSON, {
+                ...settings,
+                teamsEnableTags: notification.teamsEnableTags,
+            })
+        );
+        return;
+    }
+
+    console.warn(`Notification type "${notification.type}" is not supported by Worker status delivery yet.`);
+}
+
+function buildNotificationMonitorJSON(monitor, tags = []) {
+    return {
+        id: Number(monitor.id),
+        active: monitor.active === undefined ? true : normalizeBoolean(monitor.active),
+        name: monitor.name || "",
+        type: monitor.type,
+        url: monitor.url ?? null,
+        hostname: monitor.hostname ?? null,
+        port: monitor.port ?? null,
+        tags,
+    };
+}
+
+function buildNotificationHeartbeatJSON(heartbeat, settings) {
+    const status = Number(heartbeat.status ?? DOWN);
+    const time = heartbeat.checked_at || formatSqliteDateTime(new Date());
+    const date = parseWorkerHeartbeatDate(time);
+    const timezone = resolveNotificationTimezone(settings.serverTimezone);
+    return {
+        monitorID: Number(heartbeat.monitor_id),
+        status,
+        ping: heartbeat.ping ?? null,
+        msg: heartbeat.msg || "N/A",
+        time,
+        timezone,
+        timezoneOffset: formatTimezoneOffset(date, timezone),
+        localDateTime: formatDateTimeInTimezone(date, timezone),
+    };
+}
+
+function buildMonitorStatusMessage(monitorJSON, heartbeatJSON) {
+    return `[${monitorJSON.name}] [${heartbeatJSON.status === UP ? "Up" : "Down"}] ${heartbeatJSON.msg || "N/A"}`;
+}
+
+function parseWorkerHeartbeatDate(value) {
+    const text = String(value || "").trim();
+    if (!text) {
+        return new Date();
+    }
+    const normalized = text.includes("T") ? text : `${text.replace(" ", "T")}Z`;
+    const parsed = new Date(normalized);
+    return Number.isFinite(parsed.getTime()) ? parsed : new Date();
+}
+
+function resolveNotificationTimezone(value) {
+    const timezone = String(value || "UTC").trim() || "UTC";
+    try {
+        new Intl.DateTimeFormat("en-US", { timeZone: timezone }).format(new Date());
+        return timezone;
+    } catch (_) {
+        return "UTC";
+    }
+}
+
+function formatDateTimeInTimezone(date, timezone) {
+    const parts = getTimeZoneDateParts(date, timezone);
+    return `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute}:${parts.second}`;
+}
+
+function formatTimezoneOffset(date, timezone) {
+    const parts = getTimeZoneDateParts(date, timezone);
+    const localAsUtc = Date.UTC(
+        Number(parts.year),
+        Number(parts.month) - 1,
+        Number(parts.day),
+        Number(parts.hour),
+        Number(parts.minute),
+        Number(parts.second)
+    );
+    const offsetMinutes = Math.round((localAsUtc - date.getTime()) / 60000);
+    const sign = offsetMinutes >= 0 ? "+" : "-";
+    const absoluteMinutes = Math.abs(offsetMinutes);
+    return `${sign}${String(Math.floor(absoluteMinutes / 60)).padStart(2, "0")}:${String(absoluteMinutes % 60).padStart(2, "0")}`;
+}
+
+function getTimeZoneDateParts(date, timezone) {
+    const formatter = new Intl.DateTimeFormat("en-CA", {
+        timeZone: timezone,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+        hourCycle: "h23",
+    });
+    return Object.fromEntries(formatter.formatToParts(date).map((part) => [part.type, part.value]));
+}
+
+function buildMonitorDashboardUrl(primaryBaseURL, monitorId) {
+    const baseURL = String(primaryBaseURL || "").trim().replace(/\/+$/, "");
+    if (!baseURL || !monitorId) {
+        return "";
+    }
+    return `${baseURL}/dashboard/${monitorId}`;
+}
+
+function buildMonitorTargetUrl(monitor) {
+    if (monitor?.url) {
+        return String(monitor.url);
+    }
+    if (monitor?.hostname && monitor?.port) {
+        return `${monitor.hostname}:${monitor.port}`;
+    }
+    return monitor?.hostname ? String(monitor.hostname) : "";
+}
+
+function isHttpUrl(value) {
+    return /^https?:\/\//i.test(String(value || ""));
+}
+
+function buildTeamsStatusSummary(monitorName, status) {
+    if (Number(status) === DOWN) {
+        return `[${monitorName || "Monitor"}] went down`;
+    }
+    if (Number(status) === UP) {
+        return `[${monitorName || "Monitor"}] is back online`;
+    }
+    return `[${monitorName || "Monitor"}] status changed`;
+}
+
+function formatTagForNotification(tag) {
+    if (tag.value === "" || tag.value === undefined || tag.value === null) {
+        return tag.name;
+    }
+    return `${tag.name}: ${tag.value}`;
+}
+
 async function applyMonitorRetryStatus(env, monitor, result = {}) {
     const status = Number(result.status ?? DOWN);
     if (status !== DOWN) {
