@@ -273,15 +273,10 @@ export default {
          * @returns {Array} The sorted list of monitors.
          */
         sortedMonitorList() {
-            let result = Object.values(this.$root.monitorList);
-
-            result = result.filter((monitor) => {
-                // The root list does not show children
-                if (monitor.parent !== null) {
-                    return false;
-                }
-                return true;
-            });
+            const rootIds = this.$root.dashboardIndexes?.rootMonitorIds;
+            let result = Array.isArray(rootIds)
+                ? rootIds.map((id) => this.$root.monitorList[id]).filter(Boolean)
+                : Object.values(this.$root.monitorList).filter((monitor) => monitor.parent === null);
 
             result = result.filter(this.filterFunc);
 

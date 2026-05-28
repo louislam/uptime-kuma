@@ -3,6 +3,7 @@ import {
     checkTwingateHealthAlert,
     consumeQueue,
     enqueueDueMonitors,
+    backfillDashboardRuntimeCaches,
     handleApiRequest,
     purgeOldMonitorHistory,
     resolveAppVersion,
@@ -255,6 +256,7 @@ export default {
 
     async scheduled(_controller, env, _ctx) {
         await enqueueDueMonitors(env);
+        await backfillDashboardRuntimeCaches(env);
         await purgeOldMonitorHistory(env);
         await checkTwingateHealthAlert(env);
     },

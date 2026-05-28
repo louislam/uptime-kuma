@@ -67,13 +67,15 @@
                         :key="$root.userHeartbeatBar"
                         class="monitor-heartbeat"
                     >
-                        <HeartbeatBar ref="heartbeatBar" size="small" :monitor-id="monitor.id" />
+                        <HeartbeatBar v-if="heartbeatVisible" ref="heartbeatBar" size="small" :monitor-id="monitor.id" />
+                        <div v-else class="heartbeat-placeholder" aria-hidden="true"></div>
                     </div>
                 </div>
 
                 <div v-if="$root.userHeartbeatBar == 'bottom'" class="row">
                     <div class="col-12 bottom-style">
-                        <HeartbeatBar ref="heartbeatBar" size="small" :monitor-id="monitor.id" />
+                        <HeartbeatBar v-if="heartbeatVisible" ref="heartbeatBar" size="small" :monitor-id="monitor.id" />
+                        <div v-else class="heartbeat-placeholder" aria-hidden="true"></div>
                     </div>
                 </div>
             </router-link>
@@ -160,14 +162,16 @@ export default {
         return {
             isCollapsed: true,
             dragOverCount: 0,
+            heartbeatVisible: false,
+            heartbeatObserver: null,
         };
     },
     computed: {
         sortedChildMonitorList() {
-            let result = Object.values(this.$root.monitorList);
-
-            // Get children
-            result = result.filter((childMonitor) => childMonitor.parent === this.monitor.id);
+            const childIds = this.$root.dashboardIndexes?.childrenByParentId?.[String(this.monitor.id)];
+            let result = Array.isArray(childIds)
+                ? childIds.map((id) => this.$root.monitorList[id]).filter(Boolean)
+                : Object.values(this.$root.monitorList).filter((childMonitor) => childMonitor.parent === this.monitor.id);
 
             // Run filter on children
             result = result.filter(this.filterFunc);
@@ -208,6 +212,9 @@ export default {
             // TODO: Resize the heartbeat bar, but too slow
             // this.$refs.heartbeatBar.resize();
         },
+        "$root.userHeartbeatBar"() {
+            this.resetHeartbeatVisibility();
+        },
     },
     beforeMount() {
         // Always unfold if monitor is accessed directly
@@ -229,7 +236,44 @@ export default {
 
         this.isCollapsed = storageObject[`monitor_${this.monitor.id}`];
     },
+    mounted() {
+        this.observeHeartbeatVisibility();
+    },
+    beforeUnmount() {
+        if (this.heartbeatObserver) {
+            this.heartbeatObserver.disconnect();
+        }
+    },
     methods: {
+        resetHeartbeatVisibility() {
+            if (this.heartbeatObserver) {
+                this.heartbeatObserver.disconnect();
+                this.heartbeatObserver = null;
+            }
+            this.heartbeatVisible = false;
+            this.$nextTick(() => {
+                this.observeHeartbeatVisibility();
+            });
+        },
+        observeHeartbeatVisibility() {
+            if (this.$root.userHeartbeatBar === "none") {
+                return;
+            }
+            if (typeof window.IntersectionObserver === "undefined") {
+                this.heartbeatVisible = true;
+                return;
+            }
+            this.heartbeatObserver = new window.IntersectionObserver((entries) => {
+                if (entries.some((entry) => entry.isIntersecting)) {
+                    this.heartbeatVisible = true;
+                    this.heartbeatObserver?.disconnect();
+                    this.heartbeatObserver = null;
+                }
+            }, {
+                rootMargin: "320px 0px",
+            });
+            this.heartbeatObserver.observe(this.$el);
+        },
         /**
          * Changes the collapsed value of the current monitor and saves
          * it to local storage
@@ -310,6 +354,7 @@ export default {
 
             // Optimistically update local state so UI updates immediately
             this.$root.monitorList[draggedMonitorId].parent = this.monitor.id;
+            this.$root.rebuildDashboardIndexes?.();
 
             // Send updated monitor state via socket
             try {
@@ -319,6 +364,7 @@ export default {
                         if (this.$root.monitorList[draggedMonitorId]) {
                             this.$root.monitorList[draggedMonitorId].parent = originalParent;
                         }
+                        this.$root.rebuildDashboardIndexes?.();
                         if (res && res.msg) {
                             this.$root.toastError(res.msg);
                         }
@@ -331,6 +377,7 @@ export default {
                 if (this.$root.monitorList[draggedMonitorId]) {
                     this.$root.monitorList[draggedMonitorId].parent = originalParent;
                 }
+                this.$root.rebuildDashboardIndexes?.();
             }
         },
         /**
@@ -378,6 +425,10 @@ export default {
 .monitor-main,
 .monitor-heartbeat {
     min-width: 0;
+}
+
+.heartbeat-placeholder {
+    height: 24px;
 }
 
 .monitor-name-line {

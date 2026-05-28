@@ -36,4 +36,17 @@ describe("Details event log UI", () => {
         assert.match(eventMessageSource, /\.event-message-full\s*\{[\s\S]*?white-space:\s*pre-wrap;/);
         assert.match(eventMessageSource, /\.event-message-full\s*\{[\s\S]*?overflow:\s*auto;/);
     });
+
+    test("loads event pages and counts through one paged socket request", () => {
+        const detailsSource = readSource("src/pages/Details.vue");
+        const dashboardSource = readSource("src/pages/DashboardHome.vue");
+
+        for (const source of [detailsSource, dashboardSource]) {
+            assert.match(source, /mounted\(\)\s*\{[\s\S]*?this\.getImportantHeartbeatListPaged\(\{ refreshCount: true \}\);/);
+            assert.match(source, /getImportantHeartbeatListPaged\(\{ refreshCount = false \} = \{\}\)/);
+            assert.match(source, /emit\("monitorImportantHeartbeatListPaged"[\s\S]*?if \(Number\.isFinite\(res\.count\)\)/);
+            assert.match(source, /this\.importantHeartBeatListLength = res\.count;/);
+            assert.match(source, /else if \(refreshCount\) \{[\s\S]*?this\.getImportantHeartbeatListLength\(\);/);
+        }
+    });
 });

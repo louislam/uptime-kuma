@@ -16,6 +16,14 @@ import { requestCloudflareJson } from "../cloudflare-worker-api.js";
 import {
     buildCloudflareImportantHeartbeatResult,
 } from "../util/cloudflare-important-heartbeats.mjs";
+import {
+    buildMonitorIndexes,
+    clearCloudflareDashboardSecondaryCache,
+    dedupeCloudflareDashboardRequest,
+    getCachedCloudflareChartData,
+    readCloudflareDashboardSecondaryCache,
+    setCachedCloudflareChartData,
+} from "../util/cloudflare-dashboard-state.mjs";
 const toast = useToast();
 
 let socket;
@@ -28,8 +36,6 @@ const cloudflareWorkerHostnames = new Set([
     "up.wgsglobal.app",
 ]);
 const CLOUDFLARE_RECENT_HEARTBEAT_LIMIT = 150;
-const CLOUDFLARE_CHART_HEARTBEAT_PAGE_SIZE = 500;
-const CLOUDFLARE_CHART_HEARTBEAT_MAX_ROWS = 10000;
 const CLOUDFLARE_DASHBOARD_CACHE_KEY = "uptimeworker.cloudflare.dashboard.cache.v1";
 const CLOUDFLARE_DASHBOARD_CACHE_MAX_AGE_MS = 15 * 60 * 1000;
 
@@ -73,6 +79,8 @@ export default {
             statusPageListLoaded: false,
             statusPageList: [],
             proxyList: [],
+            dashboardIndexes: buildMonitorIndexes({}),
+            cloudflareDashboardSecondaryCache: {},
             isCloudflareWorkerUI: false,
             workerLocalAuthConfigured: false,
             connectionErrorMsg: `${this.$t("Cannot connect to the socket server.")} ${this.$t("Reconnecting...")}`,
@@ -170,6 +178,7 @@ export default {
             socket.on("monitorList", (data) => {
                 this.assignMonitorUrlParser(data);
                 this.monitorList = data;
+                this.rebuildDashboardIndexes();
             });
 
             socket.on("updateMonitorIntoList", (data) => {
@@ -177,11 +186,13 @@ export default {
                 Object.entries(data).forEach(([monitorID, updatedMonitor]) => {
                     this.monitorList[monitorID] = updatedMonitor;
                 });
+                this.rebuildDashboardIndexes();
             });
 
             socket.on("deleteMonitorFromList", (monitorID) => {
                 if (this.monitorList[monitorID]) {
                     delete this.monitorList[monitorID];
+                    this.rebuildDashboardIndexes();
                 }
             });
 
@@ -362,6 +373,7 @@ export default {
                     this.allowLoginDialog = false;
                     this.username = session.username;
                     this.socket.token = this.storage().token || (session.localAuthConfigured ? null : "bootstrap");
+                    this.cloudflareDashboardSecondaryCache = readCloudflareDashboardSecondaryCache();
                     this.applyCloudflareWorkerDashboardCache();
                     await this.loadCloudflareWorkerData();
                 } else {
@@ -370,6 +382,7 @@ export default {
                     this.socket.token = null;
                     this.allowLoginDialog = true;
                     clearCloudflareWorkerDashboardCache();
+                    clearCloudflareDashboardSecondaryCache();
                     this.clearCloudflareWorkerDashboardData();
                 }
             } catch (error) {
@@ -384,13 +397,13 @@ export default {
          * Load monitor state from the Cloudflare Worker REST API.
          * @param {object} options Load options.
          * @param {boolean} options.refreshSidecars Whether to refresh sidecar lists.
-         * @param {boolean} options.refreshHeartbeatHistories Whether to refresh heartbeat histories.
+         * @param {boolean} options.refreshHeartbeatHistories Whether to refresh compatibility heartbeat histories.
          * @returns {Promise<void>}
          */
         async loadCloudflareWorkerData(options = {}) {
             const {
                 refreshSidecars = true,
-                refreshHeartbeatHistories = true,
+                refreshHeartbeatHistories = false,
             } = options;
 
             try {
@@ -404,9 +417,12 @@ export default {
                     ])
                     : Promise.resolve([]);
 
-                const body = await requestCloudflareJson("/api/monitors");
+                const body = await dedupeCloudflareDashboardRequest(
+                    "dashboard-bootstrap",
+                    () => requestCloudflareJson("/api/dashboard/bootstrap")
+                );
                 const monitors = body.monitors || [];
-                this.applyCloudflareWorkerDashboardState(buildCloudflareWorkerMonitorState(monitors, this.heartbeatList));
+                this.applyCloudflareWorkerDashboardState(buildCloudflareWorkerBootstrapState(body, this.heartbeatList));
                 this.persistCloudflareWorkerDashboardCache();
 
                 if (refreshSidecars) {
@@ -482,6 +498,11 @@ export default {
             this.remoteBrowserList = Array.isArray(state.remoteBrowserList) ? state.remoteBrowserList : this.remoteBrowserList;
             this.statusPageList = state.statusPageList || this.statusPageList;
             this.statusPageListLoaded = state.statusPageListLoaded ?? this.statusPageListLoaded;
+            this.rebuildDashboardIndexes();
+        },
+
+        rebuildDashboardIndexes() {
+            this.dashboardIndexes = buildMonitorIndexes(this.monitorList);
         },
 
         /**
@@ -499,6 +520,7 @@ export default {
             this.remoteBrowserList = [];
             this.statusPageList = [];
             this.statusPageListLoaded = false;
+            this.dashboardIndexes = buildMonitorIndexes({});
         },
 
         /**
@@ -721,6 +743,7 @@ export default {
             this.loggedIn = false;
             this.username = null;
             clearCloudflareWorkerDashboardCache();
+            clearCloudflareDashboardSecondaryCache();
             this.clearData();
             if (this.isCloudflareWorkerUI) {
                 this.clearCloudflareWorkerDashboardData();
@@ -1740,6 +1763,7 @@ function applyCloudflareWorkerMonitor(app, monitor) {
         ...state.uptimeList,
     };
     app.assignMonitorUrlParser(app.monitorList);
+    app.rebuildDashboardIndexes();
     app.persistCloudflareWorkerDashboardCache();
 }
 
@@ -1771,6 +1795,7 @@ function removeCloudflareWorkerMonitor(app, monitorID) {
     delete monitorList[id];
     app.monitorList = monitorList;
     clearCloudflareWorkerMonitorHeartbeats(app, id);
+    app.rebuildDashboardIndexes();
 }
 
 /**
@@ -1895,45 +1920,6 @@ function buildCloudflareHeartbeatsUrl(monitorID, offset, count, options = {}) {
 }
 
 /**
- * Fetch enough Worker heartbeat rows to cover a selected chart period.
- * @param {number} monitorID Monitor ID.
- * @param {number} periodHours Requested chart period in hours.
- * @returns {Promise<object[]>} Heartbeat rows ordered oldest-to-newest.
- */
-async function fetchCloudflareMonitorHeartbeatsForPeriod(monitorID, periodHours) {
-    const period = Number(periodHours || 24);
-    const validPeriodHours = Number.isFinite(period) && period > 0 ? period : 24;
-    const since = Date.now() - validPeriodHours * 60 * 60 * 1000;
-    const heartbeats = [];
-    let offset = 0;
-
-    while (heartbeats.length < CLOUDFLARE_CHART_HEARTBEAT_MAX_ROWS) {
-        const count = Math.min(
-            CLOUDFLARE_CHART_HEARTBEAT_PAGE_SIZE,
-            CLOUDFLARE_CHART_HEARTBEAT_MAX_ROWS - heartbeats.length
-        );
-        const page = await fetchCloudflareMonitorHeartbeats(monitorID, offset, count);
-        if (page.length === 0) {
-            break;
-        }
-
-        heartbeats.push(...page);
-
-        const oldestHeartbeatTime = new Date(page[page.length - 1].time).getTime();
-        if (Number.isFinite(oldestHeartbeatTime) && oldestHeartbeatTime < since) {
-            break;
-        }
-        if (page.length < count) {
-            break;
-        }
-
-        offset += page.length;
-    }
-
-    return normalizeCloudflareHeartbeatHistory(heartbeats);
-}
-
-/**
  * Normalize Worker heartbeat history for live monitor state.
  * The Worker API returns newest-first rows for paged tables, while the heartbeat bar expects oldest-first.
  * @param {object[]} heartbeats Worker heartbeat rows.
@@ -1982,6 +1968,39 @@ function buildCloudflareWorkerMonitorState(monitors, previousHeartbeatList = {})
 
     return {
         monitorList,
+        heartbeatList,
+        avgPingList,
+        uptimeList,
+    };
+}
+
+/**
+ * Build dashboard state from the Worker bootstrap endpoint.
+ * @param {object} body Bootstrap response body.
+ * @param {object} previousHeartbeatList Previously cached heartbeat rows.
+ * @returns {object} Dashboard state.
+ */
+function buildCloudflareWorkerBootstrapState(body = {}, previousHeartbeatList = {}) {
+    const baseState = buildCloudflareWorkerMonitorState(body.monitors || [], previousHeartbeatList);
+    const heartbeatList = {};
+    const avgPingList = {};
+    const uptimeList = {};
+
+    for (const monitor of body.monitors || []) {
+        const id = monitor.id;
+        const heartbeats = mergeCloudflareHeartbeatHistory(body.heartbeatList?.[id], monitor.lastHeartbeat);
+        if (heartbeats.length > 0) {
+            heartbeatList[id] = heartbeats;
+        }
+        avgPingList[id] = body.avgPingList?.[id] ?? baseState.avgPingList[id];
+        for (const type of ["24", "720", "1y"]) {
+            const key = `${id}_${type}`;
+            uptimeList[key] = body.uptimeList?.[key] ?? baseState.uptimeList[key];
+        }
+    }
+
+    return {
+        ...baseState,
         heartbeatList,
         avgPingList,
         uptimeList,
@@ -2142,29 +2161,33 @@ function calculateUptime(heartbeats) {
 }
 
 /**
- * Build simple chart datapoints from Worker heartbeat rows.
+ * Build chart datapoints from Worker metric buckets.
  * @param {object} app Vue root component instance.
  * @param {number} monitorID Monitor ID.
  * @param {number} periodHours Requested chart period in hours.
  * @returns {Promise<object[]>} Chart datapoints.
  */
 async function getCloudflareChartData(app, monitorID, periodHours) {
-    void app;
     const period = Number(periodHours || 24);
-    const validPeriodHours = Number.isFinite(period) && period > 0 ? period : 24;
-    const since = Date.now() - validPeriodHours * 60 * 60 * 1000;
-    const heartbeats = await fetchCloudflareMonitorHeartbeatsForPeriod(monitorID, periodHours);
+    const validPeriodHours = [3, 6, 24, 168].includes(period) ? period : 24;
+    const cached = getCachedCloudflareChartData(app.cloudflareDashboardSecondaryCache, monitorID, validPeriodHours);
+    if (cached) {
+        void refreshCloudflareChartData(app, monitorID, validPeriodHours);
+        return cached;
+    }
+    return await refreshCloudflareChartData(app, monitorID, validPeriodHours);
+}
 
-    return heartbeats
-        .filter((beat) => new Date(beat.time).getTime() >= since)
-        .map((beat) => ({
-            timestamp: Math.floor(new Date(beat.time).getTime() / 1000),
-            up: beat.status === UP ? 1 : 0,
-            down: beat.status === DOWN || beat.status === PENDING ? 1 : 0,
-            maintenance: beat.status === MAINTENANCE ? 1 : 0,
-            avgPing: beat.ping,
-            minPing: beat.ping,
-            maxPing: beat.ping,
-        }))
-        .sort((a, b) => a.timestamp - b.timestamp);
+async function refreshCloudflareChartData(app, monitorID, periodHours) {
+    return await dedupeCloudflareDashboardRequest(`chart:${monitorID}:${periodHours}`, async () => {
+        const body = await requestCloudflareJson(`/api/monitors/${monitorID}/chart?period=${periodHours}`);
+        const data = body.data || [];
+        app.cloudflareDashboardSecondaryCache = setCachedCloudflareChartData(
+            app.cloudflareDashboardSecondaryCache,
+            monitorID,
+            periodHours,
+            data
+        );
+        return data;
+    });
 }

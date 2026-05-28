@@ -66,6 +66,11 @@ const MIN_TWINGATE_ALERT_THRESHOLD_MINUTES = 1;
 const MAX_TWINGATE_ALERT_THRESHOLD_MINUTES = 1440;
 const DEFAULT_RECENT_HEARTBEAT_HISTORY_LIMIT = 150;
 const MAX_RECENT_HEARTBEAT_HISTORY_LIMIT = 500;
+const DASHBOARD_HEARTBEAT_BAR_LIMIT = 150;
+const DASHBOARD_BACKFILL_MONITOR_LIMIT = 25;
+const DASHBOARD_BACKFILL_HEARTBEAT_LIMIT = 10000;
+const DASHBOARD_CHART_PERIODS = new Set([3, 6, 24, 168]);
+const DASHBOARD_METRIC_RESOLUTIONS = [60, 3600, 86400];
 const ACCESS_SECRET_HEADER = "X-Uptime-Worker-Token";
 const ACCESS_SECRET_MONITOR_TYPES = new Set(["http", "keyword", "json-query"]);
 const NOTIFICATION_OK_MESSAGE = "Sent Successfully.";
@@ -180,6 +185,7 @@ const accessCertCache = new Map();
 const SUPPORTED_PROXY_PROTOCOLS = new Set(["http", "https", "socks", "socks5", "socks5h", "socks4"]);
 const ADMIN_ROUTE_NAMES = new Set([
     "monitors",
+    "dashboard-bootstrap",
     "settings",
     "docker-hosts",
     "save-docker-host",
@@ -210,6 +216,7 @@ const ADMIN_ROUTE_NAMES = new Set([
     "heartbeats",
     "recent-heartbeats",
     "monitor-heartbeats",
+    "monitor-chart",
     "network-profiles",
     "patch-network-route",
     "check-now",
@@ -286,6 +293,10 @@ export async function handleApiRequest(request, env) {
 
         if (route.name === "monitors") {
             return json({ monitors: await listMonitors(env) });
+        }
+
+        if (route.name === "dashboard-bootstrap") {
+            return json(await getDashboardBootstrap(env));
         }
 
         if (route.name === "heartbeats") {
@@ -514,6 +525,14 @@ export async function handleApiRequest(request, env) {
             }
             await clearMonitorHeartbeats(env, Number(route.params.monitorId));
             return json({ ok: true, msg: "Heartbeats cleared" });
+        }
+
+        if (route.name === "monitor-chart") {
+            const period = Number(url.searchParams.get("period") || 24);
+            return json({
+                ok: true,
+                data: await getMonitorChartData(env, Number(route.params.monitorId), period),
+            });
         }
 
         if (route.name === "statistics") {
@@ -1666,6 +1685,133 @@ async function listLatestHeartbeatsByMonitorId(env, monitorIds) {
 }
 
 /**
+ * Build the Worker dashboard bootstrap payload from derived runtime tables.
+ * This is the critical-path dashboard read for Worker UI mode.
+ * @param {object} env Cloudflare Worker environment bindings.
+ * @returns {Promise<object>} Bootstrap payload for the Vue dashboard.
+ */
+export async function getDashboardBootstrap(env) {
+    const monitors = await listMonitorRows(env);
+    const relationshipData = buildMonitorRelationshipData(monitors);
+    const monitorIds = monitors.map((monitor) => Number(monitor.id));
+    const [tagsByMonitorId, notificationsByMonitorId, summariesByMonitorId] = await Promise.all([
+        listTagsByMonitorId(env, monitorIds),
+        listMonitorNotificationsByMonitorId(env, monitorIds),
+        listRuntimeSummariesByMonitorId(env, monitorIds),
+    ]);
+    const missingSummaryMonitorIds = monitorIds.filter((monitorId) => !summariesByMonitorId.has(monitorId));
+    const latestHeartbeatsByMonitorId = missingSummaryMonitorIds.length > 0
+        ? await listLatestHeartbeatsByMonitorId(env, missingSummaryMonitorIds)
+        : new Map();
+    const heartbeatList = {};
+    const avgPingList = {};
+    const uptimeList = {};
+
+    const serializedMonitors = monitors.map((monitor) => {
+        const monitorId = Number(monitor.id);
+        const summary = summariesByMonitorId.get(monitorId);
+        const heartbeats = parseHeartbeatBarJson(summary?.heartbeat_bar_json);
+        const latestHeartbeat = summaryToHeartbeat(summary) || latestHeartbeatsByMonitorId.get(monitorId) || null;
+        if (heartbeats.length > 0) {
+            heartbeatList[monitorId] = heartbeats;
+        } else if (latestHeartbeat) {
+            heartbeatList[monitorId] = [serializeHeartbeat(latestHeartbeat, monitor)];
+        }
+        avgPingList[monitorId] = normalizeNullableNumber(summary?.avg_ping);
+        uptimeList[`${monitorId}_24`] = normalizeNullableNumber(summary?.uptime_24);
+        uptimeList[`${monitorId}_720`] = normalizeNullableNumber(summary?.uptime_720);
+        uptimeList[`${monitorId}_1y`] = normalizeNullableNumber(summary?.uptime_1y);
+        return serializeMonitor(
+            monitor,
+            latestHeartbeat,
+            relationshipData,
+            tagsByMonitorId,
+            notificationsByMonitorId
+        );
+    });
+
+    return {
+        generatedAt: formatSqliteDateTime(new Date()),
+        monitors: serializedMonitors,
+        heartbeatList,
+        avgPingList,
+        uptimeList,
+    };
+}
+
+/**
+ * Read runtime summaries for dashboard bootstrap without touching raw heartbeats.
+ * @param {object} env Cloudflare Worker environment bindings.
+ * @param {number[]} monitorIds Monitor IDs to read.
+ * @returns {Promise<Map<number, object>>} Summary rows by monitor ID.
+ */
+async function listRuntimeSummariesByMonitorId(env, monitorIds) {
+    const ids = [...new Set((monitorIds || []).map((id) => Number(id)).filter(Number.isInteger))];
+    const summariesByMonitorId = new Map();
+    if (ids.length === 0) {
+        return summariesByMonitorId;
+    }
+
+    for (let index = 0; index < ids.length; index += LATEST_HEARTBEAT_LOOKUP_CHUNK_SIZE) {
+        const chunk = ids.slice(index, index + LATEST_HEARTBEAT_LOOKUP_CHUNK_SIZE);
+        const result = await env.DB.prepare(
+            `SELECT monitor_id, latest_heartbeat_id, status, ping, msg, checked_at,
+                    avg_ping, uptime_24, uptime_720, uptime_1y, heartbeat_bar_json
+             FROM monitor_runtime_summary
+             WHERE monitor_id IN (${chunk.map(() => "?").join(", ")})`
+        )
+            .bind(...chunk)
+            .all();
+        for (const summary of result.results || []) {
+            summariesByMonitorId.set(Number(summary.monitor_id), summary);
+        }
+    }
+
+    return summariesByMonitorId;
+}
+
+/**
+ * Convert a runtime summary row into the heartbeat shape serializeMonitor expects.
+ * @param {object|null|undefined} summary Runtime summary row.
+ * @returns {object|null} Latest heartbeat row, or null.
+ */
+function summaryToHeartbeat(summary) {
+    if (!summary || summary.checked_at == null || summary.status == null) {
+        return null;
+    }
+    return {
+        id: summary.latest_heartbeat_id,
+        monitor_id: Number(summary.monitor_id),
+        status: Number(summary.status),
+        ping: summary.ping,
+        msg: summary.msg || "",
+        checked_at: summary.checked_at,
+    };
+}
+
+/**
+ * Parse cached heartbeat-bar JSON safely.
+ * @param {string|null|undefined} value Stored heartbeat JSON.
+ * @returns {object[]} Heartbeat rows.
+ */
+function parseHeartbeatBarJson(value) {
+    if (!value) {
+        return [];
+    }
+    try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (_) {
+        return [];
+    }
+}
+
+function normalizeNullableNumber(value) {
+    const number = Number(value);
+    return Number.isFinite(number) ? number : undefined;
+}
+
+/**
  * Load monitor notification checkbox maps for the supplied monitors.
  * @param {object} env Cloudflare Worker environment bindings.
  * @param {number[]} monitorIds Monitor IDs to hydrate.
@@ -2292,7 +2438,8 @@ async function listImportantMonitorHeartbeats(env, monitorId, monitor, offset = 
 }
 
 /**
- * List event-log heartbeat rows using D1-side transition detection.
+ * List precomputed event-log rows. The dashboard no longer computes important
+ * transitions from raw heartbeats on the read path.
  * @param {object} env Worker environment bindings.
  * @param {object} options Query options.
  * @param {number|null} options.monitorId Optional monitor ID filter.
@@ -2305,106 +2452,228 @@ async function queryImportantHeartbeatEvents(env, {
     offset = 0,
     count = 100,
 } = {}) {
-    const limit = Math.max(1, Math.min(500, count));
-    const start = Math.max(0, offset);
-    const monitorFilter = monitorId == null ? "" : "AND h.monitor_id = ?";
-    const values = monitorId == null ? [] : [monitorId];
-    const runQuery = async (includeConfigJson) => {
-        const result = await env.DB.prepare(buildImportantHeartbeatEventsSql(monitorFilter, includeConfigJson))
-            .bind(...values, limit, start)
-            .all();
-        const rows = result.results || [];
-        const countRow = rows[0];
-        return {
-            count: Number(countRow?.total_count || 0),
-            heartbeats: rows
-                .filter((heartbeat) => heartbeat.monitor_id != null)
-                .map((heartbeat) => serializeHeartbeat(heartbeat)),
-        };
-    };
+    const result = await queryMonitorEventLog(env, { monitorId, offset, count });
 
-    try {
-        return await runQuery(true);
-    } catch (error) {
-        if (!MISSING_CONFIG_JSON_COLUMN.test(error.message || "")) {
-            throw error;
-        }
-        return await runQuery(false);
+    if (result.count > 0 || offset > 0) {
+        return result;
     }
+
+    if (!await eventLogNeedsBackfill(env, monitorId)) {
+        return result;
+    }
+
+    await backfillDashboardRuntimeCaches(env, {
+        monitorId,
+        limit: monitorId == null ? DASHBOARD_BACKFILL_MONITOR_LIMIT : 1,
+        force: true,
+    });
+    return await queryMonitorEventLog(env, { monitorId, offset, count });
 }
 
-/**
- * Build the D1 query for event-log heartbeat rows.
- * @param {string} monitorFilter Optional SQL filter for one monitor.
- * @param {boolean} includeConfigJson Whether monitor config_json is available.
- * @returns {string} SQL query.
- */
-function buildImportantHeartbeatEventsSql(monitorFilter, includeConfigJson) {
-    const upsideDownExpression = includeConfigJson
-        ? "json_valid(m.config_json) AND json_extract(m.config_json, '$.upsideDown') = 1"
-        : "0";
-    return `WITH normalized_heartbeats AS (
-            SELECT
-                h.id,
-                h.monitor_id,
-                CASE
-                    WHEN ${upsideDownExpression} THEN
-                        CASE
-                            WHEN h.status = ${UP} THEN ${DOWN}
-                            WHEN h.status = ${DOWN} THEN ${UP}
-                            ELSE h.status
-                        END
-                    ELSE h.status
-                END AS status,
-                h.ping,
-                h.msg,
-                h.checked_at
-            FROM heartbeats h
-            INNER JOIN monitors m ON m.id = h.monitor_id
+async function queryMonitorEventLog(env, {
+    monitorId = null,
+    offset = 0,
+    count = 100,
+} = {}) {
+    const limit = Math.max(1, Math.min(500, Number(count) || 100));
+    const start = Math.max(0, Number(offset) || 0);
+    const monitorFilter = monitorId == null ? "" : "AND e.monitor_id = ?";
+    const values = monitorId == null ? [limit, start] : [Number(monitorId), limit, start, Number(monitorId)];
+    const result = await env.DB.prepare(
+        `WITH event_page AS (
+            SELECT e.id, e.heartbeat_id, e.monitor_id, e.status, e.ping, e.msg, e.checked_at
+            FROM monitor_event_log e
+            INNER JOIN monitors m ON m.id = e.monitor_id
             WHERE m.active = 1
             ${monitorFilter}
-        ),
-        ordered_heartbeats AS (
-            SELECT
-                id,
-                monitor_id,
-                status,
-                ping,
-                msg,
-                checked_at,
-                LAG(status) OVER (
-                    PARTITION BY monitor_id
-                    ORDER BY checked_at ASC, id ASC
-                ) AS previous_status
-            FROM normalized_heartbeats
-        ),
-        important_events AS (
-            SELECT id, monitor_id, status, ping, msg, checked_at
-            FROM ordered_heartbeats
-            WHERE status IN (${DOWN}, ${PENDING})
-               OR (status = ${UP} AND previous_status IN (${DOWN}, ${PENDING}))
-        ),
-        event_page AS (
-            SELECT id, monitor_id, status, ping, msg, checked_at
-            FROM important_events
-            ORDER BY checked_at DESC, monitor_id DESC, id DESC
+            ORDER BY e.checked_at DESC, e.id DESC
             LIMIT ? OFFSET ?
         )
         SELECT
             total.total_count,
+            event_page.id,
+            event_page.heartbeat_id,
             event_page.monitor_id,
             event_page.status,
             event_page.ping,
             event_page.msg,
             event_page.checked_at
-        FROM (SELECT COUNT(*) AS total_count FROM important_events) total
-        LEFT JOIN event_page ON 1 = 1`;
+        FROM (
+            SELECT COUNT(*) AS total_count
+            FROM monitor_event_log e
+            INNER JOIN monitors m ON m.id = e.monitor_id
+            WHERE m.active = 1
+            ${monitorFilter}
+        ) total
+        LEFT JOIN event_page ON 1 = 1`
+    )
+        .bind(...values)
+        .all();
+    const rows = result.results || [];
+    const countRow = rows[0];
+    return {
+        count: Number(countRow?.total_count || 0),
+        heartbeats: rows
+            .filter((heartbeat) => heartbeat.monitor_id != null)
+            .map((heartbeat) => serializeHeartbeat(heartbeat)),
+    };
+}
+
+async function eventLogNeedsBackfill(env, monitorId) {
+    if (monitorId != null) {
+        return !await hasRuntimeSummaryForMonitor(env, Number(monitorId));
+    }
+
+    const monitors = await listMonitorRows(env);
+    const activeMonitorIds = monitors
+        .filter((monitor) => Number(monitor.active ?? 1) === 1)
+        .map((monitor) => Number(monitor.id));
+    if (activeMonitorIds.length === 0) {
+        return false;
+    }
+    const summariesByMonitorId = await listRuntimeSummariesByMonitorId(env, activeMonitorIds);
+    return summariesByMonitorId.size < activeMonitorIds.length;
+}
+
+/**
+ * Return chart datapoints from precomputed metric buckets.
+ * @param {object} env Worker environment bindings.
+ * @param {number} monitorId Monitor ID.
+ * @param {number} periodHours Requested chart period.
+ * @returns {Promise<object[]>} Chart datapoints.
+ */
+export async function getMonitorChartData(env, monitorId, periodHours = 24) {
+    const period = normalizeDashboardChartPeriod(periodHours);
+    const resolution = period <= 24 ? 60 : 3600;
+    const since = formatSqliteDateTime(new Date(Date.now() - period * 60 * 60 * 1000));
+    let rows = await listMonitorMetricBuckets(env, monitorId, resolution, since);
+
+    if (rows.length === 0 && !await hasRuntimeSummaryForMonitor(env, monitorId)) {
+        await backfillDashboardRuntimeCaches(env, {
+            monitorId,
+            limit: 1,
+            force: true,
+        });
+        rows = await listMonitorMetricBuckets(env, monitorId, resolution, since);
+    }
+
+    return rows.map((row) => {
+        const up = Number(row.up_count || 0);
+        const timestamp = Math.floor(parseSqliteDateTime(row.bucket_start) / 1000);
+        return {
+            timestamp,
+            up,
+            down: Number(row.down_count || 0) + Number(row.pending_count || 0),
+            maintenance: Number(row.maintenance_count || 0),
+            avgPing: up > 0 ? Number(row.ping_sum || 0) / up : null,
+            minPing: row.min_ping == null ? null : Number(row.min_ping),
+            maxPing: row.max_ping == null ? null : Number(row.max_ping),
+        };
+    });
+}
+
+function normalizeDashboardChartPeriod(periodHours) {
+    const period = Number(periodHours);
+    if (DASHBOARD_CHART_PERIODS.has(period)) {
+        return period;
+    }
+    return 24;
+}
+
+async function listMonitorMetricBuckets(env, monitorId, resolutionSeconds, since) {
+    const result = await env.DB.prepare(
+        `SELECT monitor_id, resolution_seconds, bucket_start, up_count, down_count,
+                pending_count, maintenance_count, total_count, ping_sum, min_ping, max_ping
+         FROM monitor_metric_bucket
+         WHERE monitor_id = ?
+           AND resolution_seconds = ?
+           AND bucket_start >= ?
+         ORDER BY bucket_start ASC`
+    )
+        .bind(Number(monitorId), Number(resolutionSeconds), since)
+        .all();
+    return result.results || [];
+}
+
+async function hasRuntimeSummaryForMonitor(env, monitorId) {
+    return (await listRuntimeSummariesByMonitorId(env, [Number(monitorId)])).has(Number(monitorId));
+}
+
+/**
+ * Rebuild missing derived dashboard rows in bounded batches. This keeps old D1
+ * data usable without blocking every dashboard read on a full migration.
+ * @param {object} env Worker environment bindings.
+ * @param {object} options Backfill options.
+ * @param {number|null} options.monitorId Optional single monitor ID.
+ * @param {number} options.limit Max monitors to rebuild.
+ * @returns {Promise<object>} Backfill result.
+ */
+export async function backfillDashboardRuntimeCaches(env, options = {}) {
+    const limit = Math.max(1, Math.min(100, Number(options.limit) || DASHBOARD_BACKFILL_MONITOR_LIMIT));
+    let monitors;
+    if (options.monitorId != null) {
+        const monitor = await getMonitor(env, Number(options.monitorId));
+        monitors = monitor ? [monitor] : [];
+    } else {
+        monitors = await listMonitorRows(env);
+    }
+
+    const monitorIds = monitors.map((monitor) => Number(monitor.id));
+    const summariesByMonitorId = await listRuntimeSummariesByMonitorId(env, monitorIds);
+    const missing = monitors
+        .filter((monitor) => options.force || !summariesByMonitorId.has(Number(monitor.id)))
+        .slice(0, limit);
+
+    for (const monitor of missing) {
+        await rebuildMonitorRuntimeCache(env, monitor);
+    }
+
+    return {
+        rebuilt: missing.length,
+    };
+}
+
+async function rebuildMonitorRuntimeCache(env, monitor) {
+    if (!monitor || monitor.id == null) {
+        return;
+    }
+
+    await clearDashboardDerivedDataForMonitor(env, Number(monitor.id));
+    const result = await env.DB.prepare(
+        `SELECT id, monitor_id, status, ping, msg, checked_at
+         FROM heartbeats
+         WHERE monitor_id = ?
+         ORDER BY checked_at ASC, id ASC
+         LIMIT ?`
+    )
+        .bind(Number(monitor.id), DASHBOARD_BACKFILL_HEARTBEAT_LIMIT)
+        .all();
+    let previousHeartbeat = null;
+    for (const heartbeat of result.results || []) {
+        await upsertDashboardMetricBuckets(env, monitor, heartbeat);
+        await upsertDashboardEventLog(env, monitor, heartbeat, previousHeartbeat);
+        previousHeartbeat = heartbeat;
+    }
+    await refreshMonitorRuntimeSummary(env, monitor);
+}
+
+async function clearDashboardDerivedDataForMonitor(env, monitorId) {
+    await env.DB.prepare("DELETE FROM monitor_runtime_summary WHERE monitor_id = ?")
+        .bind(Number(monitorId))
+        .run();
+    await env.DB.prepare("DELETE FROM monitor_event_log WHERE monitor_id = ?")
+        .bind(Number(monitorId))
+        .run();
+    await env.DB.prepare("DELETE FROM monitor_metric_bucket WHERE monitor_id = ?")
+        .bind(Number(monitorId))
+        .run();
 }
 
 export async function clearMonitorHeartbeats(env, monitorId) {
     await env.DB.prepare("DELETE FROM heartbeats WHERE monitor_id = ?")
         .bind(monitorId)
         .run();
+    await clearDashboardDerivedDataForMonitor(env, monitorId);
 }
 
 /**
@@ -2414,6 +2683,9 @@ export async function clearMonitorHeartbeats(env, monitorId) {
  */
 export async function clearAllStatistics(env) {
     await env.DB.prepare("DELETE FROM heartbeats").run();
+    await env.DB.prepare("DELETE FROM monitor_runtime_summary").run();
+    await env.DB.prepare("DELETE FROM monitor_event_log").run();
+    await env.DB.prepare("DELETE FROM monitor_metric_bucket").run();
 }
 
 /**
@@ -2431,6 +2703,12 @@ export async function purgeOldMonitorHistory(env, now = new Date()) {
 
     const cutoff = new Date(now.getTime() - keepDataPeriodDays * 24 * 60 * 60 * 1000);
     await env.DB.prepare("DELETE FROM heartbeats WHERE checked_at < ?")
+        .bind(formatSqliteDateTime(cutoff))
+        .run();
+    await env.DB.prepare("DELETE FROM monitor_event_log WHERE checked_at < ?")
+        .bind(formatSqliteDateTime(cutoff))
+        .run();
+    await env.DB.prepare("DELETE FROM monitor_metric_bucket WHERE bucket_start < ?")
         .bind(formatSqliteDateTime(cutoff))
         .run();
     return { deleted: true };
@@ -2583,7 +2861,7 @@ export async function executeMonitorCheck(env, monitorId) {
     result = applyTwingateServiceStatus(networkProfile, result);
     const previousHeartbeat = await getLatestHeartbeatForMonitor(env, monitorId);
     result = await applyMonitorRetryStatus(env, monitor, result);
-    const heartbeat = await writeHeartbeat(env, monitorId, result);
+    const heartbeat = await writeHeartbeat(env, monitorId, result, previousHeartbeat, monitor);
     await sendMonitorStatusNotifications(env, monitor, result, previousHeartbeat, heartbeat);
     return result;
 }
@@ -2922,7 +3200,7 @@ async function formatRunnerError(response) {
     }
 }
 
-async function writeHeartbeat(env, monitorId, result) {
+async function writeHeartbeat(env, monitorId, result, previousHeartbeat = null, monitor = null) {
     let responseR2Key = null;
     const responseBody = result.response == null
         ? ""
@@ -2933,19 +3211,216 @@ async function writeHeartbeat(env, monitorId, result) {
     }
 
     const status = result.status ?? DOWN;
-    await env.DB.prepare(
-        "INSERT INTO heartbeats (monitor_id, status, ping, msg, response_r2_key) VALUES (?, ?, ?, ?, ?)"
+    const checkedAt = formatSqliteDateTime(new Date());
+    const insertResult = await env.DB.prepare(
+        "INSERT INTO heartbeats (monitor_id, status, ping, msg, response_r2_key, checked_at) VALUES (?, ?, ?, ?, ?, ?)"
     )
-        .bind(monitorId, status, result.ping ?? null, result.msg ?? "", responseR2Key)
+        .bind(monitorId, status, result.ping ?? null, result.msg ?? "", responseR2Key, checkedAt)
         .run();
-    return {
+    const heartbeat = {
+        id: Number(insertResult?.meta?.last_row_id || 0) || null,
         monitor_id: Number(monitorId),
         status,
         ping: result.ping ?? null,
         msg: result.msg ?? "",
         response_r2_key: responseR2Key,
-        checked_at: formatSqliteDateTime(new Date()),
+        checked_at: checkedAt,
     };
+    if (monitor) {
+        await updateDashboardRuntimeCachesForHeartbeat(env, monitor, heartbeat, previousHeartbeat);
+    }
+    return heartbeat;
+}
+
+async function updateDashboardRuntimeCachesForHeartbeat(env, monitor, heartbeat, previousHeartbeat = null) {
+    await upsertDashboardMetricBuckets(env, monitor, heartbeat);
+    await upsertDashboardEventLog(env, monitor, heartbeat, previousHeartbeat);
+    await refreshMonitorRuntimeSummary(env, monitor, heartbeat);
+}
+
+async function upsertDashboardMetricBuckets(env, monitor, heartbeat) {
+    const status = Number(effectiveHeartbeatStatus(heartbeat.status, monitor));
+    const ping = status === UP && heartbeat.ping != null ? Number(heartbeat.ping) : null;
+    const values = {
+        up: status === UP ? 1 : 0,
+        down: status === DOWN ? 1 : 0,
+        pending: status === PENDING ? 1 : 0,
+        maintenance: status === MAINTENANCE ? 1 : 0,
+        pingSum: Number.isFinite(ping) ? ping : 0,
+        minPing: Number.isFinite(ping) ? ping : null,
+        maxPing: Number.isFinite(ping) ? ping : null,
+    };
+
+    for (const resolution of DASHBOARD_METRIC_RESOLUTIONS) {
+        await env.DB.prepare(
+            `INSERT INTO monitor_metric_bucket (
+                monitor_id, resolution_seconds, bucket_start, up_count, down_count,
+                pending_count, maintenance_count, total_count, ping_sum, min_ping, max_ping, updated_at
+             ) VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, CURRENT_TIMESTAMP)
+             ON CONFLICT(monitor_id, resolution_seconds, bucket_start) DO UPDATE SET
+                up_count = up_count + excluded.up_count,
+                down_count = down_count + excluded.down_count,
+                pending_count = pending_count + excluded.pending_count,
+                maintenance_count = maintenance_count + excluded.maintenance_count,
+                total_count = total_count + 1,
+                ping_sum = ping_sum + excluded.ping_sum,
+                min_ping = CASE
+                    WHEN excluded.min_ping IS NULL THEN monitor_metric_bucket.min_ping
+                    WHEN monitor_metric_bucket.min_ping IS NULL THEN excluded.min_ping
+                    ELSE MIN(monitor_metric_bucket.min_ping, excluded.min_ping)
+                END,
+                max_ping = CASE
+                    WHEN excluded.max_ping IS NULL THEN monitor_metric_bucket.max_ping
+                    WHEN monitor_metric_bucket.max_ping IS NULL THEN excluded.max_ping
+                    ELSE MAX(monitor_metric_bucket.max_ping, excluded.max_ping)
+                END,
+                updated_at = CURRENT_TIMESTAMP`
+        )
+            .bind(
+                Number(heartbeat.monitor_id),
+                resolution,
+                formatBucketStart(heartbeat.checked_at, resolution),
+                values.up,
+                values.down,
+                values.pending,
+                values.maintenance,
+                values.pingSum,
+                values.minPing,
+                values.maxPing
+            )
+            .run();
+    }
+}
+
+async function upsertDashboardEventLog(env, monitor, heartbeat, previousHeartbeat = null) {
+    const status = Number(effectiveHeartbeatStatus(heartbeat.status, monitor));
+    const previousStatus = previousHeartbeat
+        ? Number(effectiveHeartbeatStatus(previousHeartbeat.status, monitor))
+        : null;
+    const isImportant = status === DOWN || status === PENDING || (status === UP && isDegradedStatus(previousStatus));
+    const heartbeatId = Number(heartbeat.id || 0);
+    if (!heartbeatId) {
+        return;
+    }
+
+    if (!isImportant) {
+        await env.DB.prepare("DELETE FROM monitor_event_log WHERE heartbeat_id = ?")
+            .bind(heartbeatId)
+            .run();
+        return;
+    }
+
+    await env.DB.prepare(
+        `INSERT INTO monitor_event_log (heartbeat_id, monitor_id, status, ping, msg, checked_at)
+         VALUES (?, ?, ?, ?, ?, ?)
+         ON CONFLICT(heartbeat_id) DO UPDATE SET
+            monitor_id = excluded.monitor_id,
+            status = excluded.status,
+            ping = excluded.ping,
+            msg = excluded.msg,
+            checked_at = excluded.checked_at`
+    )
+        .bind(
+            heartbeatId,
+            Number(heartbeat.monitor_id),
+            status,
+            heartbeat.ping ?? null,
+            heartbeat.msg ?? "",
+            heartbeat.checked_at
+        )
+        .run();
+}
+
+function isDegradedStatus(status) {
+    return status === DOWN || status === PENDING;
+}
+
+async function refreshMonitorRuntimeSummary(env, monitor, latestHeartbeat = null) {
+    const heartbeat = latestHeartbeat || await getLatestHeartbeatForMonitor(env, Number(monitor.id));
+    const heartbeats = await listRecentSerializedHeartbeatsForSummary(env, monitor);
+    const referenceTime = heartbeat?.checked_at || formatSqliteDateTime(new Date());
+    const metrics24 = await summarizeMetricBuckets(env, Number(monitor.id), 60, referenceTime, 24);
+    const metrics720 = await summarizeMetricBuckets(env, Number(monitor.id), 3600, referenceTime, 720);
+    const metrics1y = await summarizeMetricBuckets(env, Number(monitor.id), 86400, referenceTime, 24 * 365);
+    const status = heartbeat ? Number(effectiveHeartbeatStatus(heartbeat.status, monitor)) : null;
+
+    await env.DB.prepare(
+        `INSERT INTO monitor_runtime_summary (
+            monitor_id, latest_heartbeat_id, status, ping, msg, checked_at,
+            avg_ping, uptime_24, uptime_720, uptime_1y, heartbeat_bar_json, updated_at
+         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+         ON CONFLICT(monitor_id) DO UPDATE SET
+            latest_heartbeat_id = excluded.latest_heartbeat_id,
+            status = excluded.status,
+            ping = excluded.ping,
+            msg = excluded.msg,
+            checked_at = excluded.checked_at,
+            avg_ping = excluded.avg_ping,
+            uptime_24 = excluded.uptime_24,
+            uptime_720 = excluded.uptime_720,
+            uptime_1y = excluded.uptime_1y,
+            heartbeat_bar_json = excluded.heartbeat_bar_json,
+            updated_at = CURRENT_TIMESTAMP`
+    )
+        .bind(
+            Number(monitor.id),
+            heartbeat?.id ?? null,
+            status,
+            heartbeat?.ping ?? null,
+            heartbeat?.msg ?? "",
+            heartbeat?.checked_at ?? null,
+            metrics24.avgPing,
+            metrics24.uptime,
+            metrics720.uptime,
+            metrics1y.uptime,
+            JSON.stringify(heartbeats)
+        )
+        .run();
+}
+
+async function listRecentSerializedHeartbeatsForSummary(env, monitor) {
+    const result = await env.DB.prepare(
+        `SELECT id, monitor_id, status, ping, msg, checked_at
+         FROM heartbeats
+         WHERE monitor_id = ?
+         ORDER BY checked_at DESC, id DESC
+         LIMIT ?`
+    )
+        .bind(Number(monitor.id), DASHBOARD_HEARTBEAT_BAR_LIMIT)
+        .all();
+    return (result.results || [])
+        .slice()
+        .reverse()
+        .map((heartbeat) => serializeHeartbeat(heartbeat, monitor));
+}
+
+async function summarizeMetricBuckets(env, monitorId, resolutionSeconds, referenceTime, periodHours) {
+    const since = formatSqliteDateTime(new Date(parseSqliteDateTime(referenceTime) - periodHours * 60 * 60 * 1000));
+    const result = await env.DB.prepare(
+        `SELECT
+            SUM(up_count) AS up_count,
+            SUM(total_count) AS total_count,
+            SUM(ping_sum) AS ping_sum
+         FROM monitor_metric_bucket
+         WHERE monitor_id = ?
+           AND resolution_seconds = ?
+           AND bucket_start >= ?`
+    )
+        .bind(Number(monitorId), Number(resolutionSeconds), since)
+        .first();
+    const upCount = Number(result?.up_count || 0);
+    const totalCount = Number(result?.total_count || 0);
+    const pingSum = Number(result?.ping_sum || 0);
+    return {
+        uptime: totalCount > 0 ? upCount / totalCount : undefined,
+        avgPing: upCount > 0 ? Math.round(pingSum / upCount) : null,
+    };
+}
+
+function formatBucketStart(value, resolutionSeconds) {
+    const timestamp = parseSqliteDateTime(value);
+    const bucketStart = Math.floor(timestamp / (resolutionSeconds * 1000)) * resolutionSeconds * 1000;
+    return formatSqliteDateTime(new Date(bucketStart));
 }
 
 /**
@@ -5744,6 +6219,9 @@ function matchRoute(method, pathname) {
     if (method === "GET" && pathname === "/api/monitors") {
         return { name: "monitors", params: {} };
     }
+    if (method === "GET" && pathname === "/api/dashboard/bootstrap") {
+        return { name: "dashboard-bootstrap", params: {} };
+    }
     if (method === "GET" && pathname === "/api/heartbeats") {
         return { name: "heartbeats", params: {} };
     }
@@ -5821,6 +6299,11 @@ function matchRoute(method, pathname) {
         return { name: "monitor-heartbeats", params: { monitorId: heartbeatsMatch[1] } };
     }
 
+    const chartMatch = pathname.match(/^\/api\/monitors\/(\d+)\/chart$/);
+    if (method === "GET" && chartMatch) {
+        return { name: "monitor-chart", params: { monitorId: chartMatch[1] } };
+    }
+
     const checkNowMatch = pathname.match(/^\/api\/monitors\/(\d+)\/check-now$/);
     if (method === "POST" && checkNowMatch) {
         return { name: "check-now", params: { monitorId: checkNowMatch[1] } };
@@ -5874,6 +6357,15 @@ function httpError(status, message) {
 
 function formatSqliteDateTime(date) {
     return date.toISOString().slice(0, 19).replace("T", " ");
+}
+
+function parseSqliteDateTime(value) {
+    if (value instanceof Date) {
+        return value.getTime();
+    }
+    const text = String(value || "");
+    const parsed = Date.parse(text.includes("T") ? text : `${text.replace(" ", "T")}Z`);
+    return Number.isFinite(parsed) ? parsed : Date.now();
 }
 
 function json(body, status = 200) {

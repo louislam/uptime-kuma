@@ -34,6 +34,27 @@ describe("Cloudflare Worker API", () => {
         assert.match(migrationSql, /heartbeats\(monitor_id, checked_at DESC, id DESC\)/);
     });
 
+    test("D1 migration creates derived dashboard runtime cache tables", async () => {
+        const migrationPath = path.join(
+            __dirname,
+            "../../../cloudflare/migrations/0011_dashboard_runtime_cache.sql"
+        );
+        const migrationSql = fs.readFileSync(migrationPath, "utf8");
+
+        assert.match(migrationSql, /CREATE TABLE IF NOT EXISTS monitor_runtime_summary/);
+        assert.match(migrationSql, /monitor_id INTEGER PRIMARY KEY/);
+        assert.match(migrationSql, /uptime_24 REAL/);
+        assert.match(migrationSql, /uptime_720 REAL/);
+        assert.match(migrationSql, /uptime_1y REAL/);
+        assert.match(migrationSql, /heartbeat_bar_json TEXT/);
+        assert.match(migrationSql, /CREATE TABLE IF NOT EXISTS monitor_event_log/);
+        assert.match(migrationSql, /CREATE INDEX IF NOT EXISTS idx_monitor_event_log_checked_at/);
+        assert.match(migrationSql, /checked_at DESC, id DESC/);
+        assert.match(migrationSql, /CREATE INDEX IF NOT EXISTS idx_monitor_event_log_monitor_checked_at/);
+        assert.match(migrationSql, /CREATE TABLE IF NOT EXISTS monitor_metric_bucket/);
+        assert.match(migrationSql, /PRIMARY KEY \(monitor_id, resolution_seconds, bucket_start\)/);
+    });
+
     test("D1 migration adds monitor config JSON for edit form fields", async () => {
         const migrationPath = path.join(
             __dirname,
@@ -343,8 +364,11 @@ describe("Cloudflare Worker API", () => {
     test("Worker UI hydrates monitors before slower heartbeat history requests", async () => {
         const socketMixinPath = path.join(__dirname, "../../../src/mixins/socket.js");
         const socketMixinSource = fs.readFileSync(socketMixinPath, "utf8");
+        const bootstrapRequestIndex = socketMixinSource.indexOf(
+            "requestCloudflareJson(\"/api/dashboard/bootstrap\")"
+        );
         const monitorApplyIndex = socketMixinSource.indexOf(
-            "this.applyCloudflareWorkerDashboardState(buildCloudflareWorkerMonitorState(monitors, this.heartbeatList));"
+            "this.applyCloudflareWorkerDashboardState(buildCloudflareWorkerBootstrapState(body, this.heartbeatList));"
         );
         const heartbeatRefreshIndex = socketMixinSource.indexOf(
             "void this.refreshCloudflareWorkerHeartbeatHistories(monitors);"
@@ -352,14 +376,17 @@ describe("Cloudflare Worker API", () => {
 
         assert.match(socketMixinSource, /CLOUDFLARE_DASHBOARD_CACHE_KEY/);
         assert.match(socketMixinSource, /void this\.loadCloudflareWorkerInfo\(\);\s+await this\.refreshCloudflareWorkerAuthSession\(\);/);
+        assert.match(socketMixinSource, /readCloudflareDashboardSecondaryCache\(\)/);
         assert.match(socketMixinSource, /this\.applyCloudflareWorkerDashboardCache\(\);\s+await this\.loadCloudflareWorkerData\(\);/);
         assert.match(socketMixinSource, /Promise\.allSettled\(\[/);
-        assert.match(socketMixinSource, /writeCloudflareWorkerDashboardCache/);
-        assert.match(socketMixinSource, /refreshHeartbeatHistories = true/);
-        assert.match(socketMixinSource, /fetchCloudflareRecentHeartbeatHistories\(monitors\.map/);
+        assert.match(socketMixinSource, /dedupeCloudflareDashboardRequest\(\s*"dashboard-bootstrap"/);
+        assert.match(socketMixinSource, /refreshHeartbeatHistories = false/);
+        assert.match(socketMixinSource, /function buildCloudflareWorkerBootstrapState/);
         assert.doesNotMatch(socketMixinSource, /Promise\.all\(monitors\.map\(async \(monitor\)/);
+        assert.notStrictEqual(bootstrapRequestIndex, -1);
         assert.notStrictEqual(monitorApplyIndex, -1);
         assert.notStrictEqual(heartbeatRefreshIndex, -1);
+        assert.ok(bootstrapRequestIndex < monitorApplyIndex);
         assert.ok(monitorApplyIndex < heartbeatRefreshIndex);
     });
 
@@ -973,6 +1000,121 @@ describe("Cloudflare Worker API", () => {
         );
     });
 
+    test("dashboard bootstrap reads status and summary data from derived runtime tables", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                {
+                    id: 7,
+                    name: "Private HTTP",
+                    type: "http",
+                    url: "http://private.example.test",
+                    active: 1,
+                },
+            ],
+            monitorRuntimeSummaries: [
+                {
+                    monitor_id: 7,
+                    latest_heartbeat_id: 101,
+                    status: 1,
+                    ping: 12,
+                    msg: "200 - OK",
+                    checked_at: "2026-05-11 02:31:00",
+                    avg_ping: 16,
+                    uptime_24: 0.98,
+                    uptime_720: 0.95,
+                    uptime_1y: 0.9,
+                    heartbeat_bar_json: JSON.stringify([
+                        {
+                            monitorID: 7,
+                            status: 1,
+                            ping: 12,
+                            msg: "200 - OK",
+                            time: "2026-05-11 02:31:00",
+                        },
+                    ]),
+                },
+            ],
+        });
+
+        const response = await handleApiRequest(adminRequest("https://example.com/api/dashboard/bootstrap"), env);
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(body.monitors.length, 1);
+        assert.strictEqual(body.monitors[0].lastHeartbeat.msg, "200 - OK");
+        assert.strictEqual(body.avgPingList[7], 16);
+        assert.strictEqual(body.uptimeList["7_24"], 0.98);
+        assert.strictEqual(body.uptimeList["7_720"], 0.95);
+        assert.strictEqual(body.uptimeList["7_1y"], 0.9);
+        assert.strictEqual(body.heartbeatList[7][0].msg, "200 - OK");
+        assert.ok(
+            env.state.queries.some((sql) => sql.includes("FROM monitor_runtime_summary")),
+            "bootstrap should read the derived runtime summary"
+        );
+        assert.ok(
+            env.state.queries.every((sql) => !sql.includes("FROM heartbeats")),
+            "bootstrap hot path should not scan raw heartbeat history when summaries are present"
+        );
+    });
+
+    test("dashboard bootstrap falls back to indexed latest status when derived runtime rows are missing", async () => {
+        const {
+            backfillDashboardRuntimeCaches,
+            handleApiRequest,
+        } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                {
+                    id: 7,
+                    name: "Private HTTP",
+                    type: "http",
+                    url: "http://private.example.test",
+                    active: 1,
+                },
+            ],
+            heartbeats: [
+                {
+                    id: 101,
+                    monitor_id: 7,
+                    status: 1,
+                    ping: 12,
+                    msg: "200 - OK",
+                    checked_at: "2026-05-11 02:30:00",
+                },
+                {
+                    id: 102,
+                    monitor_id: 7,
+                    status: 0,
+                    ping: null,
+                    msg: "Timeout",
+                    checked_at: "2026-05-11 02:31:00",
+                },
+            ],
+        });
+
+        const response = await handleApiRequest(adminRequest("https://example.com/api/dashboard/bootstrap"), env);
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(body.monitors[0].lastHeartbeat.msg, "Timeout");
+        assert.ok(
+            env.state.queries.some((sql) => sql.includes("WITH requested_monitor_ids")),
+            "missing summaries should use the indexed latest heartbeat fallback"
+        );
+        assert.ok(
+            env.state.queries.every((sql) => !sql.includes("ORDER BY checked_at ASC")),
+            "bootstrap should not rebuild raw heartbeat history on the hot path"
+        );
+        assert.deepStrictEqual(env.state.monitorRuntimeSummaries, []);
+
+        const result = await backfillDashboardRuntimeCaches(env, { limit: 1 });
+        assert.deepStrictEqual(result, { rebuilt: 1 });
+        assert.strictEqual(env.state.monitorRuntimeSummaries.length, 1);
+        assert.ok(env.state.monitorEventLog.length >= 1);
+        assert.ok(env.state.monitorMetricBuckets.length >= 3);
+    });
+
     test("lists Worker monitors with upside-down latest heartbeat status applied", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({
@@ -1109,6 +1251,27 @@ describe("Cloudflare Worker API", () => {
                 { monitor_id: 7, status: 1, ping: 12, msg: "200 - OK", checked_at: "2026-05-11 02:30:00" },
                 { monitor_id: 8, status: 0, ping: 44, msg: "500 - Error", checked_at: "2026-05-11 02:00:00" },
             ],
+            monitorRuntimeSummaries: [
+                { monitor_id: 7, status: 1, ping: 12, msg: "200 - OK", checked_at: "2026-05-11 02:30:00" },
+            ],
+            monitorEventLog: [
+                { id: 1, heartbeat_id: 2, monitor_id: 8, status: 0, msg: "500 - Error", checked_at: "2026-05-11 02:00:00" },
+            ],
+            monitorMetricBuckets: [
+                {
+                    monitor_id: 7,
+                    resolution_seconds: 60,
+                    bucket_start: "2026-05-11 02:30:00",
+                    up_count: 1,
+                    down_count: 0,
+                    pending_count: 0,
+                    maintenance_count: 0,
+                    total_count: 1,
+                    ping_sum: 12,
+                    min_ping: 12,
+                    max_ping: 12,
+                },
+            ],
         });
 
         const response = await handleApiRequest(
@@ -1119,6 +1282,9 @@ describe("Cloudflare Worker API", () => {
         assert.strictEqual(response.status, 200);
         assert.deepStrictEqual(await response.json(), { ok: true, msg: "Statistics cleared" });
         assert.deepStrictEqual(env.state.heartbeats, []);
+        assert.deepStrictEqual(env.state.monitorRuntimeSummaries, []);
+        assert.deepStrictEqual(env.state.monitorEventLog, []);
+        assert.deepStrictEqual(env.state.monitorMetricBuckets, []);
     });
 
     test("purges old Worker monitor history using the saved retention setting", async () => {
@@ -3214,20 +3380,178 @@ describe("Cloudflare Worker API", () => {
             ]
         );
 
-        const aggregateHeartbeatQueries = env.state.queries.filter(
-            (sql) => sql.includes("FROM heartbeats") && sql.includes("important_events")
+        assert.ok(
+            env.state.queries.some((sql) => sql.includes("FROM monitor_event_log")),
+            "aggregate event log should read the derived event table"
         );
         assert.ok(
-            aggregateHeartbeatQueries.some((sql) => sql.includes("LAG(status) OVER")),
-            "aggregate event log should classify transitions in D1 instead of in Worker JavaScript"
-        );
-        assert.ok(
-            aggregateHeartbeatQueries.some((sql) => sql.includes("COUNT(*) AS total_count FROM important_events")),
+            env.state.queries.some((sql) => sql.includes("COUNT(*) AS total_count") && sql.includes("monitor_event_log")),
             "aggregate event log should return the total count with the requested page"
         );
         assert.ok(
-            env.state.queries.every((sql) => !sql.includes("ORDER BY monitor_id ASC, checked_at ASC, id ASC")),
-            "aggregate event log should not fetch every retained active heartbeat before pagination"
+            env.state.queries.every((sql) => !sql.includes("LAG(status) OVER")),
+            "aggregate event log should not classify transitions from raw heartbeats on the read path"
+        );
+    });
+
+    test("important heartbeat endpoints read seeded derived event-log rows without raw history fallback", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                { id: 7, name: "Primary WAN", type: "ping", active: 1 },
+            ],
+            monitorEventLog: [
+                {
+                    id: 1,
+                    heartbeat_id: 101,
+                    monitor_id: 7,
+                    status: 0,
+                    ping: null,
+                    msg: "primary down",
+                    checked_at: "2026-05-12 04:02:00",
+                },
+                {
+                    id: 2,
+                    heartbeat_id: 102,
+                    monitor_id: 7,
+                    status: 1,
+                    ping: 10,
+                    msg: "primary recovered",
+                    checked_at: "2026-05-12 04:03:00",
+                },
+            ],
+        });
+
+        const response = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/7/heartbeats?important=1&offset=0&count=20"),
+            env
+        );
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(body.count, 2);
+        assert.deepStrictEqual(
+            body.heartbeats.map((heartbeat) => heartbeat.msg),
+            ["primary recovered", "primary down"]
+        );
+        assert.ok(
+            env.state.queries.some((sql) => sql.includes("FROM monitor_event_log")),
+            "important heartbeat page should read the derived event log"
+        );
+        assert.ok(
+            env.state.queries.every((sql) => !sql.includes("FROM heartbeats")),
+            "seeded event-log pages should not fall back to raw heartbeat history"
+        );
+    });
+
+    test("empty important heartbeat pages do not backfill raw history once summaries exist", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                { id: 7, name: "Primary WAN", type: "ping", active: 1 },
+            ],
+            monitorRuntimeSummaries: [
+                {
+                    monitor_id: 7,
+                    latest_heartbeat_id: 101,
+                    status: 1,
+                    ping: 10,
+                    msg: "up",
+                    checked_at: "2026-05-12 04:03:00",
+                },
+            ],
+        });
+
+        const response = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/7/heartbeats?important=1&offset=0&count=20"),
+            env
+        );
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.deepStrictEqual(body, { count: 0, heartbeats: [] });
+        assert.ok(
+            env.state.queries.every((sql) => !sql.includes("ORDER BY checked_at ASC")),
+            "empty event-log pages with summaries should not rebuild raw heartbeat history"
+        );
+    });
+
+    test("monitor chart endpoint reads bucketed metrics instead of raw heartbeats", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const bucketStart = new Date().toISOString().slice(0, 19).replace("T", " ");
+        const env = createEnv({
+            monitors: [
+                { id: 7, name: "Primary WAN", type: "ping", active: 1 },
+            ],
+            monitorMetricBuckets: [
+                {
+                    monitor_id: 7,
+                    resolution_seconds: 60,
+                    bucket_start: bucketStart,
+                    up_count: 2,
+                    down_count: 1,
+                    pending_count: 0,
+                    maintenance_count: 0,
+                    total_count: 3,
+                    ping_sum: 40,
+                    min_ping: 15,
+                    max_ping: 25,
+                },
+            ],
+        });
+
+        const response = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/7/chart?period=24"),
+            env
+        );
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(body.data.length, 1);
+        assert.strictEqual(body.data[0].up, 2);
+        assert.strictEqual(body.data[0].down, 1);
+        assert.strictEqual(body.data[0].avgPing, 20);
+        assert.strictEqual(body.data[0].minPing, 15);
+        assert.strictEqual(body.data[0].maxPing, 25);
+        assert.ok(
+            env.state.queries.some((sql) => sql.includes("FROM monitor_metric_bucket")),
+            "chart endpoint should read metric buckets"
+        );
+        assert.ok(
+            env.state.queries.every((sql) => !sql.includes("FROM heartbeats")),
+            "seeded chart buckets should avoid raw heartbeat paging"
+        );
+    });
+
+    test("empty chart pages do not backfill raw history once summaries exist", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                { id: 7, name: "Primary WAN", type: "ping", active: 1 },
+            ],
+            monitorRuntimeSummaries: [
+                {
+                    monitor_id: 7,
+                    latest_heartbeat_id: null,
+                    status: null,
+                    ping: null,
+                    msg: "",
+                    checked_at: null,
+                },
+            ],
+        });
+
+        const response = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/7/chart?period=24"),
+            env
+        );
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.deepStrictEqual(body, { ok: true, data: [] });
+        assert.ok(
+            env.state.queries.every((sql) => !sql.includes("ORDER BY checked_at ASC")),
+            "empty chart pages with summaries should not rebuild raw heartbeat history"
         );
     });
 
@@ -3862,6 +4186,69 @@ describe("Cloudflare Worker API", () => {
             ping: 12,
             msg: "200 - OK",
         });
+    });
+
+    test("heartbeat writes update dashboard summary, event, and metric bucket tables", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            profiles: [
+                { id: "twingate", slug: "twingate", name: "Twingate", type: "twingate", enabled: 1 },
+            ],
+            monitors: [
+                {
+                    id: 7,
+                    name: "Private HTTP",
+                    type: "http",
+                    url: "http://private.example.test",
+                    hostname: null,
+                    port: null,
+                    timeout: 5,
+                    active: 1,
+                    network_profile_id: "twingate",
+                },
+            ],
+            runnerResults: [
+                { status: 1, ping: 12, msg: "200 - OK", response: "ok" },
+                { status: 0, ping: null, msg: "Timeout", response: null },
+            ],
+        });
+
+        const firstResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/7/check-now", { method: "POST" }),
+            env
+        );
+        const secondResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/7/check-now", { method: "POST" }),
+            env
+        );
+
+        assert.strictEqual(firstResponse.status, 200);
+        assert.strictEqual(secondResponse.status, 200);
+        assert.strictEqual(env.state.heartbeats.length, 2);
+        assert.strictEqual(env.state.monitorRuntimeSummaries.length, 1);
+        assert.strictEqual(env.state.monitorRuntimeSummaries[0].monitor_id, 7);
+        assert.strictEqual(env.state.monitorRuntimeSummaries[0].status, 0);
+        assert.strictEqual(env.state.monitorRuntimeSummaries[0].msg, "Timeout");
+        assert.deepStrictEqual(
+            env.state.monitorEventLog.map((event) => [event.monitor_id, event.status, event.msg]),
+            [[7, 0, "Timeout"]]
+        );
+        assert.deepStrictEqual(
+            [...new Set(env.state.monitorMetricBuckets.map((bucket) => bucket.resolution_seconds))].sort((a, b) => a - b),
+            [60, 3600, 86400]
+        );
+        assert.ok(
+            env.state.queries.some((sql) => sql.includes("INSERT INTO monitor_runtime_summary")),
+            "heartbeat write should update the runtime summary"
+        );
+        assert.ok(
+            env.state.queries.some((sql) => sql.includes("INSERT INTO monitor_event_log")),
+            "heartbeat write should update the event log for transitions"
+        );
+        assert.ok(
+            env.state.queries.some((sql) => sql.includes("INSERT INTO monitor_metric_bucket")),
+            "heartbeat write should update metric buckets"
+        );
     });
 
     test("check-now on a group runs all active child monitor checks", async () => {
@@ -4852,11 +5239,15 @@ describe("Cloudflare Worker API", () => {
  * @returns {object} Mock Worker environment.
  */
 function createEnv(initial) {
+    const initialHeartbeats = normalizeInitialHeartbeats(initial.heartbeats || []);
     const state = {
         now: initial.now,
         profiles: initial.profiles || [],
         monitors: initial.monitors || [],
-        heartbeats: initial.heartbeats || [],
+        heartbeats: initialHeartbeats,
+        monitorRuntimeSummaries: initial.monitorRuntimeSummaries || [],
+        monitorEventLog: initial.monitorEventLog || [],
+        monitorMetricBuckets: initial.monitorMetricBuckets || [],
         notifications: initial.notifications || [],
         monitorNotifications: initial.monitorNotifications || [],
         tags: initial.tags || [],
@@ -4880,7 +5271,8 @@ function createEnv(initial) {
             lastError: null,
         },
         nextMonitorId: initial.nextMonitorId || 1,
-        nextHeartbeatId: initial.nextHeartbeatId || 1,
+        nextHeartbeatId: initial.nextHeartbeatId || nextHeartbeatIdAfter(initialHeartbeats),
+        nextMonitorEventLogId: initial.nextMonitorEventLogId || 1,
         nextNotificationId: initial.nextNotificationId || 1,
         nextTagId: initial.nextTagId || 1,
         nextMonitorTagId: initial.nextMonitorTagId || 1,
@@ -4940,6 +5332,23 @@ function createEnv(initial) {
             },
         },
     };
+}
+
+function normalizeInitialHeartbeats(heartbeats) {
+    return heartbeats.map((heartbeat, index) => {
+        const row = { ...heartbeat };
+        if (row.id == null) {
+            Object.defineProperty(row, "id", {
+                value: index + 1,
+            });
+        }
+        return row;
+    });
+}
+
+function nextHeartbeatIdAfter(heartbeats) {
+    const maxId = heartbeats.reduce((max, heartbeat) => Math.max(max, Number(heartbeat.id || 0)), 0);
+    return maxId + 1;
 }
 
 /**
@@ -5158,6 +5567,30 @@ function createStatement(sql, state) {
             if (sql.includes("FROM remote_browser")) {
                 return { results: [...state.remoteBrowsers] };
             }
+            if (sql.includes("FROM monitor_runtime_summary")) {
+                let results = [...state.monitorRuntimeSummaries];
+                if (sql.includes("WHERE monitor_id IN")) {
+                    const ids = this.values.map(Number);
+                    results = results.filter((summary) => ids.includes(Number(summary.monitor_id)));
+                } else if (sql.includes("WHERE monitor_id = ?")) {
+                    results = results.filter((summary) => Number(summary.monitor_id) === Number(this.values[0]));
+                }
+                return { results };
+            }
+            if (sql.includes("FROM monitor_event_log")) {
+                return { results: buildMonitorEventLogQueryResults(this.values, state) };
+            }
+            if (sql.includes("FROM monitor_metric_bucket")) {
+                const [monitorId, resolutionSeconds, since] = this.values;
+                const results = state.monitorMetricBuckets
+                    .filter((bucket) =>
+                        Number(bucket.monitor_id) === Number(monitorId) &&
+                        Number(bucket.resolution_seconds) === Number(resolutionSeconds) &&
+                        String(bucket.bucket_start) >= String(since)
+                    )
+                    .toSorted((a, b) => String(a.bucket_start).localeCompare(String(b.bucket_start)));
+                return { results };
+            }
             if (sql.includes("ROW_NUMBER() OVER") && sql.includes("ranked_heartbeats")) {
                 const limit = Number(this.values.at(-1));
                 const ids = this.values.slice(0, -1).map(Number);
@@ -5214,10 +5647,21 @@ function createStatement(sql, state) {
                 if (sql.includes("WHERE monitor_id = ?")) {
                     results = results.filter((heartbeat) => heartbeat.monitor_id === Number(this.values[0]));
                 }
-                results.sort((a, b) => String(b.checked_at).localeCompare(String(a.checked_at)));
+                results.sort((a, b) => {
+                    const checkedAtCompare = sql.includes("ORDER BY checked_at ASC")
+                        ? String(a.checked_at).localeCompare(String(b.checked_at))
+                        : String(b.checked_at).localeCompare(String(a.checked_at));
+                    if (checkedAtCompare !== 0) {
+                        return checkedAtCompare;
+                    }
+                    return sql.includes("ORDER BY checked_at ASC")
+                        ? Number(a.id || 0) - Number(b.id || 0)
+                        : Number(b.id || 0) - Number(a.id || 0);
+                });
                 if (sql.includes("LIMIT ?")) {
-                    const limit = Number(this.values.at(-2));
-                    const offset = Number(this.values.at(-1));
+                    const hasOffset = sql.includes("OFFSET ?");
+                    const limit = Number(hasOffset ? this.values.at(-2) : this.values.at(-1));
+                    const offset = Number(hasOffset ? this.values.at(-1) : 0);
                     results = results.slice(offset, offset + limit);
                 }
                 return { results };
@@ -5276,6 +5720,19 @@ function createStatement(sql, state) {
                 const id = Number(this.values[0]);
                 return state.remoteBrowsers.find((remoteBrowser) => remoteBrowser.id === id) || null;
             }
+            if (sql.includes("FROM monitor_metric_bucket")) {
+                const [monitorId, resolutionSeconds, since] = this.values;
+                const buckets = state.monitorMetricBuckets.filter((bucket) =>
+                    Number(bucket.monitor_id) === Number(monitorId) &&
+                    Number(bucket.resolution_seconds) === Number(resolutionSeconds) &&
+                    String(bucket.bucket_start) >= String(since)
+                );
+                return {
+                    up_count: buckets.reduce((total, bucket) => total + Number(bucket.up_count || 0), 0),
+                    total_count: buckets.reduce((total, bucket) => total + Number(bucket.total_count || 0), 0),
+                    ping_sum: buckets.reduce((total, bucket) => total + Number(bucket.ping_sum || 0), 0),
+                };
+            }
             return null;
         },
         async run() {
@@ -5324,6 +5781,106 @@ function createStatement(sql, state) {
                 return { success: true };
             }
             if (sql.includes("CREATE TABLE IF NOT EXISTS remote_browser")) {
+                return { success: true };
+            }
+            if (sql.includes("INSERT INTO monitor_runtime_summary")) {
+                const [
+                    monitorId,
+                    latestHeartbeatId,
+                    status,
+                    ping,
+                    msg,
+                    checkedAt,
+                    avgPing,
+                    uptime24,
+                    uptime720,
+                    uptime1y,
+                    heartbeatBarJson,
+                ] = this.values;
+                upsertByKey(state.monitorRuntimeSummaries, "monitor_id", Number(monitorId), {
+                    monitor_id: Number(monitorId),
+                    latest_heartbeat_id: latestHeartbeatId == null ? null : Number(latestHeartbeatId),
+                    status,
+                    ping,
+                    msg,
+                    checked_at: checkedAt,
+                    avg_ping: avgPing,
+                    uptime_24: uptime24,
+                    uptime_720: uptime720,
+                    uptime_1y: uptime1y,
+                    heartbeat_bar_json: heartbeatBarJson,
+                });
+                return { success: true };
+            }
+            if (sql.includes("INSERT INTO monitor_event_log")) {
+                const [heartbeatId, monitorId, status, ping, msg, checkedAt] = this.values;
+                const existing = state.monitorEventLog.find((event) => Number(event.heartbeat_id) === Number(heartbeatId));
+                const event = {
+                    id: existing?.id || state.nextMonitorEventLogId++,
+                    heartbeat_id: Number(heartbeatId),
+                    monitor_id: Number(monitorId),
+                    status,
+                    ping,
+                    msg,
+                    checked_at: checkedAt,
+                };
+                if (existing) {
+                    Object.assign(existing, event);
+                } else {
+                    state.monitorEventLog.push(event);
+                }
+                return { success: true };
+            }
+            if (sql.includes("INSERT INTO monitor_metric_bucket")) {
+                const [
+                    monitorId,
+                    resolutionSeconds,
+                    bucketStart,
+                    upCount,
+                    downCount,
+                    pendingCount,
+                    maintenanceCount,
+                    pingSum,
+                    minPing,
+                    maxPing,
+                ] = this.values;
+                const existing = state.monitorMetricBuckets.find((bucket) =>
+                    Number(bucket.monitor_id) === Number(monitorId) &&
+                    Number(bucket.resolution_seconds) === Number(resolutionSeconds) &&
+                    bucket.bucket_start === bucketStart
+                );
+                if (existing) {
+                    existing.up_count += Number(upCount || 0);
+                    existing.down_count += Number(downCount || 0);
+                    existing.pending_count += Number(pendingCount || 0);
+                    existing.maintenance_count += Number(maintenanceCount || 0);
+                    existing.total_count += 1;
+                    existing.ping_sum += Number(pingSum || 0);
+                    existing.min_ping = minPing == null
+                        ? existing.min_ping
+                        : existing.min_ping == null
+                            ? minPing
+                            : Math.min(Number(existing.min_ping), Number(minPing));
+                    existing.max_ping = maxPing == null
+                        ? existing.max_ping
+                        : existing.max_ping == null
+                            ? maxPing
+                            : Math.max(Number(existing.max_ping), Number(maxPing));
+                } else {
+                    state.monitorMetricBuckets.push({
+                        monitor_id: Number(monitorId),
+                        resolution_seconds: Number(resolutionSeconds),
+                        bucket_start: bucketStart,
+                        up_count: Number(upCount || 0),
+                        down_count: Number(downCount || 0),
+                        pending_count: Number(pendingCount || 0),
+                        maintenance_count: Number(maintenanceCount || 0),
+                        total_count: 1,
+                        ping_sum: Number(pingSum || 0),
+                        min_ping: minPing,
+                        max_ping: maxPing,
+                    });
+                }
                 return { success: true };
             }
             if (sql.includes("ALTER TABLE monitors ADD COLUMN proxy_id")) {
@@ -5708,6 +6265,46 @@ function createStatement(sql, state) {
                 state.remoteBrowsers = state.remoteBrowsers.filter((remoteBrowser) => remoteBrowser.id !== id);
                 return { success: true };
             }
+            if (sql.includes("DELETE FROM monitor_runtime_summary")) {
+                if (sql.includes("WHERE monitor_id = ?")) {
+                    const monitorId = Number(this.values[0]);
+                    state.monitorRuntimeSummaries = state.monitorRuntimeSummaries.filter(
+                        (summary) => Number(summary.monitor_id) !== monitorId
+                    );
+                } else {
+                    state.monitorRuntimeSummaries = [];
+                }
+                return { success: true };
+            }
+            if (sql.includes("DELETE FROM monitor_event_log")) {
+                if (sql.includes("WHERE checked_at < ?")) {
+                    const cutoff = this.values[0];
+                    state.monitorEventLog = state.monitorEventLog.filter((event) => event.checked_at >= cutoff);
+                } else if (sql.includes("WHERE heartbeat_id = ?")) {
+                    const heartbeatId = Number(this.values[0]);
+                    state.monitorEventLog = state.monitorEventLog.filter((event) => Number(event.heartbeat_id) !== heartbeatId);
+                } else if (sql.includes("WHERE monitor_id = ?")) {
+                    const monitorId = Number(this.values[0]);
+                    state.monitorEventLog = state.monitorEventLog.filter((event) => Number(event.monitor_id) !== monitorId);
+                } else {
+                    state.monitorEventLog = [];
+                }
+                return { success: true };
+            }
+            if (sql.includes("DELETE FROM monitor_metric_bucket")) {
+                if (sql.includes("WHERE bucket_start < ?")) {
+                    const cutoff = this.values[0];
+                    state.monitorMetricBuckets = state.monitorMetricBuckets.filter((bucket) => bucket.bucket_start >= cutoff);
+                } else if (sql.includes("WHERE monitor_id = ?")) {
+                    const monitorId = Number(this.values[0]);
+                    state.monitorMetricBuckets = state.monitorMetricBuckets.filter(
+                        (bucket) => Number(bucket.monitor_id) !== monitorId
+                    );
+                } else {
+                    state.monitorMetricBuckets = [];
+                }
+                return { success: true };
+            }
             if (sql.includes("DELETE FROM heartbeats")) {
                 if (sql.includes("WHERE checked_at < ?")) {
                     const cutoff = this.values[0];
@@ -5723,7 +6320,8 @@ function createStatement(sql, state) {
                 return { success: true };
             }
             if (sql.includes("INSERT INTO heartbeats")) {
-                const [monitorId, status, ping, msg, responseR2Key] = this.values;
+                const [monitorId, status, ping, msg, responseR2Key, checkedAt] = this.values;
+                const id = state.nextHeartbeatId++;
                 const heartbeat = {
                     monitor_id: Number(monitorId),
                     status,
@@ -5732,17 +6330,17 @@ function createStatement(sql, state) {
                 };
                 Object.defineProperties(heartbeat, {
                     id: {
-                        value: state.nextHeartbeatId++,
+                        value: id,
                     },
                     response_r2_key: {
                         value: responseR2Key,
                     },
                     checked_at: {
-                        value: new Date(state.now || Date.now()).toISOString(),
+                        value: checkedAt || new Date(state.now || Date.now()).toISOString(),
                     },
                 });
                 state.heartbeats.push(heartbeat);
-                return { success: true };
+                return { success: true, meta: { last_row_id: id } };
             }
             return { success: true };
         },
@@ -5777,6 +6375,47 @@ function latestHeartbeatForMonitor(heartbeats, monitorId) {
             }
             return Number(b.id || 0) - Number(a.id || 0);
         })[0] || null;
+}
+
+function buildMonitorEventLogQueryResults(values, state) {
+    const hasMonitorFilter = values.length === 4;
+    const monitorId = hasMonitorFilter ? Number(values[0]) : null;
+    const limit = Number(hasMonitorFilter ? values[1] : values[0]);
+    const offset = Number(hasMonitorFilter ? values[2] : values[1]);
+    const activeMonitorIds = new Set(
+        state.monitors
+            .filter((monitor) => Number(monitor.active) === 1)
+            .map((monitor) => Number(monitor.id))
+    );
+    const events = state.monitorEventLog
+        .filter((event) => activeMonitorIds.has(Number(event.monitor_id)))
+        .filter((event) => monitorId == null || Number(event.monitor_id) === monitorId)
+        .toSorted((a, b) => {
+            const checkedAtCompare = String(b.checked_at).localeCompare(String(a.checked_at));
+            if (checkedAtCompare !== 0) {
+                return checkedAtCompare;
+            }
+            return Number(b.id || 0) - Number(a.id || 0);
+        });
+    return events.slice(offset, offset + limit).map((event) => ({
+        total_count: events.length,
+        id: event.id,
+        heartbeat_id: event.heartbeat_id,
+        monitor_id: event.monitor_id,
+        status: event.status,
+        ping: event.ping,
+        msg: event.msg,
+        checked_at: event.checked_at,
+    }));
+}
+
+function upsertByKey(rows, key, value, nextRow) {
+    const existing = rows.find((row) => Number(row[key]) === Number(value));
+    if (existing) {
+        Object.assign(existing, nextRow);
+    } else {
+        rows.push(nextRow);
+    }
 }
 
 function buildImportantHeartbeatQueryResults(sql, values, state) {

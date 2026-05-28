@@ -669,7 +669,7 @@ export default {
         },
 
         monitor(to) {
-            this.getImportantHeartbeatListLength();
+            this.getImportantHeartbeatListPaged({ refreshCount: true });
         },
         "monitor.type"() {
             if (this.monitor && this.monitor.type === "push") {
@@ -682,7 +682,7 @@ export default {
     },
 
     mounted() {
-        this.getImportantHeartbeatListLength();
+        this.getImportantHeartbeatListPaged({ refreshCount: true });
 
         this.$root.emitter.on("newImportantHeartbeat", this.onNewImportantHeartbeat);
 
@@ -776,7 +776,7 @@ export default {
                     this.$root.toastSuccess(body.result?.msg || "Check complete");
                 }
                 void this.$root.loadCloudflareWorkerData({ refreshSidecars: false }).then(() => {
-                    this.getImportantHeartbeatListLength();
+                    this.getImportantHeartbeatListPaged({ refreshCount: true });
                 });
             } catch (error) {
                 this.$root.toastError(error.message);
@@ -823,7 +823,7 @@ export default {
         clearEvents() {
             this.$root.clearEvents(this.monitor.id, (res) => {
                 if (res.ok) {
-                    this.getImportantHeartbeatListLength();
+                    this.getImportantHeartbeatListPaged({ refreshCount: true });
                 } else {
                     toast.error(res.msg);
                 }
@@ -896,7 +896,6 @@ export default {
                 this.$root.getSocket().emit("monitorImportantHeartbeatListCount", this.monitor.id, (res) => {
                     if (res.ok) {
                         this.importantHeartBeatListLength = res.count;
-                        this.getImportantHeartbeatListPaged();
                     }
                 });
             }
@@ -904,9 +903,11 @@ export default {
 
         /**
          * Retrieves the important heartbeat list for the current page.
+         * @param {object} options Fetch options.
+         * @param {boolean} options.refreshCount Fetch count if the page response omits it.
          * @returns {void}
          */
-        getImportantHeartbeatListPaged() {
+        getImportantHeartbeatListPaged({ refreshCount = false } = {}) {
             if (this.monitor) {
                 const offset = (this.page - 1) * this.perPage;
                 this.$root
@@ -914,6 +915,11 @@ export default {
                     .emit("monitorImportantHeartbeatListPaged", this.monitor.id, offset, this.perPage, (res) => {
                         if (res.ok) {
                             this.displayedRecords = res.data;
+                            if (Number.isFinite(res.count)) {
+                                this.importantHeartBeatListLength = res.count;
+                            } else if (refreshCount) {
+                                this.getImportantHeartbeatListLength();
+                            }
                         }
                     });
             }

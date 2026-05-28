@@ -71,15 +71,18 @@ describe("PingChart period scaling", () => {
         assert.match(source, /max:\s*max\.format\("YYYY-MM-DD HH:mm:ss"\)/);
     });
 
-    test("Worker chart data fetches beyond the initial heartbeat cache", () => {
+    test("Worker chart data uses the derived chart endpoint with stale-while-refresh caching", () => {
         const source = fs.readFileSync(repoFile("src/mixins/socket.js"), "utf8");
 
-        assert.match(source, /const CLOUDFLARE_CHART_HEARTBEAT_PAGE_SIZE = 500;/);
-        assert.match(source, /async function fetchCloudflareMonitorHeartbeatsForPeriod/);
-        assert.match(source, /offset \+= page\.length;/);
         assert.match(source, /await getCloudflareChartData\(app, monitorID, period\)/);
         assert.match(source, /async function getCloudflareChartData/);
-        assert.match(source, /await fetchCloudflareMonitorHeartbeatsForPeriod\(monitorID, periodHours\)/);
+        assert.match(source, /getCachedCloudflareChartData\(app\.cloudflareDashboardSecondaryCache, monitorID, validPeriodHours\)/);
+        assert.match(source, /void refreshCloudflareChartData\(app, monitorID, validPeriodHours\)/);
+        assert.match(source, /dedupeCloudflareDashboardRequest\(`chart:\$\{monitorID\}:\$\{periodHours\}`/);
+        assert.match(source, /requestCloudflareJson\(`\/api\/monitors\/\$\{monitorID\}\/chart\?period=\$\{periodHours\}`\)/);
+        assert.match(source, /setCachedCloudflareChartData\(/);
+        assert.doesNotMatch(source, /fetchCloudflareMonitorHeartbeatsForPeriod/);
+        assert.doesNotMatch(source, /CLOUDFLARE_CHART_HEARTBEAT_PAGE_SIZE/);
     });
 });
 
