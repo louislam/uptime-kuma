@@ -526,15 +526,11 @@ export default {
          * @returns {Promise<void>}
          */
         async refreshCloudflareWorkerHeartbeatHistories(monitors) {
-            const entries = await Promise.all(monitors.map(async (monitor) => {
-                const heartbeats = await fetchCloudflareMonitorHeartbeats(monitor.id)
-                    .then(normalizeCloudflareHeartbeatHistory)
-                    .catch((error) => {
-                        console.warn(`Failed to load heartbeat history for monitor ${monitor.id}: ${error.message}`);
-                        return this.heartbeatList[monitor.id] || [];
-                    });
+            const historiesByMonitorId = await fetchCloudflareRecentHeartbeatHistories(monitors.map((monitor) => monitor.id));
+            const entries = monitors.map((monitor) => {
+                const heartbeats = historiesByMonitorId[monitor.id] || this.heartbeatList[monitor.id] || [];
                 return [monitor.id, mergeCloudflareHeartbeatHistory(heartbeats, monitor.lastHeartbeat)];
-            }));
+            });
 
             const heartbeatList = {};
             const avgPingList = {};
@@ -1823,6 +1819,59 @@ function clearAllCloudflareWorkerHeartbeats(app) {
 async function fetchCloudflareMonitorHeartbeats(monitorID, offset = 0, count = CLOUDFLARE_RECENT_HEARTBEAT_LIMIT) {
     const body = await requestCloudflareJson(buildCloudflareHeartbeatsUrl(monitorID, offset, count));
     return body.heartbeats || [];
+}
+
+/**
+ * Fetch recent Worker heartbeat histories for all dashboard monitors in one request.
+ * @param {number[]} monitorIDs Monitor IDs to hydrate.
+ * @param {number} count Number of rows per monitor.
+ * @returns {Promise<object>} Heartbeat arrays keyed by monitor ID.
+ */
+async function fetchCloudflareRecentHeartbeatHistories(monitorIDs, count = CLOUDFLARE_RECENT_HEARTBEAT_LIMIT) {
+    const ids = [...new Set(
+        (monitorIDs || [])
+            .map((monitorID) => Number(monitorID))
+            .filter((monitorID) => Number.isInteger(monitorID) && monitorID > 0)
+    )];
+    if (ids.length === 0) {
+        return {};
+    }
+
+    try {
+        const body = await requestCloudflareJson("/api/heartbeats/recent", {
+            method: "POST",
+            body: JSON.stringify({
+                monitorIds: ids,
+                count,
+            }),
+        });
+        return body.heartbeatsByMonitorId || {};
+    } catch (error) {
+        console.warn(
+            `Failed to load batched Worker heartbeat histories; falling back to per-monitor requests: ${error.message}`
+        );
+        return await fetchCloudflareHeartbeatHistoriesIndividually(ids, count);
+    }
+}
+
+/**
+ * Fallback for older Worker APIs that do not expose the batched history route.
+ * @param {number[]} monitorIDs Monitor IDs to hydrate.
+ * @param {number} count Number of rows per monitor.
+ * @returns {Promise<object>} Heartbeat arrays keyed by monitor ID.
+ */
+async function fetchCloudflareHeartbeatHistoriesIndividually(monitorIDs, count) {
+    const historiesByMonitorId = {};
+    for (const monitorID of monitorIDs) {
+        try {
+            historiesByMonitorId[monitorID] = normalizeCloudflareHeartbeatHistory(
+                await fetchCloudflareMonitorHeartbeats(monitorID, 0, count)
+            );
+        } catch (error) {
+            console.warn(`Failed to load heartbeat history for monitor ${monitorID}: ${error.message}`);
+        }
+    }
+    return historiesByMonitorId;
 }
 
 /**

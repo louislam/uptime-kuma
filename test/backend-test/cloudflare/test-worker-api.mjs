@@ -356,6 +356,8 @@ describe("Cloudflare Worker API", () => {
         assert.match(socketMixinSource, /Promise\.allSettled\(\[/);
         assert.match(socketMixinSource, /writeCloudflareWorkerDashboardCache/);
         assert.match(socketMixinSource, /refreshHeartbeatHistories = true/);
+        assert.match(socketMixinSource, /fetchCloudflareRecentHeartbeatHistories\(monitors\.map/);
+        assert.doesNotMatch(socketMixinSource, /Promise\.all\(monitors\.map\(async \(monitor\)/);
         assert.notStrictEqual(monitorApplyIndex, -1);
         assert.notStrictEqual(heartbeatRefreshIndex, -1);
         assert.ok(monitorApplyIndex < heartbeatRefreshIndex);
@@ -481,6 +483,50 @@ describe("Cloudflare Worker API", () => {
 
         assert.strictEqual(response.status, 503);
         assert.deepStrictEqual(await response.json(), { error: "Admin API token is not configured" });
+    });
+
+    test("lists recent Worker heartbeat histories in one batched dashboard request", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                { id: 1, name: "Main", type: "http", url: "https://example.test", active: 1 },
+                { id: 2, name: "Backup", type: "http", url: "https://backup.example.test", active: 1 },
+            ],
+            heartbeats: [
+                { id: 1, monitor_id: 1, status: 1, ping: 30, msg: "old", checked_at: "2026-05-11 00:00:00" },
+                { id: 2, monitor_id: 1, status: 0, ping: null, msg: "down", checked_at: "2026-05-11 00:01:00" },
+                { id: 3, monitor_id: 1, status: 1, ping: 35, msg: "up", checked_at: "2026-05-11 00:02:00" },
+                { id: 4, monitor_id: 2, status: 1, ping: 50, msg: "old", checked_at: "2026-05-11 00:00:30" },
+                { id: 5, monitor_id: 2, status: 1, ping: 45, msg: "up", checked_at: "2026-05-11 00:01:30" },
+            ],
+        });
+
+        const response = await handleApiRequest(
+            adminRequest("https://example.com/api/heartbeats/recent", {
+                method: "POST",
+                body: JSON.stringify({
+                    monitorIds: [1, 2],
+                    count: 2,
+                }),
+            }),
+            env
+        );
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.deepStrictEqual(Object.keys(body.heartbeatsByMonitorId), ["1", "2"]);
+        assert.deepStrictEqual(
+            body.heartbeatsByMonitorId[1].map((heartbeat) => heartbeat.msg),
+            ["down", "up"]
+        );
+        assert.deepStrictEqual(
+            body.heartbeatsByMonitorId[2].map((heartbeat) => heartbeat.msg),
+            ["old", "up"]
+        );
+        assert.strictEqual(
+            env.state.queries.filter((query) => query.includes("ROW_NUMBER() OVER")).length,
+            1
+        );
     });
 
     test("lists the Worker default status page for the deployed web UI", async () => {
@@ -5111,6 +5157,26 @@ function createStatement(sql, state) {
             }
             if (sql.includes("FROM remote_browser")) {
                 return { results: [...state.remoteBrowsers] };
+            }
+            if (sql.includes("ROW_NUMBER() OVER") && sql.includes("ranked_heartbeats")) {
+                const limit = Number(this.values.at(-1));
+                const ids = this.values.slice(0, -1).map(Number);
+                const results = [];
+                for (const id of ids) {
+                    const recentHeartbeats = state.heartbeats
+                        .filter((heartbeat) => Number(heartbeat.monitor_id) === id)
+                        .toSorted((a, b) => {
+                            const checkedAtCompare = String(b.checked_at).localeCompare(String(a.checked_at));
+                            if (checkedAtCompare !== 0) {
+                                return checkedAtCompare;
+                            }
+                            return Number(b.id || 0) - Number(a.id || 0);
+                        })
+                        .slice(0, limit)
+                        .reverse();
+                    results.push(...recentHeartbeats);
+                }
+                return { results };
             }
             if (sql.includes("WITH requested_monitor_ids") && sql.includes("FROM requested_monitor_ids")) {
                 const ids = this.values.map(Number);

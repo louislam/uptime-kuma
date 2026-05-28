@@ -64,6 +64,8 @@ const DEFAULT_DEPLOY_MONITOR_PAUSE_SECONDS = 120;
 const DEFAULT_TWINGATE_ALERT_THRESHOLD_MINUTES = 5;
 const MIN_TWINGATE_ALERT_THRESHOLD_MINUTES = 1;
 const MAX_TWINGATE_ALERT_THRESHOLD_MINUTES = 1440;
+const DEFAULT_RECENT_HEARTBEAT_HISTORY_LIMIT = 150;
+const MAX_RECENT_HEARTBEAT_HISTORY_LIMIT = 500;
 const ACCESS_SECRET_HEADER = "X-Uptime-Worker-Token";
 const ACCESS_SECRET_MONITOR_TYPES = new Set(["http", "keyword", "json-query"]);
 const NOTIFICATION_OK_MESSAGE = "Sent Successfully.";
@@ -206,6 +208,7 @@ const ADMIN_ROUTE_NAMES = new Set([
     "set-monitor-active",
     "delete-monitor",
     "heartbeats",
+    "recent-heartbeats",
     "monitor-heartbeats",
     "network-profiles",
     "patch-network-route",
@@ -294,6 +297,13 @@ export async function handleApiRequest(request, env) {
             return json(await listHeartbeats(env, offset, count, {
                 importantOnly,
             }));
+        }
+
+        if (route.name === "recent-heartbeats") {
+            const body = await request.json().catch(() => ({}));
+            return json({
+                heartbeatsByMonitorId: await listRecentHeartbeatsByMonitorId(env, body.monitorIds, body.count),
+            });
         }
 
         if (route.name === "status-pages") {
@@ -2141,6 +2151,91 @@ export async function listMonitorHeartbeats(env, monitorId, offset = 0, count = 
         count: Number(total?.count || 0),
         heartbeats: (result.results || []).map((heartbeat) => serializeHeartbeat(heartbeat, monitor)),
     };
+}
+
+/**
+ * List recent heartbeat histories for several Worker monitors in one D1 query.
+ * @param {object} env Worker environment bindings.
+ * @param {number[]} monitorIds Monitor IDs to hydrate.
+ * @param {number} count Max heartbeat rows per monitor.
+ * @returns {Promise<object>} Heartbeat rows keyed by monitor ID.
+ */
+export async function listRecentHeartbeatsByMonitorId(
+    env,
+    monitorIds = [],
+    count = DEFAULT_RECENT_HEARTBEAT_HISTORY_LIMIT
+) {
+    const ids = normalizeRecentHeartbeatMonitorIds(monitorIds);
+    const limit = normalizeRecentHeartbeatHistoryLimit(count);
+    if (ids.length === 0) {
+        return {};
+    }
+
+    const monitors = await listMonitorRows(env);
+    const monitorsById = new Map(monitors.map((monitor) => [Number(monitor.id), monitor]));
+    const existingIds = ids.filter((monitorId) => monitorsById.has(monitorId));
+    const heartbeatsByMonitorId = Object.fromEntries(existingIds.map((monitorId) => [monitorId, []]));
+
+    for (let index = 0; index < existingIds.length; index += LATEST_HEARTBEAT_LOOKUP_CHUNK_SIZE) {
+        const chunk = existingIds.slice(index, index + LATEST_HEARTBEAT_LOOKUP_CHUNK_SIZE);
+        const result = await env.DB.prepare(
+            `WITH requested_monitor_ids(monitor_id) AS (
+                VALUES ${chunk.map(() => "(?)").join(", ")}
+             ),
+             ranked_heartbeats AS (
+                SELECT h.id, h.monitor_id, h.status, h.ping, h.msg, h.checked_at,
+                       ROW_NUMBER() OVER (
+                           PARTITION BY h.monitor_id
+                           ORDER BY h.checked_at DESC, h.id DESC
+                       ) AS recent_rank
+                FROM heartbeats h
+                INNER JOIN requested_monitor_ids requested
+                    ON requested.monitor_id = h.monitor_id
+             )
+             SELECT id, monitor_id, status, ping, msg, checked_at
+             FROM ranked_heartbeats
+             WHERE recent_rank <= ?
+             ORDER BY monitor_id, checked_at ASC, id ASC`
+        )
+            .bind(...chunk, limit)
+            .all();
+
+        for (const heartbeat of result.results || []) {
+            const monitorId = Number(heartbeat.monitor_id);
+            heartbeatsByMonitorId[monitorId].push(serializeHeartbeat(heartbeat, monitorsById.get(monitorId)));
+        }
+    }
+
+    return heartbeatsByMonitorId;
+}
+
+/**
+ * Normalize dashboard heartbeat history monitor IDs.
+ * @param {unknown} monitorIds Submitted monitor IDs.
+ * @returns {number[]} Unique positive integer monitor IDs.
+ */
+function normalizeRecentHeartbeatMonitorIds(monitorIds) {
+    if (!Array.isArray(monitorIds)) {
+        return [];
+    }
+    return [...new Set(
+        monitorIds
+            .map((monitorId) => Number(monitorId))
+            .filter((monitorId) => Number.isInteger(monitorId) && monitorId > 0)
+    )];
+}
+
+/**
+ * Normalize dashboard heartbeat history page size.
+ * @param {unknown} count Submitted row limit.
+ * @returns {number} Bounded row limit per monitor.
+ */
+function normalizeRecentHeartbeatHistoryLimit(count) {
+    const parsed = Number(count);
+    if (!Number.isFinite(parsed)) {
+        return DEFAULT_RECENT_HEARTBEAT_HISTORY_LIMIT;
+    }
+    return Math.max(1, Math.min(MAX_RECENT_HEARTBEAT_HISTORY_LIMIT, Math.round(parsed)));
 }
 
 /**
@@ -5651,6 +5746,9 @@ function matchRoute(method, pathname) {
     }
     if (method === "GET" && pathname === "/api/heartbeats") {
         return { name: "heartbeats", params: {} };
+    }
+    if (method === "POST" && pathname === "/api/heartbeats/recent") {
+        return { name: "recent-heartbeats", params: {} };
     }
     if (method === "GET" && pathname === "/api/status-pages") {
         return { name: "status-pages", params: {} };
