@@ -18,6 +18,8 @@ const DEFAULT_PING_PACKET_SIZE = 56;
 const DEFAULT_PING_PER_REQUEST_TIMEOUT_SECONDS = 2;
 const DEFAULT_RESPONSE_MAX_BYTES = 1024;
 const MAX_RESPONSE_MAX_BYTES = 64 * 1024;
+const DEFAULT_TWINGATE_PING_FALLBACK_PORTS = [80, 443];
+const MAX_TWINGATE_PING_FALLBACK_PORTS = 10;
 const SYSTEM_TWINGATE_PROXY_URL = "http://127.0.0.1:9999";
 const PRIVATE_WORKER_HOST_ERROR =
     "Direct Worker checks cannot target private, loopback, link-local, or metadata hosts";
@@ -35,7 +37,12 @@ async function runCheck(job) {
 
     try {
         if (isTwingateProfile(networkProfile) && monitor.type === "ping" && job.twingateTunMode === "off") {
-            throw new Error("ICMP ping through Twingate requires Twingate TUN mode");
+            return await runTwingateUserspacePingCheck(
+                monitor,
+                twingateProxyUrl,
+                start,
+                resolveTwingatePingFallbackPorts(job, monitor)
+            );
         }
 
         if (["http", "keyword", "json-query"].includes(monitor.type)) {
@@ -184,6 +191,45 @@ async function runPingCheck(
         msg: `${ping} ms`,
         response: null,
     };
+}
+
+async function runTwingateUserspacePingCheck(monitor, twingateProxyUrl, start, fallbackPorts) {
+    const hostname = monitor.hostname;
+    if (!hostname) {
+        throw new Error("Ping monitor requires hostname");
+    }
+
+    const ports = normalizePortList(fallbackPorts);
+    if (ports.length === 0) {
+        throw new Error("Twingate userspace ping requires at least one TCP fallback port");
+    }
+
+    const timeoutSeconds = resolveTwingatePingFallbackTimeoutSeconds(monitor);
+    const attempts = ports.map(async (port) => {
+        try {
+            const socket = await connectViaHttpProxy(hostname, port, twingateProxyUrl, timeoutSeconds);
+            socket.end();
+            return { port };
+        } catch (error) {
+            throw new Error(`${port}: ${error.message}`);
+        }
+    });
+
+    try {
+        const result = await Promise.any(attempts);
+        const ping = Date.now() - start;
+        return {
+            status: UP,
+            ping,
+            msg: `${ping} ms (TCP ${result.port} via Twingate)`,
+            response: null,
+        };
+    } catch (error) {
+        const details = summarizeTwingatePingFallbackErrors(error);
+        throw new Error(
+            `Twingate userspace ping could not connect to ${hostname} on TCP ports ${ports.join(", ")}${details}`
+        );
+    }
 }
 
 function parseAveragePing(output) {
@@ -445,6 +491,55 @@ function resolveTwingateProxyUrl(job = {}) {
     return job.twingateProxyUrl || SYSTEM_TWINGATE_PROXY_URL;
 }
 
+function resolveTwingatePingFallbackPorts(job = {}, monitor = job.monitor || {}) {
+    const explicitPorts =
+        monitor.twingatePingFallbackPorts ??
+        monitor.twingatePingPorts ??
+        job.twingatePingFallbackPorts ??
+        process.env.TWINGATE_PING_FALLBACK_PORTS;
+    if (explicitPorts === undefined || explicitPorts === null || explicitPorts === "") {
+        return DEFAULT_TWINGATE_PING_FALLBACK_PORTS;
+    }
+    return normalizePortList(explicitPorts);
+}
+
+function normalizePortList(value) {
+    const values = Array.isArray(value)
+        ? value
+        : String(value)
+            .split(/[,\s]+/)
+            .filter(Boolean);
+    const seen = new Set();
+    const ports = [];
+    for (const entry of values) {
+        const port = Number(entry);
+        if (!Number.isInteger(port) || port < 1 || port > 65535 || seen.has(port)) {
+            continue;
+        }
+        seen.add(port);
+        ports.push(port);
+        if (ports.length >= MAX_TWINGATE_PING_FALLBACK_PORTS) {
+            break;
+        }
+    }
+    return ports;
+}
+
+function resolveTwingatePingFallbackTimeoutSeconds(monitor = {}) {
+    return Math.min(
+        toPositiveInteger(monitor.ping_per_request_timeout, DEFAULT_PING_PER_REQUEST_TIMEOUT_SECONDS),
+        toPositiveInteger(monitor.timeout, DEFAULT_TIMEOUT_SECONDS)
+    );
+}
+
+function summarizeTwingatePingFallbackErrors(error) {
+    const errors = Array.isArray(error?.errors) ? error.errors : [];
+    if (errors.length === 0) {
+        return "";
+    }
+    return `: ${errors.slice(0, 3).map((entry) => entry.message).join("; ")}`;
+}
+
 function getTimeoutMs(timeoutSeconds) {
     return Number(timeoutSeconds || DEFAULT_TIMEOUT_SECONDS) * 1000;
 }
@@ -548,11 +643,14 @@ function isPrivateWorkerHost(hostname) {
 
 module.exports = {
     SYSTEM_TWINGATE_PROXY_URL,
+    DEFAULT_TWINGATE_PING_FALLBACK_PORTS,
+    resolveTwingatePingFallbackPorts,
     resolveTwingateProxyUrl,
     resolveDirectTarget,
     runCheck,
     runHttpCheck,
     runPingCheck,
+    runTwingateUserspacePingCheck,
     runTcpCheck,
     isTwingateProfile,
 };

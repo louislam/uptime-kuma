@@ -3563,6 +3563,7 @@ function sanitizeMonitor(monitor) {
         ping_count: config.ping_count,
         ping_numeric: config.ping_numeric,
         ping_per_request_timeout: config.ping_per_request_timeout,
+        twingatePingFallbackPorts: config.twingatePingFallbackPorts,
     };
 }
 

@@ -289,8 +289,20 @@ describe("Cloudflare monitor runner", () => {
         assert.match(result.msg, /proxy rejected CONNECT with 403/);
     });
 
-    test("Ping over Twingate requires TUN mode", async () => {
+    test("Twingate Ping checks in userspace mode use proxy TCP fallback ports", async () => {
         const { runCheck } = require("../../../cloudflare/runner/checker");
+        const connectTargets = [];
+        const proxy = await listen(
+            http.createServer().on("connect", (req, socket) => {
+                connectTargets.push(req.url);
+                if (req.url === "camera.internal:443") {
+                    socket.write("HTTP/1.1 200 Connection Established\r\n\r\n");
+                } else {
+                    socket.write("HTTP/1.1 403 Forbidden\r\n\r\n");
+                }
+                socket.end();
+            })
+        );
 
         const result = await runCheck({
             monitor: {
@@ -300,11 +312,14 @@ describe("Cloudflare monitor runner", () => {
                 timeout: 5,
             },
             networkProfile: { slug: "twingate", type: "twingate" },
+            twingateProxyUrl: `http://127.0.0.1:${proxy.port}`,
             twingateTunMode: "off",
+            twingatePingFallbackPorts: [8080, 443],
         });
 
-        assert.strictEqual(result.status, DOWN);
-        assert.match(result.msg, /ICMP ping through Twingate requires Twingate TUN mode/);
+        assert.strictEqual(result.status, UP);
+        assert.match(result.msg, /^\d+ ms \(TCP 443 via Twingate\)$/);
+        assert.deepStrictEqual(connectTargets.sort(), ["camera.internal:443", "camera.internal:8080"]);
     });
 
     test("Twingate Ping checks allow private targets through the TUN route", async () => {

@@ -184,6 +184,7 @@ describe("Cloudflare Worker API", () => {
             assert.strictEqual(name in wranglerConfig.vars, false, `${name} should not be committed in wrangler vars`);
         }
         assert.strictEqual(wranglerConfig.vars.TWINGATE_TUN, "off");
+        assert.strictEqual(wranglerConfig.vars.TWINGATE_PING_FALLBACK_PORTS, "80,443");
     });
 
     test("Worker admin API keeps Cloudflare Access application identifiers out of checked-in vars", async () => {
@@ -216,7 +217,9 @@ describe("Cloudflare Worker API", () => {
         assert.match(workerSource, /APP_VERSION:\s*resolveAppVersion\(env\)/);
         assert.match(workerSource, /TWINGATE_READY_TIMEOUT_MS:\s*"60000"/);
         assert.match(workerSource, /TWINGATE_TUN:\s*"off"/);
+        assert.match(workerSource, /TWINGATE_PING_FALLBACK_PORTS:\s*"80,443"/);
         assert.match(workerSource, /"TWINGATE_READY_TIMEOUT_MS"/);
+        assert.match(workerSource, /"TWINGATE_PING_FALLBACK_PORTS"/);
         assert.doesNotMatch(optionalEnvBlock, /"TWINGATE_TUN"/);
         assert.match(workerSource, /JSON\.stringify\(value\)/);
     });

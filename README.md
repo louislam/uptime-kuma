@@ -244,9 +244,13 @@ address internally. Do not configure a proxy URL for Twingate; only the service
 account fields and private-key secret are operator-provided.
 Cloudflare-hosted Twingate checks support private HTTP, keyword, JSON query,
 TCP port, and WebSocket reachability checks through the userspace proxy.
-Twingate ICMP ping checks require a TUN route. The default Cloudflare container
-setting is `TWINGATE_TUN=off` because the userspace HTTP proxy does not require
-container TUN device capabilities.
+The default Cloudflare container setting is `TWINGATE_TUN=off` because the
+userspace HTTP proxy does not require container TUN device capabilities. In
+that mode, Twingate-routed ping monitors use TCP fallback probes through the
+proxy instead of ICMP. The default fallback ports are `80,443`; set
+`TWINGATE_PING_FALLBACK_PORTS` to a comma-separated port list if private
+endpoints should be probed on different TCP ports. True ICMP ping still
+requires a TUN route.
 
 If you use Cloudflare Access as the initial admin gate, configure
 `CF_ACCESS_TEAM_DOMAIN` and `CF_ACCESS_AUD` as dashboard variables for the
