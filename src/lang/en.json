@@ -1568,7 +1568,7 @@
     "networkRouteDescription": "Choose whether this monitor runs directly or through the configured Twingate route for private HTTP, keyword, JSON query, TCP port, WebSocket, and ICMP ping reachability checks.",
     "twingatePingUnsupportedWarning": "Twingate ICMP ping requires TUN mode on the Cloudflare runner.",
     "twingateSettingsTitle": "Twingate",
-    "twingateSettingsDescription": "Cloudflare runners use the configured Twingate service key env to start Twingate with the userspace HTTP proxy and TUN mode for private HTTP, TCP port, WebSocket, and ICMP ping reachability checks. The service key is never displayed here.",
+    "twingateSettingsDescription": "Cloudflare runners use the configured Twingate service key env to start Twingate in userspace HTTP proxy mode for private HTTP, TCP port, and WebSocket reachability checks. ICMP ping requires TUN mode. The service key is never displayed here.",
     "twingateNotConfigured": "Not configured",
     "twingateStarting": "Starting",
     "twingateConfiguredStopped": "Configured, but not running",

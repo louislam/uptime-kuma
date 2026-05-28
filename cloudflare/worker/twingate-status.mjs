@@ -2,7 +2,7 @@ const SYSTEM_TWINGATE_PROXY_URL = "http://127.0.0.1:9999";
 const DEFAULT_TWINGATE_STATUS_REQUEST_TIMEOUT_MS = 10000;
 const MIN_TWINGATE_STATUS_REQUEST_TIMEOUT_MS = 1000;
 const MAX_TWINGATE_STATUS_REQUEST_TIMEOUT_MS = 30000;
-const DEFAULT_TWINGATE_TUN_MODE = "on";
+const DEFAULT_TWINGATE_TUN_MODE = "off";
 const TWINGATE_CONTAINER_STARTING_MESSAGE =
     "Twingate runner container is starting or provisioning. Refresh in a few seconds.";
 const TWINGATE_ENV_INPUTS = [
@@ -69,6 +69,10 @@ function resolveTwingateStatusTimeoutMs(env = {}) {
     );
 }
 
+function resolveTwingateTunMode(env = {}) {
+    return String(env?.TWINGATE_TUN || DEFAULT_TWINGATE_TUN_MODE).toLowerCase() === "on" ? "on" : "off";
+}
+
 /**
  * Build a status payload for transient Cloudflare Container startup.
  * @param {object} env Worker environment bindings.
@@ -81,7 +85,7 @@ function buildStartingTwingateStatus(env = {}, lastError = TWINGATE_CONTAINER_ST
         starting: true,
         running: false,
         proxyUrl: SYSTEM_TWINGATE_PROXY_URL,
-        tunMode: DEFAULT_TWINGATE_TUN_MODE,
+        tunMode: resolveTwingateTunMode(env),
         lastError,
     });
 }
@@ -98,7 +102,7 @@ function buildUnavailableTwingateStatus(env = {}, lastError) {
         starting: false,
         running: false,
         proxyUrl: SYSTEM_TWINGATE_PROXY_URL,
-        tunMode: DEFAULT_TWINGATE_TUN_MODE,
+        tunMode: resolveTwingateTunMode(env),
         lastError,
     });
 }

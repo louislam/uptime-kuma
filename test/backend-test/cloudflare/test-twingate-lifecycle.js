@@ -63,18 +63,18 @@ describe("Twingate runner lifecycle", () => {
         }
     });
 
-    test("starts twingated with TUN enabled by default while checks use localhost", () => {
+    test("starts twingated in userspace proxy mode by default while checks use localhost", () => {
         const command = buildTwingatedCommand();
 
         assert.strictEqual(SYSTEM_TWINGATE_PROXY_URL, "http://127.0.0.1:9999");
         assert.strictEqual(command.file, "/usr/sbin/twingated");
-        assert.deepStrictEqual(command.args, ["--http-proxy", "0.0.0.0:9999", "--tun", "on"]);
+        assert.deepStrictEqual(command.args, ["--http-proxy", "0.0.0.0:9999", "--tun", "off"]);
     });
 
-    test("allows Twingate TUN mode to be disabled explicitly", () => {
-        const command = buildTwingatedCommand("off");
+    test("allows Twingate TUN mode to be enabled explicitly", () => {
+        const command = buildTwingatedCommand("on");
 
-        assert.deepStrictEqual(command.args, ["--http-proxy", "0.0.0.0:9999", "--tun", "off"]);
+        assert.deepStrictEqual(command.args, ["--http-proxy", "0.0.0.0:9999", "--tun", "on"]);
     });
 
     test("reports clean early exit before proxy readiness with captured output", async () => {
