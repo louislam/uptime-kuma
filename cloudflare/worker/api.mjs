@@ -466,8 +466,7 @@ export async function handleApiRequest(request, env) {
         if (route.name === "update-monitor") {
             const monitorId = Number(route.params.monitorId);
             await updateMonitor(env, monitorId, await request.json());
-            const monitor = await getSerializedMonitor(env, monitorId);
-            return json({ ok: true, msg: "Monitor saved", monitor });
+            return json({ ok: true, msg: "Monitor saved" });
         }
 
         if (route.name === "set-monitor-active") {
@@ -1057,12 +1056,16 @@ async function testNotification(notificationInput) {
     const notification = normalizeTestNotification(notificationInput);
 
     if (notification.type === "pushover") {
-        await sendPushoverTestNotification(notification, `${notification.name} Testing`);
+        await sendPushoverNotification(notification, `${notification.name} Testing`, {
+            failureLabel: "test notification",
+        });
         return { ok: true, msg: NOTIFICATION_OK_MESSAGE };
     }
 
     if (notification.type === "teams") {
-        await sendTeamsTestNotification(notification, `${notification.name} Testing`);
+        await sendTeamsNotification(notification, buildTeamsTestNotificationPayload(`${notification.name} Testing`), {
+            failureLabel: "test notification",
+        });
         return { ok: true, msg: NOTIFICATION_OK_MESSAGE };
     }
 
@@ -1087,20 +1090,34 @@ function normalizeTestNotification(notificationInput = {}) {
     };
 }
 
-async function sendPushoverTestNotification(notification, msg) {
+async function sendPushoverNotification(notification, msg, options = {}) {
+    const heartbeatJSON = options.heartbeatJSON || null;
+    const monitorJSON = options.monitorJSON || null;
     const body = new URLSearchParams();
-    body.set("message", msg);
+    body.set("message", buildPushoverMessage(msg, heartbeatJSON));
     body.set("user", requiredNotificationValue(notification.pushoveruserkey, "Pushover user key is required"));
     body.set("token", requiredNotificationValue(notification.pushoverapptoken, "Pushover application token is required"));
     body.set("retry", "30");
     body.set("expire", "3600");
     body.set("html", "1");
 
-    appendOptionalNotificationValue(body, "sound", notification.pushoversounds);
+    appendOptionalNotificationValue(
+        body,
+        "sound",
+        heartbeatJSON?.status === UP && notification.pushoversounds_up
+            ? notification.pushoversounds_up
+            : notification.pushoversounds
+    );
     appendOptionalNotificationValue(body, "priority", notification.pushoverpriority);
     appendOptionalNotificationValue(body, "title", notification.pushovertitle);
     appendOptionalNotificationValue(body, "device", notification.pushoverdevice);
     appendOptionalNotificationValue(body, "ttl", notification.pushoverttl);
+
+    const dashboardUrl = buildMonitorDashboardUrl(options.primaryBaseURL, monitorJSON?.id);
+    if (dashboardUrl) {
+        body.set("url", dashboardUrl);
+        body.set("url_title", "Link to Monitor");
+    }
 
     const response = await fetch("https://api.pushover.net/1/messages.json", {
         method: "POST",
@@ -1111,7 +1128,7 @@ async function sendPushoverTestNotification(notification, msg) {
     });
 
     if (!response.ok) {
-        throw httpError(502, `Pushover test notification failed with HTTP ${response.status}`);
+        throw httpError(502, `Pushover ${options.failureLabel || "notification"} failed with HTTP ${response.status}`);
     }
 }
 
@@ -1121,7 +1138,7 @@ async function sendPushoverTestNotification(notification, msg) {
  * @param {string} msg Message to include in the test card.
  * @returns {Promise<void>}
  */
-async function sendTeamsTestNotification(notification, msg) {
+async function sendTeamsNotification(notification, payload, options = {}) {
     const webhookUrl = normalizeHttpsNotificationUrl(
         requiredNotificationValue(notification.webhookUrl, "Teams webhook URL is required"),
         "Teams webhook URL must be a valid HTTPS URL"
@@ -1131,11 +1148,11 @@ async function sendTeamsTestNotification(notification, msg) {
         headers: {
             "content-type": "application/json",
         },
-        body: JSON.stringify(buildTeamsTestNotificationPayload(msg)),
+        body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
-        throw httpError(502, `Teams test notification failed with HTTP ${response.status}`);
+        throw httpError(502, `Teams ${options.failureLabel || "notification"} failed with HTTP ${response.status}`);
     }
 }
 
@@ -1171,6 +1188,123 @@ function buildTeamsTestNotificationPayload(msg) {
                             ],
                         },
                     ],
+                    $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+                    version: "1.5",
+                },
+            },
+        ],
+    };
+}
+
+function buildPushoverMessage(msg, heartbeatJSON) {
+    if (!heartbeatJSON?.localDateTime) {
+        return msg;
+    }
+    return `${msg}\n<b>Time (${heartbeatJSON.timezone || "UTC"})</b>: ${heartbeatJSON.localDateTime}`;
+}
+
+function buildTeamsMonitorNotificationPayload(monitorJSON, heartbeatJSON, settings) {
+    const summary = buildTeamsStatusSummary(monitorJSON?.name, heartbeatJSON?.status);
+    const facts = [];
+    const actions = [];
+    const dashboardUrl = buildMonitorDashboardUrl(settings.primaryBaseURL, monitorJSON?.id);
+    const monitorUrl = buildMonitorTargetUrl(monitorJSON);
+
+    if (heartbeatJSON?.msg) {
+        facts.push({
+            title: "Description",
+            value: heartbeatJSON.msg,
+        });
+    }
+    if (monitorJSON?.name) {
+        facts.push({
+            title: "Monitor",
+            value: monitorJSON.name,
+        });
+    }
+    if (monitorUrl) {
+        facts.push({
+            title: "Target",
+            value: isHttpUrl(monitorUrl) ? `[${monitorUrl}](${monitorUrl})` : monitorUrl,
+        });
+    }
+    if (heartbeatJSON?.localDateTime) {
+        facts.push({
+            title: "Time",
+            value: `${heartbeatJSON.localDateTime}${heartbeatJSON.timezone ? ` (${heartbeatJSON.timezone})` : ""}`,
+        });
+    }
+
+    if (dashboardUrl) {
+        actions.push({
+            type: "Action.OpenUrl",
+            title: "Visit Uptime Worker",
+            url: dashboardUrl,
+        });
+    }
+    if (isHttpUrl(monitorUrl)) {
+        actions.push({
+            type: "Action.OpenUrl",
+            title: "Visit Monitor URL",
+            url: monitorUrl,
+        });
+    }
+
+    const body = [
+        {
+            type: "Container",
+            verticalContentAlignment: "Center",
+            items: [
+                {
+                    type: "TextBlock",
+                    size: "Medium",
+                    weight: "Bolder",
+                    text: `**${summary}**`,
+                },
+                {
+                    type: "TextBlock",
+                    size: "Small",
+                    weight: "Default",
+                    text: "Uptime Worker Alert",
+                    isSubtle: true,
+                    spacing: "None",
+                },
+            ],
+            style: heartbeatJSON?.status === DOWN ? "attention" : "good",
+        },
+        {
+            type: "FactSet",
+            separator: false,
+            facts,
+        },
+    ];
+
+    if (settings.teamsEnableTags && monitorJSON?.tags?.length > 0) {
+        body.push({
+            type: "TextBlock",
+            size: "Small",
+            text: monitorJSON.tags.map(formatTagForNotification).join(", "),
+            wrap: true,
+        });
+    }
+
+    if (actions.length > 0) {
+        body.push({
+            type: "ActionSet",
+            actions,
+        });
+    }
+
+    return {
+        type: "message",
+        summary,
+        attachments: [
+            {
+                contentType: "application/vnd.microsoft.card.adaptive",
+                contentUrl: "",
+                content: {
+                    type: "AdaptiveCard",
+                    body,
                     $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
                     version: "1.5",
                 },
@@ -2276,8 +2410,10 @@ export async function executeMonitorCheck(env, monitorId) {
     }
     result = await retryPrivatePingThroughTwingate(env, monitor, job, result);
     result = applyTwingateServiceStatus(networkProfile, result);
+    const previousHeartbeat = await getLatestHeartbeatForMonitor(env, monitorId);
     result = await applyMonitorRetryStatus(env, monitor, result);
-    await writeHeartbeat(env, monitorId, result);
+    const heartbeat = await writeHeartbeat(env, monitorId, result);
+    await sendMonitorStatusNotifications(env, monitor, result, previousHeartbeat, heartbeat);
     return result;
 }
 
@@ -2631,6 +2767,14 @@ async function writeHeartbeat(env, monitorId, result) {
     )
         .bind(monitorId, status, result.ping ?? null, result.msg ?? "", responseR2Key)
         .run();
+    return {
+        monitor_id: Number(monitorId),
+        status,
+        ping: result.ping ?? null,
+        msg: result.msg ?? "",
+        response_r2_key: responseR2Key,
+        checked_at: formatSqliteDateTime(new Date()),
+    };
 }
 
 async function applyMonitorRetryStatus(env, monitor, result = {}) {

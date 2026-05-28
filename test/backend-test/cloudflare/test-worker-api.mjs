@@ -1877,11 +1877,13 @@ describe("Cloudflare Worker API", () => {
         assert.strictEqual(readBody.monitor.name, "Example HTTP");
         assert.strictEqual(readBody.monitor.interval, 90);
 
+        const updateQueryStart = env.state.queries.length;
         const updateResponse = await handleApiRequest(
             adminRequest("https://example.com/api/monitors/1", {
                 method: "PUT",
                 body: JSON.stringify({
                     ...readBody.monitor,
+                    notificationIDList: undefined,
                     name: "Renamed HTTP",
                     method: "POST",
                     body: "{\"ok\":true}",
@@ -1894,9 +1896,16 @@ describe("Cloudflare Worker API", () => {
         const updateBody = await updateResponse.json();
         assert.strictEqual(updateBody.ok, true);
         assert.strictEqual(updateBody.msg, "Monitor saved");
-        assert.strictEqual(updateBody.monitor.id, 1);
-        assert.strictEqual(updateBody.monitor.name, "Renamed HTTP");
-        assert.strictEqual(updateBody.monitor.method, "POST");
+        assert.strictEqual(
+            Object.prototype.hasOwnProperty.call(updateBody, "monitor"),
+            false,
+            "Worker monitor updates should acknowledge the save without waiting on full monitor serialization"
+        );
+        assert.doesNotMatch(
+            env.state.queries.slice(updateQueryStart).join("\n"),
+            /FROM heartbeats/,
+            "Worker monitor updates should not re-read heartbeat history before responding"
+        );
         assert.strictEqual(env.state.monitors[0].name, "Renamed HTTP");
         assert.strictEqual(env.state.monitors[0].method, "POST");
 
