@@ -191,6 +191,9 @@ const { resetChrome } = require("./monitor-types/real-browser-monitor-type");
 const { EmbeddedMariaDB } = require("./embedded-mariadb");
 const { SetupDatabase } = require("./setup-database");
 const { chartSocketHandler } = require("./socket-handlers/chart-socket-handler");
+const { userGroupSocketHandler } = require("./socket-handlers/user-group-socket-handler");
+const { checkPermission, getUserPermissions, isAdmin } = require("./util-server");
+const { PERMISSIONS } = require("./permissions");
 
 app.use(express.json());
 
@@ -354,6 +357,10 @@ let needSetup = false;
     const apiRouter = require("./routers/api-router");
     app.use(apiRouter);
 
+    // SAML Router
+    const { samlRouter, samlLoginTokens } = require("./routers/saml-router");
+    app.use("/auth/saml", samlRouter);
+
     // Status Page Router
     const statusPageRouter = require("./routers/status-page-router");
     app.use(statusPageRouter);
@@ -506,6 +513,39 @@ let needSetup = false;
                     msg: "authIncorrectCreds",
                     msgi18n: true,
                 });
+            }
+        });
+
+        socket.on("getSAMLEnabled", async (callback) => {
+            try {
+                const samlSettings = await getSettings("saml");
+                callback({ ok: true, enabled: !!(samlSettings && samlSettings.samlEnabled) });
+            } catch (e) {
+                callback({ ok: false, enabled: false });
+            }
+        });
+
+        socket.on("loginBySAMLToken", async (exchangeToken, callback) => {
+            try {
+                const data = samlLoginTokens.get(exchangeToken);
+                if (!data || data.expires < Date.now()) {
+                    throw new Error("Invalid or expired SAML token.");
+                }
+                samlLoginTokens.delete(exchangeToken);
+
+                const user = await R.findOne("user", " id = ? AND active = 1 ", [data.userID]);
+                if (!user) {
+                    throw new Error("User not found.");
+                }
+
+                await afterLogin(socket, user);
+
+                callback({
+                    ok: true,
+                    token: User.createJWT(user, server.jwtSecret),
+                });
+            } catch (e) {
+                callback({ ok: false, msg: e.message });
             }
         });
 
@@ -699,6 +739,7 @@ let needSetup = false;
                 let user = R.dispense("user");
                 user.username = username;
                 user.password = await passwordHash.generate(password);
+                user.admin = 1;
                 await R.store(user);
 
                 needSetup = false;
@@ -724,7 +765,7 @@ let needSetup = false;
         // Add a new monitor
         socket.on("add", async (monitor, callback) => {
             try {
-                checkLogin(socket);
+                await checkPermission(socket, PERMISSIONS.CREATE_MONITOR);
                 let bean = R.dispense("monitor");
 
                 let notificationIDList = monitor.notificationIDList;
@@ -800,11 +841,11 @@ let needSetup = false;
         socket.on("editMonitor", async (monitor, callback) => {
             try {
                 let removeGroupChildren = false;
-                checkLogin(socket);
+                await checkPermission(socket, PERMISSIONS.UPDATE_MONITOR);
 
                 let bean = await R.findOne("monitor", " id = ? ", [monitor.id]);
 
-                if (bean.user_id !== socket.userID) {
+                if (bean.user_id !== socket.userID && !(await isAdmin(socket.userID))) {
                     throw new Error("Permission denied.");
                 }
 
@@ -1110,7 +1151,7 @@ let needSetup = false;
                     deleteChildren = false;
                 }
 
-                checkLogin(socket);
+                await checkPermission(socket, PERMISSIONS.DELETE_MONITOR);
 
                 const startTime = Date.now();
 
@@ -1212,7 +1253,7 @@ let needSetup = false;
 
         socket.on("addTag", async (tag, callback) => {
             try {
-                checkLogin(socket);
+                await checkPermission(socket, PERMISSIONS.MANAGE_TAGS);
 
                 let bean = R.dispense("tag");
                 bean.name = tag.name;
@@ -1233,7 +1274,7 @@ let needSetup = false;
 
         socket.on("editTag", async (tag, callback) => {
             try {
-                checkLogin(socket);
+                await checkPermission(socket, PERMISSIONS.MANAGE_TAGS);
 
                 let bean = await R.findOne("tag", " id = ? ", [tag.id]);
                 if (bean == null) {
@@ -1264,7 +1305,7 @@ let needSetup = false;
 
         socket.on("deleteTag", async (tagID, callback) => {
             try {
-                checkLogin(socket);
+                await checkPermission(socket, PERMISSIONS.MANAGE_TAGS);
 
                 await R.exec("DELETE FROM tag WHERE id = ? ", [tagID]);
 
@@ -1536,10 +1577,37 @@ let needSetup = false;
             }
         });
 
+        socket.on("getSAMLSettings", async (callback) => {
+            try {
+                checkLogin(socket);
+                const data = await getSettings("saml");
+                callback({ ok: true, data: data || {} });
+            } catch (e) {
+                callback({ ok: false, msg: e.message });
+            }
+        });
+
+        socket.on("setSAMLSettings", async (data, callback) => {
+            try {
+                checkLogin(socket);
+                if (!(await isAdmin(socket.userID))) {
+                    throw new Error("Requires admin privileges.");
+                }
+                await setSettings("saml", data);
+                callback({ ok: true, msg: "Saved." });
+            } catch (e) {
+                callback({ ok: false, msg: e.message });
+            }
+        });
+
         // Add or Edit
         socket.on("addNotification", async (notification, notificationID, callback) => {
             try {
-                checkLogin(socket);
+                if (!notificationID) {
+                    await checkPermission(socket, PERMISSIONS.CREATE_NOTIFICATION);
+                } else {
+                    checkLogin(socket);
+                }
 
                 let notificationBean = await Notification.save(notification, notificationID, socket.userID);
                 await sendNotificationList(socket);
@@ -1718,6 +1786,7 @@ let needSetup = false;
         remoteBrowserSocketHandler(socket);
         generalSocketHandler(socket, server);
         chartSocketHandler(socket);
+        userGroupSocketHandler(socket);
 
         log.debug("server", "added all socket handlers");
 
@@ -1806,6 +1875,15 @@ async function checkOwner(userID, monitorID) {
 async function afterLogin(socket, user) {
     socket.userID = user.id;
     socket.join(user.id);
+
+    const adminStatus = await isAdmin(user.id);
+    const permissions = adminStatus ? Object.values(PERMISSIONS) : await getUserPermissions(user.id);
+
+    socket.emit("userPermissions", {
+        admin: adminStatus,
+        permissions,
+        forcePasswordReset: !!user.force_password_reset,
+    });
 
     let monitorList = await server.sendMonitorList(socket);
     await Promise.allSettled([

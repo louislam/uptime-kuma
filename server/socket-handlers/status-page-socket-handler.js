@@ -1,5 +1,6 @@
 const { R } = require("redbean-node");
-const { checkLogin } = require("../util-server");
+const { checkLogin, checkPermission } = require("../util-server");
+const { PERMISSIONS } = require("../permissions");
 const dayjs = require("dayjs");
 const { log } = require("../../src/util");
 const ImageDataURI = require("../image-data-uri");
@@ -435,7 +436,7 @@ module.exports.statusPageSocketHandler = (socket) => {
     // Add a new status page
     socket.on("addStatusPage", async (title, slug, callback) => {
         try {
-            checkLogin(socket);
+            await checkPermission(socket, PERMISSIONS.CREATE_DASHBOARD);
 
             title = title?.trim();
             slug = slug?.trim();

@@ -84,7 +84,7 @@ export default {
         },
 
         subMenus() {
-            return {
+            const menus = {
                 general: {
                     title: this.$t("General"),
                 },
@@ -122,6 +122,14 @@ export default {
                     title: this.$t("About"),
                 },
             };
+
+            if (this.$root.isAdmin) {
+                menus["users"] = { title: this.$t("Users") };
+                menus["groups"] = { title: this.$t("Groups") };
+                menus["saml"] = { title: this.$t("SAML / SSO") };
+            }
+
+            return menus;
         },
     },
 

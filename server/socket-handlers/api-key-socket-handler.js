@@ -1,4 +1,5 @@
-const { checkLogin } = require("../util-server");
+const { checkLogin, checkPermission } = require("../util-server");
+const { PERMISSIONS } = require("../permissions");
 const { log } = require("../../src/util");
 const { R } = require("redbean-node");
 const { nanoid } = require("nanoid");
@@ -17,7 +18,7 @@ module.exports.apiKeySocketHandler = (socket) => {
     // Add a new api key
     socket.on("addAPIKey", async (key, callback) => {
         try {
-            checkLogin(socket);
+            await checkPermission(socket, PERMISSIONS.CREATE_API_KEY);
 
             let clearKey = nanoid(40);
             let hashedKey = await passwordHash.generate(clearKey);

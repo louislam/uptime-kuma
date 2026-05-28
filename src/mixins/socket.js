@@ -68,6 +68,9 @@ export default {
             },
             faviconUpdateDebounce: null,
             emitter: mitt(),
+            isAdmin: false,
+            userPermissions: [],
+            forcePasswordReset: false,
         };
     },
 
@@ -76,6 +79,10 @@ export default {
     },
 
     methods: {
+        hasPermission(permission) {
+            return this.isAdmin || this.userPermissions.includes(permission);
+        },
+
         /**
          * Initialize connection to socket server
          * @param {boolean} bypass Should the check for if we
@@ -123,6 +130,12 @@ export default {
                 this.info = info;
             });
 
+            socket.on("userPermissions", (data) => {
+                this.isAdmin = data.admin;
+                this.userPermissions = data.permissions || [];
+                this.forcePasswordReset = !!data.forcePasswordReset;
+            });
+
             socket.on("setup", (monitorID, data) => {
                 this.$router.push("/setup");
             });
@@ -135,6 +148,15 @@ export default {
             });
 
             socket.on("loginRequired", () => {
+                // Handle SAML exchange token from redirect
+                const params = new URLSearchParams(window.location.search);
+                const samlToken = params.get("saml_token");
+                if (samlToken) {
+                    window.history.replaceState({}, "", window.location.pathname);
+                    this.loginBySAMLToken(samlToken);
+                    return;
+                }
+
                 let token = this.storage().token;
                 if (token && token !== "autoLogin") {
                     this.loginByToken(token);
@@ -451,6 +473,20 @@ export default {
                 } else {
                     this.loggedIn = true;
                     this.username = this.getJWTPayload()?.username;
+                }
+            });
+        },
+
+        loginBySAMLToken(samlToken) {
+            socket.emit("loginBySAMLToken", samlToken, (res) => {
+                this.allowLoginDialog = true;
+                if (res.ok) {
+                    this.storage().token = res.token;
+                    this.socket.token = res.token;
+                    this.loggedIn = true;
+                    this.username = this.getJWTPayload()?.username;
+                } else {
+                    this.toastError(res.msg || "SAML login failed");
                 }
             });
         },

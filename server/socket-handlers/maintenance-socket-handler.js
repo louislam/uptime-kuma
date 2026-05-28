@@ -1,4 +1,5 @@
-const { checkLogin } = require("../util-server");
+const { checkLogin, checkPermission } = require("../util-server");
+const { PERMISSIONS } = require("../permissions");
 const { log } = require("../../src/util");
 const { R } = require("redbean-node");
 const apicache = require("../modules/apicache");
@@ -15,7 +16,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
     // Add a new maintenance
     socket.on("addMaintenance", async (maintenance, callback) => {
         try {
-            checkLogin(socket);
+            await checkPermission(socket, PERMISSIONS.MANAGE_MAINTENANCE);
 
             log.debug("maintenance", maintenance);
 
@@ -45,7 +46,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
     // Edit a maintenance
     socket.on("editMaintenance", async (maintenance, callback) => {
         try {
-            checkLogin(socket);
+            await checkPermission(socket, PERMISSIONS.MANAGE_MAINTENANCE);
 
             let bean = server.getMaintenance(maintenance.id);
 

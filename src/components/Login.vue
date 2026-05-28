@@ -70,6 +70,13 @@
                     {{ $t(res.msg) }}
                 </div>
             </form>
+
+            <div v-if="samlEnabled" class="mt-3">
+                <hr />
+                <a href="/auth/saml/login" class="w-100 btn btn-outline-secondary">
+                    {{ $t("Login with SSO") }}
+                </a>
+            </div>
         </div>
     </div>
 </template>
@@ -84,6 +91,7 @@ export default {
             token: "",
             res: null,
             tokenRequired: false,
+            samlEnabled: false,
         };
     },
 
@@ -99,6 +107,11 @@ export default {
 
     mounted() {
         document.title += " - Login";
+        this.$root.getSocket().emit("getSAMLEnabled", (res) => {
+            if (res.ok) {
+                this.samlEnabled = res.enabled;
+            }
+        });
     },
 
     unmounted() {

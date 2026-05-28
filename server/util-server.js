@@ -641,6 +641,57 @@ exports.checkLogin = (socket) => {
 };
 
 /**
+ * Check if the user is a super-admin
+ * @param {number} userID User ID
+ * @returns {Promise<boolean>}
+ */
+exports.isAdmin = async (userID) => {
+    const user = await R.findOne("user", " id = ? ", [userID]);
+    return user && !!user.admin;
+};
+
+/**
+ * Check if the user has a specific permission (admins always pass)
+ * @param {object} socket Socket instance
+ * @param {string} permission Permission constant from permissions.js
+ * @returns {Promise<void>}
+ * @throws Permission denied
+ */
+exports.checkPermission = async (socket, permission) => {
+    exports.checkLogin(socket);
+
+    if (await exports.isAdmin(socket.userID)) {
+        return;
+    }
+
+    const row = await R.getRow(
+        `SELECT ugp.id FROM user_group_permission ugp
+         INNER JOIN user_group_member ugm ON ugm.group_id = ugp.group_id
+         WHERE ugm.user_id = ? AND ugp.permission = ?`,
+        [socket.userID, permission]
+    );
+
+    if (!row) {
+        throw new Error("Permission denied.");
+    }
+};
+
+/**
+ * Get all permissions for a user (union of all group permissions)
+ * @param {number} userID User ID
+ * @returns {Promise<string[]>} List of permission strings
+ */
+exports.getUserPermissions = async (userID) => {
+    const rows = await R.getAll(
+        `SELECT DISTINCT ugp.permission FROM user_group_permission ugp
+         INNER JOIN user_group_member ugm ON ugm.group_id = ugp.group_id
+         WHERE ugm.user_id = ?`,
+        [userID]
+    );
+    return rows.map((r) => r.permission);
+};
+
+/**
  * For logged-in users, double-check the password
  * @param {Socket} socket Socket.io instance
  * @param {string} currentPassword Password to validate

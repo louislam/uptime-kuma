@@ -130,6 +130,8 @@
             <Login v-if="!$root.loggedIn && $root.allowLoginDialog" />
         </main>
 
+        <ForcePasswordReset ref="forcePasswordReset" />
+
         <!-- Mobile Only -->
         <div v-if="$root.isMobile" style="width: 100%; height: calc(60px + env(safe-area-inset-bottom))" />
         <nav v-if="$root.isMobile && $root.loggedIn" class="bottom-nav">
@@ -167,6 +169,7 @@
 
 <script>
 import Login from "../components/Login.vue";
+import ForcePasswordReset from "../components/ForcePasswordReset.vue";
 import compareVersions from "compare-versions";
 import { useToast } from "vue-toastification";
 const toast = useToast();
@@ -174,6 +177,7 @@ const toast = useToast();
 export default {
     components: {
         Login,
+        ForcePasswordReset,
     },
 
     data() {
@@ -202,7 +206,13 @@ export default {
         },
     },
 
-    watch: {},
+    watch: {
+        "$root.forcePasswordReset"(val) {
+            if (val) {
+                this.$refs.forcePasswordReset.show();
+            }
+        },
+    },
 
     mounted() {
         this.toastContainer = document.querySelector(".bottom-right.toast-container");
