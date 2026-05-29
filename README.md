@@ -239,22 +239,23 @@ the base64-encoded PEM. The legacy `TWINGATE_SERVICE_KEY_B64` secret is still
 supported and should contain the full base64-encoded Twingate service key JSON.
 When both forms are present, `TWINGATE_SERVICE_KEY_JSON` takes precedence.
 
-The Cloudflare container runner manages the local Twingate userspace HTTP proxy
+The Cloudflare container runner manages the local Twingate tunnel and HTTP proxy
 address internally. Do not configure a proxy URL for Twingate; only the service
-account fields and private-key secret are operator-provided.
-Cloudflare-hosted Twingate checks support private HTTP, keyword, JSON query,
-TCP port, and WebSocket reachability checks through the userspace proxy.
+account fields and private-key secret are operator-provided. The checked-in
+Cloudflare configuration starts Twingate with `TWINGATE_TUN=on` so Twingate
+Ping monitors run real ICMP through the tunnel. The same runner still exposes
+the local HTTP proxy for private HTTP, keyword, JSON query, TCP port, and
+WebSocket reachability checks.
 When Twingate is configured, the runner keeps the Cloudflare container alive
 after idle activity expiry and supervises `twingated` inside the container.
 Unexpected non-authentication exits are restarted after `TWINGATE_RESTART_DELAY_MS`
 (`1000` by default) so deploy rollovers or clean client exits do not leave the
 service stuck in a configured-but-not-running state.
-The default Cloudflare container setting is `TWINGATE_TUN=off` because the
-userspace HTTP proxy does not require container TUN device capabilities. In
-that mode, Twingate-routed ping monitors fail closed because the userspace
-proxy cannot verify ICMP reachability. Use HTTP, keyword, JSON query, TCP port,
-or WebSocket monitors for userspace private reachability checks. True ICMP ping
-requires a TUN route.
+If your container runtime cannot provide `/dev/net/tun` and the network
+administration capability needed by the Linux Twingate client, set
+`TWINGATE_TUN=off` as a dashboard variable for proxy-only userspace mode. In
+that mode, Twingate-routed Ping monitors can only use the configured TCP
+fallback probes and cannot prove true ICMP reachability.
 
 If you use Cloudflare Access as the initial admin gate, configure
 `CF_ACCESS_TEAM_DOMAIN` and `CF_ACCESS_AUD` as dashboard variables for the

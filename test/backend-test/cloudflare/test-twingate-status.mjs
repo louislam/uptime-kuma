@@ -2,10 +2,12 @@ import { describe, test } from "node:test";
 import assert from "node:assert";
 
 import {
+    DEFAULT_TWINGATE_TUN_MODE,
     buildStartingTwingateStatus,
     buildUnavailableTwingateStatus,
     isTransientContainerStartupError,
     resolveTwingateStatusTimeoutMs,
+    resolveTwingateTunMode,
     sanitizeRunnerStatus,
 } from "../../../cloudflare/worker/twingate-status.mjs";
 
@@ -43,6 +45,13 @@ describe("Twingate Worker status helpers", () => {
             tunMode: "off",
             lastError: "Twingate runner container is starting or provisioning. Refresh in a few seconds.",
         });
+    });
+
+    test("defaults Twingate status helpers to TUN mode for ICMP-capable private checks", () => {
+        assert.strictEqual(DEFAULT_TWINGATE_TUN_MODE, "on");
+        assert.strictEqual(resolveTwingateTunMode({}), "on");
+        assert.strictEqual(resolveTwingateTunMode({ TWINGATE_TUN: "off" }), "off");
+        assert.strictEqual(resolveTwingateTunMode({ TWINGATE_TUN: "ON" }), "on");
     });
 
     test("builds unavailable status for non-transient runner failures", () => {

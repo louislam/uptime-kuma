@@ -13,6 +13,7 @@ import {
     buildUnavailableTwingateStatus,
     hasTwingateServiceKeyInput,
     isTransientContainerStartupError,
+    resolveTwingateTunMode,
     resolveTwingateStatusTimeoutMs,
 } from "./twingate-status.mjs";
 
@@ -43,7 +44,7 @@ export class MonitorRunner extends Container {
             PORT: "8788",
             TWINGATE_READY_TIMEOUT_MS: "60000",
             TWINGATE_RESTART_DELAY_MS: "1000",
-            TWINGATE_TUN: "off",
+            TWINGATE_TUN: resolveTwingateTunMode(env),
         };
 
         copyOptionalEnv(this.envVars, env, [

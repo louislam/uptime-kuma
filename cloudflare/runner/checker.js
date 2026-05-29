@@ -33,6 +33,8 @@ async function runCheck(job) {
     const options = {
         lookup: typeof job.lookup === "function" ? job.lookup : dns.lookup,
         allowPrivateResolvedForTest: job.allowPrivateResolvedForTest === true,
+        execFile: typeof job.execFile === "function" ? job.execFile : execFileAsync,
+        now: typeof job.now === "function" ? job.now : Date.now,
     };
 
     try {
@@ -54,7 +56,7 @@ async function runCheck(job) {
         }
 
         if (monitor.type === "ping") {
-            return await runPingCheck(monitor, start, execFileAsync, Date.now, networkProfile, options);
+            return await runPingCheck(monitor, start, options.execFile, options.now, networkProfile, options);
         }
 
         if (monitor.type === "websocket-upgrade") {

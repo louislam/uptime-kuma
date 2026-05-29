@@ -2,7 +2,7 @@ const SYSTEM_TWINGATE_PROXY_URL = "http://127.0.0.1:9999";
 const DEFAULT_TWINGATE_STATUS_REQUEST_TIMEOUT_MS = 10000;
 const MIN_TWINGATE_STATUS_REQUEST_TIMEOUT_MS = 1000;
 const MAX_TWINGATE_STATUS_REQUEST_TIMEOUT_MS = 30000;
-const DEFAULT_TWINGATE_TUN_MODE = "off";
+const DEFAULT_TWINGATE_TUN_MODE = "on";
 const TWINGATE_CONTAINER_STARTING_MESSAGE =
     "Twingate runner container is starting or provisioning. Refresh in a few seconds.";
 const TWINGATE_ENV_INPUTS = [
@@ -69,6 +69,11 @@ function resolveTwingateStatusTimeoutMs(env = {}) {
     );
 }
 
+/**
+ * Resolve whether the Twingate client should start with kernel TUN routing.
+ * @param {object} env Worker environment bindings.
+ * @returns {"on"|"off"} Normalized Twingate TUN mode.
+ */
 function resolveTwingateTunMode(env = {}) {
     return String(env?.TWINGATE_TUN || DEFAULT_TWINGATE_TUN_MODE).toLowerCase() === "on" ? "on" : "off";
 }
@@ -129,6 +134,7 @@ export {
     buildUnavailableTwingateStatus,
     hasTwingateServiceKeyInput,
     isTransientContainerStartupError,
+    resolveTwingateTunMode,
     resolveTwingateStatusTimeoutMs,
     sanitizeRunnerStatus,
 };

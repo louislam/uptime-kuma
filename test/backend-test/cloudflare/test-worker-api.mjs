@@ -204,7 +204,7 @@ describe("Cloudflare Worker API", () => {
         ]) {
             assert.strictEqual(name in wranglerConfig.vars, false, `${name} should not be committed in wrangler vars`);
         }
-        assert.strictEqual(wranglerConfig.vars.TWINGATE_TUN, "off");
+        assert.strictEqual(wranglerConfig.vars.TWINGATE_TUN, "on");
         assert.strictEqual("TWINGATE_PING_FALLBACK_PORTS" in wranglerConfig.vars, false);
     });
 
@@ -227,7 +227,7 @@ describe("Cloudflare Worker API", () => {
         assert.match(dockerfile, /COPY checker\.js server\.js twingate-lifecycle\.js twingate-service-key\.js \.\//);
     });
 
-    test("runner container receives Twingate userspace defaults and readiness timeout env", async () => {
+    test("runner container receives Twingate TUN defaults and readiness timeout env", async () => {
         const workerPath = path.join(__dirname, "../../../cloudflare/worker/index.mjs");
         const workerSource = fs.readFileSync(workerPath, "utf8");
         const optionalEnvBlock = workerSource.slice(
@@ -238,7 +238,7 @@ describe("Cloudflare Worker API", () => {
         assert.match(workerSource, /APP_VERSION:\s*resolveAppVersion\(env\)/);
         assert.match(workerSource, /TWINGATE_READY_TIMEOUT_MS:\s*"60000"/);
         assert.match(workerSource, /TWINGATE_RESTART_DELAY_MS:\s*"1000"/);
-        assert.match(workerSource, /TWINGATE_TUN:\s*"off"/);
+        assert.match(workerSource, /TWINGATE_TUN:\s*resolveTwingateTunMode\(env\)/);
         assert.match(workerSource, /"TWINGATE_READY_TIMEOUT_MS"/);
         assert.match(workerSource, /"TWINGATE_RESTART_DELAY_MS"/);
         assert.doesNotMatch(workerSource, /TWINGATE_PING_FALLBACK_PORTS/);

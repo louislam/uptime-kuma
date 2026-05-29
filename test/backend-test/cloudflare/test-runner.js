@@ -384,6 +384,51 @@ describe("Cloudflare monitor runner", () => {
         );
     });
 
+    test("Twingate Ping checks in TUN mode run real ICMP instead of proxy fallback", async () => {
+        const { runCheck } = require("../../../cloudflare/runner/checker");
+        let proxyRequests = 0;
+        const proxy = await listen(
+            http.createServer().on("connect", (_req, socket) => {
+                proxyRequests++;
+                socket.write("HTTP/1.1 403 Forbidden\r\n\r\n");
+                socket.end();
+            })
+        );
+
+        const result = await runCheck({
+            monitor: {
+                id: 8,
+                type: "ping",
+                hostname: "camera.internal",
+                timeout: 5,
+                ping_count: 1,
+                ping_per_request_timeout: 2,
+                packetSize: 56,
+                ping_numeric: true,
+            },
+            networkProfile: { slug: "twingate", type: "twingate" },
+            twingateProxyUrl: `http://127.0.0.1:${proxy.port}`,
+            twingateTunMode: "on",
+            execFile: async (command, args) => {
+                assert.strictEqual(command, "ping");
+                assert.deepStrictEqual(args, ["-c", "1", "-W", "2", "-w", "5", "-s", "56", "-n", "camera.internal"]);
+                return {
+                    stdout:
+                        "PING camera.internal (10.0.0.42) 56(84) bytes of data.\n" +
+                        "64 bytes from 10.0.0.42: icmp_seq=1 ttl=56 time=8.4 ms\n\n" +
+                        "--- camera.internal ping statistics ---\n" +
+                        "1 packets transmitted, 1 received, 0% packet loss, time 0ms\n" +
+                        "rtt min/avg/max/mdev = 8.400/8.400/8.400/0.000 ms\n",
+                };
+            },
+        });
+
+        assert.strictEqual(result.status, UP);
+        assert.strictEqual(result.ping, 8.4);
+        assert.strictEqual(result.msg, "8.4 ms");
+        assert.strictEqual(proxyRequests, 0);
+    });
+
     test("Twingate Ping userspace fallback requires target liveness after CONNECT", async () => {
         const { runTwingateUserspacePingCheck } = require("../../../cloudflare/runner/checker");
 
