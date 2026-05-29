@@ -44,7 +44,6 @@ export class MonitorRunner extends Container {
             TWINGATE_READY_TIMEOUT_MS: "60000",
             TWINGATE_RESTART_DELAY_MS: "1000",
             TWINGATE_TUN: "off",
-            TWINGATE_PING_FALLBACK_PORTS: "80,443",
         };
 
         copyOptionalEnv(this.envVars, env, [
@@ -61,7 +60,6 @@ export class MonitorRunner extends Container {
             "TWINGATE_READY_TIMEOUT_MS",
             "TWINGATE_RESTART_DELAY_MS",
             "TWINGATE_STATUS_REQUEST_TIMEOUT_MS",
-            "TWINGATE_PING_FALLBACK_PORTS",
         ]);
     }
 

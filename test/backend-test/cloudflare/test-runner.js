@@ -326,6 +326,28 @@ describe("Cloudflare monitor runner", () => {
         assert.deepStrictEqual(connectTargets.sort(), ["camera.internal:80", "camera.internal:8080"]);
     });
 
+    test("Twingate Ping checks fail closed in userspace mode without explicit fallback ports", async () => {
+        const { runCheck } = require("../../../cloudflare/runner/checker");
+
+        const result = await runCheck({
+            monitor: {
+                id: 7,
+                type: "ping",
+                hostname: "wgs-node-006-test.wgs",
+                timeout: 5,
+            },
+            networkProfile: { slug: "twingate", type: "twingate" },
+            twingateProxyUrl: "http://127.0.0.1:9",
+            twingateTunMode: "off",
+        });
+
+        assert.strictEqual(result.status, DOWN);
+        assert.strictEqual(
+            result.msg,
+            "Twingate userspace mode cannot run ICMP ping. Enable TUN mode or use a TCP Port monitor."
+        );
+    });
+
     test("Twingate Ping userspace fallback requires target liveness after CONNECT", async () => {
         const { runTwingateUserspacePingCheck } = require("../../../cloudflare/runner/checker");
 

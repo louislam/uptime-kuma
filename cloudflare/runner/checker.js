@@ -18,7 +18,7 @@ const DEFAULT_PING_PACKET_SIZE = 56;
 const DEFAULT_PING_PER_REQUEST_TIMEOUT_SECONDS = 2;
 const DEFAULT_RESPONSE_MAX_BYTES = 1024;
 const MAX_RESPONSE_MAX_BYTES = 64 * 1024;
-const DEFAULT_TWINGATE_PING_FALLBACK_PORTS = [80, 443];
+const DEFAULT_TWINGATE_PING_FALLBACK_PORTS = [];
 const MAX_TWINGATE_PING_FALLBACK_PORTS = 10;
 const SYSTEM_TWINGATE_PROXY_URL = "http://127.0.0.1:9999";
 const PRIVATE_WORKER_HOST_ERROR =
@@ -211,7 +211,7 @@ async function runTwingateUserspacePingCheck(monitor, twingateProxyUrl, start, f
 
     const ports = normalizePortList(fallbackPorts);
     if (ports.length === 0) {
-        throw new Error("Twingate userspace ping requires at least one TCP fallback port");
+        throw new Error("Twingate userspace mode cannot run ICMP ping. Enable TUN mode or use a TCP Port monitor.");
     }
 
     const timeoutSeconds = resolveTwingatePingFallbackTimeoutSeconds(monitor);
@@ -634,8 +634,7 @@ function resolveTwingatePingFallbackPorts(job = {}, monitor = job.monitor || {})
     const explicitPorts =
         monitor.twingatePingFallbackPorts ??
         monitor.twingatePingPorts ??
-        job.twingatePingFallbackPorts ??
-        process.env.TWINGATE_PING_FALLBACK_PORTS;
+        job.twingatePingFallbackPorts;
     if (explicitPorts === undefined || explicitPorts === null || explicitPorts === "") {
         return DEFAULT_TWINGATE_PING_FALLBACK_PORTS;
     }

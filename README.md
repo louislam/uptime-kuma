@@ -251,10 +251,9 @@ Unexpected non-authentication exits are restarted after `TWINGATE_RESTART_DELAY_
 service stuck in a configured-but-not-running state.
 The default Cloudflare container setting is `TWINGATE_TUN=off` because the
 userspace HTTP proxy does not require container TUN device capabilities. In
-that mode, Twingate-routed ping monitors use TCP fallback probes through the
-proxy instead of ICMP. The default fallback ports are `80,443`; set
-`TWINGATE_PING_FALLBACK_PORTS` to a comma-separated port list if private
-endpoints should be probed on different TCP ports. True ICMP ping still
+that mode, Twingate-routed ping monitors fail closed because the userspace
+proxy cannot verify ICMP reachability. Use HTTP, keyword, JSON query, TCP port,
+or WebSocket monitors for userspace private reachability checks. True ICMP ping
 requires a TUN route.
 
 If you use Cloudflare Access as the initial admin gate, configure
