@@ -4054,6 +4054,9 @@ export async function getDeployMonitorPauseState(env, now = new Date()) {
             versionId,
             pauseUntil,
         });
+        if (await shouldResumeDeployMonitorPause(env)) {
+            return await endDeployMonitorPause(env, versionId, now);
+        }
         return {
             paused: true,
             versionId,
@@ -4062,6 +4065,9 @@ export async function getDeployMonitorPauseState(env, now = new Date()) {
     }
 
     if (storedPauseUntil && storedPauseUntil.getTime() > now.getTime()) {
+        if (await shouldResumeDeployMonitorPause(env)) {
+            return await endDeployMonitorPause(env, versionId, now);
+        }
         return {
             paused: true,
             versionId,
@@ -4073,6 +4079,28 @@ export async function getDeployMonitorPauseState(env, now = new Date()) {
         paused: false,
         versionId,
         pauseUntil: storedPauseUntil ? storedPauseUntil.toISOString() : null,
+    };
+}
+
+async function shouldResumeDeployMonitorPause(env) {
+    try {
+        const status = await fetchRunnerStatus(env);
+        return Boolean(status.configured && status.running);
+    } catch (_) {
+        return false;
+    }
+}
+
+async function endDeployMonitorPause(env, versionId, now) {
+    const pauseUntil = now.toISOString();
+    await setStoredSetting(env, DEPLOY_MONITOR_PAUSE_SETTING, {
+        versionId,
+        pauseUntil,
+    });
+    return {
+        paused: false,
+        versionId,
+        pauseUntil,
     };
 }
 

@@ -4842,6 +4842,43 @@ describe("Cloudflare Worker API", () => {
         assert.match(env.state.settings.deployMonitorPause.pauseUntil, /^\d{4}-\d{2}-\d{2}T/);
     });
 
+    test("new Worker versions resume scheduled checks immediately when Twingate is already running", async () => {
+        const { enqueueDueMonitors } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                {
+                    id: 7,
+                    name: "Marketing Dash",
+                    type: "http",
+                    url: "https://marketing.wgsglobal.app/",
+                    active: 1,
+                },
+            ],
+            runnerStatus: {
+                configured: true,
+                starting: false,
+                running: true,
+                proxyUrl: "http://127.0.0.1:9999",
+                tunMode: "off",
+                lastError: null,
+            },
+            workerVersionId: "version-a",
+            deployMonitorPauseSeconds: "120",
+        });
+
+        const result = await enqueueDueMonitors(env);
+
+        assert.strictEqual(result.paused, false);
+        assert.deepStrictEqual(env.MONITOR_QUEUE.sent, [
+            {
+                monitorId: 7,
+                queuedAt: env.MONITOR_QUEUE.sent[0].queuedAt,
+            },
+        ]);
+        assert.strictEqual(env.state.settings.deployMonitorPause.versionId, "version-a");
+        assert.ok(Date.parse(env.state.settings.deployMonitorPause.pauseUntil) <= Date.now());
+    });
+
     test("existing Worker versions keep scheduled checks paused until pauseUntil", async () => {
         const { enqueueDueMonitors } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({
@@ -4868,6 +4905,49 @@ describe("Cloudflare Worker API", () => {
 
         assert.strictEqual(result.paused, true);
         assert.strictEqual(env.MONITOR_QUEUE.sent.length, 0);
+    });
+
+    test("existing Worker versions resume scheduled checks once Twingate is running", async () => {
+        const { enqueueDueMonitors } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                {
+                    id: 7,
+                    name: "Marketing Dash",
+                    type: "http",
+                    url: "https://marketing.wgsglobal.app/",
+                    active: 1,
+                },
+            ],
+            settings: {
+                deployMonitorPause: {
+                    versionId: "version-a",
+                    pauseUntil: new Date(Date.now() + 60_000).toISOString(),
+                },
+            },
+            runnerStatus: {
+                configured: true,
+                starting: false,
+                running: true,
+                proxyUrl: "http://127.0.0.1:9999",
+                tunMode: "off",
+                lastError: null,
+            },
+            workerVersionId: "version-a",
+            deployMonitorPauseSeconds: "120",
+        });
+
+        const result = await enqueueDueMonitors(env);
+
+        assert.strictEqual(result.paused, false);
+        assert.deepStrictEqual(env.MONITOR_QUEUE.sent, [
+            {
+                monitorId: 7,
+                queuedAt: env.MONITOR_QUEUE.sent[0].queuedAt,
+            },
+        ]);
+        assert.strictEqual(env.state.settings.deployMonitorPause.versionId, "version-a");
+        assert.ok(Date.parse(env.state.settings.deployMonitorPause.pauseUntil) <= Date.now());
     });
 
     test("existing Worker versions enqueue scheduled checks after pauseUntil expires", async () => {
