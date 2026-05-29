@@ -326,7 +326,42 @@ describe("Cloudflare monitor runner", () => {
         assert.deepStrictEqual(connectTargets.sort(), ["camera.internal:80", "camera.internal:8080"]);
     });
 
-    test("Twingate Ping checks fail closed in userspace mode without explicit fallback ports", async () => {
+    test("Twingate Ping checks in userspace mode use default TCP fallback ports", async () => {
+        const { DEFAULT_TWINGATE_PING_FALLBACK_PORTS, runCheck } = require("../../../cloudflare/runner/checker");
+        assert.deepStrictEqual(DEFAULT_TWINGATE_PING_FALLBACK_PORTS, [80, 443, 9100]);
+
+        const connectTargets = [];
+        const proxy = await listen(
+            http.createServer().on("connect", (req, socket) => {
+                connectTargets.push(req.url);
+                if (req.url === "printer.internal:9100") {
+                    socket.write("HTTP/1.1 200 Connection Established\r\n\r\n");
+                    socket.end();
+                } else {
+                    socket.write("HTTP/1.1 403 Forbidden\r\n\r\n");
+                    socket.end();
+                }
+            })
+        );
+
+        const result = await runCheck({
+            monitor: {
+                id: 7,
+                type: "ping",
+                hostname: "printer.internal",
+                timeout: 5,
+            },
+            networkProfile: { slug: "twingate", type: "twingate" },
+            twingateProxyUrl: `http://127.0.0.1:${proxy.port}`,
+            twingateTunMode: "off",
+        });
+
+        assert.strictEqual(result.status, UP);
+        assert.match(result.msg, /^\d+ ms \(TCP 9100 via Twingate\)$/);
+        assert.ok(connectTargets.includes("printer.internal:9100"));
+    });
+
+    test("Twingate Ping checks fail closed in userspace mode when fallback ports are disabled", async () => {
         const { runCheck } = require("../../../cloudflare/runner/checker");
 
         const result = await runCheck({
@@ -335,6 +370,7 @@ describe("Cloudflare monitor runner", () => {
                 type: "ping",
                 hostname: "wgs-node-006-test.wgs",
                 timeout: 5,
+                twingatePingFallbackPorts: [],
             },
             networkProfile: { slug: "twingate", type: "twingate" },
             twingateProxyUrl: "http://127.0.0.1:9",

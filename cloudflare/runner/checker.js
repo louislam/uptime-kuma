@@ -18,7 +18,7 @@ const DEFAULT_PING_PACKET_SIZE = 56;
 const DEFAULT_PING_PER_REQUEST_TIMEOUT_SECONDS = 2;
 const DEFAULT_RESPONSE_MAX_BYTES = 1024;
 const MAX_RESPONSE_MAX_BYTES = 64 * 1024;
-const DEFAULT_TWINGATE_PING_FALLBACK_PORTS = [];
+const DEFAULT_TWINGATE_PING_FALLBACK_PORTS = [80, 443, 9100];
 const MAX_TWINGATE_PING_FALLBACK_PORTS = 10;
 const SYSTEM_TWINGATE_PROXY_URL = "http://127.0.0.1:9999";
 const PRIVATE_WORKER_HOST_ERROR =
@@ -636,7 +636,7 @@ function resolveTwingatePingFallbackPorts(job = {}, monitor = job.monitor || {})
         monitor.twingatePingPorts ??
         job.twingatePingFallbackPorts;
     if (explicitPorts === undefined || explicitPorts === null || explicitPorts === "") {
-        return DEFAULT_TWINGATE_PING_FALLBACK_PORTS;
+        return [...DEFAULT_TWINGATE_PING_FALLBACK_PORTS];
     }
     return normalizePortList(explicitPorts);
 }
