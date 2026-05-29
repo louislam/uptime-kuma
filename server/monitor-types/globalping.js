@@ -501,6 +501,7 @@ class GlobalpingMonitorType extends MonitorType {
         if (monitor.expiryNotification) {
             await checkCertExpiryNotifications(monitor, certResult);
         }
+
     }
 
     /**
