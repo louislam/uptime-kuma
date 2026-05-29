@@ -464,6 +464,13 @@ let needSetup = false;
             let user = await login(data.username, data.password);
 
             if (user) {
+                // Silently upgrade legacy SHA1 hashes to bcrypt on successful login
+                if (passwordHash.needRehash(user.password)) {
+                    user.password = await passwordHash.generate(data.password);
+                    await R.exec("UPDATE `user` SET password = ? WHERE id = ?", [user.password, user.id]);
+                    log.info("auth", `Rehashed legacy password for user ${data.username}`);
+                }
+
                 if (user.twofa_status === 0) {
                     await afterLogin(socket, user);
 

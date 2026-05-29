@@ -166,6 +166,7 @@ export default {
                 tags: null,
             },
             collapseKey: 0,
+            collectionMap: {},
         };
     },
     computed: {
@@ -276,6 +277,13 @@ export default {
         },
     },
     watch: {
+        "$root.monitorList"() {
+            this.$root.getSocket().emit("getMonitorCollectionMap", (res) => {
+                if (res.ok) {
+                    this.collectionMap = res.map;
+                }
+            });
+        },
         searchText() {
             for (let monitor of this.sortedMonitorList) {
                 if (!this.selectedMonitors[monitor.id]) {
@@ -312,6 +320,11 @@ export default {
     },
     mounted() {
         window.addEventListener("scroll", this.onScroll);
+        this.$root.getSocket().emit("getMonitorCollectionMap", (res) => {
+            if (res.ok) {
+                this.collectionMap = res.map;
+            }
+        });
     },
     beforeUnmount() {
         window.removeEventListener("scroll", this.onScroll);
@@ -540,17 +553,19 @@ export default {
             }
 
             // filter by search text
-            // finds monitor name, tag name or tag value
+            // finds monitor name, tag name/value, or collection name
             let searchTextMatch = true;
             if (this.searchText !== "") {
                 const loweredSearchText = this.searchText.toLowerCase();
+                const collectionNames = this.collectionMap[monitor.id] || [];
                 searchTextMatch =
                     monitor.name.toLowerCase().includes(loweredSearchText) ||
                     monitor.tags.find(
                         (tag) =>
                             tag.name.toLowerCase().includes(loweredSearchText) ||
                             tag.value?.toLowerCase().includes(loweredSearchText)
-                    );
+                    ) ||
+                    collectionNames.some((name) => name.toLowerCase().includes(loweredSearchText));
             }
 
             // filter by status

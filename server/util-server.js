@@ -703,13 +703,21 @@ exports.getAccessibleMonitorIDs = async (userID) => {
         const rows = await R.getAll("SELECT id FROM monitor", []);
         return rows.map((r) => r.id);
     }
+    // Non-admins see:
+    // 1. Monitors in collections owned by their user groups
+    // 2. Monitors they created that haven't been assigned to any collection yet
+    //    (handles the window between creation and collection assignment)
     const rows = await R.getAll(
         `SELECT DISTINCT m.id FROM monitor m
          INNER JOIN monitor_collection_monitor cm ON cm.monitor_id = m.id
          INNER JOIN monitor_collection_user_group cug ON cug.collection_id = cm.collection_id
          INNER JOIN user_group_member ugm ON ugm.group_id = cug.group_id
-         WHERE ugm.user_id = ?`,
-        [userID]
+         WHERE ugm.user_id = ?
+         UNION
+         SELECT id FROM monitor
+         WHERE user_id = ?
+           AND id NOT IN (SELECT monitor_id FROM monitor_collection_monitor)`,
+        [userID, userID]
     );
     return rows.map((r) => r.id);
 };

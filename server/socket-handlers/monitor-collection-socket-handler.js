@@ -53,6 +53,41 @@ async function notifyAffectedUsers(io, collectionID) {
 
 module.exports.monitorCollectionSocketHandler = (socket, io) => {
 
+    socket.on("getMonitorCollectionMap", async (callback) => {
+        try {
+            checkLogin(socket);
+            // Returns { monitorID: [collectionName, ...] } for all monitors the user can see
+            let rows;
+            if (await isAdmin(socket.userID)) {
+                rows = await R.getAll(
+                    `SELECT cm.monitor_id, c.name
+                     FROM monitor_collection_monitor cm
+                     INNER JOIN monitor_collection c ON c.id = cm.collection_id`
+                );
+            } else {
+                rows = await R.getAll(
+                    `SELECT cm.monitor_id, c.name
+                     FROM monitor_collection_monitor cm
+                     INNER JOIN monitor_collection c ON c.id = cm.collection_id
+                     INNER JOIN monitor_collection_user_group cug ON cug.collection_id = c.id
+                     INNER JOIN user_group_member ugm ON ugm.group_id = cug.group_id
+                     WHERE ugm.user_id = ?`,
+                    [socket.userID]
+                );
+            }
+            const map = {};
+            for (const { monitor_id, name } of rows) {
+                if (!map[monitor_id]) {
+                    map[monitor_id] = [];
+                }
+                map[monitor_id].push(name);
+            }
+            callback({ ok: true, map });
+        } catch (e) {
+            callback({ ok: false, msg: e.message });
+        }
+    });
+
     socket.on("getMonitorCollections", async (callback) => {
         try {
             checkLogin(socket);
@@ -233,7 +268,9 @@ module.exports.monitorCollectionSocketHandler = (socket, io) => {
     socket.on("getMonitorCollectionMembership", async (monitorID, callback) => {
         try {
             checkLogin(socket);
-            if (!(await canAccessMonitor(socket.userID, monitorID))) {
+            const monitor = await R.findOne("monitor", " id = ? ", [monitorID]);
+            const isCreator = monitor && monitor.user_id === socket.userID;
+            if (!isCreator && !(await canAccessMonitor(socket.userID, monitorID))) {
                 throw new Error("You do not have access to this monitor.");
             }
             const rows = await R.getAll(
@@ -249,7 +286,10 @@ module.exports.monitorCollectionSocketHandler = (socket, io) => {
     socket.on("setMonitorCollections", async ({ monitorID, collectionIDs }, callback) => {
         try {
             checkLogin(socket);
-            if (!(await canAccessMonitor(socket.userID, monitorID))) {
+            // Allow the creator to assign collections even before the monitor is in any collection
+            const monitor = await R.findOne("monitor", " id = ? ", [monitorID]);
+            const isCreator = monitor && monitor.user_id === socket.userID;
+            if (!isCreator && !(await canAccessMonitor(socket.userID, monitorID))) {
                 throw new Error("You do not have access to this monitor.");
             }
             // Verify manage permission on each target collection
@@ -263,10 +303,7 @@ module.exports.monitorCollectionSocketHandler = (socket, io) => {
                 const rows = collectionIDs.map((cid) => ({ collection_id: cid, monitor_id: monitorID }));
                 await R.knex("monitor_collection_monitor").insert(rows).onConflict(["collection_id", "monitor_id"]).ignore();
             }
-            // Notify all users whose access may have changed across all affected collections
-            const allCollectionIDs = collectionIDs || [];
-            const io = io;
-            for (const cid of allCollectionIDs) {
+            for (const cid of (collectionIDs || [])) {
                 await notifyAffectedUsers(io, cid);
             }
             callback({ ok: true });

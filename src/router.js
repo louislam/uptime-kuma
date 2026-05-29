@@ -33,8 +33,7 @@ import About from "./components/settings/About.vue";
 import RemoteBrowsers from "./components/settings/RemoteBrowsers.vue";
 const Users = () => import("./components/settings/Users.vue");
 const Groups = () => import("./components/settings/Groups.vue");
-const SAML = () => import("./components/settings/SAML.vue");
-const OIDC = () => import("./components/settings/OIDC.vue");
+const SSO = () => import("./components/settings/SSO.vue");
 const MonitorCollections = () => import("./components/settings/MonitorCollections.vue");
 
 const routes = [
@@ -149,12 +148,8 @@ const routes = [
                                 component: Groups,
                             },
                             {
-                                path: "saml",
-                                component: SAML,
-                            },
-                            {
-                                path: "oidc",
-                                component: OIDC,
+                                path: "sso",
+                                component: SSO,
                             },
                             {
                                 path: "monitor-collections",

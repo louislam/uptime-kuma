@@ -2055,6 +2055,20 @@
                             <div class="my-3">
                                 <tags-manager ref="tagsManager" :pre-selected-tags="monitor.tags"></tags-manager>
                             </div>
+
+                            <div v-if="allCollections.length > 0" class="my-3">
+                                <label class="form-label">{{ $t("Collections") }}</label>
+                                <vue-multiselect
+                                    v-model="monitorCollections"
+                                    :options="allCollections"
+                                    :multiple="true"
+                                    track-by="id"
+                                    label="name"
+                                    :placeholder="$t('Select collections...')"
+                                    :close-on-select="false"
+                                ></vue-multiselect>
+                                <div class="form-text">{{ $t("collectionsHelpText") }}</div>
+                            </div>
                         </div>
 
                         <div class="col-md-6">
@@ -3216,6 +3230,9 @@ export default {
                 notificationIDList: {},
                 // Do not add default value here, please check init() method
             },
+            monitorCollections: [],
+            allCollections: [],
+            pendingCollectionIDs: null,
             domainExpiryUnsupportedReason: null,
             checkDomainDebounce: null,
             acceptedStatusCodeOptions: [],
@@ -3778,6 +3795,22 @@ message HealthCheckResponse {
     mounted() {
         this.init();
 
+        // Load available collections for the multi-select
+        this.$root.getSocket().emit("getMonitorCollections", (res) => {
+            if (res.ok) {
+                this.allCollections = res.collections.map((c) => ({ id: c.id, name: c.name }));
+
+                if (this.pendingCollectionIDs !== null) {
+                    // Resolve membership IDs that arrived before allCollections was ready
+                    this.monitorCollections = this.allCollections.filter((c) => this.pendingCollectionIDs.includes(c.id));
+                    this.pendingCollectionIDs = null;
+                } else if (this.isAdd && this.allCollections.length === 1) {
+                    // Auto-select the only available collection when creating a new monitor
+                    this.monitorCollections = [this.allCollections[0]];
+                }
+            }
+        });
+
         let acceptedStatusCodeOptions = ["100-199", "200-299", "300-399", "400-499", "500-599"];
 
         let acceptedWebsocketCodeOptions = [];
@@ -3858,6 +3891,19 @@ message HealthCheckResponse {
 
                         this.monitor = res.monitor;
 
+                        if (this.isEdit) {
+                            this.$root.getSocket().emit("getMonitorCollectionMembership", res.monitor.id, (cRes) => {
+                                if (cRes.ok) {
+                                    if (this.allCollections.length > 0) {
+                                        this.monitorCollections = this.allCollections.filter((c) => cRes.collectionIDs.includes(c.id));
+                                    } else {
+                                        // allCollections not ready yet — store IDs and resolve when it arrives
+                                        this.pendingCollectionIDs = cRes.collectionIDs;
+                                    }
+                                }
+                            });
+                        }
+
                         if (this.isClone) {
                             /*
                              * Cloning a monitor will include properties that can not be posted to backend
@@ -3916,6 +3962,15 @@ message HealthCheckResponse {
             }
 
             this.draftGroupName = null;
+        },
+
+        saveCollections(monitorID) {
+            return new Promise((resolve) => {
+                const collectionIDs = this.monitorCollections.map((c) => c.id);
+                this.$root.getSocket().emit("setMonitorCollections", { monitorID, collectionIDs }, () => {
+                    resolve();
+                });
+            });
         },
 
         addKafkaProducerBroker(newBroker) {
@@ -4173,6 +4228,7 @@ message HealthCheckResponse {
                 this.$root.add(this.monitor, async (res) => {
                     if (res.ok) {
                         await this.$refs.tagsManager.submit(res.monitorID);
+                        await this.saveCollections(res.monitorID);
 
                         // Start the new parent monitor after edit is done
                         if (createdNewParent) {
@@ -4188,6 +4244,7 @@ message HealthCheckResponse {
                 });
             } else {
                 await this.$refs.tagsManager.submit(this.monitor.id);
+                await this.saveCollections(this.monitor.id);
 
                 this.$root.getSocket().emit("editMonitor", this.monitor, (res) => {
                     this.processing = false;

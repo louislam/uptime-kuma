@@ -48,7 +48,7 @@ class KumaRateLimiter {
 }
 
 const loginRateLimiter = new KumaRateLimiter({
-    tokensPerInterval: 20,
+    tokensPerInterval: 5,
     interval: "minute",
     fireImmediately: true,
     errorMessage: "Too frequently, try again later.",
