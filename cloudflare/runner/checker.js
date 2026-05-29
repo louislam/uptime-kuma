@@ -183,7 +183,17 @@ async function runPingCheck(
 
     const result = await execFileFn("ping", args);
     const output = String(result.stdout || "");
-    const ping = parseAveragePing(output) ?? now() - start;
+    const receivedPackets = parseReceivedPingPackets(output);
+    if (receivedPackets !== null && receivedPackets <= 0) {
+        throw new Error("Ping failed: 0 packets received");
+    }
+
+    const averagePing = parseAveragePing(output);
+    if (receivedPackets === null && averagePing === null) {
+        throw new Error("Ping failed: no ICMP response found");
+    }
+
+    const ping = averagePing ?? now() - start;
 
     return {
         status: UP,
@@ -193,7 +203,7 @@ async function runPingCheck(
     };
 }
 
-async function runTwingateUserspacePingCheck(monitor, twingateProxyUrl, start, fallbackPorts) {
+async function runTwingateUserspacePingCheck(monitor, twingateProxyUrl, start, fallbackPorts, options = {}) {
     const hostname = monitor.hostname;
     if (!hostname) {
         throw new Error("Ping monitor requires hostname");
@@ -205,10 +215,16 @@ async function runTwingateUserspacePingCheck(monitor, twingateProxyUrl, start, f
     }
 
     const timeoutSeconds = resolveTwingatePingFallbackTimeoutSeconds(monitor);
+    const probeTwingatePingPortFn = typeof options.probeTwingatePingPort === "function"
+        ? options.probeTwingatePingPort
+        : probeTwingatePingPort;
+    const now = typeof options.now === "function" ? options.now : Date.now;
     const attempts = ports.map(async (port) => {
         try {
-            const socket = await connectViaHttpProxy(hostname, port, twingateProxyUrl, timeoutSeconds);
-            socket.end();
+            const probe = await probeTwingatePingPortFn(hostname, port, twingateProxyUrl, timeoutSeconds);
+            if (!probe?.verified) {
+                throw new Error(probe?.reason || "target liveness was not verified");
+            }
             return { port };
         } catch (error) {
             throw new Error(`${port}: ${error.message}`);
@@ -217,7 +233,7 @@ async function runTwingateUserspacePingCheck(monitor, twingateProxyUrl, start, f
 
     try {
         const result = await Promise.any(attempts);
-        const ping = Date.now() - start;
+        const ping = now() - start;
         return {
             status: UP,
             ping,
@@ -227,7 +243,7 @@ async function runTwingateUserspacePingCheck(monitor, twingateProxyUrl, start, f
     } catch (error) {
         const details = summarizeTwingatePingFallbackErrors(error);
         throw new Error(
-            `Twingate userspace ping could not connect to ${hostname} on TCP ports ${ports.join(", ")}${details}`
+            `Twingate userspace ping could not verify ${hostname} on TCP ports ${ports.join(", ")}${details}`
         );
     }
 }
@@ -235,6 +251,11 @@ async function runTwingateUserspacePingCheck(monitor, twingateProxyUrl, start, f
 function parseAveragePing(output) {
     const match = output.match(/=\s*([\d.]+)\/([\d.]+)\/([\d.]+)(?:\/([\d.]+))?\s*ms/i);
     return match ? Number(match[2]) : null;
+}
+
+function parseReceivedPingPackets(output) {
+    const match = output.match(/\b\d+\s+packets?\s+transmitted,\s+(\d+)\s+(?:packets?\s+)?received\b/i);
+    return match ? Number(match[1]) : null;
 }
 
 function requestDirect(targetUrl, monitor, resolvedTarget = null, responseMaxBytes = DEFAULT_RESPONSE_MAX_BYTES) {
@@ -428,6 +449,124 @@ function connectViaHttpProxy(hostname, port, proxyUrlString, timeoutSeconds) {
             clearTimeout(timeout);
             reject(error);
         });
+    });
+}
+
+async function probeTwingatePingPort(hostname, port, proxyUrlString, timeoutSeconds) {
+    const socket = await connectViaHttpProxy(hostname, port, proxyUrlString, timeoutSeconds);
+    if (Number(port) === 80) {
+        return await verifyHttpTunnelResponse(socket, hostname, timeoutSeconds);
+    }
+    if (Number(port) === 443) {
+        return await verifyTlsTunnelHandshake(socket, hostname, timeoutSeconds);
+    }
+
+    socket.end();
+    return { verified: true };
+}
+
+function verifyHttpTunnelResponse(socket, hostname, timeoutSeconds) {
+    return new Promise((resolve) => {
+        let settled = false;
+        let timer;
+        const noResponseReason = "CONNECT accepted but target did not return an HTTP response";
+        const cleanup = () => {
+            clearTimeout(timer);
+            socket.removeListener("data", onData);
+            socket.removeListener("error", onError);
+            socket.removeListener("end", onNoResponse);
+            socket.removeListener("close", onNoResponse);
+        };
+        const finish = (result, destroy = false) => {
+            if (settled) {
+                return;
+            }
+            settled = true;
+            cleanup();
+            if (destroy) {
+                socket.destroy();
+            } else if (!socket.destroyed) {
+                socket.end();
+            }
+            resolve(result);
+        };
+        const onData = () => finish({ verified: true });
+        const onError = (error) => finish({
+            verified: false,
+            reason: `CONNECT accepted but target stream failed: ${error.message}`,
+        }, true);
+        const onNoResponse = () => finish({ verified: false, reason: noResponseReason });
+
+        socket.once("data", onData);
+        socket.once("error", onError);
+        socket.once("end", onNoResponse);
+        socket.once("close", onNoResponse);
+        timer = setTimeout(() => finish({ verified: false, reason: noResponseReason }, true), getTimeoutMs(timeoutSeconds));
+
+        try {
+            socket.write(`HEAD / HTTP/1.1\r\nHost: ${hostname}\r\nConnection: close\r\n\r\n`);
+        } catch (error) {
+            finish({
+                verified: false,
+                reason: `CONNECT accepted but HTTP probe failed: ${error.message}`,
+            }, true);
+        }
+    });
+}
+
+function verifyTlsTunnelHandshake(socket, hostname, timeoutSeconds) {
+    return new Promise((resolve) => {
+        let tlsSocket;
+        let settled = false;
+        let timer;
+        const handshakeReason = "CONNECT accepted but target did not complete TLS handshake";
+        const cleanup = () => {
+            clearTimeout(timer);
+            if (!tlsSocket) {
+                return;
+            }
+            tlsSocket.removeListener("error", onError);
+            tlsSocket.removeListener("end", onNoHandshake);
+            tlsSocket.removeListener("close", onNoHandshake);
+        };
+        const finish = (result, destroy = false) => {
+            if (settled) {
+                return;
+            }
+            settled = true;
+            cleanup();
+            const activeSocket = tlsSocket || socket;
+            if (destroy) {
+                activeSocket.destroy();
+            } else if (!activeSocket.destroyed) {
+                activeSocket.end();
+            }
+            resolve(result);
+        };
+        const onError = (error) => finish({
+            verified: false,
+            reason: `${handshakeReason}: ${error.message}`,
+        }, true);
+        const onNoHandshake = () => finish({ verified: false, reason: handshakeReason }, true);
+
+        try {
+            tlsSocket = tls.connect({
+                socket,
+                servername: hostname,
+                rejectUnauthorized: false,
+            }, () => finish({ verified: true }));
+        } catch (error) {
+            finish({
+                verified: false,
+                reason: `${handshakeReason}: ${error.message}`,
+            }, true);
+            return;
+        }
+
+        tlsSocket.once("error", onError);
+        tlsSocket.once("end", onNoHandshake);
+        tlsSocket.once("close", onNoHandshake);
+        timer = setTimeout(() => finish({ verified: false, reason: handshakeReason }, true), getTimeoutMs(timeoutSeconds));
     });
 }
 

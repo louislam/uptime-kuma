@@ -295,12 +295,16 @@ describe("Cloudflare monitor runner", () => {
         const proxy = await listen(
             http.createServer().on("connect", (req, socket) => {
                 connectTargets.push(req.url);
-                if (req.url === "camera.internal:443") {
+                if (req.url === "camera.internal:80") {
                     socket.write("HTTP/1.1 200 Connection Established\r\n\r\n");
+                    socket.once("data", () => {
+                        socket.write("HTTP/1.1 204 No Content\r\nContent-Length: 0\r\n\r\n");
+                        socket.end();
+                    });
                 } else {
                     socket.write("HTTP/1.1 403 Forbidden\r\n\r\n");
+                    socket.end();
                 }
-                socket.end();
             })
         );
 
@@ -314,12 +318,37 @@ describe("Cloudflare monitor runner", () => {
             networkProfile: { slug: "twingate", type: "twingate" },
             twingateProxyUrl: `http://127.0.0.1:${proxy.port}`,
             twingateTunMode: "off",
-            twingatePingFallbackPorts: [8080, 443],
+            twingatePingFallbackPorts: [8080, 80],
         });
 
         assert.strictEqual(result.status, UP);
-        assert.match(result.msg, /^\d+ ms \(TCP 443 via Twingate\)$/);
-        assert.deepStrictEqual(connectTargets.sort(), ["camera.internal:443", "camera.internal:8080"]);
+        assert.match(result.msg, /^\d+ ms \(TCP 80 via Twingate\)$/);
+        assert.deepStrictEqual(connectTargets.sort(), ["camera.internal:80", "camera.internal:8080"]);
+    });
+
+    test("Twingate Ping userspace fallback requires target liveness after CONNECT", async () => {
+        const { runTwingateUserspacePingCheck } = require("../../../cloudflare/runner/checker");
+
+        await assert.rejects(
+            runTwingateUserspacePingCheck(
+                {
+                    hostname: "wgs-node-006-test.wgs",
+                    timeout: 5,
+                    ping_per_request_timeout: 2,
+                },
+                "http://127.0.0.1:9",
+                1000,
+                [443],
+                {
+                    probeTwingatePingPort: async () => ({
+                        verified: false,
+                        reason: "CONNECT accepted but target did not complete TLS handshake",
+                    }),
+                    now: () => 1003,
+                }
+            ),
+            /Twingate userspace ping could not verify wgs-node-006-test\.wgs on TCP ports 443: 443: CONNECT accepted but target did not complete TLS handshake/
+        );
     });
 
     test("Twingate Ping checks allow private targets through the TUN route", async () => {
@@ -395,6 +424,34 @@ describe("Cloudflare monitor runner", () => {
             msg: "12.345 ms",
             response: null,
         });
+    });
+
+    test("direct Ping checks reject output with no received ICMP packets", async () => {
+        const { runPingCheck } = require("../../../cloudflare/runner/checker");
+
+        await assert.rejects(
+            runPingCheck(
+                {
+                    hostname: "wgs-node-006-test.wgs",
+                    timeout: 5,
+                    ping_count: 1,
+                    ping_per_request_timeout: 2,
+                    packetSize: 56,
+                    ping_numeric: true,
+                },
+                1000,
+                async () => ({
+                    stdout:
+                        "PING wgs-node-006-test.wgs (192.0.2.55) 56(84) bytes of data.\n\n" +
+                        "--- wgs-node-006-test.wgs ping statistics ---\n" +
+                        "1 packets transmitted, 0 received, 100% packet loss, time 0ms\n",
+                }),
+                () => 1002,
+                null,
+                { lookup: async () => ({ address: "192.0.2.55", family: 4 }) }
+            ),
+            /Ping failed: 0 packets received/
+        );
     });
 
     test("direct Ping checks do not reject private DNS answers before ping runs", async () => {
