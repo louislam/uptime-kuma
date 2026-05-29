@@ -3601,6 +3601,40 @@ describe("Cloudflare Worker API", () => {
         );
     });
 
+    test("heartbeatless group chart backfill stores nullable summary values", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                { id: 172, name: "Endpoints", type: "group", active: 1, parent: null },
+            ],
+        });
+
+        const response = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/172/chart?period=3"),
+            env
+        );
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.deepStrictEqual(body, { ok: true, data: [] });
+        assert.strictEqual(env.state.monitorRuntimeSummaries.length, 1);
+        assert.strictEqual(env.state.monitorRuntimeSummaries[0].monitor_id, 172);
+        assert.strictEqual(env.state.monitorRuntimeSummaries[0].uptime_24, null);
+        assert.strictEqual(env.state.monitorRuntimeSummaries[0].uptime_720, null);
+        assert.strictEqual(env.state.monitorRuntimeSummaries[0].uptime_1y, null);
+
+        const bootstrapResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/dashboard/bootstrap"),
+            env
+        );
+        const bootstrapBody = await bootstrapResponse.json();
+
+        assert.strictEqual(bootstrapResponse.status, 200);
+        assert.strictEqual(bootstrapBody.uptimeList["172_24"], undefined);
+        assert.strictEqual(bootstrapBody.uptimeList["172_720"], undefined);
+        assert.strictEqual(bootstrapBody.uptimeList["172_1y"], undefined);
+    });
+
     test("does not list important event-log heartbeats for paused Worker monitors", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({
@@ -5510,6 +5544,14 @@ function createStatement(sql, state) {
     const statement = {
         values: [],
         bind(...values) {
+            const unsupportedIndex = values.findIndex((value) => value === undefined);
+            if (unsupportedIndex !== -1) {
+                throw new Error(
+                    `D1_TYPE_ERROR: Type 'undefined' not supported for value 'undefined' at binding ${
+                        unsupportedIndex + 1
+                    }`
+                );
+            }
             this.values = values;
             return this;
         },

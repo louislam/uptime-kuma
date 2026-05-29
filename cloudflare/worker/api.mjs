@@ -1891,6 +1891,9 @@ function parseHeartbeatBarJson(value) {
 }
 
 function normalizeNullableNumber(value) {
+    if (value == null || value === "") {
+        return undefined;
+    }
     const number = Number(value);
     return Number.isFinite(number) ? number : undefined;
 }
@@ -3502,7 +3505,7 @@ async function summarizeMetricBuckets(env, monitorId, resolutionSeconds, referen
     const totalCount = Number(result?.total_count || 0);
     const pingSum = Number(result?.ping_sum || 0);
     return {
-        uptime: totalCount > 0 ? upCount / totalCount : undefined,
+        uptime: totalCount > 0 ? upCount / totalCount : null,
         avgPing: upCount > 0 ? Math.round(pingSum / upCount) : null,
     };
 }
