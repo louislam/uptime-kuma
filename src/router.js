@@ -34,6 +34,8 @@ import RemoteBrowsers from "./components/settings/RemoteBrowsers.vue";
 const Users = () => import("./components/settings/Users.vue");
 const Groups = () => import("./components/settings/Groups.vue");
 const SAML = () => import("./components/settings/SAML.vue");
+const OIDC = () => import("./components/settings/OIDC.vue");
+const MonitorCollections = () => import("./components/settings/MonitorCollections.vue");
 
 const routes = [
     {
@@ -149,6 +151,14 @@ const routes = [
                             {
                                 path: "saml",
                                 component: SAML,
+                            },
+                            {
+                                path: "oidc",
+                                component: OIDC,
+                            },
+                            {
+                                path: "monitor-collections",
+                                component: MonitorCollections,
                             },
                         ],
                     },

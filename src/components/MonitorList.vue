@@ -101,8 +101,13 @@
             data-testid="monitor-list"
         >
             <div v-if="Object.keys($root.monitorList).length === 0" class="text-center mt-3">
-                {{ $t("No Monitors, please") }}
-                <router-link to="/add">{{ $t("add one") }}</router-link>
+                <template v-if="$root.isAdmin">
+                    {{ $t("No Monitors, please") }}
+                    <router-link to="/add">{{ $t("add one") }}</router-link>
+                </template>
+                <template v-else>
+                    {{ $t("noCollectionsForUser") }}
+                </template>
             </div>
 
             <MonitorListItem

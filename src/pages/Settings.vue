@@ -127,6 +127,10 @@ export default {
                 menus["users"] = { title: this.$t("Users") };
                 menus["groups"] = { title: this.$t("Groups") };
                 menus["saml"] = { title: this.$t("SAML / SSO") };
+                menus["oidc"] = { title: this.$t("OIDC / OAuth 2.0") };
+                menus["monitor-collections"] = { title: this.$t("Monitor Collections") };
+            } else if (this.$root.userPermissions?.includes("manage_monitor_collections")) {
+                menus["monitor-collections"] = { title: this.$t("Monitor Collections") };
             }
 
             return menus;

@@ -192,7 +192,8 @@ const { EmbeddedMariaDB } = require("./embedded-mariadb");
 const { SetupDatabase } = require("./setup-database");
 const { chartSocketHandler } = require("./socket-handlers/chart-socket-handler");
 const { userGroupSocketHandler } = require("./socket-handlers/user-group-socket-handler");
-const { checkPermission, getUserPermissions, isAdmin } = require("./util-server");
+const { monitorCollectionSocketHandler } = require("./socket-handlers/monitor-collection-socket-handler");
+const { checkPermission, getUserPermissions, isAdmin, getAccessibleMonitorIDs, canAccessMonitor } = require("./util-server");
 const { PERMISSIONS } = require("./permissions");
 
 app.use(express.json());
@@ -361,6 +362,10 @@ let needSetup = false;
     const { samlRouter, samlLoginTokens } = require("./routers/saml-router");
     app.use("/auth/saml", samlRouter);
 
+    // OIDC Router
+    const { oidcRouter, oidcLoginTokens } = require("./routers/oidc-router");
+    app.use("/auth/oidc", oidcRouter);
+
     // Status Page Router
     const statusPageRouter = require("./routers/status-page-router");
     app.use(statusPageRouter);
@@ -525,6 +530,15 @@ let needSetup = false;
             }
         });
 
+        socket.on("getOIDCEnabled", async (callback) => {
+            try {
+                const oidcSettings = await getSettings("oidc");
+                callback({ ok: true, enabled: !!(oidcSettings && oidcSettings.oidcEnabled) });
+            } catch (e) {
+                callback({ ok: false, enabled: false });
+            }
+        });
+
         socket.on("loginBySAMLToken", async (exchangeToken, callback) => {
             try {
                 const data = samlLoginTokens.get(exchangeToken);
@@ -532,6 +546,30 @@ let needSetup = false;
                     throw new Error("Invalid or expired SAML token.");
                 }
                 samlLoginTokens.delete(exchangeToken);
+
+                const user = await R.findOne("user", " id = ? AND active = 1 ", [data.userID]);
+                if (!user) {
+                    throw new Error("User not found.");
+                }
+
+                await afterLogin(socket, user);
+
+                callback({
+                    ok: true,
+                    token: User.createJWT(user, server.jwtSecret),
+                });
+            } catch (e) {
+                callback({ ok: false, msg: e.message });
+            }
+        });
+
+        socket.on("loginByOIDCToken", async (exchangeToken, callback) => {
+            try {
+                const data = oidcLoginTokens.get(exchangeToken);
+                if (!data || data.expires < Date.now()) {
+                    throw new Error("Invalid or expired OIDC token.");
+                }
+                oidcLoginTokens.delete(exchangeToken);
 
                 const user = await R.findOne("user", " id = ? AND active = 1 ", [data.userID]);
                 if (!user) {
@@ -845,8 +883,8 @@ let needSetup = false;
 
                 let bean = await R.findOne("monitor", " id = ? ", [monitor.id]);
 
-                if (bean.user_id !== socket.userID && !(await isAdmin(socket.userID))) {
-                    throw new Error("Permission denied.");
+                if (!(await canAccessMonitor(socket.userID, monitor.id))) {
+                    throw new Error("You do not have access to this monitor.");
                 }
 
                 // Check if Parent is Descendant (would cause endless loop)
@@ -1033,7 +1071,10 @@ let needSetup = false;
 
                 log.info("monitor", `Get Monitor: ${monitorID} User ID: ${socket.userID}`);
 
-                let monitor = await R.findOne("monitor", " id = ? AND user_id = ? ", [monitorID, socket.userID]);
+                if (!(await canAccessMonitor(socket.userID, monitorID))) {
+                    throw new Error("You do not have access to this monitor.");
+                }
+                let monitor = await R.findOne("monitor", " id = ? ", [monitorID]);
                 const monitorData = [{ id: monitor.id, active: monitor.active }];
                 const preloadData = await Monitor.preparePreloadData(monitorData);
                 callback({
@@ -1155,8 +1196,11 @@ let needSetup = false;
 
                 const startTime = Date.now();
 
+                if (!(await canAccessMonitor(socket.userID, monitorID))) {
+                    throw new Error("You do not have access to this monitor.");
+                }
                 // Check if this is a group monitor
-                const monitor = await R.findOne("monitor", " id = ? AND user_id = ? ", [monitorID, socket.userID]);
+                const monitor = await R.findOne("monitor", " id = ? ", [monitorID]);
 
                 // Log with context about deletion type
                 if (monitor && monitor.type === "group") {
@@ -1600,6 +1644,29 @@ let needSetup = false;
             }
         });
 
+        socket.on("getOIDCSettings", async (callback) => {
+            try {
+                checkLogin(socket);
+                const data = await getSettings("oidc");
+                callback({ ok: true, data: data || {} });
+            } catch (e) {
+                callback({ ok: false, msg: e.message });
+            }
+        });
+
+        socket.on("setOIDCSettings", async (data, callback) => {
+            try {
+                checkLogin(socket);
+                if (!(await isAdmin(socket.userID))) {
+                    throw new Error("Requires admin privileges.");
+                }
+                await setSettings("oidc", data);
+                callback({ ok: true, msg: "Saved." });
+            } catch (e) {
+                callback({ ok: false, msg: e.message });
+            }
+        });
+
         // Add or Edit
         socket.on("addNotification", async (notification, notificationID, callback) => {
             try {
@@ -1787,6 +1854,7 @@ let needSetup = false;
         generalSocketHandler(socket, server);
         chartSocketHandler(socket);
         userGroupSocketHandler(socket);
+        monitorCollectionSocketHandler(socket, io);
 
         log.debug("server", "added all socket handlers");
 
@@ -1858,10 +1926,9 @@ async function updateMonitorNotification(monitorID, notificationIDList) {
  * @throws {Error} The specified user does not own the monitor
  */
 async function checkOwner(userID, monitorID) {
-    let row = await R.getRow("SELECT id FROM monitor WHERE id = ? AND user_id = ? ", [monitorID, userID]);
-
-    if (!row) {
-        throw new Error("You do not own this monitor.");
+    const accessible = await canAccessMonitor(userID, monitorID);
+    if (!accessible) {
+        throw new Error("You do not have access to this monitor.");
     }
 }
 
@@ -1901,6 +1968,7 @@ async function afterLogin(socket, user) {
 
     const monitorPromises = [];
     for (let monitorID in monitorList) {
+        socket.join("monitor:" + monitorID);
         monitorPromises.push(sendHeartbeatList(socket, monitorID));
         monitorPromises.push(Monitor.sendStats(io, monitorID, user.id));
     }
@@ -1959,7 +2027,7 @@ async function startMonitor(userID, monitorID) {
 
     log.info("manage", `Resume Monitor: ${monitorID} User ID: ${userID}`);
 
-    await R.exec("UPDATE monitor SET active = 1 WHERE id = ? AND user_id = ? ", [monitorID, userID]);
+    await R.exec("UPDATE monitor SET active = 1 WHERE id = ? ", [monitorID]);
 
     let monitor = await R.findOne("monitor", " id = ? ", [monitorID]);
 
@@ -1992,7 +2060,7 @@ async function pauseMonitor(userID, monitorID) {
 
     log.info("manage", `Pause Monitor: ${monitorID} User ID: ${userID}`);
 
-    await R.exec("UPDATE monitor SET active = 0 WHERE id = ? AND user_id = ? ", [monitorID, userID]);
+    await R.exec("UPDATE monitor SET active = 0 WHERE id = ? ", [monitorID]);
 
     if (monitorID in server.monitorList) {
         await server.monitorList[monitorID].stop();

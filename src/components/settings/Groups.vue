@@ -149,6 +149,7 @@ export default {
                 { value: "manage_maintenance", label: this.$t("Manage Maintenance") },
                 { value: "manage_tags", label: this.$t("Manage Tags") },
                 { value: "manage_proxy", label: this.$t("Manage Proxy") },
+                { value: "manage_monitor_collections", label: this.$t("Manage Monitor Collections") },
             ],
         };
     },

@@ -9,6 +9,7 @@ const PERMISSIONS = {
     MANAGE_MAINTENANCE: "manage_maintenance",
     MANAGE_TAGS: "manage_tags",
     MANAGE_PROXY: "manage_proxy",
+    MANAGE_MONITOR_COLLECTIONS: "manage_monitor_collections",
 };
 
 module.exports = { PERMISSIONS };

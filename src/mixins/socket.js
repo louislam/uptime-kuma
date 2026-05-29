@@ -148,12 +148,18 @@ export default {
             });
 
             socket.on("loginRequired", () => {
-                // Handle SAML exchange token from redirect
+                // Handle SSO exchange tokens from redirect
                 const params = new URLSearchParams(window.location.search);
                 const samlToken = params.get("saml_token");
                 if (samlToken) {
                     window.history.replaceState({}, "", window.location.pathname);
                     this.loginBySAMLToken(samlToken);
+                    return;
+                }
+                const oidcToken = params.get("oidc_token");
+                if (oidcToken) {
+                    window.history.replaceState({}, "", window.location.pathname);
+                    this.loginByOIDCToken(oidcToken);
                     return;
                 }
 
@@ -164,6 +170,11 @@ export default {
                     this.$root.storage().removeItem("token");
                     this.allowLoginDialog = true;
                 }
+            });
+
+            socket.on("recomputeAccessibleMonitors", () => {
+                // Server will push a fresh monitorList event after this
+                socket.emit("getMonitorList", () => {});
             });
 
             socket.on("monitorList", (data) => {
@@ -487,6 +498,20 @@ export default {
                     this.username = this.getJWTPayload()?.username;
                 } else {
                     this.toastError(res.msg || "SAML login failed");
+                }
+            });
+        },
+
+        loginByOIDCToken(oidcToken) {
+            socket.emit("loginByOIDCToken", oidcToken, (res) => {
+                this.allowLoginDialog = true;
+                if (res.ok) {
+                    this.storage().token = res.token;
+                    this.socket.token = res.token;
+                    this.loggedIn = true;
+                    this.username = this.getJWTPayload()?.username;
+                } else {
+                    this.toastError(res.msg || "OIDC login failed");
                 }
             });
         },
