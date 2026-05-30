@@ -7,6 +7,7 @@ import mitt from "mitt";
 
 import { DOWN, MAINTENANCE, PENDING, UP } from "../util.ts";
 import { getToastSuccessTimeout, getToastErrorTimeout } from "../util-frontend.js";
+import { logout } from "../auth-client";
 const toast = useToast();
 
 let socket;
@@ -26,7 +27,6 @@ export default {
         return {
             info: {},
             socket: {
-                token: null,
                 firstConnect: true,
                 connected: false,
                 connectCount: 0,
@@ -135,13 +135,7 @@ export default {
             });
 
             socket.on("loginRequired", () => {
-                let token = this.storage().token;
-                if (token && token !== "autoLogin") {
-                    this.loginByToken(token);
-                } else {
-                    this.$root.storage().removeItem("token");
-                    this.allowLoginDialog = true;
-                }
+                this.allowLoginDialog = true;
             });
 
             socket.on("monitorList", (data) => {
@@ -327,19 +321,6 @@ export default {
         },
 
         /**
-         * Get payload of JWT cookie
-         * @returns {(object | undefined)} JWT payload
-         */
-        getJWTPayload() {
-            const jwtToken = this.$root.storage().token;
-
-            if (jwtToken && jwtToken !== "autoLogin") {
-                return jwtDecode(jwtToken);
-            }
-            return undefined;
-        },
-
-        /**
          * Get current socket
          * @returns {Socket} Current socket
          */
@@ -396,128 +377,19 @@ export default {
         },
 
         /**
-         * Callback for login
-         * @callback loginCB
-         * @param {object} res Response object
-         */
-
-        /**
-         * Send request to log user in
-         * @param {string} username Username to log in with
-         * @param {string} password Password to log in with
-         * @param {string} token User token
-         * @param {loginCB} callback Callback to call with result
-         * @returns {void}
-         */
-        login(username, password, token, callback) {
-            socket.emit(
-                "login",
-                {
-                    username,
-                    password,
-                    token,
-                },
-                (res) => {
-                    if (res.tokenRequired) {
-                        callback(res);
-                    }
-
-                    if (res.ok) {
-                        this.storage().token = res.token;
-                        this.socket.token = res.token;
-                        this.loggedIn = true;
-                        this.username = this.getJWTPayload()?.username;
-
-                        // Trigger Chrome Save Password
-                        history.pushState({}, "");
-                    }
-
-                    callback(res);
-                }
-            );
-        },
-
-        /**
-         * Log in using a token
-         * @param {string} token Token to log in with
-         * @returns {void}
-         */
-        loginByToken(token) {
-            socket.emit("loginByToken", token, (res) => {
-                this.allowLoginDialog = true;
-
-                if (!res.ok) {
-                    this.logout();
-                } else {
-                    this.loggedIn = true;
-                    this.username = this.getJWTPayload()?.username;
-                }
-            });
-        },
-
-        /**
          * Log out of the web application
          * @returns {void}
          */
-        logout() {
-            socket.emit("logout", () => {});
-            this.storage().removeItem("token");
-            this.socket.token = null;
+        async logout() {
+            socket.emit("logout", () => {
+                logout(() => {
+                    console.log("Logged out");
+                    location.reload();
+                });
+            });
             this.loggedIn = false;
             this.username = null;
             this.clearData();
-        },
-
-        /**
-         * Callback for general socket requests
-         * @callback socketCB
-         * @param {object} res Result of operation
-         */
-        /**
-         * Prepare 2FA configuration
-         * @param {socketCB} callback Callback for socket response
-         * @returns {void}
-         */
-        prepare2FA(callback) {
-            socket.emit("prepare2FA", callback);
-        },
-
-        /**
-         * Save the current 2FA configuration
-         * @param {any} secret Unused
-         * @param {socketCB} callback Callback for socket response
-         * @returns {void}
-         */
-        save2FA(secret, callback) {
-            socket.emit("save2FA", callback);
-        },
-
-        /**
-         * Disable 2FA for this user
-         * @param {socketCB} callback Callback for socket response
-         * @returns {void}
-         */
-        disable2FA(callback) {
-            socket.emit("disable2FA", callback);
-        },
-
-        /**
-         * Verify the provided 2FA token
-         * @param {string} token Token to verify
-         * @param {socketCB} callback Callback for socket response
-         * @returns {void}
-         */
-        verifyToken(token, callback) {
-            socket.emit("verifyToken", token, callback);
-        },
-
-        /**
-         * Get current 2FA status
-         * @param {socketCB} callback Callback for socket response
-         * @returns {void}
-         */
-        twoFAStatus(callback) {
-            socket.emit("twoFAStatus", callback);
         },
 
         /**

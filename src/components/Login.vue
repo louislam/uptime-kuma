@@ -75,6 +75,8 @@
 </template>
 
 <script>
+import { login } from "../auth-client";
+
 export default {
     data() {
         return {
@@ -110,18 +112,16 @@ export default {
          * Submit the user details and attempt to log in
          * @returns {void}
          */
-        submit() {
+        async submit() {
             this.processing = true;
 
-            this.$root.login(this.username, this.password, this.token, (res) => {
+            try {
+                await login(this.username, this.password);
+            } catch (e) {
+                console.error(e);
+            } finally {
                 this.processing = false;
-
-                if (res.tokenRequired) {
-                    this.tokenRequired = true;
-                } else {
-                    this.res = res;
-                }
-            });
+            }
         },
     },
 };

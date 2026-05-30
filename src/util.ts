@@ -1,12 +1,6 @@
 /* eslint-disable camelcase */
 /*!
 // Common Util for frontend and backend
-//
-// DOT NOT MODIFY util.js!
-// Need to run "npm run tsc" to compile if there are any changes.
-//
-// Backend uses the compiled file util.js
-// Frontend uses util.ts
 */
 
 import dayjsFrontend from "dayjs";
@@ -144,11 +138,6 @@ const consoleLevelColors = {
     debug: CONSOLE_STYLE_FgGray,
 } as const;
 
-/**
- * Flip the status of s
- * @param s input status: UP or DOWN
- * @returns {number} UP or DOWN
- */
 export const badgeConstants = {
     naColor: "#999",
     defaultUpColor: "#66c20a",
@@ -171,8 +160,8 @@ export const badgeConstants = {
 
 /**
  * Flip the status of s between UP and DOWN if this is possible
- * @param s {number} status
- * @returns {number} flipped status
+ * @param s status
+ * @returns flipped status
  */
 export function flipStatus(s: number) {
     if (s === UP) {
@@ -189,7 +178,6 @@ export function flipStatus(s: number) {
 /**
  * Delays for specified number of seconds
  * @param ms Number of milliseconds to sleep for
- * @returns {Promise<void>} Promise that resolves after ms
  */
 export function sleep(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -198,7 +186,7 @@ export function sleep(ms: number) {
 /**
  * PHP's ucfirst
  * @param str string input
- * @returns {string} string with first letter capitalized
+ * @returns string with first letter capitalized
  */
 export function ucfirst(str: string) {
     if (!str) {
@@ -212,7 +200,6 @@ export function ucfirst(str: string) {
 /**
  * @deprecated Use log.debug (https://github.com/louislam/uptime-kuma/pull/910)
  * @param msg Message to write
- * @returns {void}
  */
 export function debug(msg: unknown) {
     log.log("", "debug", msg);
@@ -261,7 +248,6 @@ class Logger {
      * @param module The module the log comes from
      * @param level Log level. One of info, warn, error, debug.
      * @param msg Message to write
-     * @returns {void}
      */
     log(module: string, level: LogLevel, ...msg: unknown[]) {
         if (level === "debug" && !isDev) {
@@ -464,7 +450,7 @@ export class TimeLogger {
  * Returns a random number between min (inclusive) and max (exclusive)
  * @param min minumim value, inclusive
  * @param max maximum value, exclusive
- * @returns {number} Random number
+ * @returns Random number
  */
 export function getRandomArbitrary(min: number, max: number) {
     return Math.random() * (max - min) + min;
@@ -644,7 +630,7 @@ export function isoToUTCDateTime(input: string) {
 
 /**
  * @param input valid datetime string
- * @returns {string} ISO DateTime string
+ * @returns ISO DateTime string
  */
 export function utcToISODateTime(input: string) {
     return dayjs.utc(input).toISOString();
@@ -804,7 +790,7 @@ export const TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD = {
 } as const;
 
 /**
- * @param res
+ * @param res Response object from fetch
  */
 export async function checkFetch(res: Response): Promise<void> {
     let data;

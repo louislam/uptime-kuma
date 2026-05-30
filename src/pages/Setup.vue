@@ -74,7 +74,7 @@
 
 <script>
 import { checkFetch } from "../util";
-import { authClient, baseURL } from "../auth-client";
+import { authClient, baseURL, login } from "../auth-client";
 
 export default {
     data() {
@@ -122,19 +122,7 @@ export default {
                 await checkFetch(response);
 
                 // Login
-                const { error } = await authClient.signIn.username({
-                    username: this.username,
-                    password: this.password,
-                });
-
-                console.log(error);
-
-                if (error) {
-                    throw error;
-                }
-
-                // Redirect to home page without vue-router, so that WebSocket can be reconnected with new token
-                location.href = "/";
+                await login(this.username, this.password);
             } catch (error) {
                 this.$root.toastRes({
                     ok: false,

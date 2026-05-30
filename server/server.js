@@ -93,10 +93,6 @@ const prometheusAPIMetrics = require("prometheus-api-metrics");
 const { passwordStrength } = require("check-password-strength");
 const TranslatableError = require("./translatable-error");
 
-log.debug("server", "Importing 2FA Modules");
-const notp = require("notp");
-const base32 = require("thirty-two");
-
 const { UptimeKumaServer } = require("./uptime-kuma-server");
 const server = UptimeKumaServer.getInstance();
 const io = (module.exports.io = server.io);
@@ -129,7 +125,7 @@ const Database = require("./database");
 
 log.debug("server", "Importing Background Jobs");
 const { initBackgroundJobs, stopBackgroundJobs } = require("./jobs");
-const { loginRateLimiter, twoFaRateLimiter } = require("./rate-limiter");
+const { loginRateLimiter } = require("./rate-limiter");
 
 const { apiAuth } = require("./auth");
 const { login } = require("./auth");
@@ -148,12 +144,6 @@ const port = config.port;
 const disableFrameSameOrigin =
     !!process.env.UPTIME_KUMA_DISABLE_FRAME_SAMEORIGIN || args["disable-frame-sameorigin"] || false;
 const cloudflaredToken = args["cloudflared-token"] || process.env.UPTIME_KUMA_CLOUDFLARED_TOKEN || undefined;
-
-// 2FA / notp verification defaults
-const twoFAVerifyOptions = {
-    window: 1,
-    time: 30,
-};
 
 /**
  * Run unit test after the server is ready
@@ -175,7 +165,6 @@ const {
 const { statusPageSocketHandler } = require("./socket-handlers/status-page-socket-handler");
 const { databaseSocketHandler } = require("./socket-handlers/database-socket-handler");
 const { remoteBrowserSocketHandler } = require("./socket-handlers/remote-browser-socket-handler");
-const TwoFA = require("./2fa");
 const StatusPage = require("./model/status_page");
 const {
     cloudflaredSocketHandler,
@@ -397,81 +386,6 @@ app.use(function (req, res, next) {
         // Public Socket API
         // ***************************
 
-        // TODO: better-auth
-        socket.on("login", async (data, callback) => {
-            const clientIP = await server.getClientIP(socket);
-
-            log.info("auth", `Login by username + password. IP=${clientIP}`);
-
-            // Checking
-            if (typeof callback !== "function") {
-                return;
-            }
-
-            if (!data) {
-                return;
-            }
-
-            let user = await login(data.username, data.password);
-
-            if (user) {
-                if (user.twofa_status === 0) {
-                    await afterLogin(socket, user);
-
-                    log.info("auth", `Successfully logged in user ${data.username}. IP=${clientIP}`);
-
-                    callback({
-                        ok: true,
-                        token: User.createJWT(user, server.jwtSecret),
-                    });
-                }
-
-                if (user.twofa_status === 1 && !data.token) {
-                    log.info("auth", `2FA token required for user ${data.username}. IP=${clientIP}`);
-
-                    callback({
-                        tokenRequired: true,
-                    });
-                }
-
-                if (data.token) {
-                    let verify = notp.totp.verify(data.token, user.twofa_secret, twoFAVerifyOptions);
-
-                    if (user.twofa_last_token !== data.token && verify) {
-                        await afterLogin(socket, user);
-
-                        await R.exec("UPDATE `user` SET twofa_last_token = ? WHERE id = ? ", [
-                            data.token,
-                            socket.userID,
-                        ]);
-
-                        log.info("auth", `Successfully logged in user ${data.username}. IP=${clientIP}`);
-
-                        callback({
-                            ok: true,
-                            token: User.createJWT(user, server.jwtSecret),
-                        });
-                    } else {
-                        log.warn("auth", `Invalid token provided for user ${data.username}. IP=${clientIP}`);
-
-                        callback({
-                            ok: false,
-                            msg: "authInvalidToken",
-                            msgi18n: true,
-                        });
-                    }
-                }
-            } else {
-                log.warn("auth", `Incorrect username or password for user ${data.username}. IP=${clientIP}`);
-
-                callback({
-                    ok: false,
-                    msg: "authIncorrectCreds",
-                    msgi18n: true,
-                });
-            }
-        });
-
         socket.on("logout", async (callback) => {
             // Rate Limit
             if (!(await loginRateLimiter.pass(callback))) {
@@ -483,163 +397,6 @@ app.use(function (req, res, next) {
 
             if (typeof callback === "function") {
                 callback();
-            }
-        });
-
-        socket.on("prepare2FA", async (currentPassword, callback) => {
-            try {
-                if (!(await twoFaRateLimiter.pass(callback))) {
-                    return;
-                }
-
-                checkLogin(socket);
-                await doubleCheckPassword(socket, currentPassword);
-
-                let user = await R.findOne("user", " id = ? AND active = 1 ", [socket.userID]);
-
-                if (user.twofa_status === 0) {
-                    let newSecret = genSecret();
-                    let encodedSecret = base32.encode(newSecret);
-
-                    // Google authenticator doesn't like equal signs
-                    // The fix is found at https://github.com/guyht/notp
-                    // Related issue: https://github.com/louislam/uptime-kuma/issues/486
-                    encodedSecret = encodedSecret.toString().replace(/=/g, "");
-
-                    let uri = `otpauth://totp/Uptime%20Kuma:${user.username}?secret=${encodedSecret}`;
-
-                    await R.exec("UPDATE `user` SET twofa_secret = ? WHERE id = ? ", [newSecret, socket.userID]);
-
-                    callback({
-                        ok: true,
-                        uri: uri,
-                    });
-                } else {
-                    callback({
-                        ok: false,
-                        msg: "2faAlreadyEnabled",
-                        msgi18n: true,
-                    });
-                }
-            } catch (error) {
-                callback({
-                    ok: false,
-                    msg: error.message,
-                });
-            }
-        });
-
-        socket.on("save2FA", async (currentPassword, callback) => {
-            const clientIP = await server.getClientIP(socket);
-
-            try {
-                if (!(await twoFaRateLimiter.pass(callback))) {
-                    return;
-                }
-
-                checkLogin(socket);
-                await doubleCheckPassword(socket, currentPassword);
-
-                await R.exec("UPDATE `user` SET twofa_status = 1 WHERE id = ? ", [socket.userID]);
-
-                log.info("auth", `Saved 2FA token. IP=${clientIP}`);
-
-                callback({
-                    ok: true,
-                    msg: "2faEnabled",
-                    msgi18n: true,
-                });
-            } catch (error) {
-                log.error("auth", `Error changing 2FA token. IP=${clientIP}`);
-
-                callback({
-                    ok: false,
-                    msg: error.message,
-                });
-            }
-        });
-
-        socket.on("disable2FA", async (currentPassword, callback) => {
-            const clientIP = await server.getClientIP(socket);
-
-            try {
-                if (!(await twoFaRateLimiter.pass(callback))) {
-                    return;
-                }
-
-                checkLogin(socket);
-                await doubleCheckPassword(socket, currentPassword);
-                await TwoFA.disable2FA(socket.userID);
-
-                log.info("auth", `Disabled 2FA token. IP=${clientIP}`);
-
-                callback({
-                    ok: true,
-                    msg: "2faDisabled",
-                    msgi18n: true,
-                });
-            } catch (error) {
-                log.error("auth", `Error disabling 2FA token. IP=${clientIP}`);
-
-                callback({
-                    ok: false,
-                    msg: error.message,
-                });
-            }
-        });
-
-        socket.on("verifyToken", async (token, currentPassword, callback) => {
-            try {
-                checkLogin(socket);
-                await doubleCheckPassword(socket, currentPassword);
-
-                let user = await R.findOne("user", " id = ? AND active = 1 ", [socket.userID]);
-
-                let verify = notp.totp.verify(token, user.twofa_secret, twoFAVerifyOptions);
-
-                if (user.twofa_last_token !== token && verify) {
-                    callback({
-                        ok: true,
-                        valid: true,
-                    });
-                } else {
-                    callback({
-                        ok: false,
-                        msg: "authInvalidToken",
-                        msgi18n: true,
-                        valid: false,
-                    });
-                }
-            } catch (error) {
-                callback({
-                    ok: false,
-                    msg: error.message,
-                });
-            }
-        });
-
-        socket.on("twoFAStatus", async (callback) => {
-            try {
-                checkLogin(socket);
-
-                let user = await R.findOne("user", " id = ? AND active = 1 ", [socket.userID]);
-
-                if (user.twofa_status === 1) {
-                    callback({
-                        ok: true,
-                        status: true,
-                    });
-                } else {
-                    callback({
-                        ok: true,
-                        status: false,
-                    });
-                }
-            } catch (error) {
-                callback({
-                    ok: false,
-                    msg: error.message,
-                });
             }
         });
 

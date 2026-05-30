@@ -20,3 +20,32 @@ export async function isLoggedIn() {
     const session = await authClient.getSession();
     return session.data !== null;
 }
+
+/**
+ * @param username
+ * @param password
+ */
+export async function login(username: string, password: string) {
+    const { error } = await authClient.signIn.username({
+        username,
+        password,
+    });
+
+    if (error) {
+        throw new Error(error.message);
+    }
+
+    // Refresh, so that WebSocket can be reconnected with new token
+    location.reload();
+}
+
+/**
+ * @param onSuccess
+ */
+export async function logout(onSuccess = () => {}) {
+    await authClient.signOut({
+        fetchOptions: {
+            onSuccess,
+        },
+    });
+}
