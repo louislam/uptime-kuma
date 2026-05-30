@@ -1530,5 +1530,19 @@
     "teltonikaUrl": "Your Teltonika device URL",
     "teltonikaUrlHelptext": "URL should be specified as full origin, e.g. {0}, or {1}.",
     "teltonikaUnsafeTls": "Ignore certificate validation",
-    "teltonikaUnsafeTlsDescription": "Turning off TLS certificate validation opens you up to on-path (man-in-the-middle) attacks, potentially leading to data leaks and systems take-over. Do not turn off certificate validation unless you accept this attack vector. We recomend using LetsEncrypt with automatic renewal."
+    "teltonikaUnsafeTlsDescription": "Turning off TLS certificate validation opens you up to on-path (man-in-the-middle) attacks, potentially leading to data leaks and systems take-over. Do not turn off certificate validation unless you accept this attack vector. We recomend using LetsEncrypt with automatic renewal.",
+    "WebSocket Options": "WebSocket Options",
+    "pingPacketSizeWarning": "A packet size smaller than 16 does not produce round-trip times on Linux",
+    "wayToGetEgoSMSToken": "You can get your EgoSMS API username and password from {here}.",
+    "egosmsSenderDescription": "Sender ID shown to recipients (max 11 characters). Defaults to EGOSMS if empty.",
+    "egosmsPhoneNumberDescription": "Recipient number with country code, without + or 00 (e.g. 2567XXXXXXXX).",
+    "VKTeams Chat Id Description": "For users, this is their email address. For groups and channels, get the ID from their settings and append {'@'}chat.agent",
+    "VKTeams Bot Token Description": "You can find out how to get a bot token and other details at {0}.",
+    "VKTeams Base Url Description": "VKTeams base API URL may differ in the on-premises solution. Default: https://myteam.mail.ru",
+    "VKTeams Use Template": "Use custom message template",
+    "Bearer Token": "Bearer Token",
+    "gamedigToken": "Token",
+    "gamedigTokenDescription": "Optional. Some game servers require an authentication token.",
+    "VKTeams Use Template Description": "If enabled, the message will be sent using a custom template.",
+    "VKTeams Template Format Description": "For message styling, VKTeams supports plain text, MarkdownV2, and HTML formatting."
 }

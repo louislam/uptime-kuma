@@ -778,7 +778,7 @@
     "wayToGetKookGuildID": "Attiva la 'Modalità sviluppatore' nelle impostazioni di Kook e fai clic con il pulsante destro del mouse sul gruppo per ottenere il suo ID",
     "Guild ID": "ID gruppo",
     "Free Mobile API Key": "Chiave API mobile gratuita",
-    "telegramUseTemplate": "Utilizza un modello di messaggio personalizzato",
+    "telegramUseTemplate": "Usa un modello di messaggio personalizzato",
     "telegramTemplateFormatDescription": "Telegram permette l'utilizzo di diversi linguaggi di markup, vedi Telegram {0} per maggiori dettagli.",
     "Add Tags": "Aggiungi Etichette",
     "Mentioning": "Menzione",
@@ -1621,5 +1621,17 @@
     "vkPeerIdDescription": "Inserisci il peer_id di destinazione di VK. Questo valore viene inviato all’API così com’è.",
     "oracledbConnectionString": "Database Oracle: {connectionString}",
     "WebSocket Options": "Opzioni WebSocket",
-    "pingPacketSizeWarning": "Una dimensione del pacchetto inferiore a 16 non produce tempi di andata e ritorno su Linux"
+    "pingPacketSizeWarning": "Una dimensione del pacchetto inferiore a 16 non produce tempi di andata e ritorno su Linux",
+    "VKTeams Use Template": "Usa un modello di messaggio personalizzato",
+    "VKTeams Use Template Description": "Se abilitato, il messaggio sarà spedito usando il template personalizzato.",
+    "VKTeams Template Format Description": "Per la formattazione dei messaggi, VKTeams supporta testo semplice, MarkdownV2 e HTML.",
+    "VKTeams Bot Token Description": "Puoi scoprire come ottenere un token bot e altri dettagli su {0}.",
+    "VKTeams Base Url Description": "URL API di base di VKTeams, potrebbe essere diverso nelle soluzioni on-premise. Predefinito: https://myteam.mail.ru",
+    "VKTeams Chat Id Description": "Per gli utenti, questo è il loro indirizzo email. Per gruppi e canali, recupera l'ID dalle loro impostazioni e aggiungi {'@'}chat.agent",
+    "wayToGetEgoSMSToken": "Puoi ottenere il tuo nome utente e la password dell'API EgoSMS da {qui}.",
+    "egosmsSenderDescription": "ID del mittente visualizzato ai destinatari (massimo 11 caratteri). Se vuoto, il valore predefinito è EGOSMS.",
+    "egosmsPhoneNumberDescription": "Numero del destinatario con prefisso internazionale, senza + o 00 (ad esempio 2567XXXXXXXX).",
+    "gamedigToken": "Token",
+    "gamedigTokenDescription": "Opzionale. Alcuni server di gioco richiedono un token di autenticazione.",
+    "Bearer Token": "Token Bearer"
 }
