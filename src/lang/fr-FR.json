@@ -1648,5 +1648,17 @@
     "evolutionCustomMessageTitle": "Message personnalisé (facultatif)",
     "evolutionCustomMessageDesc": "Laissez vide pour utiliser le message par défaut.",
     "WebSocket Options": "Options du WebSocket",
-    "pingPacketSizeWarning": "Une taille de paquet inférieure à 16 n'entraîne pas de temps d'aller-retour sous Linux"
+    "pingPacketSizeWarning": "Une taille de paquet inférieure à 16 n'entraîne pas de temps d'aller-retour sous Linux",
+    "VKTeams Bot Token Description": "Vous pouvez découvrir comment obtenir un jeton de robot et d’autres informations à l’adresse {0}.",
+    "VKTeams Chat Id Description": "Pour les utilisateurs, il s’agit de leur adresse e-mail. Pour les groupes et les canaux, récupérez l’ID dans leurs paramètres et ajoutez {'@'}chat.agent",
+    "VKTeams Use Template": "Utiliser un modèle de message personnalisé",
+    "VKTeams Template Format Description": "Pour le style de message, VKTeams prend en charge le texte brut, MarkdownV2 et la mise en forme HTML.",
+    "VKTeams Base Url Description": "URL d’API de base VKTeams, peut différer selon la solution sur site. Valeur par défaut : https://myteam.mail.ru",
+    "VKTeams Use Template Description": "Si activé, le message sera envoyé en utilisant un modèle personnalisé.",
+    "wayToGetEgoSMSToken": "Vous pouvez obtenir votre nom d’utilisateur et mot de passe API EgoSMS à partir de {here}.",
+    "egosmsSenderDescription": "ID de l’expéditeur affiché aux destinataires (11 caractères maximum). Si vide, utilise EGOSMS par défaut.",
+    "egosmsPhoneNumberDescription": "Numéro de destinataire avec code pays, sans + ou 00 (par exemple 2567XXXXXXXX).",
+    "gamedigToken": "Jeton",
+    "gamedigTokenDescription": "Facultatif. Certains serveurs de jeu nécessitent un jeton d’authentification.",
+    "Bearer Token": "Jeton Bearer"
 }
