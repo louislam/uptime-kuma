@@ -2,7 +2,7 @@ const fs = require("fs");
 const fsAsync = fs.promises;
 const { R } = require("redbean-node");
 const { setSetting, setting } = require("./util-server");
-const { log, sleep } = require("../src/util");
+const { log, sleep, isDev } = require("../src/util");
 const knex = require("knex");
 const path = require("path");
 const { EmbeddedMariaDB } = require("./embedded-mariadb");
@@ -134,7 +134,7 @@ class Database {
      */
     static initDataDir(args) {
         // Data Directory (must be end with "/")
-        Database.dataDir = process.env.DATA_DIR || args["data-dir"] || "./data/";
+        Database.dataDir = process.env.DATA_DIR || args["data-dir"] || Database.getDevDataDir() || "./data/";
 
         Database.sqlitePath = path.join(Database.dataDir, "kuma.db");
         if (!fs.existsSync(Database.dataDir)) {
@@ -159,6 +159,41 @@ class Database {
         }
 
         log.info("server", `Data Dir: ${Database.dataDir}`);
+    }
+
+    /**
+     * Development + non-master branch + no custom only
+     * To avoid database migration issue during different pull request testing.
+     * Path: ./data/dev-data/<git branch name>/
+     * @returns {string} The dev data dir, empty string if not in dev mode or in master branch
+     */
+    static getDevDataDir() {
+        if (isDev) {
+            const gitBranch = this.getCurrentGitBranch();
+
+            // HEAD means detached head. Don't handle this case, becasuse it is not common.
+            if (gitBranch !== "" && gitBranch !== "master" && gitBranch !== "HEAD") {
+                log.info("server", `Using development data directory for branch ${gitBranch}`);
+                return path.join("./data/dev-data/", gitBranch, "/");
+            } else {
+                log.debug("server", "Do not use development data directory because it is master branch");
+            }
+        }
+        return "";
+    }
+
+    /**
+     * Get the current git branch name
+     * @returns {string} The current git branch name, or empty string if it cannot be determined
+     */
+    static getCurrentGitBranch() {
+        try {
+            const { execSync } = require("child_process");
+            // Reference: https://stackoverflow.com/questions/6245570/how-do-i-get-the-current-branch-name-in-git
+            return execSync("git rev-parse --abbrev-ref HEAD").toString().trim();
+        } catch (e) {
+            return "";
+        }
     }
 
     /**

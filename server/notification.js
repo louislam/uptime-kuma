@@ -14,6 +14,7 @@ const DingDing = require("./notification-providers/dingding");
 const Discord = require("./notification-providers/discord");
 const Fluxer = require("./notification-providers/fluxer");
 const Elks = require("./notification-providers/46elks");
+const EgoSMS = require("./notification-providers/egosms");
 const Feishu = require("./notification-providers/feishu");
 const Notifery = require("./notification-providers/notifery");
 const FreeMobile = require("./notification-providers/freemobile");
@@ -124,6 +125,7 @@ class Notification {
             new Discord(),
             new Fluxer(),
             new Elks(),
+            new EgoSMS(),
             new Feishu(),
             new FreeMobile(),
             new GoogleChat(),
