@@ -1604,5 +1604,11 @@
     "evolutionCustomMessageDesc": "Nechte pole prázdné, chcete-li použít výchozí zprávu.",
     "evolutionCustomMessageTitle": "Vlastní zpráva (volitelné)",
     "WebSocket Options": "Možnosti WebSocketu",
-    "pingPacketSizeWarning": "Velikost paketu menší než 16 nevyvolává v systému Linux měření doby přenosu tam a zpět"
+    "pingPacketSizeWarning": "Velikost paketu menší než 16 nevyvolává v systému Linux měření doby přenosu tam a zpět",
+    "VKTeams Use Template": "Použít vlastní šablonu zprávy",
+    "VKTeams Use Template Description": "Pokud je tato funkce zapnutá, zpráva bude odeslána pomocí vlastní šablony.",
+    "VKTeams Bot Token Description": "Jak získat token bota a další podrobnosti najdete na {0}.",
+    "VKTeams Base Url Description": "Základní adresa URL rozhraní API VKTeams; v případě řešení nasazeného na vlastním serveru se může lišit. Výchozí hodnota: https://myteam.mail.ru",
+    "VKTeams Chat Id Description": "U uživatelů se jedná o jejich e-mailovou adresu. U skupin a kanálů získejte ID z jejich nastavení a připojte k němu {‚@‘}chat.agent",
+    "VKTeams Template Format Description": "Pro formátování zpráv podporuje VKTeams formátování prostého textu, MarkdownV2 a HTML."
 }
