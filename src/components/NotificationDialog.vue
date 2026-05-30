@@ -214,6 +214,7 @@ export default {
             let chatPlatforms = {
                 bale: "Bale",
                 Bitrix24: "Bitrix24",
+                clickup: "Clickup",
                 discord: "Discord",
                 max: this.$t("maxMessenger"),
                 fluxer: "Fluxer",
