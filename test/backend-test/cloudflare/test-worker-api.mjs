@@ -1052,9 +1052,78 @@ describe("Cloudflare Worker API", () => {
             "bootstrap should read the derived runtime summary"
         );
         assert.ok(
-            env.state.queries.every((sql) => !sql.includes("FROM heartbeats")),
-            "bootstrap hot path should not scan raw heartbeat history when summaries are present"
+            env.state.queries.some((sql) => sql.includes("WITH requested_monitor_ids")),
+            "bootstrap should verify summaries against the indexed latest heartbeat"
         );
+        assert.ok(
+            env.state.queries.every((sql) => !sql.includes("ORDER BY checked_at ASC")),
+            "bootstrap hot path should not rebuild raw heartbeat history when summaries are current"
+        );
+    });
+
+    test("dashboard bootstrap prefers a newer indexed DOWN heartbeat over a stale UP runtime summary", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                {
+                    id: 7,
+                    name: "Private HTTP",
+                    type: "http",
+                    url: "http://private.example.test",
+                    active: 1,
+                },
+            ],
+            heartbeats: [
+                {
+                    id: 101,
+                    monitor_id: 7,
+                    status: 1,
+                    ping: 12,
+                    msg: "200 - OK",
+                    checked_at: "2026-05-11 02:30:00",
+                },
+                {
+                    id: 102,
+                    monitor_id: 7,
+                    status: 0,
+                    ping: null,
+                    msg: "Timeout",
+                    checked_at: "2026-05-11 02:31:00",
+                },
+            ],
+            monitorRuntimeSummaries: [
+                {
+                    monitor_id: 7,
+                    latest_heartbeat_id: 101,
+                    status: 1,
+                    ping: 12,
+                    msg: "200 - OK",
+                    checked_at: "2026-05-11 02:30:00",
+                    avg_ping: 12,
+                    uptime_24: 1,
+                    uptime_720: 1,
+                    uptime_1y: 1,
+                    heartbeat_bar_json: JSON.stringify([
+                        {
+                            monitorID: 7,
+                            status: 1,
+                            ping: 12,
+                            msg: "200 - OK",
+                            time: "2026-05-11 02:30:00",
+                        },
+                    ]),
+                },
+            ],
+        });
+
+        const response = await handleApiRequest(adminRequest("https://example.com/api/dashboard/bootstrap"), env);
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(body.monitors[0].lastHeartbeat.status, 0);
+        assert.strictEqual(body.monitors[0].lastHeartbeat.msg, "Timeout");
+        assert.strictEqual(body.heartbeatList[7].at(-1).status, 0);
+        assert.strictEqual(body.heartbeatList[7].at(-1).msg, "Timeout");
     });
 
     test("dashboard bootstrap falls back to indexed latest status when derived runtime rows are missing", async () => {

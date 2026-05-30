@@ -18,23 +18,29 @@ const DEFAULT_PING_PACKET_SIZE = 56;
 const DEFAULT_PING_PER_REQUEST_TIMEOUT_SECONDS = 2;
 const DEFAULT_RESPONSE_MAX_BYTES = 1024;
 const MAX_RESPONSE_MAX_BYTES = 64 * 1024;
-const DEFAULT_TWINGATE_PING_FALLBACK_PORTS = [80, 443, 9100];
+const DEFAULT_TWINGATE_PING_FALLBACK_PORTS = [];
 const MAX_TWINGATE_PING_FALLBACK_PORTS = 10;
 const SYSTEM_TWINGATE_PROXY_URL = "http://127.0.0.1:9999";
 const PRIVATE_WORKER_HOST_ERROR =
     "Direct Worker checks cannot target private, loopback, link-local, or metadata hosts";
+const TWINGATE_USERSPACE_TCP_UNVERIFIED_MESSAGE =
+    "Twingate userspace TCP checks require TUN mode to verify endpoint liveness";
+const TWINGATE_USERSPACE_PING_UNSUPPORTED_MESSAGE =
+    "Twingate userspace mode cannot run ICMP ping. Enable TUN mode or configure verifiable TCP fallback ports.";
 const execFileAsync = promisify(execFile);
 
 async function runCheck(job) {
     const monitor = job.monitor || {};
     const networkProfile = job.networkProfile || null;
     const twingateProxyUrl = resolveTwingateProxyUrl(job);
-    const start = Date.now();
+    const now = typeof job.now === "function" ? job.now : Date.now;
+    const start = now();
     const options = {
         lookup: typeof job.lookup === "function" ? job.lookup : dns.lookup,
         allowPrivateResolvedForTest: job.allowPrivateResolvedForTest === true,
         execFile: typeof job.execFile === "function" ? job.execFile : execFileAsync,
-        now: typeof job.now === "function" ? job.now : Date.now,
+        now,
+        twingateTunMode: normalizeTwingateTunMode(job.twingateTunMode),
     };
 
     try {
@@ -60,14 +66,14 @@ async function runCheck(job) {
         }
 
         if (monitor.type === "websocket-upgrade") {
-            return await runWebSocketReachabilityCheck(monitor, networkProfile, twingateProxyUrl, start);
+            return await runWebSocketReachabilityCheck(monitor, networkProfile, twingateProxyUrl, start, options);
         }
 
         throw new Error(`Unsupported Cloudflare runner monitor type: ${monitor.type}`);
     } catch (error) {
         return {
             status: DOWN,
-            ping: Date.now() - start,
+            ping: options.now() - start,
             msg: error.message,
             response: null,
         };
@@ -76,8 +82,9 @@ async function runCheck(job) {
 
 async function runHttpCheck(monitor, networkProfile, twingateProxyUrl, start, options = {}) {
     const targetUrl = new URL(monitor.url);
-    const useTwingateProxy = isTwingateProfile(networkProfile);
+    const useTwingateProxy = shouldUseTwingateProxy(networkProfile, options);
     const userProxy = useTwingateProxy ? null : activeUserProxy(monitor.proxy);
+    const now = typeof options.now === "function" ? options.now : Date.now;
     let resolvedTarget = null;
     if (!useTwingateProxy && !userProxy) {
         resolvedTarget = await resolveDirectTarget(targetUrl.hostname, networkProfile, options.lookup, options);
@@ -113,7 +120,7 @@ async function runHttpCheck(monitor, networkProfile, twingateProxyUrl, start, op
 
     return {
         status: UP,
-        ping: Date.now() - start,
+        ping: now() - start,
         msg: `${response.statusCode} - ${response.statusMessage}`,
         response: shouldReturnResponseBody(monitor, true) ? response.body : null,
     };
@@ -127,15 +134,15 @@ async function runTcpCheck(monitor, networkProfile, twingateProxyUrl, start, opt
         throw new Error("TCP monitor requires hostname and port");
     }
 
-    if (isTwingateProfile(networkProfile)) {
-        const socket = await connectViaHttpProxy(hostname, port, twingateProxyUrl, monitor.timeout);
-        socket.end();
+    if (shouldUseTwingateProxy(networkProfile, options)) {
+        await verifyTwingateUserspaceTcpCheck(hostname, port, twingateProxyUrl, monitor.timeout);
     } else {
         const resolvedTarget = await resolveDirectTarget(hostname, networkProfile, options.lookup, options);
         await connectDirect(resolvedTarget.address || hostname, port, monitor.timeout);
     }
 
-    const ping = Date.now() - start;
+    const now = typeof options.now === "function" ? options.now : Date.now;
+    const ping = now() - start;
     return {
         status: UP,
         ping,
@@ -144,7 +151,7 @@ async function runTcpCheck(monitor, networkProfile, twingateProxyUrl, start, opt
     };
 }
 
-async function runWebSocketReachabilityCheck(monitor, networkProfile, twingateProxyUrl, start) {
+async function runWebSocketReachabilityCheck(monitor, networkProfile, twingateProxyUrl, start, options = {}) {
     const url = new URL(monitor.url);
     const port = Number(url.port || (url.protocol === "wss:" ? 443 : 80));
     const tcpMonitor = {
@@ -152,7 +159,7 @@ async function runWebSocketReachabilityCheck(monitor, networkProfile, twingatePr
         port,
         timeout: monitor.timeout,
     };
-    return await runTcpCheck(tcpMonitor, networkProfile, twingateProxyUrl, start);
+    return await runTcpCheck(tcpMonitor, networkProfile, twingateProxyUrl, start, options);
 }
 
 async function runPingCheck(
@@ -213,7 +220,7 @@ async function runTwingateUserspacePingCheck(monitor, twingateProxyUrl, start, f
 
     const ports = normalizePortList(fallbackPorts);
     if (ports.length === 0) {
-        throw new Error("Twingate userspace mode cannot run ICMP ping. Enable TUN mode or use a TCP Port monitor.");
+        throw new Error(TWINGATE_USERSPACE_PING_UNSUPPORTED_MESSAGE);
     }
 
     const timeoutSeconds = resolveTwingatePingFallbackTimeoutSeconds(monitor);
@@ -463,8 +470,19 @@ async function probeTwingatePingPort(hostname, port, proxyUrlString, timeoutSeco
         return await verifyTlsTunnelHandshake(socket, hostname, timeoutSeconds);
     }
 
-    socket.end();
-    return { verified: true };
+    // CONNECT success alone can be local proxy readiness. Without a protocol probe, raw TCP fallback is not endpoint proof.
+    socket.destroy();
+    return {
+        verified: false,
+        reason: `TCP fallback port ${port} cannot verify target liveness without a protocol probe`,
+    };
+}
+
+async function verifyTwingateUserspaceTcpCheck(hostname, port, proxyUrlString, timeoutSeconds) {
+    // Arbitrary TCP checks need TUN mode so the runner observes the real target connect result instead of proxy acceptance.
+    const socket = await connectViaHttpProxy(hostname, port, proxyUrlString, timeoutSeconds);
+    socket.destroy();
+    throw new Error(TWINGATE_USERSPACE_TCP_UNVERIFIED_MESSAGE);
 }
 
 function verifyHttpTunnelResponse(socket, hostname, timeoutSeconds) {
@@ -616,6 +634,14 @@ function resolveJsonPath(value, path) {
 
 function isTwingateProfile(networkProfile) {
     return networkProfile?.slug === "twingate" || networkProfile?.type === "twingate";
+}
+
+function shouldUseTwingateProxy(networkProfile, options = {}) {
+    return isTwingateProfile(networkProfile) && normalizeTwingateTunMode(options.twingateTunMode) === "off";
+}
+
+function normalizeTwingateTunMode(value) {
+    return String(value || "on").toLowerCase() === "off" ? "off" : "on";
 }
 
 function activeUserProxy(proxy) {

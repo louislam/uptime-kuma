@@ -2,6 +2,7 @@
 const { describe, test, beforeEach, afterEach } = require("node:test");
 const assert = require("node:assert");
 const http = require("node:http");
+const net = require("node:net");
 
 const DOWN = 0;
 const UP = 1;
@@ -58,7 +59,7 @@ describe("Cloudflare monitor runner", () => {
         );
     });
 
-    test("Twingate HTTP checks use the configured HTTP proxy", async () => {
+    test("Twingate HTTP checks in userspace mode use the configured HTTP proxy", async () => {
         const { runCheck } = require("../../../cloudflare/runner/checker");
         let proxyRequests = 0;
         const proxy = await listen(
@@ -80,12 +81,57 @@ describe("Cloudflare monitor runner", () => {
             },
             networkProfile: { slug: "twingate", type: "twingate" },
             twingateProxyUrl: `http://127.0.0.1:${proxy.port}`,
+            twingateTunMode: "off",
         });
 
         assert.strictEqual(result.status, UP);
         assert.strictEqual(result.msg, "200 - OK");
         assert.strictEqual(result.response, "proxied ok");
         assert.strictEqual(proxyRequests, 1);
+    });
+
+    test("Twingate HTTP checks in TUN mode connect to the target directly", async () => {
+        const { runCheck } = require("../../../cloudflare/runner/checker");
+        let targetRequests = 0;
+        let proxyRequests = 0;
+        const target = await listen(
+            http.createServer((req, res) => {
+                targetRequests++;
+                assert.strictEqual(req.url, "/health");
+                res.writeHead(200, { "content-type": "text/plain" });
+                res.end("direct twingate ok");
+            })
+        );
+        const proxy = await listen(
+            http.createServer((req, res) => {
+                proxyRequests++;
+                res.writeHead(502);
+                res.end("proxy should not be used in TUN mode");
+            }).on("connect", (_req, socket) => {
+                proxyRequests++;
+                socket.write("HTTP/1.1 502 Bad Gateway\r\n\r\n");
+                socket.end();
+            })
+        );
+
+        const result = await runCheck({
+            monitor: {
+                id: 12,
+                type: "http",
+                url: `http://127.0.0.1:${target.port}/health`,
+                timeout: 5,
+                saveResponse: true,
+            },
+            networkProfile: { slug: "twingate", type: "twingate" },
+            twingateProxyUrl: `http://127.0.0.1:${proxy.port}`,
+            twingateTunMode: "on",
+        });
+
+        assert.strictEqual(result.status, UP);
+        assert.strictEqual(result.msg, "200 - OK");
+        assert.strictEqual(result.response, "direct twingate ok");
+        assert.strictEqual(targetRequests, 1);
+        assert.strictEqual(proxyRequests, 0);
     });
 
     test("HTTP checks do not return response bodies unless response saving is enabled", async () => {
@@ -236,7 +282,44 @@ describe("Cloudflare monitor runner", () => {
         }
     });
 
-    test("Twingate TCP checks use HTTP CONNECT and record latency", async () => {
+    test("Twingate TCP checks in TUN mode connect directly and record latency", async () => {
+        const { runCheck } = require("../../../cloudflare/runner/checker");
+        let targetConnections = 0;
+        let proxyRequests = 0;
+        const target = await listen(
+            net.createServer((socket) => {
+                targetConnections++;
+                socket.end();
+            })
+        );
+        const proxy = await listen(
+            http.createServer().on("connect", (req, socket) => {
+                proxyRequests++;
+                socket.write("HTTP/1.1 200 Connection Established\r\n\r\n");
+                socket.end();
+            })
+        );
+
+        const result = await runCheck({
+            monitor: {
+                id: 3,
+                type: "port",
+                hostname: "127.0.0.1",
+                port: target.port,
+                timeout: 5,
+            },
+            networkProfile: { slug: "twingate", type: "twingate" },
+            twingateProxyUrl: `http://127.0.0.1:${proxy.port}`,
+            twingateTunMode: "on",
+        });
+
+        assert.strictEqual(result.status, UP);
+        assert.match(result.msg, /^\d+ ms$/);
+        assert.strictEqual(targetConnections, 1);
+        assert.strictEqual(proxyRequests, 0);
+    });
+
+    test("Twingate TCP checks in userspace mode do not treat CONNECT acceptance as endpoint liveness", async () => {
         const { runCheck } = require("../../../cloudflare/runner/checker");
         let connectTarget = null;
         const proxy = await listen(
@@ -249,19 +332,20 @@ describe("Cloudflare monitor runner", () => {
 
         const result = await runCheck({
             monitor: {
-                id: 3,
+                id: 13,
                 type: "port",
-                hostname: "db.internal",
-                port: 5432,
+                hostname: "missing.internal",
+                port: 3389,
                 timeout: 5,
             },
             networkProfile: { slug: "twingate", type: "twingate" },
             twingateProxyUrl: `http://127.0.0.1:${proxy.port}`,
+            twingateTunMode: "off",
         });
 
-        assert.strictEqual(result.status, UP);
-        assert.match(result.msg, /^\d+ ms$/);
-        assert.strictEqual(connectTarget, "db.internal:5432");
+        assert.strictEqual(result.status, DOWN);
+        assert.match(result.msg, /Twingate userspace TCP checks require TUN mode/);
+        assert.strictEqual(connectTarget, "missing.internal:3389");
     });
 
     test("Twingate TCP checks report resource or ACL rejection", async () => {
@@ -283,6 +367,7 @@ describe("Cloudflare monitor runner", () => {
             },
             networkProfile: { slug: "twingate", type: "twingate" },
             twingateProxyUrl: `http://127.0.0.1:${proxy.port}`,
+            twingateTunMode: "off",
         });
 
         assert.strictEqual(result.status, DOWN);
@@ -326,21 +411,16 @@ describe("Cloudflare monitor runner", () => {
         assert.deepStrictEqual(connectTargets.sort(), ["camera.internal:80", "camera.internal:8080"]);
     });
 
-    test("Twingate Ping checks in userspace mode use default TCP fallback ports", async () => {
+    test("Twingate Ping checks in userspace mode fail closed when fallback ports are not configured", async () => {
         const { DEFAULT_TWINGATE_PING_FALLBACK_PORTS, runCheck } = require("../../../cloudflare/runner/checker");
-        assert.deepStrictEqual(DEFAULT_TWINGATE_PING_FALLBACK_PORTS, [80, 443, 9100]);
+        assert.deepStrictEqual(DEFAULT_TWINGATE_PING_FALLBACK_PORTS, []);
 
         const connectTargets = [];
         const proxy = await listen(
             http.createServer().on("connect", (req, socket) => {
                 connectTargets.push(req.url);
-                if (req.url === "printer.internal:9100") {
-                    socket.write("HTTP/1.1 200 Connection Established\r\n\r\n");
-                    socket.end();
-                } else {
-                    socket.write("HTTP/1.1 403 Forbidden\r\n\r\n");
-                    socket.end();
-                }
+                socket.write("HTTP/1.1 200 Connection Established\r\n\r\n");
+                socket.end();
             })
         );
 
@@ -356,9 +436,12 @@ describe("Cloudflare monitor runner", () => {
             twingateTunMode: "off",
         });
 
-        assert.strictEqual(result.status, UP);
-        assert.match(result.msg, /^\d+ ms \(TCP 9100 via Twingate\)$/);
-        assert.ok(connectTargets.includes("printer.internal:9100"));
+        assert.strictEqual(result.status, DOWN);
+        assert.strictEqual(
+            result.msg,
+            "Twingate userspace mode cannot run ICMP ping. Enable TUN mode or configure verifiable TCP fallback ports."
+        );
+        assert.deepStrictEqual(connectTargets, []);
     });
 
     test("Twingate Ping checks fail closed in userspace mode when fallback ports are disabled", async () => {
@@ -380,7 +463,36 @@ describe("Cloudflare monitor runner", () => {
         assert.strictEqual(result.status, DOWN);
         assert.strictEqual(
             result.msg,
-            "Twingate userspace mode cannot run ICMP ping. Enable TUN mode or use a TCP Port monitor."
+            "Twingate userspace mode cannot run ICMP ping. Enable TUN mode or configure verifiable TCP fallback ports."
+        );
+    });
+
+    test("Twingate Ping userspace fallback does not treat raw TCP CONNECT acceptance as endpoint liveness", async () => {
+        const { runCheck } = require("../../../cloudflare/runner/checker");
+        const proxy = await listen(
+            http.createServer().on("connect", (_req, socket) => {
+                socket.write("HTTP/1.1 200 Connection Established\r\n\r\n");
+                socket.end();
+            })
+        );
+
+        const result = await runCheck({
+            monitor: {
+                id: 14,
+                type: "ping",
+                hostname: "printer.internal",
+                timeout: 5,
+                twingatePingFallbackPorts: [9100],
+            },
+            networkProfile: { slug: "twingate", type: "twingate" },
+            twingateProxyUrl: `http://127.0.0.1:${proxy.port}`,
+            twingateTunMode: "off",
+        });
+
+        assert.strictEqual(result.status, DOWN);
+        assert.match(
+            result.msg,
+            /Twingate userspace ping could not verify printer\.internal on TCP ports 9100: 9100: TCP fallback port 9100 cannot verify target liveness/
         );
     });
 

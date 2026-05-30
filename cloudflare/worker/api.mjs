@@ -1747,7 +1747,7 @@ async function listLatestHeartbeatsByMonitorId(env, monitorIds) {
             `WITH requested_monitor_ids(monitor_id) AS (
                 VALUES ${chunk.map(() => "(?)").join(", ")}
              )
-             SELECT h.monitor_id, h.status, h.ping, h.msg, h.checked_at
+             SELECT h.id, h.monitor_id, h.status, h.ping, h.msg, h.checked_at
              FROM requested_monitor_ids requested
              INNER JOIN heartbeats h
                  ON h.id = (
@@ -1777,15 +1777,12 @@ export async function getDashboardBootstrap(env) {
     const monitors = await listMonitorRows(env);
     const relationshipData = buildMonitorRelationshipData(monitors);
     const monitorIds = monitors.map((monitor) => Number(monitor.id));
-    const [tagsByMonitorId, notificationsByMonitorId, summariesByMonitorId] = await Promise.all([
+    const [tagsByMonitorId, notificationsByMonitorId, summariesByMonitorId, latestHeartbeatsByMonitorId] = await Promise.all([
         listTagsByMonitorId(env, monitorIds),
         listMonitorNotificationsByMonitorId(env, monitorIds),
         listRuntimeSummariesByMonitorId(env, monitorIds),
+        listLatestHeartbeatsByMonitorId(env, monitorIds),
     ]);
-    const missingSummaryMonitorIds = monitorIds.filter((monitorId) => !summariesByMonitorId.has(monitorId));
-    const latestHeartbeatsByMonitorId = missingSummaryMonitorIds.length > 0
-        ? await listLatestHeartbeatsByMonitorId(env, missingSummaryMonitorIds)
-        : new Map();
     const heartbeatList = {};
     const avgPingList = {};
     const uptimeList = {};
@@ -1793,12 +1790,16 @@ export async function getDashboardBootstrap(env) {
     const serializedMonitors = monitors.map((monitor) => {
         const monitorId = Number(monitor.id);
         const summary = summariesByMonitorId.get(monitorId);
-        const heartbeats = parseHeartbeatBarJson(summary?.heartbeat_bar_json);
-        const latestHeartbeat = summaryToHeartbeat(summary) || latestHeartbeatsByMonitorId.get(monitorId) || null;
+        const latestHeartbeat = selectLatestHeartbeat(
+            summaryToHeartbeat(summary),
+            latestHeartbeatsByMonitorId.get(monitorId) || null
+        );
+        const heartbeats = mergeSerializedHeartbeatRows(
+            parseHeartbeatBarJson(summary?.heartbeat_bar_json),
+            latestHeartbeat ? serializeHeartbeat(latestHeartbeat, monitor) : null
+        );
         if (heartbeats.length > 0) {
             heartbeatList[monitorId] = heartbeats;
-        } else if (latestHeartbeat) {
-            heartbeatList[monitorId] = [serializeHeartbeat(latestHeartbeat, monitor)];
         }
         avgPingList[monitorId] = normalizeNullableNumber(summary?.avg_ping);
         uptimeList[`${monitorId}_24`] = normalizeNullableNumber(summary?.uptime_24);
@@ -1871,6 +1872,40 @@ function summaryToHeartbeat(summary) {
         msg: summary.msg || "",
         checked_at: summary.checked_at,
     };
+}
+
+function selectLatestHeartbeat(summaryHeartbeat, indexedHeartbeat) {
+    if (!summaryHeartbeat) {
+        return indexedHeartbeat || null;
+    }
+    if (!indexedHeartbeat) {
+        return summaryHeartbeat;
+    }
+    return compareHeartbeatRows(indexedHeartbeat, summaryHeartbeat) > 0 ? indexedHeartbeat : summaryHeartbeat;
+}
+
+function compareHeartbeatRows(a, b) {
+    const checkedAtCompare = String(a?.checked_at || "").localeCompare(String(b?.checked_at || ""));
+    if (checkedAtCompare !== 0) {
+        return checkedAtCompare;
+    }
+    return Number(a?.id || 0) - Number(b?.id || 0);
+}
+
+function mergeSerializedHeartbeatRows(heartbeats = [], latestHeartbeat = null) {
+    const merged = Array.isArray(heartbeats) ? heartbeats.filter(Boolean).slice() : [];
+    if (
+        latestHeartbeat &&
+        !merged.some((heartbeat) =>
+            Number(heartbeat.monitorID) === Number(latestHeartbeat.monitorID) &&
+            heartbeat.time === latestHeartbeat.time
+        )
+    ) {
+        merged.push(latestHeartbeat);
+    }
+    return merged
+        .sort((a, b) => String(a?.time || "").localeCompare(String(b?.time || "")))
+        .slice(-DASHBOARD_HEARTBEAT_BAR_LIMIT);
 }
 
 /**
