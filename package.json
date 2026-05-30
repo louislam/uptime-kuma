@@ -74,7 +74,7 @@
         "@louislam/sqlite3": "15.1.6",
         "@vvo/tzdb": "~6.198.0",
         "args-parser": "~1.3.0",
-        "axios": "~0.31.0",
+        "axios": "~0.32.0",
         "badge-maker": "~3.3.1",
         "bcryptjs": "~2.4.3",
         "chardet": "~1.4.0",
@@ -111,7 +111,7 @@
         "kafkajs": "~2.2.4",
         "knex": "~3.1.0",
         "limiter": "~2.1.0",
-        "liquidjs": "~10.25.0",
+        "liquidjs": "~10.26.0",
         "marked": "~14.1.4",
         "mitt": "~3.0.1",
         "mongodb": "~4.17.2",
@@ -225,5 +225,21 @@
         "vuedraggable": "~4.1.0",
         "wait-on": "^7.2.0",
         "whatwg-url": "~12.0.1"
+    },
+    "allowScripts": {
+        "@louislam/sqlite3@15.1.6": true,
+        "@fortawesome/fontawesome-common-types@0.2.36": true,
+        "@fortawesome/fontawesome-svg-core@1.2.36": true,
+        "@fortawesome/free-regular-svg-icons@5.15.4": true,
+        "@fortawesome/free-solid-svg-icons@5.15.4": true,
+        "core-js@2.6.12": true,
+        "core-js@3.26.1": true,
+        "cpu-features@0.0.10": true,
+        "protobufjs@7.6.1": true,
+        "protobufjs@7.2.6": true,
+        "esbuild@0.21.5": true,
+        "oracledb@6.10.0": true,
+        "ssh2@1.17.0": true,
+        "vue-demi@0.12.5": true
     }
 }
