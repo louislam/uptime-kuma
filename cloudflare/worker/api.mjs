@@ -4240,7 +4240,7 @@ function normalizeMonitorInput(input, existing = {}) {
 
     const interval = Number(monitor.interval || existing.interval || 60);
     const timeout = Number(monitor.timeout || existing.timeout || 30);
-    const networkProfileId = normalizeNetworkProfileId(monitor.networkProfileId ?? monitor.network_profile_id);
+    const networkProfileId = normalizeNetworkProfileId(resolveMonitorNetworkProfileInput(input, existing));
     const parent = normalizeMonitorParent(monitor.parent ?? existing.parent);
     const proxyId = normalizeProxyId(resolveMonitorProxyInput(input, existing));
     assertWorkerTargetAllowed(monitor, networkProfileId);
@@ -6251,6 +6251,16 @@ function resolveMonitorProxyInput(input = {}, existing = {}) {
         return input.proxy_id;
     }
     return existing.proxy_id ?? existing.proxyId;
+}
+
+function resolveMonitorNetworkProfileInput(input = {}, existing = {}) {
+    if (Object.prototype.hasOwnProperty.call(input, "networkProfileId")) {
+        return input.networkProfileId;
+    }
+    if (Object.prototype.hasOwnProperty.call(input, "network_profile_id")) {
+        return input.network_profile_id;
+    }
+    return existing.network_profile_id ?? existing.networkProfileId;
 }
 
 function hasProxySelection(input = {}) {

@@ -4228,6 +4228,49 @@ describe("Cloudflare Worker API", () => {
         assert.strictEqual(invalidResponse.status, 400);
     });
 
+    test("clears a Twingate network route when a full monitor edit chooses direct", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            profiles: [
+                { id: "twingate", slug: "twingate", name: "Twingate", type: "twingate", enabled: 1 },
+            ],
+            monitors: [
+                {
+                    id: 42,
+                    name: "Public HTTP",
+                    type: "http",
+                    url: "https://example.com",
+                    method: "GET",
+                    timeout: 30,
+                    interval: 60,
+                    active: 1,
+                    network_profile_id: "twingate",
+                },
+            ],
+        });
+
+        const response = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/42", {
+                method: "PUT",
+                body: JSON.stringify({
+                    id: 42,
+                    name: "Public HTTP",
+                    type: "http",
+                    url: "https://example.com",
+                    method: "GET",
+                    timeout: 30,
+                    interval: 60,
+                    active: true,
+                    networkProfileId: null,
+                }),
+            }),
+            env
+        );
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(env.state.monitors[0].network_profile_id, null);
+    });
+
     test("check-now executes a sanitized monitor job and writes a heartbeat", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({
@@ -6342,7 +6385,7 @@ function createStatement(sql, state) {
                     }
                     return { success: true };
                 }
-                if (sql.includes("SET network_profile_id")) {
+                if (/UPDATE monitors SET\s+network_profile_id = \?, updated_at/i.test(sql)) {
                     const [networkProfileId, id] = this.values;
                     const monitor = state.monitors.find((candidate) => candidate.id === Number(id));
                     if (monitor) {
