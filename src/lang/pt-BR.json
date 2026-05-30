@@ -1615,5 +1615,17 @@
     "evolutionCustomMessageTitle": "Mensagem personalizada (opcional)",
     "evolutionCustomMessageDesc": "Deixe em branco para usar a mensagem padrão.",
     "WebSocket Options": "Opções do WebSocket",
-    "pingPacketSizeWarning": "Um tamanho de pacote menor que 16 não produz tempos de ida e volta no Linux"
+    "pingPacketSizeWarning": "Um tamanho de pacote menor que 16 não produz tempos de ida e volta no Linux",
+    "VKTeams Chat Id Description": "Para usuários, este é o endereço de e-mail deles. Para grupos e canais, obtenha o ID das configurações e adicione {'@'}chat.agent",
+    "VKTeams Template Format Description": "Para formatação de mensagens, o VKTeams suporta texto simples, MarkdownV2 e formatação HTML.",
+    "VKTeams Bot Token Description": "Você pode descobrir como obter um token de bot e outros detalhes em {0}.",
+    "VKTeams Base Url Description": "O URL base da API do VKTeams pode ser diferente em soluções locais (On-Premise). Padrão: https://myteam.mail.ru",
+    "VKTeams Use Template": "Use um modelo de mensagem personalizado",
+    "VKTeams Use Template Description": "Se ativada, a mensagem será enviada usando um modelo personalizado.",
+    "wayToGetEgoSMSToken": "Você pode obter seu nome de usuário e senha da API do EgoSMS {here}.",
+    "egosmsSenderDescription": "Identificação do remetente exibida aos destinatários (máximo de 11 caracteres). O padrão é EGOSMS se estiver vazio.",
+    "egosmsPhoneNumberDescription": "Número do destinatário com código do país, sem + ou 00 (ex.: 2567XXXXXXXX).",
+    "gamedigToken": "Token",
+    "gamedigTokenDescription": "Opcional. Alguns servidores de jogos exigem um token de autenticação.",
+    "Bearer Token": "Bearer Token"
 }
