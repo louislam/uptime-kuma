@@ -22,11 +22,15 @@ import utc from "dayjs/plugin/utc";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { loadToastSettings } from "./util-frontend";
 import { installUiNotificationLogging } from "./util/notification-log.mjs";
+import { installClearDeleteDoubleClickConfirm } from "./util/double-click-confirm.mjs";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.extend(relativeTime);
 
 installUiNotificationLogging();
+installClearDeleteDoubleClickConfirm(document, {
+    confirmText: () => i18n.global.t("Click again to confirm"),
+});
 
 const app = createApp({
     mixins: [socket, theme, mobile, datetime, publicMixin, lang],

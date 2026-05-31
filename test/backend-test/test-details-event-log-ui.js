@@ -49,4 +49,13 @@ describe("Details event log UI", () => {
             assert.match(source, /else if \(refreshCount\) \{[\s\S]*?this\.getImportantHeartbeatListLength\(\);/);
         }
     });
+
+    test("requires double-click confirmation for monitor clear-data actions", () => {
+        const detailsSource = readSource("src/pages/Details.vue");
+
+        assert.match(detailsSource, /isClearEventsArmed \? \$t\("Click again to confirm"\) : \$t\("Events"\)/);
+        assert.match(detailsSource, /isClearHeartbeatsArmed \? \$t\("Click again to confirm"\) : \$t\("Heartbeats"\)/);
+        assert.match(detailsSource, /requireDoubleClickConfirm\(this,\s*"clear-events"/);
+        assert.match(detailsSource, /requireDoubleClickConfirm\(this,\s*"clear-heartbeats"/);
+    });
 });

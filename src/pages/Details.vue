@@ -345,7 +345,7 @@
                         </li>
                         <li>
                             <button type="button" class="dropdown-item" @click="clearHeartbeatsDialog">
-                                {{ $t("Heartbeats") }}
+                                {{ isClearHeartbeatsArmed ? $t("Click again to confirm") : $t("Heartbeats") }}
                             </button>
                         </li>
                     </ul>
@@ -661,6 +661,9 @@ export default {
         isClearEventsArmed() {
             return isDoubleClickConfirmArmed(this, "clear-events");
         },
+        isClearHeartbeatsArmed() {
+            return isDoubleClickConfirmArmed(this, "clear-heartbeats");
+        },
     },
 
     watch: {
@@ -800,7 +803,9 @@ export default {
          * @returns {void}
          */
         clearHeartbeatsDialog() {
-            this.$refs.confirmClearHeartbeats.show();
+            requireDoubleClickConfirm(this, "clear-heartbeats", () => {
+                this.$refs.confirmClearHeartbeats.show();
+            });
         },
 
         /**

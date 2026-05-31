@@ -123,6 +123,11 @@ optgroup {
     border-radius: $button-border-radius;
 }
 
+.double-click-confirm-armed {
+    white-space: nowrap;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
 .btn-sm {
     border-radius: $button-border-radius-sm;
 }
