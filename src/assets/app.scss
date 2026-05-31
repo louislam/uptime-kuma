@@ -377,6 +377,13 @@ optgroup {
 
             &.active {
                 background-color: #dcf7e7;
+                box-shadow:
+                    inset 4px 0 0 $primary,
+                    inset 0 0 0 1px rgba($primary, 0.32);
+            }
+
+            &.active .monitor-name {
+                color: $light-font-color;
             }
         }
     }
@@ -540,7 +547,14 @@ optgroup {
             }
 
             &.active {
-                background-color: $dark-bg2;
+                background-color: rgba($primary, 0.14);
+                box-shadow:
+                    inset 4px 0 0 $primary,
+                    inset 0 0 0 1px rgba($primary, 0.3);
+            }
+
+            &.active .monitor-name {
+                color: #f2fff6;
             }
         }
     }
@@ -650,6 +664,13 @@ optgroup {
 
         &.active {
             background-color: #cdf8f4;
+            box-shadow:
+                inset 4px 0 0 $primary,
+                inset 0 0 0 1px rgba($primary, 0.28);
+        }
+
+        &.active .monitor-name {
+            font-weight: 700;
         }
         .tags {
             // Removes margin to line up tags list with uptime percentage

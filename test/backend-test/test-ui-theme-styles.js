@@ -41,4 +41,13 @@ describe("UI theme and button styling", () => {
         assert.match(layout, /\.light\s*\{[\s\S]*header\s*\{/);
         assert.match(layout, /\.light\s*\{[\s\S]*\.bottom-nav\s*\{/);
     });
+
+    test("selected monitor list item has a persistent selection rail and stronger label contrast", () => {
+        const appStyles = readSource("src/assets/app.scss");
+
+        assert.match(appStyles, /&\.active\s*\{[\s\S]*?box-shadow:\s*inset 4px 0 0 \$primary,/);
+        assert.match(appStyles, /&\.active\s+\.monitor-name\s*\{[\s\S]*?font-weight:\s*700;/);
+        assert.match(appStyles, /\.light\s*\{[\s\S]*?\.monitor-list\s*\{[\s\S]*?&\.active\s*\{[\s\S]*?box-shadow:\s*inset 4px 0 0 \$primary,/);
+        assert.match(appStyles, /\.dark\s*\{[\s\S]*?\.monitor-list\s*\{[\s\S]*?&\.active\s*\{[\s\S]*?box-shadow:\s*inset 4px 0 0 \$primary,/);
+    });
 });
