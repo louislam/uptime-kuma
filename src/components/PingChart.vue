@@ -69,6 +69,7 @@ const PING_CHART_LINE_STYLES = {
         borderWidth: 2,
     },
 };
+const CHART_BACKGROUND_REFRESH_MS = 60 * 1000;
 
 Chart.register(
     LineController,
@@ -315,13 +316,18 @@ export default {
 
                 this.chartDataFetchInterval = setInterval(
                     () => {
-                        this.$root.getMonitorChartData(this.monitorId, period, (res) => {
-                            if (res.ok) {
-                                this.chartRawData = res.data;
-                            }
-                        });
+                        this.$root.getMonitorChartData(
+                            this.monitorId,
+                            period,
+                            (res) => {
+                                if (res.ok) {
+                                    this.chartRawData = res.data;
+                                }
+                            },
+                            { forceRefresh: true }
+                        );
                     },
-                    5 * 60 * 1000
+                    CHART_BACKGROUND_REFRESH_MS
                 );
             }
         },

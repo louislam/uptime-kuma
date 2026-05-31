@@ -6,9 +6,15 @@ import {
     buildMonitorIndexes,
     dedupeCloudflareDashboardRequest,
     getCachedCloudflareChartData,
+    reuseUnchangedDashboardState,
     setCachedCloudflareChartData,
 } from "../../src/util/cloudflare-dashboard-state.mjs";
 
+/**
+ * Read a project source file for source-level UI assertions.
+ * @param {string} relativePath Source path relative to the repository root.
+ * @returns {string} Source content.
+ */
 function readSource(relativePath) {
     return fs.readFileSync(new URL(`../../${relativePath}`, import.meta.url), "utf8");
 }
@@ -78,6 +84,98 @@ describe("Cloudflare dashboard state helpers", () => {
                 globalThis.localStorage = originalLocalStorage;
             }
         }
+    });
+
+    test("reuses unchanged dashboard records during Worker refreshes", () => {
+        const previousHeartbeatList = {
+            1: [{ monitorID: 1, time: "2026-05-31 12:00:00", status: 1, ping: 12 }],
+            2: [{ monitorID: 2, time: "2026-05-31 12:00:00", status: 0, ping: null }],
+        };
+        const previous = {
+            monitorList: {
+                1: { id: 1, name: "API", active: true, getUrl() {} },
+                2: { id: 2, name: "Phone", active: true, getUrl() {} },
+            },
+            heartbeatList: previousHeartbeatList,
+            avgPingList: {
+                1: 12,
+                2: null,
+            },
+            uptimeList: {
+                "1_24": 1,
+                "2_24": 0,
+            },
+        };
+        const next = {
+            monitorList: {
+                1: { id: 1, name: "API", active: true },
+                2: { id: 2, name: "Phone", active: false },
+            },
+            heartbeatList: {
+                1: [{ monitorID: 1, time: "2026-05-31 12:00:00", status: 1, ping: 12 }],
+                2: [
+                    { monitorID: 2, time: "2026-05-31 12:00:00", status: 0, ping: null },
+                    { monitorID: 2, time: "2026-05-31 12:01:00", status: 1, ping: 34 },
+                ],
+            },
+            avgPingList: {
+                1: 12,
+                2: 34,
+            },
+            uptimeList: {
+                "1_24": 1,
+                "2_24": 0.5,
+            },
+        };
+
+        const merged = reuseUnchangedDashboardState(previous, next);
+
+        assert.notStrictEqual(merged.monitorList, previous.monitorList);
+        assert.strictEqual(merged.monitorList[1], previous.monitorList[1]);
+        assert.notStrictEqual(merged.monitorList[2], previous.monitorList[2]);
+        assert.notStrictEqual(merged.heartbeatList, previous.heartbeatList);
+        assert.strictEqual(merged.heartbeatList[1], previous.heartbeatList[1]);
+        assert.notStrictEqual(merged.heartbeatList[2], previous.heartbeatList[2]);
+        assert.strictEqual(merged.avgPingList[1], previous.avgPingList[1]);
+        assert.strictEqual(merged.uptimeList["1_24"], previous.uptimeList["1_24"]);
+    });
+
+    test("returns existing dashboard records when refreshed payload is unchanged", () => {
+        const previous = {
+            monitorList: {
+                1: { id: 1, name: "API", active: true, getUrl() {} },
+            },
+            heartbeatList: {
+                1: [{ monitorID: 1, time: "2026-05-31 12:00:00", status: 1, ping: 12 }],
+            },
+            avgPingList: {
+                1: 12,
+            },
+            uptimeList: {
+                "1_24": 1,
+            },
+        };
+        const next = {
+            monitorList: {
+                1: { id: 1, name: "API", active: true },
+            },
+            heartbeatList: {
+                1: [{ monitorID: 1, time: "2026-05-31 12:00:00", status: 1, ping: 12 }],
+            },
+            avgPingList: {
+                1: 12,
+            },
+            uptimeList: {
+                "1_24": 1,
+            },
+        };
+
+        const merged = reuseUnchangedDashboardState(previous, next);
+
+        assert.strictEqual(merged.monitorList, previous.monitorList);
+        assert.strictEqual(merged.heartbeatList, previous.heartbeatList);
+        assert.strictEqual(merged.avgPingList, previous.avgPingList);
+        assert.strictEqual(merged.uptimeList, previous.uptimeList);
     });
 
     test("monitor list components consume precomputed indexes and defer heartbeat canvases", () => {

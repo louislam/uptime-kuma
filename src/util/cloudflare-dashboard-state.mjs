@@ -44,7 +44,7 @@ export function buildMonitorIndexes(monitorList = {}) {
 /**
  * Deduplicate concurrent Worker dashboard requests.
  * @param {string} key Request cache key.
- * @param {Function} requestFactory Async request factory.
+ * @param {() => Promise<unknown>} requestFactory Async request factory.
  * @returns {Promise<unknown>} Request result.
  */
 export function dedupeCloudflareDashboardRequest(key, requestFactory) {
@@ -75,7 +75,7 @@ export function readCloudflareDashboardSecondaryCache() {
             return {};
         }
         return cached.state || {};
-    } catch (_) {
+    } catch {
         return {};
     }
 }
@@ -94,7 +94,7 @@ export function writeCloudflareDashboardSecondaryCache(state = {}) {
                 state,
             })
         );
-    } catch (_) {
+    } catch {
         // Storage can be full or unavailable; live API reads still work.
     }
 }
@@ -106,11 +106,18 @@ export function writeCloudflareDashboardSecondaryCache(state = {}) {
 export function clearCloudflareDashboardSecondaryCache() {
     try {
         globalThis.localStorage?.removeItem(SECONDARY_CACHE_KEY);
-    } catch (_) {
+    } catch {
         // Ignore storage failures during logout.
     }
 }
 
+/**
+ * Read cached chart datapoints for a monitor and period.
+ * @param {object} cache Secondary dashboard cache.
+ * @param {number|string} monitorID Monitor ID.
+ * @param {number|string} period Chart period in hours.
+ * @returns {object[]|null} Cached chart datapoints, or null when unavailable.
+ */
 export function getCachedCloudflareChartData(cache, monitorID, period) {
     const entry = cache?.chartData?.[chartCacheKey(monitorID, period)];
     if (!entry || Date.now() - Number(entry.generatedAt) > CHART_CACHE_MAX_AGE_MS) {
@@ -119,6 +126,14 @@ export function getCachedCloudflareChartData(cache, monitorID, period) {
     return Array.isArray(entry.data) ? entry.data : null;
 }
 
+/**
+ * Persist chart datapoints in the secondary dashboard cache.
+ * @param {object} cache Secondary dashboard cache.
+ * @param {number|string} monitorID Monitor ID.
+ * @param {number|string} period Chart period in hours.
+ * @param {object[]} data Chart datapoints.
+ * @returns {object} Updated secondary dashboard cache.
+ */
 export function setCachedCloudflareChartData(cache, monitorID, period, data) {
     const nextCache = {
         ...(cache || {}),
@@ -134,10 +149,132 @@ export function setCachedCloudflareChartData(cache, monitorID, period, data) {
     return nextCache;
 }
 
+/**
+ * Reuse unchanged dashboard records so background refreshes do not force Vue
+ * components, canvases, or charts to redraw when the visible data is identical.
+ * @param {object} previous Previous dashboard state.
+ * @param {object} next Incoming dashboard state.
+ * @returns {object} Dashboard state with unchanged references preserved.
+ */
+export function reuseUnchangedDashboardState(previous = {}, next = {}) {
+    return {
+        ...next,
+        monitorList: reuseUnchangedRecord(previous.monitorList, next.monitorList),
+        heartbeatList: reuseUnchangedRecord(previous.heartbeatList, next.heartbeatList),
+        avgPingList: reuseUnchangedRecord(previous.avgPingList, next.avgPingList),
+        uptimeList: reuseUnchangedRecord(previous.uptimeList, next.uptimeList),
+    };
+}
+
+/**
+ * Build the chart cache key for a monitor and period.
+ * @param {number|string} monitorID Monitor ID.
+ * @param {number|string} period Chart period in hours.
+ * @returns {string} Cache key.
+ */
 function chartCacheKey(monitorID, period) {
     return `${monitorID}:${period}`;
 }
 
+/**
+ * Reuse unchanged values in a keyed dashboard record.
+ * @param {object} previousRecord Previous keyed record.
+ * @param {object} nextRecord Incoming keyed record.
+ * @returns {object} Merged keyed record.
+ */
+function reuseUnchangedRecord(previousRecord, nextRecord) {
+    if (!isPlainObject(previousRecord) || !isPlainObject(nextRecord)) {
+        return nextRecord;
+    }
+
+    let changed = false;
+    const merged = {};
+    const previousKeys = Object.keys(previousRecord);
+    const nextKeys = Object.keys(nextRecord);
+
+    if (previousKeys.length !== nextKeys.length) {
+        changed = true;
+    }
+
+    for (const key of nextKeys) {
+        if (Object.prototype.hasOwnProperty.call(previousRecord, key)
+            && serializableDeepEqual(previousRecord[key], nextRecord[key])) {
+            merged[key] = previousRecord[key];
+        } else {
+            merged[key] = nextRecord[key];
+            changed = true;
+        }
+    }
+
+    return changed ? merged : previousRecord;
+}
+
+/**
+ * Deep-compare serializable values while ignoring functions.
+ * @param {unknown} left First value.
+ * @param {unknown} right Second value.
+ * @returns {boolean} True when values are serializably equal.
+ */
+function serializableDeepEqual(left, right) {
+    if (Object.is(left, right)) {
+        return true;
+    }
+
+    if (Array.isArray(left) || Array.isArray(right)) {
+        if (!Array.isArray(left) || !Array.isArray(right) || left.length !== right.length) {
+            return false;
+        }
+
+        return left.every((item, index) => serializableDeepEqual(item, right[index]));
+    }
+
+    if (isPlainObject(left) || isPlainObject(right)) {
+        if (!isPlainObject(left) || !isPlainObject(right)) {
+            return false;
+        }
+
+        const leftKeys = serializableKeys(left);
+        const rightKeys = serializableKeys(right);
+        if (leftKeys.length !== rightKeys.length) {
+            return false;
+        }
+
+        return leftKeys.every((key, index) => (
+            key === rightKeys[index]
+            && serializableDeepEqual(left[key], right[key])
+        ));
+    }
+
+    return false;
+}
+
+/**
+ * Get sorted keys that affect serialized dashboard equality.
+ * @param {object} value Object to inspect.
+ * @returns {string[]} Serializable keys.
+ */
+function serializableKeys(value) {
+    return Object.keys(value)
+        .filter((key) => typeof value[key] !== "function" && value[key] !== undefined)
+        .sort();
+}
+
+/**
+ * Check for non-array objects.
+ * @param {unknown} value Value to inspect.
+ * @returns {boolean} True when value is a plain object for this module's purposes.
+ */
+function isPlainObject(value) {
+    return value != null && typeof value === "object" && !Array.isArray(value);
+}
+
+/**
+ * Collect active leaf monitor IDs within a group.
+ * @param {object} groupMonitor Group monitor.
+ * @param {object} monitorList Monitor map keyed by ID.
+ * @param {object} childrenByParentId Child monitor IDs by parent ID.
+ * @returns {number[]} Active leaf monitor IDs.
+ */
 function collectActiveLeafIds(groupMonitor, monitorList, childrenByParentId) {
     const result = [];
     for (const childId of childrenByParentId[String(groupMonitor.id)] || []) {
@@ -154,6 +291,12 @@ function collectActiveLeafIds(groupMonitor, monitorList, childrenByParentId) {
     return result;
 }
 
+/**
+ * Sort monitors by active state, weight, then name.
+ * @param {object} a First monitor.
+ * @param {object} b Second monitor.
+ * @returns {number} Sort order.
+ */
 function compareMonitors(a, b) {
     if (!a || !b) {
         return 0;

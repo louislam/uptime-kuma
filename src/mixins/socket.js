@@ -22,6 +22,7 @@ import {
     dedupeCloudflareDashboardRequest,
     getCachedCloudflareChartData,
     readCloudflareDashboardSecondaryCache,
+    reuseUnchangedDashboardState,
     setCachedCloudflareChartData,
 } from "../util/cloudflare-dashboard-state.mjs";
 const toast = useToast();
@@ -35,6 +36,7 @@ const cloudflareWorkerHostnames = new Set([
     "uptime.wgsglobal.app",
     "up.wgsglobal.app",
 ]);
+const CLOUDFLARE_DASHBOARD_AUTO_REFRESH_MS = 30 * 1000;
 const CLOUDFLARE_RECENT_HEARTBEAT_LIMIT = 150;
 const CLOUDFLARE_DASHBOARD_CACHE_KEY = "uptimeworker.cloudflare.dashboard.cache.v1";
 const CLOUDFLARE_DASHBOARD_CACHE_MAX_AGE_MS = 15 * 60 * 1000;
@@ -81,6 +83,9 @@ export default {
             proxyList: [],
             dashboardIndexes: buildMonitorIndexes({}),
             cloudflareDashboardSecondaryCache: {},
+            cloudflareDashboardAutoRefreshInterval: null,
+            cloudflareDashboardAutoRefreshInFlight: false,
+            cloudflareDashboardVisibilityHandler: null,
             isCloudflareWorkerUI: false,
             workerLocalAuthConfigured: false,
             connectionErrorMsg: `${this.$t("Cannot connect to the socket server.")} ${this.$t("Reconnecting...")}`,
@@ -99,6 +104,10 @@ export default {
 
     created() {
         this.initSocketIO();
+    },
+
+    beforeUnmount() {
+        this.stopCloudflareWorkerDashboardAutoRefresh();
     },
 
     methods: {
@@ -376,7 +385,9 @@ export default {
                     this.cloudflareDashboardSecondaryCache = readCloudflareDashboardSecondaryCache();
                     this.applyCloudflareWorkerDashboardCache();
                     await this.loadCloudflareWorkerData();
+                    this.startCloudflareWorkerDashboardAutoRefresh();
                 } else {
+                    this.stopCloudflareWorkerDashboardAutoRefresh();
                     this.loggedIn = false;
                     this.username = null;
                     this.socket.token = null;
@@ -398,12 +409,14 @@ export default {
          * @param {object} options Load options.
          * @param {boolean} options.refreshSidecars Whether to refresh sidecar lists.
          * @param {boolean} options.refreshHeartbeatHistories Whether to refresh compatibility heartbeat histories.
-         * @returns {Promise<void>}
+         * @param {boolean} options.silentErrors Whether to keep current UI state on refresh failure.
+         * @returns {Promise<boolean>} True when data loaded successfully.
          */
         async loadCloudflareWorkerData(options = {}) {
             const {
                 refreshSidecars = true,
                 refreshHeartbeatHistories = false,
+                silentErrors = false,
             } = options;
 
             try {
@@ -459,11 +472,18 @@ export default {
                 if (refreshHeartbeatHistories) {
                     void this.refreshCloudflareWorkerHeartbeatHistories(monitors);
                 }
+                return true;
             } catch (error) {
+                if (silentErrors) {
+                    console.warn(`Failed to refresh Cloudflare Worker monitor data: ${error.message}`);
+                    return false;
+                }
+
                 console.error(`Failed to load Cloudflare Worker monitor data: ${error.message}`);
                 this.connectionErrorMsg = `Cannot load Cloudflare Worker monitor data. [${error.message}]`;
                 this.socket.connected = false;
                 this.statusPageListLoaded = true;
+                return false;
             }
         },
 
@@ -486,19 +506,97 @@ export default {
          * @returns {void}
          */
         applyCloudflareWorkerDashboardState(state) {
-            const monitorList = state.monitorList || {};
+            const mergedState = reuseUnchangedDashboardState({
+                monitorList: this.monitorList,
+                heartbeatList: this.heartbeatList,
+                avgPingList: this.avgPingList,
+                uptimeList: this.uptimeList,
+            }, state || {});
+            const monitorList = mergedState.monitorList || {};
             this.assignMonitorUrlParser(monitorList);
             this.monitorList = monitorList;
-            this.heartbeatList = state.heartbeatList || {};
-            this.avgPingList = state.avgPingList || {};
-            this.uptimeList = state.uptimeList || {};
-            this.notificationList = Array.isArray(state.notificationList) ? state.notificationList : this.notificationList;
-            this.proxyList = normalizeProxyList(state.proxyList || this.proxyList);
-            this.dockerHostList = Array.isArray(state.dockerHostList) ? state.dockerHostList : this.dockerHostList;
-            this.remoteBrowserList = Array.isArray(state.remoteBrowserList) ? state.remoteBrowserList : this.remoteBrowserList;
-            this.statusPageList = state.statusPageList || this.statusPageList;
-            this.statusPageListLoaded = state.statusPageListLoaded ?? this.statusPageListLoaded;
+            this.heartbeatList = mergedState.heartbeatList || {};
+            this.avgPingList = mergedState.avgPingList || {};
+            this.uptimeList = mergedState.uptimeList || {};
+            this.notificationList = Array.isArray(mergedState.notificationList)
+                ? mergedState.notificationList
+                : this.notificationList;
+            this.proxyList = normalizeProxyList(mergedState.proxyList || this.proxyList);
+            this.dockerHostList = Array.isArray(mergedState.dockerHostList)
+                ? mergedState.dockerHostList
+                : this.dockerHostList;
+            this.remoteBrowserList = Array.isArray(mergedState.remoteBrowserList)
+                ? mergedState.remoteBrowserList
+                : this.remoteBrowserList;
+            this.statusPageList = mergedState.statusPageList || this.statusPageList;
+            this.statusPageListLoaded = mergedState.statusPageListLoaded ?? this.statusPageListLoaded;
             this.rebuildDashboardIndexes();
+        },
+
+        /**
+         * Keep the Worker-backed dashboard fresh while the tab is open.
+         * @returns {void}
+         */
+        startCloudflareWorkerDashboardAutoRefresh() {
+            if (!this.isCloudflareWorkerUI || this.cloudflareDashboardAutoRefreshInterval != null) {
+                return;
+            }
+
+            this.cloudflareDashboardVisibilityHandler = () => {
+                if (document.visibilityState === "visible") {
+                    void this.refreshCloudflareWorkerDashboardInBackground();
+                }
+            };
+            document.addEventListener("visibilitychange", this.cloudflareDashboardVisibilityHandler);
+            this.cloudflareDashboardAutoRefreshInterval = setInterval(() => {
+                void this.refreshCloudflareWorkerDashboardInBackground();
+            }, CLOUDFLARE_DASHBOARD_AUTO_REFRESH_MS);
+        },
+
+        /**
+         * Stop Worker dashboard polling.
+         * @returns {void}
+         */
+        stopCloudflareWorkerDashboardAutoRefresh() {
+            if (this.cloudflareDashboardAutoRefreshInterval != null) {
+                clearInterval(this.cloudflareDashboardAutoRefreshInterval);
+                this.cloudflareDashboardAutoRefreshInterval = null;
+            }
+
+            if (this.cloudflareDashboardVisibilityHandler) {
+                document.removeEventListener("visibilitychange", this.cloudflareDashboardVisibilityHandler);
+                this.cloudflareDashboardVisibilityHandler = null;
+            }
+
+            this.cloudflareDashboardAutoRefreshInFlight = false;
+        },
+
+        /**
+         * Refresh Worker dashboard data without replacing the page or showing loading chrome.
+         * @returns {Promise<void>}
+         */
+        async refreshCloudflareWorkerDashboardInBackground() {
+            if (
+                !this.isCloudflareWorkerUI
+                || !this.loggedIn
+                || document.visibilityState !== "visible"
+                || this.cloudflareDashboardAutoRefreshInFlight
+            ) {
+                return;
+            }
+
+            this.cloudflareDashboardAutoRefreshInFlight = true;
+            try {
+                const refreshed = await this.loadCloudflareWorkerData({
+                    refreshSidecars: false,
+                    silentErrors: true,
+                });
+                if (refreshed) {
+                    this.socket.connected = true;
+                }
+            } finally {
+                this.cloudflareDashboardAutoRefreshInFlight = false;
+            }
         },
 
         rebuildDashboardIndexes() {
@@ -701,7 +799,9 @@ export default {
                         this.username = res.username || this.getJWTPayload()?.username;
                         this.workerLocalAuthConfigured = res.localAuthConfigured ?? this.workerLocalAuthConfigured;
                         if (this.isCloudflareWorkerUI) {
-                            this.loadCloudflareWorkerData();
+                            this.loadCloudflareWorkerData().then(() => {
+                                this.startCloudflareWorkerDashboardAutoRefresh();
+                            });
                         }
 
                         // Trigger Chrome Save Password
@@ -737,6 +837,7 @@ export default {
          * @returns {void}
          */
         logout() {
+            this.stopCloudflareWorkerDashboardAutoRefresh();
             socket.emit("logout", () => {});
             this.storage().removeItem("token");
             this.socket.token = null;
@@ -1006,9 +1107,17 @@ export default {
          * @param {string} monitorID - The ID of the monitor.
          * @param {number} period - The time period for the chart data, in hours.
          * @param {socketCB} callback - The callback function to handle the chart data.
+         * @param {object} options - Chart data options.
          * @returns {void}
          */
-        getMonitorChartData(monitorID, period, callback) {
+        getMonitorChartData(monitorID, period, callback, options = {}) {
+            if (this.isCloudflareWorkerUI && options.forceRefresh) {
+                refreshCloudflareChartData(this, monitorID, period)
+                    .then((data) => callback?.({ ok: true, data }))
+                    .catch((error) => callback?.({ ok: false, msg: error.message }));
+                return;
+            }
+
             socket.emit("getMonitorChartData", monitorID, period, callback);
         },
     },
@@ -2178,6 +2287,13 @@ async function getCloudflareChartData(app, monitorID, periodHours) {
     return await refreshCloudflareChartData(app, monitorID, validPeriodHours);
 }
 
+/**
+ * Fetch fresh Worker chart datapoints and update the local cache.
+ * @param {object} app Vue root component instance.
+ * @param {number|string} monitorID Monitor ID.
+ * @param {number|string} periodHours Requested chart period in hours.
+ * @returns {Promise<object[]>} Chart datapoints.
+ */
 async function refreshCloudflareChartData(app, monitorID, periodHours) {
     return await dedupeCloudflareDashboardRequest(`chart:${monitorID}:${periodHours}`, async () => {
         const body = await requestCloudflareJson(`/api/monitors/${monitorID}/chart?period=${periodHours}`);
