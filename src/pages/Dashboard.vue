@@ -8,7 +8,7 @@
                         {{ $t("Add New Monitor") }}
                     </router-link>
                 </div>
-                <MonitorList :scrollbar="true" />
+                <MonitorList :scrollbar="true" :use-page-scroll="true" />
             </aside>
 
             <div
@@ -179,12 +179,14 @@ export default {
 
 .dashboard-shell {
     display: flex;
-    align-items: flex-start;
+    align-items: stretch;
     width: 100%;
     min-width: 0;
 }
 
 .dashboard-sidebar {
+    display: flex;
+    flex-direction: column;
     flex: 0 0 auto;
     min-width: 0;
     padding-left: 0;

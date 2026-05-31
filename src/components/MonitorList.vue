@@ -1,5 +1,5 @@
 <template>
-    <div class="shadow-box mb-3 p-0" :style="boxStyle">
+    <div class="shadow-box mb-3 p-0 monitor-list-box" :style="boxStyle">
         <div ref="listHeader" class="list-header">
             <!-- Line 1: Checkbox + Status + Tags + Search Bar -->
             <div class="filter-row">
@@ -152,7 +152,7 @@
         <div
             ref="monitorList"
             class="monitor-list px-2"
-            :class="{ scrollbar: scrollbar }"
+            :class="{ scrollbar: scrollbar && !usePageScroll }"
             :style="monitorListStyle"
             data-testid="monitor-list"
         >
@@ -220,6 +220,11 @@ export default {
         scrollbar: {
             type: Boolean,
         },
+        /** Let the containing page own vertical scrolling on desktop */
+        usePageScroll: {
+            type: Boolean,
+            default: false,
+        },
     },
     data() {
         return {
@@ -254,6 +259,13 @@ export default {
             const style = {
                 "--monitor-name-column-width": `${this.nameColumnWidth}%`,
             };
+
+            if (this.usePageScroll && !this.$root.isMobile) {
+                return {
+                    ...style,
+                    flex: "1 1 auto",
+                };
+            }
 
             if (window.innerWidth > 550) {
                 return {
@@ -290,6 +302,10 @@ export default {
         },
 
         monitorListStyle() {
+            if (this.usePageScroll && !this.$root.isMobile) {
+                return {};
+            }
+
             return {
                 height: `calc(100% - ${this.listHeaderHeight + 6}px)`,
             };
