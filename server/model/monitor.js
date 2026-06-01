@@ -964,8 +964,18 @@ class Monitor extends BeanModel {
                     bean.msg = error.message;
                 }
 
-                if (this.getSaveErrorResponse() && error?.response?.data !== undefined) {
-                    await this.saveResponseData(bean, error.response.data);
+                if (this.getSaveErrorResponse() && error?.response) {
+                    if (typeof error.response.status === "number") {
+                        bean.status_code = error.response.status;
+                    }
+                    if (error.response.headers) {
+                        bean.response_headers = Buffer.from(JSON.stringify(error.response.headers), "utf8").toString(
+                            "base64"
+                        );
+                    }
+                    if (error.response.data !== undefined) {
+                        await this.saveResponseData(bean, error.response.data);
+                    }
                 }
 
                 // If UP come in here, it must be upside down mode
@@ -1102,7 +1112,7 @@ class Monitor extends BeanModel {
 
             // Send to frontend
             log.debug("monitor", `[${this.name}] Send to socket`);
-            io.to(this.user_id).emit("heartbeat", bean.toJSON());
+            io.to(this.user_id).emit("heartbeat", await bean.toJSONAsync({ decodeResponse: true }));
             Monitor.sendStats(io, this.id, this.user_id);
 
             // Store to database

@@ -290,6 +290,8 @@
     "Method": "Method",
     "Body": "Body",
     "Headers": "Headers",
+    "Response Body": "Response Body",
+    "Show response details": "Show response details",
     "PushUrl": "Push URL",
     "HeadersInvalidFormatBecause": "The request headers are not valid JSON because {error}",
     "BodyInvalidFormatBecause": "The request body is not valid JSON because {error}",
