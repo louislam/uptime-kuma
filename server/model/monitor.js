@@ -47,6 +47,7 @@ const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification");
 const { Proxy } = require("../proxy");
+const { setLongTimeout, clearLongTimeout } = require("../long-timeout");
 const { demoMode } = require("../config");
 const version = require("../../package.json").version;
 const apicache = require("../modules/apicache");
@@ -765,7 +766,7 @@ class Monitor extends BeanModel {
                             // No need to insert successful heartbeat for push type, so end here
                             retries = 0;
                             log.debug("monitor", `[${this.name}] timeout = ${timeout}`);
-                            this.heartbeatInterval = setTimeout(safeBeat, timeout);
+                            this.heartbeatInterval = setLongTimeout(safeBeat, timeout);
                             return;
                         }
                     } else {
@@ -1124,7 +1125,7 @@ class Monitor extends BeanModel {
 
                 log.debug("monitor", `[${this.name}] Next heartbeat in: ${intervalRemainingMs}ms`);
 
-                this.heartbeatInterval = setTimeout(safeBeat, intervalRemainingMs);
+                this.heartbeatInterval = setLongTimeout(safeBeat, intervalRemainingMs);
             } else {
                 log.info("monitor", `[${this.name}] isStop = true, no next check.`);
             }
@@ -1144,14 +1145,14 @@ class Monitor extends BeanModel {
 
                 if (!this.isStop) {
                     log.info("monitor", "Try to restart the monitor");
-                    this.heartbeatInterval = setTimeout(safeBeat, this.interval * 1000);
+                    this.heartbeatInterval = setLongTimeout(safeBeat, this.interval * 1000);
                 }
             }
         };
 
         // Delay Push Type
         if (this.type === "push") {
-            setTimeout(() => {
+            this.heartbeatInterval = setLongTimeout(() => {
                 safeBeat();
             }, this.interval * 1000);
         } else {
@@ -1255,7 +1256,7 @@ class Monitor extends BeanModel {
      * @returns {Promise<void>}
      */
     async stop() {
-        clearTimeout(this.heartbeatInterval);
+        clearLongTimeout(this.heartbeatInterval);
         this.isStop = true;
 
         this.prometheus?.remove();
