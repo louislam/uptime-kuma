@@ -40,8 +40,12 @@ class DnsMonitorType extends MonitorType {
                 break;
 
             case "TXT":
+                // DNS TXT records have a 255 char limit per string, so long records
+                // (like DKIM keys) are split into multiple chunks. Join them for
+                // condition checking to handle full DKIM strings.
                 dnsMessage = `Records: ${dnsRes.join(" | ")}`;
-                conditionsResult = dnsRes.flat().some((record) => handleConditions({ record }));
+                const txtRecord = dnsRes.join("");
+                conditionsResult = handleConditions({ record: txtRecord });
                 break;
 
             case "CNAME":
