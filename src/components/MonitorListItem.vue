@@ -63,8 +63,8 @@
         <transition name="slide-fade-up">
             <div v-if="!isCollapsed" class="childs">
                 <MonitorListItem
-                    v-for="(item, index) in sortedChildMonitorList"
-                    :key="index"
+                    v-for="item in sortedChildMonitorList"
+                    :key="item.id"
                     :monitor="item"
                     :isSelectMode="isSelectMode"
                     :isSelected="isSelected"
