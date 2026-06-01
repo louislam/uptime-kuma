@@ -185,6 +185,19 @@
                         data-testid="analytics-script-url-input"
                     />
                 </div>
+                <!-- Cookie Consent Banner Toggle - show only for Google Analytics -->
+                <div v-if="config.analyticsType === 'google'" class="my-3 form-check form-switch">
+                    <input
+                        id="show-cookie-consent"
+                        v-model="config.showCookieConsent"
+                        class="form-check-input"
+                        type="checkbox"
+                        data-testid="show-cookie-consent-checkbox"
+                    />
+                    <label class="form-check-label" for="show-cookie-consent">
+                        {{ $t("Show Cookie Consent Banner") }}
+                    </label>
+                </div>
 
                 <!-- RSS Title -->
                 <div class="my-3">
@@ -546,6 +559,22 @@
                 @incident-updated="loadIncidentHistory"
             />
 
+            <!-- Cookie Consent Banner -->
+            <div
+                v-if="showCookieBanner"
+                class="cookie-consent-banner shadow-box p-3 mb-4 d-flex justify-content-between align-items-center"
+            >
+                <span>{{ $t("This site uses Google Analytics. Do you accept cookies?") }}</span>
+                <div>
+                    <button class="btn btn-primary btn-sm me-2" @click="acceptCookies">
+                        {{ $t("Accept") }}
+                    </button>
+                    <button class="btn btn-secondary btn-sm" @click="declineCookies">
+                        {{ $t("Decline") }}
+                    </button>
+                </div>
+            </div>
+
             <footer class="mt-5 mb-4">
                 <div class="custom-footer-text text-start">
                     <strong v-if="enableEditMode">{{ $t("Custom Footer") }}:</strong>
@@ -709,6 +738,8 @@ export default {
             incidentHistoryLoading: false,
             incidentHistoryNextCursor: null,
             incidentHistoryHasMore: false,
+            showCookieBanner: false,
+            cookieConsentGiven: false,
         };
     },
     computed: {
@@ -718,6 +749,9 @@ export default {
             } else {
                 return this.baseURL + this.imgDataUrl;
             }
+        },
+        shouldShowCookieBanner() {
+            return this.config.analyticsType === "google" && this.config.showCookieConsent && !this.cookieConsentGiven;
         },
 
         /**
@@ -1011,6 +1045,7 @@ export default {
                 this.incident = res.data.incident;
                 this.maintenanceList = res.data.maintenanceList;
                 this.$root.publicGroupList = res.data.publicGroupList;
+                this.initAnalytics();
 
                 this.loading = false;
 
@@ -1055,6 +1090,57 @@ export default {
                 );
             } else {
                 return axios.get("/api/status-page/" + this.slug);
+            }
+        },
+
+        acceptCookies() {
+            localStorage.setItem("cookie-consent", "accepted");
+            this.cookieConsentGiven = true;
+            this.showCookieBanner = false;
+            this.loadGoogleAnalytics();
+        },
+
+        declineCookies() {
+            localStorage.setItem("cookie-consent", "declined");
+            this.showCookieBanner = false;
+        },
+
+        loadGoogleAnalytics() {
+            if (this.config.analyticsId) {
+                const script = document.createElement("script");
+                script.src = `https://www.googletagmanager.com/gtag/js?id=${this.config.analyticsId}`;
+                script.async = true;
+                document.head.appendChild(script);
+
+                window.dataLayer = window.dataLayer || [];
+                /**
+                 *
+                 */
+                function gtag() {
+                    window.dataLayer.push(arguments);
+                }
+                gtag("js", new Date());
+                gtag("config", this.config.analyticsId);
+            }
+        },
+
+        initAnalytics() {
+            if (this.config.analyticsType !== "google") {
+                return;
+            }
+
+            const consent = localStorage.getItem("cookie-consent");
+            if (this.config.showCookieConsent) {
+                if (consent === "accepted") {
+                    this.cookieConsentGiven = true;
+                    this.loadGoogleAnalytics();
+                } else if (!consent) {
+                    this.showCookieBanner = true;
+                }
+                // if "declined", do nothing
+            } else {
+                // No consent banner needed, load GA directly
+                this.loadGoogleAnalytics();
             }
         },
 
@@ -1781,5 +1867,16 @@ footer {
     .incident-list-box {
         padding: 0;
     }
+}
+
+.cookie-consent-banner {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    width: 90%;
+    max-width: 600px;
+    border-radius: 10px;
 }
 </style>
