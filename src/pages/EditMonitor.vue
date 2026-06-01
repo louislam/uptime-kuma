@@ -1555,14 +1555,12 @@
                                     (monitor.type === 'globalping' && monitor.subtype === 'http')
                                 "
                                 class="my-3 form-check"
-                                :title="monitor.ignoreTls ? $t('ignoredTLSError') : ''"
                             >
                                 <input
                                     id="expiry-notification"
                                     v-model="monitor.expiryNotification"
                                     class="form-check-input"
                                     type="checkbox"
-                                    :disabled="monitor.ignoreTls"
                                 />
                                 <label class="form-check-label" for="expiry-notification">
                                     {{ $t("Certificate Expiry Notification") }}
@@ -3769,11 +3767,6 @@ message HealthCheckResponse {
             this.monitor.game = newGameObject.keys[0];
         },
 
-        "monitor.ignoreTls"(newVal) {
-            if (newVal) {
-                this.monitor.expiryNotification = false;
-            }
-        },
     },
     mounted() {
         this.init();

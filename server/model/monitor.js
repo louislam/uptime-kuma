@@ -2109,7 +2109,7 @@ class Monitor extends BeanModel {
         await this.updateTlsInfo(tlsInfo);
         this.prometheus?.update(null, tlsInfo, null);
 
-        if (!this.getIgnoreTls() && this.isEnabledExpiryNotification()) {
+        if (this.isEnabledExpiryNotification()) {
             log.debug("monitor", `[${this.name}] call checkCertExpiryNotifications`);
             await checkCertExpiryNotifications(this, tlsInfo);
         }
