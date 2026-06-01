@@ -123,6 +123,19 @@
                                 </select>
                             </div>
 
+                            <div v-if="maintenance.strategy === 'manual'" class="my-3 form-check">
+                                <input
+                                    id="auto-disable-on-up"
+                                    v-model="maintenance.autoDisableOnUp"
+                                    class="form-check-input"
+                                    type="checkbox"
+                                />
+                                <label class="form-check-label" for="auto-disable-on-up">
+                                    {{ $t("autoDisableOnUp") }}
+                                </label>
+                                <div class="form-text">{{ $t("autoDisableOnUpDescription") }}</div>
+                            </div>
+
                             <template v-if="maintenance.strategy === 'cron'">
                                 <!-- Cron -->
                                 <div class="my-3">
