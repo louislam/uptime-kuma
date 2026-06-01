@@ -47,6 +47,26 @@
             </p>
         </div>
 
+        <label for="telegram-topic-name" class="form-label">{{ $t("telegramCreateTopic") }}</label>
+        <div class="input-group mb-1">
+            <input
+                id="telegram-topic-name"
+                v-model="$parent.notification.telegramTopicName"
+                type="text"
+                class="form-control"
+                :placeholder="$t('telegramTopicNamePlaceholder')"
+            />
+            <button
+                class="btn btn-outline-secondary"
+                type="button"
+                :disabled="!$parent.notification.telegramBotToken || !$parent.notification.telegramChatID"
+                @click="createTelegramTopic"
+            >
+                {{ $t("Create") }}
+            </button>
+        </div>
+        <p class="form-text">{{ $t("telegramCreateTopicDescription") }}</p>
+
         <label for="message_thread_id" class="form-label">{{ $t("telegramMessageThreadID") }}</label>
         <input
             id="message_thread_id"
@@ -199,6 +219,43 @@ Uptime Kuma Alert{% if monitorJSON %} - {{ monitorJSON['name'] }}{% endif %}
                 }
             } catch (error) {
                 this.$root.toastError(error.message);
+            }
+        },
+
+        /**
+         * Create a new Telegram topic and use it for notifications
+         * @returns {Promise<void>}
+         * @throws The topic could not be created
+         */
+        async createTelegramTopic() {
+            const name = (this.$parent.notification.telegramTopicName || "").trim();
+
+            if (!name) {
+                this.$root.toastError(this.$t("telegramTopicNameRequired"));
+                return;
+            }
+
+            if (this.$parent.notification.telegramMessageThreadID) {
+                this.$root.toastError(this.$t("telegramThreadAlreadyExists"));
+                return;
+            }
+
+            try {
+                const url = `${this.$parent.notification.telegramServerUrl}/bot${this.$parent.notification.telegramBotToken}/createForumTopic`;
+                const res = await axios.post(url, {
+                    chat_id: this.$parent.notification.telegramChatID,
+                    name,
+                });
+
+                const threadID = res.data?.result?.message_thread_id;
+                if (!threadID) {
+                    throw new Error(this.$t("telegramTopicCreationFailed"));
+                }
+
+                this.$parent.notification.telegramMessageThreadID = threadID;
+                this.$root.toastSuccess(this.$t("telegramTopicCreated"));
+            } catch (error) {
+                this.$root.toastError(error.response?.data?.description || error.message);
             }
         },
     },
