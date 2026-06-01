@@ -93,7 +93,12 @@ export default {
                 if (res.ok) {
                     location.href = "/status/" + res.slug + "?edit";
                 } else {
-                    if (res.msg.includes("UNIQUE constraint")) {
+                    const msg = res.msg.toLowerCase();
+                    if (
+                        msg.includes("unique constraint") ||
+                        msg.includes("duplicate entry") ||
+                        msg.includes("already exists")
+                    ) {
                         this.$root.toastError("The slug is already taken. Please choose another slug.");
                     } else {
                         this.$root.toastRes(res);
