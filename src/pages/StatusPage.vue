@@ -201,6 +201,21 @@
                     </div>
                 </div>
 
+                <!-- Notification Email -->
+                <div class="my-3">
+                    <label for="notification-email" class="form-label">{{ $t("Notification Email") }}</label>
+                    <input
+                        id="notification-email"
+                        v-model="config.notificationEmail"
+                        type="email"
+                        class="form-control"
+                        data-testid="notification-email-input"
+                    />
+                    <div class="form-text">
+                        {{ $t("notificationEmailDescription") }}
+                    </div>
+                </div>
+
                 <!-- Custom CSS -->
                 <div class="my-3">
                     <div class="mb-1">{{ $t("Custom CSS") }}</div>

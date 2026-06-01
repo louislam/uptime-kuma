@@ -8,6 +8,7 @@ const apicache = require("../modules/apicache");
 const StatusPage = require("../model/status_page");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { Settings } = require("../settings");
+const { StatusPageNotification } = require("../status-page-notification");
 
 /**
  * Validates incident data
@@ -61,6 +62,8 @@ module.exports.statusPageSocketHandler = (socket) => {
             incidentBean.active = true;
             incidentBean.status_page_id = statusPageID;
 
+            let isNewIncident = !incident.id;
+
             if (incident.id) {
                 incidentBean.last_updated_date = R.isoDateTime(dayjs.utc());
             } else {
@@ -68,6 +71,16 @@ module.exports.statusPageSocketHandler = (socket) => {
             }
 
             await R.store(incidentBean);
+
+            if (isNewIncident) {
+                StatusPageNotification.sendIncidentNotification(statusPageID, incidentBean).catch((e) => {
+                    log.error("status-page-notification", e.message);
+                });
+            } else {
+                StatusPageNotification.sendIncidentUpdateNotification(statusPageID, incidentBean).catch((e) => {
+                    log.error("status-page-notification", e.message);
+                });
+            }
 
             callback({
                 ok: true,
@@ -169,6 +182,10 @@ module.exports.statusPageSocketHandler = (socket) => {
 
             await R.store(bean);
 
+            StatusPageNotification.sendIncidentUpdateNotification(statusPageID, bean).catch((e) => {
+                log.error("status-page-notification", e.message);
+            });
+
             callback({
                 ok: true,
                 msg: "Saved.",
@@ -249,6 +266,10 @@ module.exports.statusPageSocketHandler = (socket) => {
             }
 
             await bean.resolve();
+
+            StatusPageNotification.sendIncidentResolvedNotification(statusPageID, bean).catch((e) => {
+                log.error("status-page-notification", e.message);
+            });
 
             callback({
                 ok: true,
@@ -334,6 +355,7 @@ module.exports.statusPageSocketHandler = (socket) => {
             statusPage.custom_css = config.customCSS;
             statusPage.show_powered_by = config.showPoweredBy;
             statusPage.rss_title = config.rssTitle;
+            statusPage.notification_email = config.notificationEmail;
             statusPage.show_only_last_heartbeat = config.showOnlyLastHeartbeat;
             statusPage.show_certificate_expiry = config.showCertificateExpiry;
             statusPage.modified_date = R.isoDateTime();
