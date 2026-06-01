@@ -52,7 +52,10 @@
                                             "
                                             value="system-service"
                                         >
-                                            {{ $t("System Service") }}
+                                            {{ $t("systemService") }}
+                                        </option>
+                                        <option value="pm2">
+                                            {{ $t("PM2 Process") }}
                                         </option>
                                         <option value="real-browser">
                                             HTTP(s) - Browser Engine (Chrome/Chromium) (Beta)
@@ -1242,14 +1245,16 @@
 
                             <template v-if="monitor.type === 'system-service'">
                                 <div class="my-3">
-                                    <label for="system-service-name" class="form-label">{{ $t("Service Name") }}</label>
+                                    <label for="system-service-name" class="form-label">
+                                        {{ $t("systemServiceName") }}
+                                    </label>
                                     <input
                                         id="system-service-name"
                                         v-model="monitor.system_service_name"
                                         type="text"
                                         class="form-control"
                                         required
-                                        placeholder="nginx"
+                                        :placeholder="$root.info.runtime.platform === 'win32' ? 'Dnscache' : 'nginx'"
                                     />
 
                                     <div class="form-text">
@@ -1315,6 +1320,71 @@
                                                 </div>
                                             </div>
                                         </template>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <template v-if="monitor.type === 'pm2'">
+                                <div class="my-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <label for="pm2-process-name" class="form-label mb-0">
+                                            {{ $t("PM2 Process") }}
+                                        </label>
+                                        <button
+                                            class="btn btn-outline-secondary btn-sm"
+                                            type="button"
+                                            :disabled="pm2ProcessLoading"
+                                            @click="loadPM2ProcessList"
+                                        >
+                                            {{ pm2ProcessLoading ? $t("Loading...") : $t("Refresh") }}
+                                        </button>
+                                    </div>
+                                    <select
+                                        v-if="pm2ProcessOptions.length > 0"
+                                        id="pm2-process-name"
+                                        v-model="monitor.system_service_name"
+                                        class="form-select mt-2"
+                                        required
+                                    >
+                                        <option disabled value="">{{ $t("Select PM2 process") }}</option>
+                                        <!-- Save the PM2 name because PM2 can reassign numeric IDs after delete/recreate. -->
+                                        <option
+                                            v-for="item in pm2ProcessOptions"
+                                            :key="`${item.name}-${item.id}`"
+                                            :value="item.name"
+                                        >
+                                            {{ item.name }} (#{{ item.id }}) - {{ item.status }}
+                                        </option>
+                                    </select>
+                                    <input
+                                        v-else
+                                        id="pm2-process-name"
+                                        v-model="monitor.system_service_name"
+                                        type="text"
+                                        class="form-control mt-2"
+                                        placeholder="api"
+                                        required
+                                    />
+                                    <div v-if="pm2ProcessError" class="text-danger small mt-2">
+                                        {{ pm2ProcessError }}
+                                    </div>
+
+                                    <div class="form-text">
+                                        {{
+                                            $t("pm2Description", {
+                                                service_name: monitor.system_service_name || "api",
+                                            })
+                                        }}
+                                        <div class="mt-2">
+                                            <i18n-t keypath="systemServiceCommandHint" tag="span">
+                                                <template #command>
+                                                    <code>pm2 jlist</code>
+                                                </template>
+                                            </i18n-t>
+                                        </div>
+                                        <div class="text-secondary small">
+                                            {{ $t("pm2ExpectedStates") }}
+                                        </div>
                                     </div>
                                 </div>
                             </template>
@@ -3239,6 +3309,9 @@ export default {
                 confirmed: false,
                 editedValue: false,
             },
+            pm2ProcessOptions: [],
+            pm2ProcessLoading: false,
+            pm2ProcessError: "",
         };
     },
 
@@ -3589,6 +3662,10 @@ message HealthCheckResponse {
         "monitor.type"(newType, oldType) {
             this.checkDomain();
 
+            if (newType === "pm2") {
+                this.loadPM2ProcessList();
+            }
+
             if (newType === "globalping" && !this.monitor.subtype) {
                 this.monitor.subtype = "ping";
             }
@@ -3819,6 +3896,41 @@ message HealthCheckResponse {
         this.kafkaSaslMechanismOptions = kafkaSaslMechanismOptions;
     },
     methods: {
+        loadPM2ProcessList() {
+            this.pm2ProcessLoading = true;
+            this.pm2ProcessError = "";
+
+            this.$root.getSocket().emit("getPM2ProcessList", (res) => {
+                this.pm2ProcessLoading = false;
+
+                if (!res.ok) {
+                    this.pm2ProcessOptions = [];
+                    this.pm2ProcessError = res.msg || "Unable to query PM2 process list.";
+                    return;
+                }
+
+                this.pm2ProcessOptions = (res.processList || []).map((item) => {
+                    return {
+                        id: item.id,
+                        name: item.name,
+                        status: item.status,
+                    };
+                });
+
+                const selectedProcess = this.pm2ProcessOptions.find(
+                    (item) =>
+                        item.id === this.monitor.system_service_name || item.name === this.monitor.system_service_name
+                );
+
+                // Keep compatibility with monitors previously saved with a numeric PM2 id.
+                if (selectedProcess) {
+                    this.monitor.system_service_name = selectedProcess.name;
+                } else if (this.pm2ProcessOptions.length > 0) {
+                    this.monitor.system_service_name = this.pm2ProcessOptions[0].name;
+                }
+            });
+        },
+
         /**
          * Initialize the edit monitor form
          * @returns {void}
@@ -3908,6 +4020,10 @@ message HealthCheckResponse {
                             } else {
                                 this.monitor.timeout = ~~(this.monitor.interval * 8) / 10;
                             }
+                        }
+
+                        if (this.monitor.type === "pm2") {
+                            this.loadPM2ProcessList();
                         }
                     } else {
                         this.$root.toastError(res.msg);
@@ -4126,6 +4242,10 @@ message HealthCheckResponse {
 
             if (this.monitor.url) {
                 this.monitor.url = this.monitor.url.trim();
+            }
+
+            if (["system-service", "pm2"].includes(this.monitor.type) && this.monitor.system_service_name) {
+                this.monitor.system_service_name = this.monitor.system_service_name.trim();
             }
 
             if (this.monitor.databaseConnectionString) {
