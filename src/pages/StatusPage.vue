@@ -12,6 +12,15 @@
                 </div>
 
                 <div class="my-3">
+                    <label for="statusPageLanguage" class="form-label">{{ $t("Language") }}</label>
+                    <select id="statusPageLanguage" v-model="config.statusPageLanguage" class="form-select">
+                        <option v-for="lang in $i18n.availableLocales" :key="lang" :value="lang">
+                            {{ $i18n.messages[lang].languageName }}
+                        </option>
+                    </select>
+                </div>
+
+                <div class="my-3">
                     <label for="title" class="form-label">{{ $t("Title") }}</label>
                     <input id="title" v-model="config.title" type="text" class="form-control" />
                 </div>
@@ -995,6 +1004,8 @@ export default {
                 if (this.config.icon) {
                     this.imgDataUrl = this.config.icon;
                 }
+
+                this.$root.statusPageLanguage = this.config.statusPageLanguage || "en";
 
                 this.maintenanceList = res.data.maintenanceList;
                 this.$root.publicGroupList = res.data.publicGroupList;
