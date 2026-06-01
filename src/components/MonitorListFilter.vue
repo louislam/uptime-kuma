@@ -118,7 +118,7 @@
         </template>
         <template #dropdown>
             <li class="list-unstyled m-0 p-0">
-                <div class="tags-dropdown-scroll">
+                <div ref="tagsDropdownScroll" class="tags-dropdown-scroll" :style="tagsDropdownStyle">
                     <ul class="list-unstyled m-0 p-0">
                         <li v-for="tag in tagsList" :key="tag.id">
                             <div class="dropdown-item" tabindex="0" @click.stop="toggleTagFilter(tag)">
@@ -183,6 +183,7 @@ export default {
     data() {
         return {
             tagsList: [],
+            tagsDropdownMaxWidth: null,
         };
     },
     computed: {
@@ -197,11 +198,29 @@ export default {
 
             return num;
         },
+        tagsDropdownStyle() {
+            return this.tagsDropdownMaxWidth ? { maxWidth: `${this.tagsDropdownMaxWidth}px` } : {};
+        },
     },
     mounted() {
         this.getExistingTags();
+        window.addEventListener("resize", this.updateTagsDropdownMaxWidth);
+        this.updateTagsDropdownMaxWidth();
+    },
+    beforeUnmount() {
+        window.removeEventListener("resize", this.updateTagsDropdownMaxWidth);
     },
     methods: {
+        updateTagsDropdownMaxWidth() {
+            const el = this.$refs.tagsDropdownScroll;
+            if (!el) {
+                return;
+            }
+
+            const left = el.getBoundingClientRect().left;
+            const padding = 16; // space from right edge
+            this.tagsDropdownMaxWidth = Math.max(80, window.innerWidth - left - padding);
+        },
         toggleStatusFilter(status) {
             let newFilter = {
                 ...this.filterState,
