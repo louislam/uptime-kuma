@@ -1,8 +1,8 @@
 <template>
     <div class="form-container">
         <div class="form">
-            <form @submit.prevent="submit">
-                <h1 class="h3 mb-3 fw-normal" />
+            <form aria-label="Login" @submit.prevent="submit">
+                <h1 class="h3 mb-3 fw-normal">{{ $t("Login") }}</h1>
 
                 <div v-if="!tokenRequired" class="form-floating">
                     <input
@@ -113,7 +113,15 @@ export default {
         submit() {
             this.processing = true;
 
+            const timeout = setTimeout(() => {
+                if (this.processing) {
+                    this.processing = false;
+                    this.res = { ok: false, msg: "Connection timed out. Please try again." };
+                }
+            }, 10000);
+
             this.$root.login(this.username, this.password, this.token, (res) => {
+                clearTimeout(timeout);
                 this.processing = false;
 
                 if (res.tokenRequired) {
