@@ -377,7 +377,23 @@
             </div>
 
             <Confirm ref="confirmPause" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="pauseMonitor">
-                {{ $t("pauseMonitorMsg") }}
+                <div v-if="monitor && monitor.type === 'group'">
+                    <div>{{ $t("pauseGroupMsg") }}</div>
+                    <div v-if="hasChildren" class="form-check">
+                        <input
+                            id="pause-children-checkbox"
+                            v-model="pauseChildrenMonitors"
+                            class="form-check-input"
+                            type="checkbox"
+                        />
+                        <label class="form-check-label" for="pause-children-checkbox">
+                            {{ $t("pauseChildrenMonitors", childrenCount) }}
+                        </label>
+                    </div>
+                </div>
+                <div v-else>
+                    {{ $t("pauseMonitorMsg") }}
+                </div>
             </Confirm>
 
             <Confirm
@@ -491,6 +507,7 @@ export default {
                 code: "",
             },
             deleteChildrenMonitors: false,
+            pauseChildrenMonitors: false,
         };
     },
     computed: {
@@ -666,7 +683,7 @@ export default {
          * @returns {void}
          */
         pauseMonitor() {
-            this.$root.getSocket().emit("pauseMonitor", this.monitor.id, (res) => {
+            this.$root.getSocket().emit("pauseMonitor", this.monitor.id, this.pauseChildrenMonitors, (res) => {
                 this.$root.toastRes(res);
             });
         },
