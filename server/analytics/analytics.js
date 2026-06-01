@@ -2,6 +2,7 @@ const googleAnalytics = require("./google-analytics");
 const umamiAnalytics = require("./umami-analytics");
 const plausibleAnalytics = require("./plausible-analytics");
 const matomoAnalytics = require("./matomo-analytics");
+const posthogAnalytics = require("./posthog-analytics");
 
 /**
  * Returns a string that represents the javascript that is required to insert the selected Analytics' script
@@ -22,6 +23,8 @@ function getAnalyticsScript(statusPage) {
             );
         case "matomo":
             return matomoAnalytics.getMatomoAnalyticsScript(statusPage.analyticsScriptUrl, statusPage.analyticsId);
+        case "posthog":
+            return posthogAnalytics.getPostHogAnalyticsScript(statusPage.analyticsScriptUrl, statusPage.analyticsId);
         default:
             return null;
     }
@@ -35,6 +38,7 @@ function getAnalyticsScript(statusPage) {
 function isValidAnalyticsConfig(statusPage) {
     switch (statusPage.analyticsType) {
         case "google":
+        case "posthog":
             return statusPage.analyticsId != null;
         case "umami":
         case "plausible":
