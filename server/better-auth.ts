@@ -7,6 +7,7 @@ import { KyselyKnexDialect, MySQL2ColdDialect, SQLite3ColdDialect } from "kysely
 import { username } from "better-auth/plugins";
 import { admin } from "better-auth/plugins";
 import { Socket } from "socket.io";
+import { haveIBeenPwned } from "better-auth/plugins";
 
 let authInstance: ReturnType<typeof createAuthInstance>;
 
@@ -43,8 +44,10 @@ function createAuthInstance() {
     return betterAuth({
         database,
         secret: getAuthSecret(),
+        // Should be handled in Express.js, check better-auth-router.ts
         trustedOrigins: ["*"],
         emailAndPassword: {
+            revokeSessionsOnPasswordReset: true,
             enabled: true,
             disableSignUp: false,
         },
@@ -55,7 +58,16 @@ function createAuthInstance() {
             // Requests per window
             max: 10,
         },
-        plugins: [username(), admin()],
+        plugins: [
+            // Enable login by username
+            username(),
+
+            // Enable user management API (used for creating the first admin user)
+            admin(),
+
+            // Check if the password has been pwned in data breaches
+            haveIBeenPwned(),
+        ],
         user: {
             modelName: "better_auth_user",
         },

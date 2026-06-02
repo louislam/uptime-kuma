@@ -1104,39 +1104,6 @@ app.use(function (req, res, next) {
             }
         });
 
-        // TODO: better-auth
-        socket.on("changePassword", async (password, callback) => {
-            try {
-                checkLogin(socket);
-
-                if (!password.newPassword) {
-                    throw new Error("Invalid new password");
-                }
-
-                if (passwordStrength(password.newPassword).value === "Too weak") {
-                    throw new TranslatableError("passwordTooWeak");
-                }
-
-                let user = await doubleCheckPassword(socket, password.currentPassword);
-                await user.resetPassword(password.newPassword);
-
-                server.disconnectAllSocketClients(user.id, socket.id);
-
-                callback({
-                    ok: true,
-                    token: User.createJWT(user, server.jwtSecret),
-                    msg: "successAuthChangePassword",
-                    msgi18n: true,
-                });
-            } catch (e) {
-                callback({
-                    ok: false,
-                    msg: e.message,
-                    msgi18n: !!e.msgi18n,
-                });
-            }
-        });
-
         socket.on("getSettings", async (callback) => {
             try {
                 checkLogin(socket);
