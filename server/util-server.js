@@ -238,6 +238,7 @@ exports.kafkaProducerAsync = function (brokers, topic, message, options = {}, sa
                 retries: 0,
             },
             ssl: ssl,
+            connectionTimeout: 5000,
         });
 
         let producer = client.producer({
