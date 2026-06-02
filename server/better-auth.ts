@@ -8,6 +8,8 @@ import { username } from "better-auth/plugins";
 import { admin } from "better-auth/plugins";
 import { Socket } from "socket.io";
 import { haveIBeenPwned } from "better-auth/plugins";
+import { twoFactor } from "better-auth/plugins";
+import { anonymous } from "better-auth/plugins";
 
 let authInstance: ReturnType<typeof createAuthInstance>;
 
@@ -67,6 +69,11 @@ function createAuthInstance() {
 
             // Check if the password has been pwned in data breaches
             haveIBeenPwned(),
+
+            twoFactor(),
+
+            // Potentially for "Disable Auth"
+            anonymous(),
         ],
         user: {
             modelName: "better_auth_user",
