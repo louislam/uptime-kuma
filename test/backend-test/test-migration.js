@@ -70,7 +70,7 @@ describe("Database Migration", () => {
                     MYSQL_USER: "kuma",
                     MYSQL_PASSWORD: "kuma",
                 })
-                .withCommand(["--innodb-strict-mode=1"])
+                .withCommand(["--innodb-strict-mode=1", "--innodb-default-row-format=compact"])
                 .withExposedPorts(3306)
                 .withWaitStrategy(Wait.forLogMessage("ready for connections", 2))
                 .withStartupTimeout(120000)
