@@ -63,14 +63,14 @@ describe("Database Migration", () => {
         },
         async () => {
             // Start MariaDB container (using MariaDB 12 to match current production)
-            const mariadbContainer = await new GenericContainer("mariadb:12")
+            const mariadbContainer = await new GenericContainer("mariadb:10.11")
                 .withEnvironment({
                     MYSQL_ROOT_PASSWORD: "root",
                     MYSQL_DATABASE: "kuma_test",
                     MYSQL_USER: "kuma",
                     MYSQL_PASSWORD: "kuma",
                 })
-                .withCommand(["--innodb-strict-mode=1", "--innodb-default-row-format=compact"])
+                .withCommand(["--innodb-strict-mode=1"])
                 .withExposedPorts(3306)
                 .withWaitStrategy(Wait.forLogMessage("ready for connections", 2))
                 .withStartupTimeout(120000)
