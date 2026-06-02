@@ -213,7 +213,7 @@ exports.pingAsync = function (
  */
 exports.kafkaProducerAsync = function (brokers, topic, message, options = {}, saslOptions = {}) {
     return new Promise((resolve, reject) => {
-        const { interval = 20, allowAutoTopicCreation = false, ssl = false, clientId = "Uptime-Kuma" } = options;
+        const { interval = 20, allowAutoTopicCreation = false, ssl = false, clientId = "Uptime-Kuma", connectionTimeout = 1 } = options;
 
         let connectedToKafka = false;
 
@@ -238,7 +238,7 @@ exports.kafkaProducerAsync = function (brokers, topic, message, options = {}, sa
                 retries: 0,
             },
             ssl: ssl,
-            connectionTimeout: 5000,
+            connectionTimeout: connectionTimeout * 1000,
         });
 
         let producer = client.producer({
