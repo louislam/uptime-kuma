@@ -122,7 +122,7 @@ class DnsMonitorType extends MonitorType {
             .filter((x) => x !== "");
         if (!addresses.length) {
             throw new Error(
-                "No Resolver Servers specified. Please specifiy at least one resolver server like 1.1.1.1 or a hostname"
+                "No Resolver Servers specified. Please specify at least one resolver server like 1.1.1.1 or a hostname"
             );
         }
         const resolver = new Resolver();

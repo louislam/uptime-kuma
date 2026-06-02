@@ -99,11 +99,7 @@ class Monitor extends BeanModel {
             obj.tags = await this.getTags();
         }
 
-        if (
-            certExpiry &&
-            (this.type === "http" || this.type === "keyword" || this.type === "json-query") &&
-            this.getURLProtocol() === "https:"
-        ) {
+        if (certExpiry) {
             const { certExpiryDaysRemaining, validCert } = await this.getCertExpiry(this.id);
             obj.certExpiryDaysRemaining = certExpiryDaysRemaining;
             obj.validCert = validCert;
@@ -237,6 +233,8 @@ class Monitor extends BeanModel {
                 oauth_scopes: this.oauth_scopes,
                 oauth_audience: this.oauth_audience,
                 oauth_auth_method: this.oauth_auth_method,
+                bearer_token: this.bearer_token,
+                gamedigToken: this.gamedigToken,
                 pushToken: this.pushToken,
                 databaseConnectionString: this.databaseConnectionString,
                 radiusUsername: this.radiusUsername,
@@ -489,6 +487,14 @@ class Monitor extends BeanModel {
                         };
                     }
 
+                    // Bearer token auth
+                    let bearerAuthHeader = {};
+                    if (this.auth_method === "bearer") {
+                        bearerAuthHeader = {
+                            Authorization: "Bearer " + this.bearer_token,
+                        };
+                    }
+
                     // OIDC: Basic client credential flow.
                     // Additional grants might be implemented in the future
                     let oauth2AuthHeader = {};
@@ -562,6 +568,7 @@ class Monitor extends BeanModel {
                             Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
                             ...(contentType ? { "Content-Type": contentType } : {}),
                             ...basicAuthHeader,
+                            ...bearerAuthHeader,
                             ...oauth2AuthHeader,
                             ...(this.headers ? JSON.parse(this.headers) : {}),
                         },
@@ -1227,6 +1234,7 @@ class Monitor extends BeanModel {
             let res;
             if (this.auth_method === "ntlm") {
                 options.httpsAgent.keepAlive = true;
+                options.httpAgent.keepAlive = true;
 
                 res = await httpNtlm(options, {
                     username: this.basic_auth_user,
@@ -1554,8 +1562,10 @@ class Monitor extends BeanModel {
             // This makes downtime information available to all notification providers
             if (bean.status === UP && monitor.id) {
                 try {
+                    // Filter by important = 1 to get the state transition heartbeat (e.g. UP→DOWN),
+                    // not the most recent DOWN heartbeat which would be the last check before recovery.
                     const lastDownHeartbeat = await R.getRow(
-                        "SELECT time FROM heartbeat WHERE monitor_id = ? AND status = ? ORDER BY time DESC LIMIT 1",
+                        "SELECT time FROM heartbeat WHERE monitor_id = ? AND status = ? AND important = 1 ORDER BY time DESC LIMIT 1",
                         [monitor.id, DOWN]
                     );
 
@@ -2095,7 +2105,7 @@ class Monitor extends BeanModel {
         }
 
         const parentActive = await Monitor.isParentActive(parent.id);
-        return parent.active && parentActive;
+        return parent.active === 1 && parentActive;
     }
 
     /**
