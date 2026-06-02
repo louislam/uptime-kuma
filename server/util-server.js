@@ -1,8 +1,9 @@
+import { checkLogin as betterAuthCheckLogin } from "./better-auth";
+
 const ping = require("@louislam/ping");
 const { R } = require("redbean-node");
 const {
     log,
-    genSecret,
     badgeConstants,
     PING_PACKET_SIZE_DEFAULT,
     PING_GLOBAL_TIMEOUT_DEFAULT,
@@ -35,31 +36,6 @@ const { Kafka, SASLOptions } = require("kafkajs");
 const crypto = require("crypto");
 
 const isWindows = process.platform === /^win/.test(process.platform);
-/**
- * Init or reset JWT secret
- * @returns {Promise<Bean>} JWT secret
- */
-exports.initJWTSecret = async () => {
-    let jwtSecretBean = await R.findOne("setting", " `key` = ? ", ["jwtSecret"]);
-
-    if (!jwtSecretBean) {
-        jwtSecretBean = R.dispense("setting");
-        jwtSecretBean.key = "jwtSecret";
-    }
-
-    jwtSecretBean.value = await passwordHash.generate(genSecret());
-    await R.store(jwtSecretBean);
-    return jwtSecretBean;
-};
-
-/**
- * Decodes a jwt and returns the payload portion without verifying the jwt.
- * @param {string} jwt The input jwt as a string
- * @returns {object} Decoded jwt payload object
- */
-exports.decodeJwt = (jwt) => {
-    return JSON.parse(Buffer.from(jwt.split(".")[1], "base64").toString());
-};
 
 /**
  * Gets an Access Token from an oidc/oauth2 provider
@@ -607,6 +583,7 @@ exports.getTotalClientInRoom = (io, roomName) => {
 };
 
 /**
+ * @deprecated Use allowDevOrigin
  * Allow CORS all origins if development
  * @param {object} res Response object from axios
  * @returns {void}
@@ -618,6 +595,7 @@ exports.allowDevAllOrigin = (res) => {
 };
 
 /**
+ * @deprecated Use allowOrigin
  * Allow CORS all origins
  * @param {object} res Response object from axios
  * @returns {void}
@@ -629,15 +607,40 @@ exports.allowAllOrigin = (res) => {
 };
 
 /**
+ * Allow CORS all origins if development
+ * @param {Request} req Express request object
+ * @param {Response} res Express response object
+ * @returns {void}
+ */
+exports.allowDevOrigin = (req, res) => {
+    if (process.env.NODE_ENV === "development") {
+        exports.allowOrigin(req, res);
+    }
+};
+
+/**
+ * Allow CORS all origins
+ * Since Allow-Credentials is set to true, the Access-Control-Allow-Origin cannot be *, so we will set it to the request origin.
+ * @param {Request} req Express request object
+ * @param {Response} res Response object
+ * @returns {void}
+ */
+exports.allowOrigin = (req, res) => {
+    res.header("Access-Control-Allow-Origin", req.get("origin"));
+    res.header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE, OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    res.header("Access-Control-Allow-Credentials", "true");
+};
+
+/**
+ * @deprecated Use better-auth's checkLogin
  * Check if a user is logged in
  * @param {Socket} socket Socket instance
  * @returns {void}
  * @throws The user is not logged in
  */
 exports.checkLogin = (socket) => {
-    if (!socket.userID) {
-        throw new Error("You are not logged in.");
-    }
+    betterAuthCheckLogin(socket);
 };
 
 /**

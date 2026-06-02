@@ -4,7 +4,6 @@ const Database = require("../server/database");
 const { R } = require("redbean-node");
 const readline = require("readline");
 const { passwordStrength } = require("check-password-strength");
-const { initJWTSecret } = require("../server/util-server");
 const User = require("../server/model/user");
 const { io } = require("socket.io-client");
 const { localWebSocketURL } = require("../server/config");
@@ -62,8 +61,8 @@ const main = async () => {
                     if (!("dry-run" in args)) {
                         await User.resetPassword(user.id, password);
 
-                        // Reset all sessions by reset jwt secret
-                        await initJWTSecret();
+                        // TODO: Reset all sessions by reset jwt secret
+                        // await initJWTSecret();
 
                         // Disconnect all other socket clients of the user
                         await disconnectAllSocketClients(user.username, password);

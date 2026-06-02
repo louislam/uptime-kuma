@@ -7,7 +7,7 @@
         "url": "https://github.com/louislam/uptime-kuma.git"
     },
     "engines": {
-        "node": ">= 26.0.0"
+        "node": ">= 26.2.0"
     },
     "scripts": {
         "lint:js": "eslint --ext \".js,.vue\" --ignore-path .gitignore .",
@@ -71,6 +71,7 @@
         "axios": "~0.31.0",
         "badge-maker": "~3.3.1",
         "bcryptjs": "~2.4.3",
+        "better-auth": "~1.6.11",
         "chardet": "~1.4.0",
         "check-password-strength": "~2.0.10",
         "cheerio": "~1.0.0",
@@ -82,7 +83,6 @@
         "croner": "~8.1.2",
         "dayjs": "~1.11.19",
         "dev-null": "~0.1.1",
-        "dotenv": "~16.0.3",
         "express": "~4.22.1",
         "express-basic-auth": "~1.2.1",
         "express-static-gzip": "~2.1.8",
@@ -104,6 +104,7 @@
         "jwt-decode": "~3.1.2",
         "kafkajs": "~2.2.4",
         "knex": "~3.1.0",
+        "kysely-knex": "~0.2.0",
         "limiter": "~2.1.0",
         "liquidjs": "~10.25.0",
         "marked": "~14.1.4",
@@ -118,7 +119,6 @@
         "node-radius-utils": "~1.2.0",
         "nodemailer": "~7.0.13",
         "nostr-tools": "~2.20.0",
-        "notp": "~2.0.3",
         "openid-client": "~5.7.1",
         "oracledb": "~6.10.0",
         "password-hash": "~1.2.2",
@@ -140,14 +140,13 @@
         "sqlstring": "~2.3.3",
         "tar": "~6.2.1",
         "tcp-ping": "~0.1.1",
-        "thirty-two": "~1.0.2",
         "tldts": "~7.0.23",
         "tough-cookie": "~4.1.4",
         "validator": "~13.15.26",
         "web-push": "~3.6.7",
-        "tsx": "~4.20.6",
+        "tsx": "~4.22.3",
         "ws": "~8.19.0",
-        "zod": "~4.1.12"
+        "zod": "~4.4.3"
     },
     "devDependencies": {
         "@actions/github": "~6.0.1",
@@ -203,7 +202,7 @@
         "terser": "~5.15.1",
         "test": "~3.3.0",
         "testcontainers": "^11.12.0",
-        "typescript": "~4.4.4",
+        "typescript": "~6.0.3",
         "v-pagination-3": "~0.1.7",
         "vite": "~5.4.21",
         "vite-plugin-compression": "^0.5.1",
