@@ -11,7 +11,7 @@ const { UP, PENDING } = require("../../../src/util");
 async function createAndStartMariaDBContainer() {
     const container = await new MariaDbContainer("mariadb:10.11")
         .withStartupTimeout(90000)
-        .withCommand(["--innodb-strict-mode=1"])
+        .withCommand(["--innodb-strict-mode=1", "--innodb-default-row-format=compact"])
         .start();
 
     const connectionString = `mysql://${container.getUsername()}:${container.getUserPassword()}@${container.getHost()}:${container.getPort()}/${container.getDatabase()}`;
