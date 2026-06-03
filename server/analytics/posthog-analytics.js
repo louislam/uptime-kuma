@@ -9,7 +9,7 @@ const { escape } = require("html-escaper");
  * @returns {string} HTML script tags to inject into page
  * @see https://posthog.com/docs/getting-started/install?tab=snippet
  */
-function getPostHogAnalyticsScript(apiHost = "https://us.i.posthog.com", projectToken) {
+function getPostHogAnalyticsScript(apiHost, projectToken) {
     let escapedProjectTokenJS = jsesc(projectToken, { isScriptContext: true });
     let escapedApiHostJS = jsesc(apiHost, { isScriptContext: true });
 
