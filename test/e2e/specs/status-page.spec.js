@@ -29,6 +29,8 @@ test.describe("Status Page", () => {
         const plausibleAnalyticsDomainsUrls = "one.com,two.com";
         const matomoUrl = "https://matomoto.example.com";
         const matomoSiteId = "123456789";
+        const postHogUrl = "https://posthog.example.com";
+        const postHogProjectToken = "phc_1234567890abcdef";
         const customCss = "body { background: rgb(0, 128, 128) !important; }";
         const descriptionText = "This is an example status page.";
         const incidentTitle = "Example Outage Incident";
@@ -208,6 +210,23 @@ test.describe("Status Page", () => {
         );
         expect(await page.locator("head").innerHTML()).toContain(matomoUrl);
         expect(await page.locator("head").innerHTML()).toContain(matomoSiteId);
+
+        await page.getByTestId("edit-button").click();
+        // Fill in posthog analytics after editing
+        await page.getByTestId("analytics-type-select").selectOption("posthog");
+        await page.getByTestId("analytics-script-url-input").fill(postHogUrl);
+        await page.getByTestId("analytics-id-input").fill(postHogProjectToken);
+        await page.getByTestId("save-button").click();
+        await screenshot(testInfo, page);
+        await page.waitForFunction(
+            (url) => {
+                return document.head.innerHTML.includes(url);
+            },
+            postHogUrl,
+            { timeout: 5000 }
+        );
+        expect(await page.locator("head").innerHTML()).toContain(postHogUrl);
+        expect(await page.locator("head").innerHTML()).toContain(postHogProjectToken);
     });
 
     // @todo Test certificate expiry
