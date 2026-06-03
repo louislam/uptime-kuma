@@ -4,9 +4,10 @@ const { escape } = require("html-escaper");
 /**
  * Returns a string that represents the javascript that is required to insert the PostHog Analytics script
  * into a webpage.
- * @param {string} apiHost API host to use with the Posthog Analytics script.
- * @param {string} projectToken Project token to use with the Posthog Analytics script.
+ * @param {string} apiHost API host to use with the PostHog Analytics script.
+ * @param {string} projectToken Project token to use with the PostHog Analytics script.
  * @returns {string} HTML script tags to inject into page
+ * @see https://posthog.com/docs/getting-started/install?tab=snippet
  */
 function getPostHogAnalyticsScript(apiHost = "https://us.i.posthog.com", projectToken) {
     let escapedProjectTokenJS = jsesc(projectToken, { isScriptContext: true });
