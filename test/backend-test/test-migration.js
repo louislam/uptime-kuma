@@ -113,6 +113,10 @@ describe("Database Migration", () => {
                 });
 
                 // Test passes if migrations complete successfully without errors
+
+                // Print monitor table column count
+                const columns = await R.knex("monitor").columnInfo();
+                console.log("Monitor table columns:", Object.keys(columns));
             } finally {
                 // Clean up
                 try {
