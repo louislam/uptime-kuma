@@ -1505,7 +1505,13 @@
                                 class="my-3"
                             >
                                 <label for="timeout" class="form-label">
-                                    {{ monitor.type === "ping" ? $t("pingGlobalTimeoutLabel") : monitor.type === "kafka-producer" ? $t("Connection Timeout") : $t("Request Timeout") }}
+                                    {{
+                                        monitor.type === "ping"
+                                            ? $t("pingGlobalTimeoutLabel")
+                                            : monitor.type === "kafka-producer"
+                                              ? $t("Connection Timeout")
+                                              : $t("Request Timeout")
+                                    }}
                                     <span v-if="monitor.type !== 'ping'">
                                         ({{ $t("timeoutAfter", [monitor.timeout || clampTimeout(monitor.interval)]) }})
                                     </span>
