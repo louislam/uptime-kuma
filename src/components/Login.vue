@@ -70,6 +70,13 @@
                     {{ $t(res.msg) }}
                 </div>
             </form>
+
+            <template v-if="oidcEnabled">
+                <hr class="my-3" />
+                <a href="/auth/oidc/login" class="w-100 btn btn-outline-secondary">
+                    "Login with SSO"
+                </a>
+            </template>
         </div>
     </div>
 </template>
@@ -84,6 +91,7 @@ export default {
             token: "",
             res: null,
             tokenRequired: false,
+            oidcEnabled: false,
         };
     },
 
@@ -99,6 +107,10 @@ export default {
 
     mounted() {
         document.title += " - Login";
+        fetch("/auth/oidc/info")
+            .then((r) => r.json())
+            .then((d) => { this.oidcEnabled = d.enabled; })
+            .catch(() => {});
     },
 
     unmounted() {

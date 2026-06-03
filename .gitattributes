@@ -1,0 +1,5 @@
+# Keep fork-owned workflow files during upstream merges.
+# The 'ours' driver always takes the local version on conflict.
+# Note: this covers edits/deletions but not new files added by upstream
+# — the sync-upstream workflow handles those explicitly.
+.github/* merge=ours

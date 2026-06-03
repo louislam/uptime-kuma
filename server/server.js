@@ -350,6 +350,11 @@ let needSetup = false;
         response.redirect("https://github.com/louislam/uptime-kuma/wiki/Reset-Password-via-CLI");
     });
 
+    // OIDC Router (fork-specific SSO support)
+    const oidcRouter = require("./routers/oidc-router");
+    if (await oidcRouter.init()) needSetup = false;
+    app.use(oidcRouter);
+
     // API Router
     const apiRouter = require("./routers/api-router");
     app.use(apiRouter);

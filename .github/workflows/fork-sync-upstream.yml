@@ -1,0 +1,59 @@
+name: Sync Upstream
+
+on:
+  schedule:
+    - cron: '0 2 1 * *'  # 1st of every month at 02:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Fetch upstream
+        run: |
+          git remote add upstream https://github.com/louislam/uptime-kuma.git
+          git fetch upstream master
+
+      - name: Merge upstream (preserve fork workflows)
+        run: |
+          # Merge without committing so we can override the workflows dir
+          git merge upstream/master --no-commit --no-ff || true
+
+          # Always restore our own workflows — handles both conflicts and new
+          # workflow files that upstream may have added
+          git checkout HEAD -- .github/
+
+          # Fail if there are still unresolved conflicts elsewhere
+          UNRESOLVED=$(git ls-files --unmerged)
+          if [ -n "$UNRESOLVED" ]; then
+            echo "::error::Unresolved merge conflicts — manual intervention required:"
+            echo "$UNRESOLVED"
+            git merge --abort
+            exit 1
+          fi
+
+          # Commit only if something actually changed
+          if git diff --cached --quiet; then
+            echo "Already up to date with upstream."
+          else
+            UPSTREAM_VERSION=$(node -p "require('./package.json').version" 2>/dev/null || echo "unknown")
+            git commit -m "chore: sync upstream master (v${UPSTREAM_VERSION})"
+          fi
+
+      - name: Push
+        run: git push origin master

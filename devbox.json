@@ -1,0 +1,16 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.14.2/.schema/devbox.schema.json",
+  "packages": [
+    "nodejs_24@latest"
+  ],
+  "shell": {
+    "init_hook": [
+      "[ -d node_modules ] || npm ci"
+    ],
+    "scripts": {
+      "test": "npm run test-backend",
+      "test-e2e": "npx playwright install --with-deps && npm run test-e2e",
+      "test-oidc": "bash scripts/test-oidc.sh"
+    }
+  }
+}
