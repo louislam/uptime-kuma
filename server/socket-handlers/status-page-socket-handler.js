@@ -322,7 +322,7 @@ module.exports.statusPageSocketHandler = (socket) => {
             }
 
             statusPage.slug = config.slug;
-            if (typeof lang !== "string" || !lang.match(/^[A-Za-z0-9@_-]+$/)) {
+            if (typeof config.statusPageLanguage !== "string" || !config.statusPageLanguage.match(/^[A-Za-z0-9@_-]+$/)) {
                 throw new Error(`Invalid language ${lang}`);
             }
             statusPage.status_page_language = config.statusPageLanguage;
