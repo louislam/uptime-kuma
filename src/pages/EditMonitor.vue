@@ -1499,12 +1499,19 @@
                                     monitor.type === 'ping' ||
                                     monitor.type === 'rabbitmq' ||
                                     monitor.type === 'snmp' ||
-                                    monitor.type === 'websocket-upgrade'
+                                    monitor.type === 'websocket-upgrade' ||
+                                    monitor.type === 'kafka-producer'
                                 "
                                 class="my-3"
                             >
                                 <label for="timeout" class="form-label">
-                                    {{ monitor.type === "ping" ? $t("pingGlobalTimeoutLabel") : $t("Request Timeout") }}
+                                    {{
+                                        monitor.type === "ping"
+                                            ? $t("pingGlobalTimeoutLabel")
+                                            : monitor.type === "kafka-producer"
+                                              ? $t("Connection Timeout")
+                                              : $t("Request Timeout")
+                                    }}
                                     <span v-if="monitor.type !== 'ping'">
                                         ({{ $t("timeoutAfter", [monitor.timeout || clampTimeout(monitor.interval)]) }})
                                     </span>
@@ -3659,6 +3666,8 @@ message HealthCheckResponse {
                     this.monitor.timeout = 5;
                 } else if (this.monitor.type === "ping") {
                     this.monitor.timeout = 10;
+                } else if (this.monitor.type === "kafka-producer") {
+                    this.monitor.timeout = 1;
                 } else {
                     this.monitor.timeout = 48;
                 }
