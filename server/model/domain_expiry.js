@@ -285,12 +285,17 @@ class DomainExpiry extends BeanModel {
         } else if (bean) {
             expiryDate = await bean.getExpiryDate();
 
-            if (dayjs.utc(expiryDate).isAfter(dayjs.utc(bean.expiry))) {
-                bean.lastExpiryNotificationSent = null;
-            }
-
-            bean.expiry = R.isoDateTimeMillis(expiryDate);
+            // Always update lastCheck so we don't re-query RDAP on every heartbeat if a
+            // transient failure returns null. Only update expiry when we have a valid date —
+            // otherwise a transient failure overwrites a previously-good cached value and the
+            // sendNotifications guard fires "Invalid Date" warnings on every beat for ~24h.
             bean.lastCheck = R.isoDateTimeMillis(dayjs.utc());
+            if (expiryDate !== null) {
+                if (dayjs.utc(expiryDate).isAfter(dayjs.utc(bean.expiry))) {
+                    bean.lastExpiryNotificationSent = null;
+                }
+                bean.expiry = R.isoDateTimeMillis(expiryDate);
+            }
             await R.store(bean);
         }
 
