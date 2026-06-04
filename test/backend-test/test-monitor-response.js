@@ -34,3 +34,27 @@ describe("Monitor response saving", () => {
         assert.strictEqual(await Heartbeat.decodeResponseValue(bean.response), JSON.stringify({ ok: true }));
     });
 });
+
+describe("Monitor OAuth2 authorization", () => {
+    test("getOAuth2AuthorizationHeader() rejects tokens without a token type", () => {
+        const monitor = Object.create(Monitor.prototype);
+        monitor.oauthAccessToken = {
+            access_token: "example-token",
+        };
+
+        assert.throws(
+            () => monitor.getOAuth2AuthorizationHeader(),
+            /OAuth access-token response is missing token_type/
+        );
+    });
+
+    test("getOAuth2AuthorizationHeader() builds the authorization value", () => {
+        const monitor = Object.create(Monitor.prototype);
+        monitor.oauthAccessToken = {
+            token_type: "Bearer",
+            access_token: "example-token",
+        };
+
+        assert.strictEqual(monitor.getOAuth2AuthorizationHeader(), "Bearer example-token");
+    });
+});

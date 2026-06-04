@@ -499,8 +499,7 @@ class Monitor extends BeanModel {
                                 this.oauthAccessToken = await this.makeOidcTokenClientCredentialsRequest();
                             }
                             oauth2AuthHeader = {
-                                Authorization:
-                                    this.oauthAccessToken.token_type + " " + this.oauthAccessToken.access_token,
+                                Authorization: this.getOAuth2AuthorizationHeader(),
                             };
                         } catch (e) {
                             throw new Error("The oauth config is invalid. " + e.message);
@@ -1221,7 +1220,7 @@ class Monitor extends BeanModel {
             if (this.auth_method === "oauth2-cc" && error.response.status === 401 && !finalCall) {
                 this.oauthAccessToken = await this.makeOidcTokenClientCredentialsRequest();
                 let oauth2AuthHeader = {
-                    Authorization: this.oauthAccessToken.token_type + " " + this.oauthAccessToken.access_token,
+                    Authorization: this.getOAuth2AuthorizationHeader(),
                 };
                 options.headers = { ...options.headers, ...oauth2AuthHeader };
 
@@ -2098,6 +2097,19 @@ class Monitor extends BeanModel {
         }
 
         return oAuthAccessToken;
+    }
+
+    /**
+     * Builds an OAuth2 Authorization header from the last retrieved access token.
+     * @throws {Error} When the access token response has no token type
+     * @returns {string} Authorization header value
+     */
+    getOAuth2AuthorizationHeader() {
+        if (!this.oauthAccessToken?.token_type) {
+            throw new Error("OAuth access-token response is missing token_type");
+        }
+
+        return this.oauthAccessToken.token_type + " " + this.oauthAccessToken.access_token;
     }
 
     /**
