@@ -1311,6 +1311,29 @@ describe("Cloudflare Worker API", () => {
         assert.deepStrictEqual(body.monitors[0].accepted_statuscodes, ["200-299"]);
     });
 
+    test("lists Worker monitors with legacy ignore_tls column state", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                {
+                    id: 17,
+                    name: "Legacy Self Signed HTTP",
+                    type: "http",
+                    url: "https://192.168.50.1",
+                    active: 1,
+                    ignore_tls: 1,
+                    config_json: JSON.stringify({}),
+                },
+            ],
+        });
+
+        const response = await handleApiRequest(adminRequest("https://example.com/api/monitors/17"), env);
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(body.monitor.ignoreTls, true);
+    });
+
     test("gets and saves UI settings through app_settings", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({
@@ -4379,6 +4402,39 @@ describe("Cloudflare Worker API", () => {
             ping: 12,
             msg: "200 - OK",
         });
+    });
+
+    test("check-now sends legacy ignore_tls state to the runner", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            profiles: [
+                { id: "twingate", slug: "twingate", name: "Twingate", type: "twingate", enabled: 1 },
+            ],
+            monitors: [
+                {
+                    id: 17,
+                    name: "Legacy Self Signed HTTP",
+                    type: "http",
+                    url: "https://192.168.50.1",
+                    hostname: null,
+                    port: null,
+                    timeout: 5,
+                    network_profile_id: "twingate",
+                    ignore_tls: 1,
+                    config_json: JSON.stringify({}),
+                },
+            ],
+            runnerResult: { status: 1, ping: 12, msg: "200 - OK", response: "ok" },
+        });
+
+        const response = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/17/check-now", { method: "POST" }),
+            env
+        );
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(env.state.runnerJobs.length, 1);
+        assert.strictEqual(env.state.runnerJobs[0].monitor.ignoreTls, true);
     });
 
     test("heartbeat writes update dashboard summary, event, and metric bucket tables", async () => {

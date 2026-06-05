@@ -4259,7 +4259,7 @@ function sanitizeMonitor(monitor) {
         twingatePingFallbackPorts: config.twingatePingFallbackPorts,
     };
     if (ACCESS_SECRET_MONITOR_TYPES.has(monitor.type)) {
-        sanitized.ignoreTls = normalizeBoolean(config.ignoreTls);
+        sanitized.ignoreTls = resolveMonitorIgnoreTls(monitor, config);
     }
     return sanitized;
 }
@@ -5725,6 +5725,26 @@ function normalizeBoolean(value) {
     return Boolean(value);
 }
 
+/**
+ * Resolve the monitor TLS-ignore flag from Worker config JSON or legacy row fields.
+ * @param {object} monitor Monitor database row.
+ * @param {object} config Parsed config_json payload.
+ * @returns {boolean} True when TLS/SSL validation errors should be ignored.
+ */
+function resolveMonitorIgnoreTls(monitor = {}, config = parseMonitorConfig(monitor.config_json)) {
+    const values = [
+        config.ignoreTls,
+        monitor.ignoreTls,
+        monitor.ignore_tls,
+    ];
+    for (const value of values) {
+        if (value !== undefined && value !== null) {
+            return normalizeBoolean(value);
+        }
+    }
+    return false;
+}
+
 function normalizeRunnerResponseMaxLength(value) {
     const parsed = Number(value);
     if (!Number.isFinite(parsed) || parsed <= 0) {
@@ -6141,9 +6161,10 @@ function serializeMonitor(
     notificationsByMonitorId = new Map()
 ) {
     const name = monitor.name || "";
+    const storedConfig = parseMonitorConfig(monitor.config_json);
     const config = {
         ...monitorConfigDefaults(monitor.type),
-        ...parseMonitorConfig(monitor.config_json),
+        ...storedConfig,
     };
     return {
         ...config,
@@ -6171,6 +6192,7 @@ function serializeMonitor(
         notificationIDList: notificationsByMonitorId.get(Number(monitor.id)) || {},
         networkProfileId: monitor.network_profile_id ?? monitor.networkProfileId ?? null,
         proxyId: monitor.proxy_id == null ? null : Number(monitor.proxy_id),
+        ignoreTls: resolveMonitorIgnoreTls(monitor, storedConfig),
         accepted_statuscodes: Array.isArray(config.accepted_statuscodes)
             ? config.accepted_statuscodes
             : monitorConfigDefaults(monitor.type).accepted_statuscodes,

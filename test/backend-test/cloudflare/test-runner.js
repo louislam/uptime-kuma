@@ -135,6 +135,36 @@ describe("Cloudflare monitor runner", () => {
         assert.strictEqual(proxyRequests, 0);
     });
 
+    test("Twingate HTTPS checks in TUN mode honor ignoreTls for self-signed certificates", async () => {
+        const { runCheck } = require("../../../cloudflare/runner/checker");
+        const target = await listen(
+            https.createServer({
+                key: SELF_SIGNED_KEY,
+                cert: SELF_SIGNED_CERT,
+            }, (_req, res) => {
+                res.writeHead(200, { "content-type": "text/plain" });
+                res.end("private self signed ok");
+            })
+        );
+
+        const result = await runCheck({
+            monitor: {
+                id: 16,
+                type: "http",
+                url: `https://127.0.0.1:${target.port}/health`,
+                timeout: 5,
+                ignoreTls: true,
+                saveResponse: true,
+            },
+            networkProfile: { slug: "twingate", type: "twingate" },
+            twingateTunMode: "on",
+        });
+
+        assert.strictEqual(result.status, UP);
+        assert.strictEqual(result.msg, "200 - OK");
+        assert.strictEqual(result.response, "private self signed ok");
+    });
+
     test("HTTP checks do not return response bodies unless response saving is enabled", async () => {
         const { runCheck } = require("../../../cloudflare/runner/checker");
         const target = await listen(
