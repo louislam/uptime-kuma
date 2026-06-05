@@ -4356,6 +4356,7 @@ describe("Cloudflare Worker API", () => {
                     port: null,
                     timeout: 5,
                     network_profile_id: "twingate",
+                    config_json: JSON.stringify({ ignoreTls: true }),
                 },
             ],
             runnerResult: { status: 1, ping: 12, msg: "200 - OK", response: "ok" },
@@ -4371,6 +4372,7 @@ describe("Cloudflare Worker API", () => {
         assert.deepStrictEqual(body.result, { status: 1, ping: 12, msg: "200 - OK", response: "ok" });
         assert.strictEqual(env.state.runnerJobs.length, 1);
         assert.strictEqual(env.state.runnerJobs[0].networkProfile.slug, "twingate");
+        assert.strictEqual(env.state.runnerJobs[0].monitor.ignoreTls, true);
         assert.deepStrictEqual(env.state.heartbeats[0], {
             monitor_id: 7,
             status: 1,

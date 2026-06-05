@@ -270,6 +270,7 @@ function parseReceivedPingPackets(output) {
 function requestDirect(targetUrl, monitor, resolvedTarget = null, responseMaxBytes = DEFAULT_RESPONSE_MAX_BYTES) {
     return new Promise((resolve, reject) => {
         const client = targetUrl.protocol === "https:" ? https : http;
+        const tlsOptions = targetUrl.protocol === "https:" ? monitorTlsOptions(monitor) : {};
         const req = client.request(
             targetUrl,
             {
@@ -277,6 +278,7 @@ function requestDirect(targetUrl, monitor, resolvedTarget = null, responseMaxByt
                 timeout: getTimeoutMs(monitor.timeout),
                 headers: parseHeaders(monitor.headers),
                 lookup: pinnedLookup(resolvedTarget),
+                ...tlsOptions,
             },
             (res) => collectResponse(res, resolve, responseMaxBytes)
         );
@@ -322,6 +324,7 @@ function requestViaHttpProxy(targetUrl, proxyUrlString, monitor, responseMaxByte
 function requestViaUserProxy(targetUrl, proxy, monitor, responseMaxBytes = DEFAULT_RESPONSE_MAX_BYTES) {
     return new Promise((resolve, reject) => {
         const transport = targetUrl.protocol === "https:" ? https : http;
+        const tlsOptions = targetUrl.protocol === "https:" ? monitorTlsOptions(monitor) : {};
         const req = transport.request(
             {
                 hostname: targetUrl.hostname,
@@ -331,6 +334,7 @@ function requestViaUserProxy(targetUrl, proxy, monitor, responseMaxBytes = DEFAU
                 timeout: getTimeoutMs(monitor.timeout),
                 headers: parseHeaders(monitor.headers),
                 agent: createUserProxyAgent(proxy, targetUrl.protocol),
+                ...tlsOptions,
             },
             (res) => collectResponse(res, resolve, responseMaxBytes)
         );
@@ -377,6 +381,7 @@ async function requestHttpsViaConnectProxy(
     const tlsSocket = tls.connect({
         socket,
         servername: targetUrl.hostname,
+        ...monitorTlsOptions(monitor),
     });
 
     return new Promise((resolve, reject) => {
@@ -399,6 +404,19 @@ async function requestHttpsViaConnectProxy(
         }
         req.end();
     });
+}
+
+function monitorTlsOptions(monitor) {
+    return ignoreTlsErrors(monitor) ? { rejectUnauthorized: false } : {};
+}
+
+function ignoreTlsErrors(monitor) {
+    return (
+        monitor?.ignoreTls === true ||
+        monitor?.ignoreTls === 1 ||
+        monitor?.ignoreTls === "1" ||
+        monitor?.ignoreTls === "true"
+    );
 }
 
 function connectDirect(hostname, port, timeoutSeconds) {

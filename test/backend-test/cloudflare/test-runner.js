@@ -2,6 +2,7 @@
 const { describe, test, beforeEach, afterEach } = require("node:test");
 const assert = require("node:assert");
 const http = require("node:http");
+const https = require("node:https");
 const net = require("node:net");
 
 const DOWN = 0;
@@ -182,6 +183,36 @@ describe("Cloudflare monitor runner", () => {
 
         assert.strictEqual(result.status, UP);
         assert.strictEqual(result.response, "01234567");
+    });
+
+    test("HTTPS checks honor ignoreTls for self-signed certificates", async () => {
+        const { runCheck } = require("../../../cloudflare/runner/checker");
+        const target = await listen(
+            https.createServer({
+                key: SELF_SIGNED_KEY,
+                cert: SELF_SIGNED_CERT,
+            }, (_req, res) => {
+                res.writeHead(200, { "content-type": "text/plain" });
+                res.end("self signed ok");
+            })
+        );
+
+        const result = await runCheck({
+            monitor: {
+                id: 15,
+                type: "http",
+                url: `https://public.example.test:${target.port}/health`,
+                timeout: 5,
+                ignoreTls: true,
+                saveResponse: true,
+            },
+            lookup: async () => ({ address: "127.0.0.1", family: 4 }),
+            allowPrivateResolvedForTest: true,
+        });
+
+        assert.strictEqual(result.status, UP);
+        assert.strictEqual(result.msg, "200 - OK");
+        assert.strictEqual(result.response, "self signed ok");
     });
 
     test("HTTP checks use assigned active user proxy with basic auth", async () => {
@@ -711,6 +742,58 @@ describe("Cloudflare monitor runner", () => {
         });
     });
 });
+
+const SELF_SIGNED_KEY = `
+-----BEGIN PRIVATE KEY-----
+MIIEuwIBADANBgkqhkiG9w0BAQEFAASCBKUwggShAgEAAoIBAQDNJM9df/FLu6K8
+G+RBqX7qqjXYppi0xkZXVsxAF0Fc6K757HlEoEZEO7KY6iwJ3MoojLB9EG2G1C7p
+Fosk7ozI4x4+F9wIIBz44NI5T/OECmk3ECid/PnvOMW/IDN/vhGhMDf2K1LJstGE
+VreRlDbMmUHJB37r9lysD2WofKVZe58ENtBWwnh34qfoe1bOj4RKNcZ3kTluWe2d
+0MyWUhR3DVpm/MKudq8BcdyW8d3Da4wegYbJoP7DrMlvd0nsUmGsxyzZatlm7BRs
+4to/25hDG8b+wrAyDrQ/uPLE3QSqt35K0KXF+CS2+BmzfngEJuC3Pq6wsrZnZ2BA
+LOOn0JbnAgMBAAECggEAEJI+pgDlzwZTOPrPz3YPqIkjXGLoxwGVQQzj5vF5+DVb
+nRi7Gw4PXwerf6q67/kD446p2xBuqIuPVojZqJwUh03BbaajwYxGitwuXy7ULwBg
+S3Bkt45t6iMd5jiFsHX8Gpc4jgwl3eEyB4yxu3LLkm923vRaDlmSVtvPjHK1MKsk
+pURnXUFx3Zmjnv22ioqGmnwu4h5KHu61gqXhGa7elLid1AQwwGcTGkleSinIEUe4
+ccuYq2CTpEnf1bMKymUTg2PYarPqyWBiYJIml2QS4zhGKNAE0Pk7Gu3puc1WWbGr
+cRYYNOxUF7lIs9NhB5o7Qrq9Wf1wXUWRF3MmxIJscQKBgQD3bD+vSxRFr4AYCgED
+O8BEDc5oNwY+CfUEVcvIftka6OTZ2MFDYBKFEap1i+O171ODaW+ew9erKOPt9I/d
+yrTggmdqzMK54s+YKdQhMWJlFbJddZ/M52kMUC87DTHZzSHj0/cRt0Ye9fyXU20Y
+EUSR7LCLkqpAip+iHLERnF88NQKBgQDUQVsyX69mw5LDSj+k5aQofgi3aDw+74ZB
+g9FiHj5zVkv4KMeAPqKqHNMTsvIxvRYc8ZxH0YBCQEjNkvF09Z3+GLTgAQj1MJdS
+ucu9uI9VcrLxwItbKwUC72Rayi+oQLbqHpK4wlzdnYTSTbA7uwT8cRhu570ah96M
+q0Hg9HbSKwKBgQC4GIAuMsPrsdCykkb8m+nL+SXaXw6y/H+lcR0GmnN51U3qVaA/
+PG2rO2DEw4hz55YRElNuIzQGc49cj3q4QUpiPkUqrx44Z22lP4JKDE+0/PbRGWME
+eC6ubb8mxgOQllQgC6grM13mTYtbIUTsAnUtypn1z/QDv+FVItoRS3OE/QKBgHhD
+U7XWC18Rnv1x+1+mEf4zcyLgN4p9UreaRa/vbPkSw1anXGpokugKDvrRYHMYLQhX
+SXJT3PUs0VNRV+gqJsvLGej2DSpHzuW7ihpEEUqcA5IAw7TzShKgq17Zwmj1ye4b
+RozS66VR0+kIxbsCO1ABkJN+UGJQ66MOgfRA73YjAn9gbFuIxHw3bBhmD9fjTKmw
+RqfX1b/Ywxcb6kiPCP+uebcQPKWWK0wWIV9hVHw1tRQ0NexzxEUM0pdsMtcKYD7x
+WJEf9pnWuXYiKzEWHMwWNw55A0fMK71+/tGVKa7nzYzuQCivdXVXsf7yIBp/Z+Np
+fhEjbaw0/WwWmQrG8Fzw
+-----END PRIVATE KEY-----
+`;
+
+const SELF_SIGNED_CERT = `
+-----BEGIN CERTIFICATE-----
+MIIC4TCCAcmgAwIBAgIJAK3cxKdt/KixMA0GCSqGSIb3DQEBCwUAMB4xHDAaBgNV
+BAMME3B1YmxpYy5leGFtcGxlLnRlc3QwHhcNMjYwNjA1MDAxMTUyWhcNMzYwNjAy
+MDAxMTUyWjAeMRwwGgYDVQQDDBNwdWJsaWMuZXhhbXBsZS50ZXN0MIIBIjANBgkq
+hkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzSTPXX/xS7uivBvkQal+6qo12KaYtMZG
+V1bMQBdBXOiu+ex5RKBGRDuymOosCdzKKIywfRBthtQu6RaLJO6MyOMePhfcCCAc
++ODSOU/zhAppNxAonfz57zjFvyAzf74RoTA39itSybLRhFa3kZQ2zJlByQd+6/Zc
+rA9lqHylWXufBDbQVsJ4d+Kn6HtWzo+ESjXGd5E5blntndDMllIUdw1aZvzCrnav
+AXHclvHdw2uMHoGGyaD+w6zJb3dJ7FJhrMcs2WrZZuwUbOLaP9uYQxvG/sKwMg60
+P7jyxN0Eqrd+StClxfgktvgZs354BCbgtz6usLK2Z2dgQCzjp9CW5wIDAQABoyIw
+IDAeBgNVHREEFzAVghNwdWJsaWMuZXhhbXBsZS50ZXN0MA0GCSqGSIb3DQEBCwUA
+A4IBAQAoEILfR9XCn+mG9LZuuO/zgOoy8k7uRPA2nzIs0NOVvEPjIk1hEMmk7xp0
+M8Ku6tn1TFIlhqgts5pWHG7o6+wG5ZPFXv6ry2Qes75bRMLtUgk6h2OKrWF+7vRz
+cL2DVDpp+K+V+/xi1Ek8KGm8Wu1nZ462UWxToZFie9nLDQ/U/Gb/n7zlCRlbiZ0b
+3wmV8Z0jY5hZ9+oX5XpJjVMRnQFSFx9FE4XAt+RoGDE2yx8TyNwZSlUfUyy+91/w
+Iji3NB8dTYmVcQ66taV5i0dYCWY5LyodOSkHDrQGgNp9XVgFeIN6A2Lv+PsOYH5z
+u+l1uRgttneeiT6xmfpZxGaSsr4k
+-----END CERTIFICATE-----
+`;
 
 function listen(server) {
     return new Promise((resolve) => {

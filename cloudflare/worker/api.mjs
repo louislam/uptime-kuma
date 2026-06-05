@@ -4234,7 +4234,7 @@ async function getNetworkProfile(env, networkProfileId) {
 
 function sanitizeMonitor(monitor) {
     const config = parseMonitorConfig(monitor.config_json);
-    return {
+    const sanitized = {
         id: monitor.id,
         name: monitor.name,
         type: monitor.type,
@@ -4258,6 +4258,10 @@ function sanitizeMonitor(monitor) {
         ping_per_request_timeout: config.ping_per_request_timeout,
         twingatePingFallbackPorts: config.twingatePingFallbackPorts,
     };
+    if (ACCESS_SECRET_MONITOR_TYPES.has(monitor.type)) {
+        sanitized.ignoreTls = normalizeBoolean(config.ignoreTls);
+    }
+    return sanitized;
 }
 
 function normalizeMonitorInput(input, existing = {}) {
