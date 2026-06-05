@@ -42,10 +42,10 @@ jobs:
             }
 
   pr-title:
-    if: github.repository == 'louislam/uptime-kuma'
+    if: ${{ github.repository == 'louislam/uptime-kuma' && always() }}
     name: Validate PR title follows https://conventionalcommits.org
     runs-on: ubuntu-latest
-    needs: auto-title
+    needs: [auto-title]
     permissions:
       pull-requests: read
     steps:
