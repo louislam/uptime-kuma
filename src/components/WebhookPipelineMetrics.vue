@@ -65,6 +65,10 @@ export default {
             type: String,
             required: true,
         },
+        webhookPipelinePanel: {
+            type: Boolean,
+            default: false,
+        },
     },
 
     data() {
@@ -73,6 +77,7 @@ export default {
             fetchError: null,
             warnings: [],
             metrics: {
+                enabled: null,
                 timestamp: null,
                 proxy: { recvQ: null, recvQLevel: "unknown", establishedConnections: null },
                 queue: {
@@ -90,7 +95,7 @@ export default {
 
     computed: {
         visible() {
-            return String(this.slug || "").toLowerCase() === "newstargeted-status";
+            return this.webhookPipelinePanel === true && this.metrics.enabled !== false;
         },
         displayWarnings() {
             const raw =
@@ -104,11 +109,15 @@ export default {
     },
 
     mounted() {
-        if (!this.visible) {
+        if (!this.webhookPipelinePanel) {
             return;
         }
-        this.loadMetrics();
-        this.refreshTimer = window.setInterval(() => this.loadMetrics(), REFRESH_MS);
+        this.loadMetrics().then(() => {
+            if (!this.visible) {
+                return;
+            }
+            this.refreshTimer = window.setInterval(() => this.loadMetrics(), REFRESH_MS);
+        });
     },
 
     beforeUnmount() {
@@ -119,7 +128,7 @@ export default {
 
     methods: {
         async loadMetrics() {
-            if (!this.visible) {
+            if (!this.webhookPipelinePanel) {
                 return;
             }
 
@@ -128,6 +137,11 @@ export default {
                     timeout: 12000,
                 });
                 this.metrics = res.data;
+                if (res.data.enabled === false) {
+                    this.warnings = [];
+                    this.fetchError = null;
+                    return;
+                }
                 this.warnings = Array.isArray(res.data.warnings) ? res.data.warnings : [];
                 this.fetchError = null;
             } catch (error) {

@@ -625,14 +625,38 @@ exports.allowDevAllOrigin = (res) => {
 };
 
 /**
- * CORS for public status-page API when embedded on the main site.
+ * Parse UPTIME_KUMA_STATUS_EMBED_ORIGINS (comma-separated absolute origins).
+ * @returns {string[]}
+ */
+exports.getStatusEmbedOrigins = () => {
+    const raw = process.env.UPTIME_KUMA_STATUS_EMBED_ORIGINS || "";
+    return raw
+        .split(",")
+        .map((origin) => origin.trim())
+        .filter((origin) => origin.length > 0);
+};
+
+/**
+ * Build a Content-Security-Policy frame-ancestors value for iframe embeds.
+ * @returns {string|null} null when no extra ancestors are configured
+ */
+exports.getStatusEmbedFrameAncestorsCsp = () => {
+    const allowed = exports.getStatusEmbedOrigins();
+    if (allowed.length === 0) {
+        return null;
+    }
+    return ["frame-ancestors 'self'", ...allowed].join(" ");
+};
+
+/**
+ * CORS for public status-page API when embedded on configured parent sites.
  * @param {import("express").Request} req
  * @param {import("express").Response} res
  * @returns {void}
  */
 exports.allowStatusEmbedOrigin = (req, res) => {
     const origin = req.headers.origin || "";
-    const allowed = ["https://newstargeted.com", "https://www.newstargeted.com"];
+    const allowed = exports.getStatusEmbedOrigins();
     if (allowed.includes(origin)) {
         res.header("Access-Control-Allow-Origin", origin);
         res.header("Access-Control-Allow-Methods", "GET, OPTIONS");

@@ -24,3 +24,11 @@ extra/exe-builder/obj
 
 .vs
 .vscode
+
+# Deploy-only (status.newstargeted.com); not submitted to upstream
+/ecosystem.config.js
+/.htaccess
+/to-do/
+/sql/backup-before-tags-*.sql
+/sql/add-tags.sql
+/Test/measure-login*.mjs

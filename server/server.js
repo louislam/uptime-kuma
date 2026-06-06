@@ -112,6 +112,7 @@ const {
     shake256,
     SHAKE256_LENGTH,
     allowDevAllOrigin,
+    getStatusEmbedFrameAncestorsCsp,
     printServerUrls,
 } = require("./util-server");
 
@@ -199,10 +200,12 @@ app.use(function (req, res, next) {
     if (!disableFrameSameOrigin) {
         res.setHeader("X-Frame-Options", "SAMEORIGIN");
     } else {
-        res.setHeader(
-            "Content-Security-Policy",
-            "frame-ancestors 'self' https://newstargeted.com https://www.newstargeted.com"
-        );
+        const frameAncestorsCsp = getStatusEmbedFrameAncestorsCsp();
+        if (frameAncestorsCsp) {
+            res.setHeader("Content-Security-Policy", frameAncestorsCsp);
+        } else {
+            res.setHeader("Content-Security-Policy", "frame-ancestors 'self'");
+        }
     }
     res.removeHeader("X-Powered-By");
     next();

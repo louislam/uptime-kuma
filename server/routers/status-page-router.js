@@ -36,7 +36,7 @@ router.get("/status-page", cache("5 minutes"), async (request, response) => {
     await StatusPage.handleStatusPageResponse(response, server.indexHTML, slug);
 });
 
-// Webhook proxy Recv-Q + RabbitMQ queue (NewsTargeted status page panel)
+// Optional webhook proxy Recv-Q + RabbitMQ queue panel (env-configured)
 // Must be registered before /api/status-page/:slug so "webhook-pipeline" is not treated as a slug.
 router.get("/api/status-page/webhook-pipeline", async (request, response) => {
     allowStatusEmbedOrigin(request, response);

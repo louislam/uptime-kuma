@@ -8,8 +8,45 @@ const http = require("http");
 const axios = require("axios");
 
 const WEBHOOK_PORT = parseInt(process.env.WEBHOOK_PIPELINE_PORT || "3005", 10) || 3005;
-const WEBHOOK_CONFIG_JS =
-    process.env.WEBHOOK_CONFIG_JS_PATH || "/home/newstargeted.com/webhook.newstargeted.com/config.js";
+
+function getWebhookConfigJsPath() {
+    const path = (
+        process.env.WEBHOOK_CONFIG_JS_PATH ||
+        process.env.UPTIME_KUMA_WEBHOOK_CONFIG_JS_PATH ||
+        ""
+    ).trim();
+    return path.length > 0 ? path : null;
+}
+
+/**
+ * Parse UPTIME_KUMA_WEBHOOK_PIPELINE_STATUS_SLUGS (comma-separated status page slugs).
+ * @returns {string[]}
+ */
+function parseWebhookPipelineStatusSlugs() {
+    const raw = process.env.UPTIME_KUMA_WEBHOOK_PIPELINE_STATUS_SLUGS || "";
+    return raw
+        .split(",")
+        .map((slug) => slug.trim().toLowerCase())
+        .filter((slug) => slug.length > 0);
+}
+
+/**
+ * Whether the webhook pipeline panel/API is enabled for a status page slug.
+ * @param {string} slug
+ * @returns {boolean}
+ */
+function isWebhookPipelineEnabledForSlug(slug) {
+    const slugs = parseWebhookPipelineStatusSlugs();
+    if (slugs.length === 0 || !getWebhookConfigJsPath()) {
+        return false;
+    }
+    return slugs.includes(String(slug || "").toLowerCase());
+}
+
+function isWebhookPipelineConfigured() {
+    return parseWebhookPipelineStatusSlugs().length > 0 && !!getWebhookConfigJsPath();
+}
+
 const PUBLISHER_PROBE_TIMEOUT_MS = parseInt(process.env.WEBHOOK_PIPELINE_PUBLISHER_PROBE_MS || "1500", 10) || 1500;
 const RABBITMQ_FETCH_TIMEOUT_MS = parseInt(process.env.RABBITMQ_PIPELINE_MGMT_TIMEOUT_MS || "5000", 10) || 5000;
 
@@ -43,8 +80,13 @@ function loadRabbitManagementConfig() {
         return rabbitConfigCache;
     }
 
+    const webhookConfigJsPath = getWebhookConfigJsPath();
+    if (!webhookConfigJsPath) {
+        return null;
+    }
+
     try {
-        const { get } = require(WEBHOOK_CONFIG_JS);
+        const { get } = require(webhookConfigJsPath);
         const amqpHost = String(get("rabbitmq.host", "localhost") || "localhost");
         const mgmtHostExplicit = String(get("rabbitmq.managementHost", "") || "").trim();
         const managementHost =
@@ -295,6 +337,12 @@ function mergeProxyLevel(recvQLevel, connectionLevel, publisherHealthy) {
 }
 
 async function fetchWebhookPipelineMetrics() {
+    if (!isWebhookPipelineConfigured()) {
+        return {
+            enabled: false,
+        };
+    }
+
     if (cache.value && Date.now() < cache.expiresAt) {
         return cache.value;
     }
@@ -346,6 +394,7 @@ async function fetchWebhookPipelineMetrics() {
     }
 
     const payload = {
+        enabled: true,
         timestamp,
         proxy,
         queue: queuePublic,
@@ -362,5 +411,7 @@ async function fetchWebhookPipelineMetrics() {
 
 module.exports = {
     fetchWebhookPipelineMetrics,
+    isWebhookPipelineEnabledForSlug,
+    isWebhookPipelineConfigured,
     parseSsListenLine,
 };

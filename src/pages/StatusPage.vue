@@ -409,7 +409,7 @@
                 </template>
             </div>
 
-            <WebhookPipelineMetrics :slug="slug" />
+            <WebhookPipelineMetrics :slug="slug" :webhook-pipeline-panel="webhookPipelinePanel" />
 
             <!-- Maintenance -->
             <template v-if="maintenanceList.length > 0">
@@ -713,6 +713,7 @@ export default {
             incidentHistoryLoading: false,
             incidentHistoryNextCursor: null,
             incidentHistoryHasMore: false,
+            webhookPipelinePanel: false,
         };
     },
     computed: {
@@ -1015,6 +1016,7 @@ export default {
                 this.incident = res.data.incident;
                 this.maintenanceList = res.data.maintenanceList;
                 this.$root.publicGroupList = res.data.publicGroupList;
+                this.webhookPipelinePanel = res.data.webhookPipelinePanel === true;
 
                 this.loading = false;
 

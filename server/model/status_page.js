@@ -348,12 +348,15 @@ class StatusPage extends BeanModel {
             publicGroupList.push(monitorGroup);
         }
 
+        const { isWebhookPipelineEnabledForSlug } = require("../modules/webhook-pipeline-metrics");
+
         // Response
         return {
             config,
             incidents,
             publicGroupList,
             maintenanceList,
+            webhookPipelinePanel: isWebhookPipelineEnabledForSlug(statusPage.slug),
         };
     }
 
