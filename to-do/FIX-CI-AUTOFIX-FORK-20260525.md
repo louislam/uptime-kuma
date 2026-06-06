@@ -7,7 +7,7 @@ Date (Europe/Oslo): 25/05/2026 21:55
 The `autofix.ci` GitHub Actions workflow has been red on every push to
 `master3395/uptime-kuma:master`, including run
 [#26414438570](https://github.com/master3395/uptime-kuma/actions/runs/26414438570)
-("fix(perf,db): respect DB pool env var and patch stat_* dup-key race").
+("fix(perf,db): respect DB pool env var and patch stat\_\* dup-key race").
 
 The annotations look intimidating ("11 errors, 11 warnings"), but only one
 step actually fails. The rest are pre-existing upstream noise.
@@ -33,13 +33,13 @@ the action exits 1 and the run is marked failure. Earlier steps (`npm ci`,
 
 ### The "11 errors" annotations
 
-| Where | What | Whose problem |
-|---|---|---|
-| 8 errors in `node_modules/@types/node/http.d.ts` (lines 239, 240, 244, 248, 255, 261, 269) | TS parser cannot read syntax in current `@types/node` | Upstream: pinned `typescript` version is older than installed `@types/node` major. Same annotations appear in `louislam/uptime-kuma` runs. |
-| 2 errors in `node_modules/@types/node/buffer.d.ts:129` | Same as above | Upstream |
-| 1 error: "autofix.ci app is not installed" | Step 9 cannot post diffs | Fork-only |
-| 10 warnings on `modules/pm2-kuma-push-sync.js` | Missing JSDoc tags on the helper file we authored in this fork | Ours to fix |
-| 1 warning: "Node.js 20 actions are deprecated" | `autofix-ci/action@635ffb…` runs on Node 20 | Upstream action; fixed when louislam upgrades the pinned tag |
+| Where                                                                                      | What                                                           | Whose problem                                                                                                                              |
+| ------------------------------------------------------------------------------------------ | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| 8 errors in `node_modules/@types/node/http.d.ts` (lines 239, 240, 244, 248, 255, 261, 269) | TS parser cannot read syntax in current `@types/node`          | Upstream: pinned `typescript` version is older than installed `@types/node` major. Same annotations appear in `louislam/uptime-kuma` runs. |
+| 2 errors in `node_modules/@types/node/buffer.d.ts:129`                                     | Same as above                                                  | Upstream                                                                                                                                   |
+| 1 error: "autofix.ci app is not installed"                                                 | Step 9 cannot post diffs                                       | Fork-only                                                                                                                                  |
+| 10 warnings on `modules/pm2-kuma-push-sync.js`                                             | Missing JSDoc tags on the helper file we authored in this fork | Ours to fix                                                                                                                                |
+| 1 warning: "Node.js 20 actions are deprecated"                                             | `autofix-ci/action@635ffb…` runs on Node 20                    | Upstream action; fixed when louislam upgrades the pinned tag                                                                               |
 
 ## Fix
 

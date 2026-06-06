@@ -14,14 +14,14 @@ Second `louislam/master` merge of the day, applied to local branch
 
 ## Commits pulled in (6)
 
-| SHA      | Date       | Type   | Description                                                   |
-|----------|------------|--------|---------------------------------------------------------------|
-| 68d87cae | 25/05/2026 | feat   | Adding bearer token (#7415) - HTTP/Globalping monitors        |
-| 68787405 | 25/05/2026 | chore  | dev data directory handling for non-master branches (#7432)   |
-| 14d07ec3 | 25/05/2026 | fix    | bearer token support on WebSocket upgrade monitor (#7431)     |
-| d5d727cd | 25/05/2026 | feat   | EgoSMS notification provider for Uganda (#7434)               |
-| efa194a6 | 25/05/2026 | feat   | optional token field for gamedig monitors (#7433)             |
-| b829329e | 25/05/2026 | feat   | incidents in RSS feed (#7420)                                 |
+| SHA      | Date       | Type  | Description                                                 |
+| -------- | ---------- | ----- | ----------------------------------------------------------- |
+| 68d87cae | 25/05/2026 | feat  | Adding bearer token (#7415) - HTTP/Globalping monitors      |
+| 68787405 | 25/05/2026 | chore | dev data directory handling for non-master branches (#7432) |
+| 14d07ec3 | 25/05/2026 | fix   | bearer token support on WebSocket upgrade monitor (#7431)   |
+| d5d727cd | 25/05/2026 | feat  | EgoSMS notification provider for Uganda (#7434)             |
+| efa194a6 | 25/05/2026 | feat  | optional token field for gamedig monitors (#7433)           |
+| b829329e | 25/05/2026 | feat  | incidents in RSS feed (#7420)                               |
 
 ## DB schema changes
 
@@ -44,7 +44,7 @@ sides and resolved by line-level auto-merge:
   fields kept alongside our PM2 monitor wiring)
 - `server/model/status_page.js` (upstream RSS incident feed kept
   alongside our `reloadIndexHTMLIfChanged()` + `setSpaShellCacheHeaders()`
-  + try/catch error handler)
+  - try/catch error handler)
 - `server/server.js` (upstream `bean.bearer_token` / `bean.gamedigToken`
   kept alongside our `frame-ancestors` CSP and SPA shell hot-reload)
 - `src/lang/en.json` (new EgoSMS / bearer / gamedig keys)
@@ -75,15 +75,15 @@ sides and resolved by line-level auto-merge:
 
 ## Health check
 
-| Endpoint                                            | HTTP | Time   |
-|-----------------------------------------------------|------|--------|
-| `http://127.0.0.1:3011/`                            | 302  | 12 ms  |
-| `http://127.0.0.1:3011/status/newstargeted-status`  | 200  | 42 ms (warm) |
-| `https://status.newstargeted.com/status/newstargeted-status` | 200 | 1.1 s |
-| `http://127.0.0.1:3011/api/status-page/heartbeat/newstargeted-status` | 200 | 17.9 s (cold), cached after |
-| `http://127.0.0.1:3011/api/status-page/newstargeted-status` | 200 | 24.2 s (cold), cached after |
-| `http://127.0.0.1:3011/api/status-page/webhook-pipeline` | 200 | 0.6 s |
-| `http://127.0.0.1:3011/status/newstargeted-status/rss` (NEW) | 200 | 20.9 s (cold) `application/rss+xml` |
+| Endpoint                                                              | HTTP | Time                                |
+| --------------------------------------------------------------------- | ---- | ----------------------------------- |
+| `http://127.0.0.1:3011/`                                              | 302  | 12 ms                               |
+| `http://127.0.0.1:3011/status/newstargeted-status`                    | 200  | 42 ms (warm)                        |
+| `https://status.newstargeted.com/status/newstargeted-status`          | 200  | 1.1 s                               |
+| `http://127.0.0.1:3011/api/status-page/heartbeat/newstargeted-status` | 200  | 17.9 s (cold), cached after         |
+| `http://127.0.0.1:3011/api/status-page/newstargeted-status`           | 200  | 24.2 s (cold), cached after         |
+| `http://127.0.0.1:3011/api/status-page/webhook-pipeline`              | 200  | 0.6 s                               |
+| `http://127.0.0.1:3011/status/newstargeted-status/rss` (NEW)          | 200  | 20.9 s (cold) `application/rss+xml` |
 
 CSP header on `/`: `frame-ancestors 'self' https://newstargeted.com
 https://www.newstargeted.com` (our embed CSP intact).
@@ -101,11 +101,11 @@ https://www.newstargeted.com` (our embed CSP intact).
 
 Location: `/home/backup/status.newstargeted.com-20260525-190444-pre-merge-evening/`
 
-| File                                    | Size  | SHA-256 (prefix)   |
-|-----------------------------------------|-------|--------------------|
-| `status.newstargeted.com-files.tar.gz`  | 42 M  | `152826875c25ae97` |
-| `news_status.sql.gz`                    | 2.3 M | `d39de57bc6620f49` |
-| `BACKUP-README.txt`                     | -     | (manifest + restore steps) |
+| File                                   | Size  | SHA-256 (prefix)           |
+| -------------------------------------- | ----- | -------------------------- |
+| `status.newstargeted.com-files.tar.gz` | 42 M  | `152826875c25ae97`         |
+| `news_status.sql.gz`                   | 2.3 M | `d39de57bc6620f49`         |
+| `BACKUP-README.txt`                    | -     | (manifest + restore steps) |
 
 The tarball excludes `node_modules/`, `dist/`, and `data/error.log`.
 The DB dump is a full `mariadb-dump --single-transaction --routines

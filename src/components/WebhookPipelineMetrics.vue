@@ -1,18 +1,12 @@
 <template>
-    <div
-        v-if="visible"
-        class="shadow-box webhook-pipeline-metrics mb-4 p-4"
-        data-testid="webhook-pipeline-metrics"
-    >
+    <div v-if="visible" class="shadow-box webhook-pipeline-metrics mb-4 p-4" data-testid="webhook-pipeline-metrics">
         <h3 class="pipeline-title mb-3">Webhook pipeline</h3>
         <p class="pipeline-note text-muted small mb-3">
-            HTTP backlog is incoming webhook traffic waiting to be accepted.
-            The message queue shows work already stored for delivery.
+            HTTP backlog is incoming webhook traffic waiting to be accepted. The message queue shows work already stored
+            for delivery.
         </p>
 
-        <div v-if="loading && !metrics.timestamp" class="text-muted small">
-            Loading pipeline metrics…
-        </div>
+        <div v-if="loading && !metrics.timestamp" class="text-muted small">Loading pipeline metrics…</div>
 
         <div v-else class="row g-3">
             <div class="col-md-6">
@@ -32,17 +26,15 @@
 
             <div class="col-md-6">
                 <div class="metric-card" :class="levelClass(metrics.queue.readyLevel)">
-                    <div class="metric-label">
-                        Message queue
-                    </div>
+                    <div class="metric-label">Message queue</div>
                     <div class="metric-value">
                         {{ formatNumber(metrics.queue.messagesReady) }}
                         <span class="metric-sub">ready</span>
                     </div>
                     <div class="metric-meta">
-                        Unacked: {{ formatNumber(metrics.queue.messagesUnacknowledged) }}
-                        · Total: {{ formatNumber(metrics.queue.messageCount) }}
-                        · Consumers: {{ formatNumber(metrics.queue.consumerCount) }}
+                        Unacked: {{ formatNumber(metrics.queue.messagesUnacknowledged) }} · Total:
+                        {{ formatNumber(metrics.queue.messageCount) }} · Consumers:
+                        {{ formatNumber(metrics.queue.consumerCount) }}
                     </div>
                     <div v-if="!metrics.queue.connected" class="metric-hint warning-text">
                         Queue metrics are temporarily unavailable.
@@ -53,7 +45,7 @@
 
         <div class="pipeline-footer text-muted small mt-3">
             Updated {{ fromNow(metrics.timestamp) }}
-            <span v-for="(warning, idx) in displayWarnings" :key="idx" class="warning-text"> · {{ warning }}</span>
+            <span v-for="(warning, idx) in displayWarnings" :key="idx" class="warning-text">· {{ warning }}</span>
         </div>
     </div>
 </template>

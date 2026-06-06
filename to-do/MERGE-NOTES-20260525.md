@@ -12,18 +12,18 @@ on 25/05/2026 kl. 04:27.
 
 ## Commits pulled in (10)
 
-| SHA      | Date       | Type   | Description                                                   |
-|----------|------------|--------|---------------------------------------------------------------|
-| 3fcddaf0 | 09/05/2026 | fix    | update link to documentation about API keys (#7373)           |
-| 0c5371af | 10/05/2026 | fix    | NTLM monitor over plain HTTP fails with 400 Bad Request (#7351) |
-| b45c6374 | 12/05/2026 | chore  | temporary disable github actions cache (#7388)                |
-| 6a2f0714 | 13/05/2026 | fix    | normalize hidden log level lookup (#7390)                     |
-| 7c41b08f | 16/05/2026 | chore  | Add a workflow for `ai-slop` tag (#7403)                      |
-| 4f74fc29 | 16/05/2026 | chore  | Follow up of "Add a workflow for ai-slop tag" (#7404)         |
-| bc6ca6e9 | 16/05/2026 | chore  | New AI slop policy (#7405)                                    |
-| 5f3f1f54 | 21/05/2026 | chore  | Anti AI slop workflow for issue too (#7419)                   |
-| 916ea813 | 22/05/2026 | chore  | Secure all workflows with `pull_request_target` (#7424)       |
-| 6a10d82f | 23/05/2026 | chore  | Add a workflow to mark a pull request as "deleted" (#7428)    |
+| SHA      | Date       | Type  | Description                                                     |
+| -------- | ---------- | ----- | --------------------------------------------------------------- |
+| 3fcddaf0 | 09/05/2026 | fix   | update link to documentation about API keys (#7373)             |
+| 0c5371af | 10/05/2026 | fix   | NTLM monitor over plain HTTP fails with 400 Bad Request (#7351) |
+| b45c6374 | 12/05/2026 | chore | temporary disable github actions cache (#7388)                  |
+| 6a2f0714 | 13/05/2026 | fix   | normalize hidden log level lookup (#7390)                       |
+| 7c41b08f | 16/05/2026 | chore | Add a workflow for `ai-slop` tag (#7403)                        |
+| 4f74fc29 | 16/05/2026 | chore | Follow up of "Add a workflow for ai-slop tag" (#7404)           |
+| bc6ca6e9 | 16/05/2026 | chore | New AI slop policy (#7405)                                      |
+| 5f3f1f54 | 21/05/2026 | chore | Anti AI slop workflow for issue too (#7419)                     |
+| 916ea813 | 22/05/2026 | chore | Secure all workflows with `pull_request_target` (#7424)         |
+| 6a10d82f | 23/05/2026 | chore | Add a workflow to mark a pull request as "deleted" (#7428)      |
 
 Real runtime impact: 3 small bug fixes + 1 docs link update.  
 The rest are GitHub Actions workflow changes only (no runtime impact).
@@ -50,6 +50,7 @@ The rest are GitHub Actions workflow changes only (no runtime impact).
 ## Uncommitted local changes preserved (stashed during merge, popped after)
 
 Modified:
+
 - `ecosystem.config.js`
 - `server/model/status_page.js`
 - `server/routers/status-page-router.js`
@@ -59,6 +60,7 @@ Modified:
 - `src/pages/StatusPage.vue`
 
 Untracked (preserved):
+
 - `.htaccess`
 - `modules/pm2-kuma-push-sync.js`
 - `server/modules/webhook-pipeline-metrics.js`
@@ -77,11 +79,11 @@ Untracked (preserved):
 
 Location: `/home/backup/status.newstargeted.com-20260525-041920-pre-merge/`
 
-| File                                    | Size | SHA-256 (prefix) |
-|-----------------------------------------|------|------------------|
-| `status.newstargeted.com-files.tar.gz`  | 40M  | 5ddf8790...      |
-| `news_status.sql.gz`                    | 1.6M | 2fb7bff9...      |
-| `BACKUP-README.txt`                     | -    | (manifest + restore steps) |
+| File                                   | Size | SHA-256 (prefix)           |
+| -------------------------------------- | ---- | -------------------------- |
+| `status.newstargeted.com-files.tar.gz` | 40M  | 5ddf8790...                |
+| `news_status.sql.gz`                   | 1.6M | 2fb7bff9...                |
+| `BACKUP-README.txt`                    | -    | (manifest + restore steps) |
 
 The tarball excludes `node_modules/`, `dist/`, and `data/error.log`. Restore
 instructions are in `BACKUP-README.txt`.

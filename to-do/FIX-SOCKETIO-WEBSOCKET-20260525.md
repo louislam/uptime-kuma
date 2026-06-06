@@ -16,10 +16,11 @@ not forwarded to Kuma. Browsers fell back to long-polling.
 
 Long-polling cycles time out at about 25 seconds. The Kuma
 `afterLogin` flow on this server takes 30-75 seconds (large monitor
-+ status page set, cold-cache `getStatusPageData` is 24 seconds).
-That meant the `loginByToken` callback never returned, so neither
-`$root.loggedIn` nor `$root.allowLoginDialog` ever became `true`.
-Per `src/layouts/Layout.vue` lines 129-130:
+
+- status page set, cold-cache `getStatusPageData` is 24 seconds).
+  That meant the `loginByToken` callback never returned, so neither
+  `$root.loggedIn` nor `$root.allowLoginDialog` ever became `true`.
+  Per `src/layouts/Layout.vue` lines 129-130:
 
 ```vue
 <router-view v-if="$root.loggedIn" />
@@ -85,18 +86,18 @@ Kept in `.htaccess`:
 - Security headers (`X-Content-Type-Options`, `Referrer-Policy`,
   `Permissions-Policy`, `X-XSS-Protection`) and the embed CSP
   (`frame-ancestors 'self' https://newstargeted.com
-  https://www.newstargeted.com`).
+https://www.newstargeted.com`).
 
 ## Verification
 
 1. WebSocket upgrade through Cloudflare returns `HTTP/1.1 101
-   Switching Protocols` with the correct `Sec-WebSocket-Accept`.
+Switching Protocols` with the correct `Sec-WebSocket-Accept`.
 2. HTTP polling on `/socket.io/?EIO=4&transport=polling` returns
    the Engine.IO handshake JSON
    (`0{"sid":"...","upgrades":["websocket"],...}`).
 3. Kuma log now shows for each new browser session:
    - `New polling connection`
-   - `New websocket connection`   <-- upgrade succeeds
+   - `New websocket connection` <-- upgrade succeeds
    - `WebSocket with no origin is allowed`
 4. `Successfully logged in user Admin` no longer takes 41-75 s; it
    completes within 1-2 s once WS replaces polling.

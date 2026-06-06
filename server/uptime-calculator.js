@@ -41,10 +41,11 @@ async function safeStoreStatBean(table, bean) {
         return bean;
     } catch (e) {
         const msg = String((e && (e.code || e.errno || e.message)) || "");
-        const isDup = e?.code === "ER_DUP_ENTRY"
-            || /Duplicate entry/i.test(msg)
-            || /SQLITE_CONSTRAINT/i.test(msg)
-            || /UNIQUE constraint failed/i.test(msg);
+        const isDup =
+            e?.code === "ER_DUP_ENTRY" ||
+            /Duplicate entry/i.test(msg) ||
+            /SQLITE_CONSTRAINT/i.test(msg) ||
+            /UNIQUE constraint failed/i.test(msg);
 
         if (!isDup) {
             throw e;
@@ -52,10 +53,7 @@ async function safeStoreStatBean(table, bean) {
 
         // Race: another async path inserted (monitor_id, timestamp) between
         // our findOne and our store. Re-fetch and re-apply our values.
-        const existing = await R.findOne(table, " monitor_id = ? AND timestamp = ?", [
-            bean.monitor_id,
-            bean.timestamp,
-        ]);
+        const existing = await R.findOne(table, " monitor_id = ? AND timestamp = ?", [bean.monitor_id, bean.timestamp]);
 
         if (!existing) {
             // Should be unreachable: duplicate without an existing row.

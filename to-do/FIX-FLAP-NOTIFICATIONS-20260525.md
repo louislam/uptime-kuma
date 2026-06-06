@@ -42,12 +42,12 @@ pattern: alternating status=1 and status=2 / status=0 spaced ~60 s apart.
 Per-minute audit of the helper post-rewrite:
 
 | Oslo minute | pending | gone_down | up pushes |
-|---|---:|---:|---:|
-| 21:31 |   0 | 2 |  3  |
-| 21:32 |   0 | 0 | 51  |
-| 21:33-21:40 | 0 | 3* | ~50 each |
-| 21:41 |  12 | 3 | 52  |
-| 21:42 |   0 | 3 | 68  |
+| ----------- | ------: | --------: | --------: |
+| 21:31       |       0 |         2 |         3 |
+| 21:32       |       0 |         0 |        51 |
+| 21:33-21:40 |       0 |       3\* |  ~50 each |
+| 21:41       |      12 |         3 |        52 |
+| 21:42       |       0 |         3 |        68 |
 
 (\*the constant `gone_down=3` is the three intentionally-stopped services
 `PM2 nt-canary`, `PM2 nt-canary2`, `PM2 rabbitmq-connection-cleanup`.)

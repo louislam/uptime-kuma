@@ -68,12 +68,12 @@ inherited the I/O contention.
 contract (same SQL query, same URL pattern) but four behavioural
 changes:
 
-| Change | Why |
-| --- | --- |
-| Bounded parallel pushes (`runWithConcurrency`, default `KUMA_PUSH_CONCURRENCY=10`) | 33 monitors finish in ~11-22 s instead of ~165 s; loop never stacks. |
-| Per-fetch timeout via `AbortController` (default `KUMA_PUSH_FETCH_TIMEOUT_MS=15000`) | A single hung `/api/push` call cannot tie up a worker slot indefinitely. |
-| Re-entrancy guard (`syncRunning` flag) | If a loop somehow runs longer than the interval, the next tick logs "still running, skipping" instead of stacking. |
-| `describeFetchError(error)` surfaces `error.cause.code` / message | Logs now read `... [ECONNREFUSED] connect ECONNREFUSED 127.0.0.1:3011` instead of bare `fetch failed`. Failure log is rate-limited after 3 consecutive failing loops to avoid spam. |
+| Change                                                                               | Why                                                                                                                                                                                 |
+| ------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Bounded parallel pushes (`runWithConcurrency`, default `KUMA_PUSH_CONCURRENCY=10`)   | 33 monitors finish in ~11-22 s instead of ~165 s; loop never stacks.                                                                                                                |
+| Per-fetch timeout via `AbortController` (default `KUMA_PUSH_FETCH_TIMEOUT_MS=15000`) | A single hung `/api/push` call cannot tie up a worker slot indefinitely.                                                                                                            |
+| Re-entrancy guard (`syncRunning` flag)                                               | If a loop somehow runs longer than the interval, the next tick logs "still running, skipping" instead of stacking.                                                                  |
+| `describeFetchError(error)` surfaces `error.cause.code` / message                    | Logs now read `... [ECONNREFUSED] connect ECONNREFUSED 127.0.0.1:3011` instead of bare `fetch failed`. Failure log is rate-limited after 3 consecutive failing loops to avoid spam. |
 
 `ecosystem.config.js` now declares both apps so env vars are reproducible
 across reboots and pm2 dumps:

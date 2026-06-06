@@ -1842,7 +1842,6 @@ async function afterLogin(socket, user) {
 
     await StatusPage.sendStatusPageList(io, socket);
 
-
     // Per-monitor heartbeat lists and stats are heavy: 2 SQL queries per
     // monitor (sendHeartbeatList) plus stats fan-out from sendStats. With
     // 49 monitors that is ~150 queries. We *intentionally do not await*
@@ -1885,7 +1884,10 @@ async function sendPerMonitorDataInBackground(socket, monitorList, userID) {
         return;
     }
 
-    log.debug("server", `Streaming heartbeat+stats for ${monitorIDs.length} monitors in background (chunks of ${CHUNK_SIZE})`);
+    log.debug(
+        "server",
+        `Streaming heartbeat+stats for ${monitorIDs.length} monitors in background (chunks of ${CHUNK_SIZE})`
+    );
 
     for (let i = 0; i < monitorIDs.length; i += CHUNK_SIZE) {
         const chunk = monitorIDs.slice(i, i + CHUNK_SIZE);

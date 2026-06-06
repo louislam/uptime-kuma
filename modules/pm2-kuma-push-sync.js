@@ -169,7 +169,10 @@ async function sendPush(token, status, message, pingMs) {
     let lastError = null;
     for (let attempt = 1; attempt <= PUSH_RETRIES; attempt++) {
         const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(new Error(`timeout after ${FETCH_TIMEOUT_MS} ms`)), FETCH_TIMEOUT_MS);
+        const timer = setTimeout(
+            () => controller.abort(new Error(`timeout after ${FETCH_TIMEOUT_MS} ms`)),
+            FETCH_TIMEOUT_MS
+        );
 
         try {
             const response = await fetch(url, { method: "GET", signal: controller.signal });
@@ -218,15 +221,17 @@ async function runWithConcurrency(items, limit, worker) {
     const safeLimit = Math.max(1, Math.min(limit, items.length));
 
     for (let i = 0; i < safeLimit; i++) {
-        runners.push((async () => {
-            while (true) {
-                const idx = cursor++;
-                if (idx >= items.length) {
-                    return;
+        runners.push(
+            (async () => {
+                while (true) {
+                    const idx = cursor++;
+                    if (idx >= items.length) {
+                        return;
+                    }
+                    await worker(items[idx]);
                 }
-                await worker(items[idx]);
-            }
-        })());
+            })()
+        );
     }
 
     await Promise.all(runners);
@@ -295,7 +300,9 @@ async function syncOnce() {
             } else if (consecutiveFailureLogs % 10 === 0) {
                 const sample = errorSummary.entries().next().value;
                 const sampleStr = sample ? `${sample[0]}: ${sample[1]}` : "n/a";
-                process.stderr.write(`[pm2-kuma-push-sync] still failing for ${consecutiveFailureLogs} loops, ${failCount}/${monitors.length} this tick. Sample: ${sampleStr}\n`);
+                process.stderr.write(
+                    `[pm2-kuma-push-sync] still failing for ${consecutiveFailureLogs} loops, ${failCount}/${monitors.length} this tick. Sample: ${sampleStr}\n`
+                );
             }
         }
     } finally {
@@ -311,7 +318,9 @@ async function syncOnce() {
  *   recurring timer keeps the process alive after that.
  */
 async function main() {
-    process.stdout.write(`[pm2-kuma-push-sync] starting (loop=${LOOP_INTERVAL_MS}ms concurrency=${PUSH_CONCURRENCY} fetch_timeout=${FETCH_TIMEOUT_MS}ms)\n`);
+    process.stdout.write(
+        `[pm2-kuma-push-sync] starting (loop=${LOOP_INTERVAL_MS}ms concurrency=${PUSH_CONCURRENCY} fetch_timeout=${FETCH_TIMEOUT_MS}ms)\n`
+    );
     await syncOnce();
     setInterval(() => {
         syncOnce().catch((error) => {

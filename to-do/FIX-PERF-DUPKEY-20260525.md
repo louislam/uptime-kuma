@@ -27,11 +27,11 @@ from the env var), runs:
 
 ```javascript
 if (dbConfig.type.endsWith("mariadb")) {
-    config.pool = {
-        afterCreate(conn, done) {
-            conn.query("SET CHARACTER SET utf8mb4;", (err) => done(err, conn));
-        },
-    };
+  config.pool = {
+    afterCreate(conn, done) {
+      conn.query("SET CHARACTER SET utf8mb4;", (err) => done(err, conn));
+    },
+  };
 }
 ```
 
@@ -46,12 +46,12 @@ losing `min`/`max`/`idleTimeoutMillis`:
 
 ```javascript
 if (dbConfig.type.endsWith("mariadb")) {
-    config.pool = {
-        ...config.pool,
-        afterCreate(conn, done) {
-            conn.query("SET CHARACTER SET utf8mb4;", (err) => done(err, conn));
-        },
-    };
+  config.pool = {
+    ...config.pool,
+    afterCreate(conn, done) {
+      conn.query("SET CHARACTER SET utf8mb4;", (err) => done(err, conn));
+    },
+  };
 }
 ```
 
@@ -69,10 +69,10 @@ env: {
 
 Burst of 30 parallel `/api/status-page/heartbeat` requests:
 
-| Metric | Before | After |
-|---|---|---|
+| Metric                              | Before      | After       |
+| ----------------------------------- | ----------- | ----------- |
 | Total connections to news_status DB | 11 (pinned) | 51 (50 + 1) |
-| Active queries during burst | 11 max | 49 measured |
+| Active queries during burst         | 11 max      | 49 measured |
 
 Login `Username from JWT -> Successfully logged in` round trip on
 the same dataset (49 monitors, 5 status pages) drops from 41-75 s
@@ -151,10 +151,10 @@ Cross-DB compatible (SQLite + MariaDB).
 Race stress test: 30 parallel `curl` pushes to the same monitor's
 push token in the same minute.
 
-| Metric | Before fix | After fix |
-|---|---|---|
-| New `Duplicate entry` errors during 30-parallel-push burst | 5-15 | 0 |
-| stat_minutely rows for that minute | 1 winning row + N rejected attempts | 1 row, correct aggregate (`up=31`) |
+| Metric                                                     | Before fix                          | After fix                          |
+| ---------------------------------------------------------- | ----------------------------------- | ---------------------------------- |
+| New `Duplicate entry` errors during 30-parallel-push burst | 5-15                                | 0                                  |
+| stat_minutely rows for that minute                         | 1 winning row + N rejected attempts | 1 row, correct aggregate (`up=31`) |
 
 3-minute observation window after deploy: 0 new dup-key errors.
 Pre-fix it was several per minute.

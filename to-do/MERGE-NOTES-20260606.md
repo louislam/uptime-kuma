@@ -12,16 +12,16 @@ Merged `louislam/master` (2.4.0) into local branch
 
 ## Commits pulled in (26 since `b829329e`)
 
-| SHA      | Type  | Description |
-|----------|-------|-------------|
-| 8ad9ab64 | fix   | npm 11.16.0 handling |
-| 09f43d3e | fix   | Let's Encrypt Gen Y root certs (docker-only) |
-| 9f3b837c | chore | Version bump to 2.4.0 |
-| d0a63d56 | fix   | Globalping ping monitor protocol preservation |
-| 8e27fd19 | fix   | Kafka producer timeout |
+| SHA      | Type  | Description                                        |
+| -------- | ----- | -------------------------------------------------- |
+| 8ad9ab64 | fix   | npm 11.16.0 handling                               |
+| 09f43d3e | fix   | Let's Encrypt Gen Y root certs (docker-only)       |
+| 9f3b837c | chore | Version bump to 2.4.0                              |
+| d0a63d56 | fix   | Globalping ping monitor protocol preservation      |
+| 8e27fd19 | fix   | Kafka producer timeout                             |
 | 2372d39b | chore | GitHub workflow: auto PR title for translation PRs |
-| a7725149 | chore | Code formatting |
-| + 19     | chore | Weblate translation updates (incl. nb-NO) |
+| a7725149 | chore | Code formatting                                    |
+| + 19     | chore | Weblate translation updates (incl. nb-NO)          |
 
 ## DB schema changes
 
@@ -60,12 +60,12 @@ None. Auto-merge completed cleanly on all four overlap files:
 
 ## Health check
 
-| Endpoint | HTTP | Notes |
-|----------|------|-------|
-| `http://127.0.0.1:3011/` | 302 | 43 ms |
-| `https://status.newstargeted.com/status/newstargeted-status` | 200 | 4.7 s |
-| `http://127.0.0.1:3011/status/newstargeted-status/rss` | 200 | `application/rss+xml` |
-| `http://127.0.0.1:3011/api/status-page/webhook-pipeline` | 200 | 0.23 s |
+| Endpoint                                                     | HTTP | Notes                 |
+| ------------------------------------------------------------ | ---- | --------------------- |
+| `http://127.0.0.1:3011/`                                     | 302  | 43 ms                 |
+| `https://status.newstargeted.com/status/newstargeted-status` | 200  | 4.7 s                 |
+| `http://127.0.0.1:3011/status/newstargeted-status/rss`       | 200  | `application/rss+xml` |
+| `http://127.0.0.1:3011/api/status-page/webhook-pipeline`     | 200  | 0.23 s                |
 
 CSP header on `/`: `frame-ancestors 'self' https://newstargeted.com
 https://www.newstargeted.com` (embed CSP intact).
@@ -76,10 +76,10 @@ PM2 reports `status-uptime-kuma` version **2.4.0**.
 
 Location: `/home/backup/status.newstargeted.com-20260606-232928-pre-merge-240/`
 
-| File | Size |
-|------|------|
-| `status.newstargeted.com-files.tar.gz` | 68 M |
-| `news_status.sql.gz` | 2.8 M |
+| File                                   | Size  |
+| -------------------------------------- | ----- |
+| `status.newstargeted.com-files.tar.gz` | 68 M  |
+| `news_status.sql.gz`                   | 2.8 M |
 
 ## What was NOT done
 

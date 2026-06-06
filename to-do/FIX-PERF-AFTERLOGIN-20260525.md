@@ -6,10 +6,10 @@ After the WebSocket and connection-pool fixes from earlier today, login still
 felt sluggish. Server logs paired `Login by token` against
 `Successfully logged in user Admin` and showed:
 
-| State | Round trip |
-| --- | --- |
+| State                                      | Round trip |
+| ------------------------------------------ | ---------- |
 | Cold (post pm2 reload, pre-warm in flight) | 41 to 50 s |
-| Warm (no other DB load) | 18 to 26 s |
+| Warm (no other DB load)                    | 18 to 26 s |
 
 The Vue client cannot render `<router-view>` until that callback resolves, so
 `/manage-status-page` and `/dashboard` looked frozen for the entire window.
@@ -25,13 +25,13 @@ afterLogin timing: monitorList=18676ms smallLists=1308ms statusPageList=991ms to
 The bottleneck was `getMonitorJSONList` -> `Monitor.preparePreloadData`, which
 issued five unbounded `Promise.all` fan-outs back to back:
 
-| Fan-out | Per-monitor work |
-| --- | --- |
-| `isUnderMaintenance` | one SELECT, then recurses via `getParent` |
-| `getAllChildrenIDs` | recurses via `getChildren` (one SELECT per hop) |
-| `isActive` | calls `isParentActive` (recursive `getParent`) |
-| `isParentActive` | recursive `getParent` |
-| `getAllPath` | recursive `getParent` |
+| Fan-out              | Per-monitor work                                |
+| -------------------- | ----------------------------------------------- |
+| `isUnderMaintenance` | one SELECT, then recurses via `getParent`       |
+| `getAllChildrenIDs`  | recurses via `getChildren` (one SELECT per hop) |
+| `isActive`           | calls `isParentActive` (recursive `getParent`)  |
+| `isParentActive`     | recursive `getParent`                           |
+| `getAllPath`         | recursive `getParent`                           |
 
 For 49 monitors with shallow trees this still produced 250 to 500 SELECTs per
 login, all queued behind the connection pool. With Knex's default pool of 10 it
@@ -55,7 +55,7 @@ populates reactively as Socket.IO events arrive.
 - One `SELECT id, parent, active, name FROM monitor` builds an in-memory
   parent map and a parent -> children map.
 - One `SELECT monitor_id, maintenance_id FROM monitor_maintenance WHERE
-  monitor_id IN (...)` resolves maintenance lookups against the cached
+monitor_id IN (...)` resolves maintenance lookups against the cached
   `UptimeKumaServer.maintenanceList`.
 - `getAllPath`, `getAllChildrenIDs`, `isActive`, `isParentActive` and the
   parent inheritance for maintenance now traverse the in-memory maps. Zero
@@ -82,7 +82,7 @@ preload from ~17 s to ~50 ms.
 with `startMonitors` (both are idempotent and share the pool). It walks the
 49 active monitors in chunks of 5, calling
 `UptimeCalculator.getUptimeCalculator(id)` so the first admin login post
-restart does not pay the cold-init cost (3 stat_* SELECTs per monitor on
+restart does not pay the cold-init cost (3 stat\_\* SELECTs per monitor on
 first call).
 
 ### 4. Bump the connection pool to 80
@@ -93,7 +93,7 @@ first call).
 UPTIME_KUMA_DB_POOL_MAX_CONNECTIONS: "80"
 ```
 
-Peak concurrency at login is now roughly 5 fan-outs * 8 chunk size = ~40 +
+Peak concurrency at login is now roughly 5 fan-outs \* 8 chunk size = ~40 +
 other afterLogin work. 80 leaves headroom while staying under MariaDB
 `max_connections=300` and Kuma's own 100 ceiling (`server/database.js:280`).
 
@@ -116,6 +116,7 @@ other afterLogin work. 80 leaves headroom while staying under MariaDB
 
   Median ~3.4 s, min ~2 s. Compared to ~50 s cold / ~20 s warm before, that
   is a 6x to 25x speedup on the user-visible critical path.
+
 - `https://status.newstargeted.com/manage-status-page` and `/dashboard`
   return 200 with sub-second TTFB on the SPA shell.
 - No new errors in `status-uptime-kuma-out.log` or
@@ -132,8 +133,8 @@ other afterLogin work. 80 leaves headroom while staying under MariaDB
 ## Follow-ups left intentionally
 
 - The `kuma-pm2-push-sync` helper is still showing `fetch failed` errors in
-  pm2 logs; that is a *separate* issue (network or token related) and was
+  pm2 logs; that is a _separate_ issue (network or token related) and was
   not touched here.
 - Persisting `UptimeCalculator` state across restarts (rather than rebuilding
-  from stat_* tables) would let cold starts skip the pre-warm entirely. Not
+  from stat\_\* tables) would let cold starts skip the pre-warm entirely. Not
   critical now that pre-warm runs in parallel with `startMonitors`.
