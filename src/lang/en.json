@@ -87,6 +87,7 @@
     "Path": "Path",
     "Heartbeat Interval": "Heartbeat Interval",
     "Request Timeout": "Request Timeout",
+    "Connection Timeout": "Connection Timeout",
     "timeoutAfter": "Timeout after {0} seconds",
     "Retries": "Retries",
     "Heartbeat Retry Interval": "Heartbeat Retry Interval",

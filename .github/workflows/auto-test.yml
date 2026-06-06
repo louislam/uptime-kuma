@@ -44,6 +44,13 @@ jobs:
         uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
         with:
           node-version: ${{ matrix.node }}
+
+      # Install latest npm to test the new policy - npm approve-scripts
+      - run: npm install npm -g
+
+      # Print the npm version
+      - run: npm --version
+
       - run: npm clean-install --no-fund
 
       - name: Rebuild native modules for ARM64
