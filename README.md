@@ -125,27 +125,37 @@ Deploy to Cloudflare:
 npx wrangler deploy
 ```
 
-The Worker dashboard supports a local username/password login in
-Settings > Security. On a fresh deployment, use the existing Cloudflare Access
-or admin-token path to open Settings > Security and create the local admin
-login. After a local login exists, browser dashboard access uses that
-username/password session instead of the Cloudflare Access identity.
+The Worker dashboard supports D1-backed local users, sessions, roles, and
+route-level permissions. On a fresh deployment, use the existing Cloudflare
+Access or admin-token path to open Settings > Security and create the first
+local admin login. After local users exist, Cloudflare Access is no longer an
+admin identity by itself; browser dashboard access uses a local user session.
+
+Available roles are `admin`, `editor`, `operator`, and `viewer`. Admin users
+can manage users from Settings > Users. Normal users can manage their own
+password and 2FA from Settings > Security. Public status-page API routes remain
+unauthenticated.
+
+The `0012_users_rbac.sql` migration creates `users`, `user_sessions`, and
+`user_audit_log`. If the older single Worker-local admin still exists in
+`app_settings.workerAuthUser` and `users` is empty, the migration/runtime
+bootstrap imports that account as the first `admin` user and copies the legacy
+global `workerAuthTotp` value into `users.totp_json`.
 
 Set an admin API token before exposing the Worker deployment if you also need
-scripted access or a local fallback. All monitor, settings, network-profile,
-check-now, and Twingate status endpoints fail closed unless the request has a
-valid local dashboard session, this bearer token, or a valid Cloudflare Access
-JWT before local auth has been configured:
+scripted access or an emergency fallback. Protected endpoints fail closed unless
+the request has a valid local dashboard session, this bearer token, or a valid
+Cloudflare Access JWT before local users have been configured:
 
 ```bash
 openssl rand -base64 32 | npx wrangler secret put ADMIN_API_TOKEN
 ```
 
 The Worker dashboard sends its local session as a bearer token. The fallback
-admin token is still accepted when it is stored in browser local storage or
-session storage under `uptimeWorkerAdminToken` or `cloudflareWorkerApiToken`,
-but local username/password login is preferred for browser use. Public
-status-page endpoints do not require admin authentication.
+admin token is full system-admin access and is still accepted when it is stored
+in browser local storage or session storage under `uptimeWorkerAdminToken` or
+`cloudflareWorkerApiToken`, but local username/password login is preferred for
+browser use.
 
 To let checks reach your own Cloudflare-protected applications without storing
 the bypass token in monitor rows, set a Worker secret named `ACCESS_SECRET`:
@@ -293,7 +303,7 @@ explicitly in the change or pull request.
 - Apply D1 migrations before relying on monitor or heartbeat state.
 - Preserve existing D1 migration filenames after they may have been applied to
   remote environments. The current `0009_*` pair is intentional compatibility
-  history; the next new Cloudflare migration should use the `0010_` prefix.
+  history; the next new Cloudflare migration should use the `0013_` prefix.
 - Keep `run_worker_first` for `/api/*` so API requests are handled by the Worker
   instead of the SPA fallback.
 - Worker deployments automatically pause monitor checks for 2 minutes when a

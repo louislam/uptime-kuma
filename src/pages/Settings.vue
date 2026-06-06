@@ -1,7 +1,7 @@
 <template>
     <div class="settings-page">
         <div v-if="$root.isMobile" class="shadow-box mb-3">
-            <router-link to="/manage-status-page" class="nav-link">
+            <router-link v-if="$root.hasPermission('status-pages.write')" to="/manage-status-page" class="nav-link">
                 <font-awesome-icon icon="stream" />
                 {{ $t("Status Pages") }}
             </router-link>
@@ -38,7 +38,7 @@
                 </div>
                 <div class="settings-content col-lg-9 col-md-7">
                     <div v-if="currentPage" class="settings-content-header">
-                        {{ subMenus[currentPage].title }}
+                        {{ currentPageTitle }}
                     </div>
                     <div v-if="isUnsupportedWorkerSetting" class="mx-3 my-4">
                         <div class="alert alert-info">
@@ -88,6 +88,10 @@ export default {
             }
         },
 
+        currentPageTitle() {
+            return this.subMenus[this.currentPage]?.title || "";
+        },
+
         isUnsupportedWorkerSetting() {
             if (!this.$root.isCloudflareWorkerUI || !this.currentPage) {
                 return false;
@@ -102,6 +106,7 @@ export default {
                 "remote-browsers",
                 "twingate",
                 "security",
+                "users",
                 "proxies",
                 "about",
                 "import-monitors",
@@ -146,9 +151,16 @@ export default {
             };
 
             if (this.$root.isCloudflareWorkerUI) {
-                menus["import-monitors"] = {
-                    title: "Import Monitors",
-                };
+                if (this.$root.hasPermission("monitors.write")) {
+                    menus["import-monitors"] = {
+                        title: "Import Monitors",
+                    };
+                }
+                if (this.$root.hasPermission("users.read")) {
+                    menus.users = {
+                        title: "Users",
+                    };
+                }
             }
 
             return menus;

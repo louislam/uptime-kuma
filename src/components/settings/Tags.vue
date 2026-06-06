@@ -1,7 +1,7 @@
 <template>
     <div class="my-4">
         <div class="mx-0 mx-lg-4 pt-1 mb-4">
-            <button class="btn btn-primary" @click.stop="addTag">
+            <button v-if="$root.hasPermission('tags.write')" class="btn btn-primary" @click.stop="addTag">
                 <font-awesome-icon icon="plus" />
                 {{ $t("Add New Tag") }}
             </button>
@@ -23,6 +23,7 @@
                 </div>
                 <div class="col-2 pe-2 pe-lg-3 d-flex justify-content-end">
                     <button
+                        v-if="$root.hasPermission('tags.write')"
                         type="button"
                         class="btn-rm-tag btn btn-outline-danger ms-2 py-1"
                         :disabled="processing"
@@ -128,6 +129,9 @@ export default {
          * @returns {void}
          */
         editTag(index) {
+            if (!this.$root.hasPermission("tags.write")) {
+                return;
+            }
             this.$refs.tagEditDialog.show(this.tagsList[index]);
         },
 

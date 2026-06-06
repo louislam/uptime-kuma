@@ -5,7 +5,7 @@
                 {{ $t("Status Pages") }}
             </h1>
 
-            <div>
+            <div v-if="$root.hasPermission('status-pages.write')">
                 <router-link to="/add-status-page" class="btn btn-primary mb-3">
                     <font-awesome-icon icon="plus" />
                     {{ $t("New Status Page") }}
@@ -33,7 +33,7 @@
                             <div class="title">{{ statusPage.title }}</div>
                             <div class="slug">/status/{{ statusPage.slug }}</div>
                         </div>
-                        <div class="actions">
+                        <div v-if="$root.hasPermission('status-pages.write')" class="actions">
                             <button
                                 class="btn btn-danger delete-status-page"
                                 @click.stop.prevent="deleteDialog(statusPage.slug)"

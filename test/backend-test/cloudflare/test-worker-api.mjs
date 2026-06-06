@@ -55,6 +55,26 @@ describe("Cloudflare Worker API", () => {
         assert.match(migrationSql, /PRIMARY KEY \(monitor_id, resolution_seconds, bucket_start\)/);
     });
 
+    test("D1 migration creates Worker users, sessions, audit log, and legacy admin migration", async () => {
+        const migrationPath = path.join(
+            __dirname,
+            "../../../cloudflare/migrations/0012_users_rbac.sql"
+        );
+        const migrationSql = fs.readFileSync(migrationPath, "utf8");
+
+        assert.match(migrationSql, /CREATE TABLE IF NOT EXISTS users/);
+        assert.match(migrationSql, /username TEXT NOT NULL UNIQUE/);
+        assert.match(migrationSql, /role TEXT NOT NULL/);
+        assert.match(migrationSql, /password_json TEXT NOT NULL/);
+        assert.match(migrationSql, /totp_json TEXT/);
+        assert.match(migrationSql, /CREATE TABLE IF NOT EXISTS user_sessions/);
+        assert.match(migrationSql, /token_hash TEXT NOT NULL UNIQUE/);
+        assert.match(migrationSql, /CREATE TABLE IF NOT EXISTS user_audit_log/);
+        assert.match(migrationSql, /workerAuthUser/);
+        assert.match(migrationSql, /workerAuthTotp/);
+        assert.match(migrationSql, /NOT EXISTS \(SELECT 1 FROM users\)/);
+    });
+
     test("D1 migration adds monitor config JSON for edit form fields", async () => {
         const migrationPath = path.join(
             __dirname,
@@ -340,6 +360,49 @@ describe("Cloudflare Worker API", () => {
         assert.match(socketMixinSource, /event === "testRemoteBrowser"/);
     });
 
+    test("Worker UI stores RBAC session context and exposes permission helpers", async () => {
+        const socketMixinPath = path.join(__dirname, "../../../src/mixins/socket.js");
+        const socketMixinSource = fs.readFileSync(socketMixinPath, "utf8");
+
+        assert.match(socketMixinSource, /currentUser:\s*null/);
+        assert.match(socketMixinSource, /currentRole:\s*null/);
+        assert.match(socketMixinSource, /currentPermissions:\s*\[\]/);
+        assert.match(socketMixinSource, /applyCloudflareWorkerAuthContext\(session\)/);
+        assert.match(socketMixinSource, /hasPermission\(permission\)/);
+        assert.match(socketMixinSource, /hasAnyPermission\(permissions/);
+        assert.match(socketMixinSource, /token:\s*credentials\.token/);
+    });
+
+    test("Worker Settings UI exposes Users and Worker 2FA controls through permissions", async () => {
+        const settingsPath = path.join(__dirname, "../../../src/pages/Settings.vue");
+        const settingsSource = fs.readFileSync(settingsPath, "utf8");
+        const securityPath = path.join(__dirname, "../../../src/components/settings/Security.vue");
+        const securitySource = fs.readFileSync(securityPath, "utf8");
+        const routerPath = path.join(__dirname, "../../../src/router.js");
+        const routerSource = fs.readFileSync(routerPath, "utf8");
+
+        assert.match(settingsSource, /hasPermission\("users\.read"\)/);
+        assert.match(settingsSource, /menus\.users/);
+        assert.match(settingsSource, /"users"/);
+        assert.match(routerSource, /settings\/Users\.vue/);
+        assert.match(routerSource, /path:\s*"users"/);
+        assert.match(securitySource, /Two Factor Authentication/);
+        assert.match(securitySource, /hasPermission\("users\.read"\)/);
+        assert.match(securitySource, /to="\/settings\/users"/);
+    });
+
+    test("Worker Users settings UI calls RBAC user management endpoints", async () => {
+        const usersPath = path.join(__dirname, "../../../src/components/settings/Users.vue");
+        const usersSource = fs.readFileSync(usersPath, "utf8");
+
+        assert.match(usersSource, /requestCloudflareJson\("\/api\/users"/);
+        assert.match(usersSource, /requestCloudflareJson\(`\/api\/users\/\$\{user\.id\}`/);
+        assert.match(usersSource, /requestCloudflareJson\(`\/api\/users\/\$\{user\.id\}\/password`/);
+        assert.match(usersSource, /requestCloudflareJson\(`\/api\/users\/\$\{user\.id\}\/reset-2fa`/);
+        assert.match(usersSource, /hasPermission\("users\.write"\)/);
+        assert.match(usersSource, /hasPermission\("users\.delete"\)/);
+    });
+
     test("Worker check-now UI shows runner and down-check failures as errors", async () => {
         const componentPath = path.join(__dirname, "../../../src/pages/Details.vue");
         const componentSource = fs.readFileSync(componentPath, "utf8");
@@ -491,11 +554,13 @@ describe("Cloudflare Worker API", () => {
 
             assert.notStrictEqual(result, timedOut);
             assert.strictEqual(result.status, 200);
-            assert.deepStrictEqual(await result.json(), {
-                authenticated: false,
-                username: null,
-                localAuthConfigured: false,
-            });
+            const body = await result.json();
+            assert.strictEqual(body.authenticated, false);
+            assert.strictEqual(body.username, null);
+            assert.strictEqual(body.user, null);
+            assert.strictEqual(body.role, null);
+            assert.deepStrictEqual(body.permissions, []);
+            assert.strictEqual(body.localAuthConfigured, false);
         } finally {
             globalThis.fetch = originalFetch;
         }
@@ -1494,15 +1559,389 @@ describe("Cloudflare Worker API", () => {
         const body = await response.json();
         assert.match(body.token, /^[^.]+\.[^.]+\.[^.]+$/);
         delete body.token;
-        assert.deepStrictEqual(body, {
-            ok: true,
-            msg: "Local admin login saved",
-            username: "admin",
-            localAuthConfigured: true,
+        assert.strictEqual(body.ok, true);
+        assert.strictEqual(body.msg, "Local admin login saved");
+        assert.strictEqual(body.username, "admin");
+        assert.strictEqual(body.user.username, "admin");
+        assert.strictEqual(body.role, "admin");
+        assert.ok(body.permissions.includes("users.read"));
+        assert.strictEqual(body.localAuthConfigured, true);
+        assert.strictEqual(env.state.users[0].username, "admin");
+        assert.notStrictEqual(JSON.parse(env.state.users[0].password_json).hash, "password123");
+        assert.strictEqual(JSON.parse(env.state.users[0].password_json).iterations, 100000);
+    });
+
+    test("migrates legacy Worker auth settings into the first D1 admin user", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const legacyPassword = await hashTestWorkerPassword("password123");
+        const legacyTotp = {
+            secret: "JBSWY3DPEHPK3PXP",
+            enabled: true,
+            lastToken: null,
+            verified: false,
+            updatedAt: "2026-01-01T00:00:00.000Z",
+        };
+        const env = createEnv({
+            settings: {
+                workerAuthUser: {
+                    username: "legacy-admin",
+                    password: legacyPassword,
+                    updatedAt: "2026-01-01T00:00:00.000Z",
+                },
+                workerAuthTotp: legacyTotp,
+            },
         });
-        assert.strictEqual(env.state.settings.workerAuthUser.username, "admin");
-        assert.notStrictEqual(env.state.settings.workerAuthUser.password.hash, "password123");
-        assert.strictEqual(env.state.settings.workerAuthUser.password.iterations, 100000);
+
+        const response = await handleApiRequest(
+            new Request("https://example.com/api/auth/login", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({
+                    username: "legacy-admin",
+                    password: "password123",
+                }),
+            }),
+            env
+        );
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.deepStrictEqual(body, { tokenRequired: true });
+        assert.strictEqual(env.state.users.length, 1);
+        assert.strictEqual(env.state.users[0].username, "legacy-admin");
+        assert.strictEqual(env.state.users[0].role, "admin");
+        assert.deepStrictEqual(JSON.parse(env.state.users[0].password_json), legacyPassword);
+        assert.deepStrictEqual(JSON.parse(env.state.users[0].totp_json), legacyTotp);
+
+        const tokenResponse = await handleApiRequest(
+            new Request("https://example.com/api/auth/login", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({
+                    username: "legacy-admin",
+                    password: "password123",
+                    token: await generateTotp(legacyTotp.secret),
+                }),
+            }),
+            env
+        );
+        const tokenBody = await tokenResponse.json();
+
+        assert.strictEqual(tokenResponse.status, 200);
+        assert.strictEqual(tokenBody.ok, true);
+        assert.strictEqual(tokenBody.user.username, "legacy-admin");
+        assert.strictEqual(tokenBody.role, "admin");
+        assert.ok(tokenBody.permissions.includes("users.read"));
+    });
+
+    test("Worker login returns D1 user role and permissions", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            users: [
+                {
+                    id: 7,
+                    username: "viewer",
+                    role: "viewer",
+                    active: 1,
+                    password_json: JSON.stringify(await hashTestWorkerPassword("password123")),
+                    totp_json: null,
+                },
+            ],
+        });
+
+        const response = await handleApiRequest(
+            new Request("https://example.com/api/auth/login", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({
+                    username: "viewer",
+                    password: "password123",
+                }),
+            }),
+            env
+        );
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(body.ok, true);
+        assert.strictEqual(body.user.id, 7);
+        assert.strictEqual(body.user.username, "viewer");
+        assert.strictEqual(body.role, "viewer");
+        assert.ok(body.permissions.includes("monitors.read"));
+        assert.strictEqual(body.permissions.includes("monitors.write"), false);
+        assert.strictEqual(body.permissions.includes("users.read"), false);
+    });
+
+    test("role permissions return 403 for authenticated users missing route permission", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            users: [
+                {
+                    id: 8,
+                    username: "viewer",
+                    role: "viewer",
+                    active: 1,
+                    password_json: JSON.stringify(await hashTestWorkerPassword("password123")),
+                    totp_json: null,
+                },
+            ],
+            monitors: [],
+        });
+        const loginResponse = await handleApiRequest(
+            new Request("https://example.com/api/auth/login", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({
+                    username: "viewer",
+                    password: "password123",
+                }),
+            }),
+            env
+        );
+        const { token } = await loginResponse.json();
+
+        const readResponse = await handleApiRequest(
+            new Request("https://example.com/api/monitors", {
+                headers: { authorization: `Bearer ${token}` },
+            }),
+            env
+        );
+        const writeResponse = await handleApiRequest(
+            new Request("https://example.com/api/monitors", {
+                method: "POST",
+                headers: {
+                    "content-type": "application/json",
+                    authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    name: "Blocked",
+                    type: "http",
+                    url: "https://blocked.example.test",
+                }),
+            }),
+            env
+        );
+
+        assert.strictEqual(readResponse.status, 200);
+        assert.strictEqual(writeResponse.status, 403);
+        assert.deepStrictEqual(await writeResponse.json(), { error: "Forbidden" });
+    });
+
+    test("Worker user management endpoints create, list, update, reset 2FA, rotate password, and delete users", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({});
+        await createLocalUser(handleApiRequest, env);
+        const adminToken = await loginLocalUser(handleApiRequest, env, "admin", "password123");
+
+        const createResponse = await handleApiRequest(
+            bearerRequest(adminToken, "https://example.com/api/users", {
+                method: "POST",
+                body: JSON.stringify({
+                    username: "operator",
+                    password: "operator123",
+                    role: "operator",
+                    active: true,
+                }),
+            }),
+            env
+        );
+        const createBody = await createResponse.json();
+
+        assert.strictEqual(createResponse.status, 200);
+        assert.strictEqual(createBody.user.username, "operator");
+        assert.strictEqual(createBody.user.role, "operator");
+
+        const listResponse = await handleApiRequest(bearerRequest(adminToken, "https://example.com/api/users"), env);
+        const listBody = await listResponse.json();
+        assert.strictEqual(listResponse.status, 200);
+        assert.deepStrictEqual(
+            listBody.users.map((user) => user.username).sort(),
+            ["admin", "operator"]
+        );
+        assert.strictEqual("password_json" in listBody.users[0], false);
+
+        const getResponse = await handleApiRequest(
+            bearerRequest(adminToken, `https://example.com/api/users/${createBody.user.id}`),
+            env
+        );
+        assert.strictEqual(getResponse.status, 200);
+        assert.strictEqual((await getResponse.json()).user.role, "operator");
+
+        const updateResponse = await handleApiRequest(
+            bearerRequest(adminToken, `https://example.com/api/users/${createBody.user.id}`, {
+                method: "PUT",
+                body: JSON.stringify({
+                    username: "editor",
+                    role: "editor",
+                    active: true,
+                }),
+            }),
+            env
+        );
+        assert.strictEqual(updateResponse.status, 200);
+        assert.strictEqual((await updateResponse.json()).user.role, "editor");
+
+        const resetTwoFAResponse = await handleApiRequest(
+            bearerRequest(adminToken, `https://example.com/api/users/${createBody.user.id}/reset-2fa`, {
+                method: "POST",
+            }),
+            env
+        );
+        assert.strictEqual(resetTwoFAResponse.status, 200);
+
+        const passwordResponse = await handleApiRequest(
+            bearerRequest(adminToken, `https://example.com/api/users/${createBody.user.id}/password`, {
+                method: "PATCH",
+                body: JSON.stringify({ password: "editor123" }),
+            }),
+            env
+        );
+        assert.strictEqual(passwordResponse.status, 200);
+
+        const editorToken = await loginLocalUser(handleApiRequest, env, "editor", "editor123");
+        assert.match(editorToken, /.+/);
+
+        const deleteResponse = await handleApiRequest(
+            bearerRequest(adminToken, `https://example.com/api/users/${createBody.user.id}`, {
+                method: "DELETE",
+            }),
+            env
+        );
+        assert.strictEqual(deleteResponse.status, 200);
+        assert.strictEqual(env.state.users.some((user) => user.username === "editor"), false);
+    });
+
+    test("Worker user management protects the last active admin", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({});
+        await createLocalUser(handleApiRequest, env);
+        const adminToken = await loginLocalUser(handleApiRequest, env, "admin", "password123");
+        const adminId = env.state.users.find((user) => user.username === "admin").id;
+
+        const disableResponse = await handleApiRequest(
+            bearerRequest(adminToken, `https://example.com/api/users/${adminId}`, {
+                method: "PUT",
+                body: JSON.stringify({
+                    username: "admin",
+                    role: "admin",
+                    active: false,
+                }),
+            }),
+            env
+        );
+        const deleteResponse = await handleApiRequest(
+            bearerRequest(adminToken, `https://example.com/api/users/${adminId}`, {
+                method: "DELETE",
+            }),
+            env
+        );
+
+        assert.strictEqual(disableResponse.status, 400);
+        assert.deepStrictEqual(await disableResponse.json(), { error: "Cannot remove the last active admin" });
+        assert.strictEqual(deleteResponse.status, 400);
+        assert.deepStrictEqual(await deleteResponse.json(), { error: "Cannot remove the last active admin" });
+    });
+
+    test("inactive Worker users cannot log in", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            users: [
+                {
+                    id: 9,
+                    username: "inactive",
+                    role: "admin",
+                    active: 0,
+                    password_json: JSON.stringify(await hashTestWorkerPassword("password123")),
+                    totp_json: null,
+                },
+            ],
+        });
+
+        const response = await handleApiRequest(
+            new Request("https://example.com/api/auth/login", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({
+                    username: "inactive",
+                    password: "password123",
+                }),
+            }),
+            env
+        );
+
+        assert.strictEqual(response.status, 401);
+        assert.deepStrictEqual(await response.json(), { error: "authIncorrectCreds" });
+    });
+
+    test("ADMIN_API_TOKEN keeps full system-admin fallback after local users exist", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            users: [
+                {
+                    id: 10,
+                    username: "viewer",
+                    role: "viewer",
+                    active: 1,
+                    password_json: JSON.stringify(await hashTestWorkerPassword("password123")),
+                    totp_json: null,
+                },
+            ],
+        });
+
+        const response = await handleApiRequest(adminRequest("https://example.com/api/users"), env);
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(body.users.length, 1);
+        assert.strictEqual(body.users[0].username, "viewer");
+    });
+
+    test("Worker status page API stays public while protected writes still require auth", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            users: [
+                {
+                    id: 11,
+                    username: "admin",
+                    role: "admin",
+                    active: 1,
+                    password_json: JSON.stringify(await hashTestWorkerPassword("password123")),
+                    totp_json: null,
+                },
+            ],
+            monitors: [
+                {
+                    id: 99,
+                    name: "Public Site",
+                    type: "http",
+                    url: "https://public.example.test",
+                    active: 1,
+                },
+            ],
+            settings: {
+                "statusPagePublicGroupList:default": [
+                    {
+                        name: "Public",
+                        monitorList: [99],
+                    },
+                ],
+            },
+        });
+
+        const readResponse = await handleApiRequest(new Request("https://example.com/api/status-page/default"), env);
+        const writeResponse = await handleApiRequest(
+            new Request("https://example.com/api/status-page/default", {
+                method: "PUT",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ publicGroupList: [] }),
+            }),
+            env
+        );
+
+        assert.strictEqual(readResponse.status, 200);
+        assert.strictEqual((await readResponse.json()).publicGroupList.length, 1);
+        assert.strictEqual(writeResponse.status, 401);
+        assert.deepStrictEqual(await writeResponse.json(), { error: "Unauthorized" });
     });
 
     test("Worker local password changes require the current password", async () => {
@@ -1673,11 +2112,13 @@ describe("Cloudflare Worker API", () => {
         );
 
         assert.strictEqual(response.status, 200);
-        assert.deepStrictEqual(await response.json(), {
-            authenticated: true,
-            username: "admin",
-            localAuthConfigured: true,
-        });
+        const body = await response.json();
+        assert.strictEqual(body.authenticated, true);
+        assert.strictEqual(body.username, "admin");
+        assert.strictEqual(body.user.username, "admin");
+        assert.strictEqual(body.role, "admin");
+        assert.ok(body.permissions.includes("users.read"));
+        assert.strictEqual(body.localAuthConfigured, true);
     });
 
     test("Worker local password changes revoke existing session tokens", async () => {
@@ -5584,6 +6025,9 @@ function createEnv(initial) {
         proxies: initial.proxies || [],
         dockerHosts: initial.dockerHosts || [],
         remoteBrowsers: initial.remoteBrowsers || [],
+        users: initial.users || [],
+        userSessions: initial.userSessions || [],
+        userAuditLog: initial.userAuditLog || [],
         settings: initial.settings || {},
         queries: [],
         runnerJobs: [],
@@ -5608,6 +6052,8 @@ function createEnv(initial) {
         nextProxyId: initial.nextProxyId || 1,
         nextDockerHostId: initial.nextDockerHostId || 1,
         nextRemoteBrowserId: initial.nextRemoteBrowserId || 1,
+        nextUserId: initial.nextUserId || nextUserIdAfter(initial.users || []),
+        nextUserAuditLogId: initial.nextUserAuditLogId || 1,
         missingConfigJsonColumn: Boolean(initial.missingConfigJsonColumn),
         missingParentColumn: Boolean(initial.missingParentColumn),
         missingProxyColumn: Boolean(initial.missingProxyColumn),
@@ -5681,6 +6127,11 @@ function nextHeartbeatIdAfter(heartbeats) {
     return maxId + 1;
 }
 
+function nextUserIdAfter(users) {
+    const maxId = users.reduce((max, user) => Math.max(max, Number(user.id || 0)), 0);
+    return maxId + 1;
+}
+
 /**
  * Create an authenticated Worker API request for admin route tests.
  * @param {string} url Request URL.
@@ -5693,6 +6144,24 @@ function adminRequest(url, init = {}) {
         headers: {
             ...(init.headers || {}),
             authorization: "Bearer test-token",
+        },
+    });
+}
+
+/**
+ * Create an authenticated Worker API request with a local user token.
+ * @param {string} token Local user session token.
+ * @param {string} url Request URL.
+ * @param {RequestInit} init Request init.
+ * @returns {Request} Authenticated request.
+ */
+function bearerRequest(token, url, init = {}) {
+    return new Request(url, {
+        ...init,
+        headers: {
+            "content-type": "application/json",
+            ...(init.headers || {}),
+            authorization: `Bearer ${token}`,
         },
     });
 }
@@ -5715,6 +6184,29 @@ async function createLocalUser(handleApiRequest, env) {
         env
     );
     assert.strictEqual(response.status, 200);
+}
+
+/**
+ * Log in with a local Worker user and return the session token.
+ * @param {(request: Request, env: object) => Promise<Response>} handleApiRequest Worker API handler.
+ * @param {object} env Test Worker environment.
+ * @param {string} username Username.
+ * @param {string} password Password.
+ * @returns {Promise<string>} Session token.
+ */
+async function loginLocalUser(handleApiRequest, env, username, password) {
+    const response = await handleApiRequest(
+        new Request("https://example.com/api/auth/login", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ username, password }),
+        }),
+        env
+    );
+    assert.strictEqual(response.status, 200);
+    const body = await response.json();
+    assert.match(body.token, /.+/);
+    return body.token;
 }
 
 /**
@@ -5905,6 +6397,17 @@ function createStatement(sql, state) {
             if (sql.includes("FROM remote_browser")) {
                 return { results: [...state.remoteBrowsers] };
             }
+            if (sql.includes("FROM users")) {
+                let results = state.users.map((user) => ({ ...user }));
+                if (sql.includes("ORDER BY id") && sql.includes("LIMIT 2")) {
+                    results = results
+                        .toSorted((a, b) => Number(a.id) - Number(b.id))
+                        .slice(0, 2);
+                } else {
+                    results.sort((a, b) => String(a.username).localeCompare(String(b.username)));
+                }
+                return { results };
+            }
             if (sql.includes("FROM monitor_runtime_summary")) {
                 if (state.missingDashboardRuntimeCacheTables) {
                     throw new Error("D1_ERROR: no such table: monitor_runtime_summary: SQLITE_ERROR");
@@ -6067,6 +6570,37 @@ function createStatement(sql, state) {
                 const id = Number(this.values[0]);
                 return state.remoteBrowsers.find((remoteBrowser) => remoteBrowser.id === id) || null;
             }
+            if (sql.includes("COUNT(*) AS count") && sql.includes("FROM users")) {
+                if (sql.includes("role = 'admin'")) {
+                    const exceptUserId = Number(this.values[0]);
+                    return {
+                        count: state.users.filter(
+                            (user) =>
+                                user.role === "admin" &&
+                                Number(user.active) === 1 &&
+                                Number(user.id) !== exceptUserId
+                        ).length,
+                    };
+                }
+                return { count: state.users.length };
+            }
+            if (sql.includes("FROM user_sessions")) {
+                const [sessionId, tokenHash] = this.values;
+                return state.userSessions.find(
+                    (session) => session.id === sessionId && session.token_hash === tokenHash
+                ) || null;
+            }
+            if (sql.includes("FROM users")) {
+                if (sql.includes("lower(username)")) {
+                    const username = String(this.values[0] || "").toLowerCase();
+                    return state.users.find((user) => String(user.username).toLowerCase() === username) || null;
+                }
+                if (sql.includes("WHERE id = ?")) {
+                    const id = Number(this.values[0]);
+                    return state.users.find((user) => Number(user.id) === id) || null;
+                }
+                return state.users[0] || null;
+            }
             if (sql.includes("FROM monitor_metric_bucket")) {
                 if (state.missingDashboardRuntimeCacheTables) {
                     throw new Error("D1_ERROR: no such table: monitor_metric_bucket: SQLITE_ERROR");
@@ -6152,6 +6686,24 @@ function createStatement(sql, state) {
                 return { success: true };
             }
             if (sql.includes("CREATE TABLE IF NOT EXISTS remote_browser")) {
+                return { success: true };
+            }
+            if (sql.includes("CREATE TABLE IF NOT EXISTS users")) {
+                return { success: true };
+            }
+            if (sql.includes("CREATE INDEX IF NOT EXISTS idx_users_role_active")) {
+                return { success: true };
+            }
+            if (sql.includes("CREATE TABLE IF NOT EXISTS user_sessions")) {
+                return { success: true };
+            }
+            if (sql.includes("CREATE INDEX IF NOT EXISTS idx_user_sessions")) {
+                return { success: true };
+            }
+            if (sql.includes("CREATE TABLE IF NOT EXISTS user_audit_log")) {
+                return { success: true };
+            }
+            if (sql.includes("CREATE INDEX IF NOT EXISTS idx_user_audit_log")) {
                 return { success: true };
             }
             if (sql.includes("INSERT INTO monitor_runtime_summary")) {
@@ -6363,6 +6915,74 @@ function createStatement(sql, state) {
                 });
                 return { success: true, meta: { last_row_id: id } };
             }
+            if (sql.includes("INSERT INTO users")) {
+                const id = state.nextUserId++;
+                let row;
+                if (sql.includes("'admin'") && sql.includes("totp_json")) {
+                    const [username, passwordJson, totpJson] = this.values;
+                    row = {
+                        id,
+                        username,
+                        display_name: null,
+                        role: "admin",
+                        password_json: passwordJson,
+                        totp_json: totpJson ?? null,
+                        active: 1,
+                    };
+                } else if (sql.includes("'admin'")) {
+                    const [username, passwordJson] = this.values;
+                    row = {
+                        id,
+                        username,
+                        display_name: null,
+                        role: "admin",
+                        password_json: passwordJson,
+                        totp_json: null,
+                        active: 1,
+                    };
+                } else {
+                    const [username, displayName, role, passwordJson, active] = this.values;
+                    row = {
+                        id,
+                        username,
+                        display_name: displayName,
+                        role,
+                        password_json: passwordJson,
+                        totp_json: null,
+                        active,
+                    };
+                }
+                row.created_at = row.created_at || "2026-01-01 00:00:00";
+                row.updated_at = row.updated_at || "2026-01-01 00:00:00";
+                row.last_login_at = row.last_login_at || null;
+                state.users.push(row);
+                return { success: true, meta: { last_row_id: id } };
+            }
+            if (sql.includes("INSERT INTO user_sessions")) {
+                const [id, userId, tokenHash, expiresAt] = this.values;
+                state.userSessions.push({
+                    id,
+                    user_id: Number(userId),
+                    token_hash: tokenHash,
+                    expires_at: expiresAt,
+                    revoked_at: null,
+                    created_at: "2026-01-01 00:00:00",
+                    last_seen_at: null,
+                });
+                return { success: true };
+            }
+            if (sql.includes("INSERT INTO user_audit_log")) {
+                const [actorUserId, userId, action, detailsJson] = this.values;
+                state.userAuditLog.push({
+                    id: state.nextUserAuditLogId++,
+                    actor_user_id: actorUserId,
+                    user_id: userId,
+                    action,
+                    details_json: detailsJson,
+                    created_at: "2026-01-01 00:00:00",
+                });
+                return { success: true };
+            }
             if (sql.includes("UPDATE proxy")) {
                 const [protocol, host, port, auth, username, password, active, isDefault, id] = this.values;
                 const proxy = state.proxies.find((candidate) => candidate.id === Number(id));
@@ -6400,6 +7020,81 @@ function createStatement(sql, state) {
                         name,
                         url,
                     });
+                }
+                return { success: true };
+            }
+            if (sql.includes("UPDATE users")) {
+                if (sql.includes("SET last_login_at")) {
+                    const [id] = this.values;
+                    const user = state.users.find((candidate) => Number(candidate.id) === Number(id));
+                    if (user) {
+                        user.last_login_at = "2026-01-01 00:00:00";
+                    }
+                    return { success: true };
+                }
+                if (sql.includes("SET totp_json")) {
+                    const [totpJson, id] = this.values;
+                    const user = state.users.find((candidate) => Number(candidate.id) === Number(id));
+                    if (user) {
+                        user.totp_json = totpJson;
+                        user.updated_at = "2026-01-01 00:00:00";
+                    }
+                    return { success: true };
+                }
+                if (sql.includes("SET username = ?, password_json")) {
+                    const [username, passwordJson, id] = this.values;
+                    const user = state.users.find((candidate) => Number(candidate.id) === Number(id));
+                    if (user) {
+                        user.username = username;
+                        user.password_json = passwordJson;
+                        user.updated_at = "2026-01-01 00:00:00";
+                    }
+                    return { success: true };
+                }
+                if (sql.includes("SET password_json")) {
+                    const [passwordJson, id] = this.values;
+                    const user = state.users.find((candidate) => Number(candidate.id) === Number(id));
+                    if (user) {
+                        user.password_json = passwordJson;
+                        user.updated_at = "2026-01-01 00:00:00";
+                    }
+                    return { success: true };
+                }
+                const [username, displayName, role, active, id] = this.values;
+                const user = state.users.find((candidate) => Number(candidate.id) === Number(id));
+                if (user) {
+                    Object.assign(user, {
+                        username,
+                        display_name: displayName,
+                        role,
+                        active,
+                        updated_at: "2026-01-01 00:00:00",
+                    });
+                }
+                return { success: true };
+            }
+            if (sql.includes("UPDATE user_sessions")) {
+                if (sql.includes("WHERE id = ?")) {
+                    const [id] = this.values;
+                    const session = state.userSessions.find((candidate) => candidate.id === id);
+                    if (session) {
+                        if (sql.includes("last_seen_at")) {
+                            session.last_seen_at = "2026-01-01 00:00:00";
+                        }
+                        if (sql.includes("revoked_at")) {
+                            session.revoked_at = "2026-01-01 00:00:00";
+                        }
+                    }
+                    return { success: true };
+                }
+                if (sql.includes("WHERE user_id = ?")) {
+                    const [userId] = this.values;
+                    for (const session of state.userSessions) {
+                        if (Number(session.user_id) === Number(userId) && !session.revoked_at) {
+                            session.revoked_at = "2026-01-01 00:00:00";
+                        }
+                    }
+                    return { success: true };
                 }
                 return { success: true };
             }
@@ -6634,6 +7329,12 @@ function createStatement(sql, state) {
             if (sql.includes("DELETE FROM remote_browser")) {
                 const id = Number(this.values[0]);
                 state.remoteBrowsers = state.remoteBrowsers.filter((remoteBrowser) => remoteBrowser.id !== id);
+                return { success: true };
+            }
+            if (sql.includes("DELETE FROM users")) {
+                const id = Number(this.values[0]);
+                state.users = state.users.filter((user) => Number(user.id) !== id);
+                state.userSessions = state.userSessions.filter((session) => Number(session.user_id) !== id);
                 return { success: true };
             }
             if (sql.includes("DELETE FROM monitor_runtime_summary")) {
@@ -6915,6 +7616,38 @@ async function generateTotp(secret, now = Date.now()) {
         (signature[offset + 3] & 0xff)
     ) % 1000000;
     return String(code).padStart(6, "0");
+}
+
+/**
+ * Hash a password in the Worker PBKDF2-SHA256 JSON format for auth fixtures.
+ * @param {string} password Plain-text password.
+ * @returns {Promise<object>} Stored password JSON.
+ */
+async function hashTestWorkerPassword(password) {
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const keyMaterial = await crypto.subtle.importKey(
+        "raw",
+        new TextEncoder().encode(password),
+        "PBKDF2",
+        false,
+        ["deriveBits"]
+    );
+    const bits = await crypto.subtle.deriveBits(
+        {
+            name: "PBKDF2",
+            hash: "SHA-256",
+            salt,
+            iterations: 100000,
+        },
+        keyMaterial,
+        256
+    );
+    return {
+        algorithm: "PBKDF2-SHA256",
+        iterations: 100000,
+        salt: base64UrlEncode(salt),
+        hash: base64UrlEncode(new Uint8Array(bits)),
+    };
 }
 
 /**

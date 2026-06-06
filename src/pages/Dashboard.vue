@@ -2,7 +2,7 @@
     <div class="container-fluid dashboard-container">
         <div ref="dashboardShell" class="dashboard-shell">
             <aside v-if="!$root.isMobile" class="dashboard-sidebar" :style="sidebarStyle">
-                <div>
+                <div v-if="canWriteMonitors">
                     <router-link to="/add" class="btn btn-primary add-monitor-btn mb-2">
                         <font-awesome-icon icon="plus" />
                         {{ $t("Add New Monitor") }}
@@ -85,6 +85,9 @@ export default {
             return {
                 width: `${this.sidebarWidth}px`,
             };
+        },
+        canWriteMonitors() {
+            return this.$root.hasPermission("monitors.write");
         },
     },
     mounted() {

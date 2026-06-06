@@ -9,11 +9,11 @@
                 <li v-for="(dockerHost, index) in $root.dockerHostList" :key="index" class="list-group-item">
                     {{ dockerHost.name }}
                     <br />
-                    <a href="#" @click="$refs.dockerHostDialog.show(dockerHost.id)">{{ $t("Edit") }}</a>
+                    <a v-if="$root.hasPermission('docker-hosts.write')" href="#" @click="$refs.dockerHostDialog.show(dockerHost.id)">{{ $t("Edit") }}</a>
                 </li>
             </ul>
 
-            <button class="btn btn-primary me-2" type="button" @click="$refs.dockerHostDialog.show()">
+            <button v-if="$root.hasPermission('docker-hosts.write')" class="btn btn-primary me-2" type="button" @click="$refs.dockerHostDialog.show()">
                 {{ $t("Setup Docker Host") }}
             </button>
         </div>

@@ -77,6 +77,26 @@
                     </button>
                 </div>
             </form>
+
+            <div v-if="$root.workerLocalAuthConfigured" class="security-section-block">
+                <h5 class="settings-subheading security-subheading">
+                    {{ $t("Two Factor Authentication") }}
+                </h5>
+                <div class="mb-4">
+                    <button class="btn btn-primary security-pill-button" type="button" @click="$refs.TwoFADialog.show()">
+                        {{ $t("2FA Settings") }}
+                    </button>
+                </div>
+            </div>
+
+            <div v-if="canManageWorkerUsers" class="security-section-block">
+                <h5 class="settings-subheading security-subheading">
+                    Users
+                </h5>
+                <router-link to="/settings/users" class="btn btn-outline-primary security-pill-button">
+                    Manage Users
+                </router-link>
+            </div>
         </div>
 
         <div v-else-if="settingsLoaded" class="security-section">
@@ -262,6 +282,9 @@ export default {
         settingsLoaded() {
             return this.$parent.$parent.$parent.settingsLoaded;
         },
+        canManageWorkerUsers() {
+            return this.$root.hasPermission("users.read");
+        },
     },
 
     watch: {
@@ -341,6 +364,7 @@ export default {
             if (res.ok) {
                 this.$root.workerLocalAuthConfigured = true;
                 this.$root.username = res.username;
+                this.$root.applyCloudflareWorkerAuthContext(res);
                 this.workerAuth.username = res.username || this.workerAuth.username;
                 if (res.token) {
                     this.$root.storage().token = res.token;

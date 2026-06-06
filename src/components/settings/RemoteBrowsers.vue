@@ -9,11 +9,11 @@
                 <li v-for="(remoteBrowser, index) in $root.remoteBrowserList" :key="index" class="list-group-item">
                     {{ remoteBrowser.name }}
                     <br />
-                    <a href="#" @click="$refs.remoteBrowserDialog.show(remoteBrowser.id)">{{ $t("Edit") }}</a>
+                    <a v-if="$root.hasPermission('remote-browsers.write')" href="#" @click="$refs.remoteBrowserDialog.show(remoteBrowser.id)">{{ $t("Edit") }}</a>
                 </li>
             </ul>
 
-            <button class="btn btn-primary me-2" type="button" @click="$refs.remoteBrowserDialog.show()">
+            <button v-if="$root.hasPermission('remote-browsers.write')" class="btn btn-primary me-2" type="button" @click="$refs.remoteBrowserDialog.show()">
                 <font-awesome-icon icon="plus" />
                 {{ $t("Add Remote Browser") }}
             </button>

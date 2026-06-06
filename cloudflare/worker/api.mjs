@@ -242,65 +242,226 @@ const DEFAULT_ACCESS_CERT_LOOKUP_TIMEOUT_MS = 5000;
 const accessCertCache = new Map();
 const dashboardRuntimeCacheSchemaReady = new WeakMap();
 const SUPPORTED_PROXY_PROTOCOLS = new Set(["http", "https", "socks", "socks5", "socks5h", "socks4"]);
-const ADMIN_ROUTE_NAMES = new Set([
-    "monitors",
-    "dashboard-bootstrap",
-    "settings",
-    "docker-hosts",
-    "save-docker-host",
-    "delete-docker-host",
-    "test-docker-host",
-    "remote-browsers",
-    "save-remote-browser",
-    "delete-remote-browser",
-    "test-remote-browser",
-    "proxies",
-    "save-proxy",
-    "delete-proxy",
-    "notifications",
-    "save-notification",
-    "delete-notification",
-    "test-notification",
-    "tags",
-    "save-tag",
-    "delete-tag",
-    "add-monitor-tag",
-    "delete-monitor-tag",
-    "create-monitor",
-    "import-monitors",
-    "monitor",
-    "update-monitor",
-    "set-monitor-active",
-    "delete-monitor",
-    "heartbeats",
-    "recent-heartbeats",
-    "monitor-heartbeats",
-    "monitor-chart",
-    "network-profiles",
-    "patch-network-route",
-    "check-now",
-    "twingate-status",
-    "auth-local-user",
-    "auth-2fa-status",
-    "auth-2fa-prepare",
-    "auth-2fa-verify",
-    "auth-2fa-save",
-    "auth-2fa-disable",
-    "save-status-page",
-    "statistics",
+const USER_TABLE_SQL = `CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT NOT NULL UNIQUE,
+    display_name TEXT,
+    role TEXT NOT NULL CHECK (role IN ('admin', 'editor', 'operator', 'viewer')),
+    password_json TEXT NOT NULL,
+    totp_json TEXT,
+    active INTEGER NOT NULL DEFAULT 1 CHECK (active IN (0, 1)),
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_login_at TEXT
+)`;
+const USER_ROLE_ACTIVE_INDEX_SQL = "CREATE INDEX IF NOT EXISTS idx_users_role_active ON users(role, active)";
+const USER_SESSION_TABLE_SQL = `CREATE TABLE IF NOT EXISTS user_sessions (
+    id TEXT PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    token_hash TEXT NOT NULL UNIQUE,
+    expires_at TEXT NOT NULL,
+    revoked_at TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_seen_at TEXT,
+    user_agent TEXT,
+    ip_address TEXT,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+)`;
+const USER_SESSION_USER_INDEX_SQL = "CREATE INDEX IF NOT EXISTS idx_user_sessions_user_id ON user_sessions(user_id)";
+const USER_SESSION_EXPIRY_INDEX_SQL = "CREATE INDEX IF NOT EXISTS idx_user_sessions_expires_at ON user_sessions(expires_at)";
+const USER_AUDIT_LOG_TABLE_SQL = `CREATE TABLE IF NOT EXISTS user_audit_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    actor_user_id INTEGER,
+    user_id INTEGER,
+    action TEXT NOT NULL,
+    details_json TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (actor_user_id) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+)`;
+const USER_AUDIT_LOG_USER_INDEX_SQL =
+    "CREATE INDEX IF NOT EXISTS idx_user_audit_log_user_id ON user_audit_log(user_id, created_at DESC)";
+const USER_AUDIT_LOG_ACTOR_INDEX_SQL =
+    "CREATE INDEX IF NOT EXISTS idx_user_audit_log_actor_user_id ON user_audit_log(actor_user_id, created_at DESC)";
+const USER_AUTH_SCHEMA_SQL = [
+    USER_TABLE_SQL,
+    USER_ROLE_ACTIVE_INDEX_SQL,
+    USER_SESSION_TABLE_SQL,
+    USER_SESSION_USER_INDEX_SQL,
+    USER_SESSION_EXPIRY_INDEX_SQL,
+    USER_AUDIT_LOG_TABLE_SQL,
+    USER_AUDIT_LOG_USER_INDEX_SQL,
+    USER_AUDIT_LOG_ACTOR_INDEX_SQL,
+];
+const VALID_USER_ROLES = new Set(["admin", "editor", "operator", "viewer"]);
+const ALL_PERMISSIONS = [
+    "dashboard.read",
+    "monitors.read",
+    "monitors.write",
+    "monitors.delete",
+    "monitors.run",
+    "monitors.pause",
+    "heartbeats.read",
+    "heartbeats.clear",
+    "settings.read",
+    "settings.write",
+    "notifications.read",
+    "notifications.write",
+    "notifications.test",
+    "tags.read",
+    "tags.write",
+    "proxies.read",
+    "proxies.write",
+    "docker-hosts.read",
+    "docker-hosts.write",
+    "docker-hosts.test",
+    "remote-browsers.read",
+    "remote-browsers.write",
+    "remote-browsers.test",
+    "status-pages.read",
+    "status-pages.write",
+    "network-profiles.read",
+    "network-profiles.write",
+    "twingate.read",
+    "statistics.clear",
+    "security.self",
+    "security.manage",
+    "users.read",
+    "users.write",
+    "users.delete",
+];
+const ALL_PERMISSION_SET = new Set(ALL_PERMISSIONS);
+const ROLE_PERMISSIONS = {
+    admin: ALL_PERMISSIONS,
+    editor: [
+        "dashboard.read",
+        "monitors.read",
+        "monitors.write",
+        "monitors.delete",
+        "monitors.run",
+        "monitors.pause",
+        "heartbeats.read",
+        "heartbeats.clear",
+        "settings.read",
+        "settings.write",
+        "notifications.read",
+        "notifications.write",
+        "notifications.test",
+        "tags.read",
+        "tags.write",
+        "proxies.read",
+        "proxies.write",
+        "docker-hosts.read",
+        "docker-hosts.write",
+        "docker-hosts.test",
+        "remote-browsers.read",
+        "remote-browsers.write",
+        "remote-browsers.test",
+        "status-pages.read",
+        "status-pages.write",
+        "network-profiles.read",
+        "network-profiles.write",
+        "twingate.read",
+        "statistics.clear",
+        "security.self",
+    ],
+    operator: [
+        "dashboard.read",
+        "monitors.read",
+        "monitors.run",
+        "monitors.pause",
+        "heartbeats.read",
+        "heartbeats.clear",
+        "settings.read",
+        "notifications.read",
+        "tags.read",
+        "proxies.read",
+        "docker-hosts.read",
+        "remote-browsers.read",
+        "status-pages.read",
+        "network-profiles.read",
+        "twingate.read",
+        "security.self",
+    ],
+    viewer: [
+        "dashboard.read",
+        "monitors.read",
+        "heartbeats.read",
+        "settings.read",
+        "notifications.read",
+        "tags.read",
+        "proxies.read",
+        "docker-hosts.read",
+        "remote-browsers.read",
+        "status-pages.read",
+        "network-profiles.read",
+        "security.self",
+    ],
+};
+const ROUTE_PERMISSIONS = new Map([
+    ["monitors", "monitors.read"],
+    ["dashboard-bootstrap", "dashboard.read"],
+    ["settings", "settings.read"],
+    ["docker-hosts", "docker-hosts.read"],
+    ["save-docker-host", "docker-hosts.write"],
+    ["delete-docker-host", "docker-hosts.write"],
+    ["test-docker-host", "docker-hosts.test"],
+    ["remote-browsers", "remote-browsers.read"],
+    ["save-remote-browser", "remote-browsers.write"],
+    ["delete-remote-browser", "remote-browsers.write"],
+    ["test-remote-browser", "remote-browsers.test"],
+    ["proxies", "proxies.read"],
+    ["save-proxy", "proxies.write"],
+    ["delete-proxy", "proxies.write"],
+    ["notifications", "notifications.read"],
+    ["save-notification", "notifications.write"],
+    ["delete-notification", "notifications.write"],
+    ["test-notification", "notifications.test"],
+    ["tags", "tags.read"],
+    ["save-tag", "tags.write"],
+    ["delete-tag", "tags.write"],
+    ["add-monitor-tag", "tags.write"],
+    ["delete-monitor-tag", "tags.write"],
+    ["create-monitor", "monitors.write"],
+    ["import-monitors", "monitors.write"],
+    ["monitor", "monitors.read"],
+    ["update-monitor", "monitors.write"],
+    ["set-monitor-active", "monitors.pause"],
+    ["delete-monitor", "monitors.delete"],
+    ["heartbeats", "heartbeats.read"],
+    ["recent-heartbeats", "heartbeats.read"],
+    ["monitor-chart", "heartbeats.read"],
+    ["network-profiles", "network-profiles.read"],
+    ["patch-network-route", "network-profiles.write"],
+    ["check-now", "monitors.run"],
+    ["twingate-status", "twingate.read"],
+    ["auth-local-user", "security.self"],
+    ["auth-2fa-status", "security.self"],
+    ["auth-2fa-prepare", "security.self"],
+    ["auth-2fa-verify", "security.self"],
+    ["auth-2fa-save", "security.self"],
+    ["auth-2fa-disable", "security.self"],
+    ["save-status-page", "status-pages.write"],
+    ["statistics", "statistics.clear"],
+    ["users", "users.read"],
+    ["create-user", "users.write"],
+    ["user", "users.read"],
+    ["update-user", "users.write"],
+    ["delete-user", "users.delete"],
+    ["set-user-password", "users.write"],
+    ["reset-user-2fa", "users.write"],
 ]);
 const PRIVATE_WORKER_HOST_ERROR =
     "Direct Worker checks cannot target private, loopback, link-local, or metadata hosts";
 const DUPLICATE_COLUMN_ERROR = /duplicate column name:\s*(parent|proxy_id)/i;
+const userAuthSchemaReady = new WeakMap();
 
 export async function handleApiRequest(request, env) {
     const url = new URL(request.url);
     const route = matchRoute(request.method, url.pathname);
 
     try {
-        if (ADMIN_ROUTE_NAMES.has(route.name)) {
-            await requireAdminRequest(request, env);
-        }
+        const actor = await requireRoutePermission(request, env, route);
 
         if (route.name === "entry-page") {
             return json({ type: "entryPage", entryPage: "dashboard" });
@@ -327,27 +488,27 @@ export async function handleApiRequest(request, env) {
         }
 
         if (route.name === "auth-local-user") {
-            return json(await saveWorkerAuthUser(env, await request.json()));
+            return json(await saveWorkerAuthUser(env, await request.json(), actor));
         }
 
         if (route.name === "auth-2fa-status") {
-            return json(await getWorkerTwoFAStatus(env));
+            return json(await getWorkerTwoFAStatus(env, actor));
         }
 
         if (route.name === "auth-2fa-prepare") {
-            return json(await prepareWorkerTwoFA(env, await request.json()));
+            return json(await prepareWorkerTwoFA(env, await request.json(), actor));
         }
 
         if (route.name === "auth-2fa-verify") {
-            return json(await verifyWorkerTwoFAToken(env, await request.json()));
+            return json(await verifyWorkerTwoFAToken(env, await request.json(), actor));
         }
 
         if (route.name === "auth-2fa-save") {
-            return json(await saveWorkerTwoFA(env, await request.json()));
+            return json(await saveWorkerTwoFA(env, await request.json(), actor));
         }
 
         if (route.name === "auth-2fa-disable") {
-            return json(await disableWorkerTwoFA(env, await request.json()));
+            return json(await disableWorkerTwoFA(env, await request.json(), actor));
         }
 
         if (route.name === "monitors") {
@@ -404,6 +565,43 @@ export async function handleApiRequest(request, env) {
             }
             await setUiSettings(env, await request.json());
             return json({ ok: true, msg: "Settings saved" });
+        }
+
+        if (route.name === "users") {
+            return json({ users: await listUsers(env) });
+        }
+
+        if (route.name === "create-user") {
+            return json({
+                ok: true,
+                user: await createUser(env, await request.json(), actor),
+            });
+        }
+
+        if (route.name === "user") {
+            return json({ user: await requireUserForResponse(env, Number(route.params.userId)) });
+        }
+
+        if (route.name === "update-user") {
+            return json({
+                ok: true,
+                user: await updateUser(env, Number(route.params.userId), await request.json(), actor),
+            });
+        }
+
+        if (route.name === "delete-user") {
+            await deleteUser(env, Number(route.params.userId), actor);
+            return json({ ok: true, msg: "successDeleted", msgi18n: true });
+        }
+
+        if (route.name === "set-user-password") {
+            await setUserPassword(env, Number(route.params.userId), await request.json(), actor);
+            return json({ ok: true, msg: "Password updated" });
+        }
+
+        if (route.name === "reset-user-2fa") {
+            await resetUserTwoFA(env, Number(route.params.userId), actor);
+            return json({ ok: true, msg: "2faDisabled", msgi18n: true });
         }
 
         if (route.name === "docker-hosts") {
@@ -4306,51 +4504,90 @@ function normalizeMonitorInput(input, existing = {}) {
     };
 }
 
-async function requireAdminRequest(request, env) {
-    const expectedToken = env.ADMIN_API_TOKEN;
+async function requireRoutePermission(request, env, route) {
+    const permission = resolveRoutePermission(route, request.method);
+    if (!permission) {
+        return null;
+    }
+
     const authorization = request.headers.get("authorization") || "";
     const suppliedToken = authorization.startsWith("Bearer ") ? authorization.slice(7) : "";
-    if (expectedToken && typeof expectedToken === "string" && timingSafeEqual(suppliedToken, expectedToken)) {
-        return;
+    if (isAdminApiToken(env, suppliedToken)) {
+        return buildSystemAdminActor();
     }
 
-    const localAuthUser = await getWorkerAuthUser(env);
-    if (localAuthUser && await verifyWorkerAuthSessionToken(suppliedToken, env)) {
-        return;
+    await ensureUserAuthSchema(env);
+    const usersConfigured = await hasAnyWorkerUsers(env);
+    const actor = usersConfigured ? await verifyWorkerAuthSessionToken(suppliedToken, env) : null;
+    if (actor) {
+        if (!actorHasPermission(actor, permission)) {
+            throw httpError(403, "Forbidden");
+        }
+        return actor;
     }
 
-    if (!localAuthUser && await isCloudflareAccessAdminRequest(request, env)) {
-        return;
-    }
-
-    if (localAuthUser) {
-        throw httpError(401, "Unauthorized");
-    }
-
-    if (!expectedToken || typeof expectedToken !== "string") {
-        throw httpError(503, "Admin API token is not configured");
+    if (!usersConfigured) {
+        if (await isCloudflareAccessAdminRequest(request, env)) {
+            return buildBootstrapAdminActor();
+        }
+        if (!hasConfiguredAdminApiToken(env)) {
+            throw httpError(503, "Admin API token is not configured");
+        }
     }
 
     throw httpError(401, "Unauthorized");
 }
 
+function resolveRoutePermission(route, method) {
+    if (route.name === "settings") {
+        return method === "PUT" ? "settings.write" : "settings.read";
+    }
+    if (route.name === "monitor-heartbeats") {
+        return method === "DELETE" ? "heartbeats.clear" : "heartbeats.read";
+    }
+    if (route.name === "auth-local-user") {
+        return "security.self";
+    }
+    return ROUTE_PERMISSIONS.get(route.name) || null;
+}
+
 async function getWorkerAuthSession(request, env) {
-    const localAuthUser = await getWorkerAuthUser(env);
     const authorization = request.headers.get("authorization") || "";
     const suppliedToken = authorization.startsWith("Bearer ") ? authorization.slice(7) : "";
-    const session = localAuthUser ? await verifyWorkerAuthSessionToken(suppliedToken, env) : null;
-    if (session) {
+    if (isAdminApiToken(env, suppliedToken)) {
+        const actor = buildSystemAdminActor();
         return {
             authenticated: true,
-            username: session.username,
+            username: actor.username,
+            user: actor.user,
+            role: actor.role,
+            permissions: actor.permissions,
+            localAuthConfigured: await hasAnyWorkerUsersAfterSchema(env),
+        };
+    }
+
+    await ensureUserAuthSchema(env);
+    const usersConfigured = await hasAnyWorkerUsers(env);
+    const actor = usersConfigured ? await verifyWorkerAuthSessionToken(suppliedToken, env) : null;
+    if (actor) {
+        return {
+            authenticated: true,
+            username: actor.username,
+            user: actor.user,
+            role: actor.role,
+            permissions: actor.permissions,
             localAuthConfigured: true,
         };
     }
 
-    if (!localAuthUser && await isBootstrapAdminRequest(request, env)) {
+    if (!usersConfigured && await isCloudflareAccessAdminRequest(request, env)) {
+        const actor = buildBootstrapAdminActor();
         return {
             authenticated: true,
-            username: "Cloudflare",
+            username: actor.username,
+            user: actor.user,
+            role: actor.role,
+            permissions: actor.permissions,
             localAuthConfigured: false,
         };
     }
@@ -4358,77 +4595,92 @@ async function getWorkerAuthSession(request, env) {
     return {
         authenticated: false,
         username: null,
-        localAuthConfigured: Boolean(localAuthUser),
+        user: null,
+        role: null,
+        permissions: [],
+        localAuthConfigured: usersConfigured,
     };
 }
 
-async function isBootstrapAdminRequest(request, env) {
-    const expectedToken = env.ADMIN_API_TOKEN;
-    const authorization = request.headers.get("authorization") || "";
-    const suppliedToken = authorization.startsWith("Bearer ") ? authorization.slice(7) : "";
-    if (expectedToken && typeof expectedToken === "string" && timingSafeEqual(suppliedToken, expectedToken)) {
-        return true;
-    }
-    return await isCloudflareAccessAdminRequest(request, env);
+async function hasAnyWorkerUsersAfterSchema(env) {
+    await ensureUserAuthSchema(env);
+    return await hasAnyWorkerUsers(env);
 }
 
-async function saveWorkerAuthUser(env, body) {
-    const existingAuthUser = await getWorkerAuthUser(env);
-    const username = String(body?.username || existingAuthUser?.username || "").trim();
+async function saveWorkerAuthUser(env, body, actor) {
+    await ensureUserAuthSchema(env);
+    const usersConfigured = await hasAnyWorkerUsers(env);
     const currentPassword = String(body?.currentPassword || "");
     const newPassword = String(body?.newPassword || body?.password || "");
-    if (!username) {
-        throw httpError(400, "Username is required");
+    assertWorkerPasswordStrength(newPassword);
+
+    if (!usersConfigured) {
+        const username = String(body?.username || "").trim();
+        if (!username) {
+            throw httpError(400, "Username is required");
+        }
+        const createdUser = await createFirstAdminUser(env, {
+            username,
+            password: newPassword,
+        }, actor);
+        const token = await createWorkerAuthSessionToken(env, createdUser, WORKER_AUTH_SESSION_TTL_SECONDS);
+        return buildAuthSuccessResponse(createdUser, token, "Local admin login saved");
     }
-    if (
-        existingAuthUser &&
-        (!currentPassword || !(await verifyWorkerAuthPassword(currentPassword, existingAuthUser.password)))
-    ) {
+
+    const targetUser = await resolveSelfManagedUser(env, actor, body);
+    if (!await verifyWorkerAuthPassword(currentPassword, parseStoredPassword(targetUser.password_json))) {
         throw httpError(401, "authIncorrectCreds");
     }
-    if (newPassword.length < 6) {
-        throw httpError(400, "passwordTooWeak");
+
+    const nextUsername = String(body?.username || targetUser.username || "").trim();
+    if (!nextUsername) {
+        throw httpError(400, "Username is required");
     }
-    const authUser = {
-        username,
-        password: await hashWorkerAuthPassword(newPassword),
-        updatedAt: new Date().toISOString(),
-    };
-    await setStoredSetting(env, WORKER_AUTH_USER_SETTING, authUser);
-    if (existingAuthUser) {
-        await rotateWorkerAuthSessionSecret(env);
-    } else {
-        await ensureWorkerAuthSessionSecret(env);
+    if (nextUsername.toLowerCase() !== targetUser.username.toLowerCase()) {
+        await assertUsernameAvailable(env, nextUsername, targetUser.id);
     }
-    return {
-        ok: true,
-        msg: "Local admin login saved",
-        token: await createWorkerAuthSessionToken(env, username, WORKER_AUTH_SESSION_TTL_SECONDS),
-        username,
-        localAuthConfigured: true,
-    };
+
+    await revokeUserSessions(env, targetUser.id);
+    const passwordJson = await hashWorkerAuthPassword(newPassword);
+    await env.DB.prepare(
+        `UPDATE users
+         SET username = ?, password_json = ?, updated_at = CURRENT_TIMESTAMP
+         WHERE id = ?`
+    )
+        .bind(nextUsername, JSON.stringify(passwordJson), targetUser.id)
+        .run();
+    const updatedUser = await getUserById(env, targetUser.id);
+    await logUserAudit(env, actor, updatedUser.id, "user.password.self", { username: updatedUser.username });
+    const token = await createWorkerAuthSessionToken(env, updatedUser, WORKER_AUTH_SESSION_TTL_SECONDS);
+    return buildAuthSuccessResponse(updatedUser, token, "Local admin login saved");
 }
 
 async function logoutWorkerAuthSession(request, env) {
+    await ensureUserAuthSchema(env);
     const authorization = request.headers.get("authorization") || "";
     const suppliedToken = authorization.startsWith("Bearer ") ? authorization.slice(7) : "";
     const session = await verifyWorkerAuthSessionToken(suppliedToken, env);
-    if (session) {
-        await revokeWorkerAuthSession(env, session, suppliedToken);
+    if (session?.sessionId) {
+        await revokeWorkerAuthSession(env, session);
     }
     return { ok: true };
 }
 
 async function loginWorkerAuthUser(env, body) {
+    await ensureUserAuthSchema(env);
     const username = String(body?.username || "").trim();
     const password = String(body?.password || "");
     const oneTimeToken = String(body?.token || "").trim();
-    const authUser = await getWorkerAuthUser(env);
-    if (!authUser || authUser.username !== username || !await verifyWorkerAuthPassword(password, authUser.password)) {
+    const authUser = await getUserByUsername(env, username);
+    if (
+        !authUser ||
+        !authUser.active ||
+        !await verifyWorkerAuthPassword(password, parseStoredPassword(authUser.password_json))
+    ) {
         throw httpError(401, "authIncorrectCreds");
     }
 
-    const twoFA = await getWorkerTwoFA(env);
+    const twoFA = parseUserTotp(authUser.totp_json);
     if (twoFA?.enabled) {
         if (!oneTimeToken) {
             return { tokenRequired: true };
@@ -4440,7 +4692,7 @@ async function loginWorkerAuthUser(env, body) {
                 msgi18n: true,
             };
         }
-        await setStoredSetting(env, WORKER_AUTH_TOTP_SETTING, {
+        await updateUserTotp(env, authUser.id, {
             ...twoFA,
             lastToken: oneTimeToken,
             updatedAt: new Date().toISOString(),
@@ -4448,34 +4700,25 @@ async function loginWorkerAuthUser(env, body) {
     }
 
     const ttlSeconds = body?.remember ? WORKER_AUTH_REMEMBER_SESSION_TTL_SECONDS : WORKER_AUTH_SESSION_TTL_SECONDS;
-    const token = await createWorkerAuthSessionToken(env, authUser.username, ttlSeconds);
-    return {
-        ok: true,
-        token,
-        username: authUser.username,
-        localAuthConfigured: true,
-    };
+    const token = await createWorkerAuthSessionToken(env, authUser, ttlSeconds);
+    await env.DB.prepare("UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = ?")
+        .bind(authUser.id)
+        .run();
+    return buildAuthSuccessResponse(authUser, token);
 }
 
-async function getWorkerAuthUser(env) {
-    const authUser = await getStoredSetting(env, WORKER_AUTH_USER_SETTING);
-    if (!authUser || typeof authUser.username !== "string" || !authUser.password) {
-        return null;
-    }
-    return authUser;
-}
-
-async function getWorkerTwoFAStatus(env) {
-    const twoFA = await getWorkerTwoFA(env);
+async function getWorkerTwoFAStatus(env, actor) {
+    const user = await resolveSelfManagedUser(env, actor);
+    const twoFA = parseUserTotp(user.totp_json);
     return {
         ok: true,
         status: Boolean(twoFA?.enabled),
     };
 }
 
-async function prepareWorkerTwoFA(env, body) {
-    const authUser = await requireWorkerAuthPassword(env, body?.currentPassword);
-    const twoFA = await getWorkerTwoFA(env);
+async function prepareWorkerTwoFA(env, body, actor) {
+    const user = await requireSelfManagedUserPassword(env, body?.currentPassword, actor, body);
+    const twoFA = parseUserTotp(user.totp_json);
     if (twoFA?.enabled) {
         return {
             ok: false,
@@ -4485,7 +4728,7 @@ async function prepareWorkerTwoFA(env, body) {
     }
 
     const secret = base32Encode(crypto.getRandomValues(new Uint8Array(20)));
-    await setStoredSetting(env, WORKER_AUTH_TOTP_SETTING, {
+    await updateUserTotp(env, user.id, {
         secret,
         enabled: false,
         lastToken: null,
@@ -4495,13 +4738,13 @@ async function prepareWorkerTwoFA(env, body) {
 
     return {
         ok: true,
-        uri: buildWorkerTotpUri(authUser.username, secret),
+        uri: buildWorkerTotpUri(user.username, secret),
     };
 }
 
-async function verifyWorkerTwoFAToken(env, body) {
-    await requireWorkerAuthPassword(env, body?.currentPassword);
-    const twoFA = await getWorkerTwoFA(env);
+async function verifyWorkerTwoFAToken(env, body, actor) {
+    const user = await requireSelfManagedUserPassword(env, body?.currentPassword, actor, body);
+    const twoFA = parseUserTotp(user.totp_json);
     const token = String(body?.token || "").trim();
     if (!twoFA?.secret || twoFA.lastToken === token || !await verifyWorkerTotpCode(twoFA.secret, token)) {
         return {
@@ -4511,7 +4754,7 @@ async function verifyWorkerTwoFAToken(env, body) {
             valid: false,
         };
     }
-    await setStoredSetting(env, WORKER_AUTH_TOTP_SETTING, {
+    await updateUserTotp(env, user.id, {
         ...twoFA,
         verified: true,
         verifiedAt: new Date().toISOString(),
@@ -4523,16 +4766,16 @@ async function verifyWorkerTwoFAToken(env, body) {
     };
 }
 
-async function saveWorkerTwoFA(env, body) {
-    await requireWorkerAuthPassword(env, body?.currentPassword);
-    const twoFA = await getWorkerTwoFA(env);
+async function saveWorkerTwoFA(env, body, actor) {
+    const user = await requireSelfManagedUserPassword(env, body?.currentPassword, actor, body);
+    const twoFA = parseUserTotp(user.totp_json);
     if (!twoFA?.secret) {
         throw httpError(400, "2FA has not been prepared");
     }
     if (!twoFA.verified) {
         throw httpError(400, "authInvalidToken");
     }
-    await setStoredSetting(env, WORKER_AUTH_TOTP_SETTING, {
+    await updateUserTotp(env, user.id, {
         ...twoFA,
         enabled: true,
         verified: false,
@@ -4545,9 +4788,9 @@ async function saveWorkerTwoFA(env, body) {
     };
 }
 
-async function disableWorkerTwoFA(env, body) {
-    await requireWorkerAuthPassword(env, body?.currentPassword);
-    await setStoredSetting(env, WORKER_AUTH_TOTP_SETTING, {
+async function disableWorkerTwoFA(env, body, actor) {
+    const user = await requireSelfManagedUserPassword(env, body?.currentPassword, actor, body);
+    await updateUserTotp(env, user.id, {
         secret: null,
         enabled: false,
         lastToken: null,
@@ -4561,23 +4804,473 @@ async function disableWorkerTwoFA(env, body) {
     };
 }
 
-async function requireWorkerAuthPassword(env, currentPassword) {
-    const authUser = await getWorkerAuthUser(env);
-    if (!authUser) {
-        throw httpError(401, "authIncorrectCreds");
-    }
-    if (!await verifyWorkerAuthPassword(String(currentPassword || ""), authUser.password)) {
-        throw httpError(401, "authIncorrectCreds");
-    }
-    return authUser;
+async function listUsers(env) {
+    await ensureUserAuthSchema(env);
+    const result = await env.DB.prepare(
+        `SELECT id, username, display_name, role, active, created_at, updated_at, last_login_at
+         FROM users
+         ORDER BY username COLLATE NOCASE`
+    ).all();
+    return (result.results || []).map(serializePublicUser);
 }
 
-async function getWorkerTwoFA(env) {
-    const twoFA = await getStoredSetting(env, WORKER_AUTH_TOTP_SETTING);
-    if (!twoFA || typeof twoFA.secret !== "string") {
+async function requireUserForResponse(env, userId) {
+    const user = await getUserById(env, userId);
+    if (!user) {
+        throw httpError(404, "User not found");
+    }
+    return serializePublicUser(user);
+}
+
+async function createUser(env, body, actor) {
+    await ensureUserAuthSchema(env);
+    const username = String(body?.username || "").trim();
+    const displayName = normalizeOptionalString(body?.displayName ?? body?.display_name);
+    const role = normalizeUserRole(body?.role || "viewer");
+    const password = String(body?.password || body?.newPassword || "");
+    const active = body?.active === undefined ? true : Boolean(body.active);
+    if (!username) {
+        throw httpError(400, "Username is required");
+    }
+    assertWorkerPasswordStrength(password);
+    await assertUsernameAvailable(env, username);
+    const passwordJson = await hashWorkerAuthPassword(password);
+    const result = await env.DB.prepare(
+        `INSERT INTO users (username, display_name, role, password_json, totp_json, active)
+         VALUES (?, ?, ?, ?, NULL, ?)`
+    )
+        .bind(username, displayName, role, JSON.stringify(passwordJson), active ? 1 : 0)
+        .run();
+    const userId = Number(result.meta?.last_row_id || result.meta?.last_rowid || result.lastRowId || result.last_row_id);
+    const user = await getUserById(env, userId);
+    await logUserAudit(env, actor, user.id, "user.create", { username, role, active });
+    return serializePublicUser(user);
+}
+
+async function updateUser(env, userId, body, actor) {
+    await ensureUserAuthSchema(env);
+    const existing = await getUserById(env, userId);
+    if (!existing) {
+        throw httpError(404, "User not found");
+    }
+    const username = String(body?.username || existing.username).trim();
+    const displayName = Object.prototype.hasOwnProperty.call(body || {}, "displayName")
+        || Object.prototype.hasOwnProperty.call(body || {}, "display_name")
+        ? normalizeOptionalString(body?.displayName ?? body?.display_name)
+        : existing.display_name;
+    const role = normalizeUserRole(body?.role || existing.role);
+    const active = body?.active === undefined ? Boolean(existing.active) : Boolean(body.active);
+    if (!username) {
+        throw httpError(400, "Username is required");
+    }
+    if (username.toLowerCase() !== existing.username.toLowerCase()) {
+        await assertUsernameAvailable(env, username, existing.id);
+    }
+    if (wouldRemoveActiveAdmin(existing, { role, active })) {
+        await assertCanRemoveActiveAdmin(env, existing.id);
+    }
+    await env.DB.prepare(
+        `UPDATE users
+         SET username = ?, display_name = ?, role = ?, active = ?, updated_at = CURRENT_TIMESTAMP
+         WHERE id = ?`
+    )
+        .bind(username, displayName, role, active ? 1 : 0, existing.id)
+        .run();
+    if (!active) {
+        await revokeUserSessions(env, existing.id);
+    }
+    const updated = await getUserById(env, existing.id);
+    await logUserAudit(env, actor, updated.id, "user.update", { username, role, active });
+    return serializePublicUser(updated);
+}
+
+async function deleteUser(env, userId, actor) {
+    await ensureUserAuthSchema(env);
+    const existing = await getUserById(env, userId);
+    if (!existing) {
+        throw httpError(404, "User not found");
+    }
+    if (existing.active && existing.role === "admin") {
+        await assertCanRemoveActiveAdmin(env, existing.id);
+    }
+    await revokeUserSessions(env, existing.id);
+    await env.DB.prepare("DELETE FROM users WHERE id = ?").bind(existing.id).run();
+    await logUserAudit(env, actor, existing.id, "user.delete", { username: existing.username, role: existing.role });
+}
+
+async function setUserPassword(env, userId, body, actor) {
+    await ensureUserAuthSchema(env);
+    const existing = await getUserById(env, userId);
+    if (!existing) {
+        throw httpError(404, "User not found");
+    }
+    const password = String(body?.password || body?.newPassword || "");
+    assertWorkerPasswordStrength(password);
+    const passwordJson = await hashWorkerAuthPassword(password);
+    await revokeUserSessions(env, existing.id);
+    await env.DB.prepare(
+        `UPDATE users
+         SET password_json = ?, updated_at = CURRENT_TIMESTAMP
+         WHERE id = ?`
+    )
+        .bind(JSON.stringify(passwordJson), existing.id)
+        .run();
+    await logUserAudit(env, actor, existing.id, "user.password.admin", { username: existing.username });
+}
+
+async function resetUserTwoFA(env, userId, actor) {
+    await ensureUserAuthSchema(env);
+    const existing = await getUserById(env, userId);
+    if (!existing) {
+        throw httpError(404, "User not found");
+    }
+    await updateUserTotp(env, existing.id, null);
+    await logUserAudit(env, actor, existing.id, "user.2fa.reset", { username: existing.username });
+}
+
+async function ensureUserAuthSchema(env) {
+    let ready = userAuthSchemaReady.get(env.DB);
+    if (!ready) {
+        ready = (async () => {
+            for (const sql of USER_AUTH_SCHEMA_SQL) {
+                await env.DB.prepare(sql).run();
+            }
+            await migrateLegacyWorkerAuthUser(env);
+        })();
+        userAuthSchemaReady.set(env.DB, ready);
+    }
+
+    try {
+        await ready;
+    } catch (error) {
+        userAuthSchemaReady.delete(env.DB);
+        throw error;
+    }
+}
+
+async function migrateLegacyWorkerAuthUser(env) {
+    if (await hasAnyWorkerUsers(env)) {
+        return;
+    }
+    const legacyAuthUser = await getStoredSetting(env, WORKER_AUTH_USER_SETTING);
+    if (
+        !legacyAuthUser ||
+        typeof legacyAuthUser.username !== "string" ||
+        !legacyAuthUser.password ||
+        legacyAuthUser.password.algorithm !== "PBKDF2-SHA256"
+    ) {
+        return;
+    }
+    const username = legacyAuthUser.username.trim();
+    if (!username) {
+        return;
+    }
+    const legacyTotp = await getStoredSetting(env, WORKER_AUTH_TOTP_SETTING);
+    const result = await env.DB.prepare(
+        `INSERT INTO users (username, display_name, role, password_json, totp_json, active)
+         VALUES (?, NULL, 'admin', ?, ?, 1)`
+    )
+        .bind(
+            username,
+            JSON.stringify(legacyAuthUser.password),
+            legacyTotp ? JSON.stringify(legacyTotp) : null
+        )
+        .run();
+    const userId = Number(result.meta?.last_row_id || result.meta?.last_rowid || result.lastRowId || result.last_row_id);
+    await logUserAudit(env, null, userId, "user.legacy_migrate", { username });
+}
+
+async function hasAnyWorkerUsers(env) {
+    const row = await env.DB.prepare("SELECT COUNT(*) AS count FROM users").first();
+    return Number(row?.count || 0) > 0;
+}
+
+async function createFirstAdminUser(env, body, actor) {
+    const username = String(body?.username || "").trim();
+    const password = String(body?.password || body?.newPassword || "");
+    if (!username) {
+        throw httpError(400, "Username is required");
+    }
+    assertWorkerPasswordStrength(password);
+    await assertUsernameAvailable(env, username);
+    const passwordJson = await hashWorkerAuthPassword(password);
+    const result = await env.DB.prepare(
+        `INSERT INTO users (username, display_name, role, password_json, totp_json, active)
+         VALUES (?, NULL, 'admin', ?, NULL, 1)`
+    )
+        .bind(username, JSON.stringify(passwordJson))
+        .run();
+    const userId = Number(result.meta?.last_row_id || result.meta?.last_rowid || result.lastRowId || result.last_row_id);
+    const user = await getUserById(env, userId);
+    await logUserAudit(env, actor, user.id, "user.bootstrap", { username });
+    return user;
+}
+
+async function getUserByUsername(env, username) {
+    await ensureUserAuthSchema(env);
+    const row = await env.DB.prepare(
+        `SELECT id, username, display_name, role, password_json, totp_json, active, created_at, updated_at, last_login_at
+         FROM users
+         WHERE lower(username) = lower(?)
+         LIMIT 1`
+    )
+        .bind(username)
+        .first();
+    return row ? normalizeUserRow(row) : null;
+}
+
+async function getUserById(env, userId) {
+    await ensureUserAuthSchema(env);
+    const row = await env.DB.prepare(
+        `SELECT id, username, display_name, role, password_json, totp_json, active, created_at, updated_at, last_login_at
+         FROM users
+         WHERE id = ?
+         LIMIT 1`
+    )
+        .bind(Number(userId))
+        .first();
+    return row ? normalizeUserRow(row) : null;
+}
+
+async function assertUsernameAvailable(env, username, exceptUserId = null) {
+    const existing = await getUserByUsername(env, username);
+    if (existing && Number(existing.id) !== Number(exceptUserId)) {
+        throw httpError(400, "Username already exists");
+    }
+}
+
+async function assertCanRemoveActiveAdmin(env, userId) {
+    const row = await env.DB.prepare(
+        `SELECT COUNT(*) AS count
+         FROM users
+         WHERE role = 'admin'
+           AND active = 1
+           AND id != ?`
+    )
+        .bind(Number(userId))
+        .first();
+    if (Number(row?.count || 0) <= 0) {
+        throw httpError(400, "Cannot remove the last active admin");
+    }
+}
+
+function wouldRemoveActiveAdmin(existing, next) {
+    return existing.active && existing.role === "admin" && (!next.active || next.role !== "admin");
+}
+
+async function resolveSelfManagedUser(env, actor, body = {}) {
+    if (actor?.id) {
+        const user = await getUserById(env, actor.id);
+        if (!user || !user.active) {
+            throw httpError(401, "Unauthorized");
+        }
+        return user;
+    }
+    if (actor?.systemAdmin) {
+        const username = String(body?.username || "").trim();
+        if (username) {
+            const user = await getUserByUsername(env, username);
+            if (!user) {
+                throw httpError(404, "User not found");
+            }
+            return user;
+        }
+        const result = await env.DB.prepare(
+            `SELECT id, username, display_name, role, password_json, totp_json, active, created_at, updated_at, last_login_at
+             FROM users
+             ORDER BY id
+             LIMIT 2`
+        ).all();
+        const users = (result.results || []).map(normalizeUserRow);
+        if (users.length === 1) {
+            return users[0];
+        }
+        throw httpError(400, "Username is required");
+    }
+    throw httpError(401, "Unauthorized");
+}
+
+async function requireSelfManagedUserPassword(env, currentPassword, actor, body = {}) {
+    const user = await resolveSelfManagedUser(env, actor, body);
+    if (!await verifyWorkerAuthPassword(String(currentPassword || ""), parseStoredPassword(user.password_json))) {
+        throw httpError(401, "authIncorrectCreds");
+    }
+    return user;
+}
+
+async function updateUserTotp(env, userId, value) {
+    await env.DB.prepare(
+        `UPDATE users
+         SET totp_json = ?, updated_at = CURRENT_TIMESTAMP
+         WHERE id = ?`
+    )
+        .bind(value ? JSON.stringify(value) : null, Number(userId))
+        .run();
+}
+
+async function logUserAudit(env, actor, userId, action, details = null) {
+    await env.DB.prepare(
+        `INSERT INTO user_audit_log (actor_user_id, user_id, action, details_json)
+         VALUES (?, ?, ?, ?)`
+    )
+        .bind(
+            actor?.id || null,
+            userId || null,
+            action,
+            details ? JSON.stringify(details) : null
+        )
+        .run();
+}
+
+function buildAuthSuccessResponse(user, token, msg = undefined) {
+    return {
+        ok: true,
+        ...(msg ? { msg } : {}),
+        token,
+        username: user.username,
+        user: serializePublicUser(user),
+        role: user.role,
+        permissions: getRolePermissions(user.role),
+        localAuthConfigured: true,
+    };
+}
+
+function buildSystemAdminActor() {
+    return {
+        id: null,
+        username: "System Admin",
+        role: "admin",
+        permissions: getRolePermissions("admin"),
+        user: {
+            id: null,
+            username: "System Admin",
+            role: "admin",
+            active: true,
+            system: true,
+        },
+        systemAdmin: true,
+    };
+}
+
+function buildBootstrapAdminActor() {
+    return {
+        id: null,
+        username: "Cloudflare",
+        role: "admin",
+        permissions: getRolePermissions("admin"),
+        user: {
+            id: null,
+            username: "Cloudflare",
+            role: "admin",
+            active: true,
+            bootstrap: true,
+        },
+        bootstrap: true,
+    };
+}
+
+function actorHasPermission(actor, permission) {
+    return actor?.role === "admin" || actor?.permissions?.includes(permission);
+}
+
+function getRolePermissions(role) {
+    return [...new Set(ROLE_PERMISSIONS[role] || [])]
+        .filter((permission) => ALL_PERMISSION_SET.has(permission))
+        .sort();
+}
+
+function normalizeUserRole(role) {
+    const normalized = String(role || "viewer").trim().toLowerCase();
+    if (!VALID_USER_ROLES.has(normalized)) {
+        throw httpError(400, "Invalid role");
+    }
+    return normalized;
+}
+
+function normalizeOptionalString(value) {
+    if (value == null) {
         return null;
     }
-    return twoFA;
+    const normalized = String(value).trim();
+    return normalized || null;
+}
+
+function assertWorkerPasswordStrength(password) {
+    if (String(password || "").length < 6) {
+        throw httpError(400, "passwordTooWeak");
+    }
+}
+
+function normalizeUserRow(row) {
+    return {
+        id: Number(row.id),
+        username: row.username,
+        display_name: row.display_name ?? null,
+        role: normalizeUserRole(row.role),
+        password_json: row.password_json,
+        totp_json: row.totp_json ?? null,
+        active: Boolean(row.active),
+        created_at: row.created_at ?? null,
+        updated_at: row.updated_at ?? null,
+        last_login_at: row.last_login_at ?? null,
+    };
+}
+
+function serializePublicUser(row) {
+    const user = row?.id == null ? row : normalizeUserRow(row);
+    return {
+        id: user.id,
+        username: user.username,
+        displayName: user.display_name ?? null,
+        role: user.role,
+        active: Boolean(user.active),
+        permissions: getRolePermissions(user.role),
+        createdAt: user.created_at ?? null,
+        updatedAt: user.updated_at ?? null,
+        lastLoginAt: user.last_login_at ?? null,
+    };
+}
+
+function parseStoredPassword(value) {
+    if (!value) {
+        return null;
+    }
+    if (typeof value === "object") {
+        return value;
+    }
+    try {
+        return JSON.parse(value);
+    } catch (_) {
+        return null;
+    }
+}
+
+function parseUserTotp(value) {
+    if (!value) {
+        return null;
+    }
+    if (typeof value === "object") {
+        return typeof value.secret === "string" ? value : null;
+    }
+    try {
+        const parsed = JSON.parse(value);
+        return typeof parsed?.secret === "string" ? parsed : null;
+    } catch (_) {
+        return null;
+    }
+}
+
+function hasConfiguredAdminApiToken(env) {
+    return Boolean(env.ADMIN_API_TOKEN && typeof env.ADMIN_API_TOKEN === "string");
+}
+
+function isAdminApiToken(env, suppliedToken) {
+    const expectedToken = env.ADMIN_API_TOKEN;
+    return Boolean(
+        expectedToken &&
+        typeof expectedToken === "string" &&
+        timingSafeEqual(suppliedToken, expectedToken)
+    );
 }
 
 async function getStoredSetting(env, key) {
@@ -4667,19 +5360,33 @@ async function rotateWorkerAuthSessionSecret(env) {
     return secret;
 }
 
-async function createWorkerAuthSessionToken(env, username, ttlSeconds) {
+async function createWorkerAuthSessionToken(env, user, ttlSeconds) {
+    await ensureUserAuthSchema(env);
+    const sessionId = crypto.randomUUID
+        ? crypto.randomUUID()
+        : bytesToBase64Url(crypto.getRandomValues(new Uint8Array(16)));
+    const exp = Math.floor(Date.now() / 1000) + ttlSeconds;
     const header = bytesToBase64Url(new TextEncoder().encode(JSON.stringify({ alg: "HS256", typ: "JWT" })));
     const payload = bytesToBase64Url(new TextEncoder().encode(JSON.stringify({
         typ: "worker-session",
-        username,
-        jti: crypto.randomUUID ? crypto.randomUUID() : bytesToBase64Url(crypto.getRandomValues(new Uint8Array(16))),
-        exp: Math.floor(Date.now() / 1000) + ttlSeconds,
+        userId: user.id,
+        username: user.username,
+        jti: sessionId,
+        exp,
     })));
     const signature = await signWorkerAuthSession(`${header}.${payload}`, await ensureWorkerAuthSessionSecret(env));
-    return `${header}.${payload}.${signature}`;
+    const token = `${header}.${payload}.${signature}`;
+    await env.DB.prepare(
+        `INSERT INTO user_sessions (id, user_id, token_hash, expires_at)
+         VALUES (?, ?, ?, ?)`
+    )
+        .bind(sessionId, Number(user.id), await hashWorkerAuthSessionToken(token), new Date(exp * 1000).toISOString())
+        .run();
+    return token;
 }
 
 async function verifyWorkerAuthSessionToken(token, env) {
+    await ensureUserAuthSchema(env);
     if (!token || typeof token !== "string") {
         return null;
     }
@@ -4700,57 +5407,77 @@ async function verifyWorkerAuthSessionToken(token, env) {
         if (payload.typ !== "worker-session" || typeof payload.username !== "string" || !jwtTimeIsValid(payload)) {
             return null;
         }
-        const authUser = await getWorkerAuthUser(env);
-        if (!authUser || authUser.username !== payload.username) {
+        const session = await getStoredUserSession(env, payload, await hashWorkerAuthSessionToken(token));
+        if (!session || session.revoked_at || parseSqliteDateTime(session.expires_at) <= Date.now()) {
             return null;
         }
-        if (await isWorkerAuthSessionRevoked(env, payload, parts[2])) {
+        const authUser = await getUserById(env, session.user_id);
+        if (!authUser || !authUser.active) {
             return null;
         }
-        return payload;
+        await env.DB.prepare("UPDATE user_sessions SET last_seen_at = CURRENT_TIMESTAMP WHERE id = ?")
+            .bind(session.id)
+            .run();
+        return buildLocalUserActor(authUser, session);
     } catch (_) {
         return null;
     }
 }
 
-async function revokeWorkerAuthSession(env, payload, token) {
-    const exp = Number(payload?.exp || 0);
-    const now = Math.floor(Date.now() / 1000);
-    if (!Number.isFinite(exp) || exp <= now) {
+async function getStoredUserSession(env, payload, tokenHash) {
+    const sessionId = typeof payload?.jti === "string" ? payload.jti : "";
+    if (!sessionId) {
+        return null;
+    }
+    return await env.DB.prepare(
+        `SELECT id, user_id, token_hash, expires_at, revoked_at, created_at, last_seen_at
+         FROM user_sessions
+         WHERE id = ?
+           AND token_hash = ?
+         LIMIT 1`
+    )
+        .bind(sessionId, tokenHash)
+        .first();
+}
+
+async function revokeWorkerAuthSession(env, actor) {
+    if (!actor?.sessionId) {
         return;
     }
-    const revokedSessions = await getWorkerAuthRevokedSessions(env);
-    revokedSessions[workerAuthSessionRevocationKey(payload, token?.split(".")?.[2])] = exp;
-    await setStoredSetting(env, WORKER_AUTH_REVOKED_SESSIONS_SETTING, revokedSessions);
+    await env.DB.prepare(
+        `UPDATE user_sessions
+         SET revoked_at = CURRENT_TIMESTAMP
+         WHERE id = ?`
+    )
+        .bind(actor.sessionId)
+        .run();
 }
 
-async function isWorkerAuthSessionRevoked(env, payload, signature) {
-    const revokedSessions = await getWorkerAuthRevokedSessions(env);
-    const key = workerAuthSessionRevocationKey(payload, signature);
-    return Number(revokedSessions[key] || 0) > Math.floor(Date.now() / 1000);
+async function revokeUserSessions(env, userId) {
+    await env.DB.prepare(
+        `UPDATE user_sessions
+         SET revoked_at = CURRENT_TIMESTAMP
+         WHERE user_id = ?
+           AND revoked_at IS NULL`
+    )
+        .bind(Number(userId))
+        .run();
 }
 
-async function getWorkerAuthRevokedSessions(env) {
-    const stored = await getStoredSetting(env, WORKER_AUTH_REVOKED_SESSIONS_SETTING);
-    const revokedSessions = stored && typeof stored === "object" && !Array.isArray(stored) ? stored : {};
-    const now = Math.floor(Date.now() / 1000);
-    let pruned = false;
-    for (const [key, exp] of Object.entries(revokedSessions)) {
-        if (!Number.isFinite(Number(exp)) || Number(exp) <= now) {
-            delete revokedSessions[key];
-            pruned = true;
-        }
-    }
-    if (pruned) {
-        await setStoredSetting(env, WORKER_AUTH_REVOKED_SESSIONS_SETTING, revokedSessions);
-    }
-    return revokedSessions;
+function buildLocalUserActor(user, session) {
+    return {
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        permissions: getRolePermissions(user.role),
+        user: serializePublicUser(user),
+        sessionId: session.id,
+    };
 }
 
-function workerAuthSessionRevocationKey(payload, signature) {
-    return typeof payload?.jti === "string" && payload.jti
-        ? `jti:${payload.jti}`
-        : `sig:${signature || ""}`;
+async function hashWorkerAuthSessionToken(token) {
+    const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(token));
+    return bytesToBase64Url(new Uint8Array(digest));
 }
 
 async function signWorkerAuthSession(data, secret) {
@@ -6366,6 +7093,12 @@ function matchRoute(method, pathname) {
     if ((method === "GET" || method === "PUT") && pathname === "/api/settings") {
         return { name: "settings", params: {} };
     }
+    if (method === "GET" && pathname === "/api/users") {
+        return { name: "users", params: {} };
+    }
+    if (method === "POST" && pathname === "/api/users") {
+        return { name: "create-user", params: {} };
+    }
     if (method === "DELETE" && pathname === "/api/statistics") {
         return { name: "statistics", params: {} };
     }
@@ -6434,6 +7167,27 @@ function matchRoute(method, pathname) {
     }
     if (method === "GET" && pathname === "/api/twingate/status") {
         return { name: "twingate-status", params: {} };
+    }
+
+    const userPasswordMatch = pathname.match(/^\/api\/users\/(\d+)\/password$/);
+    if (method === "PATCH" && userPasswordMatch) {
+        return { name: "set-user-password", params: { userId: userPasswordMatch[1] } };
+    }
+
+    const userResetTwoFAMatch = pathname.match(/^\/api\/users\/(\d+)\/reset-2fa$/);
+    if (method === "POST" && userResetTwoFAMatch) {
+        return { name: "reset-user-2fa", params: { userId: userResetTwoFAMatch[1] } };
+    }
+
+    const userMatch = pathname.match(/^\/api\/users\/(\d+)$/);
+    if (method === "GET" && userMatch) {
+        return { name: "user", params: { userId: userMatch[1] } };
+    }
+    if (method === "PUT" && userMatch) {
+        return { name: "update-user", params: { userId: userMatch[1] } };
+    }
+    if (method === "DELETE" && userMatch) {
+        return { name: "delete-user", params: { userId: userMatch[1] } };
     }
 
     const networkRouteMatch = pathname.match(/^\/api\/monitors\/(\d+)\/network-route$/);

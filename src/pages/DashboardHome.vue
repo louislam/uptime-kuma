@@ -37,7 +37,7 @@
             </div>
 
             <div class="shadow-box table-shadow-box table-wrapper">
-                <div class="mb-3 text-end">
+                <div v-if="$root.hasPermission('heartbeats.clear')" class="mb-3 text-end">
                     <button
                         class="btn btn-sm"
                         :class="isClearAllEventsArmed ? 'btn-danger' : 'btn-outline-danger'"

@@ -27,7 +27,7 @@
             </a>
 
             <ul class="nav nav-pills">
-                <li v-if="$root.loggedIn" class="nav-item me-1">
+                <li v-if="$root.loggedIn && $root.hasPermission('status-pages.write')" class="nav-item me-1">
                     <router-link to="/manage-status-page" class="nav-link">
                         <font-awesome-icon icon="stream" />
                         {{ $t("Status Pages") }}
@@ -174,7 +174,7 @@
                 {{ $t("List") }}
             </router-link>
 
-            <router-link to="/add" class="nav-link">
+            <router-link v-if="$root.hasPermission('monitors.write')" to="/add" class="nav-link">
                 <div><font-awesome-icon icon="plus" /></div>
                 {{ $t("Add") }}
             </router-link>

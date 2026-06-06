@@ -14,13 +14,15 @@
                     {{ proxy.host }}:{{ proxy.port }} ({{ proxy.protocol }})
                     <span v-if="proxy.default === true" class="badge bg-primary ms-2">{{ $t("Default") }}</span>
                     <br />
-                    <a href="#" @click="$refs.proxyDialog.show(proxy.id)">{{ $t("Edit") }}</a>
-                    |
-                    <a href="#" @click="$refs.proxyDialog.showClone(proxy.id)">{{ $t("Clone") }}</a>
+                    <template v-if="$root.hasPermission('proxies.write')">
+                        <a href="#" @click="$refs.proxyDialog.show(proxy.id)">{{ $t("Edit") }}</a>
+                        |
+                        <a href="#" @click="$refs.proxyDialog.showClone(proxy.id)">{{ $t("Clone") }}</a>
+                    </template>
                 </li>
             </ul>
 
-            <button class="btn btn-primary me-2" type="button" @click="$refs.proxyDialog.show()">
+            <button v-if="$root.hasPermission('proxies.write')" class="btn btn-primary me-2" type="button" @click="$refs.proxyDialog.show()">
                 {{ $t("Setup Proxy") }}
             </button>
         </div>

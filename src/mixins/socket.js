@@ -63,6 +63,9 @@ export default {
                 initedSocketIO: false,
             },
             username: null,
+            currentUser: null,
+            currentRole: null,
+            currentPermissions: [],
             remember: localStorage.remember !== "0",
             allowLoginDialog: false, // Allowed to show login dialog, but "loggedIn" have to be true too. This exists because prevent the login dialog show 0.1s in first before the socket server auth-ed.
             loggedIn: false,
@@ -349,6 +352,7 @@ export default {
             this.loggedIn = false;
             this.allowLoginDialog = false;
             this.username = null;
+            this.clearCloudflareWorkerAuthContext();
             socket = createCloudflareSocketStub(this);
             void this.loadCloudflareWorkerInfo();
             await this.refreshCloudflareWorkerAuthSession();
@@ -378,6 +382,7 @@ export default {
                 const session = await requestCloudflareJson("/api/auth/session");
                 this.workerLocalAuthConfigured = Boolean(session.localAuthConfigured);
                 if (session.authenticated) {
+                    this.applyCloudflareWorkerAuthContext(session);
                     this.loggedIn = true;
                     this.allowLoginDialog = false;
                     this.username = session.username;
@@ -388,6 +393,7 @@ export default {
                     this.startCloudflareWorkerDashboardAutoRefresh();
                 } else {
                     this.stopCloudflareWorkerDashboardAutoRefresh();
+                    this.clearCloudflareWorkerAuthContext();
                     this.loggedIn = false;
                     this.username = null;
                     this.socket.token = null;
@@ -604,6 +610,54 @@ export default {
         },
 
         /**
+         * Store Worker RBAC context from auth/session responses.
+         * @param {object} session Auth/session response.
+         * @returns {void}
+         */
+        applyCloudflareWorkerAuthContext(session = {}) {
+            this.currentUser = session.user || null;
+            this.currentRole = session.role || session.user?.role || null;
+            this.currentPermissions = Array.isArray(session.permissions) ? session.permissions : [];
+        },
+
+        /**
+         * Clear Worker RBAC context when logged out or unauthenticated.
+         * @returns {void}
+         */
+        clearCloudflareWorkerAuthContext() {
+            this.currentUser = null;
+            this.currentRole = null;
+            this.currentPermissions = [];
+        },
+
+        /**
+         * Check whether the current Worker user has a permission.
+         * @param {string} permission Permission string.
+         * @returns {boolean} True when allowed.
+         */
+        hasPermission(permission) {
+            if (!permission) {
+                return false;
+            }
+            if (!this.isCloudflareWorkerUI) {
+                return true;
+            }
+            return this.currentRole === "admin" || this.currentPermissions.includes(permission);
+        },
+
+        /**
+         * Check whether the current Worker user has any listed permission.
+         * @param {string[]} permissions Permission strings.
+         * @returns {boolean} True when any permission is allowed.
+         */
+        hasAnyPermission(permissions = []) {
+            if (!this.isCloudflareWorkerUI) {
+                return true;
+            }
+            return permissions.some((permission) => this.hasPermission(permission));
+        },
+
+        /**
          * Clear Worker dashboard data that may have been hydrated from cache.
          * @returns {void}
          */
@@ -797,6 +851,7 @@ export default {
                         this.socket.token = res.token;
                         this.loggedIn = true;
                         this.username = res.username || this.getJWTPayload()?.username;
+                        this.applyCloudflareWorkerAuthContext(res);
                         this.workerLocalAuthConfigured = res.localAuthConfigured ?? this.workerLocalAuthConfigured;
                         if (this.isCloudflareWorkerUI) {
                             this.loadCloudflareWorkerData().then(() => {
@@ -827,6 +882,7 @@ export default {
                 } else {
                     this.loggedIn = true;
                     this.username = res.username || this.getJWTPayload()?.username;
+                    this.applyCloudflareWorkerAuthContext(res);
                     this.workerLocalAuthConfigured = res.localAuthConfigured ?? this.workerLocalAuthConfigured;
                 }
             });
@@ -843,6 +899,7 @@ export default {
             this.socket.token = null;
             this.loggedIn = false;
             this.username = null;
+            this.clearCloudflareWorkerAuthContext();
             clearCloudflareWorkerDashboardCache();
             clearCloudflareDashboardSecondaryCache();
             this.clearData();
@@ -1326,6 +1383,7 @@ function createCloudflareSocketStub(app) {
                         body: JSON.stringify({
                             username: credentials.username,
                             password: credentials.password,
+                            token: credentials.token,
                             remember: app.remember,
                         }),
                     });
@@ -1342,6 +1400,9 @@ function createCloudflareSocketStub(app) {
                     callback?.({
                         ok: body.authenticated,
                         username: body.username,
+                        user: body.user,
+                        role: body.role,
+                        permissions: body.permissions || [],
                         localAuthConfigured: body.localAuthConfigured,
                     });
                     return;
@@ -1359,6 +1420,7 @@ function createCloudflareSocketStub(app) {
                         body: JSON.stringify(args[0] || {}),
                     });
                     app.workerLocalAuthConfigured = true;
+                    app.applyCloudflareWorkerAuthContext(body);
                     callback?.(body);
                     return;
                 }
