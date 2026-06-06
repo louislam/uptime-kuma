@@ -840,6 +840,7 @@ let needSetup = false;
                 bean.headers = monitor.headers;
                 bean.basic_auth_user = monitor.basic_auth_user;
                 bean.basic_auth_pass = monitor.basic_auth_pass;
+                bean.bearer_token = monitor.bearer_token;
                 bean.timeout = monitor.timeout;
                 bean.oauth_client_id = monitor.oauth_client_id;
                 bean.oauth_client_secret = monitor.oauth_client_secret;
@@ -917,6 +918,7 @@ let needSetup = false;
                 bean.kafkaProducerSsl = monitor.kafkaProducerSsl;
                 bean.kafkaProducerAllowAutoTopicCreation = monitor.kafkaProducerAllowAutoTopicCreation;
                 bean.gamedigGivenPortOnly = monitor.gamedigGivenPortOnly;
+                bean.gamedigToken = monitor.gamedigToken;
                 bean.remote_browser = monitor.remote_browser;
                 bean.smtpSecurity = monitor.smtpSecurity;
                 bean.snmpVersion = monitor.snmpVersion;
@@ -1745,7 +1747,8 @@ let needSetup = false;
     await server.start();
 
     server.httpServer.listen(port, hostname, async () => {
-        printServerUrls("server", port, hostname);
+        printServerUrls("server", port, hostname, config.isSSL);
+
         await startMonitors();
 
         // Put this here. Start background jobs after the db and server is ready to prevent clear up during db migration.

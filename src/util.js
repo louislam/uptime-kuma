@@ -90,10 +90,10 @@ const consoleModuleColors = [
     exports.CONSOLE_STYLE_FgPink,
 ];
 const consoleLevelColors = {
-    INFO: exports.CONSOLE_STYLE_FgCyan,
-    WARN: exports.CONSOLE_STYLE_FgYellow,
-    ERROR: exports.CONSOLE_STYLE_FgRed,
-    DEBUG: exports.CONSOLE_STYLE_FgGray,
+    info: exports.CONSOLE_STYLE_FgCyan,
+    warn: exports.CONSOLE_STYLE_FgYellow,
+    error: exports.CONSOLE_STYLE_FgRed,
+    debug: exports.CONSOLE_STYLE_FgGray,
 };
 exports.badgeConstants = {
     naColor: "#999",
@@ -136,7 +136,7 @@ function ucfirst(str) {
 }
 exports.ucfirst = ucfirst;
 function debug(msg) {
-    exports.log.log("", "DEBUG", msg);
+    exports.log.log("", "debug", msg);
 }
 exports.debug = debug;
 class Logger {
@@ -160,13 +160,14 @@ class Logger {
         }
     }
     log(module, level, ...msg) {
-        if (level === "DEBUG" && !exports.isDev) {
+        if (level === "debug" && !exports.isDev) {
             return;
         }
         if (this.hideLog[level] && this.hideLog[level].includes(module.toLowerCase())) {
             return;
         }
         module = module.toUpperCase();
+        const levelLabel = level.toUpperCase();
         let now;
         if (dayjs.tz) {
             now = dayjs.tz(new Date()).format();
@@ -205,7 +206,7 @@ class Logger {
         let levelPart;
         if (exports.isNode) {
             switch (level) {
-                case "DEBUG":
+                case "debug":
                     timePart = exports.CONSOLE_STYLE_FgGray + now + exports.CONSOLE_STYLE_Reset;
                     break;
                 default:
@@ -213,24 +214,24 @@ class Logger {
                     break;
             }
             modulePart = "[" + moduleColor + module + exports.CONSOLE_STYLE_Reset + "]";
-            levelPart = levelColor + `${level}:` + exports.CONSOLE_STYLE_Reset;
+            levelPart = levelColor + `${levelLabel}:` + exports.CONSOLE_STYLE_Reset;
         }
         else {
             timePart = now;
             modulePart = `[${module}]`;
-            levelPart = `${level}:`;
+            levelPart = `${levelLabel}:`;
         }
         switch (level) {
-            case "ERROR":
+            case "error":
                 console.error(timePart, modulePart, levelPart, ...msg);
                 break;
-            case "WARN":
+            case "warn":
                 console.warn(timePart, modulePart, levelPart, ...msg);
                 break;
-            case "INFO":
+            case "info":
                 console.info(timePart, modulePart, levelPart, ...msg);
                 break;
-            case "DEBUG":
+            case "debug":
                 if (exports.isDev) {
                     console.debug(timePart, modulePart, levelPart, ...msg);
                 }
@@ -241,19 +242,19 @@ class Logger {
         }
     }
     info(module, ...msg) {
-        this.log(module, "INFO", ...msg);
+        this.log(module, "info", ...msg);
     }
     warn(module, ...msg) {
-        this.log(module, "WARN", ...msg);
+        this.log(module, "warn", ...msg);
     }
     error(module, ...msg) {
-        this.log(module, "ERROR", ...msg);
+        this.log(module, "error", ...msg);
     }
     debug(module, ...msg) {
-        this.log(module, "DEBUG", ...msg);
+        this.log(module, "debug", ...msg);
     }
     exception(module, exception, ...msg) {
-        this.log(module, "ERROR", ...msg, exception);
+        this.log(module, "error", ...msg, exception);
     }
 }
 exports.log = new Logger();

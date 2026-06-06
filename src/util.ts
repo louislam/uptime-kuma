@@ -128,12 +128,14 @@ const consoleModuleColors = [
     CONSOLE_STYLE_FgPink,
 ];
 
-const consoleLevelColors: Record<string, string> = {
-    INFO: CONSOLE_STYLE_FgCyan,
-    WARN: CONSOLE_STYLE_FgYellow,
-    ERROR: CONSOLE_STYLE_FgRed,
-    DEBUG: CONSOLE_STYLE_FgGray,
-};
+type LogLevel = "info" | "warn" | "error" | "debug";
+
+const consoleLevelColors = {
+    info: CONSOLE_STYLE_FgCyan,
+    warn: CONSOLE_STYLE_FgYellow,
+    error: CONSOLE_STYLE_FgRed,
+    debug: CONSOLE_STYLE_FgGray,
+} as const;
 
 /**
  * Flip the status of s
@@ -206,7 +208,7 @@ export function ucfirst(str: string) {
  * @returns {void}
  */
 export function debug(msg: unknown) {
-    log.log("", "DEBUG", msg);
+    log.log("", "debug", msg);
 }
 
 class Logger {
@@ -250,12 +252,12 @@ class Logger {
     /**
      * Write a message to the log
      * @param module The module the log comes from
-     * @param level Log level. One of INFO, WARN, ERROR, DEBUG or can be customized.
+     * @param level Log level. One of info, warn, error, debug.
      * @param msg Message to write
      * @returns {void}
      */
-    log(module: string, level: "INFO" | "WARN" | "ERROR" | "DEBUG", ...msg: unknown[]) {
-        if (level === "DEBUG" && !isDev) {
+    log(module: string, level: LogLevel, ...msg: unknown[]) {
+        if (level === "debug" && !isDev) {
             return;
         }
 
@@ -264,6 +266,7 @@ class Logger {
         }
 
         module = module.toUpperCase();
+        const levelLabel = level.toUpperCase();
 
         let now;
         if (dayjs.tz) {
@@ -308,7 +311,7 @@ class Logger {
         if (isNode) {
             // Add console colors
             switch (level) {
-                case "DEBUG":
+                case "debug":
                     timePart = CONSOLE_STYLE_FgGray + now + CONSOLE_STYLE_Reset;
                     break;
                 default:
@@ -317,26 +320,26 @@ class Logger {
             }
 
             modulePart = "[" + moduleColor + module + CONSOLE_STYLE_Reset + "]";
-            levelPart = levelColor + `${level}:` + CONSOLE_STYLE_Reset;
+            levelPart = levelColor + `${levelLabel}:` + CONSOLE_STYLE_Reset;
         } else {
             // No console colors
             timePart = now;
             modulePart = `[${module}]`;
-            levelPart = `${level}:`;
+            levelPart = `${levelLabel}:`;
         }
 
         // Write to console
         switch (level) {
-            case "ERROR":
+            case "error":
                 console.error(timePart, modulePart, levelPart, ...msg);
                 break;
-            case "WARN":
+            case "warn":
                 console.warn(timePart, modulePart, levelPart, ...msg);
                 break;
-            case "INFO":
+            case "info":
                 console.info(timePart, modulePart, levelPart, ...msg);
                 break;
-            case "DEBUG":
+            case "debug":
                 if (isDev) {
                     console.debug(timePart, modulePart, levelPart, ...msg);
                 }
@@ -354,7 +357,7 @@ class Logger {
      * @returns {void}
      */
     info(module: string, ...msg: unknown[]) {
-        this.log(module, "INFO", ...msg);
+        this.log(module, "info", ...msg);
     }
 
     /**
@@ -364,7 +367,7 @@ class Logger {
      * @returns {void}
      */
     warn(module: string, ...msg: unknown[]) {
-        this.log(module, "WARN", ...msg);
+        this.log(module, "warn", ...msg);
     }
 
     /**
@@ -374,7 +377,7 @@ class Logger {
      * @returns {void}
      */
     error(module: string, ...msg: unknown[]) {
-        this.log(module, "ERROR", ...msg);
+        this.log(module, "error", ...msg);
     }
 
     /**
@@ -384,7 +387,7 @@ class Logger {
      * @returns {void}
      */
     debug(module: string, ...msg: unknown[]) {
-        this.log(module, "DEBUG", ...msg);
+        this.log(module, "debug", ...msg);
     }
 
     /**
@@ -395,7 +398,7 @@ class Logger {
      * @returns {void}
      */
     exception(module: string, exception: unknown, ...msg: unknown[]) {
-        this.log(module, "ERROR", ...msg, exception);
+        this.log(module, "error", ...msg, exception);
     }
 }
 

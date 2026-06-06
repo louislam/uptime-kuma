@@ -205,28 +205,43 @@
                                 />
                             </div>
 
-                            <!-- Websocket Subprotocol Docs: https://www.iana.org/assignments/websocket/websocket.xml#subprotocol-name -->
-                            <div v-if="monitor.type === 'websocket-upgrade'" class="my-3">
-                                <label for="ws_subprotocol" class="form-label">{{ $t("Subprotocol(s)") }}</label>
-                                <input
-                                    id="ws_subprotocol"
-                                    v-model="monitor.wsSubprotocol"
-                                    type="text"
-                                    class="form-control"
-                                    placeholder="mielecloudconnect,soap"
-                                />
-                                <i18n-t tag="div" class="form-text" keypath="wsSubprotocolDescription">
-                                    <template #documentation>
-                                        <a
-                                            href="https://www.iana.org/assignments/websocket/websocket.xml#subprotocol-name"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                        >
-                                            {{ $t("documentationOf", ["IANA"]) }}
-                                        </a>
-                                    </template>
-                                </i18n-t>
-                            </div>
+                            <template v-if="monitor.type === 'websocket-upgrade'">
+                                <h2 class="mt-5 mb-2">{{ $t("WebSocket Options") }}</h2>
+
+                                <!-- Websocket Subprotocol Docs: https://www.iana.org/assignments/websocket/websocket.xml#subprotocol-name -->
+                                <div class="my-3">
+                                    <label for="ws_subprotocol" class="form-label">{{ $t("Subprotocol(s)") }}</label>
+                                    <input
+                                        id="ws_subprotocol"
+                                        v-model="monitor.wsSubprotocol"
+                                        type="text"
+                                        class="form-control"
+                                        placeholder="mielecloudconnect,soap"
+                                    />
+                                    <i18n-t tag="div" class="form-text" keypath="wsSubprotocolDescription">
+                                        <template #documentation>
+                                            <a
+                                                href="https://www.iana.org/assignments/websocket/websocket.xml#subprotocol-name"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                {{ $t("documentationOf", ["IANA"]) }}
+                                            </a>
+                                        </template>
+                                    </i18n-t>
+                                </div>
+
+                                <!-- Custom Headers -->
+                                <div class="my-3">
+                                    <label for="ws-headers" class="form-label">{{ $t("Headers") }}</label>
+                                    <textarea
+                                        id="ws-headers"
+                                        v-model="monitor.headers"
+                                        class="form-control"
+                                        :placeholder="headersPlaceholder"
+                                    ></textarea>
+                                </div>
+                            </template>
 
                             <!-- gRPC URL -->
                             <div v-if="monitor.type === 'grpc-keyword'" class="my-3">
@@ -702,6 +717,21 @@
                                     max="65535"
                                     step="1"
                                 />
+                            </div>
+
+                            <!-- Gamedig Token -->
+                            <div v-if="monitor.type === 'gamedig'" class="my-3">
+                                <label for="gamedig-token" class="form-label">{{ $t("gamedigToken") }}</label>
+                                <input
+                                    id="gamedig-token"
+                                    v-model="monitor.gamedigToken"
+                                    type="password"
+                                    class="form-control"
+                                    :placeholder="$t('gamedigToken')"
+                                />
+                                <div class="form-text">
+                                    {{ $t("gamedigTokenDescription") }}
+                                </div>
                             </div>
 
                             <!-- SNMP Monitor Type -->
@@ -1539,12 +1569,19 @@
                                     monitor.type === 'ping' ||
                                     monitor.type === 'rabbitmq' ||
                                     monitor.type === 'snmp' ||
-                                    monitor.type === 'websocket-upgrade'
+                                    monitor.type === 'websocket-upgrade' ||
+                                    monitor.type === 'kafka-producer'
                                 "
                                 class="my-3"
                             >
                                 <label for="timeout" class="form-label">
-                                    {{ monitor.type === "ping" ? $t("pingGlobalTimeoutLabel") : $t("Request Timeout") }}
+                                    {{
+                                        monitor.type === "ping"
+                                            ? $t("pingGlobalTimeoutLabel")
+                                            : monitor.type === "kafka-producer"
+                                              ? $t("Connection Timeout")
+                                              : $t("Request Timeout")
+                                    }}
                                     <span v-if="monitor.type !== 'ping'">
                                         ({{ $t("timeoutAfter", [monitor.timeout || clampTimeout(monitor.interval)]) }})
                                     </span>
@@ -1821,6 +1858,12 @@
                                     :max="65500"
                                     step="1"
                                 />
+                                <div
+                                    v-if="$root.info.runtime.platform === 'linux' && monitor.packetSize < 16"
+                                    class="form-text text-warning"
+                                >
+                                    {{ $t("pingPacketSizeWarning") }}
+                                </div>
                             </div>
 
                             <!-- per-request timeout -->
@@ -2128,6 +2171,191 @@
                                 {{ $t("Setup Notification") }}
                             </button>
 
+                            <!-- WebSocket Authentication -->
+                            <template v-if="monitor.type === 'websocket-upgrade'">
+                                <h2 class="mt-5 mb-2">{{ $t("Authentication") }}</h2>
+
+                                <!-- Auth Method -->
+                                <div class="my-3">
+                                    <label for="ws-auth-method" class="form-label">{{ $t("Method") }}</label>
+                                    <select id="ws-auth-method" v-model="monitor.authMethod" class="form-select">
+                                        <option :value="null">
+                                            {{ $t("None") }}
+                                        </option>
+                                        <option value="basic">
+                                            {{ $t("HTTP Basic Auth") }}
+                                        </option>
+                                        <option value="bearer">
+                                            {{ $t("Bearer Token") }}
+                                        </option>
+                                        <option value="oauth2-cc">
+                                            {{ $t("OAuth2: Client Credentials") }}
+                                        </option>
+                                        <option value="mtls">mTLS</option>
+                                    </select>
+                                </div>
+
+                                <template v-if="monitor.authMethod === 'basic'">
+                                    <div class="my-3">
+                                        <label for="ws-basicauth-user" class="form-label">{{ $t("Username") }}</label>
+                                        <input
+                                            id="ws-basicauth-user"
+                                            v-model="monitor.basic_auth_user"
+                                            type="text"
+                                            class="form-control"
+                                            :placeholder="$t('Username')"
+                                        />
+                                    </div>
+                                    <div class="my-3">
+                                        <label for="ws-basicauth-pass" class="form-label">{{ $t("Password") }}</label>
+                                        <HiddenInput
+                                            id="ws-basicauth-pass"
+                                            v-model="monitor.basic_auth_pass"
+                                            autocomplete="new-password"
+                                            :placeholder="$t('Password')"
+                                        />
+                                    </div>
+                                </template>
+
+                                <template v-else-if="monitor.authMethod === 'bearer'">
+                                    <div class="my-3">
+                                        <label for="ws-bearer-token" class="form-label">{{ $t("Token") }}</label>
+                                        <HiddenInput
+                                            id="ws-bearer-token"
+                                            v-model="monitor.bearer_token"
+                                            autocomplete="new-password"
+                                            :placeholder="$t('Token')"
+                                        />
+                                    </div>
+                                </template>
+
+                                <template v-else-if="monitor.authMethod === 'oauth2-cc'">
+                                    <div class="my-3">
+                                        <label for="ws-oauth-auth-method" class="form-label">
+                                            {{ $t("Authentication Method") }}
+                                        </label>
+                                        <select
+                                            id="ws-oauth-auth-method"
+                                            v-model="monitor.oauth_auth_method"
+                                            class="form-select"
+                                        >
+                                            <option value="client_secret_basic">
+                                                {{ $t("Authorization Header") }}
+                                            </option>
+                                            <option value="client_secret_post">
+                                                {{ $t("Form Data Body") }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="my-3">
+                                        <label for="ws-oauth-token-url" class="form-label">
+                                            {{ $t("OAuth Token URL") }}
+                                        </label>
+                                        <input
+                                            id="ws-oauth-token-url"
+                                            v-model="monitor.oauth_token_url"
+                                            type="text"
+                                            class="form-control"
+                                            :placeholder="$t('OAuth Token URL')"
+                                            required
+                                        />
+                                    </div>
+                                    <div class="my-3">
+                                        <label for="ws-oauth-client-id" class="form-label">
+                                            {{ $t("Client ID") }}
+                                        </label>
+                                        <input
+                                            id="ws-oauth-client-id"
+                                            v-model="monitor.oauth_client_id"
+                                            type="text"
+                                            class="form-control"
+                                            :placeholder="$t('Client ID')"
+                                            required
+                                        />
+                                    </div>
+                                    <template
+                                        v-if="
+                                            monitor.oauth_auth_method === 'client_secret_post' ||
+                                            monitor.oauth_auth_method === 'client_secret_basic'
+                                        "
+                                    >
+                                        <div class="my-3">
+                                            <label for="ws-oauth-client-secret" class="form-label">
+                                                {{ $t("Client Secret") }}
+                                            </label>
+                                            <HiddenInput
+                                                id="ws-oauth-client-secret"
+                                                v-model="monitor.oauth_client_secret"
+                                                :placeholder="$t('Client Secret')"
+                                                :required="true"
+                                            />
+                                        </div>
+                                        <div class="my-3">
+                                            <label for="ws-oauth-scopes" class="form-label">
+                                                {{ $t("OAuth Scope") }}
+                                            </label>
+                                            <input
+                                                id="ws-oauth-scopes"
+                                                v-model="monitor.oauth_scopes"
+                                                type="text"
+                                                class="form-control"
+                                                :placeholder="$t('Optional: Space separated list of scopes')"
+                                            />
+                                        </div>
+                                        <div class="my-3">
+                                            <label for="ws-oauth-audience" class="form-label">
+                                                {{ $t("OAuth Audience") }}
+                                            </label>
+                                            <input
+                                                id="ws-oauth-audience"
+                                                v-model="monitor.oauth_audience"
+                                                type="text"
+                                                class="form-control"
+                                                :placeholder="$t('Optional: The audience to request the JWT for')"
+                                            />
+                                        </div>
+                                    </template>
+                                </template>
+
+                                <template v-else-if="monitor.authMethod === 'mtls'">
+                                    <div class="my-3">
+                                        <label for="ws-tls-cert" class="form-label">
+                                            {{ $t("mtls-auth-server-cert-label") }}
+                                        </label>
+                                        <textarea
+                                            id="ws-tls-cert"
+                                            v-model="monitor.tlsCert"
+                                            class="form-control"
+                                            :placeholder="$t('mtls-auth-server-cert-placeholder')"
+                                            required
+                                        ></textarea>
+                                    </div>
+                                    <div class="my-3">
+                                        <label for="ws-tls-key" class="form-label">
+                                            {{ $t("mtls-auth-server-key-label") }}
+                                        </label>
+                                        <textarea
+                                            id="ws-tls-key"
+                                            v-model="monitor.tlsKey"
+                                            class="form-control"
+                                            :placeholder="$t('mtls-auth-server-key-placeholder')"
+                                            required
+                                        ></textarea>
+                                    </div>
+                                    <div class="my-3">
+                                        <label for="ws-tls-ca" class="form-label">
+                                            {{ $t("mtls-auth-server-ca-label") }}
+                                        </label>
+                                        <textarea
+                                            id="ws-tls-ca"
+                                            v-model="monitor.tlsCa"
+                                            class="form-control"
+                                            :placeholder="$t('mtls-auth-server-ca-placeholder')"
+                                        ></textarea>
+                                    </div>
+                                </template>
+                            </template>
+
                             <!-- Proxies -->
                             <div
                                 v-if="
@@ -2346,6 +2574,9 @@
                                         <option value="basic">
                                             {{ $t("HTTP Basic Auth") }}
                                         </option>
+                                        <option value="bearer">
+                                            {{ $t("Bearer Token") }}
+                                        </option>
                                         <option value="oauth2-cc">
                                             {{ $t("OAuth2: Client Credentials") }}
                                         </option>
@@ -2389,6 +2620,17 @@
                                                 class="form-control"
                                                 :placeholder="$t('mtls-auth-server-ca-placeholder')"
                                             ></textarea>
+                                        </div>
+                                    </template>
+                                    <template v-else-if="monitor.authMethod === 'bearer'">
+                                        <div class="my-3">
+                                            <label for="bearer-token" class="form-label">{{ $t("Token") }}</label>
+                                            <HiddenInput
+                                                id="bearer-token"
+                                                v-model="monitor.bearer_token"
+                                                autocomplete="new-password"
+                                                :placeholder="$t('Token')"
+                                            />
                                         </div>
                                     </template>
                                     <template v-else-if="monitor.authMethod === 'oauth2-cc'">
@@ -2566,6 +2808,9 @@
                                         <option value="basic">
                                             {{ $t("HTTP Basic Auth") }}
                                         </option>
+                                        <option value="bearer">
+                                            {{ $t("Bearer Token") }}
+                                        </option>
                                         <option value="oauth2-cc">
                                             {{ $t("OAuth2: Client Credentials") }}
                                         </option>
@@ -2593,6 +2838,19 @@
                                             autocomplete="new-password"
                                             class="form-control"
                                             :placeholder="$t('Password')"
+                                        />
+                                    </div>
+                                </template>
+                                <template v-else-if="monitor.authMethod === 'bearer'">
+                                    <div class="my-3">
+                                        <label for="bearer-token-globalping" class="form-label">
+                                            {{ $t("Token") }}
+                                        </label>
+                                        <HiddenInput
+                                            id="bearer-token-globalping"
+                                            v-model="monitor.bearer_token"
+                                            autocomplete="new-password"
+                                            :placeholder="$t('Token')"
                                         />
                                     </div>
                                 </template>
@@ -2982,6 +3240,7 @@ const monitorDefaults = {
     proxyId: null,
     basic_auth_user: "",
     basic_auth_pass: "",
+    bearer_token: "",
     mqttUsername: "",
     mqttPassword: "",
     mqttTopic: "",
@@ -2999,6 +3258,7 @@ const monitorDefaults = {
     kafkaProducerSsl: false,
     kafkaProducerAllowAutoTopicCreation: false,
     gamedigGivenPortOnly: true,
+    gamedigToken: "",
     remote_browser: null,
     screenshot_delay: 0,
     rabbitmqNodes: [],
@@ -3483,6 +3743,8 @@ message HealthCheckResponse {
                     this.monitor.timeout = 5;
                 } else if (this.monitor.type === "ping") {
                     this.monitor.timeout = 10;
+                } else if (this.monitor.type === "kafka-producer") {
+                    this.monitor.timeout = 1;
                 } else {
                     this.monitor.timeout = 48;
                 }
@@ -3554,7 +3816,7 @@ message HealthCheckResponse {
                 }
             }
 
-            if (newSubtype !== oldSubtype) {
+            if (oldSubtype && newSubtype !== oldSubtype) {
                 if (newSubtype === "ping") {
                     this.monitor.protocol = "ICMP";
                     this.monitor.port = "80";

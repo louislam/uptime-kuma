@@ -13,6 +13,7 @@ import DingDing from "./DingDing.vue";
 import Discord from "./Discord.vue";
 import Fluxer from "./Fluxer.vue";
 import Elks from "./46elks.vue";
+import EgoSMS from "./EgoSMS.vue";
 import Feishu from "./Feishu.vue";
 import FreeMobile from "./FreeMobile.vue";
 import GoogleChat from "./GoogleChat.vue";
@@ -63,6 +64,7 @@ import Teams from "./Teams.vue";
 import TechulusPush from "./TechulusPush.vue";
 import Telegram from "./Telegram.vue";
 import Teltonika from "./Teltonika.vue";
+import Telnyx from "./Telnyx.vue";
 import Threema from "./Threema.vue";
 import Twilio from "./Twilio.vue";
 import Webhook from "./Webhook.vue";
@@ -88,6 +90,8 @@ import Webpush from "./Webpush.vue";
 import HaloPSA from "./HaloPSA.vue";
 import Resend from "./Resend.vue";
 import Max from "./Max.vue";
+import VK from "./VK.vue";
+import VKTeams from "./VKTeams.vue";
 
 /**
  * Manage all notification form.
@@ -109,6 +113,7 @@ const NotificationFormList = {
     discord: Discord,
     fluxer: Fluxer,
     Elks: Elks,
+    egosms: EgoSMS,
     Feishu: Feishu,
     FreeMobile: FreeMobile,
     GoogleChat: GoogleChat,
@@ -158,6 +163,7 @@ const NotificationFormList = {
     teams: Teams,
     telegram: Telegram,
     Teltonika: Teltonika,
+    telnyx: Telnyx,
     threema: Threema,
     twilio: Twilio,
     Splunk: Splunk,
@@ -184,6 +190,8 @@ const NotificationFormList = {
     Webpush: Webpush,
     HaloPSA: HaloPSA,
     max: Max,
+    VK: VK,
+    VKTeams: VKTeams,
 };
 
 export default NotificationFormList;
