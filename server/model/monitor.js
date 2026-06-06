@@ -939,6 +939,7 @@ class Monitor extends BeanModel {
                             ssl: this.kafkaProducerSsl,
                             clientId: `Uptime-Kuma/${version}`,
                             interval: this.interval,
+                            connectionTimeout: this.timeout,
                         },
                         JSON.parse(this.kafkaProducerSaslOptions)
                     );
