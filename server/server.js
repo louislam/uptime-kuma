@@ -1102,6 +1102,32 @@ let needSetup = false;
             }
         });
 
+        socket.on("checkMonitorNow", async (monitorID, callback) => {
+            try {
+                checkLogin(socket);
+                await checkOwner(socket.userID, monitorID);
+
+                log.info("manage", `Check Monitor Now: ${monitorID} User ID: ${socket.userID}`);
+
+                if (!(monitorID in server.monitorList)) {
+                    throw new Error("Resume the monitor before checking it.");
+                }
+
+                await restartMonitor(socket.userID, monitorID);
+
+                callback({
+                    ok: true,
+                    msg: "checkScheduled",
+                    msgi18n: true,
+                });
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
         socket.on("deleteMonitor", async (monitorID, deleteChildren, callback) => {
             try {
                 // Backward compatibility: if deleteChildren is omitted, the second parameter is the callback

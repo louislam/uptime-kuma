@@ -110,6 +110,15 @@
 
             <div class="functions">
                 <div class="btn-group" role="group">
+                    <button
+                        v-if="monitor.active"
+                        class="btn btn-normal"
+                        :disabled="monitor.forceInactive"
+                        @click="checkMonitorNow"
+                    >
+                        <font-awesome-icon icon="heartbeat" />
+                        {{ $t("Check Now") }}
+                    </button>
                     <button v-if="monitor.active" class="btn btn-normal" @click="pauseDialog">
                         <font-awesome-icon icon="pause" />
                         {{ $t("Pause") }}
@@ -667,6 +676,16 @@ export default {
          */
         pauseMonitor() {
             this.$root.getSocket().emit("pauseMonitor", this.monitor.id, (res) => {
+                this.$root.toastRes(res);
+            });
+        },
+
+        /**
+         * Trigger an immediate check of this monitor, bypassing the interval
+         * @returns {void}
+         */
+        checkMonitorNow() {
+            this.$root.getSocket().emit("checkMonitorNow", this.monitor.id, (res) => {
                 this.$root.toastRes(res);
             });
         },
