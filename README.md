@@ -112,6 +112,53 @@ If you need more options or need to browse via a reverse proxy, please read:
 
 <https://github.com/louislam/uptime-kuma/wiki/%F0%9F%94%A7-How-to-Install>
 
+## 🔌 REST API
+
+Uptime Kuma exposes a REST API for managing monitors programmatically — useful for IaC workflows (Ansible, Terraform, etc.) without filling forms in the UI.
+
+**Authentication:** Generate an API key in Settings → API Keys. Pass it as the password in HTTP Basic auth (username can be empty):
+
+```
+Authorization: Basic <base64(:YOUR_API_KEY)>
+```
+
+### Create a monitor with a notification
+
+**Step 1 — find your notification ID by name:**
+
+```bash
+curl -s -u ":YOUR_API_KEY" https://your-uptime-kuma/api/notifications \
+  | jq '.notifications[] | select(.name=="My Slack Channel")'
+```
+
+**Step 2 — create the monitor:**
+
+```bash
+curl -s -u ":YOUR_API_KEY" \
+  -X POST https://your-uptime-kuma/api/monitors \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "My Service",
+    "type": "http",
+    "url": "https://my-service.example.com/health",
+    "interval": 60,
+    "maxretries": 3,
+    "notificationNames": ["My Slack Channel"]
+  }'
+```
+
+The `notificationNames` field resolves notification channels by name. You can also pass `notificationIDs` as an array of numeric IDs.
+
+### Other endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/monitors` | List all monitors |
+| `GET` | `/api/monitors/:id` | Get a single monitor |
+| `PUT` | `/api/monitors/:id` | Update a monitor |
+| `DELETE` | `/api/monitors/:id` | Delete a monitor (`?deleteChildren=true` for groups) |
+| `GET` | `/api/notifications` | List notification channels |
+
 ## 🆙 How to Update
 
 Please read:

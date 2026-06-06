@@ -539,6 +539,92 @@ class UptimeKumaServer {
     }
 
     /**
+     * Check that a user owns a given monitor
+     * @param {number} userID ID of user
+     * @param {number} monitorID ID of monitor
+     * @returns {Promise<void>}
+     * @throws {Error} If the user does not own the monitor
+     */
+    async checkOwner(userID, monitorID) {
+        let row = await R.getRow("SELECT id FROM monitor WHERE id = ? AND user_id = ? ", [monitorID, userID]);
+
+        if (!row) {
+            throw new Error("You do not own this monitor.");
+        }
+    }
+
+    /**
+     * Update notification links for a monitor
+     * @param {number} monitorID ID of monitor
+     * @param {object} notificationIDList Map of notification IDs to boolean (true = linked)
+     * @returns {Promise<void>}
+     */
+    async updateMonitorNotification(monitorID, notificationIDList) {
+        await R.exec("DELETE FROM monitor_notification WHERE monitor_id = ? ", [monitorID]);
+
+        for (let notificationID in notificationIDList) {
+            if (notificationIDList[notificationID]) {
+                let relation = R.dispense("monitor_notification");
+                relation.monitor_id = monitorID;
+                relation.notification_id = notificationID;
+                await R.store(relation);
+            }
+        }
+    }
+
+    /**
+     * Start (activate) a monitor
+     * @param {number} userID ID of user who owns the monitor
+     * @param {number} monitorID ID of monitor to start
+     * @returns {Promise<void>}
+     */
+    async startMonitor(userID, monitorID) {
+        await this.checkOwner(userID, monitorID);
+
+        log.info("manage", `Resume Monitor: ${monitorID} User ID: ${userID}`);
+
+        await R.exec("UPDATE monitor SET active = 1 WHERE id = ? AND user_id = ? ", [monitorID, userID]);
+
+        let monitor = await R.findOne("monitor", " id = ? ", [monitorID]);
+
+        if (monitor.id in this.monitorList) {
+            await this.monitorList[monitor.id].stop();
+        }
+
+        this.monitorList[monitor.id] = monitor;
+        await monitor.start(this.io);
+    }
+
+    /**
+     * Restart a monitor (stop and start)
+     * @param {number} userID ID of user who owns the monitor
+     * @param {number} monitorID ID of monitor to restart
+     * @returns {Promise<void>}
+     */
+    async restartMonitor(userID, monitorID) {
+        return await this.startMonitor(userID, monitorID);
+    }
+
+    /**
+     * Pause (deactivate) a monitor
+     * @param {number} userID ID of user who owns the monitor
+     * @param {number} monitorID ID of monitor to pause
+     * @returns {Promise<void>}
+     */
+    async pauseMonitor(userID, monitorID) {
+        await this.checkOwner(userID, monitorID);
+
+        log.info("manage", `Pause Monitor: ${monitorID} User ID: ${userID}`);
+
+        await R.exec("UPDATE monitor SET active = 0 WHERE id = ? AND user_id = ? ", [monitorID, userID]);
+
+        if (monitorID in this.monitorList) {
+            await this.monitorList[monitorID].stop();
+            this.monitorList[monitorID].active = 0;
+        }
+    }
+
+    /**
      * Force connected sockets of a user to refresh and disconnect.
      * Used for resetting password.
      * @param {string} userID User ID

@@ -63,6 +63,36 @@ async function verifyAPIKey(key) {
 }
 
 /**
+ * Resolve an API key string to the owning user ID
+ * @param {string} key Raw API key (format: uk{id}_{clear})
+ * @returns {Promise<{userId: number}|null>} User ID or null if key is invalid/expired
+ */
+exports.resolveAPIKeyUser = async function (key) {
+    if (typeof key !== "string") {
+        return null;
+    }
+
+    let index = key.substring(2, key.indexOf("_"));
+    let clear = key.substring(key.indexOf("_") + 1);
+
+    let hash = await R.findOne("api_key", " id=? ", [index]);
+
+    if (!hash || !hash.active) {
+        return null;
+    }
+
+    if (dayjs(hash.expires).diff(dayjs()) < 0) {
+        return null;
+    }
+
+    if (!passwordHash.verify(clear, hash.key)) {
+        return null;
+    }
+
+    return { userId: hash.user_id };
+};
+
+/**
  * Callback for basic auth authorizers
  * @callback authCallback
  * @param {any} err Any error encountered
