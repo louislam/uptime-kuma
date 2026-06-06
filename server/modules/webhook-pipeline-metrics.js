@@ -10,11 +10,7 @@ const axios = require("axios");
 const WEBHOOK_PORT = parseInt(process.env.WEBHOOK_PIPELINE_PORT || "3005", 10) || 3005;
 
 function getWebhookConfigJsPath() {
-    const path = (
-        process.env.WEBHOOK_CONFIG_JS_PATH ||
-        process.env.UPTIME_KUMA_WEBHOOK_CONFIG_JS_PATH ||
-        ""
-    ).trim();
+    const path = (process.env.WEBHOOK_CONFIG_JS_PATH || process.env.UPTIME_KUMA_WEBHOOK_CONFIG_JS_PATH || "").trim();
     return path.length > 0 ? path : null;
 }
 
