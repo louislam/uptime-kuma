@@ -1,7 +1,11 @@
 <template>
     <div class="container-fluid dashboard-container">
         <div ref="dashboardShell" class="dashboard-shell">
-            <aside v-if="!$root.isMobile" class="dashboard-sidebar" :style="sidebarStyle">
+            <aside
+                v-if="!$root.isMobile && !isSettingsPage"
+                class="dashboard-sidebar"
+                :style="sidebarStyle"
+            >
                 <div v-if="canWriteMonitors">
                     <router-link to="/add" class="btn btn-primary add-monitor-btn mb-2">
                         <font-awesome-icon icon="plus" />
@@ -12,7 +16,7 @@
             </aside>
 
             <div
-                v-if="!$root.isMobile"
+                v-if="!$root.isMobile && !isSettingsPage"
                 class="dashboard-sidebar-resizer"
                 :class="{ resizing: isSidebarResizing }"
                 role="separator"
@@ -88,6 +92,9 @@ export default {
         },
         canWriteMonitors() {
             return this.$root.hasPermission("monitors.write");
+        },
+        isSettingsPage() {
+            return this.$route.path.startsWith("/settings");
         },
     },
     mounted() {
