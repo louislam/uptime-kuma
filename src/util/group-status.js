@@ -345,7 +345,7 @@ function isActive(monitor) {
     return monitor?.active !== false && monitor?.active !== 0;
 }
 
-module.exports = {
+const groupStatus = {
     UNKNOWN,
     buildGroupHeartbeatList,
     calculateGroupAveragePing,
@@ -355,3 +355,16 @@ module.exports = {
     getGroupChildMonitors,
     statusToBadge,
 };
+
+export {
+    UNKNOWN,
+    buildGroupHeartbeatList,
+    calculateGroupAveragePing,
+    calculateGroupStatusBadge,
+    calculateGroupStatus,
+    calculateGroupUptime,
+    getGroupChildMonitors,
+    statusToBadge,
+};
+
+export default groupStatus;

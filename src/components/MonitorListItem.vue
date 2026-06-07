@@ -104,10 +104,8 @@
 import HeartbeatBar from "../components/HeartbeatBar.vue";
 import Tag from "../components/Tag.vue";
 import Uptime from "../components/Uptime.vue";
-import monitorNotifications from "../util/monitor-notifications";
+import { getActiveMonitorNotificationNames, hasActiveMonitorNotification } from "../util/monitor-notifications";
 import { getMonitorRelativeURL } from "../util.ts";
-
-const { getActiveMonitorNotificationNames, hasActiveMonitorNotification } = monitorNotifications;
 
 export default {
     name: "MonitorListItem",

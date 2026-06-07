@@ -81,10 +81,20 @@ function getActiveMonitorNotificationNames(monitor, notificationList = []) {
         .filter(Boolean);
 }
 
-module.exports = {
+const monitorNotifications = {
     getActiveMonitorNotificationNames,
     getActiveMonitorNotifications,
     hasActiveMonitorNotification,
     isNotificationAssignmentEnabled,
     isNotificationActive,
 };
+
+export {
+    getActiveMonitorNotificationNames,
+    getActiveMonitorNotifications,
+    hasActiveMonitorNotification,
+    isNotificationAssignmentEnabled,
+    isNotificationActive,
+};
+
+export default monitorNotifications;

@@ -4214,6 +4214,62 @@ describe("Cloudflare Worker API", () => {
         );
     });
 
+    test("chart endpoint accepts 30-minute and 1-month dashboard periods", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const recentBucketStart = new Date().toISOString().slice(0, 16).replace("T", " ") + ":00";
+        const env = createEnv({
+            monitors: [
+                { id: 7, name: "Primary WAN", type: "ping", active: 1 },
+            ],
+            monitorMetricBuckets: [
+                {
+                    monitor_id: 7,
+                    resolution_seconds: 60,
+                    bucket_start: recentBucketStart,
+                    up_count: 1,
+                    down_count: 0,
+                    pending_count: 0,
+                    maintenance_count: 0,
+                    total_count: 1,
+                    ping_sum: 12,
+                    min_ping: 12,
+                    max_ping: 12,
+                },
+            ],
+        });
+
+        const thirtyMinuteResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/7/chart?period=0.5"),
+            env
+        );
+        const thirtyMinuteBody = await thirtyMinuteResponse.json();
+        const thirtyMinuteBucketStatement = env.state.boundStatements.find((statement) =>
+            statement.sql.includes("FROM monitor_metric_bucket") &&
+            Number(statement.values[1]) === 60
+        );
+
+        assert.strictEqual(thirtyMinuteResponse.status, 200);
+        assert.strictEqual(thirtyMinuteBody.data.length, 1);
+        assert.ok(thirtyMinuteBucketStatement, "30-minute chart should query 60-second metric buckets");
+        assert.ok(
+            Date.now() - Date.parse(`${thirtyMinuteBucketStatement.values[2]}Z`) < 45 * 60 * 1000,
+            "30-minute chart should not normalize to the 24-hour default"
+        );
+
+        const oneMonthResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/7/chart?period=720"),
+            env
+        );
+        await oneMonthResponse.json();
+        const oneMonthBucketStatement = env.state.boundStatements.find((statement) =>
+            statement.sql.includes("FROM monitor_metric_bucket") &&
+            Number(statement.values[1]) === 3600
+        );
+
+        assert.strictEqual(oneMonthResponse.status, 200);
+        assert.ok(oneMonthBucketStatement, "1-month chart should query hourly metric buckets");
+    });
+
     test("empty chart pages do not backfill raw history once summaries exist", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({

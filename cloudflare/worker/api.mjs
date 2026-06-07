@@ -69,7 +69,8 @@ const MAX_RECENT_HEARTBEAT_HISTORY_LIMIT = 500;
 const DASHBOARD_HEARTBEAT_BAR_LIMIT = 150;
 const DASHBOARD_BACKFILL_MONITOR_LIMIT = 25;
 const DASHBOARD_BACKFILL_HEARTBEAT_LIMIT = 10000;
-const DASHBOARD_CHART_PERIODS = new Set([3, 6, 24, 168]);
+const DEFAULT_DASHBOARD_CHART_PERIOD_HOURS = 1;
+const DASHBOARD_CHART_PERIODS = new Set([0.5, 1, 3, 6, 24, 168, 720]);
 const DASHBOARD_METRIC_RESOLUTIONS = [60, 3600, 86400];
 const HOT_PATH_DASHBOARD_METRIC_RESOLUTIONS = [60];
 const DASHBOARD_ROLLUP_RESOLUTIONS = [3600, 86400];
@@ -791,7 +792,7 @@ export async function handleApiRequest(request, env) {
         }
 
         if (route.name === "monitor-chart") {
-            const period = Number(url.searchParams.get("period") || 24);
+            const period = Number(url.searchParams.get("period") || DEFAULT_DASHBOARD_CHART_PERIOD_HOURS);
             return json({
                 ok: true,
                 data: await getMonitorChartData(env, Number(route.params.monitorId), period),
@@ -2870,7 +2871,7 @@ async function eventLogNeedsBackfill(env, monitorId) {
  * @param {number} periodHours Requested chart period.
  * @returns {Promise<object[]>} Chart datapoints.
  */
-export async function getMonitorChartData(env, monitorId, periodHours = 24) {
+export async function getMonitorChartData(env, monitorId, periodHours = DEFAULT_DASHBOARD_CHART_PERIOD_HOURS) {
     const period = normalizeDashboardChartPeriod(periodHours);
     const resolution = period <= 24 ? 60 : 3600;
     const since = formatSqliteDateTime(new Date(Date.now() - period * 60 * 60 * 1000));
@@ -2911,7 +2912,7 @@ function normalizeDashboardChartPeriod(periodHours) {
     if (DASHBOARD_CHART_PERIODS.has(period)) {
         return period;
     }
-    return 24;
+    return DEFAULT_DASHBOARD_CHART_PERIOD_HOURS;
 }
 
 async function listMonitorMetricBuckets(env, monitorId, resolutionSeconds, since) {

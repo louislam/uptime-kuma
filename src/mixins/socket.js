@@ -40,6 +40,8 @@ const CLOUDFLARE_DASHBOARD_AUTO_REFRESH_MS = 30 * 1000;
 const CLOUDFLARE_RECENT_HEARTBEAT_LIMIT = 150;
 const CLOUDFLARE_DASHBOARD_CACHE_KEY = "uptimeworker.cloudflare.dashboard.cache.v1";
 const CLOUDFLARE_DASHBOARD_CACHE_MAX_AGE_MS = 15 * 60 * 1000;
+const DEFAULT_CLOUDFLARE_CHART_PERIOD_HOURS = 1;
+const CLOUDFLARE_CHART_PERIOD_HOURS = [0.5, 1, 3, 6, 24, 168, 720];
 
 const noSocketIOPages = [
     /^\/status-page$/, //  /status-page
@@ -2339,8 +2341,10 @@ function calculateUptime(heartbeats) {
  * @returns {Promise<object[]>} Chart datapoints.
  */
 async function getCloudflareChartData(app, monitorID, periodHours) {
-    const period = Number(periodHours || 24);
-    const validPeriodHours = [3, 6, 24, 168].includes(period) ? period : 24;
+    const period = Number(periodHours || DEFAULT_CLOUDFLARE_CHART_PERIOD_HOURS);
+    const validPeriodHours = CLOUDFLARE_CHART_PERIOD_HOURS.includes(period)
+        ? period
+        : DEFAULT_CLOUDFLARE_CHART_PERIOD_HOURS;
     const cached = getCachedCloudflareChartData(app.cloudflareDashboardSecondaryCache, monitorID, validPeriodHours);
     if (cached) {
         void refreshCloudflareChartData(app, monitorID, validPeriodHours);

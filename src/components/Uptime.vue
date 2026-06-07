@@ -4,9 +4,7 @@
 
 <script>
 import { DOWN, MAINTENANCE, PENDING, UP } from "../util.ts";
-import groupStatus from "../util/group-status";
-
-const { calculateGroupStatus, calculateGroupUptime, getGroupChildMonitors } = groupStatus;
+import { calculateGroupStatus, calculateGroupUptime, getGroupChildMonitors } from "../util/group-status";
 
 export default {
     props: {

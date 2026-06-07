@@ -7,17 +7,17 @@
                 data-bs-toggle="dropdown"
                 aria-expanded="false"
             >
-                {{ chartPeriodOptions[chartPeriodHrs] }}&nbsp;
+                {{ currentChartPeriodLabel }}&nbsp;
             </button>
             <ul class="dropdown-menu dropdown-menu-end">
-                <li v-for="(item, key) in chartPeriodOptions" :key="key">
+                <li v-for="option in chartPeriodOptions" :key="option.value">
                     <button
                         type="button"
                         class="dropdown-item"
-                        :class="{ active: chartPeriodHrs == key }"
-                        @click="chartPeriodHrs = key"
+                        :class="{ active: chartPeriodHrs === option.value }"
+                        @click="chartPeriodHrs = option.value"
                     >
-                        {{ item }}
+                        {{ option.label }}
                     </button>
                 </li>
             </ul>
@@ -45,9 +45,7 @@ import {
 import "chartjs-adapter-dayjs-4";
 import { Line } from "vue-chartjs";
 import { UP, DOWN, PENDING, MAINTENANCE } from "../util.ts";
-import groupStatus from "../util/group-status";
-
-const { buildGroupHeartbeatList, getGroupChildMonitors } = groupStatus;
+import { buildGroupHeartbeatList, getGroupChildMonitors } from "../util/group-status";
 
 const PING_CHART_LINE_STYLES = {
     min: {
@@ -70,6 +68,16 @@ const PING_CHART_LINE_STYLES = {
     },
 };
 const CHART_BACKGROUND_REFRESH_MS = 60 * 1000;
+const DEFAULT_CHART_PERIOD_HRS = "1";
+const CHART_PERIOD_OPTIONS = [
+    { value: "0.5", label: "30m" },
+    { value: "1", label: "1h" },
+    { value: "3", label: "3h" },
+    { value: "6", label: "6h" },
+    { value: "24", label: "24h" },
+    { value: "168", label: "1w" },
+    { value: "720", label: "1mo" },
+];
 
 Chart.register(
     LineController,
@@ -98,17 +106,9 @@ export default {
             loading: false,
 
             // Time period for the chart to display, in hours
-            // Initial value is 0 as a workaround for triggering a data fetch on created()
-            chartPeriodHrs: "0",
+            chartPeriodHrs: DEFAULT_CHART_PERIOD_HRS,
 
-            chartPeriodOptions: {
-                0: this.$t("recent"),
-                3: "3h",
-                6: "6h",
-                24: "24h",
-                168: "1w",
-            },
-            recentChartPeriodHrs: 3,
+            chartPeriodOptions: CHART_PERIOD_OPTIONS,
 
             chartRawData: null,
             chartDataFetchInterval: null,
@@ -247,12 +247,11 @@ export default {
                 },
             };
         },
+        currentChartPeriodLabel() {
+            return this.chartPeriodOptions.find((option) => option.value === this.chartPeriodHrs)?.label || "1h";
+        },
         chartData() {
-            if (!this.isCloudflareWorkerRecentChart && this.chartPeriodHrs === "0") {
-                return this.getChartDatapointsFromHeartbeatList();
-            } else {
-                return this.getChartDatapointsFromStats();
-            }
+            return this.getChartDatapointsFromStats();
         },
         chartXAxisRange() {
             const period = Number(this.selectedChartPeriodHrs);
@@ -268,11 +267,8 @@ export default {
                 max: max.format("YYYY-MM-DD HH:mm:ss"),
             };
         },
-        isCloudflareWorkerRecentChart() {
-            return this.$root.isCloudflareWorkerUI && this.chartPeriodHrs === "0";
-        },
         selectedChartPeriodHrs() {
-            return this.isCloudflareWorkerRecentChart ? this.recentChartPeriodHrs : this.chartPeriodHrs;
+            return this.chartPeriodHrs;
         },
         currentMonitor() {
             return this.$root.monitorList[this.monitorId];
@@ -303,10 +299,15 @@ export default {
             if (typeof period !== "string") {
                 period = period.toString();
             }
-            this.chartPeriodHrs = period;
-            shouldRefreshInitialPeriod = period === "0";
+            if (this.chartPeriodOptions.some((option) => option.value === period)) {
+                this.chartPeriodHrs = period;
+                shouldRefreshInitialPeriod = period === DEFAULT_CHART_PERIOD_HRS;
+            } else {
+                this.chartPeriodHrs = DEFAULT_CHART_PERIOD_HRS;
+                shouldRefreshInitialPeriod = true;
+            }
         } else {
-            this.chartPeriodHrs = "0";
+            this.chartPeriodHrs = DEFAULT_CHART_PERIOD_HRS;
             shouldRefreshInitialPeriod = true;
         }
 
@@ -342,20 +343,13 @@ export default {
                 this.chartDataFetchInterval = null;
             }
 
-            if (this.isCloudflareWorkerRecentChart || this.chartPeriodHrs !== "0") {
-                this.fetchChartData(newPeriod);
-                return;
-            }
-
-            this.heartbeatList = null;
-            this.chartRawData = null;
-            this.$root.storage()["chart-period"] = newPeriod;
+            this.fetchChartData(newPeriod);
         },
         fetchChartData(newPeriod) {
             this.loading = true;
 
-            const parsedPeriod = parseInt(this.selectedChartPeriodHrs);
-            const period = Number.isFinite(parsedPeriod) && parsedPeriod > 0 ? parsedPeriod : 24;
+            const parsedPeriod = Number(this.selectedChartPeriodHrs);
+            const period = Number.isFinite(parsedPeriod) && parsedPeriod > 0 ? parsedPeriod : Number(DEFAULT_CHART_PERIOD_HRS);
 
             this.$root.getMonitorChartData(this.monitorId, period, (res) => {
                 if (!res.ok) {
@@ -529,7 +523,7 @@ export default {
             let downData = []; // Down Data for Bar Chart, y-axis is number of down datapoints in this period
             let colorData = []; // Color Data for Bar Chart
 
-            const period = parseInt(this.chartPeriodHrs);
+            const period = Number(this.selectedChartPeriodHrs);
             let aggregatePoints = period > 6 ? 12 : 4;
 
             let aggregateBuffer = [];

@@ -61,6 +61,18 @@ describe("PingChart pushDatapoint filtering", () => {
 });
 
 describe("PingChart period scaling", () => {
+    test("chart period menu uses explicit periods with 1 hour as the default", () => {
+        const source = fs.readFileSync(repoFile("src/components/PingChart.vue"), "utf8");
+
+        assert.match(source, /DEFAULT_CHART_PERIOD_HRS\s*=\s*"1"/);
+        assert.match(source, /chartPeriodHrs:\s*DEFAULT_CHART_PERIOD_HRS/);
+        assert.match(source, /value:\s*"0\.5"[\s\S]*?label:\s*"30m"/);
+        assert.match(source, /value:\s*"1"[\s\S]*?label:\s*"1h"/);
+        assert.match(source, /value:\s*"720"[\s\S]*?label:\s*"1mo"/);
+        assert.doesNotMatch(source, /this\.\$t\("recent"\)/);
+        assert.match(source, /this\.chartPeriodOptions\.some\(\(option\) => option\.value === period\)/);
+    });
+
     test("selected period options set explicit x-axis bounds", () => {
         const source = fs.readFileSync(repoFile("src/components/PingChart.vue"), "utf8");
 
@@ -76,6 +88,7 @@ describe("PingChart period scaling", () => {
 
         assert.match(source, /await getCloudflareChartData\(app, monitorID, period\)/);
         assert.match(source, /async function getCloudflareChartData/);
+        assert.match(source, /CLOUDFLARE_CHART_PERIOD_HOURS\s*=\s*\[0\.5,\s*1,\s*3,\s*6,\s*24,\s*168,\s*720\]/);
         assert.match(source, /getCachedCloudflareChartData\(app\.cloudflareDashboardSecondaryCache, monitorID, validPeriodHours\)/);
         assert.match(source, /void refreshCloudflareChartData\(app, monitorID, validPeriodHours\)/);
         assert.match(source, /dedupeCloudflareDashboardRequest\(`chart:\$\{monitorID\}:\$\{periodHours\}`/);
@@ -85,14 +98,14 @@ describe("PingChart period scaling", () => {
         assert.doesNotMatch(source, /CLOUDFLARE_CHART_HEARTBEAT_PAGE_SIZE/);
     });
 
-    test("Worker Recent chart uses derived chart data instead of sparse heartbeat cache", () => {
+    test("Worker chart no longer uses a Recent-only heartbeat cache path", () => {
         const source = fs.readFileSync(repoFile("src/components/PingChart.vue"), "utf8");
 
-        assert.match(source, /isCloudflareWorkerRecentChart\(\)/);
         assert.match(source, /selectedChartPeriodHrs\(\)/);
-        assert.match(source, /this\.isCloudflareWorkerRecentChart \|\| this\.chartPeriodHrs !== "0"/);
-        assert.match(source, /this\.isCloudflareWorkerRecentChart \? this\.recentChartPeriodHrs : this\.chartPeriodHrs/);
-        assert.match(source, /this\.refreshChartDataForPeriod\(this\.chartPeriodHrs\)/);
+        assert.match(source, /return this\.chartPeriodHrs/);
+        assert.doesNotMatch(source, /isCloudflareWorkerRecentChart/);
+        assert.doesNotMatch(source, /recentChartPeriodHrs/);
+        assert.doesNotMatch(source, /chartPeriodHrs\s*===\s*"0"/);
     });
 });
 

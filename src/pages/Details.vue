@@ -478,9 +478,7 @@ import {
     requireDoubleClickConfirm,
     resetDoubleClickConfirm,
 } from "../util/double-click-confirm.mjs";
-import groupStatus from "../util/group-status";
-
-const { calculateGroupAveragePing, calculateGroupStatusBadge, getGroupChildMonitors } = groupStatus;
+import { calculateGroupAveragePing, calculateGroupStatusBadge, getGroupChildMonitors } from "../util/group-status";
 
 export default {
     components: {

@@ -42,9 +42,7 @@
 import dayjs from "dayjs";
 import { DOWN, UP, PENDING, MAINTENANCE } from "../util.ts";
 import Tooltip from "./Tooltip.vue";
-import groupStatus from "../util/group-status";
-
-const { buildGroupHeartbeatList, getGroupChildMonitors } = groupStatus;
+import { buildGroupHeartbeatList, getGroupChildMonitors } from "../util/group-status";
 
 export default {
     components: {
