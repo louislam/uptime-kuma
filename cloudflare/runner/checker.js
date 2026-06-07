@@ -348,17 +348,26 @@ function requestViaUserProxy(targetUrl, proxy, monitor, responseMaxBytes = DEFAU
 }
 
 function createUserProxyAgent(proxy, targetProtocol) {
-    const proxyUrl = proxyToUrl(proxy);
     if (String(proxy.protocol || "").startsWith("socks")) {
+        const proxyUrl = proxyToUrl(proxy);
         return new SocksProxyAgent(proxyUrl);
     }
+    const proxyUrl = proxyToUrl(proxy, resolveHttpUserProxyProtocol(proxy));
     return targetProtocol === "https:"
         ? new HttpsProxyAgent(proxyUrl)
         : new HttpProxyAgent(proxyUrl);
 }
 
-function proxyToUrl(proxy) {
-    const proxyUrl = new URL(`${proxy.protocol}://${proxy.host}:${proxy.port}`);
+function resolveHttpUserProxyProtocol(proxy) {
+    const protocol = String(proxy?.protocol || "http").toLowerCase();
+    if (protocol === "https" && net.isIP(String(proxy?.host || ""))) {
+        return "http";
+    }
+    return protocol;
+}
+
+function proxyToUrl(proxy, protocol = proxy.protocol) {
+    const proxyUrl = new URL(`${protocol}://${proxy.host}:${proxy.port}`);
     if (proxy.auth) {
         proxyUrl.username = proxy.username || "";
         proxyUrl.password = proxy.password || "";

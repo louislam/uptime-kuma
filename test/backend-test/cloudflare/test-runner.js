@@ -284,6 +284,67 @@ describe("Cloudflare monitor runner", () => {
         assert.strictEqual(proxyRequests, 1);
     });
 
+    test("HTTPS-labeled IP user proxies use HTTP CONNECT for plain proxy endpoints", async () => {
+        const { runCheck } = require("../../../cloudflare/runner/checker");
+        let proxyConnects = 0;
+        let connectTarget = null;
+        const tunnelSockets = new Set();
+        const target = await listen(
+            https.createServer({
+                key: SELF_SIGNED_KEY,
+                cert: SELF_SIGNED_CERT,
+            }, (_req, res) => {
+                res.writeHead(200, { "content-type": "text/plain" });
+                res.end("fallback proxied ok");
+            })
+        );
+        const proxyServer = http.createServer();
+        proxyServer.on("connect", (req, socket) => {
+            proxyConnects++;
+            connectTarget = req.url;
+            const upstream = net.connect({ host: "127.0.0.1", port: target.port }, () => {
+                socket.write("HTTP/1.1 200 Connection Established\r\n\r\n");
+                socket.pipe(upstream);
+                upstream.pipe(socket);
+            });
+            tunnelSockets.add(socket);
+            tunnelSockets.add(upstream);
+            socket.on("close", () => tunnelSockets.delete(socket));
+            upstream.on("close", () => tunnelSockets.delete(upstream));
+            upstream.on("error", () => socket.destroy());
+            socket.on("error", () => upstream.destroy());
+        });
+        proxyServer.on("clientError", (_error, socket) => socket.destroy());
+        const proxy = await listen(proxyServer);
+
+        const result = await runCheck({
+            monitor: {
+                id: 17,
+                type: "http",
+                url: `https://public.example.test:${target.port}/health`,
+                timeout: 5,
+                ignoreTls: true,
+                saveResponse: true,
+                proxy: {
+                    protocol: "https",
+                    host: "127.0.0.1",
+                    port: proxy.port,
+                    active: true,
+                },
+            },
+            networkProfile: null,
+        });
+
+        assert.strictEqual(result.status, UP);
+        assert.strictEqual(result.msg, "200 - OK");
+        assert.strictEqual(result.response, "fallback proxied ok");
+        assert.strictEqual(proxyConnects, 1);
+        assert.strictEqual(connectTarget, `public.example.test:${target.port}`);
+        for (const socket of tunnelSockets) {
+            socket.destroy();
+        }
+    });
+
     test("HTTP checks ignore assigned inactive user proxy", async () => {
         const { runCheck } = require("../../../cloudflare/runner/checker");
         let proxyRequests = 0;

@@ -37,4 +37,15 @@ describe("EditMonitor Worker UI rendering guards", () => {
             "Cached monitor hydration must happen before the slower per-monitor fetch starts"
         );
     });
+
+    test("Proxy dialog defaults new proxies to HTTP CONNECT", () => {
+        const source = fs.readFileSync(
+            path.join(__dirname, "../../src/components/ProxyDialog.vue"),
+            "utf8"
+        );
+
+        assert.match(source, /<option value="http">HTTP<\/option>[\s\S]*<option value="https">HTTPS<\/option>/);
+        assert.match(source, /protocol:\s*"http"/);
+        assert.doesNotMatch(source, /protocol:\s*"https"/);
+    });
 });

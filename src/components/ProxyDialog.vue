@@ -13,8 +13,8 @@
                         <div class="mb-3">
                             <label for="proxy-protocol" class="form-label">{{ $t("Proxy Protocol") }}</label>
                             <select id="proxy-protocol" v-model="proxy.protocol" class="form-select">
-                                <option value="https">HTTPS</option>
                                 <option value="http">HTTP</option>
+                                <option value="https">HTTPS</option>
                                 <option value="socks">SOCKS</option>
                                 <option value="socks5">SOCKS v5</option>
                                 <option value="socks5h">SOCKS v5 (+DNS)</option>
@@ -212,7 +212,7 @@ export default {
             } else {
                 this.id = null;
                 this.proxy = {
-                    protocol: "https",
+                    protocol: "http",
                     host: null,
                     port: null,
                     auth: false,
