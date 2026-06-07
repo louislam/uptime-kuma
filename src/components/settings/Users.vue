@@ -148,6 +148,16 @@
                     </tbody>
                 </table>
             </div>
+
+            <section class="worker-role-help mt-4" aria-labelledby="worker-role-help-title">
+                <h2 id="worker-role-help-title" class="h5 mb-3">Role permissions</h2>
+                <dl class="row g-3 mb-0">
+                    <div v-for="role in roleDetails" :key="role.name" class="col-md-6">
+                        <dt class="mb-1">{{ role.name }}</dt>
+                        <dd class="mb-0">{{ role.description }}</dd>
+                    </div>
+                </dl>
+            </section>
         </template>
     </div>
 </template>
@@ -155,11 +165,31 @@
 <script>
 import { requestCloudflareJson } from "../../cloudflare-worker-api";
 
+const ROLE_DETAILS = [
+    {
+        name: "admin",
+        description: "Full access to every Uptime Worker setting, monitor, status page, security control, and user management action.",
+    },
+    {
+        name: "editor",
+        description: "Can create, edit, delete, run, and pause monitors, manage settings, notifications, tags, status pages, network profiles, and clear statistics. Cannot manage users or security settings.",
+    },
+    {
+        name: "operator",
+        description: "Can view settings and integrations, run or pause monitors, and clear heartbeat history. Cannot create, edit, or delete monitors or settings.",
+    },
+    {
+        name: "viewer",
+        description: "Read-only access to dashboards, monitors, heartbeat history, settings, notifications, tags, proxies, Docker hosts, remote browsers, network profiles, and status pages.",
+    },
+];
+
 export default {
     data() {
         return {
             users: [],
-            roles: ["admin", "editor", "operator", "viewer"],
+            roleDetails: ROLE_DETAILS,
+            roles: ROLE_DETAILS.map((role) => role.name),
             saving: false,
             newUser: {
                 username: "",
@@ -170,12 +200,6 @@ export default {
         };
     },
 
-    mounted() {
-        if (this.hasPermission("users.read")) {
-            this.loadUsers();
-        }
-    },
-
     computed: {
         canWriteUsers() {
             return this.hasPermission("users.write");
@@ -184,6 +208,12 @@ export default {
         canDeleteUsers() {
             return this.hasPermission("users.delete");
         },
+    },
+
+    mounted() {
+        if (this.hasPermission("users.read")) {
+            this.loadUsers();
+        }
     },
 
     methods: {
@@ -301,6 +331,19 @@ export default {
 
 .worker-users-actions {
     white-space: nowrap;
+}
+
+.worker-role-help {
+    border-top: 1px solid $dark-border-color;
+    padding-top: 1rem;
+}
+
+.worker-role-help dt {
+    font-weight: 700;
+}
+
+.worker-role-help dd {
+    color: $dark-font-color2;
 }
 
 .dark {
