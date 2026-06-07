@@ -1140,6 +1140,63 @@ describe("Cloudflare Worker API", () => {
         );
     });
 
+    test("dashboard bootstrap keeps current upside-down runtime summary status applied once", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                {
+                    id: 7,
+                    name: "Blocked Security Check",
+                    type: "http",
+                    url: "https://blocked.example.test",
+                    active: 1,
+                    config_json: JSON.stringify({ upsideDown: true }),
+                },
+            ],
+            heartbeats: [
+                {
+                    id: 101,
+                    monitor_id: 7,
+                    status: 0,
+                    ping: null,
+                    msg: "Connection refused",
+                    checked_at: "2026-05-11 02:31:00",
+                },
+            ],
+            monitorRuntimeSummaries: [
+                {
+                    monitor_id: 7,
+                    latest_heartbeat_id: 101,
+                    status: 1,
+                    ping: null,
+                    msg: "Connection refused",
+                    checked_at: "2026-05-11 02:31:00",
+                    avg_ping: null,
+                    uptime_24: 1,
+                    uptime_720: 1,
+                    uptime_1y: 1,
+                    heartbeat_bar_json: JSON.stringify([
+                        {
+                            monitorID: 7,
+                            status: 1,
+                            ping: null,
+                            msg: "Connection refused",
+                            time: "2026-05-11 02:31:00",
+                        },
+                    ]),
+                },
+            ],
+        });
+
+        const response = await handleApiRequest(adminRequest("https://example.com/api/dashboard/bootstrap"), env);
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(body.monitors[0].lastHeartbeat.status, 1);
+        assert.strictEqual(body.heartbeatList[7].at(-1).status, 1);
+        assert.strictEqual(body.uptimeList["7_24"], 1);
+    });
+
     test("dashboard bootstrap prefers a newer indexed DOWN heartbeat over a stale UP runtime summary", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({

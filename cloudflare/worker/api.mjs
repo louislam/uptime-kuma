@@ -2072,6 +2072,7 @@ function summaryToHeartbeat(summary) {
         id: summary.latest_heartbeat_id,
         monitor_id: Number(summary.monitor_id),
         status: Number(summary.status),
+        status_is_effective: true,
         ping: summary.ping,
         msg: summary.msg || "",
         checked_at: summary.checked_at,
@@ -7265,7 +7266,9 @@ async function isMissingColumn(env, table, column) {
 function serializeHeartbeat(heartbeat, monitor = null) {
     return {
         monitorID: Number(heartbeat.monitor_id ?? heartbeat.monitorID),
-        status: effectiveHeartbeatStatus(heartbeat.status, monitor),
+        status: heartbeat.status_is_effective
+            ? heartbeat.status
+            : effectiveHeartbeatStatus(heartbeat.status, monitor),
         ping: heartbeat.ping,
         msg: heartbeat.msg,
         time: heartbeat.checked_at ?? heartbeat.time,
