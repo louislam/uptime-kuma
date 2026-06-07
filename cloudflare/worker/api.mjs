@@ -71,6 +71,12 @@ const DASHBOARD_BACKFILL_MONITOR_LIMIT = 25;
 const DASHBOARD_BACKFILL_HEARTBEAT_LIMIT = 10000;
 const DASHBOARD_CHART_PERIODS = new Set([3, 6, 24, 168]);
 const DASHBOARD_METRIC_RESOLUTIONS = [60, 3600, 86400];
+const HOT_PATH_DASHBOARD_METRIC_RESOLUTIONS = [60];
+const DASHBOARD_ROLLUP_RESOLUTIONS = [3600, 86400];
+const DEFAULT_OK_HEARTBEAT_SAMPLE_SECONDS = 15 * 60;
+const SCHEDULED_BACKFILL_INTERVAL_MS = 15 * 60 * 1000;
+const SCHEDULED_PURGE_INTERVAL_MS = 24 * 60 * 60 * 1000;
+const SCHEDULED_TWINGATE_ALERT_INTERVAL_MS = 5 * 60 * 1000;
 const ACCESS_SECRET_HEADER = "X-Uptime-Worker-Token";
 const ACCESS_SECRET_MONITOR_TYPES = new Set(["http", "keyword", "json-query"]);
 const NOTIFICATION_OK_MESSAGE = "Sent Successfully.";
@@ -2278,9 +2284,9 @@ export async function getStatusPageHeartbeatData(env, slug) {
                 return;
             }
 
-            const heartbeats = await getStatusPageMonitorHeartbeats(env, monitor);
-            heartbeatList[monitor.id] = heartbeats;
-            uptimeList[`${monitor.id}_24`] = calculateStatusPageUptime(heartbeats);
+            const heartbeatData = await getStatusPageMonitorHeartbeatData(env, monitor);
+            heartbeatList[monitor.id] = heartbeatData.heartbeats;
+            uptimeList[`${monitor.id}_24`] = heartbeatData.uptime;
         })
     );
 
@@ -2868,6 +2874,12 @@ export async function getMonitorChartData(env, monitorId, periodHours = 24) {
     const resolution = period <= 24 ? 60 : 3600;
     const since = formatSqliteDateTime(new Date(Date.now() - period * 60 * 60 * 1000));
     let rows = await listMonitorMetricBuckets(env, monitorId, resolution, since);
+    if (rows.length === 0 && resolution !== 60) {
+        rows = await listMetricRollupRows(env, resolution, {
+            monitorId,
+            since,
+        });
+    }
 
     if (rows.length === 0 && !await hasRuntimeSummaryForMonitor(env, monitorId)) {
         await backfillDashboardRuntimeCaches(env, {
@@ -2955,6 +2967,85 @@ export async function backfillDashboardRuntimeCaches(env, options = {}) {
     };
 }
 
+export async function refreshDashboardRuntimeSummaries(env, options = {}) {
+    const limit = Math.max(1, Math.min(100, Number(options.limit) || DASHBOARD_BACKFILL_MONITOR_LIMIT));
+    const now = options.now instanceof Date ? options.now : new Date();
+    const monitors = options.monitorId != null
+        ? [await getMonitor(env, Number(options.monitorId))].filter(Boolean)
+        : selectScheduledMonitorRefreshWindow(
+            (await listMonitorRows(env)).filter((monitor) => Number(monitor.active ?? 1) === 1),
+            limit,
+            now
+        );
+
+    for (const monitor of monitors) {
+        await refreshMonitorRuntimeSummary(env, monitor, null, { recomputeExpensive: true });
+    }
+
+    return { refreshed: monitors.length };
+}
+
+function selectScheduledMonitorRefreshWindow(monitors, limit, now) {
+    if (monitors.length <= limit) {
+        return monitors;
+    }
+    const windowIndex = Math.floor(now.getTime() / SCHEDULED_BACKFILL_INTERVAL_MS);
+    const offset = (windowIndex * limit) % monitors.length;
+    return monitors.slice(offset, offset + limit)
+        .concat(monitors.slice(0, Math.max(0, offset + limit - monitors.length)));
+}
+
+export async function runScheduledMaintenance(controller, env) {
+    const now = resolveScheduledNow(controller);
+    const enqueue = await enqueueDueMonitors(env, now);
+    const result = {
+        ...enqueue,
+        backfill: null,
+        summaryRefresh: null,
+        purge: null,
+        twingate: null,
+        rollupHourly: null,
+        rollupDaily: null,
+    };
+
+    if (shouldRunScheduledCadence(now, SCHEDULED_BACKFILL_INTERVAL_MS)) {
+        result.backfill = await backfillDashboardRuntimeCaches(env);
+        result.rollupHourly = await rollupDashboardMetricBuckets(env, {
+            resolutions: [3600],
+            since: formatSqliteDateTime(new Date(now.getTime() - 2 * 60 * 60 * 1000)),
+        });
+        result.summaryRefresh = await refreshDashboardRuntimeSummaries(env, { now });
+    }
+
+    if (shouldRunScheduledCadence(now, SCHEDULED_PURGE_INTERVAL_MS)) {
+        result.purge = await purgeOldMonitorHistory(env, now);
+        result.rollupDaily = await rollupDashboardMetricBuckets(env, {
+            resolutions: [86400],
+            since: formatSqliteDateTime(new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000)),
+        });
+    }
+
+    if (shouldRunScheduledCadence(now, SCHEDULED_TWINGATE_ALERT_INTERVAL_MS)) {
+        result.twingate = await checkTwingateHealthAlert(env, now);
+    }
+
+    return result;
+}
+
+function resolveScheduledNow(controller = {}) {
+    const scheduledTime = Number(controller?.scheduledTime);
+    if (Number.isFinite(scheduledTime) && scheduledTime > 0) {
+        return new Date(scheduledTime);
+    }
+    return new Date();
+}
+
+function shouldRunScheduledCadence(now, intervalMs) {
+    const intervalMinutes = Math.max(1, Math.floor(intervalMs / 60000));
+    const minutesSinceEpoch = Math.floor(now.getTime() / 60000);
+    return minutesSinceEpoch % intervalMinutes === 0;
+}
+
 async function rebuildMonitorRuntimeCache(env, monitor) {
     if (!monitor || monitor.id == null) {
         return;
@@ -2972,11 +3063,13 @@ async function rebuildMonitorRuntimeCache(env, monitor) {
         .all();
     let previousHeartbeat = null;
     for (const heartbeat of result.results || []) {
-        await upsertDashboardMetricBuckets(env, monitor, heartbeat);
+        await upsertDashboardMetricBuckets(env, monitor, heartbeat, {
+            resolutions: DASHBOARD_METRIC_RESOLUTIONS,
+        });
         await upsertDashboardEventLog(env, monitor, heartbeat, previousHeartbeat);
         previousHeartbeat = heartbeat;
     }
-    await refreshMonitorRuntimeSummary(env, monitor);
+    await refreshMonitorRuntimeSummary(env, monitor, null, { recomputeExpensive: true });
 }
 
 async function clearDashboardDerivedDataForMonitor(env, monitorId) {
@@ -3027,15 +3120,12 @@ export async function purgeOldMonitorHistory(env, now = new Date()) {
 
     await ensureDashboardRuntimeCacheTables(env);
     const cutoff = new Date(now.getTime() - keepDataPeriodDays * 24 * 60 * 60 * 1000);
-    await env.DB.prepare("DELETE FROM heartbeats WHERE checked_at < ?")
-        .bind(formatSqliteDateTime(cutoff))
-        .run();
-    await env.DB.prepare("DELETE FROM monitor_event_log WHERE checked_at < ?")
-        .bind(formatSqliteDateTime(cutoff))
-        .run();
-    await env.DB.prepare("DELETE FROM monitor_metric_bucket WHERE bucket_start < ?")
-        .bind(formatSqliteDateTime(cutoff))
-        .run();
+    await runD1(env, "history.purge_heartbeats", env.DB.prepare("DELETE FROM heartbeats WHERE checked_at < ?")
+        .bind(formatSqliteDateTime(cutoff)));
+    await runD1(env, "history.purge_event_log", env.DB.prepare("DELETE FROM monitor_event_log WHERE checked_at < ?")
+        .bind(formatSqliteDateTime(cutoff)));
+    await runD1(env, "history.purge_metric_buckets", env.DB.prepare("DELETE FROM monitor_metric_bucket WHERE bucket_start < ?")
+        .bind(formatSqliteDateTime(cutoff)));
     return { deleted: true };
 }
 
@@ -3349,7 +3439,7 @@ function stringifyMonitorHeaders(headers) {
     return Object.keys(headers).length > 0 ? JSON.stringify(headers) : null;
 }
 
-export async function enqueueDueMonitors(env) {
+export async function enqueueDueMonitors(env, now = new Date()) {
     const deployPause = await getDeployMonitorPauseState(env);
     if (deployPause.paused) {
         return {
@@ -3359,13 +3449,13 @@ export async function enqueueDueMonitors(env) {
         };
     }
 
-    const monitors = await listDueMonitorsForEnqueue(env);
+    const monitors = await listDueMonitorsForEnqueue(env, now);
 
     await Promise.all(
         monitors.map((monitor) =>
             env.MONITOR_QUEUE.send({
                 monitorId: monitor.id,
-                queuedAt: new Date().toISOString(),
+                queuedAt: now.toISOString(),
             })
         )
     );
@@ -3376,33 +3466,26 @@ export async function enqueueDueMonitors(env) {
     };
 }
 
-async function listDueMonitorsForEnqueue(env) {
-    const result = await env.DB.prepare(
-        `SELECT id
-         FROM monitors
-         WHERE active = 1
-           AND type != 'group'
+async function listDueMonitorsForEnqueue(env, now = new Date()) {
+    await ensureDashboardRuntimeCacheTables(env);
+    const result = await allD1(env, "monitor.enqueue_due", env.DB.prepare(
+        `SELECT m.id
+         FROM monitors m
+         LEFT JOIN monitor_runtime_summary s ON s.monitor_id = m.id
+         WHERE m.active = 1
+           AND m.type != 'group'
            AND (
-                NOT EXISTS (
-                    SELECT 1
-                    FROM heartbeats h
-                    WHERE h.monitor_id = monitors.id
-                )
+                s.checked_at IS NULL
                 OR (
-                    strftime('%s', 'now') - strftime('%s', (
-                        SELECT latest.checked_at
-                        FROM heartbeats latest
-                        WHERE latest.monitor_id = monitors.id
-                        ORDER BY latest.checked_at DESC, latest.id DESC
-                        LIMIT 1
-                    ))
+                    strftime('%s', ?) - strftime('%s', s.checked_at)
                 ) >= CASE
-                    WHEN "interval" IS NOT NULL AND "interval" > 0 THEN "interval"
+                    WHEN m."interval" IS NOT NULL AND m."interval" > 0 THEN m."interval"
                     ELSE ${DEFAULT_MONITOR_INTERVAL_SECONDS}
                 END
            )
-         ORDER BY id`
-    ).all();
+         ORDER BY m.id`
+    )
+        .bind(formatSqliteDateTime(now)));
     return result.results || [];
 }
 
@@ -3526,24 +3609,29 @@ async function formatRunnerError(response) {
 }
 
 async function writeHeartbeat(env, monitorId, result, previousHeartbeat = null, monitor = null) {
-    let responseR2Key = null;
-    const responseBody = result.response == null
-        ? ""
-        : String(result.response).slice(0, WORKER_HEARTBEAT_RESPONSE_MAX_CHARS);
-    if (responseBody && env.ARTIFACTS) {
-        responseR2Key = `responses/${monitorId}/${Date.now()}.txt`;
-        await env.ARTIFACTS.put(responseR2Key, responseBody);
-    }
-
     const status = result.status ?? DOWN;
     const checkedAt = formatSqliteDateTime(new Date());
-    const insertResult = await env.DB.prepare(
-        "INSERT INTO heartbeats (monitor_id, status, ping, msg, response_r2_key, checked_at) VALUES (?, ?, ?, ?, ?, ?)"
-    )
-        .bind(monitorId, status, result.ping ?? null, result.msg ?? "", responseR2Key, checkedAt)
-        .run();
+    const persistDecision = shouldPersistRawHeartbeat(env, status, previousHeartbeat, checkedAt);
+    let responseR2Key = null;
+    let heartbeatId = null;
+    if (persistDecision.persistRaw) {
+        const responseBody = result.response == null
+            ? ""
+            : String(result.response).slice(0, WORKER_HEARTBEAT_RESPONSE_MAX_CHARS);
+        if (responseBody && env.ARTIFACTS) {
+            responseR2Key = `responses/${monitorId}/${Date.now()}.txt`;
+            await env.ARTIFACTS.put(responseR2Key, responseBody);
+        }
+
+        const insertResult = await runD1(env, "heartbeat.insert", env.DB.prepare(
+            "INSERT INTO heartbeats (monitor_id, status, ping, msg, response_r2_key, checked_at) VALUES (?, ?, ?, ?, ?, ?)"
+        )
+            .bind(monitorId, status, result.ping ?? null, result.msg ?? "", responseR2Key, checkedAt));
+        heartbeatId = Number(insertResult?.meta?.last_row_id || 0) || null;
+    }
+
     const heartbeat = {
-        id: Number(insertResult?.meta?.last_row_id || 0) || null,
+        id: heartbeatId,
         monitor_id: Number(monitorId),
         status,
         ping: result.ping ?? null,
@@ -3552,19 +3640,68 @@ async function writeHeartbeat(env, monitorId, result, previousHeartbeat = null, 
         checked_at: checkedAt,
     };
     if (monitor) {
-        await updateDashboardRuntimeCachesForHeartbeat(env, monitor, heartbeat, previousHeartbeat);
+        await updateDashboardRuntimeCachesForHeartbeat(env, monitor, heartbeat, previousHeartbeat, {
+            recomputeSummary: shouldRecomputeRuntimeSummary(previousHeartbeat, heartbeat, persistDecision),
+        });
     }
     return heartbeat;
 }
 
-async function updateDashboardRuntimeCachesForHeartbeat(env, monitor, heartbeat, previousHeartbeat = null) {
-    await ensureDashboardRuntimeCacheTables(env);
-    await upsertDashboardMetricBuckets(env, monitor, heartbeat);
-    await upsertDashboardEventLog(env, monitor, heartbeat, previousHeartbeat);
-    await refreshMonitorRuntimeSummary(env, monitor, heartbeat);
+function shouldPersistRawHeartbeat(env, status, previousHeartbeat, checkedAt) {
+    const numericStatus = Number(status);
+    if (numericStatus !== UP) {
+        return { persistRaw: true, sampledOk: false };
+    }
+    if (!previousHeartbeat) {
+        return { persistRaw: true, sampledOk: true };
+    }
+    if (Number(previousHeartbeat.status) !== UP) {
+        return { persistRaw: true, sampledOk: true };
+    }
+
+    const sampleSeconds = resolveOkHeartbeatSampleSeconds(env);
+    if (sampleSeconds <= 0) {
+        return { persistRaw: true, sampledOk: true };
+    }
+    const previousBucket = formatBucketStart(previousHeartbeat.checked_at, sampleSeconds);
+    const currentBucket = formatBucketStart(checkedAt, sampleSeconds);
+    return {
+        persistRaw: previousBucket !== currentBucket,
+        sampledOk: previousBucket !== currentBucket,
+    };
 }
 
-async function upsertDashboardMetricBuckets(env, monitor, heartbeat) {
+function shouldRecomputeRuntimeSummary(previousHeartbeat, heartbeat, persistDecision) {
+    if (!previousHeartbeat) {
+        return true;
+    }
+    if (Number(previousHeartbeat.status) !== Number(heartbeat.status)) {
+        return true;
+    }
+    return Boolean(persistDecision.sampledOk);
+}
+
+function resolveOkHeartbeatSampleSeconds(env = {}) {
+    const configured = Number.parseInt(env.OK_HEARTBEAT_SAMPLE_SECONDS, 10);
+    if (!Number.isFinite(configured)) {
+        return DEFAULT_OK_HEARTBEAT_SAMPLE_SECONDS;
+    }
+    return Math.max(0, configured);
+}
+
+async function updateDashboardRuntimeCachesForHeartbeat(env, monitor, heartbeat, previousHeartbeat = null, options = {}) {
+    await ensureDashboardRuntimeCacheTables(env);
+    await upsertDashboardMetricBuckets(env, monitor, heartbeat, {
+        resolutions: HOT_PATH_DASHBOARD_METRIC_RESOLUTIONS,
+    });
+    await upsertDashboardEventLog(env, monitor, heartbeat, previousHeartbeat);
+    await refreshMonitorRuntimeSummary(env, monitor, heartbeat, {
+        recomputeExpensive: Boolean(options.recomputeSummary),
+        previousHeartbeat,
+    });
+}
+
+async function upsertDashboardMetricBuckets(env, monitor, heartbeat, options = {}) {
     const status = Number(effectiveHeartbeatStatus(heartbeat.status, monitor));
     const ping = status === UP && heartbeat.ping != null ? Number(heartbeat.ping) : null;
     const values = {
@@ -3576,9 +3713,10 @@ async function upsertDashboardMetricBuckets(env, monitor, heartbeat) {
         minPing: Number.isFinite(ping) ? ping : null,
         maxPing: Number.isFinite(ping) ? ping : null,
     };
+    const resolutions = options.resolutions || DASHBOARD_METRIC_RESOLUTIONS;
 
-    for (const resolution of DASHBOARD_METRIC_RESOLUTIONS) {
-        await env.DB.prepare(
+    for (const resolution of resolutions) {
+        await runD1(env, `metric_bucket.upsert.${resolution}`, env.DB.prepare(
             `INSERT INTO monitor_metric_bucket (
                 monitor_id, resolution_seconds, bucket_start, up_count, down_count,
                 pending_count, maintenance_count, total_count, ping_sum, min_ping, max_ping, updated_at
@@ -3613,9 +3751,101 @@ async function upsertDashboardMetricBuckets(env, monitor, heartbeat) {
                 values.pingSum,
                 values.minPing,
                 values.maxPing
-            )
-            .run();
+            ));
     }
+}
+
+/**
+ * Rebuild coarser metric buckets from the per-check 60-second buckets.
+ * @param {object} env Worker environment bindings.
+ * @param {object} options Rollup options.
+ * @param {number[]} options.resolutions Target resolutions to roll up.
+ * @param {string|null} options.since Optional lower bucket_start bound.
+ * @param {number|null} options.monitorId Optional monitor filter.
+ * @returns {Promise<object>} Rollup count.
+ */
+export async function rollupDashboardMetricBuckets(env, options = {}) {
+    await ensureDashboardRuntimeCacheTables(env);
+    const resolutions = (options.resolutions || DASHBOARD_ROLLUP_RESOLUTIONS)
+        .map(Number)
+        .filter((resolution) => DASHBOARD_ROLLUP_RESOLUTIONS.includes(resolution));
+    let rolledUp = 0;
+
+    for (const resolution of resolutions) {
+        const rows = await listMetricRollupRows(env, resolution, options);
+        for (const row of rows) {
+            await upsertMetricRollupBucket(env, row);
+            rolledUp++;
+        }
+    }
+
+    return { rolledUp };
+}
+
+async function listMetricRollupRows(env, resolutionSeconds, options = {}) {
+    const since = options.since || "0000-01-01 00:00:00";
+    const monitorFilter = options.monitorId == null ? "" : "AND monitor_id = ?";
+    const bucketExpression = Number(resolutionSeconds) === 86400
+        ? "strftime('%Y-%m-%d 00:00:00', bucket_start)"
+        : "strftime('%Y-%m-%d %H:00:00', bucket_start)";
+    const values = options.monitorId == null
+        ? [since]
+        : [since, Number(options.monitorId)];
+
+    const result = await allD1(env, `metric_bucket.rollup_select.${resolutionSeconds}`, env.DB.prepare(
+        `SELECT
+            monitor_id,
+            ? AS resolution_seconds,
+            ${bucketExpression} AS bucket_start,
+            SUM(up_count) AS up_count,
+            SUM(down_count) AS down_count,
+            SUM(pending_count) AS pending_count,
+            SUM(maintenance_count) AS maintenance_count,
+            SUM(total_count) AS total_count,
+            SUM(ping_sum) AS ping_sum,
+            MIN(min_ping) AS min_ping,
+            MAX(max_ping) AS max_ping
+         FROM monitor_metric_bucket
+         WHERE resolution_seconds = 60
+           AND bucket_start >= ?
+           ${monitorFilter}
+         GROUP BY monitor_id, ${bucketExpression}
+         ORDER BY monitor_id, bucket_start`
+    )
+        .bind(Number(resolutionSeconds), ...values));
+    return result.results || [];
+}
+
+async function upsertMetricRollupBucket(env, row) {
+    await runD1(env, `metric_bucket.rollup_upsert.${row.resolution_seconds}`, env.DB.prepare(
+        `INSERT INTO monitor_metric_bucket (
+            monitor_id, resolution_seconds, bucket_start, up_count, down_count,
+            pending_count, maintenance_count, total_count, ping_sum, min_ping, max_ping, updated_at
+         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+         ON CONFLICT(monitor_id, resolution_seconds, bucket_start) DO UPDATE SET
+            up_count = excluded.up_count,
+            down_count = excluded.down_count,
+            pending_count = excluded.pending_count,
+            maintenance_count = excluded.maintenance_count,
+            total_count = excluded.total_count,
+            ping_sum = excluded.ping_sum,
+            min_ping = excluded.min_ping,
+            max_ping = excluded.max_ping,
+            updated_at = CURRENT_TIMESTAMP`
+    )
+        .bind(
+            Number(row.monitor_id),
+            Number(row.resolution_seconds),
+            row.bucket_start,
+            Number(row.up_count || 0),
+            Number(row.down_count || 0),
+            Number(row.pending_count || 0),
+            Number(row.maintenance_count || 0),
+            Number(row.total_count || 0),
+            Number(row.ping_sum || 0),
+            row.min_ping == null ? null : Number(row.min_ping),
+            row.max_ping == null ? null : Number(row.max_ping)
+        ));
 }
 
 async function upsertDashboardEventLog(env, monitor, heartbeat, previousHeartbeat = null) {
@@ -3630,13 +3860,12 @@ async function upsertDashboardEventLog(env, monitor, heartbeat, previousHeartbea
     }
 
     if (!isImportant) {
-        await env.DB.prepare("DELETE FROM monitor_event_log WHERE heartbeat_id = ?")
-            .bind(heartbeatId)
-            .run();
+        await runD1(env, "event_log.delete_unimportant", env.DB.prepare("DELETE FROM monitor_event_log WHERE heartbeat_id = ?")
+            .bind(heartbeatId));
         return;
     }
 
-    await env.DB.prepare(
+    await runD1(env, "event_log.upsert", env.DB.prepare(
         `INSERT INTO monitor_event_log (heartbeat_id, monitor_id, status, ping, msg, checked_at)
          VALUES (?, ?, ?, ?, ?, ?)
          ON CONFLICT(heartbeat_id) DO UPDATE SET
@@ -3653,16 +3882,20 @@ async function upsertDashboardEventLog(env, monitor, heartbeat, previousHeartbea
             heartbeat.ping ?? null,
             heartbeat.msg ?? "",
             heartbeat.checked_at
-        )
-        .run();
+        ));
 }
 
 function isDegradedStatus(status) {
     return status === DOWN || status === PENDING;
 }
 
-async function refreshMonitorRuntimeSummary(env, monitor, latestHeartbeat = null) {
+async function refreshMonitorRuntimeSummary(env, monitor, latestHeartbeat = null, options = {}) {
     const heartbeat = latestHeartbeat || await getLatestHeartbeatForMonitor(env, Number(monitor.id));
+    if (options.recomputeExpensive === false) {
+        await refreshMonitorRuntimeSummaryLatestFields(env, monitor, heartbeat, options.previousHeartbeat);
+        return;
+    }
+
     const heartbeats = await listRecentSerializedHeartbeatsForSummary(env, monitor);
     const referenceTime = heartbeat?.checked_at || formatSqliteDateTime(new Date());
     const metrics24 = await summarizeMetricBuckets(env, Number(monitor.id), 60, referenceTime, 24);
@@ -3670,7 +3903,7 @@ async function refreshMonitorRuntimeSummary(env, monitor, latestHeartbeat = null
     const metrics1y = await summarizeMetricBuckets(env, Number(monitor.id), 86400, referenceTime, 24 * 365);
     const status = heartbeat ? Number(effectiveHeartbeatStatus(heartbeat.status, monitor)) : null;
 
-    await env.DB.prepare(
+    await runD1(env, "runtime_summary.refresh_full", env.DB.prepare(
         `INSERT INTO monitor_runtime_summary (
             monitor_id, latest_heartbeat_id, status, ping, msg, checked_at,
             avg_ping, uptime_24, uptime_720, uptime_1y, heartbeat_bar_json, updated_at
@@ -3700,8 +3933,31 @@ async function refreshMonitorRuntimeSummary(env, monitor, latestHeartbeat = null
             metrics720.uptime,
             metrics1y.uptime,
             JSON.stringify(heartbeats)
-        )
-        .run();
+        ));
+}
+
+async function refreshMonitorRuntimeSummaryLatestFields(env, monitor, heartbeat = null, previousHeartbeat = null) {
+    const status = heartbeat ? Number(effectiveHeartbeatStatus(heartbeat.status, monitor)) : null;
+    await runD1(env, "runtime_summary.refresh_latest", env.DB.prepare(
+        `INSERT INTO monitor_runtime_summary (
+            monitor_id, latest_heartbeat_id, status, ping, msg, checked_at, updated_at
+         ) VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+         ON CONFLICT(monitor_id) DO UPDATE SET
+            latest_heartbeat_id = excluded.latest_heartbeat_id,
+            status = excluded.status,
+            ping = excluded.ping,
+            msg = excluded.msg,
+            checked_at = excluded.checked_at,
+            updated_at = CURRENT_TIMESTAMP`
+    )
+        .bind(
+            Number(monitor.id),
+            heartbeat?.id ?? previousHeartbeat?.id ?? null,
+            status,
+            heartbeat?.ping ?? null,
+            heartbeat?.msg ?? "",
+            heartbeat?.checked_at ?? null
+        ));
 }
 
 async function listRecentSerializedHeartbeatsForSummary(env, monitor) {
@@ -4235,7 +4491,7 @@ async function applyMonitorRetryStatus(env, monitor, result = {}) {
         };
     }
 
-    const recentFailures = await countRecentMonitorFailures(env, monitor.id);
+    const recentFailures = await countRecentMonitorFailures(env, monitor.id, maxRetries);
     return {
         ...result,
         status: recentFailures < maxRetries ? PENDING : DOWN,
@@ -4249,12 +4505,12 @@ function resolveMonitorMaxRetries(monitor = {}) {
     return Number.isFinite(maxRetries) && maxRetries > 0 ? maxRetries : 0;
 }
 
-async function countRecentMonitorFailures(env, monitorId) {
-    const result = await env.DB.prepare(
-        "SELECT status FROM heartbeats WHERE monitor_id = ? ORDER BY checked_at DESC, id DESC"
+async function countRecentMonitorFailures(env, monitorId, maxRetries) {
+    const limit = Math.max(1, Number(maxRetries || 0) + 1);
+    const result = await allD1(env, "monitor.recent_failures", env.DB.prepare(
+        "SELECT status FROM heartbeats WHERE monitor_id = ? ORDER BY checked_at DESC, id DESC LIMIT ?"
     )
-        .bind(monitorId)
-        .all();
+        .bind(monitorId, limit));
 
     let failures = 0;
     for (const heartbeat of result.results || []) {
@@ -6747,23 +7003,44 @@ async function buildWorkerGroupStatusPageHeartbeatData(env, groupMonitor, monito
         };
     }
 
-    const childHeartbeatLists = await Promise.all(
-        childMonitors.map((monitor) => getStatusPageMonitorHeartbeats(env, monitor))
+    const childHeartbeatData = await Promise.all(
+        childMonitors.map((monitor) => getStatusPageMonitorHeartbeatData(env, monitor))
     );
 
-    const totalUptime = childHeartbeatLists.reduce((total, heartbeats) => (
-        total + calculateStatusPageUptime(heartbeats)
+    const totalUptime = childHeartbeatData.reduce((total, data) => (
+        total + data.uptime
     ), 0);
 
     return {
-        heartbeats: buildWorkerGroupHeartbeatList(groupMonitor.id, childHeartbeatLists),
-        uptime: totalUptime / childHeartbeatLists.length,
+        heartbeats: buildWorkerGroupHeartbeatList(groupMonitor.id, childHeartbeatData.map((data) => data.heartbeats)),
+        uptime: totalUptime / childHeartbeatData.length,
+    };
+}
+
+async function getStatusPageMonitorHeartbeatData(env, monitor) {
+    const heartbeats = await getStatusPageMonitorHeartbeats(env, monitor);
+    return {
+        heartbeats,
+        uptime: await getStatusPageMonitorUptime24(env, monitor, heartbeats),
     };
 }
 
 async function getStatusPageMonitorHeartbeats(env, monitor) {
     const result = await listMonitorHeartbeats(env, monitor.id, 0, 100);
     return result.heartbeats.slice().reverse();
+}
+
+async function getStatusPageMonitorUptime24(env, monitor, fallbackHeartbeats) {
+    const referenceTime = monitor.lastHeartbeat?.time || formatSqliteDateTime(new Date());
+    try {
+        const metrics = await summarizeMetricBuckets(env, Number(monitor.id), 60, referenceTime, 24);
+        return metrics.uptime == null ? calculateStatusPageUptime(fallbackHeartbeats) : metrics.uptime;
+    } catch (error) {
+        if (!/no such table: monitor_metric_bucket/i.test(error?.message || "")) {
+            throw error;
+        }
+        return calculateStatusPageUptime(fallbackHeartbeats);
+    }
 }
 
 function getActiveWorkerLeafMonitors(groupMonitor, monitorsById) {
@@ -7312,6 +7589,45 @@ function parseSqliteDateTime(value) {
     const text = String(value || "");
     const parsed = Date.parse(text.includes("T") ? text : `${text.replace(" ", "T")}Z`);
     return Number.isFinite(parsed) ? parsed : Date.now();
+}
+
+async function runD1(env, label, statement) {
+    const result = await statement.run();
+    logD1Usage(env, label, result);
+    return result;
+}
+
+async function allD1(env, label, statement) {
+    const result = await statement.all();
+    logD1Usage(env, label, result);
+    return result;
+}
+
+function logD1Usage(env, label, result) {
+    if (!isD1UsageDebugEnabled(env)) {
+        return;
+    }
+    const results = Array.isArray(result) ? result : [result];
+    const summary = results.reduce((total, entry) => {
+        const meta = entry?.meta || {};
+        return {
+            rows_read: total.rows_read + Number(meta.rows_read || 0),
+            rows_written: total.rows_written + Number(meta.rows_written || 0),
+            statements: total.statements + 1,
+        };
+    }, { rows_read: 0, rows_written: 0, statements: 0 });
+    console.log(JSON.stringify({
+        type: "d1_usage",
+        label,
+        rows_read: summary.rows_read,
+        rows_written: summary.rows_written,
+        statements: summary.statements,
+    }));
+}
+
+function isD1UsageDebugEnabled(env = {}) {
+    const value = env.D1_USAGE_DEBUG;
+    return value === true || value === 1 || /^(1|true|yes|on)$/i.test(String(value || ""));
 }
 
 function json(body, status = 200) {

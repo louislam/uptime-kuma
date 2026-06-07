@@ -55,6 +55,20 @@ describe("Cloudflare Worker API", () => {
         assert.match(migrationSql, /PRIMARY KEY \(monitor_id, resolution_seconds, bucket_start\)/);
     });
 
+    test("D1 write-reduction migration adds hot-path indexes and optimizes planner stats", async () => {
+        const migrationPath = path.join(
+            __dirname,
+            "../../../cloudflare/migrations/0013_d1_write_reduction.sql"
+        );
+        const migrationSql = fs.readFileSync(migrationPath, "utf8");
+
+        assert.match(migrationSql, /CREATE INDEX IF NOT EXISTS idx_heartbeats_monitor_checked_at_id/);
+        assert.match(migrationSql, /heartbeats\(monitor_id, checked_at DESC, id DESC\)/);
+        assert.match(migrationSql, /CREATE INDEX IF NOT EXISTS idx_monitors_active_type/);
+        assert.match(migrationSql, /monitors\(active, type\)/);
+        assert.match(migrationSql, /PRAGMA optimize/);
+    });
+
     test("D1 migration creates Worker users, sessions, audit log, and legacy admin migration", async () => {
         const migrationPath = path.join(
             __dirname,
@@ -302,12 +316,12 @@ describe("Cloudflare Worker API", () => {
         assert.match(workerSource, /persistStartingTwingateStatus/);
     });
 
-    test("scheduled Worker checks Twingate health alerts", async () => {
+    test("scheduled Worker uses cadence-gated maintenance runner", async () => {
         const workerPath = path.join(__dirname, "../../../cloudflare/worker/index.mjs");
         const workerSource = fs.readFileSync(workerPath, "utf8");
 
-        assert.match(workerSource, /checkTwingateHealthAlert/);
-        assert.match(workerSource, /await checkTwingateHealthAlert\(env\)/);
+        assert.match(workerSource, /runScheduledMaintenance/);
+        assert.match(workerSource, /await runScheduledMaintenance\(_controller,\s*env\)/);
     });
 
     test("runner monitor checks use startup-aware forwarding instead of the default container fetch", async () => {
@@ -4101,6 +4115,48 @@ describe("Cloudflare Worker API", () => {
         );
     });
 
+    test("168-hour chart falls back to read-only hourly aggregation from 60-second buckets", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const bucketStart = new Date().toISOString().slice(0, 13).replace("T", " ") + ":00:00";
+        const env = createEnv({
+            monitors: [
+                { id: 7, name: "Primary WAN", type: "ping", active: 1 },
+            ],
+            monitorMetricBuckets: [
+                {
+                    monitor_id: 7,
+                    resolution_seconds: 60,
+                    bucket_start: bucketStart,
+                    up_count: 3,
+                    down_count: 1,
+                    pending_count: 1,
+                    maintenance_count: 0,
+                    total_count: 5,
+                    ping_sum: 90,
+                    min_ping: 20,
+                    max_ping: 40,
+                },
+            ],
+        });
+
+        const response = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/7/chart?period=168"),
+            env
+        );
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(body.data.length, 1);
+        assert.strictEqual(body.data[0].up, 3);
+        assert.strictEqual(body.data[0].down, 2);
+        assert.strictEqual(body.data[0].avgPing, 30);
+        assert.strictEqual(env.state.monitorMetricBuckets.filter((bucket) => bucket.resolution_seconds === 3600).length, 0);
+        assert.ok(
+            env.state.queries.some((sql) => sql.includes("resolution_seconds = 60") && sql.includes("GROUP BY monitor_id")),
+            "168-hour chart should aggregate 60-second buckets without writing hourly buckets"
+        );
+    });
+
     test("empty chart pages do not backfill raw history once summaries exist", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({
@@ -4878,7 +4934,7 @@ describe("Cloudflare Worker API", () => {
         assert.strictEqual(env.state.runnerJobs[0].monitor.ignoreTls, true);
     });
 
-    test("heartbeat writes update dashboard summary, event, and metric bucket tables", async () => {
+    test("heartbeat writes update dashboard summary, event, and 60-second metric bucket tables", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({
             profiles: [
@@ -4925,7 +4981,7 @@ describe("Cloudflare Worker API", () => {
         );
         assert.deepStrictEqual(
             [...new Set(env.state.monitorMetricBuckets.map((bucket) => bucket.resolution_seconds))].sort((a, b) => a - b),
-            [60, 3600, 86400]
+            [60]
         );
         assert.ok(
             env.state.queries.some((sql) => sql.includes("INSERT INTO monitor_runtime_summary")),
@@ -4939,6 +4995,234 @@ describe("Cloudflare Worker API", () => {
             env.state.queries.some((sql) => sql.includes("INSERT INTO monitor_metric_bucket")),
             "heartbeat write should update metric buckets"
         );
+    });
+
+    test("stable UP checks sample raw heartbeats while metric buckets count every check", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                {
+                    id: 7,
+                    name: "Sampled HTTP",
+                    type: "http",
+                    url: "https://sampled.example.test",
+                    active: 1,
+                    network_profile_id: null,
+                },
+            ],
+            runnerResults: [
+                { status: 1, ping: 20, msg: "200 - OK", response: null },
+                { status: 1, ping: 21, msg: "200 - OK", response: null },
+            ],
+        });
+
+        const firstResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/7/check-now", { method: "POST" }),
+            env
+        );
+        const secondResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/7/check-now", { method: "POST" }),
+            env
+        );
+
+        assert.strictEqual(firstResponse.status, 200);
+        assert.strictEqual(secondResponse.status, 200);
+        assert.strictEqual(env.state.heartbeats.length, 1);
+        assert.strictEqual(env.state.heartbeats[0].msg, "200 - OK");
+        assert.strictEqual(env.state.monitorRuntimeSummaries.length, 1);
+        assert.strictEqual(env.state.monitorRuntimeSummaries[0].status, 1);
+        assert.strictEqual(env.state.monitorRuntimeSummaries[0].ping, 21);
+        assert.strictEqual(env.state.monitorRuntimeSummaries[0].msg, "200 - OK");
+        assert.deepStrictEqual(
+            env.state.monitorMetricBuckets.map((bucket) => [bucket.resolution_seconds, bucket.total_count]),
+            [[60, 2]]
+        );
+    });
+
+    test("DOWN and recovery checks are always persisted despite OK sampling", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                {
+                    id: 7,
+                    name: "Flapping HTTP",
+                    type: "http",
+                    url: "https://flap.example.test",
+                    active: 1,
+                    network_profile_id: null,
+                    config_json: JSON.stringify({ maxretries: 0 }),
+                },
+            ],
+            heartbeats: [
+                {
+                    id: 100,
+                    monitor_id: 7,
+                    status: 1,
+                    ping: 15,
+                    msg: "200 - OK",
+                    checked_at: "2026-05-18 14:00:00",
+                },
+            ],
+            runnerResults: [
+                { status: 0, ping: null, msg: "Timeout", response: null },
+                { status: 1, ping: 18, msg: "200 - OK", response: null },
+            ],
+        });
+
+        const downResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/7/check-now", { method: "POST" }),
+            env
+        );
+        const recoveryResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/7/check-now", { method: "POST" }),
+            env
+        );
+
+        assert.strictEqual(downResponse.status, 200);
+        assert.strictEqual(recoveryResponse.status, 200);
+        assert.deepStrictEqual(
+            env.state.heartbeats.map((heartbeat) => heartbeat.status),
+            [1, 0, 1]
+        );
+        assert.deepStrictEqual(
+            env.state.heartbeats.map((heartbeat) => heartbeat.msg),
+            ["200 - OK", "Timeout", "200 - OK"]
+        );
+    });
+
+    test("hot-path metric writes only update 60-second buckets", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                {
+                    id: 7,
+                    name: "Metric HTTP",
+                    type: "http",
+                    url: "https://metric.example.test",
+                    active: 1,
+                    network_profile_id: null,
+                },
+            ],
+            runnerResult: { status: 1, ping: 20, msg: "200 - OK", response: null },
+        });
+
+        const response = await handleApiRequest(
+            adminRequest("https://example.com/api/monitors/7/check-now", { method: "POST" }),
+            env
+        );
+
+        assert.strictEqual(response.status, 200);
+        assert.deepStrictEqual(
+            [...new Set(env.state.monitorMetricBuckets.map((bucket) => bucket.resolution_seconds))],
+            [60]
+        );
+    });
+
+    test("D1 usage debug logs rows read and written from query metadata", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                {
+                    id: 7,
+                    name: "Debug HTTP",
+                    type: "http",
+                    url: "https://debug.example.test",
+                    active: 1,
+                    network_profile_id: null,
+                },
+            ],
+            runnerResult: { status: 1, ping: 20, msg: "200 - OK", response: null },
+        });
+        env.D1_USAGE_DEBUG = "1";
+        const originalLog = console.log;
+        const logs = [];
+        console.log = (...args) => {
+            logs.push(args.join(" "));
+        };
+
+        try {
+            const response = await handleApiRequest(
+                adminRequest("https://example.com/api/monitors/7/check-now", { method: "POST" }),
+                env
+            );
+            assert.strictEqual(response.status, 200);
+        } finally {
+            console.log = originalLog;
+        }
+
+        assert.ok(logs.some((line) => line.includes('"type":"d1_usage"')));
+        assert.ok(logs.some((line) => line.includes('"rows_written":')));
+        assert.ok(logs.some((line) => line.includes('"rows_read":')));
+    });
+
+    test("scheduled metric rollups rebuild hourly and daily buckets idempotently from 60-second buckets", async () => {
+        const { rollupDashboardMetricBuckets } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitorMetricBuckets: [
+                {
+                    monitor_id: 7,
+                    resolution_seconds: 60,
+                    bucket_start: "2026-05-18 14:00:00",
+                    up_count: 1,
+                    down_count: 0,
+                    pending_count: 0,
+                    maintenance_count: 0,
+                    total_count: 1,
+                    ping_sum: 20,
+                    min_ping: 20,
+                    max_ping: 20,
+                },
+                {
+                    monitor_id: 7,
+                    resolution_seconds: 60,
+                    bucket_start: "2026-05-18 14:01:00",
+                    up_count: 0,
+                    down_count: 1,
+                    pending_count: 0,
+                    maintenance_count: 0,
+                    total_count: 1,
+                    ping_sum: 0,
+                    min_ping: null,
+                    max_ping: null,
+                },
+            ],
+        });
+
+        const firstResult = await rollupDashboardMetricBuckets(env, { resolutions: [3600, 86400] });
+        const secondResult = await rollupDashboardMetricBuckets(env, { resolutions: [3600, 86400] });
+
+        assert.deepStrictEqual(firstResult, { rolledUp: 2 });
+        assert.deepStrictEqual(secondResult, { rolledUp: 2 });
+        const hourly = env.state.monitorMetricBuckets.find((bucket) => bucket.resolution_seconds === 3600);
+        const daily = env.state.monitorMetricBuckets.find((bucket) => bucket.resolution_seconds === 86400);
+        assert.deepStrictEqual(
+            pick(hourly, ["monitor_id", "bucket_start", "up_count", "down_count", "total_count", "ping_sum", "min_ping", "max_ping"]),
+            {
+                monitor_id: 7,
+                bucket_start: "2026-05-18 14:00:00",
+                up_count: 1,
+                down_count: 1,
+                total_count: 2,
+                ping_sum: 20,
+                min_ping: 20,
+                max_ping: 20,
+            }
+        );
+        assert.deepStrictEqual(
+            pick(daily, ["monitor_id", "bucket_start", "up_count", "down_count", "total_count", "ping_sum", "min_ping", "max_ping"]),
+            {
+                monitor_id: 7,
+                bucket_start: "2026-05-18 00:00:00",
+                up_count: 1,
+                down_count: 1,
+                total_count: 2,
+                ping_sum: 20,
+                min_ping: 20,
+                max_ping: 20,
+            }
+        );
+        assert.strictEqual(env.state.monitorMetricBuckets.filter((bucket) => bucket.resolution_seconds === 3600).length, 1);
+        assert.strictEqual(env.state.monitorMetricBuckets.filter((bucket) => bucket.resolution_seconds === 86400).length, 1);
     });
 
     test("check-now on a group runs all active child monitor checks", async () => {
@@ -5040,6 +5324,10 @@ describe("Cloudflare Worker API", () => {
             ping: 120,
             msg: "Request timed out",
         });
+        const retryQuery = env.state.boundStatements.find(({ sql }) => sql.includes("SELECT status FROM heartbeats"));
+        assert.ok(retryQuery);
+        assert.match(retryQuery.sql, /LIMIT \?/);
+        assert.deepStrictEqual(retryQuery.values, [7, 3]);
     });
 
     test("check-now records Twingate service outages as pending", async () => {
@@ -5640,15 +5928,13 @@ describe("Cloudflare Worker API", () => {
                     active: 0,
                 },
             ],
-            heartbeats: [
+            monitorRuntimeSummaries: [
                 {
-                    id: 1,
                     monitor_id: 7,
                     status: 1,
                     checked_at: new Date(now - 60_000).toISOString(),
                 },
                 {
-                    id: 2,
                     monitor_id: 8,
                     status: 1,
                     checked_at: new Date(now - 61_000).toISOString(),
@@ -5656,11 +5942,115 @@ describe("Cloudflare Worker API", () => {
             ],
         });
 
-        const result = await enqueueDueMonitors(env);
+        const result = await enqueueDueMonitors(env, new Date(now));
 
         assert.strictEqual(result.paused, false);
         assert.strictEqual(result.enqueued, 2);
         assert.deepStrictEqual(env.MONITOR_QUEUE.sent.map((message) => message.monitorId), [8, 9]);
+        const dueQuery = env.state.queries.find((sql) => sql.includes("FROM monitors") && sql.includes("monitor_runtime_summary"));
+        assert.ok(dueQuery);
+        assert.doesNotMatch(dueQuery, /FROM heartbeats/);
+    });
+
+    test("scheduled maintenance cadence gates backfill, purge, rollups, and Twingate checks", async () => {
+        const { runScheduledMaintenance } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            settings: {
+                keepDataPeriodDays: 7,
+                twingateAlertEnabled: true,
+                twingateAlertNotificationIDList: { 3: true },
+                twingateAlertThresholdMinutes: 5,
+            },
+            monitors: [
+                {
+                    id: 7,
+                    name: "Cadence HTTP",
+                    type: "http",
+                    url: "https://cadence.example.test",
+                    interval: 60,
+                    active: 1,
+                },
+            ],
+            heartbeats: [
+                {
+                    id: 1,
+                    monitor_id: 7,
+                    status: 1,
+                    ping: 20,
+                    msg: "old",
+                    checked_at: "2026-05-18 11:00:00",
+                },
+            ],
+            monitorRuntimeSummaries: [
+                {
+                    monitor_id: 7,
+                    latest_heartbeat_id: 1,
+                    status: 1,
+                    ping: 20,
+                    msg: "old",
+                    checked_at: "2026-05-18 11:00:00",
+                },
+            ],
+            monitorMetricBuckets: [
+                {
+                    monitor_id: 7,
+                    resolution_seconds: 60,
+                    bucket_start: "2026-05-18 11:00:00",
+                    up_count: 1,
+                    down_count: 0,
+                    pending_count: 0,
+                    maintenance_count: 0,
+                    total_count: 1,
+                    ping_sum: 20,
+                    min_ping: 20,
+                    max_ping: 20,
+                },
+            ],
+            runnerStatus: {
+                configured: true,
+                starting: false,
+                running: true,
+                proxyUrl: "http://127.0.0.1:9999",
+                tunMode: "on",
+                lastError: null,
+            },
+        });
+
+        const quietResult = await runScheduledMaintenance(
+            { scheduledTime: Date.parse("2026-05-18T12:01:00Z") },
+            env
+        );
+        assert.strictEqual(quietResult.enqueued, 1);
+        assert.strictEqual(quietResult.backfill, null);
+        assert.strictEqual(quietResult.purge, null);
+        assert.strictEqual(quietResult.twingate, null);
+        assert.strictEqual(quietResult.rollupHourly, null);
+        assert.strictEqual(quietResult.rollupDaily, null);
+        assert.strictEqual(env.state.runnerStatusRequests, 0);
+        assert.strictEqual(env.state.monitorMetricBuckets.filter((bucket) => bucket.resolution_seconds === 3600).length, 0);
+
+        const fiveMinuteResult = await runScheduledMaintenance(
+            { scheduledTime: Date.parse("2026-05-18T12:05:00Z") },
+            env
+        );
+        assert.ok(fiveMinuteResult.twingate);
+        assert.strictEqual(env.state.runnerStatusRequests, 1);
+
+        const fifteenMinuteResult = await runScheduledMaintenance(
+            { scheduledTime: Date.parse("2026-05-18T12:15:00Z") },
+            env
+        );
+        assert.ok(fifteenMinuteResult.backfill);
+        assert.ok(fifteenMinuteResult.rollupHourly);
+        assert.strictEqual(env.state.monitorMetricBuckets.filter((bucket) => bucket.resolution_seconds === 3600).length, 1);
+
+        const dailyResult = await runScheduledMaintenance(
+            { scheduledTime: Date.parse("2026-05-19T00:00:00Z") },
+            env
+        );
+        assert.ok(dailyResult.purge);
+        assert.ok(dailyResult.rollupDaily);
+        assert.strictEqual(env.state.monitorMetricBuckets.filter((bucket) => bucket.resolution_seconds === 86400).length, 1);
     });
 
     test("queue consumer acknowledges messages without runner checks during deploy pause", async () => {
@@ -6030,7 +6420,9 @@ function createEnv(initial) {
         userAuditLog: initial.userAuditLog || [],
         settings: initial.settings || {},
         queries: [],
+        boundStatements: [],
         runnerJobs: [],
+        runnerStatusRequests: 0,
         runnerResult: initial.runnerResult,
         runnerResults: initial.runnerResults ? [...initial.runnerResults] : null,
         runnerResponseStatus: initial.runnerResponseStatus || 200,
@@ -6090,6 +6482,7 @@ function createEnv(initial) {
                     async fetch(request) {
                         const url = new URL(request.url);
                         if (request.method === "GET" && url.pathname === "/twingate/status") {
+                            state.runnerStatusRequests++;
                             if (state.runnerStatusNeverResolves) {
                                 return new Promise(() => {});
                             }
@@ -6294,6 +6687,10 @@ function createStatement(sql, state) {
                 );
             }
             this.values = values;
+            state.boundStatements.push({
+                sql,
+                values: [...values],
+            });
             return this;
         },
         async all() {
@@ -6427,6 +6824,12 @@ function createStatement(sql, state) {
                 }
                 return { results: buildMonitorEventLogQueryResults(this.values, state) };
             }
+            if (sql.includes("FROM monitor_metric_bucket") && sql.includes("GROUP BY monitor_id")) {
+                if (state.missingDashboardRuntimeCacheTables) {
+                    throw new Error("D1_ERROR: no such table: monitor_metric_bucket: SQLITE_ERROR");
+                }
+                return { results: buildMetricRollupRows(sql, this.values, state) };
+            }
             if (sql.includes("FROM monitor_metric_bucket")) {
                 if (state.missingDashboardRuntimeCacheTables) {
                     throw new Error("D1_ERROR: no such table: monitor_metric_bucket: SQLITE_ERROR");
@@ -6479,6 +6882,9 @@ function createStatement(sql, state) {
                     }
                 }
                 return { results };
+            }
+            if (sql.includes("FROM monitors m") && sql.includes("monitor_runtime_summary")) {
+                return { results: state.monitors.filter((monitor) => isMonitorDueForEnqueue(monitor, state, this.values[0])) };
             }
             if (sql.includes("FROM monitors") && sql.includes("NOT EXISTS") && sql.includes("FROM heartbeats")) {
                 return { results: state.monitors.filter((monitor) => isMonitorDueForEnqueue(monitor, state)) };
@@ -6707,32 +7113,43 @@ function createStatement(sql, state) {
                 return { success: true };
             }
             if (sql.includes("INSERT INTO monitor_runtime_summary")) {
-                const [
-                    monitorId,
-                    latestHeartbeatId,
-                    status,
-                    ping,
-                    msg,
-                    checkedAt,
-                    avgPing,
-                    uptime24,
-                    uptime720,
-                    uptime1y,
-                    heartbeatBarJson,
-                ] = this.values;
-                upsertByKey(state.monitorRuntimeSummaries, "monitor_id", Number(monitorId), {
+                const isFullRefresh = sql.includes("avg_ping");
+                const [monitorId, latestHeartbeatId, status, ping, msg, checkedAt] = this.values;
+                const existing = state.monitorRuntimeSummaries.find(
+                    (summary) => Number(summary.monitor_id) === Number(monitorId)
+                );
+                const nextSummary = {
+                    ...(existing || {}),
                     monitor_id: Number(monitorId),
                     latest_heartbeat_id: latestHeartbeatId == null ? null : Number(latestHeartbeatId),
                     status,
                     ping,
                     msg,
                     checked_at: checkedAt,
-                    avg_ping: avgPing,
-                    uptime_24: uptime24,
-                    uptime_720: uptime720,
-                    uptime_1y: uptime1y,
-                    heartbeat_bar_json: heartbeatBarJson,
-                });
+                };
+                if (isFullRefresh) {
+                    const [
+                        ,
+                        ,
+                        ,
+                        ,
+                        ,
+                        ,
+                        avgPing,
+                        uptime24,
+                        uptime720,
+                        uptime1y,
+                        heartbeatBarJson,
+                    ] = this.values;
+                    Object.assign(nextSummary, {
+                        avg_ping: avgPing,
+                        uptime_24: uptime24,
+                        uptime_720: uptime720,
+                        uptime_1y: uptime1y,
+                        heartbeat_bar_json: heartbeatBarJson,
+                    });
+                }
+                upsertByKey(state.monitorRuntimeSummaries, "monitor_id", Number(monitorId), nextSummary);
                 return { success: true };
             }
             if (sql.includes("INSERT INTO monitor_event_log")) {
@@ -6755,6 +7172,35 @@ function createStatement(sql, state) {
                 return { success: true };
             }
             if (sql.includes("INSERT INTO monitor_metric_bucket")) {
+                if (sql.includes("total_count = excluded.total_count")) {
+                    const [
+                        monitorId,
+                        resolutionSeconds,
+                        bucketStart,
+                        upCount,
+                        downCount,
+                        pendingCount,
+                        maintenanceCount,
+                        totalCount,
+                        pingSum,
+                        minPing,
+                        maxPing,
+                    ] = this.values;
+                    upsertMetricBucketExact(state, {
+                        monitor_id: Number(monitorId),
+                        resolution_seconds: Number(resolutionSeconds),
+                        bucket_start: bucketStart,
+                        up_count: Number(upCount || 0),
+                        down_count: Number(downCount || 0),
+                        pending_count: Number(pendingCount || 0),
+                        maintenance_count: Number(maintenanceCount || 0),
+                        total_count: Number(totalCount || 0),
+                        ping_sum: Number(pingSum || 0),
+                        min_ping: minPing,
+                        max_ping: maxPing,
+                    });
+                    return { success: true };
+                }
                 const [
                     monitorId,
                     resolutionSeconds,
@@ -7420,21 +7866,31 @@ function createStatement(sql, state) {
     return statement;
 }
 
-function isMonitorDueForEnqueue(monitor, state) {
+function isMonitorDueForEnqueue(monitor, state, nowValue = null) {
     if (Number(monitor.active) !== 1 || monitor.type === "group") {
         return false;
     }
-    const latestHeartbeat = latestHeartbeatForMonitor(state.heartbeats, monitor.id);
-    if (!latestHeartbeat) {
+    const latestCheck = nowValue == null
+        ? latestHeartbeatForMonitor(state.heartbeats, monitor.id)
+        : state.monitorRuntimeSummaries.find((summary) => Number(summary.monitor_id) === Number(monitor.id));
+    if (!latestCheck?.checked_at) {
         return true;
     }
-    const checkedAt = new Date(latestHeartbeat.checked_at).getTime();
+    const checkedAt = parseTestSqlTime(latestCheck.checked_at);
     if (!Number.isFinite(checkedAt)) {
         return true;
     }
     const intervalSeconds = Number(monitor.interval) > 0 ? Number(monitor.interval) : 60;
-    const now = state.now || Date.now();
+    const now = nowValue == null ? (state.now || Date.now()) : parseTestSqlTime(nowValue);
     return now - checkedAt >= intervalSeconds * 1000;
+}
+
+function parseTestSqlTime(value) {
+    if (value instanceof Date) {
+        return value.getTime();
+    }
+    const text = String(value || "");
+    return Date.parse(text.includes("T") ? text : `${text.replace(" ", "T")}Z`);
 }
 
 function latestHeartbeatForMonitor(heartbeats, monitorId) {
@@ -7481,12 +7937,91 @@ function buildMonitorEventLogQueryResults(values, state) {
     }));
 }
 
+function buildMetricRollupRows(sql, values, state) {
+    const resolutionSeconds = Number(values[0]);
+    const since = String(values[1] || "0000-01-01 00:00:00");
+    const monitorId = sql.includes("AND monitor_id = ?") ? Number(values[2]) : null;
+    const rowsByKey = new Map();
+
+    for (const bucket of state.monitorMetricBuckets) {
+        if (Number(bucket.resolution_seconds) !== 60 || String(bucket.bucket_start) < since) {
+            continue;
+        }
+        if (monitorId != null && Number(bucket.monitor_id) !== monitorId) {
+            continue;
+        }
+        const bucketStart = formatTestBucketStart(bucket.bucket_start, resolutionSeconds);
+        const key = `${bucket.monitor_id}:${resolutionSeconds}:${bucketStart}`;
+        const row = rowsByKey.get(key) || {
+            monitor_id: Number(bucket.monitor_id),
+            resolution_seconds: resolutionSeconds,
+            bucket_start: bucketStart,
+            up_count: 0,
+            down_count: 0,
+            pending_count: 0,
+            maintenance_count: 0,
+            total_count: 0,
+            ping_sum: 0,
+            min_ping: null,
+            max_ping: null,
+        };
+        row.up_count += Number(bucket.up_count || 0);
+        row.down_count += Number(bucket.down_count || 0);
+        row.pending_count += Number(bucket.pending_count || 0);
+        row.maintenance_count += Number(bucket.maintenance_count || 0);
+        row.total_count += Number(bucket.total_count || 0);
+        row.ping_sum += Number(bucket.ping_sum || 0);
+        row.min_ping = bucket.min_ping == null
+            ? row.min_ping
+            : row.min_ping == null
+                ? Number(bucket.min_ping)
+                : Math.min(row.min_ping, Number(bucket.min_ping));
+        row.max_ping = bucket.max_ping == null
+            ? row.max_ping
+            : row.max_ping == null
+                ? Number(bucket.max_ping)
+                : Math.max(row.max_ping, Number(bucket.max_ping));
+        rowsByKey.set(key, row);
+    }
+
+    return [...rowsByKey.values()].toSorted((a, b) => {
+        const monitorCompare = Number(a.monitor_id) - Number(b.monitor_id);
+        if (monitorCompare !== 0) {
+            return monitorCompare;
+        }
+        return String(a.bucket_start).localeCompare(String(b.bucket_start));
+    });
+}
+
+function formatTestBucketStart(value, resolutionSeconds) {
+    const date = new Date(`${String(value).replace(" ", "T")}Z`);
+    if (Number(resolutionSeconds) === 86400) {
+        date.setUTCHours(0, 0, 0, 0);
+    } else {
+        date.setUTCMinutes(0, 0, 0);
+    }
+    return date.toISOString().slice(0, 19).replace("T", " ");
+}
+
 function upsertByKey(rows, key, value, nextRow) {
     const existing = rows.find((row) => Number(row[key]) === Number(value));
     if (existing) {
         Object.assign(existing, nextRow);
     } else {
         rows.push(nextRow);
+    }
+}
+
+function upsertMetricBucketExact(state, nextBucket) {
+    const existing = state.monitorMetricBuckets.find((bucket) =>
+        Number(bucket.monitor_id) === Number(nextBucket.monitor_id) &&
+        Number(bucket.resolution_seconds) === Number(nextBucket.resolution_seconds) &&
+        bucket.bucket_start === nextBucket.bucket_start
+    );
+    if (existing) {
+        Object.assign(existing, nextBucket);
+    } else {
+        state.monitorMetricBuckets.push(nextBucket);
     }
 }
 
