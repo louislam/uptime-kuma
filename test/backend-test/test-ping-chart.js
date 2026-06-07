@@ -84,6 +84,16 @@ describe("PingChart period scaling", () => {
         assert.doesNotMatch(source, /fetchCloudflareMonitorHeartbeatsForPeriod/);
         assert.doesNotMatch(source, /CLOUDFLARE_CHART_HEARTBEAT_PAGE_SIZE/);
     });
+
+    test("Worker Recent chart uses derived chart data instead of sparse heartbeat cache", () => {
+        const source = fs.readFileSync(repoFile("src/components/PingChart.vue"), "utf8");
+
+        assert.match(source, /isCloudflareWorkerRecentChart\(\)/);
+        assert.match(source, /selectedChartPeriodHrs\(\)/);
+        assert.match(source, /this\.isCloudflareWorkerRecentChart \|\| this\.chartPeriodHrs !== "0"/);
+        assert.match(source, /this\.isCloudflareWorkerRecentChart \? this\.recentChartPeriodHrs : this\.chartPeriodHrs/);
+        assert.match(source, /this\.refreshChartDataForPeriod\(this\.chartPeriodHrs\)/);
+    });
 });
 
 describe("PingChart legend styling", () => {

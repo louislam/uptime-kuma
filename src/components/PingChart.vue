@@ -108,6 +108,7 @@ export default {
                 24: "24h",
                 168: "1w",
             },
+            recentChartPeriodHrs: 3,
 
             chartRawData: null,
             chartDataFetchInterval: null,
@@ -247,14 +248,14 @@ export default {
             };
         },
         chartData() {
-            if (this.chartPeriodHrs === "0") {
+            if (!this.isCloudflareWorkerRecentChart && this.chartPeriodHrs === "0") {
                 return this.getChartDatapointsFromHeartbeatList();
             } else {
                 return this.getChartDatapointsFromStats();
             }
         },
         chartXAxisRange() {
-            const period = Number(this.chartPeriodHrs);
+            const period = Number(this.selectedChartPeriodHrs);
             if (!Number.isFinite(period) || period <= 0) {
                 return {};
             }
@@ -266,6 +267,12 @@ export default {
                 min: min.format("YYYY-MM-DD HH:mm:ss"),
                 max: max.format("YYYY-MM-DD HH:mm:ss"),
             };
+        },
+        isCloudflareWorkerRecentChart() {
+            return this.$root.isCloudflareWorkerUI && this.chartPeriodHrs === "0";
+        },
+        selectedChartPeriodHrs() {
+            return this.isCloudflareWorkerRecentChart ? this.recentChartPeriodHrs : this.chartPeriodHrs;
         },
         currentMonitor() {
             return this.$root.monitorList[this.monitorId];
@@ -284,65 +291,27 @@ export default {
     watch: {
         // Update chart data when the selected chart period changes
         chartPeriodHrs: function (newPeriod) {
-            if (this.chartDataFetchInterval) {
-                clearInterval(this.chartDataFetchInterval);
-                this.chartDataFetchInterval = null;
-            }
-
-            // eslint-disable-next-line eqeqeq
-            if (newPeriod == "0") {
-                this.heartbeatList = null;
-                this.$root.storage()["chart-period"] = newPeriod;
-            } else {
-                this.loading = true;
-
-                let period;
-                try {
-                    period = parseInt(newPeriod);
-                } catch (e) {
-                    // Invalid period
-                    period = 24;
-                }
-
-                this.$root.getMonitorChartData(this.monitorId, period, (res) => {
-                    if (!res.ok) {
-                        this.$root.toastError(res.msg);
-                    } else {
-                        this.chartRawData = res.data;
-                        this.$root.storage()["chart-period"] = newPeriod;
-                    }
-                    this.loading = false;
-                });
-
-                this.chartDataFetchInterval = setInterval(
-                    () => {
-                        this.$root.getMonitorChartData(
-                            this.monitorId,
-                            period,
-                            (res) => {
-                                if (res.ok) {
-                                    this.chartRawData = res.data;
-                                }
-                            },
-                            { forceRefresh: true }
-                        );
-                    },
-                    CHART_BACKGROUND_REFRESH_MS
-                );
-            }
+            this.refreshChartDataForPeriod(newPeriod);
         },
     },
     created() {
         // Load chart period from storage if saved
         let period = this.$root.storage()["chart-period"];
+        let shouldRefreshInitialPeriod = false;
         if (period != null) {
             // Has this ever been not a string?
             if (typeof period !== "string") {
                 period = period.toString();
             }
             this.chartPeriodHrs = period;
+            shouldRefreshInitialPeriod = period === "0";
         } else {
             this.chartPeriodHrs = "0";
+            shouldRefreshInitialPeriod = true;
+        }
+
+        if (shouldRefreshInitialPeriod) {
+            this.refreshChartDataForPeriod(this.chartPeriodHrs);
         }
     },
     beforeUnmount() {
@@ -366,6 +335,53 @@ export default {
                 // Show yellow for mixed status
                 return "rgba(245, 182, 23, 0.41)";
             }
+        },
+        refreshChartDataForPeriod(newPeriod) {
+            if (this.chartDataFetchInterval) {
+                clearInterval(this.chartDataFetchInterval);
+                this.chartDataFetchInterval = null;
+            }
+
+            if (this.isCloudflareWorkerRecentChart || this.chartPeriodHrs !== "0") {
+                this.fetchChartData(newPeriod);
+                return;
+            }
+
+            this.heartbeatList = null;
+            this.chartRawData = null;
+            this.$root.storage()["chart-period"] = newPeriod;
+        },
+        fetchChartData(newPeriod) {
+            this.loading = true;
+
+            const parsedPeriod = parseInt(this.selectedChartPeriodHrs);
+            const period = Number.isFinite(parsedPeriod) && parsedPeriod > 0 ? parsedPeriod : 24;
+
+            this.$root.getMonitorChartData(this.monitorId, period, (res) => {
+                if (!res.ok) {
+                    this.$root.toastError(res.msg);
+                } else {
+                    this.chartRawData = res.data;
+                    this.$root.storage()["chart-period"] = newPeriod;
+                }
+                this.loading = false;
+            });
+
+            this.chartDataFetchInterval = setInterval(
+                () => {
+                    this.$root.getMonitorChartData(
+                        this.monitorId,
+                        period,
+                        (res) => {
+                            if (res.ok) {
+                                this.chartRawData = res.data;
+                            }
+                        },
+                        { forceRefresh: true }
+                    );
+                },
+                CHART_BACKGROUND_REFRESH_MS
+            );
         },
         // push datapoint to chartData
         pushDatapoint(datapoint, avgPingData, minPingData, maxPingData, downData, colorData) {
