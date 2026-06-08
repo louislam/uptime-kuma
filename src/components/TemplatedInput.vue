@@ -20,6 +20,10 @@
         : {{ $t("templateHeartbeatJSON") }}
         <b>({{ $t("templateLimitedToUpDownNotifications") }})</b>
         <br />
+        <code v-pre>{{ heartbeatJSON.downMonitors }}</code>
+        : {{ $t("templateDownMonitors") }}
+        <b>({{ $t("templateLimitedToUpDownNotifications") }})</b>
+        <br />
         <code v-pre>{{ monitorJSON }}</code>
         : {{ $t("templateMonitorJSON") }}
         <b>({{ $t("templateLimitedToUpDownCertNotifications") }})</b>

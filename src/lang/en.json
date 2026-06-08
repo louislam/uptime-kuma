@@ -270,6 +270,7 @@
     "Result": "Result",
     "templateMsg": "message of the notification",
     "templateHeartbeatJSON": "object describing the heartbeat",
+    "templateDownMonitors": "array of other monitors that are currently down (each with id, name, msg, time)",
     "templateMonitorJSON": "object describing the monitor",
     "templateLimitedToUpDownCertNotifications": "only available for UP/DOWN/Certificate expiry notifications",
     "templateLimitedToUpDownNotifications": "only available for UP/DOWN notifications",
