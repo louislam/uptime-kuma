@@ -70,7 +70,13 @@ function createAuthInstance() {
             // Check if the password has been pwned in data breaches
             haveIBeenPwned(),
 
-            twoFactor(),
+            twoFactor({
+                schema: {
+                    twoFactor: {
+                        modelName: "better_auth_twoFactor",
+                    },
+                },
+            }),
 
             // Potentially for "Disable Auth"
             anonymous(),

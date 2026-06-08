@@ -1,5 +1,5 @@
 import { createAuthClient } from "better-auth/vue";
-import { usernameClient } from "better-auth/client/plugins";
+import { twoFactorClient, usernameClient } from "better-auth/client/plugins";
 
 export const baseURL =
     process.env.NODE_ENV === "development" || localStorage.dev === "dev"
@@ -8,7 +8,7 @@ export const baseURL =
 
 export const authClient = createAuthClient({
     baseURL,
-    plugins: [usernameClient()],
+    plugins: [usernameClient(), twoFactorClient()],
 });
 
 authClient.signIn;
