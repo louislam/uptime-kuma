@@ -716,6 +716,21 @@
                                 />
                             </div>
 
+                            <!-- Gamedig Token -->
+                            <div v-if="monitor.type === 'gamedig'" class="my-3">
+                                <label for="gamedig-token" class="form-label">{{ $t("gamedigToken") }}</label>
+                                <input
+                                    id="gamedig-token"
+                                    v-model="monitor.gamedigToken"
+                                    type="password"
+                                    class="form-control"
+                                    :placeholder="$t('gamedigToken')"
+                                />
+                                <div class="form-text">
+                                    {{ $t("gamedigTokenDescription") }}
+                                </div>
+                            </div>
+
                             <!-- SNMP Monitor Type -->
                             <div v-if="monitor.type === 'snmp'" class="my-3">
                                 <label for="snmp_community_string" class="form-label">
@@ -1484,12 +1499,19 @@
                                     monitor.type === 'ping' ||
                                     monitor.type === 'rabbitmq' ||
                                     monitor.type === 'snmp' ||
-                                    monitor.type === 'websocket-upgrade'
+                                    monitor.type === 'websocket-upgrade' ||
+                                    monitor.type === 'kafka-producer'
                                 "
                                 class="my-3"
                             >
                                 <label for="timeout" class="form-label">
-                                    {{ monitor.type === "ping" ? $t("pingGlobalTimeoutLabel") : $t("Request Timeout") }}
+                                    {{
+                                        monitor.type === "ping"
+                                            ? $t("pingGlobalTimeoutLabel")
+                                            : monitor.type === "kafka-producer"
+                                              ? $t("Connection Timeout")
+                                              : $t("Request Timeout")
+                                    }}
                                     <span v-if="monitor.type !== 'ping'">
                                         ({{ $t("timeoutAfter", [monitor.timeout || clampTimeout(monitor.interval)]) }})
                                     </span>
@@ -3166,6 +3188,7 @@ const monitorDefaults = {
     kafkaProducerSsl: false,
     kafkaProducerAllowAutoTopicCreation: false,
     gamedigGivenPortOnly: true,
+    gamedigToken: "",
     remote_browser: null,
     screenshot_delay: 0,
     rabbitmqNodes: [],
@@ -3643,6 +3666,8 @@ message HealthCheckResponse {
                     this.monitor.timeout = 5;
                 } else if (this.monitor.type === "ping") {
                     this.monitor.timeout = 10;
+                } else if (this.monitor.type === "kafka-producer") {
+                    this.monitor.timeout = 1;
                 } else {
                     this.monitor.timeout = 48;
                 }
@@ -3714,7 +3739,7 @@ message HealthCheckResponse {
                 }
             }
 
-            if (newSubtype !== oldSubtype) {
+            if (oldSubtype && newSubtype !== oldSubtype) {
                 if (newSubtype === "ping") {
                     this.monitor.protocol = "ICMP";
                     this.monitor.port = "80";

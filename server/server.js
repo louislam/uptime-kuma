@@ -918,6 +918,7 @@ let needSetup = false;
                 bean.kafkaProducerSsl = monitor.kafkaProducerSsl;
                 bean.kafkaProducerAllowAutoTopicCreation = monitor.kafkaProducerAllowAutoTopicCreation;
                 bean.gamedigGivenPortOnly = monitor.gamedigGivenPortOnly;
+                bean.gamedigToken = monitor.gamedigToken;
                 bean.remote_browser = monitor.remote_browser;
                 bean.smtpSecurity = monitor.smtpSecurity;
                 bean.snmpVersion = monitor.snmpVersion;

@@ -32,8 +32,11 @@ jobs:
 
       - name: Generate lockfile from scratch
         run: |
+          npm install npm -g
+          npm -v
           rm -f package-lock.json
           npm install --package-lock-only
+          npm approve-scripts --all
 
       - name: Check if there are changes
         id: check_changes

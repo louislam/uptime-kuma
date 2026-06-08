@@ -231,6 +231,7 @@ class Monitor extends BeanModel {
                 oauth_audience: this.oauth_audience,
                 oauth_auth_method: this.oauth_auth_method,
                 bearer_token: this.bearer_token,
+                gamedigToken: this.gamedigToken,
                 pushToken: this.pushToken,
                 databaseConnectionString: this.databaseConnectionString,
                 radiusUsername: this.radiusUsername,
@@ -938,6 +939,7 @@ class Monitor extends BeanModel {
                             ssl: this.kafkaProducerSsl,
                             clientId: `Uptime-Kuma/${version}`,
                             interval: this.interval,
+                            connectionTimeout: this.timeout,
                         },
                         JSON.parse(this.kafkaProducerSaslOptions)
                     );

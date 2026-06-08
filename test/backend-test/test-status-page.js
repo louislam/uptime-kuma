@@ -53,6 +53,15 @@ describe("StatusPage", () => {
                 title: "Test Status Page",
             };
 
+            const mockIncidents = [
+                {
+                    title: "Test Monitor",
+                    content: "Test content",
+                    id: 1,
+                    createdDate: "2026-05-21 15:07:35.600",
+                },
+            ];
+
             const mockHeartbeats = [
                 {
                     name: "Test Monitor",
@@ -62,6 +71,7 @@ describe("StatusPage", () => {
             ];
 
             mock.method(StatusPage, "getRSSPageData", async () => ({
+                incidents: mockIncidents,
                 heartbeats: mockHeartbeats,
                 statusDescription: "All Systems Operational",
             }));
