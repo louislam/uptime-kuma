@@ -1,8 +1,8 @@
 <template>
     <div class="form-container">
         <div class="form">
-            <form @submit.prevent="submit">
-                <h1 class="h3 mb-3 fw-normal" />
+            <form @submit.prevent="submit" aria-label="Login">
+                <h1 class="h3 mb-3 fw-normal">{{ $t("Login") }}</h1>
 
                 <div v-if="!tokenRequired" class="form-floating">
                     <input
