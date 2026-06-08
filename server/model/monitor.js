@@ -1549,6 +1549,25 @@ class Monitor extends BeanModel {
                 }
             }
 
+            // Fetch other monitors currently down for the same user
+            try {
+                const downMonitors = await R.getAll(
+                    `SELECT m.id, m.name, h.msg, h.time
+                    FROM monitor m
+                    INNER JOIN heartbeat h ON h.monitor_id = m.id
+                    WHERE m.user_id = ? AND m.active = 1 AND m.id != ?
+                      AND h.time = (
+                          SELECT MAX(time) FROM heartbeat WHERE monitor_id = m.id AND important = 1
+                      )
+                      AND h.status = ?`,
+                    [monitor.user_id, monitor.id, DOWN]
+                );
+                heartbeatJSON["downMonitors"] = downMonitors;
+            } catch (error) {
+                log.debug("monitor", `[${monitor.name}] Could not fetch down monitors: ${error.message}`);
+                heartbeatJSON["downMonitors"] = [];
+            }
+
             for (let notification of notificationList) {
                 try {
                     await Notification.send(
