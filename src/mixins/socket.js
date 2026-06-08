@@ -1,13 +1,12 @@
 import { io } from "socket.io-client";
 import { useToast } from "vue-toastification";
-import jwtDecode from "jwt-decode";
 import Favico from "favico.js";
 import dayjs from "dayjs";
 import mitt from "mitt";
 
 import { DOWN, MAINTENANCE, PENDING, UP } from "../util.ts";
 import { getToastSuccessTimeout, getToastErrorTimeout } from "../util-frontend.js";
-import { logout } from "../auth-client";
+import { logout as betterAuthLogout } from "../auth-client";
 const toast = useToast();
 
 let socket;
@@ -381,15 +380,10 @@ export default {
          * @returns {void}
          */
         async logout() {
-            socket.emit("logout", () => {
-                logout(() => {
-                    console.log("Logged out");
-                    location.reload();
-                });
+            await betterAuthLogout(() => {
+                console.log("Logged out");
+                location.reload();
             });
-            this.loggedIn = false;
-            this.username = null;
-            this.clearData();
         },
 
         /**

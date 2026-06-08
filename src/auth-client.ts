@@ -14,7 +14,7 @@ export const authClient = createAuthClient({
 authClient.signIn;
 
 /**
- * Check if the user is logged in
+ * @returns Check if the user is logged in
  */
 export async function isLoggedIn() {
     const session = await authClient.getSession();
@@ -22,13 +22,15 @@ export async function isLoggedIn() {
 }
 
 /**
- * @param username
- * @param password
+ * @param username Username
+ * @param password Password
+ * @param remember Remember Me
  */
-export async function login(username: string, password: string) {
+export async function login(username: string, password: string, remember: boolean = true) {
     const { error } = await authClient.signIn.username({
         username,
         password,
+        rememberMe: remember,
     });
 
     if (error) {

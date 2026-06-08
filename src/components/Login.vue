@@ -116,7 +116,7 @@ export default {
             this.processing = true;
 
             try {
-                await login(this.username, this.password);
+                await login(this.username, this.password, this.$root.remember);
             } catch (e) {
                 console.error(e);
             } finally {

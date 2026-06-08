@@ -383,24 +383,6 @@ app.use(function (req, res, next) {
         }
 
         // ***************************
-        // Public Socket API
-        // ***************************
-
-        socket.on("logout", async (callback) => {
-            // Rate Limit
-            if (!(await loginRateLimiter.pass(callback))) {
-                return;
-            }
-
-            socket.leave(socket.userID);
-            socket.userID = null;
-
-            if (typeof callback === "function") {
-                callback();
-            }
-        });
-
-        // ***************************
         // Auth Only API
         // ***************************
 
