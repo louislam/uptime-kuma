@@ -342,10 +342,6 @@ export default {
     font-weight: 700;
 }
 
-.worker-role-help dd {
-    color: $dark-font-color2;
-}
-
 .dark {
     .worker-users-table {
         color: $dark-font-color;

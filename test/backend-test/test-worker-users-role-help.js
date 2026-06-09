@@ -15,5 +15,6 @@ describe("Worker users role help", () => {
         assert.match(usersSource, /Can create, edit, delete, run, and pause monitors, manage settings, notifications, tags, status pages, network profiles, and clear statistics\. Cannot manage users or security settings\./);
         assert.match(usersSource, /Can view settings and integrations, run or pause monitors, and clear heartbeat history\. Cannot create, edit, or delete monitors or settings\./);
         assert.match(usersSource, /Read-only access to dashboards, monitors, heartbeat history, settings, notifications, tags, proxies, Docker hosts, remote browsers, network profiles, and status pages\./);
+        assert.doesNotMatch(usersSource, /worker-role-help dd[\s\S]*\$dark-font-color2/);
     });
 });
