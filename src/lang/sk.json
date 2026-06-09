@@ -1607,5 +1607,17 @@
     "evolutionCustomMessageTitle": "Vlastná správa (voliteľné)",
     "evolutionCustomMessageDesc": "Nechajte prázdne, ak chcete použiť predvolenú správu.",
     "WebSocket Options": "Možnosti WebSocket",
-    "pingPacketSizeWarning": "Pri veľkosti paketu menšej ako 16 sa v systéme Linux nezaznamenávajú časy odozvy"
+    "pingPacketSizeWarning": "Pri veľkosti paketu menšej ako 16 sa v systéme Linux nezaznamenávajú časy odozvy",
+    "VKTeams Chat Id Description": "V prípade používateľov ide o ich e-mailovú adresu. V prípade skupín a kanálov získajte ID z ich nastavení a pripojte k nemu {‚@‘}chat.agent",
+    "VKTeams Use Template": "Použiť vlastnú šablónu správy",
+    "VKTeams Use Template Description": "Ak je táto funkcia zapnutá, správa bude odoslaná pomocou vlastnej šablóny.",
+    "VKTeams Bot Token Description": "Informácie o tom, ako získať bot token, a ďalšie podrobnosti nájdete na {0}.",
+    "VKTeams Base Url Description": "Základná URL adresa rozhrania API VKTeams; v prípade riešenia On-Premise sa môže líšiť. Predvolené: https://myteam.mail.ru",
+    "VKTeams Template Format Description": "Pokiaľ ide o formátovanie správ, VKTeams podporuje formátovanie v podobe obyčajného textu, MarkdownV2 a HTML.",
+    "egosmsPhoneNumberDescription": "Číslo príjemcu s predvoľbou krajiny, bez znaku + alebo 00 (napr. 2567XXXXXXXX).",
+    "wayToGetEgoSMSToken": "Svoje používateľské meno a heslo pre rozhranie API EgoSMS si môžete vyžiadať {tu}.",
+    "egosmsSenderDescription": "ID odosielateľa zobrazené príjemcom (max. 11 znakov). Ak je pole prázdne, predvolené nastavenie je EGOSMS.",
+    "gamedigToken": "Token",
+    "gamedigTokenDescription": "Voliteľné. Niektoré herné servery vyžadujú overovací token.",
+    "Bearer Token": "Token na doručiteľa"
 }
