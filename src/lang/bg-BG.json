@@ -1648,5 +1648,17 @@
     "evolutionCustomMessageTitle": "Персонализирано съобщение (по избор)",
     "evolutionCustomMessageDesc": "Оставете празно, за да използвате съобщението по подразбиране.",
     "WebSocket Options": "WebSocket опции",
-    "pingPacketSizeWarning": "Пакет с размер по-малък от 16 не продуцира \"round-trip\" време в Linux"
+    "pingPacketSizeWarning": "Пакет с размер по-малък от 16 не продуцира \"round-trip\" време в Linux",
+    "wayToGetEgoSMSToken": "Можете да получите потребителското си име и парола за EgoSMS API от {тук}.",
+    "egosmsPhoneNumberDescription": "Номер на получател с код на държавата, без + или 00 (напр. 2567XXXXXXXX).",
+    "Bearer Token": "Bearer токен код",
+    "VKTeams Use Template": "Използвай персонализиран шаблон за съобщение",
+    "gamedigToken": "Токен код",
+    "gamedigTokenDescription": "По желание. Някои игрови сървъри изискват токен за удостоверяване.",
+    "VKTeams Bot Token Description": "Можете да разберете как да получите бот токен код и други подробности на {0}.",
+    "VKTeams Chat Id Description": "За потребителите това е техният имейл адрес. За групи и канали, вземете идентификатора от техните настройки и добавете {'@'}chat.agent",
+    "VKTeams Template Format Description": "За стилизиране на съобщения, VKTeams поддържа форматиране на обикновен текст, MarkdownV2 и HTML.",
+    "egosmsSenderDescription": "ID на подателя, показван на получателите (максимум 11 знака). По подразбиране е EGOSMS, ако е празно.",
+    "VKTeams Base Url Description": "Базов URL адрес за VKTeams API, може да се различава в локалното решение. По подразбиране: https://myteam.mail.ru",
+    "VKTeams Use Template Description": "Ако е активирано, съобщението ще бъде изпратено чрез персонализиран шаблон."
 }
