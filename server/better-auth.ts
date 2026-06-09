@@ -9,7 +9,8 @@ import { admin } from "better-auth/plugins";
 import { Socket } from "socket.io";
 import { haveIBeenPwned } from "better-auth/plugins";
 import { twoFactor } from "better-auth/plugins";
-import { anonymous } from "better-auth/plugins";
+
+type BetterAuthUser = ReturnType<typeof createAuthInstance>["$Infer"]["Session"]["user"];
 
 let authInstance: ReturnType<typeof createAuthInstance>;
 
@@ -78,8 +79,8 @@ function createAuthInstance() {
                 },
             }),
 
-            // Potentially for "Disable Auth"
-            anonymous(),
+            // It is not suitable for "Disable Auth", because it can not turn on/off after init.
+            //anonymous(),
         ],
         user: {
             modelName: "better_auth_user",
@@ -120,6 +121,7 @@ export function getAuthSecret() {
  * @returns Session Object
  */
 export function getSession(cookie: string) {
+    log.info("auth", "Logged in with httpOnly cookie session");
     const context = {
         headers: new Headers(),
     };
@@ -128,7 +130,45 @@ export function getSession(cookie: string) {
 }
 
 /**
- * @param socket
+ *
+ */
+export async function getDisableAuthSession(): ReturnType<typeof getSession> {
+    log.info("auth", "Logged in with Disable Auth");
+
+    const { users, total } = await authInstance.api.listUsers({
+        query: {
+            limit: 1,
+        },
+    });
+
+    if (total == 0) {
+        throw new Error("Unexpected error. No users found");
+    }
+
+    // Seems bugged, user from listUsers does not have all properties
+    // Force parse the user object to BetterAuthUser.
+    // https://github.com/better-auth/better-auth/issues/7452
+    const user = users[0] as BetterAuthUser;
+
+    return {
+        user,
+        session: {
+            id: "disable-auth",
+            userId: user.id,
+            ipAddress: null,
+            userAgent: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 365),
+            token: "disable-auth",
+        },
+    };
+}
+
+/**
+ * Check Login (Better Auth New!)
+ * @param socket Socket.IO Socket
+ * @throws Error if not logged in
  */
 export function checkLogin(socket: Socket) {
     // @ts-ignore
@@ -140,4 +180,7 @@ export function checkLogin(socket: Socket) {
 /**
  * TODO
  */
-export async function migrateUser() {}
+export async function migrateUser() {
+    // TODO: User have to input pwd one time to migrate, or we can not get the original password hash to create a better-auth user
+    // TODO: Disable Auth may need to directly create a user in the database
+}

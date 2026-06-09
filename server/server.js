@@ -4,7 +4,7 @@
  * DO NOT require("./server") in other modules, it likely creates circular dependency!
  */
 import { genSecret, getRandomInt, isDev, log, sleep } from "../src/util";
-import { auth, getSession } from "./better-auth";
+import { auth, getDisableAuthSession, getSession } from "./better-auth";
 import { createBetterAuthRouter, needSetup } from "./routers/better-auth-router";
 import { betterAuthSocketHandler } from "./socket-handlers/better-auth-socket-handler";
 import { loadEnvFile } from "node:process";
@@ -373,7 +373,13 @@ app.use(function (req, res, next) {
             socket.emit("setup");
         }
 
-        const session = await getSession(socket.request.headers.cookie);
+        let session;
+
+        if (!(await Settings.get("disableAuth"))) {
+            session = await getSession(socket.request.headers.cookie);
+        } else {
+            session = await getDisableAuthSession();
+        }
 
         if (session) {
             socket.userID = session.user.id;
@@ -1360,13 +1366,7 @@ app.use(function (req, res, next) {
         // Better do anything after added all socket handlers here
         // ***************************
 
-        log.debug("auth", "check auto login");
-        if (await setting("disableAuth")) {
-            log.info("auth", "Disabled Auth: auto login to admin");
-            await afterLogin(socket, await R.findOne("user"));
-            socket.emit("autoLogin");
-        } else if (session) {
-            log.info("auth", "Logged in with httpOnly cookie session");
+        if (session) {
             await afterLogin(socket, session.user);
         } else {
             socket.emit("loginRequired");
