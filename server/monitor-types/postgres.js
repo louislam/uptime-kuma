@@ -34,12 +34,7 @@ class PostgresMonitorType extends MonitorType {
      */
     async postgresQuery(connectionString, query) {
         return new Promise((resolve, reject) => {
-            const config = postgresConParse(connectionString);
-
-            // Fix #3868, which true/false is not parsed to boolean
-            if (typeof config.ssl === "string") {
-                config.ssl = config.ssl === "true";
-            }
+            const config = this.buildClientConfig(connectionString);
 
             if (config.password === "") {
                 // See https://github.com/brianc/node-postgres/issues/1927
@@ -75,6 +70,26 @@ class PostgresMonitorType extends MonitorType {
                 }
             });
         });
+    }
+
+    /**
+     * Build a pg client config from a connection string.
+     * @param {string} connectionString The database connection string
+     * @returns {object} pg client config
+     */
+    buildClientConfig(connectionString) {
+        const config = postgresConParse(connectionString);
+
+        // Fix #3868, which true/false is not parsed to boolean
+        if (typeof config.ssl === "string") {
+            config.ssl = config.ssl === "true";
+        }
+
+        if (config.sslmode === "require" && typeof config.ssl === "object" && !config.ssl.ca) {
+            config.ssl.rejectUnauthorized = false;
+        }
+
+        return config;
     }
 }
 

@@ -4,6 +4,31 @@ const { MariaDbContainer } = require("@testcontainers/mariadb");
 const { MysqlMonitorType } = require("../../../server/monitor-types/mysql");
 const { UP, PENDING } = require("../../../src/util");
 
+describe("MySQL/MariaDB Monitor TLS config", () => {
+    test("ssl=true does not require trusted CA certificates", () => {
+        const mysqlMonitor = new MysqlMonitorType();
+        const config = mysqlMonitor.buildConnectionConfig("mysql://user:pass@example.com:3306/db?ssl=true");
+
+        assert.strictEqual(config.ssl.rejectUnauthorized, false);
+    });
+
+    test("ssl-mode=REQUIRED does not require trusted CA certificates", () => {
+        const mysqlMonitor = new MysqlMonitorType();
+        const config = mysqlMonitor.buildConnectionConfig("mysql://user:pass@example.com:3306/db?ssl-mode=REQUIRED");
+
+        assert.strictEqual(config.ssl.rejectUnauthorized, false);
+        assert.ok(!config.uri.includes("ssl-mode"));
+    });
+
+    test("sslmode=require does not require trusted CA certificates", () => {
+        const mysqlMonitor = new MysqlMonitorType();
+        const config = mysqlMonitor.buildConnectionConfig("mysql://user:pass@example.com:3306/db?sslmode=require");
+
+        assert.strictEqual(config.ssl.rejectUnauthorized, false);
+        assert.ok(!config.uri.includes("sslmode"));
+    });
+});
+
 /**
  * Helper function to create and start a MariaDB container
  * @returns {Promise<{container: MariaDbContainer, connectionString: string}>} The started container and connection string

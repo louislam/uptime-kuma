@@ -70,10 +70,7 @@ class MysqlMonitorType extends MonitorType {
      */
     mysqlQuery(connectionString, query, password = undefined) {
         return new Promise((resolve, reject) => {
-            const connection = mysql.createConnection({
-                uri: connectionString,
-                password,
-            });
+            const connection = mysql.createConnection(this.buildConnectionConfig(connectionString, password));
 
             connection.on("error", (err) => {
                 reject(err);
@@ -109,10 +106,7 @@ class MysqlMonitorType extends MonitorType {
      */
     mysqlQuerySingleValue(connectionString, query, password = undefined) {
         return new Promise((resolve, reject) => {
-            const connection = mysql.createConnection({
-                uri: connectionString,
-                password,
-            });
+            const connection = mysql.createConnection(this.buildConnectionConfig(connectionString, password));
 
             connection.on("error", (err) => {
                 reject(err);
@@ -155,6 +149,35 @@ class MysqlMonitorType extends MonitorType {
                 resolve(firstRow[columnNames[0]]);
             });
         });
+    }
+
+    /**
+     * Build a mysql2 connection config from a connection string.
+     * @param {string} connectionString The database connection string
+     * @param {string} password Optional password override
+     * @returns {object} mysql2 connection config
+     */
+    buildConnectionConfig(connectionString, password = undefined) {
+        const config = {
+            uri: connectionString,
+            password,
+        };
+        const parsedUrl = new URL(connectionString);
+        const sslMode = parsedUrl.searchParams.get("ssl-mode") || parsedUrl.searchParams.get("sslmode");
+        const ssl = parsedUrl.searchParams.get("ssl");
+        const sslModeValue = sslMode && sslMode.toLowerCase();
+
+        if (sslModeValue === "required" || sslModeValue === "require" || ssl === "true") {
+            config.ssl = {
+                rejectUnauthorized: false,
+            };
+            parsedUrl.searchParams.delete("ssl");
+            parsedUrl.searchParams.delete("ssl-mode");
+            parsedUrl.searchParams.delete("sslmode");
+            config.uri = parsedUrl.toString();
+        }
+
+        return config;
     }
 }
 
