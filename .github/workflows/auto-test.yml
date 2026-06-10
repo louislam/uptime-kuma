@@ -46,7 +46,7 @@ jobs:
           node-version: ${{ matrix.node }}
 
       # Install latest npm to test the new policy - npm approve-scripts
-      - run: npm install npm -g
+      - run: npm install npm@12.0.0-pre.0.0 -g
 
       # Print the npm version
       - run: npm --version
