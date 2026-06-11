@@ -111,7 +111,12 @@ async function runHttpCheck(monitor, networkProfile, twingateProxyUrl, start, op
     }
 
     if (monitor.type === "json-query" && monitor.expectedValue !== undefined && monitor.expectedValue !== null) {
-        const parsed = JSON.parse(response.body);
+        let parsed;
+        try {
+            parsed = JSON.parse(response.body);
+        } catch (_) {
+            throw new Error(`Response body is not valid JSON${response.truncated ? " (body truncated by size limit)" : ""}`);
+        }
         const actual = resolveJsonPath(parsed, monitor.jsonPath);
         if (String(actual) !== String(monitor.expectedValue)) {
             throw new Error(`JSON query does not match expected value: ${actual}`);
@@ -280,7 +285,7 @@ function requestDirect(targetUrl, monitor, resolvedTarget = null, responseMaxByt
                 lookup: pinnedLookup(resolvedTarget),
                 ...tlsOptions,
             },
-            (res) => collectResponse(res, resolve, responseMaxBytes)
+            (res) => collectResponse(res, resolve, reject, responseMaxBytes)
         );
         req.on("timeout", () => req.destroy(new Error("Request timed out")));
         req.on("error", reject);
@@ -310,7 +315,7 @@ function requestViaHttpProxy(targetUrl, proxyUrlString, monitor, responseMaxByte
                     Host: targetUrl.host,
                 },
             },
-            (res) => collectResponse(res, resolve, responseMaxBytes)
+            (res) => collectResponse(res, resolve, reject, responseMaxBytes)
         );
         req.on("timeout", () => req.destroy(new Error("Request timed out")));
         req.on("error", reject);
@@ -336,7 +341,7 @@ function requestViaUserProxy(targetUrl, proxy, monitor, responseMaxBytes = DEFAU
                 agent: createUserProxyAgent(proxy, targetUrl.protocol),
                 ...tlsOptions,
             },
-            (res) => collectResponse(res, resolve, responseMaxBytes)
+            (res) => collectResponse(res, resolve, reject, responseMaxBytes)
         );
         req.on("timeout", () => req.destroy(new Error("Request timed out")));
         req.on("error", reject);
@@ -404,7 +409,7 @@ async function requestHttpsViaConnectProxy(
                 headers: parseHeaders(monitor.headers),
                 timeout: getTimeoutMs(monitor.timeout),
             },
-            (res) => collectResponse(res, resolve, responseMaxBytes)
+            (res) => collectResponse(res, resolve, reject, responseMaxBytes)
         );
         req.on("timeout", () => req.destroy(new Error("Request timed out")));
         req.on("error", reject);
@@ -617,7 +622,7 @@ function verifyTlsTunnelHandshake(socket, hostname, timeoutSeconds) {
     });
 }
 
-function collectResponse(res, resolve, maxBytes = DEFAULT_RESPONSE_MAX_BYTES) {
+function collectResponse(res, resolve, reject, maxBytes = DEFAULT_RESPONSE_MAX_BYTES) {
     const chunks = [];
     let receivedBytes = 0;
     const cappedMaxBytes = Math.max(0, Math.min(maxBytes, MAX_RESPONSE_MAX_BYTES));
@@ -635,6 +640,11 @@ function collectResponse(res, resolve, maxBytes = DEFAULT_RESPONSE_MAX_BYTES) {
             body: Buffer.concat(chunks).toString("utf8"),
             truncated: receivedBytes > cappedMaxBytes,
         });
+    });
+    // Without this, a connection reset mid-body emits an unhandled "error"
+    // event on the response stream and crashes the runner process.
+    res.on("error", (error) => {
+        reject(new Error(`Response stream failed: ${error.message}`));
     });
 }
 

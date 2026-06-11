@@ -67,6 +67,7 @@ const MAX_TWINGATE_ALERT_THRESHOLD_MINUTES = 1440;
 const DEFAULT_RECENT_HEARTBEAT_HISTORY_LIMIT = 150;
 const MAX_RECENT_HEARTBEAT_HISTORY_LIMIT = 500;
 const DASHBOARD_HEARTBEAT_BAR_LIMIT = 150;
+const STATUS_PAGE_HEARTBEAT_LIMIT = 100;
 const DASHBOARD_BACKFILL_MONITOR_LIMIT = 25;
 const DASHBOARD_BACKFILL_HEARTBEAT_LIMIT = 10000;
 const DEFAULT_DASHBOARD_CHART_PERIOD_HOURS = 1;
@@ -866,19 +867,30 @@ export async function setUiSettings(env, settings) {
         ...DEFAULT_SETTINGS,
         ...(settings || {}),
     };
-    await Promise.all(
-        Object.entries(merged).map(([key, value]) =>
+    const existing = await env.DB.prepare("SELECT key, value FROM app_settings").all();
+    const existingByKey = new Map((existing.results || []).map((row) => [row.key, row.value]));
+    const statements = [];
+    for (const [key, value] of Object.entries(merged)) {
+        if (SENSITIVE_SETTING_KEYS.has(key)) {
+            continue;
+        }
+        const serialized = JSON.stringify(value);
+        if (existingByKey.get(key) === serialized) {
+            continue;
+        }
+        statements.push(
             env.DB.prepare(
                 `INSERT INTO app_settings (key, value, updated_at)
                  VALUES (?, ?, CURRENT_TIMESTAMP)
                  ON CONFLICT(key) DO UPDATE SET
                     value = excluded.value,
                     updated_at = CURRENT_TIMESTAMP`
-            )
-                .bind(key, JSON.stringify(value))
-                .run()
-        )
-    );
+            ).bind(key, serialized)
+        );
+    }
+    if (statements.length > 0) {
+        await env.DB.batch(statements);
+    }
 }
 
 export async function listDockerHosts(env) {
@@ -2268,29 +2280,63 @@ export async function getStatusPageHeartbeatData(env, slug) {
     const monitors = await listMonitors(env);
     const monitorsById = new Map(monitors.map((monitor) => [Number(monitor.id), monitor]));
     const publicGroupList = await getWorkerPublicGroupList(env, monitors);
-    const selectedMonitors = publicGroupList.flatMap((group) => group.monitorList || []);
+    const selectedMonitors = publicGroupList
+        .flatMap((group) => group.monitorList || [])
+        .map((publicMonitor) => monitorsById.get(Number(publicMonitor.id)))
+        .filter(Boolean);
+
+    // Hydrate every selected leaf monitor (including group children) with two
+    // batched D1 reads instead of separate history/uptime queries per monitor.
+    const leafIdsByGroupId = new Map();
+    const leafIds = new Set();
+    for (const monitor of selectedMonitors) {
+        if (monitor.type === "group") {
+            const childIds = getActiveWorkerLeafMonitors(monitor, monitorsById).map((child) => Number(child.id));
+            leafIdsByGroupId.set(Number(monitor.id), childIds);
+            childIds.forEach((childId) => leafIds.add(childId));
+        } else {
+            leafIds.add(Number(monitor.id));
+        }
+    }
+
+    const [heartbeatsByMonitorId, summariesByMonitorId] = await Promise.all([
+        listRecentHeartbeatsByMonitorId(env, [...leafIds], STATUS_PAGE_HEARTBEAT_LIMIT),
+        listRuntimeSummariesByMonitorId(env, [...leafIds]),
+    ]);
+
+    const leafHeartbeatData = (monitorId) => {
+        const heartbeats = heartbeatsByMonitorId[monitorId] || [];
+        const summaryUptime = summariesByMonitorId.get(monitorId)?.uptime_24;
+        return {
+            heartbeats,
+            uptime: summaryUptime == null ? calculateStatusPageUptime(heartbeats) : Number(summaryUptime),
+        };
+    };
+
     const heartbeatList = {};
     const uptimeList = {};
-
-    await Promise.all(
-        selectedMonitors.map(async (publicMonitor) => {
-            const monitor = monitorsById.get(Number(publicMonitor.id));
-            if (!monitor) {
-                return;
+    for (const monitor of selectedMonitors) {
+        const monitorId = Number(monitor.id);
+        if (monitor.type === "group") {
+            const childData = (leafIdsByGroupId.get(monitorId) || []).map(leafHeartbeatData);
+            if (childData.length === 0) {
+                heartbeatList[monitorId] = [];
+                uptimeList[`${monitorId}_24`] = 0;
+                continue;
             }
+            heartbeatList[monitorId] = buildWorkerGroupHeartbeatList(
+                monitorId,
+                childData.map((data) => data.heartbeats)
+            );
+            uptimeList[`${monitorId}_24`] =
+                childData.reduce((total, data) => total + data.uptime, 0) / childData.length;
+            continue;
+        }
 
-            if (monitor.type === "group") {
-                const aggregate = await buildWorkerGroupStatusPageHeartbeatData(env, monitor, monitorsById);
-                heartbeatList[monitor.id] = aggregate.heartbeats;
-                uptimeList[`${monitor.id}_24`] = aggregate.uptime;
-                return;
-            }
-
-            const heartbeatData = await getStatusPageMonitorHeartbeatData(env, monitor);
-            heartbeatList[monitor.id] = heartbeatData.heartbeats;
-            uptimeList[`${monitor.id}_24`] = heartbeatData.uptime;
-        })
-    );
+        const data = leafHeartbeatData(monitorId);
+        heartbeatList[monitorId] = data.heartbeats;
+        uptimeList[`${monitorId}_24`] = data.uptime;
+    }
 
     return {
         heartbeatList,
@@ -3179,7 +3225,7 @@ export async function checkTwingateHealthAlert(env, now = new Date()) {
             notified = notifications.length > 0;
         }
 
-        await setStoredSetting(env, TWINGATE_ALERT_STATE_SETTING, nextState);
+        await storeTwingateAlertStateIfChanged(env, alertState, nextState);
         return {
             enabled: true,
             degraded: true,
@@ -3205,13 +3251,33 @@ export async function checkTwingateHealthAlert(env, now = new Date()) {
         notified = notifications.length > 0;
     }
 
-    await setStoredSetting(env, TWINGATE_ALERT_STATE_SETTING, nextState);
+    await storeTwingateAlertStateIfChanged(env, alertState, nextState);
     return {
         enabled: true,
         degraded: false,
         notified,
         thresholdMet: false,
     };
+}
+
+/**
+ * Persist the Twingate alert state only when a decision-relevant field changed.
+ * lastStatusAt is informational and never read back, so steady-state cron runs
+ * skip the per-interval D1 write.
+ * @param {object} env Cloudflare Worker environment bindings.
+ * @param {object} previousState Normalized stored alert state.
+ * @param {object} nextState Computed next alert state.
+ * @returns {Promise<void>} Completion promise.
+ */
+async function storeTwingateAlertStateIfChanged(env, previousState, nextState) {
+    const changed =
+        previousState.firstDegradedAt !== (nextState.firstDegradedAt || null) ||
+        previousState.lastError !== (nextState.lastError || null) ||
+        previousState.notifiedStatus !== (nextState.notifiedStatus || null) ||
+        previousState.lastNotificationAt !== (nextState.lastNotificationAt || null);
+    if (changed) {
+        await setStoredSetting(env, TWINGATE_ALERT_STATE_SETTING, nextState);
+    }
 }
 
 export async function updateMonitorNetworkRoute(env, monitorId, networkProfileId) {
@@ -4526,6 +4592,11 @@ async function countRecentMonitorFailures(env, monitorId, maxRetries) {
     return failures;
 }
 
+// Once a Worker version is observed unpaused, nothing can re-enter the pause
+// window for that version, so the verdict is cached per isolate to avoid a D1
+// settings read on every queued monitor check, queue batch, and cron tick.
+const resolvedDeployPauseStateByDb = new WeakMap();
+
 export async function getDeployMonitorPauseState(env, now = new Date()) {
     const versionId = resolveWorkerVersionId(env);
     if (!versionId) {
@@ -4534,6 +4605,11 @@ export async function getDeployMonitorPauseState(env, now = new Date()) {
             versionId: null,
             pauseUntil: null,
         };
+    }
+
+    const cached = env.DB ? resolvedDeployPauseStateByDb.get(env.DB) : null;
+    if (cached && cached.versionId === versionId) {
+        return cached.state;
     }
 
     const stored = await getStoredSetting(env, DEPLOY_MONITOR_PAUSE_SETTING);
@@ -4566,11 +4642,21 @@ export async function getDeployMonitorPauseState(env, now = new Date()) {
         };
     }
 
-    return {
+    return cacheUnpausedDeployState(env, {
         paused: false,
         versionId,
         pauseUntil: storedPauseUntil ? storedPauseUntil.toISOString() : null,
-    };
+    });
+}
+
+function cacheUnpausedDeployState(env, state) {
+    if (env.DB) {
+        resolvedDeployPauseStateByDb.set(env.DB, {
+            versionId: state.versionId,
+            state,
+        });
+    }
+    return state;
 }
 
 async function shouldResumeDeployMonitorPause(env) {
@@ -4588,11 +4674,11 @@ async function endDeployMonitorPause(env, versionId, now) {
         versionId,
         pauseUntil,
     });
-    return {
+    return cacheUnpausedDeployState(env, {
         paused: false,
         versionId,
         pauseUntil,
-    };
+    });
 }
 
 function resolveWorkerVersionId(env) {
@@ -6994,55 +7080,6 @@ function calculateStatusPageUptime(heartbeats) {
     }
     const up = heartbeats.filter((heartbeat) => heartbeat.status === 1).length;
     return up / heartbeats.length;
-}
-
-async function buildWorkerGroupStatusPageHeartbeatData(env, groupMonitor, monitorsById) {
-    const childMonitors = getActiveWorkerLeafMonitors(groupMonitor, monitorsById);
-    if (childMonitors.length === 0) {
-        return {
-            heartbeats: [],
-            uptime: 0,
-        };
-    }
-
-    const childHeartbeatData = await Promise.all(
-        childMonitors.map((monitor) => getStatusPageMonitorHeartbeatData(env, monitor))
-    );
-
-    const totalUptime = childHeartbeatData.reduce((total, data) => (
-        total + data.uptime
-    ), 0);
-
-    return {
-        heartbeats: buildWorkerGroupHeartbeatList(groupMonitor.id, childHeartbeatData.map((data) => data.heartbeats)),
-        uptime: totalUptime / childHeartbeatData.length,
-    };
-}
-
-async function getStatusPageMonitorHeartbeatData(env, monitor) {
-    const heartbeats = await getStatusPageMonitorHeartbeats(env, monitor);
-    return {
-        heartbeats,
-        uptime: await getStatusPageMonitorUptime24(env, monitor, heartbeats),
-    };
-}
-
-async function getStatusPageMonitorHeartbeats(env, monitor) {
-    const result = await listMonitorHeartbeats(env, monitor.id, 0, 100);
-    return result.heartbeats.slice().reverse();
-}
-
-async function getStatusPageMonitorUptime24(env, monitor, fallbackHeartbeats) {
-    const referenceTime = monitor.lastHeartbeat?.time || formatSqliteDateTime(new Date());
-    try {
-        const metrics = await summarizeMetricBuckets(env, Number(monitor.id), 60, referenceTime, 24);
-        return metrics.uptime == null ? calculateStatusPageUptime(fallbackHeartbeats) : metrics.uptime;
-    } catch (error) {
-        if (!/no such table: monitor_metric_bucket/i.test(error?.message || "")) {
-            throw error;
-        }
-        return calculateStatusPageUptime(fallbackHeartbeats);
-    }
 }
 
 function getActiveWorkerLeafMonitors(groupMonitor, monitorsById) {

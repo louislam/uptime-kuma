@@ -936,6 +936,47 @@ describe("Cloudflare Worker API", () => {
         assert.strictEqual(body.heartbeatList[3], undefined);
     });
 
+    test("status page heartbeat data prefers cached runtime summary uptime", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            monitors: [
+                { id: 7, name: "Customer Site", type: "http", url: "https://customer.example.test", active: 1 },
+            ],
+            settings: {
+                "statusPagePublicGroupList:default": [
+                    {
+                        id: 10,
+                        name: "Customer Services",
+                        monitorList: [{ id: 7 }],
+                    },
+                ],
+            },
+            heartbeats: [
+                { monitor_id: 7, status: 1, ping: 12, msg: "200 - OK", checked_at: "2026-05-11 02:30:00" },
+            ],
+            monitorRuntimeSummaries: [
+                {
+                    monitor_id: 7,
+                    status: 1,
+                    ping: 12,
+                    msg: "200 - OK",
+                    checked_at: "2026-05-11 02:30:00",
+                    uptime_24: 0.98,
+                },
+            ],
+        });
+
+        const response = await handleApiRequest(
+            new Request("https://example.com/api/status-page/heartbeat/default"),
+            env
+        );
+        const body = await response.json();
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(body.uptimeList["7_24"], 0.98);
+        assert.strictEqual(body.heartbeatList[7][0].msg, "200 - OK");
+    });
+
     test("lists monitors with their latest heartbeat for the deployed web UI", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({
@@ -1601,6 +1642,62 @@ describe("Cloudflare Worker API", () => {
         assert.strictEqual(response.status, 200);
         assert.strictEqual("workerAuthUser" in body.data, false);
         assert.strictEqual("workerAuthSessionSecret" in body.data, false);
+    });
+
+    test("does not allow UI settings saves to overwrite sensitive Worker settings", async () => {
+        const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            settings: {
+                workerAuthSessionSecret: "stored-secret",
+            },
+        });
+
+        const response = await handleApiRequest(
+            adminRequest("https://example.com/api/settings", {
+                method: "PUT",
+                body: JSON.stringify({
+                    entryPage: "dashboard",
+                    workerAuthSessionSecret: "attacker-secret",
+                    workerAuthUser: { username: "attacker" },
+                    deployMonitorPause: { versionId: "fake", pauseUntil: "2099-01-01T00:00:00Z" },
+                }),
+            }),
+            env
+        );
+
+        assert.strictEqual(response.status, 200);
+        assert.strictEqual(env.state.settings.workerAuthSessionSecret, "stored-secret");
+        assert.strictEqual("workerAuthUser" in env.state.settings, false);
+        assert.strictEqual("deployMonitorPause" in env.state.settings, false);
+        assert.strictEqual(env.state.settings.entryPage, "dashboard");
+    });
+
+    test("only writes UI settings whose stored value changed", async () => {
+        const { handleApiRequest, getUiSettings } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({});
+
+        const initial = await getUiSettings(env);
+        const firstResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/settings", {
+                method: "PUT",
+                body: JSON.stringify(initial),
+            }),
+            env
+        );
+        assert.strictEqual(firstResponse.status, 200);
+
+        const writesAfterFirstSave = env.state.queries.filter((sql) => sql.includes("INSERT INTO app_settings")).length;
+        const secondResponse = await handleApiRequest(
+            adminRequest("https://example.com/api/settings", {
+                method: "PUT",
+                body: JSON.stringify(await getUiSettings(env)),
+            }),
+            env
+        );
+        assert.strictEqual(secondResponse.status, 200);
+
+        const writesAfterSecondSave = env.state.queries.filter((sql) => sql.includes("INSERT INTO app_settings")).length;
+        assert.strictEqual(writesAfterSecondSave, writesAfterFirstSave);
     });
 
     test("Cloudflare Access can bootstrap local Worker auth before a local account exists", async () => {
@@ -5995,6 +6092,30 @@ describe("Cloudflare Worker API", () => {
         ]);
     });
 
+    test("caches the unpaused deploy state to skip settings reads on later checks", async () => {
+        const { getDeployMonitorPauseState } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            settings: {
+                deployMonitorPause: {
+                    versionId: "version-a",
+                    pauseUntil: new Date(Date.now() - 60_000).toISOString(),
+                },
+            },
+            workerVersionId: "version-a",
+            deployMonitorPauseSeconds: "120",
+        });
+
+        const first = await getDeployMonitorPauseState(env);
+        assert.strictEqual(first.paused, false);
+
+        const queriesAfterFirstCall = env.state.queries.length;
+        const second = await getDeployMonitorPauseState(env);
+
+        assert.strictEqual(second.paused, false);
+        assert.strictEqual(second.versionId, "version-a");
+        assert.strictEqual(env.state.queries.length, queriesAfterFirstCall);
+    });
+
     test("scheduled monitor enqueueing only sends monitors due by interval", async () => {
         const { enqueueDueMonitors } = await import("../../../cloudflare/worker/api.mjs");
         const now = Date.parse("2026-05-26T12:00:00Z");
@@ -6423,6 +6544,53 @@ describe("Cloudflare Worker API", () => {
         }
     });
 
+    test("Twingate health alert skips rewriting an unchanged steady-state alert state", async () => {
+        const { checkTwingateHealthAlert } = await import("../../../cloudflare/worker/api.mjs");
+        const env = createEnv({
+            settings: {
+                twingateAlertEnabled: true,
+                twingateAlertNotificationIDList: {
+                    4: true,
+                },
+                twingateAlertState: {
+                    firstDegradedAt: null,
+                    lastStatusAt: "2026-05-27T11:55:00.000Z",
+                    lastError: null,
+                    notifiedStatus: "healthy",
+                    lastNotificationAt: "2026-05-27T11:00:00.000Z",
+                },
+            },
+            runnerStatus: {
+                configured: true,
+                starting: false,
+                running: true,
+                proxyUrl: "http://127.0.0.1:9999",
+                tunMode: "off",
+                lastError: null,
+            },
+            notifications: [
+                {
+                    id: 4,
+                    name: "Teams Alert",
+                    active: 1,
+                    user_id: 1,
+                    is_default: 0,
+                    config: JSON.stringify({
+                        type: "teams",
+                        webhookUrl: "https://example.webhook.office.com/services/example",
+                    }),
+                },
+            ],
+        });
+
+        const result = await checkTwingateHealthAlert(env, new Date("2026-05-27T12:00:00Z"));
+
+        assert.strictEqual(result.degraded, false);
+        assert.strictEqual(result.notified, false);
+        // The stored state is untouched, so the steady-state cron run performs no D1 write.
+        assert.strictEqual(env.state.settings.twingateAlertState.lastStatusAt, "2026-05-27T11:55:00.000Z");
+    });
+
     test("check-now adds ACCESS_SECRET header to HTTP monitor jobs without saving it", async () => {
         const { handleApiRequest } = await import("../../../cloudflare/worker/api.mjs");
         const env = createEnv({
@@ -6581,6 +6749,13 @@ function createEnv(initial) {
             prepare(sql) {
                 state.queries.push(sql);
                 return createStatement(sql, state);
+            },
+            async batch(statements) {
+                const results = [];
+                for (const statement of statements) {
+                    results.push(await statement.run());
+                }
+                return results;
             },
         },
         MONITOR_QUEUE: {

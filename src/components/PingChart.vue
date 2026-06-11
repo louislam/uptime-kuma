@@ -363,6 +363,11 @@ export default {
 
             this.chartDataFetchInterval = setInterval(
                 () => {
+                    // Skip background refreshes while the tab is hidden to
+                    // avoid wasted chart requests against the Worker API.
+                    if (document.visibilityState === "hidden") {
+                        return;
+                    }
                     this.$root.getMonitorChartData(
                         this.monitorId,
                         period,

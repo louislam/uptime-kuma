@@ -321,11 +321,12 @@ export default {
     text-align: center;
     white-space: nowrap;
     padding: 0 10px env(safe-area-inset-bottom);
+    display: flex;
 
     a {
         text-align: center;
-        width: 25%;
-        display: inline-block;
+        flex: 1 1 0;
+        min-width: 0;
         height: 100%;
         padding: 8px 10px 0;
         font-size: 13px;
@@ -523,6 +524,7 @@ main {
 
     .bottom-nav {
         background-color: $dark-bg;
+        border-top: 1px solid $dark-border-color;
     }
 }
 

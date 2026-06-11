@@ -162,6 +162,7 @@ export default {
             clearingAllEvents: false,
             doubleClickConfirmAction: null,
             doubleClickConfirmTimer: null,
+            resizeDebounceTimer: null,
         };
     },
     computed: {
@@ -194,14 +195,15 @@ export default {
 
         this.initialPerPage = this.perPage;
 
-        window.addEventListener("resize", this.updatePerPage);
+        window.addEventListener("resize", this.onResize);
         this.updatePerPage();
     },
 
     beforeUnmount() {
         this.$root.emitter.off("newImportantHeartbeat", this.onNewImportantHeartbeat);
 
-        window.removeEventListener("resize", this.updatePerPage);
+        window.removeEventListener("resize", this.onResize);
+        clearTimeout(this.resizeDebounceTimer);
         resetDoubleClickConfirm(this);
     },
 
@@ -278,20 +280,33 @@ export default {
         },
 
         /**
+         * Debounced resize handler so rotation/resize bursts trigger a single
+         * recalculation (and at most one paged refetch) instead of many.
+         * @returns {void}
+         */
+        onResize() {
+            clearTimeout(this.resizeDebounceTimer);
+            this.resizeDebounceTimer = setTimeout(() => this.updatePerPage(), 200);
+        },
+
+        /**
          * Updates the number of items shown per page based on the available height.
          * @returns {void}
          */
         updatePerPage() {
             const tableContainer = this.$refs.tableContainer;
-            const tableContainerHeight = tableContainer.offsetHeight;
-            const availableHeight = window.innerHeight - tableContainerHeight;
-            const additionalPerPage = Math.floor(availableHeight / 58);
-
-            if (additionalPerPage > 0) {
-                this.perPage = Math.max(this.initialPerPage, this.perPage + additionalPerPage);
-            } else {
-                this.perPage = this.initialPerPage;
+            const containerElement = tableContainer?.$el?.offsetHeight != null ? tableContainer.$el : tableContainer;
+            const containerHeight = Number(containerElement?.offsetHeight);
+            if (!Number.isFinite(containerHeight)) {
+                return;
             }
+            const rowsHeight = this.displayedRecords.length * 58;
+            const chromeHeight = Math.max(0, containerHeight - rowsHeight);
+            const fittedPerPage = Math.floor((window.innerHeight - chromeHeight) / 58);
+
+            // Grow from the fixed base (not the current value) so repeated
+            // resize events cannot compound perPage without bound.
+            this.perPage = Math.min(100, Math.max(this.initialPerPage, fittedPerPage));
         },
 
         clearAllEventsDialog() {

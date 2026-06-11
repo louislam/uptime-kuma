@@ -645,7 +645,6 @@ dayjs.extend(duration);
 
 const leavePageMsg = "Do you really want to leave? you have unsaved changes!";
 
-// eslint-disable-next-line no-unused-vars
 let feedInterval;
 
 const favicon = new Favico({
@@ -1032,18 +1031,6 @@ export default {
                     this.imgDataUrl = this.config.icon;
                 }
 
-                this.maintenanceList = res.data.maintenanceList;
-                this.$root.publicGroupList = res.data.publicGroupList;
-
-                this.loading = false;
-
-                feedInterval = setInterval(
-                    () => {
-                        this.updateHeartbeatList();
-                    },
-                    Math.max(5, this.config.autoRefreshInterval) * 1000
-                );
-
                 this.incident = res.data.incident;
                 this.maintenanceList = res.data.maintenanceList;
                 this.$root.publicGroupList = res.data.publicGroupList;
@@ -1051,6 +1038,7 @@ export default {
                 this.loading = false;
 
                 // Configure auto-refresh loop
+                clearInterval(feedInterval);
                 feedInterval = setInterval(
                     () => {
                         this.updateHeartbeatList();
@@ -1070,10 +1058,27 @@ export default {
         this.updateHeartbeatList();
         this.loadIncidentHistory();
 
+        // Refresh as soon as the page becomes visible again; polling is
+        // skipped while the tab is hidden to avoid wasted API requests.
+        this.visibilityChangeHandler = () => {
+            if (document.visibilityState === "visible") {
+                this.updateHeartbeatList();
+            }
+        };
+        document.addEventListener("visibilitychange", this.visibilityChangeHandler);
+
         // Go to edit page if ?edit present
         // null means ?edit present, but no value
         if (this.$route.query.edit || this.$route.query.edit === null) {
             this.edit();
+        }
+    },
+    beforeUnmount() {
+        clearInterval(feedInterval);
+        clearInterval(this.updateCountdown);
+        if (this.visibilityChangeHandler) {
+            document.removeEventListener("visibilitychange", this.visibilityChangeHandler);
+            this.visibilityChangeHandler = null;
         }
     },
     methods: {
@@ -1108,6 +1113,12 @@ export default {
          * @returns {void}
          */
         updateHeartbeatList() {
+            // Skip background polling while the tab is hidden; the
+            // visibilitychange handler refreshes immediately on return.
+            if (document.visibilityState === "hidden") {
+                return;
+            }
+
             // If editMode, it will use the data from websocket.
             if (!this.editMode) {
                 axios.get("/api/status-page/heartbeat/" + this.slug).then((res) => {
