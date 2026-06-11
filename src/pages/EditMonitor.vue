@@ -1,7 +1,18 @@
 <template>
     <transition name="slide-fade" appear>
         <div>
-            <h1 class="mb-3">{{ pageName }}</h1>
+            <div class="edit-monitor-header mb-3">
+                <router-link
+                    v-if="isEdit"
+                    :to="monitorDetailsRoute"
+                    class="btn btn-normal edit-monitor-back"
+                    data-testid="edit-monitor-back"
+                >
+                    <font-awesome-icon icon="chevron-left" />
+                    {{ $t("Back") }}
+                </router-link>
+                <h1 class="mb-0">{{ pageName }}</h1>
+            </div>
             <form
                 @submit.prevent="submit"
                 @input="monitorFormTouched = true"
@@ -3306,6 +3317,10 @@ export default {
             return this.$t(name);
         },
 
+        monitorDetailsRoute() {
+            return `/dashboard/${this.$route.params.id}`;
+        },
+
         remoteBrowsersOptions() {
             return this.$root.remoteBrowserList.map((browser) => {
                 return {
@@ -4411,6 +4426,18 @@ message HealthCheckResponse {
 
 textarea {
     min-height: 200px;
+}
+
+.edit-monitor-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.edit-monitor-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .group-edit-box {

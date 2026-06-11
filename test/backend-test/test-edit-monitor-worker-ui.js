@@ -38,6 +38,19 @@ describe("EditMonitor Worker UI rendering guards", () => {
         );
     });
 
+    test("Edit page includes a direct back link to the monitor details page", () => {
+        const source = fs.readFileSync(
+            path.join(__dirname, "../../src/pages/EditMonitor.vue"),
+            "utf8"
+        );
+
+        assert.match(source, /data-testid="edit-monitor-back"/);
+        assert.match(source, /v-if="isEdit"/);
+        assert.match(source, /:to="monitorDetailsRoute"/);
+        assert.match(source, /icon="chevron-left"/);
+        assert.match(source, /monitorDetailsRoute\(\)[\s\S]*\/dashboard\/\$\{this\.\$route\.params\.id\}/);
+    });
+
     test("Proxy dialog defaults new proxies to HTTP CONNECT", () => {
         const source = fs.readFileSync(
             path.join(__dirname, "../../src/components/ProxyDialog.vue"),
