@@ -896,6 +896,8 @@
     "slackUseTemplateDescription": "If enabled, the message will be sent using a custom template. You can use Liquid templating to include monitor group information via monitorJSON.path or monitorJSON.pathName.",
     "aboutChannelName": "Enter the channel name on {0} Channel Name field if you want to bypass the Webhook channel. Ex: #other-channel",
     "aboutKumaURL": "If you leave the Uptime Kuma URL field blank, it will default to the Project GitHub page.",
+    "smtpAdditionalHeadersTitle": "Additional Headers",
+    "smtpAdditionalHeadersDesc": "Please refer to the Nodemailer Custom Headers {0} for usage.",
     "smtpDkimSettings": "DKIM Settings",
     "smtpDkimDesc": "Please refer to the Nodemailer DKIM {0} for usage.",
     "documentation": "documentation",
