@@ -20,9 +20,31 @@ permissions:
   pull-requests: read
 
 jobs:
+  # Rename common PR titles to follow the format requirements.
+  auto-title:
+    if: github.repository == 'louislam/uptime-kuma'
+    name: Auto Title
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            if (context.payload.pull_request.title === "Translations Update from Weblate") {
+              await github.rest.pulls.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.payload.pull_request.number,
+                title: "chore: Translations Update from Weblate"
+              });
+            }
+
   pr-title:
+    if: ${{ github.repository == 'louislam/uptime-kuma' && always() }}
     name: Validate PR title follows https://conventionalcommits.org
     runs-on: ubuntu-latest
+    needs: [auto-title]
     permissions:
       pull-requests: read
     steps:

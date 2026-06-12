@@ -42,7 +42,6 @@ class Settings {
         // Query from cache
         if (key in Settings.cacheList) {
             const v = Settings.cacheList[key].value;
-            log.debug("settings", `Get Setting (cache): ${key}: ${v}`);
             return v;
         }
 
@@ -50,7 +49,6 @@ class Settings {
 
         try {
             const v = JSON.parse(value);
-            log.debug("settings", `Get Setting: ${key}: ${v}`);
 
             Settings.cacheList[key] = {
                 value: v,

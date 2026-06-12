@@ -13,6 +13,7 @@ import DingDing from "./DingDing.vue";
 import Discord from "./Discord.vue";
 import Fluxer from "./Fluxer.vue";
 import Elks from "./46elks.vue";
+import EgoSMS from "./EgoSMS.vue";
 import Feishu from "./Feishu.vue";
 import FreeMobile from "./FreeMobile.vue";
 import GoogleChat from "./GoogleChat.vue";
@@ -90,6 +91,7 @@ import HaloPSA from "./HaloPSA.vue";
 import Resend from "./Resend.vue";
 import Max from "./Max.vue";
 import VK from "./VK.vue";
+import VKTeams from "./VKTeams.vue";
 
 /**
  * Manage all notification form.
@@ -111,6 +113,7 @@ const NotificationFormList = {
     discord: Discord,
     fluxer: Fluxer,
     Elks: Elks,
+    egosms: EgoSMS,
     Feishu: Feishu,
     FreeMobile: FreeMobile,
     GoogleChat: GoogleChat,
@@ -188,6 +191,7 @@ const NotificationFormList = {
     HaloPSA: HaloPSA,
     max: Max,
     VK: VK,
+    VKTeams: VKTeams,
 };
 
 export default NotificationFormList;
