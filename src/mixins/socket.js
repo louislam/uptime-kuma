@@ -10,6 +10,7 @@ import { logout as betterAuthLogout } from "../auth-client";
 const toast = useToast();
 
 let socket;
+let disconnectTimeout;
 
 const noSocketIOPages = [
     /^\/status-page$/, //  /status-page
@@ -260,12 +261,19 @@ export default {
 
             socket.on("disconnect", () => {
                 console.log("disconnect");
-                this.connectionErrorMsg = `${this.$t("Lost connection to the socket server.")} ${this.$t("Reconnecting...")}`;
-                this.socket.connected = false;
+                // As we are using cookie based auth, we have to reconnect the socket
+                // avoid noise by add a delay
+                disconnectTimeout = setTimeout(() => {
+                    this.connectionErrorMsg = `${this.$t("Lost connection to the socket server.")} ${this.$t("Reconnecting...")}`;
+                    this.socket.connected = false;
+                }, 2000);
             });
 
             socket.on("connect", () => {
                 console.log("Connected to the socket server");
+
+                clearTimeout(disconnectTimeout);
+
                 this.socket.connectCount++;
                 this.socket.connected = true;
                 this.showReverseProxyGuide = false;
@@ -382,7 +390,11 @@ export default {
         async logout() {
             await betterAuthLogout(() => {
                 console.log("Logged out");
-                location.reload();
+                this.loggedIn = false;
+                this.username = null;
+                this.allowLoginDialog = false;
+                this.clearData();
+                reconnectSocket();
             });
         },
 
@@ -735,7 +747,13 @@ export default {
 
         // Reload the SPA if the server version is changed.
         "info.version"(to, from) {
+            // No need to refresh, when the version is not obtained, which means it is not logged in.
+            if (!to) {
+                return;
+            }
+
             if (from && from !== to) {
+                console.log(`Server version changed from ${from} to ${to}, reloading the page`);
                 window.location.reload();
             }
         },
@@ -758,3 +776,13 @@ export default {
         },
     },
 };
+
+/**
+ *
+ */
+export function reconnectSocket() {
+    if (socket) {
+        socket.disconnect();
+        socket.connect();
+    }
+}

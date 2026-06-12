@@ -1,5 +1,6 @@
 import { createAuthClient } from "better-auth/vue";
 import { twoFactorClient, usernameClient } from "better-auth/client/plugins";
+import { reconnectSocket } from "./mixins/socket";
 
 export const baseURL =
     process.env.NODE_ENV === "development" || localStorage.dev === "dev"
@@ -37,8 +38,7 @@ export async function login(username: string, password: string, remember: boolea
         throw new Error(error.message);
     }
 
-    // Refresh, so that WebSocket can be reconnected with new token
-    location.reload();
+    reconnectSocket();
 }
 
 /**

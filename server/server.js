@@ -3,11 +3,12 @@
  * node "server/server.js"
  * DO NOT require("./server") in other modules, it likely creates circular dependency!
  */
-import { genSecret, getRandomInt, isDev, log, sleep } from "../src/util";
+import { getRandomInt, isDev, log, sleep } from "../src/util";
 import { auth, getDisableAuthSession, getSession } from "./better-auth";
 import { createBetterAuthRouter, needSetup } from "./routers/better-auth-router";
 import { betterAuthSocketHandler } from "./socket-handlers/better-auth-socket-handler";
 import { loadEnvFile } from "node:process";
+import * as fs from "fs";
 
 console.log("Welcome to Uptime Kuma");
 
@@ -90,7 +91,6 @@ log.debug("server", "Importing http-graceful-shutdown");
 const gracefulShutdown = require("http-graceful-shutdown");
 log.debug("server", "Importing prometheus-api-metrics");
 const prometheusAPIMetrics = require("prometheus-api-metrics");
-const { passwordStrength } = require("check-password-strength");
 const TranslatableError = require("./translatable-error");
 
 const { UptimeKumaServer } = require("./uptime-kuma-server");
@@ -125,11 +125,7 @@ const Database = require("./database");
 
 log.debug("server", "Importing Background Jobs");
 const { initBackgroundJobs, stopBackgroundJobs } = require("./jobs");
-const { loginRateLimiter } = require("./rate-limiter");
-
 const { apiAuth } = require("./auth");
-const { login } = require("./auth");
-
 const { Prometheus } = require("./prometheus");
 const { UptimeCalculator } = require("./uptime-calculator");
 
@@ -281,8 +277,6 @@ app.use(function (req, res, next) {
             log.debug("test", request.body);
             response.send("OK");
         });
-
-        const fs = require("fs");
 
         app.get("/_e2e/take-sqlite-snapshot", async (request, response) => {
             await Database.close();
