@@ -1,6 +1,5 @@
 <template>
     <div v-if="loadedTheme" class="container mt-3">
-        <!-- Sidebar for edit mode -->
         <div v-if="enableEditMode" class="sidebar" data-testid="edit-sidebar">
             <div class="sidebar-body">
                 <div class="my-3">
@@ -16,7 +15,6 @@
                     <input id="title" v-model="config.title" type="text" class="form-control" />
                 </div>
 
-                <!-- Description -->
                 <div class="my-3">
                     <label for="description" class="form-label">{{ $t("Description") }}</label>
                     <textarea
@@ -28,7 +26,6 @@
                     <div class="form-text">{{ $t("markdownSupported") }}</div>
                 </div>
 
-                <!-- Footer Text -->
                 <div class="my-3">
                     <label for="footer-text" class="form-label">{{ $t("Footer Text") }}</label>
                     <textarea
@@ -75,7 +72,6 @@
                     <label class="form-check-label" for="showTags">{{ $t("Show Tags") }}</label>
                 </div>
 
-                <!-- Show Powered By -->
                 <div class="my-3 form-check form-switch">
                     <input
                         id="show-powered-by"
@@ -87,7 +83,6 @@
                     <label class="form-check-label" for="show-powered-by">{{ $t("Show Powered By") }}</label>
                 </div>
 
-                <!-- Show certificate expiry -->
                 <div class="my-3 form-check form-switch">
                     <input
                         id="show-certificate-expiry"
@@ -101,7 +96,6 @@
                     </label>
                 </div>
 
-                <!-- Show only last heartbeat -->
                 <div class="my-3 form-check form-switch">
                     <input
                         id="show-only-last-heartbeat"
@@ -114,7 +108,6 @@
                     </label>
                 </div>
 
-                <!-- Domain Name List -->
                 <div class="my-3">
                     <label class="form-label">
                         {{ $t("Domain Names") }}
@@ -146,8 +139,6 @@
                     </ul>
                 </div>
 
-                <!-- Analytics -->
-
                 <div class="my-3">
                     <label for="analyticsType" class="form-label">{{ $t("Analytics Type") }}</label>
                     <select
@@ -164,29 +155,36 @@
                     </select>
                 </div>
 
-                <div v-if="!!config.analyticsType" class="my-3">
-                    <label for="analyticsId" class="form-label">{{ $t("Analytics ID") }}</label>
+                <div v-if="analyticsConfig" class="my-3">
+                    <label for="analyticsId" class="form-label">{{ analyticsConfig.idLabel }}</label>
                     <input
                         id="analyticsId"
                         v-model="config.analyticsId"
                         type="text"
                         class="form-control"
+                        :placeholder="analyticsConfig.idPlaceholder"
                         data-testid="analytics-id-input"
                     />
+                    <div class="form-text text-muted small">
+                        {{ analyticsConfig.idHelper }}
+                    </div>
                 </div>
 
-                <div v-if="!!config.analyticsType && config.analyticsType !== 'google'" class="my-3">
+                <div v-if="analyticsConfig && analyticsConfig.showScriptUrl" class="my-3">
                     <label for="analyticsScriptUrl" class="form-label">{{ $t("Analytics Script URL") }}</label>
                     <input
                         id="analyticsScriptUrl"
                         v-model="config.analyticsScriptUrl"
                         type="url"
                         class="form-control"
+                        :placeholder="analyticsConfig.urlDefault"
                         data-testid="analytics-script-url-input"
                     />
+                    <div v-if="analyticsConfig.urlHelper" class="form-text text-muted small">
+                        {{ analyticsConfig.urlHelper }}
+                    </div>
                 </div>
 
-                <!-- RSS Title -->
                 <div class="my-3">
                     <label for="rss-title" class="form-label">{{ $t("RSS Title") }}</label>
                     <input
@@ -201,7 +199,6 @@
                     </div>
                 </div>
 
-                <!-- Custom CSS -->
                 <div class="my-3">
                     <div class="mb-1">{{ $t("Custom CSS") }}</div>
                     <prism-editor
@@ -221,7 +218,6 @@
                 </div>
             </div>
 
-            <!-- Sidebar Footer -->
             <div class="sidebar-footer">
                 <button class="btn btn-success me-2" :disabled="loading" data-testid="save-button" @click="save">
                     <font-awesome-icon icon="save" />
@@ -235,11 +231,8 @@
             </div>
         </div>
 
-        <!-- Main Status Page -->
         <div :class="{ edit: enableEditMode }" class="main">
-            <!-- Logo & Title -->
             <h1 class="mb-4 title-flex">
-                <!-- Logo -->
                 <span class="logo-wrapper" @click="showImageCropUploadMethod">
                     <button
                         v-if="editMode"
@@ -253,8 +246,6 @@
                     <font-awesome-icon v-if="enableEditMode" class="icon-upload" icon="upload" />
                 </span>
 
-                <!-- Uploader -->
-                <!--    url="/api/status-page/upload-logo" -->
                 <ImageCropUpload
                     v-model="showImageCropUpload"
                     field="img"
@@ -267,11 +258,9 @@
                     @crop-success="cropSuccess"
                 />
 
-                <!-- Title -->
                 <Editable v-model="config.title" tag="span" :contenteditable="editMode" :noNL="true" />
             </h1>
 
-            <!-- Admin functions -->
             <div v-if="hasToken" class="mb-2">
                 <div v-if="!enableEditMode">
                     <button class="btn btn-primary mb-2 me-2" data-testid="edit-button" @click="edit">
@@ -297,7 +286,6 @@
                 </div>
             </div>
 
-            <!-- Incident Edit Form -->
             <IncidentEditForm
                 v-if="
                     editIncidentMode &&
@@ -309,9 +297,7 @@
                 @cancel="cancelIncident"
             />
 
-            <!-- Active Pinned Incidents -->
             <template v-for="activeIncident in activeIncidents" :key="activeIncident.id">
-                <!-- Edit mode for this specific incident -->
                 <IncidentEditForm
                     v-if="editIncidentMode && incident !== null && incident.id === activeIncident.id"
                     v-model="incident"
@@ -319,7 +305,6 @@
                     @cancel="cancelIncident"
                 />
 
-                <!-- Display mode for this incident -->
                 <div
                     v-else
                     class="shadow-box alert mb-4 p-4 incident"
@@ -328,15 +313,11 @@
                     data-testid="incident"
                 >
                     <h4 class="alert-heading" data-testid="incident-title">{{ activeIncident.title }}</h4>
-                    <!-- eslint-disable vue/no-v-html -->
                     <div
                         class="content"
                         data-testid="incident-content"
                         v-html="getIncidentHTML(activeIncident.content)"
                     ></div>
-                    <!-- eslint-enable vue/no-v-html -->
-
-                    <!-- Incident Date -->
                     <div class="date mt-3">
                         {{
                             $t("dateCreatedAtFromNow", {
@@ -375,7 +356,6 @@
                 </div>
             </template>
 
-            <!-- Overall Status -->
             <div class="shadow-box list p-4 overall-status mb-4">
                 <div v-if="Object.keys($root.publicMonitorList).length === 0 && loadedData">
                     <font-awesome-icon icon="question-circle" class="ok" />
@@ -409,7 +389,6 @@
                 </template>
             </div>
 
-            <!-- Maintenance -->
             <template v-if="maintenanceList.length > 0">
                 <div
                     v-for="maintenance in maintenanceList"
@@ -418,13 +397,11 @@
                     role="alert"
                 >
                     <h4 class="alert-heading">{{ maintenance.title }}</h4>
-                    <!-- eslint-disable-next-line vue/no-v-html-->
                     <div class="content" v-html="maintenanceHTML(maintenance.description)"></div>
                     <MaintenanceTime :maintenance="maintenance" />
                 </div>
             </template>
 
-            <!-- Description -->
             <strong v-if="editMode">{{ $t("Description") }}:</strong>
             <Editable
                 v-if="enableEditMode"
@@ -434,15 +411,12 @@
                 class="mb-4 description"
                 data-testid="description-editable"
             />
-            <!-- eslint-disable vue/no-v-html-->
             <div
                 v-if="!enableEditMode"
                 class="alert-heading p-2"
                 data-testid="description"
                 v-html="descriptionHTML"
             ></div>
-            <!-- eslint-enable vue/no-v-html-->
-
             <div v-if="editMode" class="mb-4">
                 <div>
                     <button class="btn btn-primary btn-add-group me-2" data-testid="add-group-button" @click="addGroup">
@@ -484,7 +458,6 @@
 
             <div class="mb-4">
                 <div v-if="$root.publicGroupList.length === 0 && loadedData" class="text-center">
-                    <!-- 👀 Nothing here, please add a group or a monitor. -->
                     👀 {{ $t("statusPageNothing") }}
                 </div>
 
@@ -496,7 +469,6 @@
                 />
             </div>
 
-            <!-- Past Incidents -->
             <div v-if="pastIncidentCount > 0" class="past-incidents-section mb-4">
                 <h2 class="past-incidents-title mb-3">
                     {{ $t("Past Incidents") }}
@@ -538,7 +510,6 @@
                 </div>
             </div>
 
-            <!-- Incident Manage Modal -->
             <IncidentManageModal
                 v-if="enableEditMode"
                 ref="incidentManageModal"
@@ -559,15 +530,12 @@
                     class="alert-heading p-2"
                     data-testid="custom-footer-editable"
                 />
-                <!-- eslint-disable vue/no-v-html-->
                 <div
                     v-if="!enableEditMode"
                     class="alert-heading p-2"
                     data-testid="footer-text"
                     v-html="footerHTML"
                 ></div>
-                <!-- eslint-enable vue/no-v-html-->
-
                 <p v-if="config.showPoweredBy" data-testid="powered-by">
                     {{ $t("Powered by") }}
                     <a target="_blank" rel="noopener noreferrer" href="https://github.com/louislam/uptime-kuma">
@@ -712,6 +680,38 @@ export default {
         };
     },
     computed: {
+        analyticsConfig() {
+            const configs = {
+                plausible: {
+                    idLabel: 'Domain name (Plausible ID)',
+                    idPlaceholder: 'e.g. status.yourdomain.com',
+                    idHelper: 'The domain you registered in your Plausible dashboard.',
+                    urlDefault: 'https://plausible.io/js/script.js',
+                    urlHelper: 'Cloud default pre-filled. Change if self-hosted.',
+                    showScriptUrl: true,
+                },
+                google: {
+                    idLabel: 'Measurement ID',
+                    idPlaceholder: 'e.g. G-XXXXXXXXXX',
+                    idHelper: 'Found in GA4 → Admin → Data Streams.',
+                    showScriptUrl: false,
+                },
+                umami: {
+                    idLabel: 'Website ID',
+                    idPlaceholder: 'e.g. bba12345-6789-...',
+                    idHelper: 'UUID found in Umami → Settings → Websites.',
+                    showScriptUrl: true,
+                },
+                matomo: {
+                    idLabel: 'Site ID',
+                    idPlaceholder: 'e.g. 1',
+                    idHelper: 'Numeric site ID from Matomo → Settings → Websites.',
+                    showScriptUrl: true,
+                },
+            };
+            return configs[this.config.analyticsType] ?? null;
+        },
+
         logoURL() {
             if (this.imgDataUrl.startsWith("data:")) {
                 return this.imgDataUrl;
@@ -1472,6 +1472,7 @@ export default {
                 year: "numeric",
                 month: "long",
                 day: "numeric",
+                value: "numeric",
             });
         },
 
@@ -1489,6 +1490,7 @@ export default {
             });
         },
     },
+    value: "numeric",
 };
 </script>
 
