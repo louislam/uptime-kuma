@@ -501,7 +501,7 @@
                                 <div v-if="monitor.type === 'mqtt'" class="form-text">
                                     <i18n-t tag="p" keypath="mqttHostnameTip">
                                         <template #hostnameFormat>
-                                            <code>[mqtt,ws,wss]://hostname</code>
+                                            <code>[mqtt,mqtts,ws,wss]://hostname</code>
                                         </template>
                                     </i18n-t>
                                 </div>
@@ -1058,7 +1058,7 @@
                                         {{ $t("mqttWebSocketPath") }}
                                     </label>
                                     <input
-                                        v-if="/wss?:\/\/.+/.test(monitor.hostname)"
+                                        v-if="/(mqtts?|wss?):\/\/.+/.test(monitor.hostname)"
                                         id="mqttWebsocketPath"
                                         v-model="monitor.mqttWebsocketPath"
                                         type="text"
@@ -1499,12 +1499,19 @@
                                     monitor.type === 'ping' ||
                                     monitor.type === 'rabbitmq' ||
                                     monitor.type === 'snmp' ||
-                                    monitor.type === 'websocket-upgrade'
+                                    monitor.type === 'websocket-upgrade' ||
+                                    monitor.type === 'kafka-producer'
                                 "
                                 class="my-3"
                             >
                                 <label for="timeout" class="form-label">
-                                    {{ monitor.type === "ping" ? $t("pingGlobalTimeoutLabel") : $t("Request Timeout") }}
+                                    {{
+                                        monitor.type === "ping"
+                                            ? $t("pingGlobalTimeoutLabel")
+                                            : monitor.type === "kafka-producer"
+                                              ? $t("Connection Timeout")
+                                              : $t("Request Timeout")
+                                    }}
                                     <span v-if="monitor.type !== 'ping'">
                                         ({{ $t("timeoutAfter", [monitor.timeout || clampTimeout(monitor.interval)]) }})
                                     </span>
@@ -3659,6 +3666,8 @@ message HealthCheckResponse {
                     this.monitor.timeout = 5;
                 } else if (this.monitor.type === "ping") {
                     this.monitor.timeout = 10;
+                } else if (this.monitor.type === "kafka-producer") {
+                    this.monitor.timeout = 1;
                 } else {
                     this.monitor.timeout = 48;
                 }
@@ -3730,7 +3739,7 @@ message HealthCheckResponse {
                 }
             }
 
-            if (newSubtype !== oldSubtype) {
+            if (oldSubtype && newSubtype !== oldSubtype) {
                 if (newSubtype === "ping") {
                     this.monitor.protocol = "ICMP";
                     this.monitor.port = "80";
@@ -4029,7 +4038,7 @@ message HealthCheckResponse {
                 "json-query": ["http:", "https:"],
                 "websocket-upgrade": ["ws:", "wss:"],
                 "real-browser": null,
-                mqtt: ["mqtt:", "ws:", "wss:"],
+                mqtt: ["mqtt:", "mqtts:", "ws:", "wss:"],
             };
 
             if (this.monitor.type in acceptList) {
