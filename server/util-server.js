@@ -10,7 +10,6 @@ const {
     PING_COUNT_DEFAULT,
     PING_PER_REQUEST_TIMEOUT_DEFAULT,
 } = require("../src/util");
-const passwordHash = require("./password-hash");
 const iconv = require("iconv-lite");
 const chardet = require("chardet");
 const chroma = require("chroma-js");
@@ -648,28 +647,6 @@ exports.allowOrigin = (req, res) => {
  */
 exports.checkLogin = (socket) => {
     betterAuthCheckLogin(socket);
-};
-
-/**
- * For logged-in users, double-check the password
- * @param {Socket} socket Socket.io instance
- * @param {string} currentPassword Password to validate
- * @returns {Promise<Bean>} User
- * @throws The current password is not a string
- * @throws The provided password is not correct
- */
-exports.doubleCheckPassword = async (socket, currentPassword) => {
-    if (typeof currentPassword !== "string") {
-        throw new Error("Wrong data type?");
-    }
-
-    let user = await R.findOne("user", " id = ? AND active = 1 ", [socket.userID]);
-
-    if (!user || !passwordHash.verify(currentPassword, user.password)) {
-        throw new Error("Incorrect current password");
-    }
-
-    return user;
 };
 
 /**

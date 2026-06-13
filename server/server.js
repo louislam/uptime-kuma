@@ -4,7 +4,7 @@
  * DO NOT require("./server") in other modules, it likely creates circular dependency!
  */
 import { getRandomInt, isDev, log, sleep } from "../src/util";
-import { auth, getDisableAuthSession, getSession } from "./better-auth";
+import { auth, doubleCheckPassword, getDisableAuthSession, getSession } from "./better-auth";
 import { createBetterAuthRouter, needSetup } from "./routers/better-auth-router";
 import { betterAuthSocketHandler } from "./socket-handlers/better-auth-socket-handler";
 import { loadEnvFile } from "node:process";
@@ -108,7 +108,6 @@ const {
     setSettings,
     setting,
     checkLogin,
-    doubleCheckPassword,
     allowDevAllOrigin,
     printServerUrls,
     allowDevOrigin,
@@ -1118,7 +1117,7 @@ app.use(function (req, res, next) {
                 // Enabled Auth + Want to Enable Auth => No Check
                 const currentDisabledAuth = await setting("disableAuth");
                 if (!currentDisabledAuth && data.disableAuth) {
-                    await doubleCheckPassword(socket, currentPassword);
+                    await doubleCheckPassword(socket.request.headers.cookie, currentPassword);
                 }
 
                 // Log out all clients if enabling auth
