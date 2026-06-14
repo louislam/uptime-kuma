@@ -920,6 +920,7 @@ let needSetup = false;
                 bean.gamedigGivenPortOnly = monitor.gamedigGivenPortOnly;
                 bean.gamedigToken = monitor.gamedigToken;
                 bean.remote_browser = monitor.remote_browser;
+                bean.screenshot_delay = monitor.screenshot_delay;
                 bean.smtpSecurity = monitor.smtpSecurity;
                 bean.snmpVersion = monitor.snmpVersion;
                 bean.snmpOid = monitor.snmpOid;

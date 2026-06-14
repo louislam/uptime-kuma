@@ -195,6 +195,7 @@ class Monitor extends BeanModel {
             screenshot,
             cacheBust: this.getCacheBust(),
             remote_browser: this.remote_browser,
+            screenshot_delay: this.screenshot_delay,
             snmpOid: this.snmpOid,
             jsonPathOperator: this.jsonPathOperator,
             snmpVersion: this.snmpVersion,
