@@ -161,6 +161,7 @@
                         <option value="umami">{{ $t("Umami") }}</option>
                         <option value="plausible">{{ $t("Plausible") }}</option>
                         <option value="matomo">{{ $t("Matomo") }}</option>
+                        <option value="posthog">{{ $t("PostHog") }}</option>
                     </select>
                 </div>
 
