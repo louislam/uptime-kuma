@@ -9,9 +9,7 @@ const oldValues = ["google", "umami", "plausible", "matomo"];
  * @returns {Promise<void>}
  */
 async function rebuildAnalyticsType(knex, allowedValues) {
-    const rows = await knex("status_page")
-        .whereNotNull("analytics_type")
-        .select("id", "analytics_type");
+    const rows = await knex("status_page").whereNotNull("analytics_type").select("id", "analytics_type");
 
     await knex.schema.alterTable("status_page", (table) => {
         table.dropColumn("analytics_type");
