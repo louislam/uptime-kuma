@@ -10,6 +10,7 @@ const viteCompressionFilter = /\.(js|mjs|json|css|html|svg)$/i;
 
 // https://vitejs.dev/config/
 export default defineConfig({
+    base: process.env.UPTIME_KUMA_BASE_PATH || "",
     server: {
         port: 3000,
     },
