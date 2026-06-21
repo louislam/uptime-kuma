@@ -3069,7 +3069,7 @@
                             id="monitor-submit-btn"
                             class="btn btn-primary"
                             type="submit"
-                            :disabled="processing"
+                            :disabled="processing || !isChanged"
                             data-testid="save-button"
                         >
                             {{ $t("Save") }}
@@ -3219,6 +3219,7 @@ export default {
             minInterval: MIN_INTERVAL_SECOND,
             maxInterval: MAX_INTERVAL_SECOND,
             processing: false,
+            originalMonitorStr: "",
             monitor: {
                 notificationIDList: {},
                 // Do not add default value here, please check init() method
@@ -3250,6 +3251,13 @@ export default {
     },
 
     computed: {
+        isChanged() {
+            if (this.isEdit) {
+                const t = this.$refs.tagsManager;
+                return JSON.stringify(this.monitor) !== this.originalMonitorStr || (t && (t.newTags.length || t.deleteTags.length));
+            }
+            return true;
+        },
         timeoutStep() {
             return this.monitor.type === "ping" ? 1 : 0.1;
         },
@@ -3918,6 +3926,9 @@ message HealthCheckResponse {
                                 this.monitor.timeout = ~~(this.monitor.interval * 8) / 10;
                             }
                         }
+                        this.$nextTick(() => {
+                            this.originalMonitorStr = JSON.stringify(this.monitor);
+                        });
                     } else {
                         this.$root.toastError(res.msg);
                     }
