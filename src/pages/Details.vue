@@ -897,7 +897,7 @@ export default {
         },
 
         formatHeaders(headers) {
-            if (!headers || typeof headers !== "object") {
+            if (!headers) {
                 return "";
             }
             return Object.entries(headers)
