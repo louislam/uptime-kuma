@@ -1409,11 +1409,9 @@ let needSetup = false;
                     );
                 }
 
-                const data = await Promise.all(list.map((bean) => bean.toJSONAsync({ decodeResponse: true })));
-
                 callback({
                     ok: true,
-                    data,
+                    data: list.map((bean) => bean.toJSON()),
                 });
             } catch (e) {
                 callback({
