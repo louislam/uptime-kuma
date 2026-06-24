@@ -1612,5 +1612,14 @@
     "VKTeams Bot Token Description": "Kako dobiti bot token i ostale detalje možete pronaći na {0}.",
     "VKTeams Chat Id Description": "Za korisnike, ovo je njihova adresa e-pošte. Za grupe i kanale, preuzmite ID iz njihovih postavki i dodajte {'@'}chat.agent",
     "WebSocket Options": "Opcije WebSocketa",
-    "pingPacketSizeWarning": "Veličina paketa manja od 16 na Linuxu ne stvara povratno putovanje"
+    "pingPacketSizeWarning": "Veličina paketa manja od 16 na Linuxu ne stvara povratno putovanje",
+    "smtpAdditionalHeadersTitle": "Dodatna zaglavlja",
+    "smtpAdditionalHeadersDesc": "Za korištenje pogledajte prilagođena zaglavlja Nodemailera {0}.",
+    "wayToGetEgoSMSToken": "Svoje korisničko ime i lozinku za EgoSMS API možete dobiti {ovdje}.",
+    "egosmsSenderDescription": "ID pošiljatelja prikazan primateljima (najviše 11 znakova). Zadana vrijednost je EGOSMS.",
+    "egosmsPhoneNumberDescription": "Broj primatelja s pozivnim brojem države, bez + ili 00 (npr. 3857XXXXXXXX).",
+    "gamedigToken": "Token",
+    "gamedigTokenDescription": "Neobvezno. Neki poslužitelji igara zahtijevaju token za autentifikaciju.",
+    "Bearer Token": "Token nositelja",
+    "Connection Timeout": "Vrijeme isteka konekcije"
 }

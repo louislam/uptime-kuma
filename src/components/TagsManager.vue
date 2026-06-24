@@ -7,6 +7,9 @@
                 :key="`${item.tag_id || item.id}-${item.value || ''}`"
                 :item="item"
                 :remove="deleteTag"
+                :title="item.name"
+                :scrollable="true"
+                :constrained="true"
             />
         </div>
         <div class="p-1">
