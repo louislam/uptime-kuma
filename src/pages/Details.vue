@@ -890,41 +890,10 @@ export default {
         },
 
         failureDetail(beat) {
-            const detail = {
-                statusCode: beat.statusCode ?? null,
+            return {
                 headers: beat.responseHeaders ?? null,
                 body: beat.response ?? null,
             };
-
-            // Backward compat: rows created before status/headers were split off
-            // had a JSON blob in `response`. Unpack it for display.
-            if (
-                detail.statusCode == null &&
-                detail.headers == null &&
-                typeof detail.body === "string" &&
-                detail.body.startsWith("{")
-            ) {
-                try {
-                    const parsed = JSON.parse(detail.body);
-                    if (
-                        parsed &&
-                        typeof parsed === "object" &&
-                        ("status" in parsed || "headers" in parsed || "body" in parsed)
-                    ) {
-                        if (typeof parsed.status === "number") {
-                            detail.statusCode = parsed.status;
-                        }
-                        if (parsed.headers && typeof parsed.headers === "object") {
-                            detail.headers = parsed.headers;
-                        }
-                        detail.body = parsed.body !== undefined ? parsed.body : null;
-                    }
-                } catch (_) {
-                    // Not JSON — leave body as-is
-                }
-            }
-
-            return detail;
         },
 
         formatHeaders(headers) {
