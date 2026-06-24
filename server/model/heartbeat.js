@@ -40,7 +40,6 @@ class Heartbeat extends BeanModel {
             duration: this._duration,
             retries: this._retries,
             response: this._response,
-            statusCode: this._statusCode,
             responseHeaders: this._responseHeaders,
         };
     }
@@ -61,7 +60,6 @@ class Heartbeat extends BeanModel {
             duration: this._duration,
             retries: this._retries,
             response: opts?.decodeResponse ? await Heartbeat.decodeResponseValue(this._response) : undefined,
-            statusCode: this._statusCode ?? null,
             responseHeaders: opts?.decodeResponse ? Heartbeat.decodeResponseHeaders(this._responseHeaders) : undefined,
         };
     }
