@@ -39,8 +39,8 @@ class Heartbeat extends BeanModel {
             important: this._important,
             duration: this._duration,
             retries: this._retries,
-            response: this._response,
-            responseHeaders: this._responseHeaders,
+            response: Heartbeat.decodeResponseValueSync(this._response),
+            responseHeaders: Heartbeat.decodeResponseHeaders(this._responseHeaders),
         };
     }
 
@@ -62,6 +62,23 @@ class Heartbeat extends BeanModel {
             response: opts?.decodeResponse ? await Heartbeat.decodeResponseValue(this._response) : undefined,
             responseHeaders: opts?.decodeResponse ? Heartbeat.decodeResponseHeaders(this._responseHeaders) : undefined,
         };
+    }
+
+    /**
+     * Decode compressed response payload stored in database (sync).
+     * @param {string|null} response Encoded response payload.
+     * @returns {string|null} Decoded response payload.
+     */
+    static decodeResponseValueSync(response) {
+        if (!response) {
+            return response;
+        }
+
+        try {
+            return zlib.brotliDecompressSync(Buffer.from(response, "base64")).toString("utf8");
+        } catch (error) {
+            return response;
+        }
     }
 
     /**

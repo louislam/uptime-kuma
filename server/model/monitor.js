@@ -1110,7 +1110,7 @@ class Monitor extends BeanModel {
 
             // Send to frontend
             log.debug("monitor", `[${this.name}] Send to socket`);
-            io.to(this.user_id).emit("heartbeat", await bean.toJSONAsync({ decodeResponse: true }));
+            io.to(this.user_id).emit("heartbeat", bean.toJSON());
             Monitor.sendStats(io, this.id, this.user_id);
 
             // Store to database
