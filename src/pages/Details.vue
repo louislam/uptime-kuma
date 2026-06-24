@@ -388,7 +388,9 @@
                                     <div class="p-3 small">
                                         <div v-if="failureDetail(beat).headers" class="mb-2">
                                             <div class="fw-semibold text-body-secondary mb-1">{{ $t("Headers") }}</div>
-                                            <pre class="failure-detail-pre">{{
+                                            <pre
+                                                class="m-0 p-2 bg-body-secondary rounded small overflow-auto text-break failure-detail-pre"
+                                            >{{
                                                 formatHeaders(failureDetail(beat).headers)
                                             }}</pre>
                                         </div>
@@ -396,7 +398,9 @@
                                             <div class="fw-semibold text-body-secondary mb-1">
                                                 {{ $t("Response Body") }}
                                             </div>
-                                            <pre class="failure-detail-pre">{{
+                                            <pre
+                                                class="m-0 p-2 bg-body-secondary rounded small overflow-auto text-break failure-detail-pre"
+                                            >{{
                                                 formatBody(failureDetail(beat).body)
                                             }}</pre>
                                         </div>
@@ -1141,18 +1145,7 @@ table {
 }
 
 .failure-detail-pre {
-    margin: 0;
-    padding: 8px 12px;
-    background-color: rgba(0, 0, 0, 0.04);
-    border-radius: 4px;
     white-space: pre-wrap;
-    word-break: break-word;
     max-height: 300px;
-    overflow: auto;
-    font-size: 12px;
-}
-
-.dark .failure-detail-pre {
-    background-color: rgba(255, 255, 255, 0.06);
 }
 </style>
