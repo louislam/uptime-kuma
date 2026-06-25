@@ -292,6 +292,7 @@ export default {
             let incidentManagement = {
                 alerta: "Alerta",
                 AlertNow: "AlertNow",
+                Flowtriq: "Flowtriq",
                 GoAlert: "GoAlert",
                 GrafanaOncall: "Grafana Oncall",
                 HeiiOnCall: "Heii On-Call",
