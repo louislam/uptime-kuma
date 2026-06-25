@@ -52,4 +52,7 @@ jobs:
               core.info(`Closed PR #${number} because required phrase was not present.`);
             } else {
               core.info("PR description contains required phrase; no action taken.");
+
+              const commentBody = `Thanks for the PR! If anyone would like to help with testing, run: \`npx kuma-pr ${pr.user.login}:${pr.head.ref}\` (requires Node.js and Docker)`;
+              await github.rest.issues.createComment({ owner, repo, issue_number: number, body: commentBody });
             }
