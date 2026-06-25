@@ -29,7 +29,7 @@ class SteamMonitorType extends MonitorType {
 
         this.steamApiClient = options.steamApiClient || axios;
         this.lookup = options.lookup || dns.lookup;
-        this.getSteamAPIKey = options.getSteamAPIKey || (() => setting("steamAPIKey"));
+        this.getSteamAPIKey = options.getSteamAPIKey || (() => Settings.get("steamAPIKey"));
         this.ping = options.ping || ping;
     }
 
