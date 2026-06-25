@@ -5,7 +5,8 @@ const {
     PING_GLOBAL_TIMEOUT_DEFAULT,
     PING_PER_REQUEST_TIMEOUT_DEFAULT,
 } = require("../../src/util");
-const { ping, checkStatusCode, setting } = require("../util-server");
+const { Settings } = require("../settings");
+const { ping, checkStatusCode } = require("../util-server");
 const axios = require("axios");
 const crypto = require("crypto");
 const dns = require("node:dns/promises");
