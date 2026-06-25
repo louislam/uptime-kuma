@@ -53,6 +53,12 @@ function createAuthInstance() {
             revokeSessionsOnPasswordReset: true,
             enabled: true,
             disableSignUp: false,
+            sendResetPassword: async ({ user, url, token }, request) => {
+                // TODO
+            },
+            onPasswordReset: async ({ user }, request) => {
+                // TODO
+            },
         },
         rateLimit: {
             // Seconds
