@@ -1610,5 +1610,14 @@
     "VKTeams Bot Token Description": "Jak získat token bota a další podrobnosti najdete na {0}.",
     "VKTeams Base Url Description": "Základní adresa URL rozhraní API VKTeams; v případě řešení nasazeného na vlastním serveru se může lišit. Výchozí hodnota: https://myteam.mail.ru",
     "VKTeams Chat Id Description": "U uživatelů se jedná o jejich e-mailovou adresu. U skupin a kanálů získejte ID z jejich nastavení a připojte k němu {‚@‘}chat.agent",
-    "VKTeams Template Format Description": "Pro formátování zpráv podporuje VKTeams formátování prostého textu, MarkdownV2 a HTML."
+    "VKTeams Template Format Description": "Pro formátování zpráv podporuje VKTeams formátování prostého textu, MarkdownV2 a HTML.",
+    "smtpAdditionalHeadersTitle": "Další záhlaví",
+    "egosmsPhoneNumberDescription": "Číslo příjemce s předvolbou země, bez znaménka + nebo 00 (např. 2567XXXXXXXX).",
+    "wayToGetEgoSMSToken": "Uživatelské jméno a heslo pro rozhraní API služby EgoSMS si můžete vyžádat {here}.",
+    "egosmsSenderDescription": "ID odesílatele zobrazené příjemcům (max. 11 znaků). Pokud je pole prázdné, je jako výchozí hodnota nastaveno „EGOSMS“.",
+    "smtpAdditionalHeadersDesc": "Informace o použití najdete v dokumentaci k vlastním hlavičkám Nodemaileru {0}.",
+    "Bearer Token": "Token na doručitele",
+    "gamedigToken": "Token",
+    "gamedigTokenDescription": "Volitelné. Některé herní servery vyžadují ověřovací token.",
+    "Connection Timeout": "Časový limit připojení"
 }

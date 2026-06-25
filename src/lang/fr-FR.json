@@ -1660,5 +1660,8 @@
     "egosmsPhoneNumberDescription": "Numéro de destinataire avec code pays, sans + ou 00 (par exemple 2567XXXXXXXX).",
     "gamedigToken": "Jeton",
     "gamedigTokenDescription": "Facultatif. Certains serveurs de jeu nécessitent un jeton d’authentification.",
-    "Bearer Token": "Jeton Bearer"
+    "Bearer Token": "Jeton Bearer",
+    "Connection Timeout": "Délai de connexion dépassé",
+    "smtpAdditionalHeadersTitle": "en-têtes supplémentaires",
+    "smtpAdditionalHeadersDesc": "Veuillez vous référer aux en-têtes personnalisés Nodemailer {0} pour l’utilisation."
 }

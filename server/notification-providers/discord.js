@@ -1,5 +1,6 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
+const dayjs = require("dayjs");
 const { DOWN, UP } = require("../../src/util");
 
 class Discord extends NotificationProvider {
@@ -119,7 +120,7 @@ class Discord extends NotificationProvider {
             }
 
             if (heartbeatJSON["status"] === DOWN) {
-                const wentOfflineTimestamp = Math.floor(new Date(heartbeatJSON["time"]).getTime() / 1000);
+                const wentOfflineTimestamp = dayjs.utc(heartbeatJSON["time"]).unix();
 
                 let discorddowndata = {
                     username: discordDisplayName,
@@ -174,11 +175,11 @@ class Discord extends NotificationProvider {
                 await axios.post(webhookUrl.toString(), discorddowndata, config);
                 return okMsg;
             } else if (heartbeatJSON["status"] === UP) {
-                const backOnlineTimestamp = Math.floor(new Date(heartbeatJSON["time"]).getTime() / 1000);
+                const backOnlineTimestamp = dayjs.utc(heartbeatJSON["time"]).unix();
                 let downtimeDuration = null;
                 let wentOfflineTimestamp = null;
                 if (heartbeatJSON["lastDownTime"]) {
-                    wentOfflineTimestamp = Math.floor(new Date(heartbeatJSON["lastDownTime"]).getTime() / 1000);
+                    wentOfflineTimestamp = dayjs.utc(heartbeatJSON["lastDownTime"]).unix();
                     downtimeDuration = this.formatDuration(backOnlineTimestamp - wentOfflineTimestamp);
                 }
 

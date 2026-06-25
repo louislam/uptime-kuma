@@ -37,9 +37,9 @@ class NotificationProvider {
             case "push":
                 return "Heartbeat";
             case "ping":
+            case "dns":
                 return monitorJSON["hostname"];
             case "port":
-            case "dns":
             case "gamedig":
             case "steam":
                 if (monitorJSON["port"]) {

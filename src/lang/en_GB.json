@@ -1544,5 +1544,6 @@
     "gamedigToken": "Token",
     "gamedigTokenDescription": "Optional. Some game servers require an authentication token.",
     "VKTeams Use Template Description": "If enabled, the message will be sent using a custom template.",
-    "VKTeams Template Format Description": "For message styling, VKTeams supports plain text, MarkdownV2, and HTML formatting."
+    "VKTeams Template Format Description": "For message styling, VKTeams supports plain text, MarkdownV2, and HTML formatting.",
+    "Connection Timeout": "Connection Timeout"
 }
