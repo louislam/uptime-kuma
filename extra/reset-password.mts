@@ -1,20 +1,17 @@
-import { APIError } from "better-auth";
-
 console.log("== Uptime Kuma Reset Password Tool ==");
 
 import { loadEnvFile } from "node:process";
-import { auth, BetterAuthUser, getGodKumaHeaders, removeOtherGodKumaUsers } from "../server/better-auth";
-import { input, password as passwordInput, select } from "@inquirer/prompts";
+import { auth } from "../server/better-auth";
+import { password as passwordInput, select } from "@inquirer/prompts";
 import { ExitPromptError } from "@inquirer/core";
-import { genSecret, isDevEnv } from "../src/util";
+import { isDevEnv } from "../src/util";
+import { hashPassword } from "better-auth/crypto";
 
 // @ts-ignore
 import Database from "../server/database.js";
 
 // @ts-ignore No type package is available
 import parseArgs from "args-parser";
-
-let kumaGodHeader: Headers;
 
 /**
  *
@@ -23,45 +20,42 @@ async function main() {
     const args = parseArgs(process.argv);
     try {
         loadEnvFile();
-    } catch {}
+    } catch { }
 
     console.log("Dev Environment:", isDevEnv());
 
     Database.initDataDir(args);
     await Database.connect();
 
-    kumaGodHeader = await getGodKumaHeaders(false);
+    const context = await auth().$context;
+    const internalAdapter = context.internalAdapter;
 
-    const result = await auth().api.listUsers({
-        query: {},
-        headers: kumaGodHeader,
-    });
-
-    const choices = result.users.map((user) => {
-        const email = user.email;
-        const username = (user as BetterAuthUser).username || email;
+    const users = await internalAdapter.listUsers();
+    const choices = users.map((user) => {
+        const userId = user.id;
+        const username = user.name || user.email;
 
         return {
             name: username,
-            value: email,
+            value: userId,
             description: "",
         };
     });
 
-    let email: string;
+    let userId: string;
 
     while (true) {
-        const selectEmail = await select({
+        const selectedUserId = await select({
             message: "Select a username:",
             choices,
         });
 
-        if (!selectEmail) {
+        if (!selectedUserId) {
             console.log("Invalid choice");
             continue;
         }
 
-        email = selectEmail;
+        userId = selectedUserId;
         break;
     }
 
@@ -72,18 +66,11 @@ async function main() {
         });
 
         try {
-            const ok = await auth().api.setUserPassword({
-                body: {
-                    userId: email,
-                    newPassword: password,
-                },
-                headers: kumaGodHeader,
-            });
+            const hash = await hashPassword(password); // We do that because the method under doesn't hash the password (it stores it in plain text)
+            await internalAdapter.updatePassword(userId, hash);
 
-            if (ok) {
-                console.log("Password reset succesfully!");
-                break;
-            }
+            console.log("Password reset succesfully!");
+            break;
         } catch (_) {
             // Better Auth shows Cli error message in cli already, we don't need to
         }
@@ -96,9 +83,6 @@ async function main() {
  *
  */
 async function cleanUp() {
-    if (kumaGodHeader) {
-        // Better Auth is not allow to remove current user, so leave it as is first...
-    }
     await Database.close();
 }
 

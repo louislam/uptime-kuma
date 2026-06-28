@@ -17,8 +17,6 @@ import { hasUser } from "./routers/better-auth-router";
 export type BetterAuthUser = ReturnType<typeof createAuthInstance>["$Infer"]["Session"]["user"];
 
 let authInstance: ReturnType<typeof createAuthInstance>;
-let godKumaHeaders: Headers;
-let godKumaInitSecret: string = "";
 
 /**
  * Get the singleton instance of better-auth
@@ -122,16 +120,6 @@ function createAuthInstance() {
                 if (ctx.path.startsWith("/sign-in/")) {
                     const username = ctx.body?.username;
                     const password = ctx.body?.password;
-                    const email = ctx.body?.email;
-
-                    // God Kuma is not allowed to login from the outside, only for internal usage
-                    if (username?.startsWith("god_kuma_") || email?.endsWith("@god.uptime-kuma.internal")) {
-                        if (!godKumaInitSecret || ctx.headers?.get("god-kuma-init-secret") != godKumaInitSecret) {
-                            throw new APIError("BAD_REQUEST", {
-                                message: "God Kuma is not allowed to login from the outside.",
-                            });
-                        }
-                    }
 
                     // Migrate legacy user from old user table to better-auth
                     // Only do this when there is no user in better-auth
@@ -288,93 +276,5 @@ export async function migrateUser(username: string, password: string) {
         }
     } else {
         log.info("auth", `No legacy user found for username: ${username}, do not migrate.`);
-    }
-}
-
-/**
- * Because there is no way to do admin operations without admin session
- * We have to create a god admin user to do operations
- * @param removeExistingGodKuma For server restart, remove previous god kuma user. But for short time scripts like reset password, you probably don't want to remove.
- * @returns Headers for the temp admin user
- */
-export async function getGodKumaHeaders(removeExistingGodKuma = true): Promise<Headers> {
-    if (!godKumaHeaders) {
-        const username = "god_kuma_" + genSecret(16);
-        const password = genSecret();
-        const email = `${username}@god.uptime-kuma.internal`;
-
-        await auth().api.createUser({
-            body: {
-                name: "God Kuma (Temp)",
-                email: email,
-                password,
-                role: "admin",
-                data: {
-                    username,
-                },
-            },
-        });
-
-        godKumaInitSecret = genSecret();
-
-        // Sign in
-        const response = await auth().api.signInEmail({
-            body: {
-                email,
-                password,
-            },
-            headers: {
-                "god-kuma-init-secret": godKumaInitSecret,
-            },
-            asResponse: true,
-        });
-
-        const header = new Headers();
-        header.set("cookie", response.headers.get("set-cookie") || "");
-        header.set("god-kuma-email", email);
-
-        godKumaHeaders = header;
-
-        if (removeExistingGodKuma) {
-            await removeOtherGodKumaUsers();
-        }
-    }
-
-    return godKumaHeaders;
-}
-
-/**
- * Remove other god kuma users
- */
-export async function removeOtherGodKumaUsers() {
-    let searchValue = "@god.uptime-kuma.internal";
-    let email = godKumaHeaders.get("god-kuma-email");
-
-    if (!email) {
-        throw new Error("Unexpected error: God Kuma email not found in headers.");
-    }
-
-    const result = await auth().api.listUsers({
-        query: {
-            searchField: "email",
-            searchValue,
-            searchOperator: "ends_with",
-        },
-        headers: godKumaHeaders,
-    });
-
-    for (const user of result.users) {
-        if (user.email === email) {
-            continue;
-        }
-
-        log.debug("auth", "Removing existing god kuma user:", user.email);
-        // Delete the user
-        await auth().api.removeUser({
-            body: {
-                userId: user.id,
-            },
-            headers: godKumaHeaders,
-        });
     }
 }
