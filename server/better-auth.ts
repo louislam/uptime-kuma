@@ -10,6 +10,9 @@ import { Socket } from "socket.io";
 import { haveIBeenPwned } from "better-auth/plugins";
 import { twoFactor } from "better-auth/plugins";
 import { createAuthMiddleware, APIError } from "better-auth/api";
+// @ts-ignore
+import * as oldAuth from "./auth.js";
+import { hasUser } from "./routers/better-auth-router";
 
 export type BetterAuthUser = ReturnType<typeof createAuthInstance>["$Infer"]["Session"]["user"];
 
@@ -61,12 +64,6 @@ function createAuthInstance() {
             revokeSessionsOnPasswordReset: true,
             enabled: true,
             disableSignUp: false,
-            sendResetPassword: async ({ user, url, token }, request) => {
-                // TODO
-            },
-            onPasswordReset: async ({ user }, request) => {
-                // TODO
-            },
         },
         rateLimit: {
             // Seconds
@@ -111,16 +108,24 @@ function createAuthInstance() {
 
         hooks: {
             before: createAuthMiddleware(async (ctx) => {
-                // God Kuma is not allowed to login from the outside, only for internal usage
                 if (ctx.path.startsWith("/sign-in/")) {
                     const username = ctx.body?.username;
+                    const password = ctx.body?.password;
                     const email = ctx.body?.email;
+
+                    // God Kuma is not allowed to login from the outside, only for internal usage
                     if (username?.startsWith("god_kuma_") || email?.endsWith("@god.uptime-kuma.internal")) {
                         if (!godKumaInitSecret || ctx.headers?.get("god-kuma-init-secret") != godKumaInitSecret) {
                             throw new APIError("BAD_REQUEST", {
                                 message: "God Kuma is not allowed to login from the outside.",
                             });
                         }
+                    }
+
+                    // Migrate legacy user from old user table to better-auth
+                    // Only do this when there is no user in better-auth
+                    if (!(await hasUser())) {
+                        await migrateUser(username, password);
                     }
                 }
             }),
@@ -247,11 +252,32 @@ export async function doubleCheckPassword(cookie: string, currentPassword: strin
 }
 
 /**
- * TODO
+ * Migrate a legacy user from the old `user` table to better-auth tables.
+ * @param username Legacy username
+ * @param password Plain-text password from the login form
  */
-export async function migrateUser() {
-    // TODO: User have to input pwd one time to migrate, or we can not get the original password hash to create a better-auth user
-    // TODO: Disable Auth may need to directly create a user in the database
+export async function migrateUser(username: string, password: string) {
+    const legacyUser = await oldAuth.login(username, password);
+    if (legacyUser) {
+        try {
+            await auth().api.createUser({
+                body: {
+                    name: username,
+                    email: `${username}@noreply.uptime-kuma.internal`,
+                    password,
+                    role: "admin",
+                    data: {
+                        username,
+                    },
+                },
+            });
+            log.info("auth", `Migrated legacy user: ${username}`);
+        } catch (e) {
+            log.error("auth", `Failed to migrate legacy user ${username}:`, e);
+        }
+    } else {
+        log.info("auth", `No legacy user found for username: ${username}, do not migrate.`);
+    }
 }
 
 /**

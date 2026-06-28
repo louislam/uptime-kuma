@@ -9,7 +9,7 @@ import { allowDevOrigin } from "../util-server.js";
 import { generalErrorResponse } from "../util2";
 
 let processingSetup = false;
-let hasUser = false;
+let _hasUser = false;
 let expired = false;
 
 const expiredMsg = "Setup has expired. Please restart the server to try again.";
@@ -71,7 +71,7 @@ export async function createBetterAuthRouter() {
 
                 log.debug("auth", "First user created:", user);
 
-                hasUser = true;
+                _hasUser = true;
                 res.json({ ok: true });
             } finally {
                 processingSetup = false;
@@ -86,6 +86,16 @@ export async function createBetterAuthRouter() {
 }
 
 /**
+ *
+ */
+export async function hasUser() {
+    if (_hasUser) {
+        return true;
+    }
+    return (await R.knex("better_auth_user").count("id as count").first()).count !== 0;
+}
+
+/**
  * @returns Whether setup is needed.
  */
 export async function needSetup() {
@@ -95,9 +105,13 @@ export async function needSetup() {
     if (processingSetup) {
         return false;
     }
-    if (hasUser) {
+
+    if (await hasUser()) {
         return false;
     }
-    hasUser = (await R.knex("better_auth_user").count("id as count").first()).count !== 0;
-    return !hasUser;
+
+    // The user may be in the old user table, check that as well
+    const hasOldUser = (await R.knex("user").count("id as count").first()).count !== 0;
+
+    return !hasOldUser;
 }
