@@ -17,8 +17,6 @@ import { hasUser } from "./routers/better-auth-router";
 export type BetterAuthUser = ReturnType<typeof createAuthInstance>["$Infer"]["Session"]["user"];
 
 let authInstance: ReturnType<typeof createAuthInstance>;
-let godKumaHeaders: Headers;
-let godKumaInitSecret: string = "";
 
 /**
  *
