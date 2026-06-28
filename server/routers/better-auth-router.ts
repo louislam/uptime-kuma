@@ -11,15 +11,9 @@ import { generalErrorResponse } from "../util2";
 let processingSetup = false;
 let _hasUser = false;
 let expired = false;
+let setupTimeout: NodeJS.Timeout | null = null;
 
 const expiredMsg = "Setup has expired. Please restart the server to try again.";
-setTimeout(
-    () => {
-        expired = true;
-        log.error("auth", expiredMsg);
-    },
-    1000 * 60 * 10
-);
 
 /**
  * For testing: http://localhost:3001/api/auth/ok
@@ -99,6 +93,16 @@ export async function hasUser() {
  * @returns Whether setup is needed.
  */
 export async function needSetup() {
+    if (!setupTimeout) {
+        setupTimeout = setTimeout(
+            () => {
+                expired = true;
+                log.error("auth", expiredMsg);
+            },
+            1000 * 60 * 10
+        );
+    }
+
     if (expired) {
         return false;
     }
