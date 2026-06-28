@@ -1,7 +1,6 @@
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const passwordHash = require("../password-hash");
 const { R } = require("redbean-node");
-const jwt = require("jsonwebtoken");
 const { shake256, SHAKE256_LENGTH } = require("../util-server");
 
 class User extends BeanModel {

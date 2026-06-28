@@ -13,6 +13,7 @@ const childProcessAsync = require("promisify-child-process");
 const path = require("path");
 const axios = require("axios");
 const { isSSL, sslKey, sslCert, sslKeyPassphrase } = require("./config");
+const { getSession, getDisableAuthSession } = require("./better-auth");
 // DO NOT IMPORT HERE IF THE MODULES USED `UptimeKumaServer.getInstance()`, put at the bottom of this file instead.
 
 /**
@@ -197,8 +198,24 @@ class UptimeKumaServer {
      * @returns {Promise<void>}
      */
     async initAfterDatabaseReady() {
-        // Static
-        this.app.use("/screenshots", express.static(Database.screenshotDir));
+        // Screenshots
+        this.app.use("/screenshots", async (req, res, next) => {
+            try {
+                let session;
+                if (!(await Settings.get("disableAuth"))) {
+                    session = await getSession(req.headers.cookie);
+                } else {
+                    session = await getDisableAuthSession();
+                }
+                if (session) {
+                    express.static(Database.screenshotDir)(req, res, next);
+                } else {
+                    res.sendStatus(401);
+                }
+            } catch (_) {
+                res.sendStatus(401);
+            }
+        });
 
         process.env.TZ = await this.getTimezone();
         dayjs.tz.setDefault(process.env.TZ);
