@@ -43,7 +43,7 @@
         "setup": "git checkout 2.4.0 && npm ci --omit dev --no-audit && node --run download-dist",
         "download-dist": "node extra/download-dist.js",
         "mark-as-nightly": "node extra/mark-as-nightly.js",
-        "reset-password": "tsx extra/reset-password.ts",
+        "reset-password": "tsx extra/reset-password.mts",
         "remove-2fa": "node extra/remove-2fa.js",
         "simple-dns-server": "node extra/simple-dns-server.js",
         "simple-mqtt-server": "node extra/simple-mqtt-server.js",
@@ -64,6 +64,7 @@
     },
     "dependencies": {
         "@grpc/grpc-js": "~1.8.22",
+        "@inquirer/prompts": "~8.5.2",
         "@louislam/ping": "~0.4.4-mod.1",
         "@louislam/sqlite3": "15.1.6",
         "@vvo/tzdb": "~6.198.0",
@@ -142,9 +143,9 @@
         "tcp-ping": "~0.1.1",
         "tldts": "~7.0.23",
         "tough-cookie": "~4.1.4",
+        "tsx": "~4.22.3",
         "validator": "~13.15.26",
         "web-push": "~3.6.7",
-        "tsx": "~4.22.3",
         "ws": "~8.19.0",
         "zod": "~4.4.3"
     },

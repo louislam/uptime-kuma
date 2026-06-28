@@ -7,6 +7,7 @@ const { Settings } = require("./settings");
 const dayjs = require("dayjs");
 
 /**
+ * @deprecated Use Better Auth
  * Login to web app
  * @param {string} username Username to login with
  * @param {string} password Password to login with

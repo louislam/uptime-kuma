@@ -2,7 +2,7 @@ const fs = require("fs");
 const fsAsync = fs.promises;
 const { R } = require("redbean-node");
 const { setSetting, setting } = require("./util-server");
-const { log, sleep, isDev } = require("../src/util");
+const { log, sleep, isDevEnv } = require("../src/util");
 const knex = require("knex");
 const path = require("path");
 const { EmbeddedMariaDB } = require("./embedded-mariadb");
@@ -171,7 +171,7 @@ class Database {
      * @returns {string} The dev data dir, empty string if not in dev mode or in master branch
      */
     static getDevDataDir() {
-        if (isDev) {
+        if (isDevEnv()) {
             const gitBranch = this.getCurrentGitBranch();
 
             // HEAD means detached head. Don't handle this case, becasuse it is not common.

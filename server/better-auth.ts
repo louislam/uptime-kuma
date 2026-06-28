@@ -9,10 +9,13 @@ import { admin } from "better-auth/plugins";
 import { Socket } from "socket.io";
 import { haveIBeenPwned } from "better-auth/plugins";
 import { twoFactor } from "better-auth/plugins";
+import { createAuthMiddleware, APIError } from "better-auth/api";
 
-type BetterAuthUser = ReturnType<typeof createAuthInstance>["$Infer"]["Session"]["user"];
+export type BetterAuthUser = ReturnType<typeof createAuthInstance>["$Infer"]["Session"]["user"];
 
 let authInstance: ReturnType<typeof createAuthInstance>;
+let godKumaHeaders: Headers;
+let godKumaInitSecret: string = "";
 
 /**
  *
@@ -46,6 +49,11 @@ function createAuthInstance() {
 
     return betterAuth({
         database,
+
+        // Just want to silent the warning message
+        // As we don't use callback/redirect, it is not used
+        baseURL: "http://localhost:3000",
+
         secret: getAuthSecret(),
         // Should be handled in Express.js, check better-auth-router.ts
         trustedOrigins: ["*"],
@@ -99,6 +107,23 @@ function createAuthInstance() {
         },
         verification: {
             modelName: "better_auth_verification",
+        },
+
+        hooks: {
+            before: createAuthMiddleware(async (ctx) => {
+                // God Kuma is not allowed to login from the outside, only for internal usage
+                if (ctx.path.startsWith("/sign-in/")) {
+                    const username = ctx.body?.username;
+                    const email = ctx.body?.email;
+                    if (username?.startsWith("god_kuma_") || email?.endsWith("@god.uptime-kuma.internal")) {
+                        if (!godKumaInitSecret || ctx.headers?.get("god-kuma-init-secret") != godKumaInitSecret) {
+                            throw new APIError("BAD_REQUEST", {
+                                message: "God Kuma is not allowed to login from the outside.",
+                            });
+                        }
+                    }
+                }
+            }),
         },
     });
 }
@@ -227,4 +252,92 @@ export async function doubleCheckPassword(cookie: string, currentPassword: strin
 export async function migrateUser() {
     // TODO: User have to input pwd one time to migrate, or we can not get the original password hash to create a better-auth user
     // TODO: Disable Auth may need to directly create a user in the database
+}
+
+/**
+ * Because there is no way to do admin operations without admin session
+ * We have to create a god admin user to do operations
+ * @param removeExistingGodKuma For server restart, remove previous god kuma user. But for short time scripts like reset password, you probably don't want to remove.
+ * @returns Headers for the temp admin user
+ */
+export async function getGodKumaHeaders(removeExistingGodKuma = true): Promise<Headers> {
+    if (!godKumaHeaders) {
+        const username = "god_kuma_" + genSecret(16);
+        const password = genSecret();
+        const email = `${username}@god.uptime-kuma.internal`;
+
+        await auth().api.createUser({
+            body: {
+                name: "God Kuma (Temp)",
+                email: email,
+                password,
+                role: "admin",
+                data: {
+                    username,
+                },
+            },
+        });
+
+        godKumaInitSecret = genSecret();
+
+        // Sign in
+        const response = await auth().api.signInEmail({
+            body: {
+                email,
+                password,
+            },
+            headers: {
+                "god-kuma-init-secret": godKumaInitSecret,
+            },
+            asResponse: true,
+        });
+
+        const header = new Headers();
+        header.set("cookie", response.headers.get("set-cookie") || "");
+        header.set("god-kuma-email", email);
+
+        godKumaHeaders = header;
+
+        if (removeExistingGodKuma) {
+            await removeOtherGodKumaUsers();
+        }
+    }
+
+    return godKumaHeaders;
+}
+
+/**
+ * Remove other god kuma users
+ */
+export async function removeOtherGodKumaUsers() {
+    let searchValue = "@god.uptime-kuma.internal";
+    let email = godKumaHeaders.get("god-kuma-email");
+
+    if (!email) {
+        throw new Error("Unexpected error: God Kuma email not found in headers.");
+    }
+
+    const result = await auth().api.listUsers({
+        query: {
+            searchField: "email",
+            searchValue,
+            searchOperator: "ends_with",
+        },
+        headers: godKumaHeaders,
+    });
+
+    for (const user of result.users) {
+        if (user.email === email) {
+            continue;
+        }
+
+        log.debug("auth", "Removing existing god kuma user:", user.email);
+        // Delete the user
+        await auth().api.removeUser({
+            body: {
+                userId: user.id,
+            },
+            headers: godKumaHeaders,
+        });
+    }
 }
