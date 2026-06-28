@@ -41,6 +41,7 @@ import Opsgenie from "./Opsgenie.vue";
 import JiraServiceManagement from "./JiraServiceManagement.vue";
 import PagerDuty from "./PagerDuty.vue";
 import FlashDuty from "./FlashDuty.vue";
+import Flowtriq from "./Flowtriq.vue";
 import PagerTree from "./PagerTree.vue";
 import PromoSMS from "./PromoSMS.vue";
 import Pumble from "./Pumble.vue";
@@ -140,6 +141,7 @@ const NotificationFormList = {
     JiraServiceManagement: JiraServiceManagement,
     PagerDuty: PagerDuty,
     FlashDuty: FlashDuty,
+    Flowtriq: Flowtriq,
     PagerTree: PagerTree,
     promosms: PromoSMS,
     pumble: Pumble,
