@@ -142,10 +142,10 @@ export function getAuthSecret() {
     return Database.dbConfig.authSecret;
 }
 
-/** Encrypt a string using the BetterAuth encryption method 
+/** Encrypt a string using the BetterAuth encryption method
  * @param data The string to encrypt
  * @returns The encrypted string
-*/
+ */
 export async function betterAuthEncrypt(data: string): Promise<string> {
     const encrypted = await symmetricEncrypt({
         key: auth().options.secret,
