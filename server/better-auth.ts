@@ -13,6 +13,7 @@ import { createAuthMiddleware, APIError } from "better-auth/api";
 // @ts-ignore
 import * as oldAuth from "./auth.js";
 import { hasUser } from "./routers/better-auth-router";
+import { symmetricEncrypt } from "better-auth/crypto";
 
 export type BetterAuthUser = ReturnType<typeof createAuthInstance>["$Infer"]["Session"]["user"];
 
@@ -141,6 +142,19 @@ export function getAuthSecret() {
     return Database.dbConfig.authSecret;
 }
 
+/** Encrypt a string using the BetterAuth encryption method 
+ * @param data The string to encrypt
+ * @returns The encrypted string
+*/
+export async function betterAuthEncrypt(data: string): Promise<string> {
+    const encrypted = await symmetricEncrypt({
+        key: auth().options.secret,
+        data,
+    });
+
+    return encrypted;
+}
+
 /**
  * Get session from cookie
  * @param cookie Cookie string
@@ -250,7 +264,8 @@ export async function migrateUser(username: string, password: string) {
     const legacyUser = await oldAuth.login(username, password);
     if (legacyUser) {
         try {
-            await auth().api.createUser({
+            // Create BetterAuth user with the same username and password
+            const newUser = await auth().api.createUser({
                 body: {
                     name: username,
                     email: `${username}@noreply.uptime-kuma.internal`,
@@ -261,6 +276,23 @@ export async function migrateUser(username: string, password: string) {
                     },
                 },
             });
+
+            // Migrate 2FA settings if they exist
+            if (legacyUser.twoFactorEnabled) {
+                const rowId = genSecret(32);
+                const userId = newUser.user.id;
+
+                const encryptedSecret = await betterAuthEncrypt(legacyUser.twofa_secret);
+                const encryptedBackupCodes = await betterAuthEncrypt(JSON.stringify([])); // Empty backup codes for migration, as we don't have the original backup codes
+
+                await R.knex("better_auth_twoFactor").insert({
+                    id: rowId,
+                    secret: encryptedSecret,
+                    backupCodes: encryptedBackupCodes,
+                    verified: true,
+                    userId: userId,
+                });
+            }
             log.info("auth", `Migrated legacy user: ${username}`);
         } catch (e) {
             log.error("auth", `Failed to migrate legacy user ${username}:`, e);
