@@ -18,11 +18,11 @@ import { symmetricEncrypt } from "better-auth/crypto";
 export type BetterAuthUser = ReturnType<typeof createAuthInstance>["$Infer"]["Session"]["user"];
 
 let authInstance: ReturnType<typeof createAuthInstance>;
-let godKumaHeaders: Headers;
-let godKumaInitSecret: string = "";
 
 /**
- *
+ * Get the singleton instance of better-auth
+ * Mainly used for http and socket.io authentication
+ * @returns The singleton instance of better-auth
  */
 export function auth() {
     if (authInstance) {
@@ -30,6 +30,15 @@ export function auth() {
     }
     authInstance = createAuthInstance();
     return authInstance;
+}
+
+/**
+ * Do staff without any auth
+ * For internal usage only, the api should be a superset of auth().api
+ * @returns Internal adapter of better-auth
+ */
+export async function authInternal() {
+    return (await auth().$context).internalAdapter;
 }
 
 /**
