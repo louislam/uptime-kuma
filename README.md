@@ -112,6 +112,8 @@ If you need more options or need to browse via a reverse proxy, please read:
 
 <https://github.com/louislam/uptime-kuma/wiki/%F0%9F%94%A7-How-to-Install>
 
+[![Deploy with Zenith](https://cdn.zenith.hosting/buttons/deploy-with-zenith.svg)](https://zenith.hosting/host/uptime-kuma?ref=gh)
+
 ## 🆙 How to Update
 
 Please read:
