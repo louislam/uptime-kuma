@@ -4,7 +4,7 @@
  * DO NOT require("./server") in other modules, it likely creates circular dependency!
  */
 import { getRandomInt, isDev, log, sleep } from "../src/util";
-import { auth, doubleCheckPassword, getDisableAuthSession, getSession } from "./better-auth";
+import { auth, createHeaders, doubleCheckPassword, getDisableAuthSession, getSession } from "./better-auth";
 import { createBetterAuthRouter, needSetup } from "./routers/better-auth-router";
 import { betterAuthSocketHandler } from "./socket-handlers/better-auth-socket-handler";
 import { loadEnvFile } from "node:process";
@@ -153,7 +153,6 @@ const {
     sendInfo,
     sendProxyList,
     sendDockerHostList,
-    sendAPIKeyList,
     sendRemoteBrowserList,
     sendMonitorTypeList,
 } = require("./client");
@@ -377,6 +376,7 @@ app.use(function (req, res, next) {
         if (session) {
             socket.userID = session.user.id;
             socket.session = session;
+            socket.headers = createHeaders(socket.request.headers.cookie);
             socket.emit("session", session.user.username);
             log.debug("auth", `Session active:`, session.session.ipAddress, session.user.username);
         }
@@ -1445,7 +1445,6 @@ async function afterLogin(socket, user) {
         sendNotificationList(socket),
         sendProxyList(socket),
         sendDockerHostList(socket),
-        sendAPIKeyList(socket),
         sendRemoteBrowserList(socket),
         sendMonitorTypeList(socket),
     ]);

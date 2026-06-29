@@ -116,27 +116,6 @@ async function sendProxyList(socket) {
 }
 
 /**
- * Emit API key list to client
- * @param {Socket} socket Socket.io socket instance
- * @returns {Promise<void>}
- */
-async function sendAPIKeyList(socket) {
-    const timeLogger = new TimeLogger();
-
-    let result = [];
-    const list = await R.find("api_key");
-
-    for (let bean of list) {
-        result.push(bean.toPublicJSON());
-    }
-
-    io.to(socket.userID).emit("apiKeyList", result);
-    timeLogger.print("Sent API Key List");
-
-    return list;
-}
-
-/**
  * Emits the version information to the client.
  * @param {Socket} socket Socket.io socket instance
  * @param {boolean} hideVersion Should we hide the version information in the response?
@@ -240,7 +219,7 @@ module.exports = {
     sendImportantHeartbeatList,
     sendHeartbeatList,
     sendProxyList,
-    sendAPIKeyList,
+
     sendInfo,
     sendDockerHostList,
     sendRemoteBrowserList,

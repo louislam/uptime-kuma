@@ -1,6 +1,5 @@
 import { createAuthClient } from "better-auth/vue";
 import { twoFactorClient, usernameClient } from "better-auth/client/plugins";
-import { apiKeyClient } from "@better-auth/api-key/client";
 import { reconnectSocket } from "./mixins/socket";
 
 export const baseURL =
@@ -10,7 +9,7 @@ export const baseURL =
 
 export const authClient = createAuthClient({
     baseURL,
-    plugins: [usernameClient(), twoFactorClient(), apiKeyClient()],
+    plugins: [usernameClient(), twoFactorClient()],
 });
 
 authClient.signIn;

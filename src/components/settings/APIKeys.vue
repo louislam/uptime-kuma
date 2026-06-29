@@ -11,15 +11,47 @@
                 </button>
             </div>
 
-            <div>
-                <span
-                    v-if="Object.keys(keyList).length === 0"
-                    class="d-flex align-items-center justify-content-center my-3"
-                >
+            <div v-if="apiKeyList.length === 0 && legacyKeyList.length === 0">
+                <span class="d-flex align-items-center justify-content-center my-3">
                     {{ $t("No API Keys") }}
                 </span>
+            </div>
 
-                <div v-for="(item, index) in keyList" :key="index" class="item" :class="item.status">
+            <div>
+                <div v-for="(item, index) in apiKeyList" :key="index" class="item" :class="apiKeyStatus(item)">
+                    <div class="left-part">
+                        <div class="circle"></div>
+                        <div class="info">
+                            <div class="title">{{ item.name }}</div>
+                            <div class="status">
+                                {{ item.enabled ? $t("apiKey-active") : $t("apiKey-inactive") }}
+                            </div>
+                            <div class="date">{{ $t("createdAt", { date: item.createdAt }) }}</div>
+                            <div class="date">
+                                {{ $t("Expires") }}:
+                                {{ item.expiresAt || $t("Never") }}
+                            </div>
+                            <div v-if="item.start" class="start">
+                                {{ $t("startsWith", { start: item.start }) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="buttons">
+                        <div class="btn-group" role="group">
+                            <button class="btn btn-danger" @click="deleteDialog(item.id)">
+                                <font-awesome-icon icon="trash" />
+                                {{ $t("Delete") }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="legacyKeyList.length > 0">
+                <h4>{{ $t("Legacy API Keys") }}</h4>
+
+                <div v-for="(item, index) in legacyKeyList" :key="index" class="item" :class="item.status">
                     <div class="left-part">
                         <div class="circle"></div>
                         <div class="info">
@@ -37,17 +69,7 @@
 
                     <div class="buttons">
                         <div class="btn-group" role="group">
-                            <button v-if="item.active" class="btn btn-normal" @click="disableDialog(item.id)">
-                                <font-awesome-icon icon="pause" />
-                                {{ $t("Disable") }}
-                            </button>
-
-                            <button v-if="!item.active" class="btn btn-primary" @click="enableKey(item.id)">
-                                <font-awesome-icon icon="play" />
-                                {{ $t("Enable") }}
-                            </button>
-
-                            <button class="btn btn-danger" @click="deleteDialog(item.id)">
+                            <button class="btn btn-danger" @click="legacyDeleteDialog(item.id)">
                                 <font-awesome-icon icon="trash" />
                                 {{ $t("Delete") }}
                             </button>
@@ -63,15 +85,21 @@
             </a>
         </div>
 
-        <Confirm ref="confirmPause" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="disableKey">
-            {{ $t("disableAPIKeyMsg") }}
-        </Confirm>
-
         <Confirm ref="confirmDelete" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="deleteKey">
             {{ $t("deleteAPIKeyMsg") }}
         </Confirm>
 
-        <APIKeyDialog ref="apiKeyDialog" />
+        <Confirm
+            ref="confirmLegacyDelete"
+            btn-style="btn-danger"
+            :yes-text="$t('Yes')"
+            :no-text="$t('No')"
+            @yes="legacyDeleteKey"
+        >
+            {{ $t("deleteAPIKeyMsg") }}
+        </Confirm>
+
+        <APIKeyDialog ref="apiKeyDialog" @keyAdded="loadAPIKeys" />
     </div>
 </template>
 
@@ -86,23 +114,45 @@ export default {
     },
     data() {
         return {
+            apiKeyList: [],
+            legacyKeyList: [],
             selectedKeyID: null,
+            selectedLegacyKeyID: null,
         };
     },
     computed: {
-        keyList() {
-            let result = Object.values(this.$root.apiKeyList);
-            return result;
-        },
         settings() {
             return this.$parent.$parent.$parent.settings;
         },
     },
 
+    mounted() {
+        this.loadAPIKeys();
+    },
+
     methods: {
+        loadAPIKeys() {
+            this.$root.getAPIKeyList((res) => {
+                if (res.ok) {
+                    this.apiKeyList = res.apiKeyList;
+                    this.legacyKeyList = res.legacyAPIKeyList;
+                }
+            });
+        },
+
+        apiKeyStatus(item) {
+            if (!item.enabled) {
+                return "inactive";
+            }
+            if (item.expiresAt && new Date(item.expiresAt) < new Date()) {
+                return "expired";
+            }
+            return "active";
+        },
+
         /**
-         * Show dialog to confirm deletion
-         * @param {number} keyID ID of monitor that is being deleted
+         * Show dialog to confirm deletion of Better Auth key
+         * @param {string} keyID ID of key to delete
          * @returns {void}
          */
         deleteDialog(keyID) {
@@ -111,42 +161,39 @@ export default {
         },
 
         /**
-         * Delete a key
+         * Delete a Better Auth key
          * @returns {void}
          */
         deleteKey() {
             this.$root.deleteAPIKey(this.selectedKeyID, (res) => {
-                this.$root.toastRes(res);
+                if (res.ok) {
+                    this.loadAPIKeys();
+                    this.$root.toastRes(res);
+                } else {
+                    this.$root.toastError(res.msg);
+                }
             });
         },
 
         /**
-         * Show dialog to confirm pause
-         * @param {number} keyID ID of key to pause
+         * Show dialog to confirm deletion of legacy key
+         * @param {number} keyID ID of key to delete
          * @returns {void}
          */
-        disableDialog(keyID) {
-            this.selectedKeyID = keyID;
-            this.$refs.confirmPause.show();
+        legacyDeleteDialog(keyID) {
+            this.selectedLegacyKeyID = keyID;
+            this.$refs.confirmLegacyDelete.show();
         },
 
         /**
-         * Pause API key
+         * Delete a legacy key
          * @returns {void}
          */
-        disableKey() {
-            this.$root.getSocket().emit("disableAPIKey", this.selectedKeyID, (res) => {
-                this.$root.toastRes(res);
-            });
-        },
-
-        /**
-         * Resume API key
-         * @param {number} id Key to resume
-         * @returns {void}
-         */
-        enableKey(id) {
-            this.$root.getSocket().emit("enableAPIKey", id, (res) => {
+        legacyDeleteKey() {
+            this.$root.deleteLegacyAPIKey(this.selectedLegacyKeyID, (res) => {
+                if (res.ok) {
+                    this.legacyKeyList = res.legacyKeys;
+                }
                 this.$root.toastRes(res);
             });
         },
@@ -162,6 +209,18 @@ export default {
         flex-direction: column;
         align-items: flex-start;
         margin-bottom: 20px;
+    }
+}
+
+.section-title {
+    margin-top: 24px;
+    margin-bottom: 12px;
+    font-size: 18px;
+    font-weight: 600;
+    color: $dark-font-color;
+
+    .dark & {
+        color: $dark-font-color2;
     }
 }
 
@@ -254,6 +313,17 @@ export default {
     .dark & {
         color: white;
         background-color: rgba(255, 255, 255, 0.1);
+    }
+}
+
+.start {
+    margin-top: 5px;
+    display: block;
+    font-size: 13px;
+    color: $dark-font-color;
+
+    .dark & {
+        color: $dark-font-color2;
     }
 }
 
