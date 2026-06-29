@@ -9,6 +9,7 @@ import { admin } from "better-auth/plugins";
 import { Socket } from "socket.io";
 import { haveIBeenPwned } from "better-auth/plugins";
 import { twoFactor } from "better-auth/plugins";
+import { apiKey } from "@better-auth/api-key";
 import { createAuthMiddleware, APIError } from "better-auth/api";
 // @ts-ignore
 import * as oldAuth from "./auth.js";
@@ -95,6 +96,14 @@ function createAuthInstance() {
                 schema: {
                     twoFactor: {
                         modelName: "better_auth_twoFactor",
+                    },
+                },
+            }),
+
+            apiKey({
+                schema: {
+                    apikey: {
+                        modelName: "better_auth_apikey",
                     },
                 },
             }),

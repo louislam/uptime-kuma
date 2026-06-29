@@ -63,6 +63,7 @@
         "generate-changelog": "node ./extra/generate-changelog.mjs"
     },
     "dependencies": {
+        "@better-auth/api-key": "1.6.11",
         "@grpc/grpc-js": "~1.8.22",
         "@inquirer/core": "~11.2.1",
         "@inquirer/prompts": "~8.5.2",
