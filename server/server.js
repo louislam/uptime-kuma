@@ -69,6 +69,24 @@ if (process.env.UPTIME_KUMA_WS_ORIGIN_CHECK === "bypass") {
     log.warn("server", "WebSocket Origin Check: " + process.env.UPTIME_KUMA_WS_ORIGIN_CHECK);
 }
 
+if (isDev || process.env.UPTIME_KUMA_DEBUG_INSPECTOR === "1") {
+    const inspector = require("inspector");
+    let inspectorHost = "127.0.0.1";
+
+    log.warn("server", "Node.js Inspector is enabled. You can connect to it via Chrome DevTools or VSCode.");
+    log.warn("server", "Node.js Inspector is listening on:", inspector.url());
+
+    if (process.env.UPTIME_KUMA_IS_CONTAINER === "1") {
+        log.warn(
+            "server",
+            "You need to expose the port 9229:9229 in your docker command or docker compose, and ssh tunneling in order to connect to it."
+        );
+        inspectorHost = "0.0.0.0";
+    }
+
+    inspector.open(9229, inspectorHost);
+}
+
 const checkVersion = require("./check-version");
 log.info("server", "Uptime Kuma Version:", checkVersion.version);
 
