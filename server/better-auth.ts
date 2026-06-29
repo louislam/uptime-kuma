@@ -287,3 +287,34 @@ export async function migrateUser(username: string, password: string) {
         log.info("auth", `No legacy user found for username: ${username}, do not migrate.`);
     }
 }
+
+/**
+ * TODO: Check username / password without creating a session, mainly for basic auth
+ * @param username Legacy username
+ * @param password Plain-text password from the login form
+ */
+export async function checkPassword(username: string, password: string): Promise<boolean> {
+    const { adapter, password: passwordVerifier } = await auth().$context;
+    const internalAdapter = await authInternal();
+
+    const user = await adapter.findOne({
+        model: "user",
+        where: [{ field: "username", value: username }],
+    });
+
+    if (!user) {
+        return false;
+    }
+
+    const accounts = await internalAdapter.findAccounts(user.id);
+    const credentialAccount = accounts.find((ac) => ac.providerId === "credential");
+
+    if (!credentialAccount?.password) {
+        return false;
+    }
+
+    return passwordVerifier.verify({
+        hash: credentialAccount.password,
+        password,
+    });
+}
