@@ -78,6 +78,7 @@ const SevenIO = require("./notification-providers/sevenio");
 const Whapi = require("./notification-providers/whapi");
 const WAHA = require("./notification-providers/waha");
 const Evolution = require("./notification-providers/evolution");
+const OpenWa = require("./notification-providers/openwa");
 const GtxMessaging = require("./notification-providers/gtx-messaging");
 const Cellsynt = require("./notification-providers/cellsynt");
 const Onesender = require("./notification-providers/onesender");
@@ -190,6 +191,7 @@ class Notification {
             new Whapi(),
             new WAHA(),
             new Evolution(),
+            new OpenWa(),
             new GtxMessaging(),
             new Cellsynt(),
             new Wpush(),
