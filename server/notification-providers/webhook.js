@@ -41,8 +41,25 @@ class Webhook extends NotificationProvider {
                 config.headers = formData.getHeaders();
                 data = formData;
             } else if (notification.webhookContentType === "custom") {
-                data = await this.renderTemplate(notification.webhookCustomBody, msg, monitorJSON, heartbeatJSON);
+                // Escapar caracteres especiales para no romper el payload JSON (Issue #3778)
+                const escapedMsg = msg
+                    ? msg.replace(/\\/g, "\\\\")
+                         .replace(/"/g, "\\\"")
+                         .replace(/\n/g, "\\n")
+                         .replace(/\r/g, "\\r")
+                         .replace(/\t/g, "\\t")
+                    : msg;
+                
+                const rendered = await this.renderTemplate(notification.webhookCustomBody, escapedMsg, monitorJSON, heartbeatJSON);
+                
+                try {
+                    // Parseamos si es JSON para que la librería Axios no lo codifique doble
+                    data = JSON.parse(rendered);
+                } catch (_) {
+                    data = rendered;
+                }
             }
+
 
             if (notification.webhookAdditionalHeaders) {
                 try {
