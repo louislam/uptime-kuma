@@ -1619,5 +1619,6 @@
     "egosmsSenderDescription": "ID odosielateľa zobrazené príjemcom (max. 11 znakov). Ak je pole prázdne, predvolené nastavenie je EGOSMS.",
     "gamedigToken": "Token",
     "gamedigTokenDescription": "Voliteľné. Niektoré herné servery vyžadujú overovací token.",
-    "Bearer Token": "Token na doručiteľa"
+    "Bearer Token": "Token na doručiteľa",
+    "Connection Timeout": "Časový limit pripojenia"
 }
