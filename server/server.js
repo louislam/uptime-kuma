@@ -1090,10 +1090,14 @@ let needSetup = false;
 
                 let monitor = await R.findOne("monitor", " id = ? ", [monitorID]);
                 if (monitor && monitor.type === "group") {
-                    let children = await R.find("monitor", " parent = ? ", [monitorID]);
-                    for (let child of children) {
-                        await startMonitor(socket.userID, child.id);
-                        await server.sendUpdateMonitorIntoList(socket, child.id);
+                    const childIDs = await Monitor.getAllChildrenIDs(monitor.id);
+                    for (let childID of childIDs) {
+                        try {
+                            await startMonitor(socket.userID, childID);
+                            await server.sendUpdateMonitorIntoList(socket, childID);
+                        } catch (err) {
+                            // ignore permission errors for maliciously linked children across users
+                        }
                     }
                 }
 
@@ -1118,10 +1122,14 @@ let needSetup = false;
 
                 let monitor = await R.findOne("monitor", " id = ? ", [monitorID]);
                 if (monitor && monitor.type === "group") {
-                    let children = await R.find("monitor", " parent = ? ", [monitorID]);
-                    for (let child of children) {
-                        await pauseMonitor(socket.userID, child.id);
-                        await server.sendUpdateMonitorIntoList(socket, child.id);
+                    const childIDs = await Monitor.getAllChildrenIDs(monitor.id);
+                    for (let childID of childIDs) {
+                        try {
+                            await pauseMonitor(socket.userID, childID);
+                            await server.sendUpdateMonitorIntoList(socket, childID);
+                        } catch (err) {
+                            // ignore permission errors for maliciously linked children across users
+                        }
                     }
                 }
 
