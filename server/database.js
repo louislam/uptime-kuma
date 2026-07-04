@@ -451,6 +451,7 @@ class Database {
      * @param {boolean} testMode Should the connection be started in test mode?
      */
     static initSQLite(rawConn, testMode) {
+        // Required for legacy SQL patch files that use unsafe PRAGMAs (e.g. PRAGMA writable_schema)
         rawConn.unsafeMode(true);
 
         if (testMode) {
