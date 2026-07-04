@@ -27,7 +27,7 @@
         "build": "vite build --config ./config/vite.config.js",
         "test": "node --run test-backend && node --run test-e2e",
         "test-with-build": "node --run build && npm test",
-        "test-backend": "cross-env TEST_BACKEND=1 node --import=tsx --test --test-reporter=spec \"test/backend-test/**/*.js\"",
+        "test-backend": "cross-env TEST_BACKEND=1 node --import=tsx --test --test-concurrency=1 --test-reporter=spec \"test/backend-test/**/*.{ts,js}\"",
         "test-e2e": "playwright test --config ./config/playwright.config.js",
         "test-e2e-ui": "playwright test --config ./config/playwright.config.js --ui --ui-port=51063",
         "playwright-codegen": "playwright codegen localhost:3000 --save-storage=./private/e2e-auth.json",

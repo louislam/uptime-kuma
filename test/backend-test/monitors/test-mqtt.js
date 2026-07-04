@@ -66,7 +66,7 @@ async function testMqtt(
 describe(
     "MqttMonitorType",
     {
-        concurrency: 4,
+        concurrency: 1,
         skip: !!process.env.CI && (process.platform !== "linux" || process.arch !== "x64"),
     },
     () => {

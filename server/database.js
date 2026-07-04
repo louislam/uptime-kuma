@@ -1,7 +1,6 @@
 const fs = require("fs");
 const fsAsync = fs.promises;
 const { R } = require("redbean-node");
-const { setSetting, setting } = require("./util-server");
 const { log, sleep, isDevEnv } = require("../src/util");
 const knex = require("knex");
 const path = require("path");
@@ -550,7 +549,7 @@ class Database {
      * @deprecated
      */
     static async patchSqlite() {
-        let version = parseInt(await setting("database_version"));
+        let version = parseInt(await Settings.get("database_version"));
 
         if (!version) {
             version = 0;
@@ -575,7 +574,7 @@ class Database {
                     log.info("db", `Patching ${sqlFile}`);
                     await Database.importSQLFile(sqlFile);
                     log.info("db", `Patched ${sqlFile}`);
-                    await setSetting("database_version", i);
+                    await Settings.set("database_version", i);
                 }
             } catch (ex) {
                 await Database.close();
@@ -604,7 +603,7 @@ class Database {
      */
     static async patchSqlite2() {
         log.debug("db", "Database Patch 2.0 Process");
-        let databasePatchedFiles = await setting("databasePatchedFiles");
+        let databasePatchedFiles = await Settings.get("databasePatchedFiles");
 
         if (!databasePatchedFiles) {
             databasePatchedFiles = {};
@@ -634,7 +633,7 @@ class Database {
             process.exit(1);
         }
 
-        await setSetting("databasePatchedFiles", databasePatchedFiles);
+        await Settings.set("databasePatchedFiles", databasePatchedFiles);
     }
 
     /**
@@ -646,7 +645,7 @@ class Database {
         // Fix 1.13.0 empty slug bug
         await R.exec("UPDATE status_page SET slug = 'empty-slug-recover' WHERE TRIM(slug) = ''");
 
-        let title = await setting("title");
+        let title = await Settings.get("title");
 
         if (title) {
             log.info("database", "Migrating Status Page");
@@ -661,12 +660,12 @@ class Database {
             let statusPage = R.dispense("status_page");
             statusPage.slug = "default";
             statusPage.title = title;
-            statusPage.description = await setting("description");
-            statusPage.icon = await setting("icon");
-            statusPage.theme = await setting("statusPageTheme");
-            statusPage.published = !!(await setting("statusPagePublished"));
-            statusPage.search_engine_index = !!(await setting("searchEngineIndex"));
-            statusPage.show_tags = !!(await setting("statusPageTags"));
+            statusPage.description = await Settings.get("description");
+            statusPage.icon = await Settings.get("icon");
+            statusPage.theme = await Settings.get("statusPageTheme");
+            statusPage.published = !!(await Settings.get("statusPagePublished"));
+            statusPage.search_engine_index = !!(await Settings.get("searchEngineIndex"));
+            statusPage.show_tags = !!(await Settings.get("statusPageTags"));
             statusPage.password = null;
 
             if (!statusPage.title) {
@@ -690,10 +689,10 @@ class Database {
             await R.exec("DELETE FROM setting WHERE type = 'statusPage'");
 
             // Migrate Entry Page if it is status page
-            let entryPage = await setting("entryPage");
+            let entryPage = await Settings.get("entryPage");
 
             if (entryPage === "statusPage") {
-                await setSetting("entryPage", "statusPage-default", "general");
+                await Settings.set("entryPage", "statusPage-default", "general");
             }
 
             log.info("database", "Migrating Status Page - Done");
