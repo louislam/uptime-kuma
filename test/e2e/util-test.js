@@ -37,5 +37,3 @@ export async function login(page) {
 export function getSqliteDatabaseExists() {
     return fs.existsSync(path.resolve(__dirname, dbPath));
 }
-
-
