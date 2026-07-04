@@ -445,8 +445,6 @@ class Database {
         }
     }
 
-    static sqliteConn = null;
-
     /**
      * Initialize SQLite for each connection
      * @param {import("better-sqlite3").Database} rawConn The raw better-sqlite3 Database object
@@ -454,18 +452,25 @@ class Database {
      */
     static initSQLite(rawConn, testMode) {
         rawConn.unsafeMode(true);
-        Database.sqliteConn = rawConn;
 
         if (testMode) {
+            // Change to MEMORY
             rawConn.exec("PRAGMA journal_mode = MEMORY");
         } else {
+            // Change to WAL
             rawConn.exec("PRAGMA journal_mode = WAL");
         }
 
         rawConn.exec("PRAGMA foreign_keys = ON");
         rawConn.exec("PRAGMA cache_size = -12000");
         rawConn.exec("PRAGMA auto_vacuum = INCREMENTAL");
+
+        // Avoid error "SQLITE_BUSY: database is locked" by allowing SQLITE to wait up to 5 seconds to do a write
         rawConn.exec("PRAGMA busy_timeout = 5000");
+
+        // This ensures that an operating system crash or power failure will not corrupt the database.
+        // FULL synchronous is very safe, but it is also slower.
+        // Read more: https://sqlite.org/pragma.html#pragma_synchronous
         rawConn.exec("PRAGMA synchronous = NORMAL");
     }
 
