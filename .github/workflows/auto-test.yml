@@ -48,11 +48,6 @@ jobs:
       - run: npm --version
 
       - run: npm clean-install --no-fund
-
-      - name: Rebuild native modules for ARM64
-        if: matrix.os == 'ubuntu-22.04-arm'
-        run: npm rebuild @louislam/sqlite3
-
       - run: npm run build
       - run: npm run test-backend
         env:
@@ -108,9 +103,6 @@ jobs:
         with:
           node-version: 26
       - run: npm clean-install --no-fund
-
-      - name: Rebuild native modules for ARM64
-        run: npm rebuild @louislam/sqlite3
 
       - name: Install Playwright ${{ env.PLAYWRIGHT_VERSION }}
         run: npx playwright@${{ env.PLAYWRIGHT_VERSION }} install --with-deps

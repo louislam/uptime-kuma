@@ -295,9 +295,6 @@ class Database {
                 fs.copyFileSync(Database.templatePath, Database.sqlitePath);
             }
 
-            const Dialect = require("knex/lib/dialects/sqlite3/index.js");
-            Dialect.prototype._driver = () => require("@louislam/sqlite3");
-
             // SQLite is actually multiple connections for WAL mode, so we can set it to a higher number.
             // See: https://github.com/knex/knex/issues/3176#issuecomment-3389054899
             let poolConfig = {
@@ -316,7 +313,7 @@ class Database {
             }
 
             config = {
-                client: Dialect,
+                client: "better-sqlite3",
                 connection: {
                     filename: Database.sqlitePath,
                     acquireConnectionTimeout: acquireConnectionTimeout,
@@ -326,9 +323,12 @@ class Database {
                     ...poolConfig,
                     acquireTimeoutMillis: acquireConnectionTimeout,
                     afterCreate: (rawConn, done) => {
-                        this.initSQLite(rawConn, testMode)
-                            .then(() => done(undefined, rawConn))
-                            .catch((err) => done(err, rawConn));
+                        try {
+                            this.initSQLite(rawConn, testMode);
+                            done(undefined, rawConn);
+                        } catch (err) {
+                            done(err, rawConn);
+                        }
                     },
                 },
             };
@@ -445,37 +445,28 @@ class Database {
         }
     }
 
+    static sqliteConn = null;
+
     /**
      * Initialize SQLite for each connection
-     * @param {any} rawConn The raw node-sqlite3 Database object
+     * @param {import("better-sqlite3").Database} rawConn The raw better-sqlite3 Database object
      * @param {boolean} testMode Should the connection be started in test mode?
-     * @returns {Promise<void>}
      */
-    static async initSQLite(rawConn, testMode) {
-        // Since rawConn.run is callback based, in order to avoid callback hell, wrap it in a promise
-        const asyncRun = (sql) => {
-            return new Promise((resolve, reject) => rawConn.run(sql, (err) => (err ? reject(err) : resolve())));
-        };
+    static initSQLite(rawConn, testMode) {
+        rawConn.unsafeMode(true);
+        Database.sqliteConn = rawConn;
 
         if (testMode) {
-            // Change to MEMORY
-            await asyncRun("PRAGMA journal_mode = MEMORY");
+            rawConn.exec("PRAGMA journal_mode = MEMORY");
         } else {
-            // Change to WAL
-            await asyncRun("PRAGMA journal_mode = WAL");
+            rawConn.exec("PRAGMA journal_mode = WAL");
         }
 
-        await asyncRun("PRAGMA foreign_keys = ON");
-        await asyncRun("PRAGMA cache_size = -12000");
-        await asyncRun("PRAGMA auto_vacuum = INCREMENTAL");
-
-        // Avoid error "SQLITE_BUSY: database is locked" by allowing SQLITE to wait up to 5 seconds to do a write
-        await asyncRun("PRAGMA busy_timeout = 5000");
-
-        // This ensures that an operating system crash or power failure will not corrupt the database.
-        // FULL synchronous is very safe, but it is also slower.
-        // Read more: https://sqlite.org/pragma.html#pragma_synchronous
-        await asyncRun("PRAGMA synchronous = NORMAL");
+        rawConn.exec("PRAGMA foreign_keys = ON");
+        rawConn.exec("PRAGMA cache_size = -12000");
+        rawConn.exec("PRAGMA auto_vacuum = INCREMENTAL");
+        rawConn.exec("PRAGMA busy_timeout = 5000");
+        rawConn.exec("PRAGMA synchronous = NORMAL");
     }
 
     /**
