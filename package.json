@@ -29,6 +29,7 @@
         "test-with-build": "node --run build && npm test",
         "test-backend": "cross-env TEST_BACKEND=1 node --import=tsx --test --test-reporter=spec \"test/backend-test/**/*.{ts,js}\"",
         "test-e2e": "playwright test --config ./config/playwright.config.js",
+        "test-e2e-local": "npm run build && npm run test-e2e",
         "test-e2e-ui": "playwright test --config ./config/playwright.config.js --ui --ui-port=51063",
         "playwright-codegen": "playwright codegen localhost:3000 --save-storage=./private/e2e-auth.json",
         "playwright-show-report": "playwright show-report ./private/playwright-report",
@@ -45,6 +46,7 @@
         "mark-as-nightly": "node extra/mark-as-nightly.js",
         "reset-password": "node --import=tsx extra/reset-password.mts",
         "remove-2fa": "node extra/remove-2fa.js",
+        "start-clear-server": "node extra/start-clear-server.mjs",
         "simple-dns-server": "node extra/simple-dns-server.js",
         "simple-mqtt-server": "node extra/simple-mqtt-server.js",
         "simple-mongo": "docker run --rm -p 27017:27017 mongo",
@@ -102,8 +104,7 @@
         "jsesc": "~3.0.2",
         "jsonata": "~2.1.0",
         "kafkajs": "~2.2.4",
-        "knex": "~3.1.0",
-        "kysely-knex": "~0.2.0",
+        "knex": "~3.3.0",
         "limiter": "~2.1.0",
         "liquidjs": "~10.26.0",
         "marked": "~14.1.4",
@@ -162,6 +163,7 @@
         "@testcontainers/oraclefree": "11.14.0",
         "@testcontainers/postgresql": "11.14.0",
         "@testcontainers/rabbitmq": "10.28.0",
+        "@types/better-sqlite3": "~7.6.13",
         "@types/bootstrap": "~5.1.13",
         "@types/node": "^20.19.33",
         "@types/web-push": "^3.6.4",
@@ -223,7 +225,8 @@
         "tedious": {
             "@azure/identity": "npm:useless-module@1.0.0",
             "@azure/keyvault-keys": "npm:useless-module@1.0.0"
-        }
+        },
+        "knex": "$knex"
     },
     "allowScripts": {
         "better-sqlite3@12.11.1": true,

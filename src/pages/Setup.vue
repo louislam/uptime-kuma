@@ -1,5 +1,5 @@
 <template>
-    <div class="form-container" data-cy="setup-form">
+    <div v-if="ready" class="form-container">
         <div class="form">
             <form @submit.prevent="submit">
                 <div>
@@ -79,6 +79,7 @@ import { authClient, baseURL, login } from "../auth-client";
 export default {
     data() {
         return {
+            ready: false,
             processing: false,
             username: "",
             password: "",
@@ -86,12 +87,22 @@ export default {
         };
     },
     watch: {},
-    mounted() {
+    async mounted() {
         this.$root.getSocket().emit("needSetup", (needSetup) => {
+            console.log(needSetup);
             if (!needSetup) {
                 this.$router.push("/");
+            } else {
+                this.ready = true;
             }
         });
+
+        // Check if /setup-database-info is available, if so, redirect to it
+        const res = await fetch(baseURL + "/setup-database-info");
+        const data = await res.json();
+        if (res.ok && data.needSetup) {
+            this.$router.push("/setup-database");
+        }
     },
     methods: {
         /**
@@ -123,6 +134,9 @@ export default {
 
                 // Login
                 await login(this.username, this.password);
+
+                // Redirect to home page
+                this.$router.push("/");
             } catch (error) {
                 this.$root.toastRes({
                     ok: false,

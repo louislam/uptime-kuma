@@ -1,6 +1,6 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const port = 30001;
+const port = 3001;
 export const url = `http://localhost:${port}`;
 
 export default defineConfig({
@@ -33,6 +33,8 @@ export default defineConfig({
     use: {
         // Base URL to use in actions like `await page.goto('/')`.
         baseURL: url,
+
+        headless: !!process.env.CI,
 
         // Collect trace when retrying the failed test.
         trace: "on-first-retry",

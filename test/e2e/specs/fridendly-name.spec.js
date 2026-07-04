@@ -1,11 +1,7 @@
 import { expect, test } from "@playwright/test";
-import { login, restoreSqliteSnapshot, screenshot } from "../util-test";
+import { login, screenshot } from "../util-test";
 
 test.describe("Friendly Name Tests", () => {
-    test.beforeEach(async ({ page }) => {
-        await restoreSqliteSnapshot(page);
-    });
-
     test("hostname", async ({ page }, testInfo) => {
         // Test DNS monitor with hostname
         await page.goto("./add");

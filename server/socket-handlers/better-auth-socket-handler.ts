@@ -7,6 +7,6 @@ import { needSetup } from "../routers/better-auth-router";
  */
 export function betterAuthSocketHandler(socket: Socket): void {
     socket.on("needSetup", async (callback) => {
-        callback(needSetup());
+        callback(await needSetup());
     });
 }

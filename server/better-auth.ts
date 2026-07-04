@@ -3,7 +3,8 @@ import { betterAuth, Session } from "better-auth";
 import * as Database from "./database.js";
 import { genSecret, log } from "../src/util";
 import { R } from "redbean-node";
-import { KyselyKnexDialect, MySQL2ColdDialect, SQLite3ColdDialect } from "kysely-knex";
+import { createPool } from "mysql2/promise";
+import BetterSqlite3Database from "better-sqlite3";
 import { username } from "better-auth/plugins";
 import { admin } from "better-auth/plugins";
 import { Socket } from "socket.io";
@@ -51,14 +52,20 @@ function createAuthInstance() {
             "Database data directory is not initialized. Please call Database.initDataDir() before using auth."
         );
     }
-    const knex = R.knex;
-    const kyselySubDialect = Database.dbConfig.type.includes("mariadb")
-        ? new MySQL2ColdDialect()
-        : new SQLite3ColdDialect();
-    const database = new KyselyKnexDialect({
-        kyselySubDialect,
-        knex,
-    });
+    let database;
+    if (Database.dbConfig.type.includes("mariadb")) {
+        database = createPool({
+            host: Database.dbConfig.host,
+            port: Database.dbConfig.port,
+            database: Database.dbConfig.database,
+            user: Database.dbConfig.username,
+            password: Database.dbConfig.password,
+            timezone: "Z",
+            ...(Database.dbConfig.socketPath ? { socketPath: Database.dbConfig.socketPath } : {}),
+        });
+    } else {
+        database = new BetterSqlite3Database(Database.sqlitePath);
+    }
 
     return betterAuth({
         database,

@@ -1,11 +1,7 @@
 import { expect, test } from "@playwright/test";
-import { login, restoreSqliteSnapshot, screenshot } from "../util-test";
+import { login, screenshot } from "../util-test";
 
 test.describe("Example Spec", () => {
-    test.beforeEach(async ({ page }) => {
-        await restoreSqliteSnapshot(page);
-    });
-
     test("dashboard", async ({ page }, testInfo) => {
         await page.goto("./dashboard");
         await login(page);

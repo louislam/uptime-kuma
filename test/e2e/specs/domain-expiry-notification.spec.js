@@ -1,11 +1,7 @@
 import { expect, test } from "@playwright/test";
-import { login, restoreSqliteSnapshot, screenshot } from "../util-test";
+import { login, screenshot } from "../util-test";
 
 test.describe("Domain Expiry Notification", () => {
-    test.beforeEach(async ({ page }) => {
-        await restoreSqliteSnapshot(page);
-    });
-
     test("TLD enabled for new monitor", async ({ page }, testInfo) => {
         await page.goto("./add");
         await login(page);

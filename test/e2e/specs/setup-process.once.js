@@ -1,5 +1,5 @@
 import { test } from "@playwright/test";
-import { getSqliteDatabaseExists, login, screenshot, takeSqliteSnapshot } from "../util-test";
+import { getSqliteDatabaseExists, login, screenshot } from "../util-test";
 
 test.describe("Uptime Kuma Setup", () => {
     test.skip(() => getSqliteDatabaseExists(), "Must only run once per session");
@@ -13,7 +13,7 @@ test.describe("Uptime Kuma Setup", () => {
      */
 
     test("setup sqlite", async ({ page }, testInfo) => {
-        await page.goto("./");
+        await page.goto("./setup-database");
         await page.getByText("SQLite").click();
         await page.getByRole("button", { name: "Next" }).click();
         await screenshot(testInfo, page);
@@ -21,14 +21,14 @@ test.describe("Uptime Kuma Setup", () => {
     });
 
     test("setup admin", async ({ page }) => {
-        await page.goto("./");
-        await page.getByPlaceholder("Username").click();
-        await page.getByPlaceholder("Username").fill("admin");
-        await page.getByPlaceholder("Username").press("Tab");
-        await page.getByPlaceholder("Password", { exact: true }).fill("admin123");
-        await page.getByPlaceholder("Password", { exact: true }).press("Tab");
-        await page.getByPlaceholder("Repeat Password").fill("admin123");
+        await page.goto("./setup");
+        await page.getByRole("textbox", { name: "Username" }).click();
+        await page.getByRole("textbox", { name: "Username" }).fill("admin");
+        await page.getByRole("textbox", { name: "Password", exact: true }).fill("admin123");
+        await page.getByRole("textbox", { name: "Repeat Password" }).fill("admin123");
         await page.getByRole("button", { name: "Create" }).click();
+        // User is auto-logged in and redirected to dashboard
+        await page.waitForURL("/dashboard");
     });
 
     /*
@@ -45,9 +45,5 @@ test.describe("Uptime Kuma Setup", () => {
         await login(page);
         await page.getByText("A", { exact: true }).click();
         await page.getByRole("button", { name: "Log out" }).click();
-    });
-
-    test("take sqlite snapshot", async ({ page }) => {
-        await takeSqliteSnapshot(page);
     });
 });

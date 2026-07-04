@@ -1,11 +1,7 @@
 import { expect, test } from "@playwright/test";
-import { login, restoreSqliteSnapshot, screenshot } from "../util-test";
+import { login, screenshot } from "../util-test";
 
 test.describe("Status Page", () => {
-    test.beforeEach(async ({ page }) => {
-        await restoreSqliteSnapshot(page);
-    });
-
     test("create and edit", async ({ page }, testInfo) => {
         test.setTimeout(60000); // Keep the timeout increase for stability
 

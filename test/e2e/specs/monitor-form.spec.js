@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { login, restoreSqliteSnapshot, screenshot } from "../util-test";
+import { login, screenshot } from "../util-test";
 
 /**
  * Selects the monitor type from the dropdown.
@@ -17,10 +17,6 @@ async function selectMonitorType(page, monitorType = "dns") {
 }
 
 test.describe("Monitor Form", () => {
-    test.beforeEach(async ({ page }) => {
-        await restoreSqliteSnapshot(page);
-    });
-
     test("condition ui", async ({ page }, testInfo) => {
         await page.goto("./add");
         await login(page);

@@ -1,7 +1,5 @@
 const fs = require("fs");
 const path = require("path");
-const serverUrl = require("../../config/playwright.config.js").url;
-
 const dbPath = "./../../data/playwright-test/kuma.db";
 
 /**
@@ -40,23 +38,4 @@ export function getSqliteDatabaseExists() {
     return fs.existsSync(path.resolve(__dirname, dbPath));
 }
 
-/**
- * Makes a request to the server to take a snapshot of the SQLite database.
- * @param {Page|null} page Page
- * @returns {Promise<Response>} Promise of response from snapshot request.
- */
-export async function takeSqliteSnapshot(page = null) {
-    if (page) {
-        return page.goto("./_e2e/take-sqlite-snapshot");
-    } else {
-        return fetch(`${serverUrl}/_e2e/take-sqlite-snapshot`);
-    }
-}
 
-/**
- * Makes a request to the server to restore the snapshot of the SQLite database.
- * @returns {Promise<Response>} Promise of response from restoration request.
- */
-export async function restoreSqliteSnapshot() {
-    return fetch(`${serverUrl}/_e2e/restore-sqlite-snapshot`);
-}
