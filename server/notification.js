@@ -14,6 +14,7 @@ const DingDing = require("./notification-providers/dingding");
 const Discord = require("./notification-providers/discord");
 const Fluxer = require("./notification-providers/fluxer");
 const Elks = require("./notification-providers/46elks");
+const EgoSMS = require("./notification-providers/egosms");
 const Feishu = require("./notification-providers/feishu");
 const Notifery = require("./notification-providers/notifery");
 const FreeMobile = require("./notification-providers/freemobile");
@@ -41,6 +42,7 @@ const JiraServiceManagement = require("./notification-providers/jira-service-man
 const PagerDuty = require("./notification-providers/pagerduty");
 const Pumble = require("./notification-providers/pumble");
 const FlashDuty = require("./notification-providers/flashduty");
+const Flowtriq = require("./notification-providers/flowtriq");
 const PagerTree = require("./notification-providers/pagertree");
 const PromoSMS = require("./notification-providers/promosms");
 const Pushbullet = require("./notification-providers/pushbullet");
@@ -124,6 +126,7 @@ class Notification {
             new Discord(),
             new Fluxer(),
             new Elks(),
+            new EgoSMS(),
             new Feishu(),
             new FreeMobile(),
             new GoogleChat(),
@@ -150,6 +153,7 @@ class Notification {
             new JiraServiceManagement(),
             new PagerDuty(),
             new FlashDuty(),
+            new Flowtriq(),
             new PagerTree(),
             new PromoSMS(),
             new Pumble(),

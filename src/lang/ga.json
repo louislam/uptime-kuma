@@ -1602,5 +1602,11 @@
     "evolutionCustomMessageDesc": "Fág folamh chun an teachtaireacht réamhshocraithe a úsáid.",
     "telnyxPhoneNumberHelptext": "D'uimhir theileafóin Telnyx le seoladh uaithi (ní mór í a bheith cláraithe i do chuntas Telnyx, m.sh. +15551234567)",
     "WebSocket Options": "Roghanna Soicéad Gréasáin",
-    "pingPacketSizeWarning": "Ní chruthaíonn méid paicéid níos lú ná 16 amanna turas cruinn ar Linux"
+    "pingPacketSizeWarning": "Ní chruthaíonn méid paicéid níos lú ná 16 amanna turas cruinn ar Linux",
+    "VKTeams Bot Token Description": "Is féidir leat tuilleadh eolais a fháil faoi chomhartha bot a fháil agus sonraí eile ag {0}.",
+    "VKTeams Base Url Description": "URL API bonn VKTeams, d'fhéadfadh sé a bheith difriúil sa réiteach ar an láthair. Réamhshocrú: https://myteam.mail.ru",
+    "VKTeams Use Template": "Úsáid teimpléad teachtaireachta saincheaptha",
+    "VKTeams Use Template Description": "Má tá sé cumasaithe, seolfar an teachtaireacht ag baint úsáide as teimpléad saincheaptha.",
+    "VKTeams Chat Id Description": "I gcás úsáideoirí, seo a seoladh ríomhphoist. I gcás grúpaí agus cainéil, faigh an ID óna socruithe agus cuir {'@'}chat.agent leis",
+    "VKTeams Template Format Description": "Chun stíliú teachtaireachtaí, tacaíonn VKTeams le téacs simplí, MarkdownV2, agus formáidiú HTML."
 }

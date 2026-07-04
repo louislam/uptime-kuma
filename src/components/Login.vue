@@ -1,9 +1,7 @@
 <template>
     <div class="form-container">
         <div class="form">
-            <form @submit.prevent="submit">
-                <h1 class="h3 mb-3 fw-normal" />
-
+            <form aria-label="Login Form" class="pt-3" @submit.prevent="submit">
                 <div v-if="!tokenRequired" class="form-floating">
                     <input
                         id="floatingInput"
