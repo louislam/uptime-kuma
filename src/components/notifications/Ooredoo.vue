@@ -8,6 +8,7 @@
             class="form-control"
             required
         />
+        <div class="form-text">{{ $t("ooredooUsernameDescription") }}</div>
     </div>
     <div class="mb-3">
         <label for="ooredoo-access-key" class="form-label">{{ $t("Access Key") }}</label>
@@ -17,6 +18,7 @@
             :required="true"
             autocomplete="new-password"
         ></HiddenInput>
+        <div class="form-text">{{ $t("ooredooAccessKeyDescription") }}</div>
     </div>
     <div class="mb-3">
         <label for="ooredoo-bearer-token" class="form-label">{{ $t("Bearer Token") }}</label>
@@ -26,6 +28,7 @@
             :required="true"
             autocomplete="new-password"
         ></HiddenInput>
+        <div class="form-text">{{ $t("ooredooBearerTokenDescription") }}</div>
     </div>
     <div class="mb-3">
         <label for="ooredoo-to-number" class="form-label">{{ $t("Recipient Number") }}</label>
