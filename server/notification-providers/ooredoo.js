@@ -1,6 +1,10 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 
+// The Ooredoo bulk_sms/v2 gateway accepts at most this many recipients per
+// request, so larger recipient lists are split into batches of this size.
+const MAX_RECIPIENTS_PER_REQUEST = 20;
+
 class Ooredoo extends NotificationProvider {
     name = "Ooredoo";
 
@@ -11,9 +15,8 @@ class Ooredoo extends NotificationProvider {
         const okMsg = "Sent Successfully.";
         const url = notification.ooredooServerUrl || "https://o-papi1-lb01.ooredoo.mv/bulk_sms/v2";
 
-        // The gateway accepts up to 20 recipients per call as a single
-        // space-separated list. Users may enter them separated by comma,
-        // semicolon, space or newline.
+        // Users may enter recipients separated by comma, semicolon, space or
+        // newline.
         const recipients = notification.ooredooToNumber
             .split(/[\s,;]+/)
             .map((number) => this.normalizePhoneNumber(number))
@@ -24,14 +27,6 @@ class Ooredoo extends NotificationProvider {
         }
 
         try {
-            const data = new URLSearchParams({
-                username: notification.ooredooUsername,
-                // The gateway expects the access key to be Base64 encoded.
-                access_key: Buffer.from(notification.ooredooAccessKey).toString("base64"),
-                message: msg,
-                batch: recipients.join(" "),
-            });
-
             let config = {
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded",
@@ -40,15 +35,28 @@ class Ooredoo extends NotificationProvider {
             };
             config = this.getAxiosConfigWithProxy(config);
 
-            const resp = await axios.post(url, data.toString(), config);
+            // The gateway only accepts MAX_RECIPIENTS_PER_REQUEST numbers per
+            // call, so send the recipients in batches of that size.
+            for (let i = 0; i < recipients.length; i += MAX_RECIPIENTS_PER_REQUEST) {
+                const batch = recipients.slice(i, i + MAX_RECIPIENTS_PER_REQUEST);
+                const data = new URLSearchParams({
+                    username: notification.ooredooUsername,
+                    // The gateway expects the access key to be Base64 encoded.
+                    access_key: Buffer.from(notification.ooredooAccessKey).toString("base64"),
+                    message: msg,
+                    batch: batch.join(" "),
+                });
 
-            // The gateway returns HTTP 200 even on failure; the real outcome
-            // is carried in "response_code" (0 means the batch was accepted).
-            if (!resp.data || Number(resp.data.response_code) !== 0) {
-                const reason = resp.data && resp.data.response_message
-                    ? resp.data.response_message
-                    : "response_code=" + (resp.data ? resp.data.response_code : "unknown");
-                throw new Error("Ooredoo rejected the message: " + reason);
+                const resp = await axios.post(url, data.toString(), config);
+
+                // The gateway returns HTTP 200 even on failure; the real outcome
+                // is carried in "response_code" (0 means the batch was accepted).
+                if (!resp.data || Number(resp.data.response_code) !== 0) {
+                    const reason = resp.data && resp.data.response_message
+                        ? resp.data.response_message
+                        : "response_code=" + (resp.data ? resp.data.response_code : "unknown");
+                    throw new Error("Ooredoo rejected the message: " + reason);
+                }
             }
 
             return okMsg;
