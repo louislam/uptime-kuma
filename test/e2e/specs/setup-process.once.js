@@ -40,6 +40,15 @@ test.describe("Uptime Kuma Setup", () => {
         await login(page);
     });
 
+    test("failed login shows error alert", async ({ page }, testInfo) => {
+        await page.goto("./dashboard");
+        await page.getByPlaceholder("Username").fill("admin");
+        await page.getByPlaceholder("Password").fill("wrongpassword");
+        await page.getByRole("button", { name: "Log in" }).click();
+        await page.waitForSelector(".alert.alert-danger", { state: "visible" });
+        await screenshot(testInfo, page);
+    });
+
     test("logout", async ({ page }) => {
         await page.goto("./dashboard");
         await login(page);
