@@ -82,6 +82,7 @@ import Whatsapp360messenger from "./360messenger.vue";
 import Evolution from "./Evolution.vue";
 import Cellsynt from "./Cellsynt.vue";
 import WPush from "./WPush.vue";
+import WxPusher from "./WxPusher.vue";
 import SIGNL4 from "./SIGNL4.vue";
 import SendGrid from "./SendGrid.vue";
 import Brevo from "./Brevo.vue";
@@ -186,6 +187,7 @@ const NotificationFormList = {
     gtxmessaging: GtxMessaging,
     Cellsynt: Cellsynt,
     WPush: WPush,
+    WxPusher: WxPusher,
     SendGrid: SendGrid,
     Brevo: Brevo,
     Resend: Resend,
