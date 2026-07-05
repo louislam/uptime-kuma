@@ -29,7 +29,7 @@
         "test-with-build": "node --run build && npm test",
         "test-backend": "cross-env TEST_BACKEND=1 node --import=tsx --test --test-reporter=spec \"test/backend-test/**/*.{ts,js}\"",
         "test-e2e": "playwright test --config ./config/playwright.config.js",
-        "test-e2e-local": "npm run build && npm run test-e2e",
+        "test-e2e-local": "cross-env SKIP_TESTCONTAINER=1 npm run build && npm run test-e2e",
         "test-e2e-ui": "playwright test --config ./config/playwright.config.js --ui --ui-port=51063",
         "playwright-codegen": "playwright codegen localhost:3000 --save-storage=./private/e2e-auth.json",
         "playwright-show-report": "playwright show-report ./private/playwright-report",

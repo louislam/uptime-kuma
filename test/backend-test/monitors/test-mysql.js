@@ -22,7 +22,7 @@ async function createAndStartMariaDBContainer() {
 describe(
     "MySQL/MariaDB Monitor",
     {
-        skip: !!process.env.CI && (process.platform !== "linux" || process.arch !== "x64"),
+        skip: !!process.env.CI && (process.platform !== "linux" || process.arch !== "x64") || process.env.SKIP_TESTCONTAINER,
     },
     () => {
         test("check() sets status to UP when MariaDB server is reachable", async () => {

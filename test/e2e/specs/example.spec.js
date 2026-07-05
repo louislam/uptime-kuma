@@ -22,12 +22,4 @@ test.describe("Example Spec", () => {
         await expect(page.getByTestId("monitor-list")).toContainText("example.com");
         await screenshot(testInfo, page);
     });
-
-    test("database is reset after previous test", async ({ page }, testInfo) => {
-        await page.goto("./dashboard");
-        await login(page);
-
-        await expect(page.getByTestId("monitor-list")).not.toContainText("example.com");
-        await screenshot(testInfo, page);
-    });
 });

@@ -9,6 +9,7 @@ export default defineConfig({
     outputDir: "../private/playwright-test-results",
     fullyParallel: false,
     locale: "en-US",
+    maxFailures: 1,
 
     // Fail the build on CI if you accidentally left test.only in the source code.
     forbidOnly: !!process.env.CI,
