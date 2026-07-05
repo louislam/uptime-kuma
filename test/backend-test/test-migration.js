@@ -56,7 +56,9 @@ describe("Database Migration", () => {
     test(
         "MariaDB migrations run successfully from fresh database",
         {
-            skip: !!process.env.CI && (process.platform !== "linux" || process.arch !== "x64") || process.env.SKIP_TESTCONTAINER,
+            skip:
+                (!!process.env.CI && (process.platform !== "linux" || process.arch !== "x64")) ||
+                process.env.SKIP_TESTCONTAINER,
         },
         async () => {
             // Start MariaDB container (using MariaDB 12 to match current production)
@@ -128,7 +130,9 @@ describe("Database Migration", () => {
     test(
         "MySQL migrations run successfully from fresh database",
         {
-            skip: !!process.env.CI && (process.platform !== "linux" || process.arch !== "x64") || process.env.SKIP_TESTCONTAINER,
+            skip:
+                (!!process.env.CI && (process.platform !== "linux" || process.arch !== "x64")) ||
+                process.env.SKIP_TESTCONTAINER,
         },
         async () => {
             // Start MySQL 8.0 container (the version mentioned in the issue)

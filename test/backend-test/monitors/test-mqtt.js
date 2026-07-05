@@ -67,7 +67,9 @@ describe(
     "MqttMonitorType",
     {
         concurrency: 1,
-        skip: !!process.env.CI && (process.platform !== "linux" || process.arch !== "x64") || process.env.SKIP_TESTCONTAINER,
+        skip:
+            (!!process.env.CI && (process.platform !== "linux" || process.arch !== "x64")) ||
+            process.env.SKIP_TESTCONTAINER,
     },
     () => {
         test("check() sets status to UP when keyword is found in message (type=default)", async () => {
