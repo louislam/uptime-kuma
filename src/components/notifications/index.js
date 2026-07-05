@@ -37,6 +37,7 @@ import Octopush from "./Octopush.vue";
 import OneChat from "./OneChat.vue";
 import OneBot from "./OneBot.vue";
 import Onesender from "./Onesender.vue";
+import Ooredoo from "./Ooredoo.vue";
 import Opsgenie from "./Opsgenie.vue";
 import JiraServiceManagement from "./JiraServiceManagement.vue";
 import PagerDuty from "./PagerDuty.vue";
@@ -138,6 +139,7 @@ const NotificationFormList = {
     OneChat: OneChat,
     OneBot: OneBot,
     Onesender: Onesender,
+    Ooredoo: Ooredoo,
     Opsgenie: Opsgenie,
     JiraServiceManagement: JiraServiceManagement,
     PagerDuty: PagerDuty,
