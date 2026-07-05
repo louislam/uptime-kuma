@@ -30,7 +30,7 @@ class Ooredoo extends NotificationProvider {
             let config = {
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded",
-                    "Authorization": "Bearer " + notification.ooredooBearerToken,
+                    Authorization: "Bearer " + notification.ooredooBearerToken,
                 },
             };
             config = this.getAxiosConfigWithProxy(config);
@@ -52,9 +52,10 @@ class Ooredoo extends NotificationProvider {
                 // The gateway returns HTTP 200 even on failure; the real outcome
                 // is carried in "response_code" (0 means the batch was accepted).
                 if (!resp.data || Number(resp.data.response_code) !== 0) {
-                    const reason = resp.data && resp.data.response_message
-                        ? resp.data.response_message
-                        : "response_code=" + (resp.data ? resp.data.response_code : "unknown");
+                    const reason =
+                        resp.data && resp.data.response_message
+                            ? resp.data.response_message
+                            : "response_code=" + (resp.data ? resp.data.response_code : "unknown");
                     throw new Error("Ooredoo rejected the message: " + reason);
                 }
             }
