@@ -82,6 +82,7 @@ const GtxMessaging = require("./notification-providers/gtx-messaging");
 const Cellsynt = require("./notification-providers/cellsynt");
 const Onesender = require("./notification-providers/onesender");
 const Wpush = require("./notification-providers/wpush");
+const WxPusher = require("./notification-providers/wxpusher");
 const SendGrid = require("./notification-providers/send-grid");
 const Brevo = require("./notification-providers/brevo");
 const Resend = require("./notification-providers/resend");
@@ -193,6 +194,7 @@ class Notification {
             new GtxMessaging(),
             new Cellsynt(),
             new Wpush(),
+            new WxPusher(),
             new Brevo(),
             new Resend(),
             new YZJ(),

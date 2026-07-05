@@ -335,6 +335,7 @@ export default {
                 smsc: "SMSC",
                 smsir: "SMS.IR",
                 WPush: "WPush(wpush.cn)",
+                WxPusher: "WxPusher SPT Push (WxPusher极简推送)",
                 YZJ: "YZJ (云之家自定义机器人)",
                 SMSPlanet: "SMSPlanet.pl",
                 VK: "VK",
