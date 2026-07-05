@@ -1005,6 +1005,7 @@ export default {
                 feedInterval = setInterval(
                     () => {
                         this.updateHeartbeatList();
+                        this.updateGroupList();
                     },
                     Math.max(5, this.config.autoRefreshInterval) * 1000
                 );
@@ -1019,6 +1020,7 @@ export default {
                 feedInterval = setInterval(
                     () => {
                         this.updateHeartbeatList();
+                        this.updateGroupList();
                     },
                     Math.max(5, this.config.autoRefreshInterval) * 1000
                 );
@@ -1066,6 +1068,24 @@ export default {
          */
         highlighter(code) {
             return highlight(code, languages.css);
+        },
+
+        /**
+         * Re-fetches groups/monitors (including service dependency trees)
+         * so that structural changes (e.g. edited dependencies) eventually
+         * show up without a manual page reload. Unlike getData(), this
+         * always hits the API instead of window.preloadData, which is a
+         * static snapshot from the initial page render and would otherwise
+         * never change. Bounded by the same server-side cache as the
+         * initial load.
+         * @returns {void}
+         */
+        updateGroupList() {
+            if (!this.editMode) {
+                axios.get("/api/status-page/" + this.slug).then((res) => {
+                    this.$root.publicGroupList = res.data.publicGroupList;
+                });
+            }
         },
 
         /**

@@ -39,6 +39,11 @@ textarea.form-control {
     background-color: $maintenance !important;
 }
 
+.bg-unreachable {
+    color: white !important;
+    background-color: $unreachable !important;
+}
+
 .bg-dark {
     color: white;
 }
@@ -47,8 +52,13 @@ textarea.form-control {
     color: $maintenance !important;
 }
 
+.text-unreachable {
+    color: $unreachable !important;
+}
+
 .incident a,
-.bg-maintenance a {
+.bg-maintenance a,
+.bg-unreachable a {
     color: inherit;
 }
 

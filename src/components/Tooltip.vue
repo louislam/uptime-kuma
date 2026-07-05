@@ -14,7 +14,7 @@
                         {{ statusText }}
                     </div>
                     <div class="tooltip-time">{{ timeText }}</div>
-                    <div v-if="content?.msg" class="tooltip-message">{{ content.msg }}</div>
+                    <div v-if="content?.msg" class="tooltip-message">{{ formatBeatMsg(content.msg) }}</div>
                 </slot>
             </div>
             <div class="tooltip-arrow" :class="{ 'arrow-above': position === 'above' }"></div>
@@ -23,10 +23,14 @@
 </template>
 
 <script>
-import { DOWN, UP, PENDING, MAINTENANCE } from "../util.ts";
+import { DOWN, UP, PENDING, MAINTENANCE, UNREACHABLE } from "../util.ts";
+import { formatBeatMsg } from "../util-frontend";
 
 export default {
     name: "Tooltip",
+    methods: {
+        formatBeatMsg,
+    },
     props: {
         /** Whether tooltip is visible */
         visible: {
@@ -77,6 +81,8 @@ export default {
                     return this.$t("Pending");
                 case MAINTENANCE:
                     return this.$t("Maintenance");
+                case UNREACHABLE:
+                    return this.$t("Unreachable");
                 default:
                     return this.$t("Unknown");
             }
@@ -96,6 +102,8 @@ export default {
                     return "status-pending";
                 case MAINTENANCE:
                     return "status-maintenance";
+                case UNREACHABLE:
+                    return "status-unreachable";
                 default:
                     return "status-unknown";
             }
@@ -163,6 +171,10 @@ export default {
 
             &.status-maintenance {
                 color: $maintenance;
+            }
+
+            &.status-unreachable {
+                color: $unreachable;
             }
 
             &.status-empty {

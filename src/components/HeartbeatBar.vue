@@ -40,7 +40,8 @@
 
 <script>
 import dayjs from "dayjs";
-import { DOWN, UP, PENDING, MAINTENANCE } from "../util.ts";
+import { DOWN, UP, PENDING, MAINTENANCE, UNREACHABLE } from "../util.ts";
+import { formatBeatMsg } from "../util-frontend";
 import Tooltip from "./Tooltip.vue";
 
 export default {
@@ -368,6 +369,8 @@ export default {
         });
     },
     methods: {
+        formatBeatMsg,
+
         /**
          * Resize the heartbeat bar
          * @returns {void}
@@ -408,7 +411,7 @@ export default {
             }
 
             // Show timestamp for all beats (both individual and aggregated)
-            return `${this.$root.datetime(beat.time)}${beat.msg ? ` - ${beat.msg}` : ""}`;
+            return `${this.$root.datetime(beat.time)}${beat.msg ? ` - ${this.formatBeatMsg(beat.msg)}` : ""}`;
         },
 
         /**
@@ -427,6 +430,7 @@ export default {
                 down: status === DOWN,
                 pending: status === PENDING,
                 maintenance: status === MAINTENANCE,
+                unreachable: status === UNREACHABLE,
             };
         },
 
@@ -445,6 +449,8 @@ export default {
                     return `Pending at ${this.$root.datetime(beat.time)}`;
                 case MAINTENANCE:
                     return `Maintenance at ${this.$root.datetime(beat.time)}`;
+                case UNREACHABLE:
+                    return `Unreachable at ${this.$root.datetime(beat.time)}`;
                 default:
                     return "No data";
             }
@@ -564,6 +570,7 @@ export default {
                 down: rootStyles.getPropertyValue("--bs-danger") || "#dc3545",
                 pending: rootStyles.getPropertyValue("--bs-warning") || "#ffc107",
                 maintenance: rootStyles.getPropertyValue("--maintenance") || "#1d4ed8",
+                unreachable: rootStyles.getPropertyValue("--unreachable") || "#9c27b0",
                 up: rootStyles.getPropertyValue("--bs-primary") || "#5cdd8b",
             };
 
@@ -650,6 +657,8 @@ export default {
                 return colors.pending;
             } else if (status === MAINTENANCE) {
                 return colors.maintenance;
+            } else if (status === UNREACHABLE) {
+                return colors.unreachable;
             } else {
                 return colors.up;
             }

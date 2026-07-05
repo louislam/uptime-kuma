@@ -1,5 +1,5 @@
 const dayjs = require("dayjs");
-const { UP, MAINTENANCE, DOWN, PENDING } = require("../src/util");
+const { UP, MAINTENANCE, DOWN, PENDING, UNREACHABLE } = require("../src/util");
 const { LimitQueue } = require("./utils/limit-queue");
 const { log } = require("../src/util");
 const { R } = require("redbean-node");
@@ -228,7 +228,10 @@ class UptimeCalculator {
         let hourlyData = this.hourlyUptimeDataList[hourlyKey];
         let dailyData = this.dailyUptimeDataList[dailyKey];
 
-        if (status === MAINTENANCE) {
+        if (status === MAINTENANCE || status === UNREACHABLE) {
+            // UNREACHABLE reuses the maintenance bucket: the outage is caused by a
+            // dependency, not this monitor's own reliability, so it shouldn't count
+            // as downtime or pollute ping stats.
             minutelyData.maintenance = minutelyData.maintenance ? minutelyData.maintenance + 1 : 1;
             hourlyData.maintenance = hourlyData.maintenance ? hourlyData.maintenance + 1 : 1;
             dailyData.maintenance = dailyData.maintenance ? dailyData.maintenance + 1 : 1;
@@ -546,6 +549,7 @@ class UptimeCalculator {
         switch (status) {
             case UP:
             case MAINTENANCE:
+            case UNREACHABLE:
                 return UP;
             case DOWN:
             case PENDING:

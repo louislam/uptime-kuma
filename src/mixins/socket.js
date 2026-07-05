@@ -5,7 +5,7 @@ import Favico from "favico.js";
 import dayjs from "dayjs";
 import mitt from "mitt";
 
-import { DOWN, MAINTENANCE, PENDING, UP } from "../util.ts";
+import { DOWN, MAINTENANCE, PENDING, UP, UNREACHABLE } from "../util.ts";
 import {
     getDevContainerServerHostname,
     isDevContainer,
@@ -785,6 +785,11 @@ export default {
                         text: this.$t("statusMaintenance"),
                         color: "maintenance",
                     };
+                } else if (lastHeartBeat.status === UNREACHABLE) {
+                    result[monitorID] = {
+                        text: this.$t("Unreachable"),
+                        color: "unreachable",
+                    };
                 } else {
                     result[monitorID] = unknown;
                 }
@@ -800,6 +805,7 @@ export default {
                 down: 0,
                 maintenance: 0,
                 pending: 0,
+                unreachable: 0,
                 unknown: 0,
                 pause: 0,
             };
@@ -820,6 +826,8 @@ export default {
                         result.pending++;
                     } else if (beat.status === MAINTENANCE) {
                         result.maintenance++;
+                    } else if (beat.status === UNREACHABLE) {
+                        result.unreachable++;
                     } else {
                         result.unknown++;
                     }

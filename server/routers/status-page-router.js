@@ -2,6 +2,7 @@ let express = require("express");
 const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const StatusPage = require("../model/status_page");
+const Monitor = require("../model/monitor");
 const { allowDevAllOrigin, sendHttpError } = require("../util-server");
 const { R } = require("redbean-node");
 const { badgeConstants } = require("../../src/util");
@@ -81,6 +82,23 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
         `,
             [statusPageID]
         );
+
+        // Service monitors show a nested tree of their children on the status
+        // page, so those children's heartbeats need to be included too.
+        const serviceMonitors = await R.getAll(
+            `SELECT id FROM monitor WHERE id IN (${monitorIDList.map(() => "?").join(",") || "NULL"}) AND type = 'service'`,
+            monitorIDList
+        );
+        const childIDLists = await Promise.all(
+            serviceMonitors.map(({ id }) => Monitor.getAllChildrenIDs(id))
+        );
+        for (const childIDs of childIDLists) {
+            for (const childID of childIDs) {
+                if (!monitorIDList.includes(childID)) {
+                    monitorIDList.push(childID);
+                }
+            }
+        }
 
         for (let monitorID of monitorIDList) {
             let list = await R.getAll(

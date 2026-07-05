@@ -10,6 +10,7 @@ const config = require("../config");
 const dayjs = require("dayjs");
 
 const { setting } = require("../util-server");
+const Monitor = require("./monitor");
 const {
     STATUS_PAGE_ALL_DOWN,
     STATUS_PAGE_ALL_UP,
@@ -332,6 +333,21 @@ class StatusPage extends BeanModel {
 
         for (let groupBean of list) {
             let monitorGroup = await groupBean.toPublicJSON(showTags, config?.showCertificateExpiry);
+
+            await Promise.all(
+                monitorGroup.monitorList
+                    .filter((m) => m.type === "service")
+                    .map(async (m) => {
+                        const { children, dependencyEdges } = await StatusPage.getPublicServiceTree(
+                            m.id,
+                            showTags,
+                            config?.showCertificateExpiry
+                        );
+                        m.children = children;
+                        m.dependencyEdges = dependencyEdges;
+                    })
+            );
+
             publicGroupList.push(monitorGroup);
         }
 
@@ -342,6 +358,57 @@ class StatusPage extends BeanModel {
             publicGroupList,
             maintenanceList,
         };
+    }
+
+    /**
+     * Builds the public-safe children list and dependency edges for a
+     * "service" monitor, for rendering a nested tree on a status page.
+     * Child monitors that are themselves services (sub-groups) get their
+     * own children/dependencyEdges attached recursively.
+     * Only the service's own children are exposed (via the existing
+     * Monitor.toPublicJSON sanitization), and only dependency edges where
+     * both ends are among those children.
+     * @param {number} serviceMonitorID ID of the service monitor
+     * @param {boolean} showTags Should tags be included
+     * @param {boolean} certExpiry Should certificate expiry be included
+     * @returns {Promise<{children: object[], dependencyEdges: object[]}>} Public tree data
+     */
+    static async getPublicServiceTree(serviceMonitorID, showTags, certExpiry) {
+        const childBeans = await Monitor.getChildren(serviceMonitorID);
+        const childBeanList = R.convertToBeans("monitor", childBeans);
+
+        const children = await Promise.all(childBeanList.map(async (child) => {
+            const json = await child.toPublicJSON(showTags, certExpiry);
+
+            if (json.type === "service") {
+                const subTree = await StatusPage.getPublicServiceTree(json.id, showTags, certExpiry);
+                json.children = subTree.children;
+                json.dependencyEdges = subTree.dependencyEdges;
+            }
+
+            return json;
+        }));
+
+        const childIDs = children.map((c) => c.id);
+        let dependencyEdges = [];
+
+        if (childIDs.length > 0) {
+            const placeholders = childIDs.map(() => "?").join(",");
+            const rows = await R.getAll(
+                `SELECT id, monitor_id, depends_on_monitor_id, relation_type FROM monitor_dependency
+                WHERE monitor_id IN (${placeholders}) AND depends_on_monitor_id IN (${placeholders})`,
+                [ ...childIDs, ...childIDs ]
+            );
+
+            dependencyEdges = rows.map((row) => ({
+                id: row.id,
+                monitorID: row.monitor_id,
+                dependsOnMonitorID: row.depends_on_monitor_id,
+                relationType: row.relation_type,
+            }));
+        }
+
+        return { children, dependencyEdges };
     }
 
     /**

@@ -1,4 +1,4 @@
-const { UP, PENDING, DOWN } = require("../../src/util");
+const { UP, PENDING, DOWN, UNREACHABLE } = require("../../src/util");
 const { MonitorType } = require("./monitor-type");
 const Monitor = require("../model/monitor");
 
@@ -43,6 +43,9 @@ class GroupMonitorType extends MonitorType {
             if (lastBeat.status === DOWN) {
                 worstStatus = DOWN;
                 downChildren.push(label);
+            } else if (lastBeat.status === UNREACHABLE) {
+                worstStatus = DOWN;
+                downChildren.push(`${label} (unreachable)`);
             } else if (lastBeat.status === PENDING) {
                 if (worstStatus !== DOWN) {
                     worstStatus = PENDING;

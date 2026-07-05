@@ -168,6 +168,11 @@
                 </div>
             </div>
 
+            <!-- Service dependency graph -->
+            <div v-if="monitor.type === 'service'" class="shadow-box big-padding">
+                <DependencyGraph :monitor-id="monitor.id" />
+            </div>
+
             <!-- Push Examples -->
             <div v-if="monitor.type === 'push'" class="shadow-box big-padding">
                 <a href="#" @click="pushMonitor.showPushExamples = !pushMonitor.showPushExamples">
@@ -362,7 +367,7 @@
                             <td :class="{ 'border-0': !beat.msg }">
                                 <Datetime :value="beat.time" />
                             </td>
-                            <td class="border-0">{{ beat.msg }}</td>
+                            <td class="border-0">{{ formatBeatMsg(beat.msg) }}</td>
                         </tr>
 
                         <tr v-if="importantHeartBeatListLength === 0">
@@ -448,13 +453,14 @@ import CountUp from "../components/CountUp.vue";
 import Uptime from "../components/Uptime.vue";
 import Pagination from "v-pagination-3";
 const PingChart = defineAsyncComponent(() => import("../components/PingChart.vue"));
+const DependencyGraph = defineAsyncComponent(() => import("../components/DependencyGraph.vue"));
 import Tag from "../components/Tag.vue";
 import CertificateInfo from "../components/CertificateInfo.vue";
 import { getMonitorRelativeURL } from "../util.ts";
 import { URL } from "whatwg-url";
 import DOMPurify from "dompurify";
 import { marked } from "marked";
-import { getResBaseURL, timeDurationFormatter } from "../util-frontend";
+import { getResBaseURL, timeDurationFormatter, formatBeatMsg, isGroupMonitor } from "../util-frontend";
 import { highlight, languages } from "prismjs/components/prism-core";
 import "prismjs/components/prism-clike";
 import "prismjs/components/prism-javascript";
@@ -473,6 +479,7 @@ export default {
         Status,
         Pagination,
         PingChart,
+        DependencyGraph,
         Tag,
         CertificateInfo,
         PrismEditor,
@@ -511,7 +518,7 @@ export default {
          * @returns {number} Number of children monitors
          */
         childrenCount() {
-            if (!this.monitor || this.monitor.type !== "group") {
+            if (!this.monitor || !isGroupMonitor(this.monitor.type)) {
                 return 0;
             }
             const children = Object.values(this.$root.monitorList).filter((m) => m.parent === this.monitor.id);
@@ -865,6 +872,8 @@ export default {
         secondsToHumanReadableFormat(seconds) {
             return timeDurationFormatter.secondsToHumanReadableFormat(seconds);
         },
+
+        formatBeatMsg,
     },
 };
 </script>

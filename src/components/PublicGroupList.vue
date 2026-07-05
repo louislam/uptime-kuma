@@ -119,6 +119,11 @@
                                             <HeartbeatBar size="mid" :monitor-id="monitor.element.id" />
                                         </div>
                                     </div>
+
+                                    <ServiceTree
+                                        v-if="monitor.element.type === 'service' && serviceTreeNodes(monitor.element).length > 0"
+                                        :nodes="serviceTreeNodes(monitor.element)"
+                                    />
                                 </div>
                             </template>
                         </Draggable>
@@ -137,6 +142,7 @@ import HeartbeatBar from "./HeartbeatBar.vue";
 import Uptime from "./Uptime.vue";
 import Tag from "./Tag.vue";
 import Status from "./Status.vue";
+import ServiceTree from "./ServiceTree.vue";
 
 export default {
     components: {
@@ -146,6 +152,7 @@ export default {
         Uptime,
         Tag,
         Status,
+        ServiceTree,
     },
     props: {
         /** Are we in edit mode? */
@@ -317,6 +324,43 @@ export default {
                 return group.id.toString();
             }
             return `group${this.$root.publicGroupList.indexOf(group)}`;
+        },
+
+        /**
+         * Builds a nested tree from a "service" monitor's flat children +
+         * hard dependency edges, for rendering with ServiceTree. Nodes with
+         * no hard dependency among their siblings become roots; a node with
+         * more than one hard dependency is nested under the first one found
+         * (diamond dependencies are not duplicated). Children that are
+         * themselves services (sub-groups) contribute their own subtree
+         * recursively.
+         * @param {object} serviceMonitor Public JSON of a service monitor,
+         * with .children and .dependencyEdges attached by the backend
+         * @returns {Array} Root-level tree nodes: { id, name, kids }
+         */
+        serviceTreeNodes(serviceMonitor) {
+            const children = serviceMonitor.children || [];
+            const edges = serviceMonitor.dependencyEdges || [];
+
+            const byId = new Map(children.map((c) => [
+                c.id,
+                {
+                    id: c.id,
+                    name: c.name,
+                    kids: c.type === "service" ? this.serviceTreeNodes(c) : [],
+                },
+            ]));
+            const hasParent = new Set();
+
+            for (const child of children) {
+                const edge = edges.find((e) => e.monitorID === child.id && e.relationType === "hard");
+                if (edge && byId.has(edge.dependsOnMonitorID)) {
+                    byId.get(edge.dependsOnMonitorID).kids.push(byId.get(child.id));
+                    hasParent.add(child.id);
+                }
+            }
+
+            return children.filter((c) => !hasParent.has(c.id)).map((c) => byId.get(c.id));
         },
     },
 };

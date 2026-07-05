@@ -63,6 +63,9 @@
                                         <option value="group">
                                             {{ $t("Group") }}
                                         </option>
+                                        <option value="service">
+                                            {{ $t("Service") }}
+                                        </option>
                                     </optgroup>
 
                                     <optgroup :label="$t('Passive Monitor Type')">
@@ -2047,6 +2050,16 @@
                                 />
                             </div>
 
+                            <!-- Dependencies -->
+                            <div class="my-3">
+                                <label class="form-label">{{ $t("Dependencies") }}</label>
+                                <MonitorDependencyEditor
+                                    v-model="dependencies"
+                                    :exclude-monitor-id="monitor.id || null"
+                                />
+                                <div class="form-text">{{ $t("dependenciesDescription") }}</div>
+                            </div>
+
                             <!-- Description -->
                             <div class="my-3">
                                 <label for="description" class="form-label">{{ $t("Description") }}</label>
@@ -3116,11 +3129,12 @@ import {
     sleep,
     TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD,
 } from "../util.ts";
-import { timeDurationFormatter } from "../util-frontend";
+import { timeDurationFormatter, isGroupMonitor } from "../util-frontend";
 import isFQDN from "validator/lib/isFQDN";
 import isIP from "validator/lib/isIP";
 import HiddenInput from "../components/HiddenInput.vue";
 import EditMonitorConditions from "../components/EditMonitorConditions.vue";
+import MonitorDependencyEditor from "../components/MonitorDependencyEditor.vue";
 
 const toast = useToast();
 
@@ -3212,6 +3226,7 @@ export default {
         TagsManager,
         VueMultiselect,
         EditMonitorConditions,
+        MonitorDependencyEditor,
     },
 
     data() {
@@ -3241,6 +3256,8 @@ export default {
                 mongodb: "mongodb://username:password@host:port/database",
             },
             draftGroupName: null,
+            dependencies: [],
+            originalDependencies: [],
             remoteBrowsersEnabled: false,
             lowIntervalConfirmation: {
                 confirmed: false,
@@ -3429,7 +3446,7 @@ message HealthCheckResponse {
             // Only groups, not itself, not a decendant
             result = result.filter(
                 (monitor) =>
-                    monitor.type === "group" &&
+                    isGroupMonitor(monitor.type) &&
                     monitor.id !== this.monitor.id &&
                     !this.monitor.childrenIDs?.includes(monitor.id)
             );
@@ -3925,6 +3942,70 @@ message HealthCheckResponse {
             }
 
             this.draftGroupName = null;
+
+            this.dependencies = [];
+            this.originalDependencies = [];
+
+            if (this.isEdit) {
+                this.loadDependencies(parseInt(this.$route.params.id));
+            }
+        },
+
+        /**
+         * Load this monitor's existing dependency edges into the form
+         * @param {number} monitorID ID of the monitor being edited
+         * @returns {void}
+         */
+        loadDependencies(monitorID) {
+            this.$root.getSocket().emit("getMonitorDependencyList", (res) => {
+                if (res.ok) {
+                    this.dependencies = res.monitorDependencyList
+                        .filter((e) => e.monitorID === monitorID)
+                        .map((e) => ({
+                            id: e.id,
+                            dependsOnMonitorID: e.dependsOnMonitorID,
+                            relationType: e.relationType,
+                        }));
+                    this.originalDependencies = this.dependencies.map((d) => ({ ...d }));
+                }
+            });
+        },
+
+        /**
+         * Persist dependency changes made in the form: deletes removed rows,
+         * adds new ones, and updates rows whose relation type changed.
+         * @param {number} monitorID ID of the (possibly just created) monitor
+         * @returns {Promise<void>}
+         */
+        async saveDependencies(monitorID) {
+            const socket = this.$root.getSocket();
+            const emit = (...args) => new Promise((resolve) => socket.emit(...args, resolve));
+
+            for (const orig of this.originalDependencies) {
+                if (!this.dependencies.some((d) => d.id === orig.id)) {
+                    const res = await emit("deleteMonitorDependency", orig.id);
+                    if (!res.ok) {
+                        this.$root.toastError(res.msg);
+                    }
+                }
+            }
+
+            for (const dep of this.dependencies) {
+                if (!dep.id) {
+                    const res = await emit("addMonitorDependency", monitorID, dep.dependsOnMonitorID, dep.relationType);
+                    if (!res.ok) {
+                        this.$root.toastError(res.msg);
+                    }
+                } else {
+                    const orig = this.originalDependencies.find((o) => o.id === dep.id);
+                    if (orig && orig.relationType !== dep.relationType) {
+                        const res = await emit("editMonitorDependency", dep.id, dep.relationType);
+                        if (!res.ok) {
+                            this.$root.toastError(res.msg);
+                        }
+                    }
+                }
+            }
         },
 
         addKafkaProducerBroker(newBroker) {
@@ -4182,6 +4263,7 @@ message HealthCheckResponse {
                 this.$root.add(this.monitor, async (res) => {
                     if (res.ok) {
                         await this.$refs.tagsManager.submit(res.monitorID);
+                        await this.saveDependencies(res.monitorID);
 
                         // Start the new parent monitor after edit is done
                         if (createdNewParent) {
@@ -4198,9 +4280,15 @@ message HealthCheckResponse {
             } else {
                 await this.$refs.tagsManager.submit(this.monitor.id);
 
-                this.$root.getSocket().emit("editMonitor", this.monitor, (res) => {
+                this.$root.getSocket().emit("editMonitor", this.monitor, async (res) => {
                     this.processing = false;
                     this.$root.toastRes(res);
+
+                    if (res.ok) {
+                        // Must finish before init(), which reloads the dependency list
+                        await this.saveDependencies(this.monitor.id);
+                    }
+
                     this.init();
 
                     // Start the new parent monitor after edit is done

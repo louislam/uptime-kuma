@@ -7,6 +7,7 @@ const {
     DOWN,
     PENDING,
     MAINTENANCE,
+    UNREACHABLE,
     flipStatus,
     MAX_INTERVAL_SECOND,
     MIN_INTERVAL_SECOND,
@@ -420,6 +421,8 @@ class Monitor extends BeanModel {
         }
 
         const beat = async () => {
+            this.isRunning = true;
+
             let beatInterval = this.interval;
 
             if (!beatInterval) {
@@ -463,9 +466,14 @@ class Monitor extends BeanModel {
             }
 
             try {
+                const downDependency = await Monitor.getDownHardDependency(this.id);
+
                 if (await Monitor.isUnderMaintenance(this.id)) {
                     bean.msg = "Monitor under maintenance";
                     bean.status = MAINTENANCE;
+                } else if (downDependency) {
+                    bean.msg = `Unreachable due to: ${downDependency.name}`;
+                    bean.status = UNREACHABLE;
                 } else if (this.type === "http" || this.type === "keyword" || this.type === "json-query") {
                     // Do not do any queries/high loading things before the "bean.ping"
                     let startTime = dayjs().valueOf();
@@ -1059,6 +1067,13 @@ class Monitor extends BeanModel {
             log.debug("monitor", `[${this.name}] Store`);
             await R.store(bean);
 
+            if (isImportant) {
+                // Cascade immediately to anything hard-depending on this monitor,
+                // instead of making them wait for their own next scheduled tick.
+                // Must run after R.store() so dependents read the fresh status.
+                await Monitor.triggerDependentRechecks(this.id);
+            }
+
             log.debug("monitor", `[${this.name}] prometheus.update`);
             const data24h = uptimeCalculator.get24Hour();
             const data30d = uptimeCalculator.get30Day();
@@ -1078,7 +1093,13 @@ class Monitor extends BeanModel {
             } else {
                 log.info("monitor", `[${this.name}] isStop = true, no next check.`);
             }
+
+            this.isRunning = false;
         };
+
+        // Exposed so that Monitor.triggerDependentRechecks can force an
+        // immediate re-check instead of waiting for the next scheduled tick.
+        this.safeBeat = () => safeBeat();
 
         /**
          * Get a heartbeat and handle errors7
@@ -1394,6 +1415,8 @@ class Monitor extends BeanModel {
         // * MAINTENANCE -> DOWN = important
         // * DOWN -> MAINTENANCE = important
         // * UP -> MAINTENANCE = important
+        // * ANY -> UNREACHABLE = important (dependency-caused outage started)
+        // * UNREACHABLE -> ANY = important (dependency recovered or monitor's own state resolved)
         return (
             isFirstBeat ||
             (previousBeatStatus === DOWN && currentBeatStatus === MAINTENANCE) ||
@@ -1402,7 +1425,9 @@ class Monitor extends BeanModel {
             (previousBeatStatus === MAINTENANCE && currentBeatStatus === UP) ||
             (previousBeatStatus === UP && currentBeatStatus === DOWN) ||
             (previousBeatStatus === DOWN && currentBeatStatus === UP) ||
-            (previousBeatStatus === PENDING && currentBeatStatus === DOWN)
+            (previousBeatStatus === PENDING && currentBeatStatus === DOWN) ||
+            (previousBeatStatus !== UNREACHABLE && currentBeatStatus === UNREACHABLE) ||
+            (previousBeatStatus === UNREACHABLE && currentBeatStatus !== UNREACHABLE)
         );
     }
 
@@ -1429,6 +1454,12 @@ class Monitor extends BeanModel {
         // * MAINTENANCE -> DOWN = important
         // DOWN -> MAINTENANCE = not important
         // UP -> MAINTENANCE = not important
+        // ANY -> UNREACHABLE / UNREACHABLE -> ANY = never important
+        // (the root cause monitor already notifies; dependents should stay quiet)
+        if (currentBeatStatus === UNREACHABLE || previousBeatStatus === UNREACHABLE) {
+            return false;
+        }
+
         return (
             isFirstBeat ||
             (previousBeatStatus === MAINTENANCE && currentBeatStatus === DOWN) ||
@@ -1582,6 +1613,87 @@ class Monitor extends BeanModel {
      */
     static async getPreviousHeartbeat(monitorID) {
         return await R.findOne("heartbeat", " id = (select MAX(id) from heartbeat where monitor_id = ?)", [monitorID]);
+    }
+
+    /**
+     * Finds a hard dependency of this monitor that is currently DOWN, if any.
+     * Soft dependencies are informational only and never block a check.
+     * @param {number} monitorID ID of the monitor to check
+     * @returns {Promise<object|null>} The down dependency monitor (id, name), or null if none
+     */
+    static async getDownHardDependency(monitorID) {
+        const dependencies = await R.getAll(
+            `SELECT m.id, m.name FROM monitor_dependency md
+            INNER JOIN monitor m ON m.id = md.depends_on_monitor_id
+            WHERE md.monitor_id = ? AND md.relation_type = 'hard'`,
+            [monitorID]
+        );
+
+        if (dependencies.length === 0) {
+            return null;
+        }
+
+        const dependencyIDs = dependencies.map((dependency) => dependency.id);
+        const placeholders = dependencyIDs.map(() => "?").join(",");
+
+        // Latest heartbeat status per dependency, fetched in a single batched
+        // query instead of one round-trip per dependency.
+        const latestStatuses = await R.getAll(
+            `SELECT h.monitor_id AS monitor_id, h.status AS status FROM heartbeat h
+            INNER JOIN (
+                SELECT monitor_id, MAX(id) AS max_id FROM heartbeat
+                WHERE monitor_id IN (${placeholders})
+                GROUP BY monitor_id
+            ) latest ON h.monitor_id = latest.monitor_id AND h.id = latest.max_id`,
+            dependencyIDs
+        );
+
+        const statusByMonitorID = new Map(latestStatuses.map((row) => [ row.monitor_id, row.status ]));
+
+        // Treat UNREACHABLE the same as DOWN so outages cascade correctly
+        // through chains of dependencies, not just direct ones.
+        return (
+            dependencies.find((dependency) => {
+                const status = statusByMonitorID.get(dependency.id);
+                return status === DOWN || status === UNREACHABLE;
+            }) || null
+        );
+    }
+
+    /**
+     * Immediately re-checks every monitor that hard-depends on monitorID,
+     * instead of leaving them to notice the change on their own next
+     * scheduled tick. Each triggered re-check will itself call this again
+     * for its own dependents, so a status change cascades transitively
+     * through the whole dependency chain within a single event loop pass.
+     * @param {number} monitorID ID of the monitor whose status just changed
+     * @returns {Promise<void>}
+     */
+    static async triggerDependentRechecks(monitorID) {
+        const dependents = await R.getAll(
+            `SELECT monitor_id FROM monitor_dependency WHERE depends_on_monitor_id = ? AND relation_type = 'hard'`,
+            [monitorID]
+        );
+
+        const server = UptimeKumaServer.getInstance();
+
+        for (const row of dependents) {
+            const dependentMonitor = server.monitorList[row.monitor_id];
+
+            // safeBeat is only assigned once the monitor's start() has run;
+            // during server boot monitors are started staggered, so a
+            // dependent may not be started yet — it will pick up the fresh
+            // dependency status on its own first beat anyway.
+            if (
+                dependentMonitor &&
+                !dependentMonitor.isStop &&
+                !dependentMonitor.isRunning &&
+                typeof dependentMonitor.safeBeat === "function"
+            ) {
+                clearTimeout(dependentMonitor.heartbeatInterval);
+                dependentMonitor.safeBeat();
+            }
+        }
     }
 
     /**

@@ -133,6 +133,7 @@ import Confirm from "../components/Confirm.vue";
 import MonitorListItem from "../components/MonitorListItem.vue";
 import MonitorListFilter from "./MonitorListFilter.vue";
 import { getMonitorRelativeURL } from "../util.ts";
+import { isGroupMonitor } from "../util-frontend";
 
 export default {
     components: {
@@ -246,7 +247,9 @@ export default {
          */
         groupMonitors() {
             const monitors = Object.values(this.$root.monitorList);
-            return monitors.filter((m) => m.type === "group" && monitors.some((child) => child.parent === m.id));
+            return monitors.filter(
+                (m) => isGroupMonitor(m.type) && monitors.some((child) => child.parent === m.id)
+            );
         },
 
         /**
@@ -527,7 +530,7 @@ export default {
          */
         filterFunc(monitor) {
             // Group monitors bypass filter if at least 1 of children matched
-            if (monitor.type === "group") {
+            if (isGroupMonitor(monitor.type)) {
                 const children = Object.values(this.$root.monitorList).filter((m) => m.parent === monitor.id);
                 if (children.some((child, index, children) => this.filterFunc(child))) {
                     return true;

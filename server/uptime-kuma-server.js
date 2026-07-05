@@ -118,6 +118,7 @@ class UptimeKumaServer {
         UptimeKumaServer.monitorTypeList["mqtt"] = new MqttMonitorType();
         UptimeKumaServer.monitorTypeList["smtp"] = new SMTPMonitorType();
         UptimeKumaServer.monitorTypeList["group"] = new GroupMonitorType();
+        UptimeKumaServer.monitorTypeList["service"] = new ServiceMonitorType();
         UptimeKumaServer.monitorTypeList["snmp"] = new SNMPMonitorType();
         UptimeKumaServer.monitorTypeList["grpc-keyword"] = new GrpcKeywordMonitorType();
         UptimeKumaServer.monitorTypeList["mongodb"] = new MongodbMonitorType();
@@ -571,6 +572,7 @@ const { PostgresMonitorType } = require("./monitor-types/postgres");
 const { MqttMonitorType } = require("./monitor-types/mqtt");
 const { SMTPMonitorType } = require("./monitor-types/smtp");
 const { GroupMonitorType } = require("./monitor-types/group");
+const { ServiceMonitorType } = require("./monitor-types/service");
 const { SNMPMonitorType } = require("./monitor-types/snmp");
 const { GrpcKeywordMonitorType } = require("./monitor-types/grpc");
 const { MongodbMonitorType } = require("./monitor-types/mongodb");

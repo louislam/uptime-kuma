@@ -1,7 +1,38 @@
 import dayjs from "dayjs";
 import { getTimeZones } from "@vvo/tzdb";
-import { localeDirection, currentLocale } from "./i18n";
+import { localeDirection, currentLocale, i18n } from "./i18n";
 import { POSITION } from "vue-toastification";
+
+/**
+ * Format a raw heartbeat message for display, translating the
+ * "Unreachable due to: X" message produced by the dependency check.
+ * Other heartbeat messages are backend-generated plain text and are
+ * returned as-is.
+ * @param {string} msg Raw heartbeat message
+ * @returns {string} Translated (or original) message
+ */
+export function formatBeatMsg(msg) {
+    if (!msg) {
+        return msg;
+    }
+
+    const match = msg.match(/^Unreachable due to: (.+)$/);
+    if (match) {
+        return i18n.global.t("unreachableDueTo", { name: match[1] });
+    }
+
+    return msg;
+}
+
+/**
+ * Whether a monitor type renders as a container of other monitors (a
+ * collapsible list with children), rather than a single checked target.
+ * @param {string} type Monitor type
+ * @returns {boolean} True for "group" and "service" monitors
+ */
+export function isGroupMonitor(type) {
+    return type === "group" || type === "service";
+}
 
 /**
  * Returns the offset from UTC in hours for the current locale.

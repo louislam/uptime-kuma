@@ -90,6 +90,7 @@ import HeartbeatBar from "../components/HeartbeatBar.vue";
 import Tag from "../components/Tag.vue";
 import Uptime from "../components/Uptime.vue";
 import { getMonitorRelativeURL } from "../util.ts";
+import { isGroupMonitor } from "../util-frontend";
 
 export default {
     name: "MonitorListItem",
@@ -238,7 +239,7 @@ export default {
         },
 
         onDragEnter(event) {
-            if (this.monitor.type !== "group") {
+            if (!isGroupMonitor(this.monitor.type)) {
                 return;
             }
 
@@ -246,7 +247,7 @@ export default {
         },
 
         onDragLeave(event) {
-            if (this.monitor.type !== "group") {
+            if (!isGroupMonitor(this.monitor.type)) {
                 return;
             }
 
@@ -257,7 +258,7 @@ export default {
             this.dragOverCount = 0;
 
             // Only groups accept drops
-            if (this.monitor.type !== "group") {
+            if (!isGroupMonitor(this.monitor.type)) {
                 return;
             }
 

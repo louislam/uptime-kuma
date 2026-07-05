@@ -30,6 +30,10 @@ export default {
                 return "maintenance";
             }
 
+            if (this.status === 4) {
+                return "unreachable";
+            }
+
             return "secondary";
         },
 
@@ -48,6 +52,10 @@ export default {
 
             if (this.status === 3) {
                 return this.$t("statusMaintenance");
+            }
+
+            if (this.status === 4) {
+                return this.$t("Unreachable");
             }
 
             return this.$t("Unknown");

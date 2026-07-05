@@ -117,6 +117,7 @@ const app = server.app;
 
 log.debug("server", "Importing Monitor");
 const Monitor = require("./model/monitor");
+const MonitorDependency = require("./model/monitor_dependency");
 const User = require("./model/user");
 
 log.debug("server", "Importing Settings");
@@ -1365,6 +1366,131 @@ let needSetup = false;
                     ok: true,
                     msg: "successDeleted",
                     msgi18n: true,
+                });
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("addMonitorDependency", async (monitorID, dependsOnMonitorID, relationType, callback) => {
+            try {
+                checkLogin(socket);
+
+                if (monitorID === dependsOnMonitorID) {
+                    throw new Error("A monitor cannot depend on itself.");
+                }
+
+                if (relationType !== "hard" && relationType !== "soft") {
+                    throw new Error("relationType must be \"hard\" or \"soft\".");
+                }
+
+                const monitor = await R.findOne("monitor", " id = ? AND user_id = ? ", [ monitorID, socket.userID ]);
+                const dependsOnMonitor = await R.findOne("monitor", " id = ? AND user_id = ? ", [ dependsOnMonitorID, socket.userID ]);
+
+                if (!monitor || !dependsOnMonitor) {
+                    throw new Error("Monitor not found.");
+                }
+
+                if (await MonitorDependency.wouldCreateCycle(monitorID, dependsOnMonitorID)) {
+                    throw new Error("This dependency would create a cycle.");
+                }
+
+                let bean = R.dispense("monitor_dependency");
+                bean.monitor_id = monitorID;
+                bean.depends_on_monitor_id = dependsOnMonitorID;
+                bean.relation_type = relationType;
+                await R.store(bean);
+
+                apicache.clear();
+
+                callback({
+                    ok: true,
+                    monitorDependency: bean.toJSON(),
+                });
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("deleteMonitorDependency", async (id, callback) => {
+            try {
+                checkLogin(socket);
+
+                await R.exec(
+                    `DELETE FROM monitor_dependency WHERE id = ? AND monitor_id IN (SELECT id FROM monitor WHERE user_id = ?)`,
+                    [ id, socket.userID ]
+                );
+
+                apicache.clear();
+
+                callback({
+                    ok: true,
+                    msg: "successDeleted",
+                    msgi18n: true,
+                });
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("editMonitorDependency", async (id, relationType, callback) => {
+            try {
+                checkLogin(socket);
+
+                if (relationType !== "hard" && relationType !== "soft") {
+                    throw new Error("relationType must be \"hard\" or \"soft\".");
+                }
+
+                await R.exec(
+                    `UPDATE monitor_dependency SET relation_type = ?
+                    WHERE id = ? AND monitor_id IN (SELECT id FROM monitor WHERE user_id = ?)`,
+                    [ relationType, id, socket.userID ]
+                );
+
+                apicache.clear();
+
+                callback({
+                    ok: true,
+                    msg: "successEdited",
+                    msgi18n: true,
+                });
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("getMonitorDependencyList", async (callback) => {
+            try {
+                checkLogin(socket);
+
+                const list = await R.getAll(
+                    `SELECT md.* FROM monitor_dependency md
+                    INNER JOIN monitor m ON m.id = md.monitor_id
+                    WHERE m.user_id = ?`,
+                    [ socket.userID ]
+                );
+
+                callback({
+                    ok: true,
+                    monitorDependencyList: list.map((row) => ({
+                        id: row.id,
+                        monitorID: row.monitor_id,
+                        dependsOnMonitorID: row.depends_on_monitor_id,
+                        relationType: row.relation_type,
+                        createdDate: row.created_date,
+                    })),
                 });
             } catch (e) {
                 callback({
