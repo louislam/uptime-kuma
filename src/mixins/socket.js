@@ -118,20 +118,13 @@ export default {
                 this.info = info;
             });
 
-            socket.on("setup", (monitorID, data) => {
+            socket.on("setup", () => {
                 this.$router.push("/setup");
             });
 
             socket.on("session", (username) => {
                 this.loggedIn = true;
                 this.username = username;
-            });
-
-            socket.on("autoLogin", (monitorID, data) => {
-                this.loggedIn = true;
-                this.storage().token = "autoLogin";
-                this.socket.token = "autoLogin";
-                this.allowLoginDialog = false;
             });
 
             socket.on("loginRequired", () => {
@@ -778,7 +771,8 @@ export default {
 };
 
 /**
- *
+ * Reconnect the socket.io connection.
+ * Usage: Reconnect socket.io with auth-ed cookie, or drop the auth-ed session.
  */
 export function reconnectSocket() {
     if (socket) {

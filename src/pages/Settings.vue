@@ -26,7 +26,7 @@
 
                     <!-- Logout Button -->
                     <a
-                        v-if="$root.isMobile && $root.loggedIn && $root.socket.token !== 'autoLogin'"
+                        v-if="$root.isMobile && $root.loggedIn"
                         class="logout"
                         @click.prevent="$root.logout"
                     >

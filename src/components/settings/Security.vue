@@ -220,7 +220,6 @@ export default {
             this.saveSettings(() => {
                 this.password.currentPassword = "";
                 this.$root.username = null;
-                this.$root.socket.token = "autoLogin";
             }, this.password.currentPassword);
         },
 
@@ -231,7 +230,6 @@ export default {
         enableAuth() {
             this.settings.disableAuth = false;
             this.saveSettings();
-            this.$root.storage().removeItem("token");
             location.reload();
         },
 
