@@ -62,7 +62,7 @@ to review the appropriate one for your contribution.
 - <details><summary><b>Small, Non-Breaking Bug Fixes</b> (click to expand)</summary>
   <p>
 
-  If you come across a bug and think you can solve, we appreciate your work.
+  If you come across a bug and think you can solve it, we appreciate your work.
   Please make sure that you follow these rules:
   - keep the PR as small as possible, fix only one thing at a time => keeping it
     reviewable
@@ -170,7 +170,7 @@ to review the appropriate one for your contribution.
 - <details><summary><b>New Monitoring Types</b> (click to expand)</summary>
   <p>
 
-  To set up a new notification provider these files need to be modified/created:
+  To set up a new monitoring type, these files need to be modified/created:
   - `server/monitor-types/MONITORING_TYPE.js` is the core of each monitor.
     The `async check(...)`-function should:
     - in the happy-path: set `heartbeat.msg` to a successful message and set `heartbeat.status = UP`
