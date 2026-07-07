@@ -105,6 +105,21 @@
                 <router-link to="/add">{{ $t("add one") }}</router-link>
             </div>
 
+            <!-- Drop zone to un-parent a monitor (drag it out of a group) -->
+            <div
+                v-if="Object.keys($root.monitorList).length > 0"
+                class="drop-zone-root"
+                :class="{ 'drop-zone-active': dropZoneActive }"
+                @dragenter.prevent="onDropZoneDragEnter"
+                @dragleave.prevent="onDropZoneDragLeave"
+                @dragover.prevent
+                @drop.prevent="onDropZoneDrop"
+            >
+                <span v-if="dropZoneActive" class="drop-zone-hint">
+                    {{ $t("Drop here to remove from group") }}
+                </span>
+            </div>
+
             <MonitorListItem
                 v-for="item in sortedMonitorList"
                 :key="`${item.id}-${collapseKey}`"
@@ -155,6 +170,8 @@ export default {
             selectedMonitors: {},
             windowTop: 0,
             bulkActionInProgress: false,
+            dropZoneActive: false,
+            dropZoneDragCount: 0,
             filterState: {
                 status: null,
                 active: null,
@@ -321,6 +338,91 @@ export default {
                 this.windowTop = window.top.scrollY;
             } else {
                 this.windowTop = 133;
+            }
+        },
+
+        /**
+         * Called when a dragged monitor enters the root drop zone.
+         * @returns {void}
+         */
+        onDropZoneDragEnter() {
+            this.dropZoneDragCount++;
+            this.dropZoneActive = true;
+        },
+
+        /**
+         * Called when a dragged monitor leaves the root drop zone.
+         * Uses a counter to handle nested dragenter/dragleave events.
+         * @returns {void}
+         */
+        onDropZoneDragLeave() {
+            this.dropZoneDragCount = Math.max(0, this.dropZoneDragCount - 1);
+            if (this.dropZoneDragCount === 0) {
+                this.dropZoneActive = false;
+            }
+        },
+
+        /**
+         * Called when a dragged monitor is dropped on the root drop zone.
+         * Un-parents the monitor (sets parent to null) so it appears at the
+         * top level of the monitor list.
+         * @param {DragEvent} event - The drop event.
+         * @returns {void}
+         */
+        onDropZoneDrop(event) {
+            this.dropZoneActive = false;
+            this.dropZoneDragCount = 0;
+
+            const draggedId = event.dataTransfer.getData("text/monitor-id");
+            if (!draggedId) {
+                return;
+            }
+
+            const draggedMonitorId = parseInt(draggedId);
+            if (isNaN(draggedMonitorId)) {
+                return;
+            }
+
+            const draggedMonitor = this.$root.monitorList[draggedMonitorId];
+            if (!draggedMonitor) {
+                return;
+            }
+
+            // Already at root level — nothing to do
+            if (draggedMonitor.parent === null) {
+                return;
+            }
+
+            // Save original parent so we can revert on error
+            const originalParent = draggedMonitor.parent;
+
+            // Prepare a full monitor object (clone) and clear parent
+            const monitorToSave = JSON.parse(JSON.stringify(draggedMonitor));
+            monitorToSave.parent = null;
+
+            // Optimistically update local state
+            this.$root.monitorList[draggedMonitorId].parent = null;
+
+            // Send updated monitor state via socket
+            try {
+                this.$root.getSocket().emit("editMonitor", monitorToSave, (res) => {
+                    if (!res || !res.ok) {
+                        // Revert local change on error
+                        if (this.$root.monitorList[draggedMonitorId]) {
+                            this.$root.monitorList[draggedMonitorId].parent = originalParent;
+                        }
+                        if (res && res.msg) {
+                            this.$root.toastError(res.msg);
+                        }
+                    } else {
+                        this.$root.toastRes(res);
+                    }
+                });
+            } catch (e) {
+                // Revert on exception
+                if (this.$root.monitorList[draggedMonitorId]) {
+                    this.$root.monitorList[draggedMonitorId].parent = originalParent;
+                }
             }
         },
         /**
@@ -833,5 +935,31 @@ export default {
             margin-top: 0.25rem;
         }
     }
+}
+
+.drop-zone-root {
+    height: 6px;
+    margin: 2px 0;
+    border-radius: 0.5rem;
+    transition: height 0.15s ease, background-color 0.15s ease;
+}
+
+.drop-zone-active {
+    height: 40px;
+    border: 3px dashed $primary;
+    background-color: rgba($primary, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .dark & {
+        background-color: rgba($primary, 0.15);
+    }
+}
+
+.drop-zone-hint {
+    font-size: 0.85em;
+    color: $primary;
+    font-weight: 500;
 }
 </style>
