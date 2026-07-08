@@ -37,6 +37,7 @@ const Ntfy = require("./notification-providers/ntfy");
 const Octopush = require("./notification-providers/octopush");
 const OneChat = require("./notification-providers/onechat");
 const OneBot = require("./notification-providers/onebot");
+const Ooredoo = require("./notification-providers/ooredoo");
 const Opsgenie = require("./notification-providers/opsgenie");
 const JiraServiceManagement = require("./notification-providers/jira-service-management");
 const PagerDuty = require("./notification-providers/pagerduty");
@@ -82,6 +83,7 @@ const GtxMessaging = require("./notification-providers/gtx-messaging");
 const Cellsynt = require("./notification-providers/cellsynt");
 const Onesender = require("./notification-providers/onesender");
 const Wpush = require("./notification-providers/wpush");
+const WxPusher = require("./notification-providers/wxpusher");
 const SendGrid = require("./notification-providers/send-grid");
 const Brevo = require("./notification-providers/brevo");
 const Resend = require("./notification-providers/resend");
@@ -149,6 +151,7 @@ class Notification {
             new OneChat(),
             new OneBot(),
             new Onesender(),
+            new Ooredoo(),
             new Opsgenie(),
             new JiraServiceManagement(),
             new PagerDuty(),
@@ -193,6 +196,7 @@ class Notification {
             new GtxMessaging(),
             new Cellsynt(),
             new Wpush(),
+            new WxPusher(),
             new Brevo(),
             new Resend(),
             new YZJ(),
