@@ -28,10 +28,29 @@ export async function isLoggedIn() {
  * @param remember Remember Me
  */
 export async function login(username: string, password: string, remember: boolean = true) {
-    const { error } = await authClient.signIn.username({
+    const { data, error } = await authClient.signIn.username({
         username,
         password,
         rememberMe: remember,
+    });
+
+    if (error) {
+        throw new Error(error.message);
+    }
+
+    if ("twoFactorRedirect" in data) {
+        return "twoFactorRequired";
+    }
+
+    reconnectSocket();
+}
+
+/**
+ * @param token Token
+ */
+export async function verifyTotp(token: string) {
+    const { error } = await authClient.twoFactor.verifyTotp({
+        code: token,
     });
 
     if (error) {
@@ -44,7 +63,7 @@ export async function login(username: string, password: string, remember: boolea
 /**
  * @param onSuccess
  */
-export async function logout(onSuccess = () => {}) {
+export async function logout(onSuccess = () => { }) {
     await authClient.signOut({
         fetchOptions: {
             onSuccess,
