@@ -120,7 +120,7 @@
 import { Modal } from "bootstrap";
 import Confirm from "./Confirm.vue";
 import VueQrcode from "vue-qrcode";
-import { authClient } from "../auth-client.ts";
+import { authClient } from "../auth-client";
 
 export default {
     components: {
