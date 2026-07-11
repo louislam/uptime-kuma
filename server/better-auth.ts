@@ -317,6 +317,10 @@ export async function migrateUser(username: string, password: string) {
                     verified: true,
                     userId: userId,
                 });
+
+                await R.knex("better_auth_user").where({ id: userId }).update({
+                    twoFactorEnabled: true,
+                });
             }
             log.info("auth", `Migrated legacy user: ${username}`);
         } catch (e) {
