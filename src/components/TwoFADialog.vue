@@ -9,16 +9,30 @@
                             <span v-if="twoFAStatus == true" class="badge bg-primary">{{ $t("Active") }}</span>
                             <span v-if="twoFAStatus == false" class="badge bg-primary">{{ $t("Inactive") }}</span>
                         </h5>
-                        <button :disabled="processing" type="button" class="btn-close" data-bs-dismiss="modal"
-                            :aria-label="$t('Close')" />
+                        <button
+                            :disabled="processing"
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            :aria-label="$t('Close')"
+                        />
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
                             <div v-if="uri && twoFAStatus == false" class="mx-auto text-center" style="width: 210px">
-                                <vue-qrcode :key="uri" :value="uri" type="image/png" :quality="1"
-                                    :color="{ light: '#ffffffff' }" />
-                                <button v-show="!showURI" type="button" class="btn btn-outline-primary btn-sm mt-2"
-                                    @click="showURI = true">
+                                <vue-qrcode
+                                    :key="uri"
+                                    :value="uri"
+                                    type="image/png"
+                                    :quality="1"
+                                    :color="{ light: '#ffffffff' }"
+                                />
+                                <button
+                                    v-show="!showURI"
+                                    type="button"
+                                    class="btn btn-outline-primary btn-sm mt-2"
+                                    @click="showURI = true"
+                                >
                                     {{ $t("Show URI") }}
                                 </button>
                             </div>
@@ -28,31 +42,56 @@
                                 <label for="current-password" class="form-label">
                                     {{ $t("Current Password") }}
                                 </label>
-                                <input id="current-password" v-model="currentPassword" type="password"
-                                    class="form-control" autocomplete="current-password" required />
+                                <input
+                                    id="current-password"
+                                    v-model="currentPassword"
+                                    type="password"
+                                    class="form-control"
+                                    autocomplete="current-password"
+                                    required
+                                />
                             </div>
 
-                            <button v-if="uri == null && twoFAStatus == false" class="btn btn-primary" type="button"
-                                @click="prepare2FA()">
+                            <button
+                                v-if="uri == null && twoFAStatus == false"
+                                class="btn btn-primary"
+                                type="button"
+                                @click="prepare2FA()"
+                            >
                                 {{ $t("Enable 2FA") }}
                             </button>
 
-                            <button v-if="twoFAStatus == true" class="btn btn-danger" type="button"
-                                :disabled="processing" @click="confirmDisableTwoFA()">
+                            <button
+                                v-if="twoFAStatus == true"
+                                class="btn btn-danger"
+                                type="button"
+                                :disabled="processing"
+                                @click="confirmDisableTwoFA()"
+                            >
                                 {{ $t("Disable 2FA") }}
                             </button>
 
                             <div v-if="uri && twoFAStatus == false" class="mt-3">
                                 <label for="basic-url" class="form-label">{{ $t("twoFAVerifyLabel") }}</label>
-                                <input v-model="token" type="text" maxlength="6" class="form-control"
-                                    autocomplete="one-time-code" required />
+                                <input
+                                    v-model="token"
+                                    type="text"
+                                    maxlength="6"
+                                    class="form-control"
+                                    autocomplete="one-time-code"
+                                    required
+                                />
                             </div>
                         </div>
                     </div>
 
                     <div v-if="uri && twoFAStatus == false" class="modal-footer">
-                        <button type="submit" class="btn btn-primary" :disabled="processing"
-                            @click="confirmEnableTwoFA()">
+                        <button
+                            type="submit"
+                            class="btn btn-primary"
+                            :disabled="processing"
+                            @click="confirmEnableTwoFA()"
+                        >
                             <div v-if="processing" class="spinner-border spinner-border-sm me-1"></div>
                             {{ $t("Save") }}
                         </button>
@@ -66,8 +105,13 @@
         {{ $t("confirmEnableTwoFAMsg") }}
     </Confirm>
 
-    <Confirm ref="confirmDisableTwoFA" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')"
-        @yes="disable2FA">
+    <Confirm
+        ref="confirmDisableTwoFA"
+        btn-style="btn-danger"
+        :yes-text="$t('Yes')"
+        :no-text="$t('No')"
+        @yes="disable2FA"
+    >
         {{ $t("confirmDisableTwoFAMsg") }}
     </Confirm>
 </template>
@@ -151,7 +195,9 @@ export default {
          * @returns {void}
          */
         async enable2FA() {
-            if (!this.token) return;
+            if (!this.token) {
+                return;
+            }
 
             this.processing = true;
 
@@ -200,7 +246,7 @@ export default {
          * @returns {void}
          */
         async getStatus() {
-            const { data, error } = await authClient.getSession()
+            const { data, error } = await authClient.getSession();
             if (error) {
                 this.$root.toastError(error.message);
                 return;
@@ -216,7 +262,6 @@ export default {
 @import "../assets/vars.scss";
 
 .dark {
-
     .modal-dialog .form-text,
     .modal-dialog p {
         color: $dark-font-color;

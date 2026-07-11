@@ -63,7 +63,7 @@ export async function verifyTotp(token: string) {
 /**
  * @param onSuccess
  */
-export async function logout(onSuccess = () => { }) {
+export async function logout(onSuccess = () => {}) {
     await authClient.signOut({
         fetchOptions: {
             onSuccess,
