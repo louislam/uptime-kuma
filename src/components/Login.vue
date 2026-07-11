@@ -115,7 +115,7 @@ export default {
 
             try {
                 if (this.tokenRequired) {
-                    this.res = await verifyTotp(this.token);
+                    await verifyTotp(this.token);
                     return;
                 }
 
