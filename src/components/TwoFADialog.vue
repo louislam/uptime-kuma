@@ -195,14 +195,10 @@ export default {
          * @returns {void}
          */
         async enable2FA() {
-            if (!this.token) {
-                return;
-            }
-
             this.processing = true;
 
             const { error } = await authClient.twoFactor.verifyTotp({
-                code: this.token,
+                code: this.token!,
             });
 
             this.processing = false;
