@@ -382,9 +382,7 @@ module.exports.statusPageSocketHandler = (socket) => {
                     relationBean.group_id = groupBean.id;
                     relationBean.monitor_id = monitor.id;
 
-                    if (monitor.sendUrl !== undefined) {
-                        relationBean.send_url = monitor.sendUrl;
-                    }
+                    relationBean.send_url = monitor.sendUrl ?? false;
 
                     if (monitor.url !== undefined) {
                         relationBean.custom_url = monitor.url;
