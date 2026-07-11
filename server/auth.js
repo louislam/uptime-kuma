@@ -5,6 +5,7 @@ const { log } = require("../src/util");
 const { loginRateLimiter, apiRateLimiter } = require("./rate-limiter");
 const { Settings } = require("./settings");
 const dayjs = require("dayjs");
+const { checkPassword } = require("./better-auth");
 
 /**
  * @deprecated Use Better Auth
@@ -108,14 +109,19 @@ function userAuthorizer(username, password, callback) {
     // Login Rate Limit
     loginRateLimiter.pass(null, 0).then((pass) => {
         if (pass) {
-            exports.login(username, password).then((user) => {
-                callback(null, user != null);
+            checkPassword(username, password)
+                .then((valid) => {
+                    callback(null, valid);
 
-                if (user == null) {
-                    log.warn("basic-auth", "Failed basic auth attempt: invalid username/password");
-                    loginRateLimiter.removeTokens(1);
-                }
-            });
+                    if (!valid) {
+                        log.warn("basic-auth", "Failed basic auth attempt: invalid username/password");
+                        loginRateLimiter.removeTokens(1);
+                    }
+                })
+                .catch((e) => {
+                    log.error("basic-auth", "Auth error:", e);
+                    callback(null, false);
+                });
         } else {
             log.warn("basic-auth", "Failed basic auth attempt: rate limit exceeded");
             callback(null, false);

@@ -124,7 +124,7 @@ export default {
                     this.tokenRequired = true;
                 }
             } catch (e) {
-                console.error(e);
+                this.res = { ok: false, msg: e.message };
             } finally {
                 this.processing = false;
             }

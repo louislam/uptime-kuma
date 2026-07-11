@@ -1,16 +1,17 @@
 process.env.UPTIME_KUMA_HIDE_LOG = ["info_db", "info_server"].join(",");
 
-const { describe, test, mock, before, after } = require("node:test");
-const assert = require("node:assert");
-const DomainExpiry = require("../../server/model/domain_expiry");
-const mockWebhook = require("./notification-providers/mock-webhook");
-const TestDB = require("../mock-testdb");
-const { R } = require("redbean-node");
-const { Notification } = require("../../server/notification");
-const { Settings } = require("../../server/settings");
-const { setSetting } = require("../../server/util-server");
-const dayjs = require("dayjs");
-dayjs.extend(require("dayjs/plugin/utc"));
+import { describe, test, mock, before, after } from "node:test";
+import assert from "node:assert";
+import DomainExpiry from "../../server/model/domain_expiry.js";
+import mockWebhook from "./notification-providers/mock-webhook.js";
+import TestDB from "../mock-testdb.js";
+import { R } from "redbean-node";
+import { Notification } from "../../server/notification.js";
+import { Settings } from "../../server/settings.js";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc.js";
+
+dayjs.extend(utc);
 
 const testDb = new TestDB();
 
@@ -55,9 +56,9 @@ describe("Domain Expiry", () => {
                 };
                 await assert.rejects(
                     async () => await DomainExpiry.checkSupport(monitor),
-                    (error) => {
-                        assert.strictEqual(error.constructor.name, "TranslatableError");
-                        assert.strictEqual(error.message, "domain_expiry_unsupported_missing_target");
+                    (error: unknown) => {
+                        assert.strictEqual((error as any).constructor.name, "TranslatableError");
+                        assert.strictEqual((error as Error).message, "domain_expiry_unsupported_missing_target");
                         return true;
                     }
                 );
@@ -70,9 +71,9 @@ describe("Domain Expiry", () => {
                 };
                 await assert.rejects(
                     async () => await DomainExpiry.checkSupport(monitor),
-                    (error) => {
-                        assert.strictEqual(error.constructor.name, "TranslatableError");
-                        assert.strictEqual(error.message, "domain_expiry_unsupported_missing_target");
+                    (error: unknown) => {
+                        assert.strictEqual((error as any).constructor.name, "TranslatableError");
+                        assert.strictEqual((error as Error).message, "domain_expiry_unsupported_missing_target");
                         return true;
                     }
                 );
@@ -86,9 +87,9 @@ describe("Domain Expiry", () => {
                 };
                 await assert.rejects(
                     async () => await DomainExpiry.checkSupport(monitor),
-                    (error) => {
-                        assert.strictEqual(error.constructor.name, "TranslatableError");
-                        assert.strictEqual(error.message, "domain_expiry_unsupported_missing_target");
+                    (error: unknown) => {
+                        assert.strictEqual((error as any).constructor.name, "TranslatableError");
+                        assert.strictEqual((error as Error).message, "domain_expiry_unsupported_missing_target");
                         return true;
                     }
                 );
@@ -104,9 +105,9 @@ describe("Domain Expiry", () => {
                 };
                 await assert.rejects(
                     async () => await DomainExpiry.checkSupport(monitor),
-                    (error) => {
-                        assert.strictEqual(error.constructor.name, "TranslatableError");
-                        assert.strictEqual(error.message, "domain_expiry_unsupported_is_icann");
+                    (error: unknown) => {
+                        assert.strictEqual((error as any).constructor.name, "TranslatableError");
+                        assert.strictEqual((error as Error).message, "domain_expiry_unsupported_is_icann");
                         return true;
                     }
                 );
@@ -190,7 +191,7 @@ describe("Domain Expiry", () => {
             url: "capture",
         };
         const manyDays = 3650;
-        await setSetting("domainExpiryNotifyDays", [manyDays], "general");
+        await Settings.set("domainExpiryNotifyDays", [manyDays], "general");
         const notif = R.convertToBean("notification", {
             config: JSON.stringify({
                 type: "webhook",
@@ -244,7 +245,7 @@ describe("Domain Expiry", () => {
                     .then(() => {
                         throw new Error("Webhook was called but should not have been for null expiry");
                     })
-                    .catch((e) => {
+                    .catch((e: any) => {
                         if (e.reason === "Timeout") {
                             return "timeout"; // Expected - webhook was not called
                         }
@@ -292,7 +293,7 @@ describe("Domain Expiry", () => {
                     .then(() => {
                         throw new Error("Webhook was called but should not have been for undefined expiry");
                     })
-                    .catch((e) => {
+                    .catch((e: any) => {
                         if (e.reason === "Timeout") {
                             return "timeout"; // Expected - webhook was not called
                         }

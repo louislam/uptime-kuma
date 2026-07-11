@@ -3,12 +3,14 @@ import { betterAuth, Session } from "better-auth";
 import * as Database from "./database.js";
 import { genSecret, log } from "../src/util";
 import { R } from "redbean-node";
-import { KyselyKnexDialect, MySQL2ColdDialect, SQLite3ColdDialect } from "kysely-knex";
+import { createPool } from "mysql2/promise";
+import BetterSqlite3Database from "better-sqlite3";
 import { username } from "better-auth/plugins";
 import { admin } from "better-auth/plugins";
 import { Socket } from "socket.io";
 import { haveIBeenPwned } from "better-auth/plugins";
 import { twoFactor } from "better-auth/plugins";
+import { apiKey } from "@better-auth/api-key";
 import { createAuthMiddleware, APIError } from "better-auth/api";
 // @ts-ignore
 import * as oldAuth from "./auth.js";
@@ -51,14 +53,20 @@ function createAuthInstance() {
             "Database data directory is not initialized. Please call Database.initDataDir() before using auth."
         );
     }
-    const knex = R.knex;
-    const kyselySubDialect = Database.dbConfig.type.includes("mariadb")
-        ? new MySQL2ColdDialect()
-        : new SQLite3ColdDialect();
-    const database = new KyselyKnexDialect({
-        kyselySubDialect,
-        knex,
-    });
+    let database;
+    if (Database.dbConfig.type.includes("mariadb")) {
+        database = createPool({
+            host: Database.dbConfig.host,
+            port: Database.dbConfig.port,
+            database: Database.dbConfig.database,
+            user: Database.dbConfig.username,
+            password: Database.dbConfig.password,
+            timezone: "Z",
+            ...(Database.dbConfig.socketPath ? { socketPath: Database.dbConfig.socketPath } : {}),
+        });
+    } else {
+        database = new BetterSqlite3Database(Database.sqlitePath);
+    }
 
     return betterAuth({
         database,
@@ -96,6 +104,14 @@ function createAuthInstance() {
                 schema: {
                     twoFactor: {
                         modelName: "better_auth_twoFactor",
+                    },
+                },
+            }),
+
+            apiKey({
+                schema: {
+                    apikey: {
+                        modelName: "better_auth_apikey",
                     },
                 },
             }),
@@ -309,4 +325,35 @@ export async function migrateUser(username: string, password: string) {
     } else {
         log.info("auth", `No legacy user found for username: ${username}, do not migrate.`);
     }
+}
+
+/**
+ * TODO: Check username / password without creating a session, mainly for basic auth
+ * @param username Legacy username
+ * @param password Plain-text password from the login form
+ */
+export async function checkPassword(username: string, password: string): Promise<boolean> {
+    const { adapter, password: passwordVerifier } = await auth().$context;
+    const internalAdapter = await authInternal();
+
+    const user = await adapter.findOne({
+        model: "user",
+        where: [{ field: "username", value: username }],
+    });
+
+    if (!user) {
+        return false;
+    }
+
+    const accounts = await internalAdapter.findAccounts(user.id);
+    const credentialAccount = accounts.find((ac) => ac.providerId === "credential");
+
+    if (!credentialAccount?.password) {
+        return false;
+    }
+
+    return passwordVerifier.verify({
+        hash: credentialAccount.password,
+        password,
+    });
 }
