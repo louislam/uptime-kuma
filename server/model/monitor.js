@@ -1017,7 +1017,7 @@ class Monitor extends BeanModel {
                     ) {
                         log.warn(
                             "domain_expiry",
-                            `Domain expiry isn’t supported for “.${error.meta.publicSuffix}” because it lacks an RDAP endpoint in the IANA database. This isn’t an Uptime Kuma bug, but a registry limitation. If an RDAP server exists, ask your registrar politely to submit it to IANA so expiry checks can work.`
+                            `Domain expiry unsupported for '.${error.meta.publicSuffix}' because it lacks an RDAP endpoint in the IANA database. This isn’t an Uptime Kuma bug, a limitation of your registry. If an RDAP server exists, ask your registrar politely to submit it to IANA so expiry checks can work.`
                         );
                     }
                 }
