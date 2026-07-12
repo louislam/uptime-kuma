@@ -37,6 +37,7 @@ import Octopush from "./Octopush.vue";
 import OneChat from "./OneChat.vue";
 import OneBot from "./OneBot.vue";
 import Onesender from "./Onesender.vue";
+import Ooredoo from "./Ooredoo.vue";
 import Opsgenie from "./Opsgenie.vue";
 import JiraServiceManagement from "./JiraServiceManagement.vue";
 import PagerDuty from "./PagerDuty.vue";
@@ -82,6 +83,7 @@ import Whatsapp360messenger from "./360messenger.vue";
 import Evolution from "./Evolution.vue";
 import Cellsynt from "./Cellsynt.vue";
 import WPush from "./WPush.vue";
+import WxPusher from "./WxPusher.vue";
 import SIGNL4 from "./SIGNL4.vue";
 import SendGrid from "./SendGrid.vue";
 import Brevo from "./Brevo.vue";
@@ -138,6 +140,7 @@ const NotificationFormList = {
     OneChat: OneChat,
     OneBot: OneBot,
     Onesender: Onesender,
+    Ooredoo: Ooredoo,
     Opsgenie: Opsgenie,
     JiraServiceManagement: JiraServiceManagement,
     PagerDuty: PagerDuty,
@@ -186,6 +189,7 @@ const NotificationFormList = {
     gtxmessaging: GtxMessaging,
     Cellsynt: Cellsynt,
     WPush: WPush,
+    WxPusher: WxPusher,
     SendGrid: SendGrid,
     Brevo: Brevo,
     Resend: Resend,
