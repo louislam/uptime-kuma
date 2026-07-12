@@ -275,7 +275,8 @@ export default {
                 SevenIO: "SevenIO",
                 SMSEagle: "SMSEagle",
                 SMSPartner: "SMS Partner",
-                telnyx: "Telnyx",
+                telnyx: "Telnyx SMS",
+                telnyxVoice: "Telnyx Voice",
                 Teltonika: this.$t("Teltonika SMS Gateway"),
                 twilio: "Twilio",
             };
