@@ -3931,11 +3931,9 @@ message HealthCheckResponse {
                         item.id === this.monitor.system_service_name || item.name === this.monitor.system_service_name
                 );
 
-                // Keep compatibility with monitors previously saved with a numeric PM2 id.
+                // Convert a legacy numeric id to the stable process name without replacing a missing saved target.
                 if (selectedProcess) {
                     this.monitor.system_service_name = selectedProcess.name;
-                } else if (this.pm2ProcessOptions.length > 0) {
-                    this.monitor.system_service_name = this.pm2ProcessOptions[0].name;
                 }
             });
         },
