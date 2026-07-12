@@ -31,9 +31,20 @@ const tables = [
 
 exports.up = async function (knex) {
     for (const table of tables) {
-        await knex.schema.alterTable(table.name, (t) => {
-            t.dropForeign("user_id");
-        });
+        try {
+            await knex.schema.alterTable(table.name, (t) => {
+                t.dropForeign("user_id");
+            });
+        } catch (error) {
+            // Not sure why it only happens on Ubuntu 22.04 + Node.js 26
+            // Can't DROP 'docker_host_user_id_foreign'; check that column/key exists
+            console.error(`Error dropping foreign key for table ${table.name}:`, error);
+
+            const columns = await knex(table.name).columnInfo();
+            console.error(`Schema for ${table.name}:`, JSON.stringify(columns, null, 2));
+
+            throw error;
+        }
 
         await knex.schema.alterTable(table.name, (t) => {
             t.dropColumn("user_id");

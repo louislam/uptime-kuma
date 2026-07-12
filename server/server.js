@@ -4,11 +4,10 @@
  * DO NOT require("./server") in other modules, it likely creates circular dependency!
  */
 import { getRandomInt, isDev, log, sleep } from "../src/util";
-import { auth, doubleCheckPassword, getDisableAuthSession, getSession } from "./better-auth";
+import { auth, closeAuthDatabase, doubleCheckPassword, getDisableAuthSession, getSession } from "./better-auth";
 import { createBetterAuthRouter, needSetup } from "./routers/better-auth-router";
 import { betterAuthSocketHandler } from "./socket-handlers/better-auth-socket-handler";
 import { loadEnvFile } from "node:process";
-import * as fs from "fs";
 
 console.log("Welcome to Uptime Kuma");
 
@@ -91,7 +90,6 @@ log.debug("server", "Importing http-graceful-shutdown");
 const gracefulShutdown = require("http-graceful-shutdown");
 log.debug("server", "Importing prometheus-api-metrics");
 const prometheusAPIMetrics = require("prometheus-api-metrics");
-const TranslatableError = require("./translatable-error");
 
 const { UptimeKumaServer } = require("./uptime-kuma-server");
 const server = UptimeKumaServer.getInstance();
@@ -100,7 +98,6 @@ const app = server.app;
 
 log.debug("server", "Importing Monitor");
 const Monitor = require("./model/monitor");
-const User = require("./model/user");
 
 log.debug("server", "Importing Settings");
 const {
@@ -1548,6 +1545,7 @@ async function shutdownFunction(signal) {
     }
     await sleep(2000);
     await Database.close();
+    await closeAuthDatabase();
 
     if (EmbeddedMariaDB.hasInstance()) {
         EmbeddedMariaDB.getInstance().stop();

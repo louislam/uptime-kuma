@@ -3,7 +3,7 @@ import { betterAuth, Session } from "better-auth";
 import * as Database from "./database.js";
 import { genSecret, log } from "../src/util";
 import { R } from "redbean-node";
-import { createPool } from "mysql2/promise";
+import { createPool, Pool } from "mysql2/promise";
 import BetterSqlite3Database from "better-sqlite3";
 import { username } from "better-auth/plugins";
 import { admin } from "better-auth/plugins";
@@ -43,6 +43,21 @@ export async function authInternal() {
     return (await auth().$context).internalAdapter;
 }
 
+let mariaDB: Pool;
+let sqlite: BetterSqlite3Database.Database;
+
+/**
+ *
+ */
+export async function closeAuthDatabase() {
+    if (mariaDB) {
+        await mariaDB.end();
+    }
+    if (sqlite) {
+        sqlite.close();
+    }
+}
+
 /**
  * Create a new instance of better-auth
  * @throws Error if Database.initDataDir() has not been called
@@ -57,7 +72,7 @@ function createAuthInstance() {
     }
     let database;
     if (Database.dbConfig.type.includes("mariadb")) {
-        database = createPool({
+        mariaDB = createPool({
             host: Database.dbConfig.host,
             port: Number(Database.dbConfig.port),
             database: Database.dbConfig.database,
@@ -66,8 +81,10 @@ function createAuthInstance() {
             timezone: "Z",
             ...(Database.dbConfig.socketPath ? { socketPath: Database.dbConfig.socketPath } : {}),
         });
+        database = mariaDB;
     } else {
-        database = new BetterSqlite3Database(Database.sqlitePath);
+        sqlite = new BetterSqlite3Database(Database.sqlitePath);
+        database = sqlite;
     }
 
     return betterAuth({
