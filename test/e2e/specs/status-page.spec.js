@@ -132,11 +132,9 @@ test.describe("Status Page", () => {
         // The status page navigates to public view after save
         await page.waitForURL("/status/example");
         // Wait for the status page theme to be applied to body
-        await page.waitForFunction(
-            (expectedTheme) => document.body.classList.contains(expectedTheme),
-            theme,
-            { timeout: 10000 }
-        );
+        await page.waitForFunction((expectedTheme) => document.body.classList.contains(expectedTheme), theme, {
+            timeout: 10000,
+        });
 
         // Add Google Analytics ID to head and verify
         await page.waitForFunction(
