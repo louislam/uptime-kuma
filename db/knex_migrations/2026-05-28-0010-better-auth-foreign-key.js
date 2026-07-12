@@ -33,6 +33,9 @@ exports.up = async function (knex) {
     for (const table of tables) {
         await knex.schema.alterTable(table.name, (t) => {
             t.dropForeign("user_id");
+        });
+
+        await knex.schema.alterTable(table.name, (t) => {
             t.dropColumn("user_id");
         });
 
