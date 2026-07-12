@@ -1,6 +1,7 @@
 const { sync: rimrafSync } = require("rimraf");
 const Database = require("../server/database");
 const { Settings } = require("../server/settings");
+const { sleep } = require("../src/util");
 
 class TestDB {
     dataDir;
@@ -22,7 +23,11 @@ class TestDB {
     async destroy() {
         await Database.close();
         Settings.stopCacheCleaner();
-        this.dataDir && rimrafSync(this.dataDir);
+        if (this.dataDir) {
+            // Windows may hold file lock?
+            await sleep(3000);
+            rimrafSync(this.dataDir);
+        }
     }
 }
 
