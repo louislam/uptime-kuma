@@ -335,7 +335,7 @@ export async function migrateUser(username: string, password: string) {
 }
 
 /**
- * TODO: Check username / password without creating a session, mainly for basic auth
+ * Check username / password without creating a session, mainly for basic auth
  * @param username Legacy username
  * @param password Plain-text password from the login form
  */
@@ -343,7 +343,7 @@ export async function checkPassword(username: string, password: string): Promise
     const { adapter, password: passwordVerifier } = await auth().$context;
     const internalAdapter = await authInternal();
 
-    const user = await adapter.findOne({
+    const user = await adapter.findOne<Record<string, any>>({
         model: "user",
         where: [{ field: "username", value: username }],
     });
