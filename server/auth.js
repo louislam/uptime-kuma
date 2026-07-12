@@ -8,8 +8,8 @@ const dayjs = require("dayjs");
 const { checkPassword } = require("./better-auth");
 
 /**
- * @deprecated Use Better Auth
- * Login to web app
+ * @deprecated DO NOT CALL IT. Use Better Auth instead.
+ * Old Login function, keep it for migration purposes.
  * @param {string} username Username to login with
  * @param {string} password Password to login with
  * @returns {Promise<(Bean|null)>} User or null if login failed
