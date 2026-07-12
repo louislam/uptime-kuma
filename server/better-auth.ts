@@ -167,7 +167,8 @@ export function getAuthSecret() {
     return Database.dbConfig.authSecret;
 }
 
-/** Encrypt a string using the BetterAuth encryption method
+/**
+ * Encrypt a string using the BetterAuth encryption method
  * @param data The string to encrypt
  * @returns The encrypted string
  */
@@ -303,7 +304,9 @@ export async function migrateUser(username: string, password: string) {
             });
 
             // Migrate 2FA settings if they exist
-            if (legacyUser.twoFactorEnabled) {
+            if (legacyUser.twofa_status) {
+                log.info("auth", `Migrating 2FA settings for user: ${username}`);
+
                 const rowId = genSecret(32);
                 const userId = newUser.user.id;
 
