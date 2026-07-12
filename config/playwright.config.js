@@ -39,6 +39,10 @@ export default defineConfig({
 
         // Collect trace when retrying the failed test.
         trace: "on-first-retry",
+
+        launchOptions: {
+            args: ["--start-minimized"],
+        },
     },
 
     // Configure projects for major browsers.
