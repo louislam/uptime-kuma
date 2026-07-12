@@ -73,7 +73,7 @@
 </template>
 
 <script>
-import { login } from "../auth-client";
+import { login, verifyTotp } from "../auth-client";
 
 export default {
     data() {
@@ -114,7 +114,15 @@ export default {
             this.processing = true;
 
             try {
-                await login(this.username, this.password, this.$root.remember);
+                if (this.tokenRequired) {
+                    await verifyTotp(this.token);
+                    return;
+                }
+
+                const result = await login(this.username, this.password, this.$root.remember);
+                if (result === "twoFactorRequired") {
+                    this.tokenRequired = true;
+                }
             } catch (e) {
                 this.res = { ok: false, msg: e.message };
             } finally {
