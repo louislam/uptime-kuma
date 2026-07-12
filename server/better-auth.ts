@@ -44,7 +44,9 @@ export async function authInternal() {
 }
 
 /**
- *
+ * Create a new instance of better-auth
+ * @throws Error if Database.initDataDir() has not been called
+ * @returns A new instance
  */
 function createAuthInstance() {
     // Check if Database.initDataDir() has been called before using this function
@@ -57,7 +59,7 @@ function createAuthInstance() {
     if (Database.dbConfig.type.includes("mariadb")) {
         database = createPool({
             host: Database.dbConfig.host,
-            port: Database.dbConfig.port,
+            port: Number(Database.dbConfig.port),
             database: Database.dbConfig.database,
             user: Database.dbConfig.username,
             password: Database.dbConfig.password,
@@ -335,9 +337,11 @@ export async function migrateUser(username: string, password: string) {
 }
 
 /**
+ * @deprecated DO NOT USE THIS FUNCTION, just for backward compatibility
  * Check username / password without creating a session, mainly for basic auth
- * @param username Legacy username
- * @param password Plain-text password from the login form
+ * @param username Username
+ * @param password Plain-text password
+ * @returns True if the username and password are correct, false otherwise
  */
 export async function checkPassword(username: string, password: string): Promise<boolean> {
     const { adapter, password: passwordVerifier } = await auth().$context;
