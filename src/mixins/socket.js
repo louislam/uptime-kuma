@@ -39,7 +39,7 @@ export default {
             monitorList: {},
             monitorTypeList: {},
             maintenanceList: {},
-            apiKeyList: {},
+
             heartbeatList: {},
             avgPingList: {},
             uptimeList: {},
@@ -155,10 +155,6 @@ export default {
 
             socket.on("maintenanceList", (data) => {
                 this.maintenanceList = data;
-            });
-
-            socket.on("apiKeyList", (data) => {
-                this.apiKeyList = data;
             });
 
             socket.on("notificationList", (data) => {
@@ -416,7 +412,7 @@ export default {
         },
 
         /**
-         * Send list of API keys
+         * Send list of API keys (callback receives BA keys and legacy keys)
          * @param {socketCB} callback Callback for socket response
          * @returns {void}
          */
@@ -425,6 +421,19 @@ export default {
                 callback = () => {};
             }
             socket.emit("getAPIKeyList", callback);
+        },
+
+        /**
+         * Delete specified legacy API key
+         * @param {int} keyID ID of key to delete
+         * @param {socketCB} callback Callback for socket response
+         * @returns {void}
+         */
+        deleteLegacyAPIKey(keyID, callback) {
+            if (!callback) {
+                callback = () => {};
+            }
+            socket.emit("deleteLegacyAPIKey", keyID, callback);
         },
 
         /**

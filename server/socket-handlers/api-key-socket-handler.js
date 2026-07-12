@@ -1,12 +1,8 @@
-const { checkLogin } = require("../util-server");
 const { log } = require("../../src/util");
 const { R } = require("redbean-node");
-const { nanoid } = require("nanoid");
-const passwordHash = require("../password-hash");
+const dayjs = require("dayjs");
 const apicache = require("../modules/apicache");
-const APIKey = require("../model/api_key");
-const { Settings } = require("../settings");
-const { sendAPIKeyList } = require("../client");
+const { auth, createHeaders, checkLogin } = require("../better-auth");
 
 /**
  * Handlers for API keys
@@ -14,34 +10,38 @@ const { sendAPIKeyList } = require("../client");
  * @returns {void}
  */
 module.exports.apiKeySocketHandler = (socket) => {
-    // Add a new api key
+    // Add a new better-auth api key
     socket.on("addAPIKey", async (key, callback) => {
         try {
             checkLogin(socket);
 
-            let clearKey = nanoid(40);
-            let hashedKey = await passwordHash.generate(clearKey);
-            key["key"] = hashedKey;
-            let bean = await APIKey.save(key, socket.userID);
+            let expiresIn;
+
+            if (key.expires) {
+                expiresIn = dayjs(key.expires).diff(dayjs(), "second");
+                if (expiresIn <= 0) {
+                    expiresIn = undefined;
+                }
+            }
+
+            const result = await auth().api.createApiKey({
+                body: {
+                    name: key.name,
+                    expiresIn,
+                    userId: socket.userID,
+                },
+                headers: socket.headers,
+            });
 
             log.debug("apikeys", "Added API Key");
             log.debug("apikeys", key);
-
-            // Append key ID and prefix to start of key separated by _, used to get
-            // correct hash when validating key.
-            let formattedKey = "uk" + bean.id + "_" + clearKey;
-            await sendAPIKeyList(socket);
-
-            // Enable API auth if the user creates a key, otherwise only basic
-            // auth will be used for API.
-            await Settings.set("apiKeysEnabled", true);
 
             callback({
                 ok: true,
                 msg: "successAdded",
                 msgi18n: true,
-                key: formattedKey,
-                keyID: bean.id,
+                key: result.key,
+                keyID: result.id,
             });
         } catch (e) {
             callback({
@@ -54,9 +54,19 @@ module.exports.apiKeySocketHandler = (socket) => {
     socket.on("getAPIKeyList", async (callback) => {
         try {
             checkLogin(socket);
-            await sendAPIKeyList(socket);
+
+            const baKeys = await auth().api.listApiKeys({
+                query: {},
+                headers: socket.headers,
+            });
+
+            const legacyBeans = await R.find("api_key");
+            const legacyAPIKeyList = legacyBeans.map((bean) => bean.toPublicJSON());
+
             callback({
                 ok: true,
+                apiKeyList: baKeys.apiKeys,
+                legacyAPIKeyList: legacyAPIKeyList,
             });
         } catch (e) {
             log.error("apikeys", e);
@@ -71,19 +81,18 @@ module.exports.apiKeySocketHandler = (socket) => {
         try {
             checkLogin(socket);
 
-            log.debug("apikeys", `Deleted API Key: ${keyID} User ID: ${socket.userID}`);
-
-            await R.exec("DELETE FROM api_key WHERE id = ? AND user_id = ? ", [keyID, socket.userID]);
-
-            apicache.clear();
+            await auth().api.deleteApiKey({
+                body: {
+                    keyId: keyID,
+                },
+                headers: createHeaders(socket.request.headers.cookie),
+            });
 
             callback({
                 ok: true,
                 msg: "successDeleted",
                 msgi18n: true,
             });
-
-            await sendAPIKeyList(socket);
         } catch (e) {
             callback({
                 ok: false,
@@ -92,48 +101,25 @@ module.exports.apiKeySocketHandler = (socket) => {
         }
     });
 
-    socket.on("disableAPIKey", async (keyID, callback) => {
+    socket.on("deleteLegacyAPIKey", async (keyID, callback) => {
         try {
             checkLogin(socket);
 
-            log.debug("apikeys", `Disabled Key: ${keyID} User ID: ${socket.userID}`);
+            log.debug("apikeys", `Deleted Legacy API Key: ${keyID} User ID: ${socket.userID}`);
 
-            await R.exec("UPDATE api_key SET active = 0 WHERE id = ? ", [keyID]);
-
-            apicache.clear();
-
-            callback({
-                ok: true,
-                msg: "successDisabled",
-                msgi18n: true,
-            });
-
-            await sendAPIKeyList(socket);
-        } catch (e) {
-            callback({
-                ok: false,
-                msg: e.message,
-            });
-        }
-    });
-
-    socket.on("enableAPIKey", async (keyID, callback) => {
-        try {
-            checkLogin(socket);
-
-            log.debug("apikeys", `Enabled Key: ${keyID} User ID: ${socket.userID}`);
-
-            await R.exec("UPDATE api_key SET active = 1 WHERE id = ? ", [keyID]);
+            await R.exec("DELETE FROM api_key WHERE id = ? AND user_id = ? ", [keyID, socket.userID]);
 
             apicache.clear();
 
+            const legacyBeans = await R.find("api_key");
+            const legacyKeys = legacyBeans.map((bean) => bean.toPublicJSON());
+
             callback({
                 ok: true,
-                msg: "successEnabled",
+                msg: "successDeleted",
                 msgi18n: true,
+                legacyKeys: legacyKeys,
             });
-
-            await sendAPIKeyList(socket);
         } catch (e) {
             callback({
                 ok: false,
