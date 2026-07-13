@@ -161,8 +161,11 @@
     "Confirm": "Confirm",
     "Yes": "Yes",
     "No": "No",
+    "Add user": "Add user",
+    "New User": "New User",
     "Username": "Username",
     "Password": "Password",
+    "Reset password": "Reset password",
     "Remember me": "Remember me",
     "Login": "Log in",
     "No Monitors, please": "No Monitors, please",
@@ -1545,5 +1548,7 @@
     "VKTeams Chat Id Description": "For users, this is their email address. For groups and channels, get the ID from their settings and append {'@'}chat.agent",
     "VKTeams Use Template": "Use custom message template",
     "VKTeams Use Template Description": "If enabled, the message will be sent using a custom template.",
-    "VKTeams Template Format Description": "For message styling, VKTeams supports plain text, MarkdownV2, and HTML formatting."
+    "VKTeams Template Format Description": "For message styling, VKTeams supports plain text, MarkdownV2, and HTML formatting.",
+    "deleteUserMsg": "Are you sure want to delete this user?",
+    "Users": "Users"
 }
