@@ -35,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, defineExpose } from "vue";
 import { Modal } from "bootstrap";
 
 import CopyableInput from "./CopyableInput.vue";
