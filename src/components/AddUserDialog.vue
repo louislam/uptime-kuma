@@ -12,7 +12,13 @@
                     <form @submit.prevent="confirm">
                         <div>
                             <label for="username" class="form-label">{{ $t("Username") }}</label>
-                            <input id="username" v-model="username" type="text" class="form-control" data-testid="username-input" />
+                            <input
+                                id="username"
+                                v-model="username"
+                                type="text"
+                                class="form-control"
+                                data-testid="username-input"
+                            />
                         </div>
                     </form>
                 </div>
@@ -20,8 +26,13 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                         {{ $t("Cancel") }}
                     </button>
-                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" :disabled="!username"
-                        @click="confirm">
+                    <button
+                        type="button"
+                        class="btn btn-primary"
+                        data-bs-dismiss="modal"
+                        :disabled="!username"
+                        @click="confirm"
+                    >
                         {{ $t("Confirm") }}
                     </button>
                 </div>
@@ -39,10 +50,10 @@ const modalRef = ref<HTMLElement | null>(null);
 const modal = ref<Modal | null>(null);
 
 // Data
-const username = ref<string>('');
+const username = ref<string>("");
 
 const emit = defineEmits<{
-    (e: 'add', username: string): void
+    (e: "add", username: string): void;
 }>();
 
 defineExpose({
@@ -58,5 +69,5 @@ onMounted(() => {
 const confirm = () => {
     emit("add", username.value);
     modal.value?.hide();
-}
+};
 </script>

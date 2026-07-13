@@ -1,7 +1,11 @@
 import { expect, test } from "@playwright/test";
-import { login, screenshot } from "../util-test";
+import { login, restoreSqliteSnapshot, screenshot } from "../util-test";
 
 test.describe("Status Page", () => {
+    test.beforeEach(async ({ page }) => {
+        await restoreSqliteSnapshot(page);
+    });
+
     test("create and edit", async ({ page }, testInfo) => {
         test.setTimeout(60000); // Keep the timeout increase for stability
 
@@ -121,20 +125,14 @@ test.describe("Status Page", () => {
 
         await expect(page.getByTestId("monitor-name")).toHaveAttribute("href", monitorCustomUrl);
 
-        // TODO: no idea how to fix, after removed sqlite snapshot/restore feature
-        /*        await expect(page.getByTestId("update-countdown-text")).toContainText("00:");
+        await expect(page.getByTestId("update-countdown-text")).toContainText("00:");
         const updateCountdown = Number(
             (await page.getByTestId("update-countdown-text").textContent()).match(/(\d+):(\d+)/)[2]
         );
         expect(updateCountdown).toBeGreaterThanOrEqual(refreshInterval - 10); // cant be certain when the timer will start, so ensure it's within expected range
-        expect(updateCountdown).toBeLessThanOrEqual(refreshInterval);*/
+        expect(updateCountdown).toBeLessThanOrEqual(refreshInterval);
 
-        // The status page navigates to public view after save
-        await page.waitForURL("/status/example");
-        // Wait for the status page theme to be applied to body
-        await page.waitForFunction((expectedTheme) => document.body.classList.contains(expectedTheme), theme, {
-            timeout: 10000,
-        });
+        await expect(page.locator("body")).toHaveClass(theme);
 
         // Add Google Analytics ID to head and verify
         await page.waitForFunction(
@@ -174,13 +172,6 @@ test.describe("Status Page", () => {
 
         await screenshot(testInfo, page);
 
-        await page.waitForFunction(
-            (scriptUrl) => {
-                return document.head.innerHTML.includes(scriptUrl);
-            },
-            umamiAnalyticsScriptUrl,
-            { timeout: 5000 }
-        );
         expect(await page.locator("head").innerHTML()).toContain(umamiAnalyticsScriptUrl);
         expect(await page.locator("head").innerHTML()).toContain(umamiAnalyticsWebsiteId);
 
@@ -317,11 +308,8 @@ test.describe("Status Page", () => {
         await page.getByTestId("save-button").click();
         await expect(page.getByTestId("edit-sidebar")).toHaveCount(0);
 
-        // Navigate to dashboard or anywhere to ensure any server-side cache is stale
-        await page.waitForTimeout(1000);
-
         // Fetch RSS feed again - should use custom RSS title
-        const rssResponseCustom = await page.request.get("/status/security-test/rss?_t=" + Date.now());
+        const rssResponseCustom = await page.request.get("/status/security-test/rss");
         expect(rssResponseCustom.status()).toBe(200);
         const rssContentCustom = await rssResponseCustom.text();
 

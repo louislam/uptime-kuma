@@ -8,8 +8,8 @@
                         v-if="!settings.disableAuth"
                         id="logout-btn"
                         class="btn btn-danger ms-4 me-2 mb-2"
-                        @click="$root.logout"
                         data-testid="logout-button"
+                        @click="$root.logout"
                     >
                         {{ $t("logoutCurrentUser", { username: $root.username }) }}
                     </button>
