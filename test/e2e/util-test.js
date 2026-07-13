@@ -27,7 +27,7 @@ export async function login(page) {
     await page.getByPlaceholder("Password").fill("admin123");
     await page.getByLabel("Remember me").check();
     await page.getByRole("button", { name: "Log in" }).click();
-    await page.isVisible("text=Add New Monitor");
+    await page.getByText("Add New Monitor").waitFor({ state: "visible" });
 }
 
 /**

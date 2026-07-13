@@ -44,16 +44,36 @@ test.describe("Status Page", () => {
         await page.getByTestId("tag-name-input").fill(tagName);
         await page.getByTestId("tag-value-input").fill(tagValue);
         await page.getByTestId("tag-color-select").click(); // Vue-Multiselect component
+
+        // DEBUG: Check for any overlays that could block the dropdown
+        const lostConnBanner = page.locator(".lost-connection");
+        console.log("DEBUG: lost-connection banner visible:", await lostConnBanner.isVisible().catch(() => false));
+        await screenshot(testInfo, page);
+
         await page.getByTestId("tag-color-select").getByRole("option", { name: "Orange" }).click();
 
+        // DEBUG: Check if color was selected
+        const colorText = await page.getByTestId("tag-color-select").textContent().catch(() => "N/A");
+        console.log("DEBUG: tag-color-select text after picking Orange:", colorText);
+        await screenshot(testInfo, page);
+
+        // DEBUG: Check button state before clicking
+        const addAnotherBtn = page.getByRole("button", { name: "Add Another Tag" });
+        const isDisabled = await addAnotherBtn.getAttribute("disabled");
+        console.log("DEBUG: 'Add Another Tag' button disabled attr:", isDisabled);
+        await screenshot(testInfo, page);
+
         // Add another tag instead of submitting directly
-        await page.getByRole("button", { name: "Add Another Tag" }).click();
+        await addAnotherBtn.click();
 
         // Add second tag
         await page.getByTestId("tag-name-input").fill(tagName2);
         await page.getByTestId("tag-value-input").fill(tagValue2);
         await page.getByTestId("tag-color-select").click();
         await page.getByTestId("tag-color-select").getByRole("option", { name: "Blue" }).click();
+        const colorText2 = await page.getByTestId("tag-color-select").textContent().catch(() => "N/A");
+        console.log("DEBUG: tag-color-select text after picking Blue:", colorText2);
+        await screenshot(testInfo, page);
 
         // Submit both tags
         await page.getByTestId("add-tags-final-button").click();
