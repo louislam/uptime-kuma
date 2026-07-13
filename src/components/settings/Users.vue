@@ -1,12 +1,8 @@
 <template>
     <div>
         <div class="add-btn">
-            <button
-                class="btn btn-primary me-2"
-                type="button"
-                data-testid="add-user-button"
-                @click="addUserDialog?.show()"
-            >
+            <button class="btn btn-primary me-2" type="button" data-testid="add-user-button"
+                @click="addUserDialog?.show()">
                 <font-awesome-icon icon="plus" />
                 {{ $t("Add user") }}
             </button>
@@ -15,7 +11,6 @@
         <div data-testid="users-list">
             <div v-for="(item, index) in userList" :key="index" class="item" data-testid="user">
                 <div class="left-part">
-                    <div class="circle"></div>
                     <div class="info">
                         <div class="title">{{ item.name }}</div>
                     </div>
@@ -215,51 +210,15 @@ const generatePassword = () => {
     min-height: 90px;
     margin-bottom: 5px;
 
-    &:hover {
-        background-color: $highlight-white;
-    }
-
-    &.active {
-        .circle {
-            background-color: $primary;
-        }
-    }
-
-    &.inactive {
-        .circle {
-            background-color: $danger;
-        }
-    }
-
-    &.expired {
-        .left-part {
-            opacity: 0.3;
-        }
-
-        .circle {
-            background-color: $dark-font-color;
-        }
-    }
-
     .left-part {
         display: flex;
         gap: 12px;
         align-items: center;
 
-        .circle {
-            width: 25px;
-            height: 25px;
-            border-radius: 50rem;
-        }
-
         .info {
             .title {
                 font-weight: bold;
                 font-size: 20px;
-            }
-
-            .status {
-                font-size: 14px;
             }
         }
     }
@@ -272,21 +231,6 @@ const generatePassword = () => {
         .btn-group {
             width: 310px;
         }
-    }
-}
-
-.date {
-    margin-top: 5px;
-    display: block;
-    font-size: 14px;
-    background-color: rgba(255, 255, 255, 0.5);
-    border-radius: 20px;
-    padding: 0 10px;
-    width: fit-content;
-
-    .dark & {
-        color: white;
-        background-color: rgba(255, 255, 255, 0.1);
     }
 }
 
