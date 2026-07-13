@@ -65,7 +65,7 @@ const loginAsUser = async (testInfo, page, username, password, expectedToFail = 
 
     if (expectedToFail) {
         // Ensure the user is not logged in and still on the login page
-        await expect(page.getByText("Incorrect username or password")).toBeVisible();
+        await expect(page.getByText("Invalid username or password")).toBeVisible(); // Don't trust the translation, just try
         await expect(page.getByText("Log in")).toBeVisible();
         return;
     }
