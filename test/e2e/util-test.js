@@ -18,6 +18,9 @@ export async function screenshot(testInfo, page) {
 
 /**
  * @param {Page} page Page
+ * @param username
+ * @param password
+ * @param rememberMe
  * @returns {Promise<void>}
  */
 export async function login(page, username = "admin", password = "admin123", rememberMe = true) {

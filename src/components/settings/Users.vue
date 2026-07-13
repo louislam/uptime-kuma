@@ -1,7 +1,12 @@
 <template>
     <div>
         <div class="add-btn">
-            <button class="btn btn-primary me-2" type="button" @click="addUserDialog?.show()" data-testid="add-user-button">
+            <button
+                class="btn btn-primary me-2"
+                type="button"
+                data-testid="add-user-button"
+                @click="addUserDialog?.show()"
+            >
                 <font-awesome-icon icon="plus" />
                 {{ $t("Add user") }}
             </button>
@@ -17,14 +22,14 @@
                 </div>
 
                 <!-- Manage user buttons -->
-                <div class="buttons" v-if="item.name != $root?.username">
+                <div v-if="item.name != $root?.username" class="buttons">
                     <div class="btn-group" role="group">
                         <button class="btn btn-primary" @click="resetPassword(item.id)">
                             <font-awesome-icon icon="key" />
                             {{ $t("Reset password") }}
                         </button>
 
-                        <button class="btn btn-danger" @click="deleteDialog(item.id)" data-testid="delete-user-button">
+                        <button class="btn btn-danger" data-testid="delete-user-button" @click="deleteDialog(item.id)">
                             <font-awesome-icon icon="trash" />
                             {{ $t("Delete") }}
                         </button>
@@ -62,7 +67,7 @@ const displayPasswordDialog = ref<InstanceType<typeof DisplayPasswordDialog> | n
 // Data
 const userList = ref<UserWithRole[]>([]);
 const selectedUserId = ref<string | null>(null);
-const userPassword = ref<string>('');
+const userPassword = ref<string>("");
 
 onMounted(() => {
     fetchUsers();
@@ -85,11 +90,11 @@ const fetchUsers = async () => {
     }
 
     userList.value = data.users;
-}
+};
 
 /**
  * Add a new user
- * @param username Username of the new user 
+ * @param username Username of the new user
  */
 const addUser = async (username: string) => {
     const password = generatePassword();
@@ -114,7 +119,7 @@ const addUser = async (username: string) => {
 
     userPassword.value = password;
     displayPasswordDialog.value?.show();
-}
+};
 
 /**
  * Reset password for a user
@@ -137,7 +142,7 @@ const resetPassword = async (userId: string) => {
 
     userPassword.value = newPassword;
     displayPasswordDialog.value?.show();
-}
+};
 
 /**
  * Show dialog to confirm deletion
@@ -155,9 +160,8 @@ const deleteDialog = (userID: string): void => {
  */
 const deleteUser = async (): Promise<void> => {
     const { error } = await authClient.admin.removeUser({
-        userId: selectedUserId.value
+        userId: selectedUserId.value,
     });
-
 
     if (!!error) {
         toast.error(error.message || "Failed to delete user");
@@ -166,21 +170,21 @@ const deleteUser = async (): Promise<void> => {
 
     toast.success("User deleted successfully");
     fetchUsers();
-}
+};
 
 /**
  * Generate a 20-character random password
  */
 const generatePassword = () => {
     const length = 20;
-    const characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz~!@-#$';
+    const characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz~!@-#$";
 
     const password = Array.from(crypto.getRandomValues(new Uint32Array(length)))
         .map((x) => characters[x % characters.length])
-        .join('');
+        .join("");
 
     return password;
-}
+};
 </script>
 
 <style lang="scss" scoped>

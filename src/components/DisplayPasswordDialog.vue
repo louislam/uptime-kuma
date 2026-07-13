@@ -10,13 +10,22 @@
                 </div>
                 <div class="modal-body">
                     <form @submit.prevent="close">
-                        <CopyableInput :model-value="password" type="password" readonly="true"
-                            data-testid="password-input" />
+                        <CopyableInput
+                            :model-value="password"
+                            type="password"
+                            readonly="true"
+                            data-testid="password-input"
+                        />
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @click="close"
-                        data-testid="password-close-button">
+                    <button
+                        type="button"
+                        class="btn btn-primary"
+                        data-bs-dismiss="modal"
+                        data-testid="password-close-button"
+                        @click="close"
+                    >
                         {{ $t("Close") }}
                     </button>
                 </div>
@@ -41,7 +50,7 @@ defineProps<{
 }>();
 
 const emit = defineEmits<{
-    (e: 'close'): void
+    (e: "close"): void;
 }>();
 
 defineExpose({
@@ -57,5 +66,5 @@ onMounted(() => {
 const close = () => {
     emit("close");
     modal.value?.hide();
-}
+};
 </script>

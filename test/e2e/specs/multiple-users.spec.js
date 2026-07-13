@@ -3,10 +3,10 @@ import { login, screenshot } from "../util-test";
 
 /**
  * Add a new user and return the password of the new user
- * @param {import("@playwright/test").TestInfo} testInfo 
- * @param {import("@playwright/test").Page} page 
- * @param {string} username 
- * @param {number} currentCount 
+ * @param {import("@playwright/test").TestInfo} testInfo
+ * @param {import("@playwright/test").Page} page
+ * @param {string} username
+ * @param {number} currentCount
  * @returns {Promise<string>}
  */
 const addUser = async (testInfo, page, username, currentCount) => {
@@ -25,10 +25,12 @@ const addUser = async (testInfo, page, username, currentCount) => {
 
     await expect(page.getByTestId("username-input")).toBeVisible();
     await page.getByTestId("username-input").fill(username);
-    await page.getByRole("button", {
-        name: "Confirm",
-        exact: true
-    }).click();
+    await page
+        .getByRole("button", {
+            name: "Confirm",
+            exact: true,
+        })
+        .click();
 
     // Ensure the new user is created and visible in the user list
     await expect(page.getByTestId("users-list")).toContainText(username);
@@ -43,16 +45,16 @@ const addUser = async (testInfo, page, username, currentCount) => {
     await screenshot(testInfo, page);
 
     return password;
-}
+};
 
 /**
  * Login as a user and check if the login is successful or not
- * @param {import("@playwright/test").TestInfo} testInfo 
- * @param {import("@playwright/test").Page} page 
- * @param {string} username 
- * @param {string} password 
- * @param {boolean} expectedToFail 
- * @returns 
+ * @param {import("@playwright/test").TestInfo} testInfo
+ * @param {import("@playwright/test").Page} page
+ * @param {string} username
+ * @param {string} password
+ * @param {boolean} expectedToFail
+ * @returns
  */
 const loginAsUser = async (testInfo, page, username, password, expectedToFail = false) => {
     // Go to the login page
@@ -76,18 +78,18 @@ const loginAsUser = async (testInfo, page, username, password, expectedToFail = 
     // Log out
     await page.getByTestId("logout-button").click();
     await expect(page.getByText("Log in")).toBeVisible();
-}
+};
 
 /**
  * Logout as admin
- * @param {import("@playwright/test").Page} page 
+ * @param {import("@playwright/test").Page} page
  */
 const logoutAdmin = async (page) => {
     // Logout as admin
     await page.getByText("A", { exact: true }).click();
     await page.getByRole("button", { name: "Log out" }).click();
     await expect(page.getByText("Log in")).toBeVisible();
-}
+};
 
 test.describe("Multiple Users", () => {
     test("test multiple users", async ({ page }, testInfo) => {
@@ -114,10 +116,12 @@ test.describe("Multiple Users", () => {
         await expect(page.getByTestId("user")).toHaveCount(3);
 
         await page.getByTestId("delete-user-button").first().click();
-        await page.getByRole("button", {
-            name: "Yes",
-            exact: true
-        }).click();
+        await page
+            .getByRole("button", {
+                name: "Yes",
+                exact: true,
+            })
+            .click();
 
         await expect(page.getByTestId("user")).toHaveCount(2);
         await screenshot(testInfo, page);
