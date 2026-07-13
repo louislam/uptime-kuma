@@ -22,6 +22,7 @@ export default defineConfig({
 
     // Reporter to use
     reporter: [
+        "list",
         [
             "html",
             {
