@@ -63,7 +63,10 @@ exports.up = async function (knex) {
 
             try {
                 const createTable = await knex.raw(`SHOW CREATE TABLE ${table.name}`);
-                console.error(`CREATE TABLE SQL for ${table.name}:`, createTable.rows[0]["Create Table"] || JSON.stringify(createTable.rows[0]));
+                console.error(
+                    `CREATE TABLE SQL for ${table.name}:`,
+                    createTable.rows[0]["Create Table"] || JSON.stringify(createTable.rows[0])
+                );
             } catch (debugError) {
                 console.error(`Could not dump CREATE TABLE for ${table.name}:`, debugError.message);
             }
