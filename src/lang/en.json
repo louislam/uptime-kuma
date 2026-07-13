@@ -1032,6 +1032,8 @@
     "telnyxMessagingProfileIdHelptext": "Optionally associate a Telnyx Messaging Profile to control sender settings and features",
     "telnyxVoiceAppId": "Call Control Application ID",
     "telnyxVoiceAppIdHelptext": "The ID of your Telnyx Call Control Application. Create one in the Telnyx portal under Real-Time Communications > Voice > Programmable Voice.",
+    "telnyxWebhookPublicKey": "Webhook Signing Public Key",
+    "telnyxWebhookPublicKeyHelptext": "The Ed25519 public key from the Telnyx Portal under Account Settings > Public Key. Used to verify that webhook events actually came from Telnyx before Uptime Kuma acts on them.",
     "telnyxVoiceBaseUrl": "Uptime Kuma Base URL",
     "telnyxVoiceBaseUrlHelptext": "The publicly accessible URL of your Uptime Kuma instance (e.g. https://kuma.example.com). Telnyx will POST call events to this address so the server can speak the alert when the call connects.",
     "telnyxVoiceText": "Message Text (optional)",

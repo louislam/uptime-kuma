@@ -192,7 +192,11 @@ const { EmbeddedMariaDB } = require("./embedded-mariadb");
 const { SetupDatabase } = require("./setup-database");
 const { chartSocketHandler } = require("./socket-handlers/chart-socket-handler");
 
-app.use(express.json());
+app.use(express.json({
+    verify: (req, res, buf) => {
+        req.rawBody = buf;
+    },
+}));
 
 // Global Middleware
 app.use(function (req, res, next) {

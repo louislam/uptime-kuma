@@ -1,5 +1,14 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
+const crypto = require("crypto");
+const { log } = require("../../src/util");
+
+/**
+ * How much clock skew/delivery delay to tolerate when checking the
+ * telnyx-timestamp header, to limit replay of old signed events.
+ * @type {number}
+ */
+const WEBHOOK_TIMESTAMP_TOLERANCE_SECONDS = 300;
 
 /**
  * Telnyx Voice notification provider.
@@ -15,9 +24,9 @@ class TelnyxVoice extends NotificationProvider {
 
     /**
      * Holds call state for in-progress voice calls, keyed by call_control_id.
-     * Each entry is { speechText: string, apiKey: string }.
+     * Each entry is { speechText: string, apiKey: string, publicKey: string }.
      * Entries are removed after the call ends or after a 5-minute safety timeout.
-     * @type {Map<string, {speechText: string, apiKey: string}>}
+     * @type {Map<string, {speechText: string, apiKey: string, publicKey: string}>}
      */
     static pendingCalls = new Map();
 
@@ -68,6 +77,7 @@ class TelnyxVoice extends NotificationProvider {
             TelnyxVoice.pendingCalls.set(callControlId, {
                 speechText,
                 apiKey: notification.telnyxApiKey,
+                publicKey: notification.telnyxWebhookPublicKey,
             });
 
             // Safety clean-up: remove stale entry after 5 minutes in case
@@ -83,12 +93,71 @@ class TelnyxVoice extends NotificationProvider {
     }
 
     /**
+     * Verify that a webhook request was genuinely signed by Telnyx.
+     * Telnyx signs webhooks with Ed25519; see
+     * https://developers.telnyx.com/docs/change-management/webhooks/signing
+     * @param {Buffer} rawBody Raw (unparsed) request body bytes
+     * @param {object} headers Request headers (lowercased, as provided by Express)
+     * @param {string} publicKeyBase64 Base64-encoded Ed25519 public key from the Telnyx portal
+     * @returns {boolean} True if the signature is valid and fresh
+     */
+    static verifyWebhookSignature(rawBody, headers, publicKeyBase64) {
+        try {
+            if (!publicKeyBase64 || !Buffer.isBuffer(rawBody) || !headers) {
+                return false;
+            }
+
+            const signatureBase64 = headers["telnyx-signature-ed25519"];
+            const timestamp = headers["telnyx-timestamp"];
+
+            if (!signatureBase64 || !timestamp) {
+                return false;
+            }
+
+            // Reject stale or future-dated events to limit replay of captured payloads.
+            const timestampAgeSeconds = Math.abs(Date.now() / 1000 - Number(timestamp));
+            if (!Number.isFinite(timestampAgeSeconds) || timestampAgeSeconds > WEBHOOK_TIMESTAMP_TOLERANCE_SECONDS) {
+                return false;
+            }
+
+            const rawPublicKey = Buffer.from(publicKeyBase64, "base64");
+            if (rawPublicKey.length !== 32) {
+                return false;
+            }
+
+            // Telnyx provides a raw 32-byte Ed25519 key; import it as a JWK
+            // (RFC 8037 "OKP") so no external dependency or DER wrapping is needed.
+            const publicKey = crypto.createPublicKey({
+                key: {
+                    kty: "OKP",
+                    crv: "Ed25519",
+                    x: rawPublicKey.toString("base64url"),
+                },
+                format: "jwk",
+            });
+
+            const signature = Buffer.from(signatureBase64, "base64");
+            if (signature.length !== 64) {
+                return false;
+            }
+
+            const signedPayload = Buffer.concat([ Buffer.from(`${timestamp}|`), rawBody ]);
+
+            return crypto.verify(null, signedPayload, publicKey, signature);
+        } catch (e) {
+            return false;
+        }
+    }
+
+    /**
      * Handle an incoming Telnyx Call Control webhook event.
      * Called by the /api/telnyx-voice-callback route in api-router.js.
      * @param {object} event The parsed JSON body from Telnyx
+     * @param {Buffer} rawBody Raw (unparsed) request body bytes, needed to verify the signature
+     * @param {object} headers Request headers from the webhook request
      * @returns {Promise<void>}
      */
-    static async handleWebhook(event) {
+    static async handleWebhook(event, rawBody, headers) {
         if (!event || !event.data || !event.data.payload) {
             return;
         }
@@ -99,6 +168,11 @@ class TelnyxVoice extends NotificationProvider {
         const pending = TelnyxVoice.pendingCalls.get(callControlId);
         if (!pending) {
             // Not an Uptime Kuma managed call; ignore.
+            return;
+        }
+
+        if (!TelnyxVoice.verifyWebhookSignature(rawBody, headers, pending.publicKey)) {
+            log.warn("telnyx-voice", "Rejected webhook for call " + callControlId + ": signature verification failed");
             return;
         }
 

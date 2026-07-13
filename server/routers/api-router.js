@@ -19,6 +19,7 @@ const Database = require("../database");
 const { UptimeCalculator } = require("../uptime-calculator");
 const { Settings } = require("../settings");
 const TelnyxVoice = require("../notification-providers/telnyx-voice");
+const { telnyxWebhookRateLimiter } = require("../rate-limiter");
 
 let router = express.Router();
 
@@ -642,14 +643,21 @@ async function isMonitorPublic(monitorID) {
  * Telnyx posts the events here (call.answered, call.speak.ended) so that
  * Uptime Kuma can send the speak and hangup commands.
  * No authentication is applied because Telnyx servers must reach this
- * endpoint from the public internet
+ * endpoint from the public internet, so the request is instead rate
+ * limited and its Ed25519 signature is verified in TelnyxVoice.handleWebhook.
  */
 router.post("/api/telnyx-voice-callback", async (request, response) => {
+    if (!await telnyxWebhookRateLimiter.pass(null, 1)) {
+        log.warn("telnyx-voice", "Webhook rejected: rate limit exceeded");
+        response.sendStatus(429);
+        return;
+    }
+
     // Acknowledge immediately so Telnyx does not retry the delivery
     response.sendStatus(200);
 
     try {
-        await TelnyxVoice.handleWebhook(request.body);
+        await TelnyxVoice.handleWebhook(request.body, request.rawBody, request.headers);
     } catch (e) {
         log.error("telnyx-voice", "Webhook handling error: " + e.message);
     }

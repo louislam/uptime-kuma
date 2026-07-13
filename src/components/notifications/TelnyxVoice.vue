@@ -49,6 +49,18 @@
     </div>
 
     <div class="mb-3">
+        <label for="telnyxv-webhook-public-key" class="form-label">{{ $t("telnyxWebhookPublicKey") }}</label>
+        <input
+            id="telnyxv-webhook-public-key"
+            v-model="$parent.notification.telnyxWebhookPublicKey"
+            type="text"
+            class="form-control"
+            required
+        />
+        <div class="form-text">{{ $t("telnyxWebhookPublicKeyHelptext") }}</div>
+    </div>
+
+    <div class="mb-3">
         <label for="telnyxv-base-url" class="form-label">{{ $t("telnyxVoiceBaseUrl") }}</label>
         <input
             id="telnyxv-base-url"
