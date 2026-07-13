@@ -321,7 +321,7 @@ as easy as installing a mobile app.
 - [`git`](https://git-scm.com/)
 - IDE that supports [`ESLint`](https://eslint.org/) and EditorConfig (I am using
   [`IntelliJ IDEA`](https://www.jetbrains.com/idea/))
-- A SQLite GUI tool (f.ex.
+- A SQLite GUI tool (for example.
   [`SQLite Expert Personal`](https://www.sqliteexpert.com/download.html) or
   [`DBeaver Community`](https://dbeaver.io/download/))
 
