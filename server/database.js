@@ -13,6 +13,8 @@ const dayjs = require("dayjs");
 const { SimpleMigrationServer } = require("./utils/simple-migration-server");
 const KumaColumnCompiler = require("./utils/knex/lib/dialects/mysql2/schema/mysql2-columncompiler");
 const SqlString = require("sqlstring");
+const { dataDir } = require("./config");
+const { execFileSync } = require("child_process");
 
 /**
  * Database & App Data Folder
@@ -53,6 +55,12 @@ class Database {
      * @type {string}
      */
     static dockerTLSDir;
+
+    /**
+     * Default directory for script monitor scripts.
+     * @type {string}
+     */
+    static scriptDir;
 
     /**
      * @type {boolean}
@@ -133,8 +141,7 @@ class Database {
      * @returns {void}
      */
     static initDataDir(args) {
-        // Data Directory (must be end with "/")
-        Database.dataDir = process.env.DATA_DIR || args["data-dir"] || Database.getDevDataDir() || "./data/";
+        Database.dataDir = dataDir;
 
         Database.sqlitePath = path.join(Database.dataDir, "kuma.db");
         if (!fs.existsSync(Database.dataDir)) {
@@ -156,6 +163,44 @@ class Database {
         Database.dockerTLSDir = path.join(Database.dataDir, "docker-tls/");
         if (!fs.existsSync(Database.dockerTLSDir)) {
             fs.mkdirSync(Database.dockerTLSDir, { recursive: true });
+        }
+
+        Database.scriptDir = path.join(Database.dataDir, "scripts/");
+        if (!fs.existsSync(Database.scriptDir)) {
+            fs.mkdirSync(Database.scriptDir, { recursive: true });
+            if (process.platform === "win32") {
+                // Unfortunately, we can't simply add a single DENY rule here
+                // As per the Windows docs (https://learn.microsoft.com/en-us/windows/win32/fileio/file-security-and-access-rights):
+                //
+                // > Note that you cannot use an access-denied ACE to deny only GENERIC_READ or only GENERIC_WRITE access to a file.
+                // > This is because for file objects, the generic mappings for both GENERIC_READ or GENERIC_WRITE include the SYNCHRONIZE access right.
+                // > If an ACE denies GENERIC_WRITE access to a trustee, and the trustee requests GENERIC_READ access,
+                // > the request will fail because the request implicitly includes SYNCHRONIZE access which is implicitly denied by the ACE, and vice versa.
+                // > Instead of using access-denied ACEs, use access-allowed ACEs to explicitly allow the permitted access rights.
+                //
+                // So instead, we will
+                // 1. turn off inheritance and delete inherited rules
+                // 2. grant read+execute access to authenticated users
+                // 3. grant write access to administators (users that are administators but currently not "elevated" will still not have write access.)
+                // 4. remove the grant rule that was auto-generated for ourselves (since we are creator-owner).
+                //    This step will come last so we don't lock ourselves out inadvertently.
+                const AUTHENTICATED_USERS = "S-1-5-11";
+                const ADMINISTRATORS = "S-1-5-32-544";
+                try {
+                    [
+                        ["/inheritance:r"],
+                        ["/grant", `*${AUTHENTICATED_USERS}:(OI)(CI)RX`],
+                        ["/grant", `*${ADMINISTRATORS}:(OI)(CI)F`],
+                        ["/remove", execFileSync("whoami", [], { windowsHide: true, encoding: "utf-8" }).trim()],
+                    ].forEach((args) =>
+                        execFileSync("icacls", [Database.scriptDir, ...args], { windowsHide: true, encoding: "utf-8" })
+                    );
+                } catch (err) {
+                    log.error("server", "Script dir creation failed: " + err.stderr?.toString("utf-8") || err.message);
+                }
+            } else {
+                fs.chmodSync(Database.scriptDir, 0o555);
+            }
         }
 
         log.info("server", `Data Dir: ${Database.dataDir}`);
