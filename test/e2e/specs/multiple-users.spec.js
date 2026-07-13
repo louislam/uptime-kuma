@@ -54,7 +54,7 @@ const addUser = async (testInfo, page, username, currentCount) => {
  * @param {string} username
  * @param {string} password
  * @param {boolean} expectedToFail
- * @returns
+ * @returns {Promise<void>}
  */
 const loginAsUser = async (testInfo, page, username, password, expectedToFail = false) => {
     // Go to the login page
