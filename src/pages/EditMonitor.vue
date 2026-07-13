@@ -79,6 +79,7 @@
                                         </option>
                                         <option value="grpc-keyword">gRPC(s) - {{ $t("Keyword") }}</option>
                                         <option value="json-query">HTTP(s) - {{ $t("Json Query") }}</option>
+                                        <option value="xml-query">HTTP(s) - {{ $t("Xml Query") }}</option>
                                         <option value="kafka-producer">Kafka Producer</option>
                                         <option value="mqtt">MQTT</option>
                                         <option value="rabbitmq">RabbitMQ</option>
@@ -186,6 +187,7 @@
                                     monitor.type === 'http' ||
                                     monitor.type === 'keyword' ||
                                     monitor.type === 'json-query' ||
+                                    monitor.type === 'xml-query' ||
                                     monitor.type === 'real-browser'
                                 "
                                 class="my-3"
@@ -922,6 +924,64 @@
                                 </div>
                             </div>
 
+                            <!-- Xml Query -->
+                            <div v-if="monitor.type === 'xml-query'" class="my-3">
+                                <div class="my-2">
+                                    <label for="xpathExpression" class="form-label mb-0">
+                                        {{ $t("XPath Expression") }}
+                                    </label>
+                                    <i18n-t tag="div" class="form-text mb-2" keypath="xpathQueryDescription">
+                                        <a
+                                            href="https://www.w3schools.com/xml/xpath_intro.asp"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            W3Schools XPath
+                                        </a>
+                                    </i18n-t>
+                                    <input
+                                        id="xpathExpression"
+                                        v-model="monitor.xpathExpression"
+                                        type="text"
+                                        class="form-control"
+                                        placeholder="//title"
+                                        required
+                                    />
+                                </div>
+
+                                <div class="d-flex align-items-start">
+                                    <div class="me-2">
+                                        <label for="xpath_operator" class="form-label">{{ $t("Condition") }}</label>
+                                        <select
+                                            id="xpath_operator"
+                                            v-model="monitor.xpathOperator"
+                                            class="form-select me-3"
+                                            required
+                                        >
+                                            <option value="==">==</option>
+                                            <option value="!=">!=</option>
+                                            <option value="isset">{{ $t("isset") }}</option>
+                                            <option value="not_isset">{{ $t("not isset") }}</option>
+                                            <option value="contains">{{ $t("contains") }}</option>
+                                            <option value="not_contains">{{ $t("not contains") }}</option>
+                                        </select>
+                                    </div>
+                                    <div
+                                        v-if="!['isset', 'not_isset'].includes(monitor.xpathOperator)"
+                                        class="flex-grow-1"
+                                    >
+                                        <label for="expectedValue" class="form-label">{{ $t("Expected Value") }}</label>
+                                        <input
+                                            id="expectedValue"
+                                            v-model="monitor.expectedValue"
+                                            type="text"
+                                            class="form-control"
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- DNS Resolver Server -->
                             <!-- For DNS Type -->
                             <template v-if="monitor.type === 'dns'">
@@ -1495,6 +1555,7 @@
                                 v-if="
                                     monitor.type === 'http' ||
                                     monitor.type === 'json-query' ||
+                                    monitor.type === 'xml-query' ||
                                     monitor.type === 'keyword' ||
                                     monitor.type === 'ping' ||
                                     monitor.type === 'rabbitmq' ||
@@ -1557,6 +1618,7 @@
                                     monitor.type === 'http' ||
                                     monitor.type === 'keyword' ||
                                     monitor.type === 'json-query' ||
+                                    monitor.type === 'xml-query' ||
                                     (monitor.type === 'port' &&
                                         ['starttls', 'secure'].includes(monitor.smtpSecurity)) ||
                                     (monitor.type === 'globalping' && monitor.subtype === 'http')
@@ -1654,6 +1716,7 @@
                                     monitor.type === 'http' ||
                                     monitor.type === 'keyword' ||
                                     monitor.type === 'json-query' ||
+                                    monitor.type === 'xml-query' ||
                                     monitor.type === 'redis' ||
                                     (monitor.type === 'globalping' && monitor.subtype === 'http')
                                 "
@@ -1676,6 +1739,7 @@
                                     monitor.type === 'http' ||
                                     monitor.type === 'keyword' ||
                                     monitor.type === 'json-query' ||
+                                    monitor.type === 'xml-query' ||
                                     (monitor.type === 'globalping' && monitor.subtype === 'http')
                                 "
                                 class="my-3 form-check"
@@ -1860,6 +1924,7 @@
                                     monitor.type === 'http' ||
                                     monitor.type === 'keyword' ||
                                     monitor.type === 'json-query' ||
+                                    monitor.type === 'xml-query' ||
                                     monitor.type === 'grpc-keyword'
                                 "
                             >
@@ -1883,7 +1948,8 @@
                                     v-if="
                                         monitor.type === 'http' ||
                                         monitor.type === 'keyword' ||
-                                        monitor.type === 'json-query'
+                                        monitor.type === 'json-query' ||
+                                        monitor.type === 'xml-query'
                                     "
                                     class="my-3"
                                 >
@@ -1911,7 +1977,8 @@
                                     v-if="
                                         (monitor.type === 'http' ||
                                             monitor.type === 'keyword' ||
-                                            monitor.type === 'json-query') &&
+                                            monitor.type === 'json-query' ||
+                                            monitor.type === 'xml-query') &&
                                         monitor.saveErrorResponse
                                     "
                                     class="my-3"
@@ -1940,7 +2007,8 @@
                                     v-if="
                                         (monitor.type === 'http' ||
                                             monitor.type === 'keyword' ||
-                                            monitor.type === 'json-query') &&
+                                            monitor.type === 'json-query' ||
+                                            monitor.type === 'xml-query') &&
                                         (monitor.saveResponse || monitor.saveErrorResponse)
                                     "
                                     class="my-3"
@@ -2291,7 +2359,8 @@
                                 v-if="
                                     monitor.type === 'http' ||
                                     monitor.type === 'keyword' ||
-                                    monitor.type === 'json-query'
+                                    monitor.type === 'json-query' ||
+                                    monitor.type === 'xml-query'
                                 "
                             >
                                 <h2 class="mt-5 mb-2">{{ $t("Proxy") }}</h2>
@@ -2436,7 +2505,8 @@
                                 v-if="
                                     monitor.type === 'http' ||
                                     monitor.type === 'keyword' ||
-                                    monitor.type === 'json-query'
+                                    monitor.type === 'json-query' ||
+                                    monitor.type === 'xml-query'
                                 "
                             >
                                 <h2 class="mt-5 mb-2">{{ $t("HTTP Options") }}</h2>
@@ -4120,7 +4190,7 @@ message HealthCheckResponse {
                 this.monitor.body = JSON.stringify(JSON.parse(this.monitor.body), null, 4);
             }
 
-            const monitorTypesWithEncodingAllowed = ["http", "keyword", "json-query"];
+            const monitorTypesWithEncodingAllowed = ["http", "keyword", "json-query", "xml-query"];
             if (this.monitor.type && !monitorTypesWithEncodingAllowed.includes(this.monitor.type)) {
                 this.monitor.httpBodyEncoding = null;
             }
