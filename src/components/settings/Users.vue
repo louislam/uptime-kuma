@@ -1,8 +1,12 @@
 <template>
     <div>
         <div class="add-btn">
-            <button class="btn btn-primary me-2" type="button" data-testid="add-user-button"
-                @click="addUserDialog?.show()">
+            <button
+                class="btn btn-primary me-2"
+                type="button"
+                data-testid="add-user-button"
+                @click="addUserDialog?.show()"
+            >
                 <font-awesome-icon icon="plus" />
                 {{ $t("Add user") }}
             </button>
