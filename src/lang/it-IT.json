@@ -1633,5 +1633,8 @@
     "egosmsPhoneNumberDescription": "Numero del destinatario con prefisso internazionale, senza + o 00 (ad esempio 2567XXXXXXXX).",
     "gamedigToken": "Token",
     "gamedigTokenDescription": "Opzionale. Alcuni server di gioco richiedono un token di autenticazione.",
-    "Bearer Token": "Token Bearer"
+    "Bearer Token": "Token Bearer",
+    "Connection Timeout": "Scadenza connessione",
+    "smtpAdditionalHeadersTitle": "Intestazioni aggiuntive",
+    "smtpAdditionalHeadersDesc": "Per l'utilizzo, fare riferimento alle intestazioni personalizzate di Nodemailer {0}."
 }

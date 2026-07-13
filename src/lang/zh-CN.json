@@ -1662,5 +1662,8 @@
     "wayToGetEgoSMSToken": "可在 {here} 获得 EgoSMS 的 API 用户名和密码。",
     "gamedigToken": "令牌",
     "gamedigTokenDescription": "可选项。部分游戏服务器需要身份验证令牌。",
-    "Bearer Token": "Bearer Token"
+    "Bearer Token": "Bearer Token",
+    "smtpAdditionalHeadersTitle": "额外 Header",
+    "smtpAdditionalHeadersDesc": "请访问 Nodemailer 自定义 Header {0} 了解配置方法。",
+    "Connection Timeout": "连接超时"
 }

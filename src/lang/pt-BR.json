@@ -1627,5 +1627,8 @@
     "egosmsPhoneNumberDescription": "Número do destinatário com código do país, sem + ou 00 (ex.: 2567XXXXXXXX).",
     "gamedigToken": "Token",
     "gamedigTokenDescription": "Opcional. Alguns servidores de jogos exigem um token de autenticação.",
-    "Bearer Token": "Bearer Token"
+    "Bearer Token": "Bearer Token",
+    "Connection Timeout": "Tempo limite de conexão",
+    "smtpAdditionalHeadersTitle": "Cabeçalhos adicionais",
+    "smtpAdditionalHeadersDesc": "Consulte os cabeçalhos personalizados do Nodemailer {0} para obter informações sobre o uso."
 }
