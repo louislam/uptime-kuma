@@ -37,29 +37,11 @@ exports.up = async function (knex) {
             });
         } catch (error) {
             // Not sure why it only happens on Ubuntu 22.04 + Node.js 26
-            // Can't DROP 'docker_host_user_id_foreign'; check that column/key exists
+            // Error: Can't DROP 'docker_host_user_id_foreign'; check that column/key exists
             console.error(`Error dropping foreign key for table ${table.name}:`, error);
 
             const columns = await knex(table.name).columnInfo();
             console.error(`Schema for ${table.name}:`, JSON.stringify(columns, null, 2));
-
-            // Print all foreign keys for the table (information_schema tables vary by DB engine)
-            try {
-                const foreignKeys = await knex.raw(`
-                    SELECT
-                        tc.constraint_name,
-                        tc.table_name,
-                        kcu.column_name
-                    FROM
-                        information_schema.table_constraints AS tc
-                        JOIN information_schema.key_column_usage AS kcu
-                          ON tc.constraint_name = kcu.constraint_name
-                    WHERE constraint_type = 'FOREIGN KEY' AND tc.table_name='${table.name}';
-                `);
-                console.error(`Foreign keys for ${table.name}:`, JSON.stringify(foreignKeys.rows, null, 2));
-            } catch (debugError) {
-                console.error(`Could not query foreign keys for ${table.name}:`, debugError.message);
-            }
 
             // Try to ignore it, because the foreign key not existing, we can just drop user_id
             // throw error;
