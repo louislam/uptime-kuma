@@ -7,15 +7,16 @@ import { createPool, Pool } from "mysql2/promise";
 import BetterSqlite3Database from "better-sqlite3";
 import { username } from "better-auth/plugins";
 import { admin } from "better-auth/plugins";
-import { Socket } from "socket.io";
+import { Server, Socket } from "socket.io";
 import { haveIBeenPwned } from "better-auth/plugins";
 import { twoFactor } from "better-auth/plugins";
 import { apiKey } from "@better-auth/api-key";
-import { createAuthMiddleware, APIError } from "better-auth/api";
+import { createAuthMiddleware } from "better-auth/api";
 // @ts-ignore
 import * as oldAuth from "./auth.js";
 import { hasUser } from "./routers/better-auth-router";
 import { symmetricEncrypt } from "better-auth/crypto";
+import { UptimeKumaServer } from "./uptime-kuma-server";
 
 export type BetterAuthUser = ReturnType<typeof createAuthInstance>["$Infer"]["Session"]["user"];
 
@@ -138,6 +139,24 @@ function createAuthInstance() {
             // It is not suitable for "Disable Auth", because it can not turn on/off after init.
             //anonymous(),
         ],
+        databaseHooks: {
+            user: {
+                delete: {
+                    after: async (user) => {
+                        // Disconnect all socket.io connections of the user after the user is deleted
+                        const server = UptimeKumaServer.getInstance();
+                        const io = server.io as unknown as Server;
+
+                        io.sockets.sockets.forEach((socket) => {
+                            // @ts-ignore
+                            if (socket.userID === user.id) {
+                                socket.disconnect(true);
+                            }
+                        });
+                    },
+                },
+            },
+        },
         user: {
             modelName: "better_auth_user",
         },
