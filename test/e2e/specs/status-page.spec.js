@@ -53,7 +53,10 @@ test.describe("Status Page", () => {
         await page.getByTestId("tag-color-select").getByRole("option", { name: "Orange" }).click();
 
         // DEBUG: Check if color was selected
-        const colorText = await page.getByTestId("tag-color-select").textContent().catch(() => "N/A");
+        const colorText = await page
+            .getByTestId("tag-color-select")
+            .textContent()
+            .catch(() => "N/A");
         console.log("DEBUG: tag-color-select text after picking Orange:", colorText);
         await screenshot(testInfo, page);
 
@@ -71,7 +74,10 @@ test.describe("Status Page", () => {
         await page.getByTestId("tag-value-input").fill(tagValue2);
         await page.getByTestId("tag-color-select").click();
         await page.getByTestId("tag-color-select").getByRole("option", { name: "Blue" }).click();
-        const colorText2 = await page.getByTestId("tag-color-select").textContent().catch(() => "N/A");
+        const colorText2 = await page
+            .getByTestId("tag-color-select")
+            .textContent()
+            .catch(() => "N/A");
         console.log("DEBUG: tag-color-select text after picking Blue:", colorText2);
         await screenshot(testInfo, page);
 
