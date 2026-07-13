@@ -17,7 +17,7 @@
                 </div>
 
                 <!-- Manage user buttons -->
-                <div class="buttons" v-if="item.name != $root?.username">
+                <div class="buttons" v-if="item.name !== $root?.username">
                     <div class="btn-group" role="group">
                         <button class="btn btn-primary" @click="resetPassword(item.id)">
                             <font-awesome-icon icon="key" />
@@ -141,7 +141,7 @@ const resetPassword = async (userId: string) => {
 
 /**
  * Show dialog to confirm deletion
- * @param {number} userID ID of monitor that is being deleted
+ * @param {number} userID ID of user that is being deleted
  * @returns {void}
  */
 const deleteDialog = (userID: string): void => {

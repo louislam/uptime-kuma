@@ -1549,6 +1549,6 @@
     "VKTeams Use Template": "Use custom message template",
     "VKTeams Use Template Description": "If enabled, the message will be sent using a custom template.",
     "VKTeams Template Format Description": "For message styling, VKTeams supports plain text, MarkdownV2, and HTML formatting.",
-    "deleteUserMsg": "Are you sure want to delete this user?",
+    "deleteUserMsg": "Are you sure you want to delete this user?",
     "Users": "Users"
 }

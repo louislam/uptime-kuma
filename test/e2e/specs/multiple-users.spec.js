@@ -63,7 +63,7 @@ const loginAsUser = async (testInfo, page, username, password, expectedToFail = 
 
     if (expectedToFail) {
         // Ensure the user is not logged in and still on the login page
-        await expect(page.getByText("Invalid username or password")).toBeVisible();
+        await expect(page.getByText("Incorrect username or password")).toBeVisible();
         await expect(page.getByText("Log in")).toBeVisible();
         return;
     }
@@ -94,7 +94,7 @@ test.describe("Multiple Users", () => {
         // Login as admin
         await page.goto("./dashboard");
         await login(page);
-        await expect(page.getByText("New monitor")).toBeVisible();
+        await expect(page.getByText("Add New Monitor")).toBeVisible();
 
         // Perform the user add tests
         const user1Password = await addUser(testInfo, page, "newuser1", 1);

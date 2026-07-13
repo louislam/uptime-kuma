@@ -19,7 +19,7 @@ export async function screenshot(testInfo, page) {
  * @param {Page} page Page
  * @returns {Promise<void>}
  */
-export async function login(page, username = "admin", password = "admin123", rememberMe = true) {
+export async function login(page, username = "admin", password = "admin123") {
     // Login
     await page.getByPlaceholder("Username").click();
     await page.getByPlaceholder("Username").fill(username);
