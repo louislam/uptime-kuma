@@ -49,8 +49,36 @@
     </div>
 
     <div class="mb-3">
+        <label for="plivo-message-type" class="form-label">{{ $t("plivoMessageType") }}</label>
+        <select id="plivo-message-type" v-model="$parent.notification.plivoMessageType" class="form-select">
+            <option value="sms">SMS</option>
+            <option value="call">{{ $t("plivoVoiceCall") }}</option>
+        </select>
+    </div>
+
+    <div v-if="$parent.notification.plivoMessageType === 'call'" class="mb-3">
+        <label for="plivo-answer-url" class="form-label">{{ $t("plivoAnswerUrl") }}</label>
+        <input
+            id="plivo-answer-url"
+            v-model="$parent.notification.plivoAnswerUrl"
+            type="url"
+            class="form-control"
+            placeholder="https://example.com/answer.xml"
+            :required="$parent.notification.plivoMessageType === 'call'"
+        />
+        <div class="form-text">{{ $t("plivoAnswerUrlHelptext") }}</div>
+    </div>
+
+    <div class="mb-3">
         <i18n-t tag="p" keypath="More info on:" style="margin-top: 8px">
-            <a href="https://www.plivo.com/docs/messaging/api/message" target="_blank">
+            <a
+                v-if="$parent.notification.plivoMessageType === 'call'"
+                href="https://www.plivo.com/docs/voice/api/call"
+                target="_blank"
+            >
+                https://www.plivo.com/docs/voice/api/call
+            </a>
+            <a v-else href="https://www.plivo.com/docs/messaging/api/message" target="_blank">
                 https://www.plivo.com/docs/messaging/api/message
             </a>
         </i18n-t>
