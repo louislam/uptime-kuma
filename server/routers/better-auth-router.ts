@@ -85,7 +85,8 @@ export async function hasUser() {
     if (_hasUser) {
         return true;
     }
-    return (await R.knex("better_auth_user").count("id as count").first()).count !== 0;
+    const { count } = await R.knex("better_auth_user").count("id as count").first();
+    return Number(count) !== 0;
 }
 
 /**
