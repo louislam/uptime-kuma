@@ -1,4 +1,4 @@
-import { test, before, after } from "node:test";
+import { test } from "node:test";
 import { auth, checkPassword } from "../../server/better-auth";
 import assert from "node:assert";
 
@@ -7,8 +7,8 @@ import TestDB from "../mock-testdb";
 
 const testDb = new TestDB();
 
-test("Basic Auth", async () => {
-    before(async () => {
+test("Basic Auth", async (t) => {
+    t.before(async () => {
         await testDb.create();
         await auth().api.createUser({
             body: {
