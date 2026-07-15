@@ -70,6 +70,7 @@ describe("Database Migration", () => {
                     MYSQL_USER: "kuma",
                     MYSQL_PASSWORD: "kuma",
                 })
+                // .withCommand(["--innodb-strict-mode=1", "--innodb-default-row-format=compact"])
                 .withExposedPorts(3306)
                 .withWaitStrategy(Wait.forLogMessage("ready for connections", 2))
                 .withStartupTimeout(120000)
@@ -112,6 +113,10 @@ describe("Database Migration", () => {
                 });
 
                 // Test passes if migrations complete successfully without errors
+
+                // Print monitor table column count
+                const columns = await R.knex("monitor").columnInfo();
+                console.log("Monitor table columns:", Object.keys(columns));
             } finally {
                 // Clean up
                 try {

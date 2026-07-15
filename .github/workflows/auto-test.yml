@@ -25,7 +25,7 @@ jobs:
         # Also test non-LTS, but only on Ubuntu.
         include:
           - os: ubuntu-22.04
-            node: 25
+            node: 26
 
     steps:
       - run: git config --global core.autocrlf false # Mainly for Windows
