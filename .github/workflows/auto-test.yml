@@ -84,7 +84,7 @@ jobs:
     permissions:
       contents: read
     env:
-      PLAYWRIGHT_VERSION: ~1.60.0
+      PLAYWRIGHT_VERSION: ~1.61.1
     steps:
       - run: git config --global core.autocrlf false # Mainly for Windows
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
@@ -109,3 +109,19 @@ jobs:
 
       - run: npm run build
       - run: npm run test-e2e
+
+      - name: Upload Playwright Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: private/playwright-report
+          retention-days: 14
+
+      - name: Upload Playwright Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-results
+          path: private/playwright-test-results
+          retention-days: 14

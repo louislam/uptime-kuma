@@ -1,6 +1,6 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const port = 30001;
+const port = 3001;
 export const url = `http://localhost:${port}`;
 
 export default defineConfig({
@@ -9,6 +9,7 @@ export default defineConfig({
     outputDir: "../private/playwright-test-results",
     fullyParallel: false,
     locale: "en-US",
+    maxFailures: 1,
 
     // Fail the build on CI if you accidentally left test.only in the source code.
     forbidOnly: !!process.env.CI,
@@ -34,8 +35,14 @@ export default defineConfig({
         // Base URL to use in actions like `await page.goto('/')`.
         baseURL: url,
 
+        headless: !!process.env.CI,
+
         // Collect trace when retrying the failed test.
         trace: "on-first-retry",
+
+        launchOptions: {
+            args: ["--start-minimized"],
+        },
     },
 
     // Configure projects for major browsers.
