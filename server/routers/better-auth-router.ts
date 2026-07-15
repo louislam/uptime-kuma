@@ -21,10 +21,9 @@ const expiredMsg = "Setup has expired. Please restart the server to try again.";
  */
 export async function createBetterAuthRouter() {
     const betterAuthRouter = express.Router();
-    const callback = toNodeHandler(auth());
     betterAuthRouter.all("/api/auth/*", async (req, res) => {
         allowDevOrigin(req, res);
-        return callback(req, res);
+        return toNodeHandler(auth())(req, res);
     });
 
     // First Setup

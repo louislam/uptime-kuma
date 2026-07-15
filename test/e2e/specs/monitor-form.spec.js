@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { login, screenshot, takeSqliteSnapshot } from "../util-test";
+import { login, screenshot, restoreSqliteSnapshot } from "../util-test";
 
 /**
  * Selects the monitor type from the dropdown.

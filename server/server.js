@@ -270,14 +270,10 @@ app.use(function (req, res, next) {
         });
 
         app.get("/_e2e/take-sqlite-snapshot", async (request, response) => {
-            await Database.close();
-            try {
-                fs.cpSync(Database.sqlitePath, `${Database.sqlitePath}.e2e-snapshot`);
-            } catch (err) {
-                throw new Error("Unable to copy SQLite DB.");
-            }
-            await Database.connect();
-
+            // Checkpoint WAL to flush all data to the main .db file, then copy.
+            // No close/reopen needed — the file is consistent after checkpoint.
+            await R.exec("PRAGMA wal_checkpoint(TRUNCATE)");
+            fs.cpSync(Database.sqlitePath, `${Database.sqlitePath}.e2e-snapshot`);
             response.send("Snapshot taken.");
         });
 
