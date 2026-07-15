@@ -3,8 +3,6 @@ import { betterAuth, Session } from "better-auth";
 import * as Database from "./database.js";
 import { genSecret, log } from "../src/util";
 import { R } from "redbean-node";
-import { createPool, Pool } from "mysql2/promise";
-import BetterSqlite3Database from "better-sqlite3";
 import { username } from "better-auth/plugins";
 import { admin } from "better-auth/plugins";
 import { Socket } from "socket.io";
@@ -24,12 +22,20 @@ let authInstance: ReturnType<typeof createAuthInstance>;
 /**
  * Get the singleton instance of better-auth
  * Mainly used for http and socket.io authentication
+ * @param force If true, create a new instance even if one already exists. Should only be used for testing or special cases.
  * @returns The singleton instance of better-auth
  */
-export function auth() {
-    if (authInstance) {
+export function auth(force = false) {
+    if (authInstance && !force) {
         return authInstance;
     }
+
+    if (force) {
+        closeAuthDatabase().catch((err) => {
+            log.error("auth", "Failed to close database connection:", err);
+        });
+    }
+
     authInstance = createAuthInstance();
     return authInstance;
 }
@@ -43,18 +49,14 @@ export async function authInternal() {
     return (await auth().$context).internalAdapter;
 }
 
-let mariaDB: Pool;
-let sqlite: BetterSqlite3Database.Database;
+let authDatabase: any;
 
 /**
  *
  */
 export async function closeAuthDatabase() {
-    if (mariaDB) {
-        await mariaDB.end();
-    }
-    if (sqlite) {
-        sqlite.close();
+    if (authDatabase) {
+        await Database.closeAuthDatabase(authDatabase);
     }
 }
 
@@ -70,25 +72,11 @@ function createAuthInstance() {
             "Database data directory is not initialized. Please call Database.initDataDir() before using auth."
         );
     }
-    let database;
-    if (Database.dbConfig.type.includes("mariadb")) {
-        mariaDB = createPool({
-            host: Database.dbConfig.host,
-            port: Number(Database.dbConfig.port),
-            database: Database.dbConfig.database,
-            user: Database.dbConfig.username,
-            password: Database.dbConfig.password,
-            timezone: "Z",
-            ...(Database.dbConfig.socketPath ? { socketPath: Database.dbConfig.socketPath } : {}),
-        });
-        database = mariaDB;
-    } else {
-        sqlite = new BetterSqlite3Database(Database.sqlitePath);
-        database = sqlite;
-    }
+
+    authDatabase = Database.createAuthDatabase(Database.dbConfig);
 
     return betterAuth({
-        database,
+        database: authDatabase,
 
         // Just want to silent the warning message
         // As we don't use callback/redirect, it is not used

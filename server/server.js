@@ -8,6 +8,7 @@ import { auth, closeAuthDatabase, doubleCheckPassword, getDisableAuthSession, ge
 import { createBetterAuthRouter, needSetup } from "./routers/better-auth-router";
 import { betterAuthSocketHandler } from "./socket-handlers/better-auth-socket-handler";
 import { loadEnvFile } from "node:process";
+import * as fs from "node:fs";
 
 console.log("Welcome to Uptime Kuma");
 
@@ -266,6 +267,34 @@ app.use(function (req, res, next) {
             log.debug("test", request.headers);
             log.debug("test", request.body);
             response.send("OK");
+        });
+
+        app.get("/_e2e/take-sqlite-snapshot", async (request, response) => {
+            await Database.close();
+            try {
+                fs.cpSync(Database.sqlitePath, `${Database.sqlitePath}.e2e-snapshot`);
+            } catch (err) {
+                throw new Error("Unable to copy SQLite DB.");
+            }
+            await Database.connect();
+
+            response.send("Snapshot taken.");
+        });
+
+        app.get("/_e2e/restore-sqlite-snapshot", async (request, response) => {
+            if (!fs.existsSync(`${Database.sqlitePath}.e2e-snapshot`)) {
+                throw new Error("Snapshot doesn't exist.");
+            }
+
+            await Database.close();
+            try {
+                fs.cpSync(`${Database.sqlitePath}.e2e-snapshot`, Database.sqlitePath);
+            } catch (err) {
+                throw new Error("Unable to copy snapshot file.");
+            }
+            await Database.connect();
+
+            response.send("Snapshot restored.");
         });
 
         app.post("/test-x-www-form-urlencoded", async (request, response) => {

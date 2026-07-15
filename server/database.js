@@ -10,8 +10,10 @@ const { Settings } = require("./settings");
 const { UptimeCalculator } = require("./uptime-calculator");
 const dayjs = require("dayjs");
 const { SimpleMigrationServer } = require("./utils/simple-migration-server");
+const BetterSqlite3Database = require("better-sqlite3");
 const KumaColumnCompiler = require("./utils/knex/lib/dialects/mysql2/schema/mysql2-columncompiler");
 const SqlString = require("sqlstring");
+const { auth } = require("./better-auth");
 
 /**
  * Database & App Data Folder
@@ -57,6 +59,11 @@ class Database {
      * @type {boolean}
      */
     static patched = false;
+
+    /**
+     * @type {object|null}
+     */
+    static authDatabase = null;
 
     /**
      * SQLite only
@@ -445,6 +452,9 @@ class Database {
         } else if (dbConfig.type.endsWith("mariadb")) {
             await this.initMariaDB();
         }
+
+        // Also connect better-auth
+        auth(true);
     }
 
     /**
@@ -534,6 +544,52 @@ class Database {
                 log.error("db", "Database migration failed");
                 throw e;
             }
+        }
+    }
+
+    /**
+     * Create a database connection for better-auth
+     * @param {object} dbConfig The database configuration
+     * @returns {{type: string, database: object}} The database connection
+     */
+    static createAuthDatabase(dbConfig) {
+        let database;
+        if (dbConfig.type.includes("mariadb")) {
+            database = mysql.createPool({
+                host: dbConfig.host,
+                port: Number(dbConfig.port),
+                database: dbConfig.database,
+                user: dbConfig.username,
+                password: dbConfig.password,
+                timezone: "Z",
+                ...(dbConfig.socketPath ? { socketPath: dbConfig.socketPath } : {}),
+            });
+        } else if (dbConfig.type === "embedded-mariadb") {
+            let embeddedMariaDB = EmbeddedMariaDB.getInstance();
+            // Embedded MariaDB should already be started by Database.connect()
+            database = mysql.createPool({
+                socketPath: embeddedMariaDB.socketPath,
+                user: embeddedMariaDB.username,
+                database: "kuma",
+                timezone: "Z",
+            });
+        } else {
+            database = new BetterSqlite3Database(Database.sqlitePath);
+        }
+        Database.authDatabase = database;
+        return database;
+    }
+
+    /**
+     * Close the auth database connection
+     * @param {object} database The database connection to close
+     * @returns {Promise<void>}
+     */
+    static async closeAuthDatabase(database) {
+        if (database && typeof database.end === "function") {
+            await database.end();
+        } else if (database && typeof database.close === "function") {
+            database.close();
         }
     }
 
@@ -791,6 +847,10 @@ class Database {
         while (true) {
             Database.noReject = true;
             await R.close();
+            if (Database.authDatabase) {
+                await Database.closeAuthDatabase(Database.authDatabase);
+                Database.authDatabase = null;
+            }
             await sleep(2000);
 
             if (Database.noReject) {

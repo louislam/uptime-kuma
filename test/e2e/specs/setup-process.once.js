@@ -1,5 +1,5 @@
 import { test } from "@playwright/test";
-import { getSqliteDatabaseExists, login, screenshot } from "../util-test";
+import { getSqliteDatabaseExists, login, screenshot, takeSqliteSnapshot } from "../util-test";
 
 test.describe("Uptime Kuma Setup", () => {
     test.skip(() => getSqliteDatabaseExists(), "Must only run once per session");
@@ -54,5 +54,9 @@ test.describe("Uptime Kuma Setup", () => {
         await login(page);
         await page.getByText("A", { exact: true }).click();
         await page.getByRole("button", { name: "Log out" }).click();
+    });
+
+    test("take sqlite snapshot", async ({ page }) => {
+        await takeSqliteSnapshot(page);
     });
 });
