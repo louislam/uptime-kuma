@@ -114,8 +114,8 @@ export async function needSetup() {
         return false;
     }
 
-    // The user may be in the old user table, check that as well
-    const hasOldUser = (await R.knex("user").count("id as count").first()).count !== 0;
+// The user may be in the old user table, check that as well
+const oldUserCountRow = await R.knex("user").count("id as count").first();
+const hasOldUser = Number(oldUserCountRow.count) !== 0;
 
-    return !hasOldUser;
-}
+return !hasOldUser;
