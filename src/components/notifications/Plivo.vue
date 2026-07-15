@@ -64,7 +64,7 @@
             type="url"
             class="form-control"
             placeholder="https://example.com/answer.xml"
-            :required="$parent.notification.plivoMessageType === 'call'"
+            :required="true"
         />
         <div class="form-text">{{ $t("plivoAnswerUrlHelptext") }}</div>
     </div>
@@ -91,6 +91,11 @@ import HiddenInput from "../HiddenInput.vue";
 export default {
     components: {
         HiddenInput,
+    },
+    mounted() {
+        if (typeof this.$parent.notification.plivoMessageType === "undefined") {
+            this.$parent.notification.plivoMessageType = "sms";
+        }
     },
 };
 </script>
