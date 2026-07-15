@@ -1,7 +1,11 @@
 import { expect, test } from "@playwright/test";
-import { login, screenshot } from "../util-test";
+import { login, restoreSqliteSnapshot, screenshot } from "../util-test";
 
 test.describe("Incident History", () => {
+    test.beforeEach(async ({ page }) => {
+        await restoreSqliteSnapshot(page);
+    });
+
     test("past incidents section is hidden when no incidents exist", async ({ page }, testInfo) => {
         test.setTimeout(60000);
 
