@@ -6,6 +6,7 @@ const knex = require("knex");
 const path = require("path");
 const { EmbeddedMariaDB } = require("./embedded-mariadb");
 const mysql = require("mysql2/promise");
+const { Pool } = mysql;
 const { Settings } = require("./settings");
 const { UptimeCalculator } = require("./uptime-calculator");
 const dayjs = require("dayjs");
@@ -61,9 +62,14 @@ class Database {
     static patched = false;
 
     /**
-     * @type {object|null}
+     * @type BetterSqlite3Database.Database
      */
-    static authDatabase = null;
+    static authSQLite = null;
+
+    /**
+     * @type Pool
+     */
+    static authMariaDB = null;
 
     /**
      * SQLite only
@@ -548,9 +554,9 @@ class Database {
     }
 
     /**
-     * Create a database connection for better-auth
+     * Create a database connection for better-auth, because better-auth doesn't use knex, so it needs a separate connection.
      * @param {object} dbConfig The database configuration
-     * @returns {{type: string, database: object}} The database connection
+     * @returns {Pool|BetterSqlite3Database.Database} The database connection
      */
     static createAuthDatabase(dbConfig) {
         let database;
@@ -564,33 +570,21 @@ class Database {
                 timezone: "Z",
                 ...(dbConfig.socketPath ? { socketPath: dbConfig.socketPath } : {}),
             });
+            Database.authMariaDB = database;
         } else if (dbConfig.type === "embedded-mariadb") {
             let embeddedMariaDB = EmbeddedMariaDB.getInstance();
-            // Embedded MariaDB should already be started by Database.connect()
             database = mysql.createPool({
                 socketPath: embeddedMariaDB.socketPath,
                 user: embeddedMariaDB.username,
                 database: "kuma",
                 timezone: "Z",
             });
+            Database.authMariaDB = database;
         } else {
             database = new BetterSqlite3Database(Database.sqlitePath);
+            Database.authSQLite = database;
         }
-        Database.authDatabase = database;
         return database;
-    }
-
-    /**
-     * Close the auth database connection
-     * @param {object} database The database connection to close
-     * @returns {Promise<void>}
-     */
-    static async closeAuthDatabase(database) {
-        if (database && typeof database.end === "function") {
-            await database.end();
-        } else if (database && typeof database.close === "function") {
-            database.close();
-        }
     }
 
     /**
@@ -847,9 +841,13 @@ class Database {
         while (true) {
             Database.noReject = true;
             await R.close();
-            if (Database.authDatabase) {
-                await Database.closeAuthDatabase(Database.authDatabase);
-                Database.authDatabase = null;
+            if (Database.authMariaDB) {
+                await Database.authMariaDB.end();
+                Database.authMariaDB = null;
+            }
+            if (Database.authSQLite) {
+                Database.authSQLite.close();
+                Database.authSQLite = null;
             }
             await sleep(2000);
 

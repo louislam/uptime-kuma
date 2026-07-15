@@ -4,7 +4,7 @@
  * DO NOT require("./server") in other modules, it likely creates circular dependency!
  */
 import { getRandomInt, isDev, log, sleep } from "../src/util";
-import { auth, closeAuthDatabase, doubleCheckPassword, getDisableAuthSession, getSession } from "./better-auth";
+import { auth, doubleCheckPassword, getDisableAuthSession, getSession } from "./better-auth";
 import { createBetterAuthRouter, needSetup } from "./routers/better-auth-router";
 import { betterAuthSocketHandler } from "./socket-handlers/better-auth-socket-handler";
 import { loadEnvFile } from "node:process";
@@ -1574,7 +1574,6 @@ async function shutdownFunction(signal) {
     }
     await sleep(2000);
     await Database.close();
-    await closeAuthDatabase();
 
     if (EmbeddedMariaDB.hasInstance()) {
         EmbeddedMariaDB.getInstance().stop();

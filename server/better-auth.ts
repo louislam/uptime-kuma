@@ -30,12 +30,6 @@ export function auth(force = false) {
         return authInstance;
     }
 
-    if (force) {
-        closeAuthDatabase().catch((err) => {
-            log.error("auth", "Failed to close database connection:", err);
-        });
-    }
-
     authInstance = createAuthInstance();
     return authInstance;
 }
@@ -47,17 +41,6 @@ export function auth(force = false) {
  */
 export async function authInternal() {
     return (await auth().$context).internalAdapter;
-}
-
-let authDatabase: any;
-
-/**
- *
- */
-export async function closeAuthDatabase() {
-    if (authDatabase) {
-        await Database.closeAuthDatabase(authDatabase);
-    }
 }
 
 /**
@@ -73,7 +56,7 @@ function createAuthInstance() {
         );
     }
 
-    authDatabase = Database.createAuthDatabase(Database.dbConfig);
+    const authDatabase = Database.createAuthDatabase(Database.dbConfig);
 
     return betterAuth({
         database: authDatabase,

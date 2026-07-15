@@ -2,7 +2,6 @@ const { sync: rimrafSync } = require("rimraf");
 const Database = require("../server/database");
 const { Settings } = require("../server/settings");
 const { sleep } = require("../src/util");
-const { closeAuthDatabase } = require("../server/better-auth");
 
 class TestDB {
     dataDir;
@@ -23,7 +22,6 @@ class TestDB {
 
     async destroy() {
         await Database.close();
-        await closeAuthDatabase();
         Settings.stopCacheCleaner();
         if (this.dataDir) {
             try {
