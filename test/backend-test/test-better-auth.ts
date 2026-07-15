@@ -23,7 +23,7 @@ test("Basic Auth", async (t) => {
         });
     });
 
-    after(async () => {
+    t.after(async () => {
         console.log("Cleaning up test database...");
         await testDb.destroy();
     });
