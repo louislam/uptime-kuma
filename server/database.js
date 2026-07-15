@@ -62,12 +62,12 @@ class Database {
     static patched = false;
 
     /**
-     * @type BetterSqlite3Database.Database
+     * @type {BetterSqlite3Database.Database}
      */
     static authSQLite = null;
 
     /**
-     * @type Pool
+     * @type {Pool}
      */
     static authMariaDB = null;
 
