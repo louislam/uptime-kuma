@@ -28,17 +28,17 @@ test("Basic Auth", async (t) => {
         await testDb.destroy();
     });
 
-    await test("[Basic Auth] returns true for valid credentials", async () => {
+    await t.test("[Basic Auth] returns true for valid credentials", async () => {
         const result = await checkPassword("admin", "secret123");
         assert.strictEqual(result, true);
     });
 
-    await test("returns false for wrong password", async () => {
+    await t.test("returns false for wrong password", async () => {
         const result = await checkPassword("admin", "wrongpassword");
         assert.strictEqual(result, false);
     });
 
-    await test("returns false for non-existent user", async () => {
+    await t.test("returns false for non-existent user", async () => {
         const result = await checkPassword("nonexistent", "secret123");
         assert.strictEqual(result, false);
     });
