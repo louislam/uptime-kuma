@@ -277,10 +277,10 @@ class Monitor extends BeanModel {
         let tlsInfo;
         if (tlsInfoBean) {
             tlsInfo = JSON.parse(tlsInfoBean?.info_json);
-            if (tlsInfo?.valid && tlsInfo?.certInfo?.daysRemaining) {
+            if (tlsInfo?.certInfo?.daysRemaining !== undefined) {
                 return {
                     certExpiryDaysRemaining: tlsInfo.certInfo.daysRemaining,
-                    validCert: true,
+                    validCert: !!tlsInfo?.valid,
                 };
             }
         }
