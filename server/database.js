@@ -840,7 +840,10 @@ class Database {
 
         while (true) {
             Database.noReject = true;
+
             await R.close();
+
+            // Also close auth db
             if (Database.authMariaDB) {
                 await Database.authMariaDB.end();
                 Database.authMariaDB = null;
@@ -849,6 +852,7 @@ class Database {
                 Database.authSQLite.close();
                 Database.authSQLite = null;
             }
+
             await sleep(2000);
 
             if (Database.noReject) {
