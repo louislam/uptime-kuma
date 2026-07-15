@@ -12,9 +12,6 @@ export const authClient = createAuthClient({
     baseURL,
     plugins: [usernameClient(), twoFactorClient(), apiKeyClient()],
 });
-
-authClient.signIn;
-
 /**
  * @returns Check if the user is logged in
  */
