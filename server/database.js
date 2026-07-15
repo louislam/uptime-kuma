@@ -582,6 +582,7 @@ class Database {
             Database.authMariaDB = database;
         } else {
             database = new BetterSqlite3Database(Database.sqlitePath);
+            Database.initSQLite(database, false);
             Database.authSQLite = database;
         }
         return database;
@@ -822,6 +823,8 @@ class Database {
     }
 
     /**
+     * Close Database
+     * Warning: It is used for shutdown the application. After closed database, it cannot be connected again! Because Better-auth would not reconnect the database.
      * Special handle, because tarn.js throw a promise reject that cannot be caught
      * @returns {Promise<void>}
      */
