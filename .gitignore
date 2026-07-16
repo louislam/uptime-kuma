@@ -24,3 +24,15 @@ extra/exe-builder/obj
 
 .vs
 .vscode
+
+# Local test scripts and build artifacts
+check-dev-db.js
+check-template-db.js
+pause-monitors.js
+temp_old_monitor.js
+test-diagnose-login.js
+test-measure-login.js
+test-setup-500.js
+test_refresh_perf.js
+test_refresh_perf.py
+refresh_test_2.png

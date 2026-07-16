@@ -163,6 +163,7 @@ const testMode = !!args["test"] || false;
 const {
     sendNotificationList,
     sendHeartbeatList,
+    sendLastHeartbeatBatch,
     sendInfo,
     sendProxyList,
     sendDockerHostList,
@@ -993,8 +994,7 @@ let needSetup = false;
                 log.info("monitor", `Get Monitor: ${monitorID} User ID: ${socket.userID}`);
 
                 let monitor = await R.findOne("monitor", " id = ? AND user_id = ? ", [monitorID, socket.userID]);
-                const monitorData = [{ id: monitor.id, active: monitor.active }];
-                const preloadData = await Monitor.preparePreloadData(monitorData);
+                const preloadData = await Monitor.preparePreloadData([monitor]);
                 callback({
                     ok: true,
                     monitor: monitor.toJSON(preloadData),
@@ -1807,34 +1807,47 @@ async function afterLogin(socket, user) {
     socket.userID = user.id;
     socket.join(user.id);
 
+    // Phase 1: Send monitor list immediately so frontend can render the dashboard
     let monitorList = await server.sendMonitorList(socket);
-    await Promise.allSettled([
-        sendInfo(socket),
-        server.sendMaintenanceList(socket),
-        sendNotificationList(socket),
-        sendProxyList(socket),
-        sendDockerHostList(socket),
-        sendAPIKeyList(socket),
-        sendRemoteBrowserList(socket),
-        sendMonitorTypeList(socket),
-    ]);
 
-    await StatusPage.sendStatusPageList(io, socket);
+    // Phase 1.5: 批量推送每个 monitor 的最新一条心跳，让状态速览顶部统计数字立即可用。
+    // 单次 SQL + 单次 emit，避免等待 N 次 sendHeartbeatList 完成。
+    await sendLastHeartbeatBatch(socket, monitorList);
 
-    const monitorPromises = [];
-    for (let monitorID in monitorList) {
-        monitorPromises.push(sendHeartbeatList(socket, monitorID));
-        monitorPromises.push(Monitor.sendStats(io, monitorID, user.id));
-    }
+    // Phase 2: Send remaining data asynchronously (fire-and-forget)
+    // Don't await - let the login callback return immediately
+    (async () => {
+        await Promise.allSettled([
+            sendInfo(socket),
+            server.sendMaintenanceList(socket),
+            sendNotificationList(socket),
+            sendProxyList(socket),
+            sendDockerHostList(socket),
+            sendAPIKeyList(socket),
+            sendRemoteBrowserList(socket),
+            sendMonitorTypeList(socket),
+        ]);
 
-    await Promise.all(monitorPromises);
+        await StatusPage.sendStatusPageList(io, socket);
 
-    // Set server timezone from client browser if not set
-    // It should be run once only
-    if (!(await Settings.get("initServerTimezone"))) {
-        log.debug("server", "emit initServerTimezone");
-        socket.emit("initServerTimezone");
-    }
+        const monitorPromises = [];
+        for (let monitorID in monitorList) {
+            // overwrite=true：覆盖 Phase 1.5 批量推送的临时单条心跳，避免 concat 重复
+            monitorPromises.push(sendHeartbeatList(socket, monitorID, false, true));
+            monitorPromises.push(Monitor.sendStats(io, monitorID, user.id, monitorList[monitorID]));
+        }
+
+        await Promise.all(monitorPromises);
+
+        // Set server timezone from client browser if not set
+        // It should be run once only
+        if (!(await Settings.get("initServerTimezone"))) {
+            log.debug("server", "emit initServerTimezone");
+            socket.emit("initServerTimezone");
+        }
+    })().catch((err) => {
+        log.error("server", "afterLogin async data push error:", err);
+    });
 }
 
 /**

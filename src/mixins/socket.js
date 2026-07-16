@@ -241,6 +241,15 @@ export default {
                 }
             });
 
+            // 批量接收每个 monitor 的最新一条心跳，用于状态速览顶部统计数字的快速渲染。
+            // 收到后立即写入 heartbeatList（每项含 1 条），stats computed 立即更新；
+            // 后续完整的 heartbeatList 事件会通过 overwrite=true 覆盖，不会丢失数据。
+            socket.on("lastHeartbeatBatch", (batch) => {
+                for (const monitorID in batch) {
+                    this.heartbeatList[monitorID] = batch[monitorID];
+                }
+            });
+
             socket.on("avgPing", (monitorID, data) => {
                 this.avgPingList[monitorID] = data;
             });

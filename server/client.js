@@ -64,6 +64,48 @@ async function sendHeartbeatList(socket, monitorID, toUser = false, overwrite = 
 }
 
 /**
+ * 批量发送每个 monitor 的最新一条心跳，用于状态速览顶部统计数字的快速渲染。
+ * 单次 SQL 取所有 monitor 的最新心跳，避免 N 次 sendHeartbeatList 调用和 N 个 emit 事件。
+ * @param {Socket} socket Socket.io 实例
+ * @param {object} monitorList 监控项列表（key 为 monitorID）
+ * @param {boolean} toUser True=推送给同用户所有浏览器，False=仅推送给当前浏览器
+ * @returns {Promise<void>}
+ */
+async function sendLastHeartbeatBatch(socket, monitorList, toUser = false) {
+    const monitorIDs = Object.keys(monitorList);
+    if (monitorIDs.length === 0) {
+        return;
+    }
+
+    // 单条 SQL 取所有 monitor 的最新心跳，避免 N 次 DB 查询
+    const placeholders = monitorIDs.map(() => "?").join(",");
+    const list = await R.getAll(
+        `
+        SELECT h.* FROM heartbeat h
+        INNER JOIN (
+            SELECT monitor_id, MAX(time) AS max_time
+            FROM heartbeat
+            WHERE monitor_id IN (${placeholders})
+            GROUP BY monitor_id
+        ) latest ON h.monitor_id = latest.monitor_id AND h.time = latest.max_time
+    `,
+        monitorIDs
+    );
+
+    // 按 monitorID 组织为 { [id]: [beat] } 形式，与 heartbeatList 数据结构一致（数组）
+    const batch = {};
+    for (const beat of list) {
+        batch[beat.monitor_id] = [beat];
+    }
+
+    if (toUser) {
+        io.to(socket.userID).emit("lastHeartbeatBatch", batch);
+    } else {
+        socket.emit("lastHeartbeatBatch", batch);
+    }
+}
+
+/**
  * Important Heart beat list (aka event list)
  * @param {Socket} socket Socket.io instance
  * @param {number} monitorID ID of monitor to send heartbeat history
@@ -239,6 +281,7 @@ module.exports = {
     sendNotificationList,
     sendImportantHeartbeatList,
     sendHeartbeatList,
+    sendLastHeartbeatBatch,
     sendProxyList,
     sendAPIKeyList,
     sendInfo,

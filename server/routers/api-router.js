@@ -126,7 +126,7 @@ router.all("/api/push/:pushToken", async (request, response) => {
 
         io.to(monitor.user_id).emit("heartbeat", bean.toJSON());
 
-        Monitor.sendStats(io, monitor.id, monitor.user_id);
+        Monitor.sendStats(io, monitor.id, monitor.user_id, monitor);
 
         try {
             new Prometheus(monitor, await monitor.getTags()).update(bean, undefined);
