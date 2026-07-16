@@ -5,8 +5,8 @@ export const url = `http://localhost:${port}`;
 
 export default defineConfig({
     // Look for test files in the "tests" directory, relative to this configuration file.
-    testDir: "../test/e2e/specs",
-    outputDir: "../private/playwright-test-results",
+    testDir: "test/e2e/specs",
+    outputDir: "private/playwright-test-results",
     fullyParallel: false,
     locale: "en-US",
     maxFailures: 1,
@@ -25,7 +25,7 @@ export default defineConfig({
         [
             "html",
             {
-                outputFolder: "../private/playwright-report",
+                outputFolder: "private/playwright-report",
                 open: "never",
             },
         ],
@@ -69,6 +69,6 @@ export default defineConfig({
         command: `node extra/remove-playwright-test-data.js && cross-env NODE_ENV=development node --import=tsx server/server.js --port=${port} --data-dir=./data/playwright-test`,
         url,
         reuseExistingServer: false,
-        cwd: "../",
+        cwd: "./",
     },
 });
