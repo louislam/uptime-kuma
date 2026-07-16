@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { restoreSqliteSnapshot } from "../util-test";
 
-const serverUrl = require("../../../config/playwright.config.js").url;
+const serverUrl = require("../../../playwright.config.js").url;
 
 test.describe("/metrics basic auth", () => {
     test.beforeEach(async () => {
