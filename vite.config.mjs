@@ -1,12 +1,9 @@
-import { fileURLToPath } from "node:url";
 import vue from "@vitejs/plugin-vue";
 import { defineConfig } from "vite";
 import visualizer from "rollup-plugin-visualizer";
 import viteCompression from "vite-plugin-compression";
 import postCssScss from "postcss-scss";
 import postcssRTLCSS from "postcss-rtlcss";
-
-const projectRoot = fileURLToPath(new URL("..", import.meta.url));
 
 const viteCompressionFilter = /\.(js|mjs|json|css|html|svg)$/i;
 
@@ -41,7 +38,7 @@ export default defineConfig({
         },
         preprocessorOptions: {
             scss: {
-                loadPaths: [projectRoot],
+                loadPaths: [process.cwd()],
                 quietDeps: true,
 
                 // Most of them are coming from boostrap unfortunately
