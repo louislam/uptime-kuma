@@ -15,14 +15,16 @@ class SystemServiceMonitorType extends MonitorType {
      * @returns {Promise<void>} Resolves when check is complete.
      */
     async check(monitor, heartbeat) {
-        if (!monitor.system_service_name) {
+        const serviceName = monitor.getConfigValue("system_service_name");
+
+        if (!serviceName) {
             throw new Error("Service Name is required.");
         }
 
         if (process.platform === "win32") {
-            return this.checkWindows(monitor.system_service_name, heartbeat);
+            return this.checkWindows(serviceName, heartbeat);
         } else if (process.platform === "linux") {
-            return this.checkLinux(monitor.system_service_name, heartbeat);
+            return this.checkLinux(serviceName, heartbeat);
         } else {
             throw new Error(`System Service monitoring is not supported on ${process.platform}`);
         }

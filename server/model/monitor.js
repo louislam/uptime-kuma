@@ -186,7 +186,6 @@ class Monitor extends BeanModel {
             httpBodyEncoding: this.httpBodyEncoding,
             jsonPath: this.jsonPath,
             expectedValue: this.expectedValue,
-            system_service_name: this.system_service_name,
             kafkaProducerTopic: this.kafkaProducerTopic,
             kafkaProducerBrokers: JSON.parse(this.kafkaProducerBrokers),
             kafkaProducerSsl: this.getKafkaProducerSsl(),
@@ -213,6 +212,9 @@ class Monitor extends BeanModel {
             saveResponse: this.getSaveResponse(),
             saveErrorResponse: this.getSaveErrorResponse(),
             responseMaxLength: this.response_max_length ?? RESPONSE_BODY_LENGTH_DEFAULT,
+
+            // extensible config for new monitor type settings
+            config: this.getConfig(),
         };
 
         if (includeSensitiveData) {
@@ -401,6 +403,53 @@ class Monitor extends BeanModel {
      */
     getSaveErrorResponse() {
         return Boolean(this.save_error_response);
+    }
+
+    /**
+     * Get the full config
+     * @returns {object} Parsed config, empty object if null
+     */
+    getConfig() {
+        if (this.config) {
+            return JSON.parse(this.config);
+        }
+        return {};
+    }
+
+    /**
+     * Set the full config object
+     * @param {object} config The config object to store
+     * @returns {void}
+     */
+    setConfig(config) {
+        this.config = JSON.stringify(config);
+    }
+
+    /**
+     * Get a value from the config
+     *
+     * PS: if you want to get multiple fields at the same time, use getConfig() to avoid multiple JSON.parse/stringify calls.
+     * @param {string} key The config key to retrieve
+     * @param {*} defaultValue Default value if key doesn't exist
+     * @returns {*} The config value or defaultValue
+     */
+    getConfigValue(key, defaultValue = undefined) {
+        const config = this.getConfig();
+        return key in config ? config[key] : defaultValue;
+    }
+
+    /**
+     * Set a value in the config
+     *
+     * PS: If update multiple fields at the same time, use setConfig() instead to avoid multiple JSON.parse/stringify calls.
+     * @param {string} key The config key to set
+     * @param {*} value The value to store
+     * @returns {void}
+     */
+    setConfigValue(key, value) {
+        const config = this.getConfig();
+        config[key] = value;
+        this.setConfig(config);
     }
 
     /**

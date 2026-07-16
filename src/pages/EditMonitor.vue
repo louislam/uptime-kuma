@@ -1245,7 +1245,7 @@
                                     <label for="system-service-name" class="form-label">{{ $t("Service Name") }}</label>
                                     <input
                                         id="system-service-name"
-                                        v-model="monitor.system_service_name"
+                                        v-model="monitor.config.system_service_name"
                                         type="text"
                                         class="form-control"
                                         required
@@ -1256,29 +1256,29 @@
                                         <template v-if="$root.info.runtime.platform === 'linux'">
                                             {{
                                                 $t("systemServiceDescriptionLinux", {
-                                                    service_name: monitor.system_service_name || "nginx",
+                                                    service_name: monitor.config.system_service_name || "nginx",
                                                 })
                                             }}
                                         </template>
                                         <template v-else-if="$root.info.runtime.platform === 'win32'">
                                             {{
                                                 $t("systemServiceDescriptionWindows", {
-                                                    service_name: monitor.system_service_name || "Dnscache",
+                                                    service_name: monitor.config.system_service_name || "Dnscache",
                                                 })
                                             }}
                                         </template>
                                         <template v-else>
                                             {{
                                                 $t("systemServiceDescription", {
-                                                    service_name: monitor.system_service_name || "nginx",
+                                                    service_name: monitor.config.system_service_name || "nginx",
                                                 })
                                             }}
                                         </template>
 
                                         <template
                                             v-if="
-                                                !monitor.system_service_name ||
-                                                /^[a-zA-Z0-9_\-\.\@\ ]+$/.test(monitor.system_service_name)
+                                                !monitor.config.system_service_name ||
+                                                /^[a-zA-Z0-9_\-\.\@\ ]+$/.test(monitor.config.system_service_name)
                                             "
                                         >
                                             <div v-if="$root.info.runtime.platform === 'linux'" class="mt-2">
@@ -1287,7 +1287,7 @@
                                                         <template #command>
                                                             <code>
                                                                 systemctl is-active
-                                                                {{ monitor.system_service_name || "nginx" }}
+                                                                {{ monitor.config.system_service_name || "nginx" }}
                                                             </code>
                                                         </template>
                                                     </i18n-t>
@@ -1303,7 +1303,7 @@
                                                             <code>
                                                                 (Get-Service -Name '{{
                                                                     (
-                                                                        monitor.system_service_name || "Dnscache"
+                                                                        monitor.config.system_service_name || "Dnscache"
                                                                     ).replaceAll("'", "''")
                                                                 }}').Status
                                                             </code>
@@ -3188,7 +3188,7 @@ const monitorDefaults = {
     rabbitmqUsername: "",
     rabbitmqPassword: "",
     conditions: [],
-    system_service_name: "",
+    config: {},
 };
 
 export default {
@@ -3259,8 +3259,8 @@ export default {
             if (this.monitor.hostname) {
                 return this.monitor.hostname;
             }
-            if (this.monitor.system_service_name) {
-                return this.monitor.system_service_name;
+            if (this.monitor.config?.system_service_name) {
+                return this.monitor.config.system_service_name;
             }
             if (this.monitor.url) {
                 if (this.monitor.url !== "http://" && this.monitor.url !== "https://") {

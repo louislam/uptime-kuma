@@ -1,6 +1,7 @@
 const { describe, test, beforeEach, afterEach } = require("node:test");
 const assert = require("node:assert");
 const { SystemServiceMonitorType } = require("../../server/monitor-types/system-service");
+const { Monitor } = require("../../server/model/monitor");
 const { DOWN, UP } = require("../../src/util");
 const process = require("process");
 const { execSync } = require("node:child_process");
@@ -25,6 +26,21 @@ function shouldSkip() {
     } catch (e) {
         return true;
     }
+}
+
+/**
+ * Create a mock monitor with config support
+ * @param {string} serviceName The system service name
+ * @returns {object} Mock monitor object
+ */
+function createMockMonitor(serviceName) {
+    return Object.create(Monitor.prototype, {
+        config: {
+            value: JSON.stringify({ system_service_name: serviceName }),
+            writable: true,
+            enumerable: true,
+        },
+    });
 }
 
 describe("SystemServiceMonitorType", { skip: shouldSkip() }, () => {
@@ -52,9 +68,7 @@ describe("SystemServiceMonitorType", { skip: shouldSkip() }, () => {
         // Linux: 'dbus' or 'cron' are standard services.
         const serviceName = process.platform === "win32" ? "Dnscache" : "dbus";
 
-        const monitor = {
-            system_service_name: serviceName,
-        };
+        const monitor = createMockMonitor(serviceName);
 
         await monitorType.check(monitor, heartbeat);
 
@@ -63,9 +77,7 @@ describe("SystemServiceMonitorType", { skip: shouldSkip() }, () => {
     });
 
     test("check() returns DOWN for a stopped service", async () => {
-        const monitor = {
-            system_service_name: "non-existent-service-12345",
-        };
+        const monitor = createMockMonitor("non-existent-service-12345");
 
         // Query a non-existent service to force an error/down state.
         // We pass the promise directly to assert.rejects, avoiding unnecessary async wrappers.
@@ -81,9 +93,7 @@ describe("SystemServiceMonitorType", { skip: shouldSkip() }, () => {
             configurable: true,
         });
 
-        const monitor = {
-            system_service_name: "invalid&service;name",
-        };
+        const monitor = createMockMonitor("invalid&service;name");
 
         // Expected validation error
         await assert.rejects(monitorType.check(monitor, heartbeat));
@@ -98,9 +108,7 @@ describe("SystemServiceMonitorType", { skip: shouldSkip() }, () => {
             configurable: true,
         });
 
-        const monitor = {
-            system_service_name: "test-service",
-        };
+        const monitor = createMockMonitor("test-service");
 
         await assert.rejects(monitorType.check(monitor, heartbeat), /not supported/);
     });

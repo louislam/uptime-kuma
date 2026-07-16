@@ -743,6 +743,7 @@ let needSetup = false;
                 monitor.conditions = JSON.stringify(monitor.conditions);
 
                 monitor.rabbitmqNodes = JSON.stringify(monitor.rabbitmqNodes);
+                monitor.config = JSON.stringify(monitor.config || {});
 
                 /*
                  * List of frontend-only properties that should not be saved to the database.
@@ -931,7 +932,7 @@ let needSetup = false;
                 bean.rabbitmqPassword = monitor.rabbitmqPassword;
                 bean.conditions = JSON.stringify(monitor.conditions);
                 bean.manual_status = monitor.manual_status;
-                bean.system_service_name = monitor.system_service_name;
+                bean.setConfigValue("system_service_name", monitor.system_service_name);
                 bean.expected_tls_alert = monitor.expectedTlsAlert;
 
                 // ping advanced options
