@@ -1,4 +1,4 @@
-import "dotenv/config";
+import { loadEnvFile } from "node:process";
 import {
     ver,
     buildDist,
@@ -12,6 +12,10 @@ import {
     createReleasePR,
 } from "./lib.mjs";
 import semver from "semver";
+
+try {
+    loadEnvFile();
+} catch (_) {}
 
 const repoNames = getRepoNames();
 const version = process.env.RELEASE_VERSION;

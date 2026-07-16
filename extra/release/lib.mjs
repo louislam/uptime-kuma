@@ -1,9 +1,13 @@
-import "dotenv/config";
+import { loadEnvFile } from "node:process";
 import * as childProcess from "child_process";
 import semver from "semver";
 import { getPrompt } from "../generate-changelog.mjs";
 import fs from "fs";
 import tar from "tar";
+
+try {
+    loadEnvFile();
+} catch (_) {}
 
 export const dryRun = process.env.RELEASE_DRY_RUN === "1";
 
