@@ -44,7 +44,7 @@ class Feishu extends NotificationProvider {
                                 tag: "div",
                                 text: {
                                     tag: "lark_md",
-                                    content: getContent(heartbeatJSON),
+                                    content: getContent(heartbeatJSON, monitorJSON),
                                 },
                             },
                         ],
@@ -74,7 +74,7 @@ class Feishu extends NotificationProvider {
                                 tag: "div",
                                 text: {
                                     tag: "lark_md",
-                                    content: getContent(heartbeatJSON),
+                                    content: getContent(heartbeatJSON, monitorJSON),
                                 },
                             },
                         ],
@@ -92,14 +92,17 @@ class Feishu extends NotificationProvider {
 /**
  * Get content
  * @param {?object} heartbeatJSON Heartbeat details (For Up/Down only)
+ * @param {?object} monitorJSON Monitor details (For Up/Down only)
  * @returns {string} Return Successful Message
  */
-function getContent(heartbeatJSON) {
-    return [
+function getContent(heartbeatJSON, monitorJSON) {
+    const lines = [
+        "**URL**: " + (monitorJSON?.url || "N/A"),
         "**Message**: " + heartbeatJSON["msg"],
         "**Ping**: " + (heartbeatJSON["ping"] == null ? "N/A" : heartbeatJSON["ping"] + " ms"),
         `**Time (${heartbeatJSON["timezone"]})**: ${heartbeatJSON["localDateTime"]}`,
-    ].join("\n");
+    ];
+    return lines.join("\n");
 }
 
 module.exports = Feishu;
