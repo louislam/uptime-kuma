@@ -1421,7 +1421,6 @@
                                     class="form-control"
                                     required
                                     :min="minInterval"
-                                    :max="maxInterval"
                                     step="1"
                                     @focus="lowIntervalConfirmation.editedValue = true"
                                     @blur="finishUpdateInterval"
@@ -3111,7 +3110,6 @@ import ProxyDialog from "../components/ProxyDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
 import {
     genSecret,
-    MAX_INTERVAL_SECOND,
     MIN_INTERVAL_SECOND,
     sleep,
     TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD,
@@ -3217,7 +3215,6 @@ export default {
     data() {
         return {
             minInterval: MIN_INTERVAL_SECOND,
-            maxInterval: MAX_INTERVAL_SECOND,
             processing: false,
             monitor: {
                 notificationIDList: {},
