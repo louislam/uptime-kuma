@@ -1241,6 +1241,10 @@ let needSetup = false;
                 bean.color = tag.color;
                 await R.store(bean);
 
+                // Re-register Prometheus metrics so the new tag is available as
+                // a label without requiring a server restart.
+                await Prometheus.init();
+
                 callback({
                     ok: true,
                     tag: await bean.toJSON(),
@@ -1270,6 +1274,10 @@ let needSetup = false;
                 bean.color = tag.color;
                 await R.store(bean);
 
+                // Re-register Prometheus metrics in case the tag was renamed, so
+                // the new label name is available without a server restart.
+                await Prometheus.init();
+
                 callback({
                     ok: true,
                     msg: "Saved.",
@@ -1289,6 +1297,10 @@ let needSetup = false;
                 checkLogin(socket);
 
                 await R.exec("DELETE FROM tag WHERE id = ? ", [tagID]);
+
+                // Re-register Prometheus metrics so the removed tag is dropped
+                // from the label set.
+                await Prometheus.init();
 
                 callback({
                     ok: true,

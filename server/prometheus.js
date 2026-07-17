@@ -9,6 +9,19 @@ let monitorAverageResponseTimeSeconds = null;
 let monitorResponseTime = null;
 let monitorStatus = null;
 
+// The metrics owned by this module, by name. Used to unregister them before a
+// re-init so the gauges can be rebuilt with an updated label set, without
+// touching any other metric on the default registry (e.g. those registered by
+// prometheus-api-metrics for the /metrics endpoint).
+const METRIC_NAMES = [
+    "monitor_cert_days_remaining",
+    "monitor_cert_is_valid",
+    "monitor_uptime_ratio",
+    "monitor_response_time_seconds",
+    "monitor_response_time",
+    "monitor_status",
+];
+
 class Prometheus {
     monitorLabelValues = {};
 
@@ -30,12 +43,22 @@ class Prometheus {
 
     /**
      * Initialize Prometheus metrics, and add all available tags as possible labels.
-     * This should be called once at the start of the application.
-     * New tags will NOT be added dynamically, a restart is sadly required to add new tags to the metrics.
-     * Existing tags added to monitors will be updated automatically.
+     * Called once at startup, and again whenever the set of tags changes (a tag
+     * is added, renamed or deleted), so newly created tags become available as
+     * labels without requiring a restart. Re-running unregisters this module's
+     * own metrics first (see METRIC_NAMES) and rebuilds them with the current
+     * label set; other metrics on the default registry are left untouched.
      * @returns {Promise<void>}
      */
     static async init() {
+        // Remove this module's own metrics so the gauges below can be recreated
+        // with an updated label set. removeSingleMetric is a no-op when the
+        // metric is absent (i.e. on the very first init()), and only ever
+        // touches the six names we own - never metrics registered elsewhere.
+        for (const name of METRIC_NAMES) {
+            PrometheusClient.register.removeSingleMetric(name);
+        }
+
         // Add all available tags as possible labels,
         // and use Set to remove possible duplicates (for when multiple tags contain non-ascii characters, and thus are sanitized to the same label)
         const tags = new Set(
