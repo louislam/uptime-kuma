@@ -32,7 +32,6 @@ const {
     checkCertificate,
     checkStatusCode,
     getTotalClientInRoom,
-    setting,
     httpNtlm,
     radius,
     kafkaProducerAsync,
@@ -233,6 +232,8 @@ class Monitor extends BeanModel {
                 oauth_scopes: this.oauth_scopes,
                 oauth_audience: this.oauth_audience,
                 oauth_auth_method: this.oauth_auth_method,
+                bearer_token: this.bearer_token,
+                gamedigToken: this.gamedigToken,
                 pushToken: this.pushToken,
                 databaseConnectionString: this.databaseConnectionString,
                 radiusUsername: this.radiusUsername,
@@ -480,6 +481,14 @@ class Monitor extends BeanModel {
                         };
                     }
 
+                    // Bearer token auth
+                    let bearerAuthHeader = {};
+                    if (this.auth_method === "bearer") {
+                        bearerAuthHeader = {
+                            Authorization: "Bearer " + this.bearer_token,
+                        };
+                    }
+
                     // OIDC: Basic client credential flow.
                     // Additional grants might be implemented in the future
                     let oauth2AuthHeader = {};
@@ -553,6 +562,7 @@ class Monitor extends BeanModel {
                             Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
                             ...(contentType ? { "Content-Type": contentType } : {}),
                             ...basicAuthHeader,
+                            ...bearerAuthHeader,
                             ...oauth2AuthHeader,
                             ...(this.headers ? JSON.parse(this.headers) : {}),
                         },
@@ -764,56 +774,6 @@ class Monitor extends BeanModel {
                         bean.duration = beatInterval;
                         throw new Error("No heartbeat in the time window");
                     }
-                } else if (this.type === "steam") {
-                    const steamApiUrl = "https://api.steampowered.com/IGameServersService/GetServerList/v1/";
-                    const steamAPIKey = await setting("steamAPIKey");
-                    const filter = `addr\\${this.hostname}:${this.port}`;
-
-                    if (!steamAPIKey) {
-                        throw new Error("Steam API Key not found");
-                    }
-
-                    let res = await axios.get(steamApiUrl, {
-                        timeout: this.timeout * 1000,
-                        headers: {
-                            Accept: "*/*",
-                        },
-                        httpsAgent: new https.Agent({
-                            maxCachedSessions: 0, // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
-                            rejectUnauthorized: !this.getIgnoreTls(),
-                            secureOptions: crypto.constants.SSL_OP_LEGACY_SERVER_CONNECT,
-                        }),
-                        httpAgent: new http.Agent({
-                            maxCachedSessions: 0,
-                        }),
-                        maxRedirects: this.maxredirects,
-                        validateStatus: (status) => {
-                            return checkStatusCode(status, this.getAcceptedStatuscodes());
-                        },
-                        params: {
-                            filter: filter,
-                            key: steamAPIKey,
-                        },
-                    });
-
-                    if (res.data.response && res.data.response.servers && res.data.response.servers.length > 0) {
-                        bean.status = UP;
-                        bean.msg = res.data.response.servers[0].name;
-
-                        try {
-                            bean.ping = await ping(
-                                this.hostname,
-                                PING_COUNT_DEFAULT,
-                                "",
-                                true,
-                                this.packetSize,
-                                PING_GLOBAL_TIMEOUT_DEFAULT,
-                                PING_PER_REQUEST_TIMEOUT_DEFAULT
-                            );
-                        } catch (_) {}
-                    } else {
-                        throw new Error("Server not found on Steam");
-                    }
                 } else if (this.type === "docker") {
                     log.debug("monitor", `[${this.name}] Prepare Options for Axios`);
 
@@ -931,6 +891,7 @@ class Monitor extends BeanModel {
                             ssl: this.kafkaProducerSsl,
                             clientId: `Uptime-Kuma/${version}`,
                             interval: this.interval,
+                            connectionTimeout: this.timeout,
                         },
                         JSON.parse(this.kafkaProducerSaslOptions)
                     );
@@ -1059,7 +1020,7 @@ class Monitor extends BeanModel {
                     ) {
                         log.warn(
                             "domain_expiry",
-                            `Domain expiry unsupported for '.${error.meta.publicSuffix}' because its RDAP endpoint is not listed in the IANA database.`
+                            `Domain expiry unsupported for '.${error.meta.publicSuffix}' because it lacks an RDAP endpoint in the IANA database. This isn’t an Uptime Kuma bug, a limitation of your registry. If an RDAP server exists, ask your registrar politely to submit it to IANA so expiry checks can work.`
                         );
                     }
                 }
@@ -1192,6 +1153,7 @@ class Monitor extends BeanModel {
             let res;
             if (this.auth_method === "ntlm") {
                 options.httpsAgent.keepAlive = true;
+                options.httpAgent.keepAlive = true;
 
                 res = await httpNtlm(options, {
                     username: this.basic_auth_user,
@@ -1731,6 +1693,22 @@ class Monitor extends BeanModel {
             } catch (e) {
                 throw new Error(`Accepted status codes must be valid JSON: ${e.message}`);
             }
+        }
+
+        if (["system-service", "pm2"].includes(this.type)) {
+            this.system_service_name = (this.system_service_name || "").trim();
+
+            if (!this.system_service_name) {
+                throw new Error(this.type === "pm2" ? "PM2 process name is required." : "Service Name is required.");
+            }
+        }
+
+        if (this.type === "system-service" && !/^[a-zA-Z0-9._\-@]+$/.test(this.system_service_name)) {
+            throw new Error("Invalid service name. Please use the internal Service Name (no spaces).");
+        }
+
+        if (this.type === "pm2" && /[\u0000-\u001F\u007F]/.test(this.system_service_name)) {
+            throw new Error("Invalid PM2 process name.");
         }
 
         if (this.type === "ping") {

@@ -1,4 +1,4 @@
-FROM node AS build
+FROM node:22-bookworm-slim AS build
 RUN useradd --create-home kuma
 USER kuma
 WORKDIR /home/kuma
@@ -14,5 +14,4 @@ WORKDIR /home/kuma
 COPY --from=build /home/kuma/uptime-kuma-push ./uptime-kuma-push
 
 ENTRYPOINT ["/home/kuma/uptime-kuma-push"]
-
 

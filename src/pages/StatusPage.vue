@@ -157,10 +157,11 @@
                         data-testid="analytics-type-select"
                     >
                         <option :value="null">{{ $t("None") }}</option>
-                        <option value="google">{{ $t("Google") }}</option>
-                        <option value="umami">{{ $t("Umami") }}</option>
-                        <option value="plausible">{{ $t("Plausible") }}</option>
-                        <option value="matomo">{{ $t("Matomo") }}</option>
+                        <option value="google">Google</option>
+                        <option value="umami">Umami</option>
+                        <option value="plausible">Plausible</option>
+                        <option value="matomo">Matomo</option>
+                        <option value="rybbit">Rybbit</option>
                     </select>
                 </div>
 

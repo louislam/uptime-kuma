@@ -13,6 +13,7 @@ import DingDing from "./DingDing.vue";
 import Discord from "./Discord.vue";
 import Fluxer from "./Fluxer.vue";
 import Elks from "./46elks.vue";
+import EgoSMS from "./EgoSMS.vue";
 import Feishu from "./Feishu.vue";
 import FreeMobile from "./FreeMobile.vue";
 import GoogleChat from "./GoogleChat.vue";
@@ -36,11 +37,14 @@ import Octopush from "./Octopush.vue";
 import OneChat from "./OneChat.vue";
 import OneBot from "./OneBot.vue";
 import Onesender from "./Onesender.vue";
+import Ooredoo from "./Ooredoo.vue";
 import Opsgenie from "./Opsgenie.vue";
 import JiraServiceManagement from "./JiraServiceManagement.vue";
 import PagerDuty from "./PagerDuty.vue";
 import FlashDuty from "./FlashDuty.vue";
+import Flowtriq from "./Flowtriq.vue";
 import PagerTree from "./PagerTree.vue";
+import Plivo from "./Plivo.vue";
 import PromoSMS from "./PromoSMS.vue";
 import Pumble from "./Pumble.vue";
 import Pushbullet from "./Pushbullet.vue";
@@ -79,6 +83,7 @@ import Whatsapp360messenger from "./360messenger.vue";
 import Evolution from "./Evolution.vue";
 import Cellsynt from "./Cellsynt.vue";
 import WPush from "./WPush.vue";
+import WxPusher from "./WxPusher.vue";
 import SIGNL4 from "./SIGNL4.vue";
 import SendGrid from "./SendGrid.vue";
 import Brevo from "./Brevo.vue";
@@ -90,6 +95,7 @@ import HaloPSA from "./HaloPSA.vue";
 import Resend from "./Resend.vue";
 import Max from "./Max.vue";
 import VK from "./VK.vue";
+import VKTeams from "./VKTeams.vue";
 
 /**
  * Manage all notification form.
@@ -111,6 +117,7 @@ const NotificationFormList = {
     discord: Discord,
     fluxer: Fluxer,
     Elks: Elks,
+    egosms: EgoSMS,
     Feishu: Feishu,
     FreeMobile: FreeMobile,
     GoogleChat: GoogleChat,
@@ -133,11 +140,14 @@ const NotificationFormList = {
     OneChat: OneChat,
     OneBot: OneBot,
     Onesender: Onesender,
+    Ooredoo: Ooredoo,
     Opsgenie: Opsgenie,
     JiraServiceManagement: JiraServiceManagement,
     PagerDuty: PagerDuty,
     FlashDuty: FlashDuty,
+    Flowtriq: Flowtriq,
     PagerTree: PagerTree,
+    plivo: Plivo,
     promosms: PromoSMS,
     pumble: Pumble,
     pushbullet: Pushbullet,
@@ -179,6 +189,7 @@ const NotificationFormList = {
     gtxmessaging: GtxMessaging,
     Cellsynt: Cellsynt,
     WPush: WPush,
+    WxPusher: WxPusher,
     SendGrid: SendGrid,
     Brevo: Brevo,
     Resend: Resend,
@@ -188,6 +199,7 @@ const NotificationFormList = {
     HaloPSA: HaloPSA,
     max: Max,
     VK: VK,
+    VKTeams: VKTeams,
 };
 
 export default NotificationFormList;
