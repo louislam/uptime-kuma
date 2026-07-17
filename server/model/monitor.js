@@ -1101,7 +1101,7 @@ class Monitor extends BeanModel {
 
         // Delay Push Type
         if (this.type === "push") {
-            setTimeout(() => {
+            this.heartbeatInterval = setTimeout(() => {
                 safeBeat();
             }, this.interval * 1000);
         } else {
