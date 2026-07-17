@@ -1618,9 +1618,9 @@ class Monitor extends BeanModel {
     }
 
     /**
-     * Make sure monitor interval is between bounds
+     * Validate monitor configuration
      * @returns {void}
-     * @throws Interval is outside of range
+     * @throws {Error} If validation fails
      */
     validate() {
         if (this.interval < MIN_INTERVAL_SECOND) {
