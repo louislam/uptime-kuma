@@ -37,6 +37,7 @@ class Maintenance extends BeanModel {
             strategy: this.strategy,
             intervalDay: this.interval_day,
             active: !!this.active,
+            autoDisableOnUp: Boolean(this.auto_disable_on_up),
             dateRange: dateRange,
             timeRange: timeRange,
             weekdays: this.weekdays ? JSON.parse(this.weekdays) : [],
@@ -154,6 +155,7 @@ class Maintenance extends BeanModel {
         bean.interval_day = obj.intervalDay;
         bean.timezone = obj.timezoneOption;
         bean.active = obj.active;
+        bean.auto_disable_on_up = obj.autoDisableOnUp || false;
 
         if (obj.dateRange[0]) {
             const parsedDate = new Date(obj.dateRange[0]);
