@@ -201,6 +201,9 @@ class Monitor extends BeanModel {
             smtpSecurity: this.smtpSecurity,
             rabbitmqNodes: JSON.parse(this.rabbitmqNodes),
             conditions: JSON.parse(this.conditions),
+            ntpStratumThreshold: this.ntp_stratum_threshold,
+            ntpTimeOffsetThreshold: this.ntp_time_offset_threshold,
+            ntpRootDispersionThreshold: this.ntp_root_dispersion_threshold,
             ipFamily: this.ipFamily,
             expectedTlsAlert: this.expected_tls_alert,
 
@@ -1018,7 +1021,7 @@ class Monitor extends BeanModel {
                     ) {
                         log.warn(
                             "domain_expiry",
-                            `Domain expiry unsupported for '.${error.meta.publicSuffix}' because its RDAP endpoint is not listed in the IANA database.`
+                            `Domain expiry unsupported for '.${error.meta.publicSuffix}' because it lacks an RDAP endpoint in the IANA database. This isn’t an Uptime Kuma bug, a limitation of your registry. If an RDAP server exists, ask your registrar politely to submit it to IANA so expiry checks can work.`
                         );
                     }
                 }
@@ -1691,6 +1694,22 @@ class Monitor extends BeanModel {
             } catch (e) {
                 throw new Error(`Accepted status codes must be valid JSON: ${e.message}`);
             }
+        }
+
+        if (["system-service", "pm2"].includes(this.type)) {
+            this.system_service_name = (this.system_service_name || "").trim();
+
+            if (!this.system_service_name) {
+                throw new Error(this.type === "pm2" ? "PM2 process name is required." : "Service Name is required.");
+            }
+        }
+
+        if (this.type === "system-service" && !/^[a-zA-Z0-9._\-@]+$/.test(this.system_service_name)) {
+            throw new Error("Invalid service name. Please use the internal Service Name (no spaces).");
+        }
+
+        if (this.type === "pm2" && /[\u0000-\u001F\u007F]/.test(this.system_service_name)) {
+            throw new Error("Invalid PM2 process name.");
         }
 
         if (this.type === "ping") {
