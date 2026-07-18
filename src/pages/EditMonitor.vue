@@ -1551,7 +1551,6 @@
                                     class="form-control"
                                     required
                                     :min="minInterval"
-                                    :max="maxInterval"
                                     step="1"
                                     @focus="lowIntervalConfirmation.editedValue = true"
                                     @blur="finishUpdateInterval"
@@ -3239,13 +3238,7 @@ import DockerHostDialog from "../components/DockerHostDialog.vue";
 import RemoteBrowserDialog from "../components/RemoteBrowserDialog.vue";
 import ProxyDialog from "../components/ProxyDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
-import {
-    genSecret,
-    MAX_INTERVAL_SECOND,
-    MIN_INTERVAL_SECOND,
-    sleep,
-    TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD,
-} from "../util.ts";
+import { genSecret, MIN_INTERVAL_SECOND, sleep, TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD } from "../util.ts";
 import { timeDurationFormatter } from "../util-frontend";
 import isFQDN from "validator/lib/isFQDN";
 import isIP from "validator/lib/isIP";
@@ -3350,7 +3343,6 @@ export default {
     data() {
         return {
             minInterval: MIN_INTERVAL_SECOND,
-            maxInterval: MAX_INTERVAL_SECOND,
             processing: false,
             monitor: {
                 notificationIDList: {},
