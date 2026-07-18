@@ -12,7 +12,7 @@
                 AccessToken
                 <span style="color: red"><sup>*</sup></span>
             </label>
-            <input id="HttpUrl" v-model="$parent.notification.accessToken" type="text" class="form-control" required />
+            <input id="HttpUrl" v-model="$parent.notification.accessToken" type="password" class="form-control" required />
             <div class="form-text">
                 <p>{{ $t("milkySafetyTips") }}</p>
             </div>
