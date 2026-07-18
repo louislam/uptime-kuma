@@ -1665,5 +1665,11 @@
     "Bearer Token": "Bearer Token",
     "smtpAdditionalHeadersTitle": "额外 Header",
     "smtpAdditionalHeadersDesc": "请访问 Nodemailer 自定义 Header {0} 了解配置方法。",
-    "Connection Timeout": "连接超时"
+    "Connection Timeout": "连接超时",
+    "milkyHttpAddress": "Milky HTTP 地址(请不要携带'/api'后缀)",
+    "milkyMessageType": "Milky 消息类型",
+    "milkyGroupMessage": "群聊",
+    "milkyPrivateMessage": "私聊",
+    "milkyUserOrGroupId": "群组/用户 ID",
+    "milkySafetyTips": "出于安全原因，请务必设置 AccessToken"
 }

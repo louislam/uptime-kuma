@@ -96,6 +96,7 @@ import Resend from "./Resend.vue";
 import Max from "./Max.vue";
 import VK from "./VK.vue";
 import VKTeams from "./VKTeams.vue";
+import Milky from "./Milky.vue";
 
 /**
  * Manage all notification form.
@@ -200,6 +201,7 @@ const NotificationFormList = {
     max: Max,
     VK: VK,
     VKTeams: VKTeams,
+    Milky: Milky,
 };
 
 export default NotificationFormList;
