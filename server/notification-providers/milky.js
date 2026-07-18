@@ -33,7 +33,12 @@ class Milky extends NotificationProvider {
             let pushText = "UptimeKuma Alert: " + msg;
             let data = {
                 message: [
-                    { type: "text", data: { text: pushText } }
+                    {
+                        type: "text",
+                        data: {
+                            text: pushText,
+                        },
+                    },
                 ],
             };
             if (notification.msgType === "group") {
