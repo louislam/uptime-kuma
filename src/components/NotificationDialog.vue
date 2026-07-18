@@ -14,56 +14,83 @@
                             <label for="notification-type" class="form-label">{{ $t("Notification Type") }}</label>
                             <select id="notification-type" v-model="notification.type" class="form-select">
                                 <optgroup :label="$t('notificationUniversal')">
-                                    <option v-for="(name, type) in notificationNameList.universal" :key="type"
-                                        :value="type">
+                                    <option
+                                        v-for="(name, type) in notificationNameList.universal"
+                                        :key="type"
+                                        :value="type"
+                                    >
                                         {{ name }}
                                     </option>
                                 </optgroup>
                                 <optgroup :label="$t('notificationChatPlatforms')">
-                                    <option v-for="(name, type) in notificationNameList.chatPlatforms" :key="type"
-                                        :value="type">
+                                    <option
+                                        v-for="(name, type) in notificationNameList.chatPlatforms"
+                                        :key="type"
+                                        :value="type"
+                                    >
                                         {{ name }}
                                     </option>
                                 </optgroup>
                                 <optgroup :label="$t('notificationPushServices')">
-                                    <option v-for="(name, type) in notificationNameList.pushServices" :key="type"
-                                        :value="type">
+                                    <option
+                                        v-for="(name, type) in notificationNameList.pushServices"
+                                        :key="type"
+                                        :value="type"
+                                    >
                                         {{ name }}
                                     </option>
                                 </optgroup>
                                 <optgroup :label="$t('notificationSmsServices')">
-                                    <option v-for="(name, type) in notificationNameList.smsServices" :key="type"
-                                        :value="type">
+                                    <option
+                                        v-for="(name, type) in notificationNameList.smsServices"
+                                        :key="type"
+                                        :value="type"
+                                    >
                                         {{ name }}
                                     </option>
                                 </optgroup>
                                 <optgroup :label="$t('notificationEmail')">
-                                    <option v-for="(name, type) in notificationNameList.email" :key="type"
-                                        :value="type">
+                                    <option
+                                        v-for="(name, type) in notificationNameList.email"
+                                        :key="type"
+                                        :value="type"
+                                    >
                                         {{ name }}
                                     </option>
                                 </optgroup>
                                 <optgroup :label="$t('notificationIncidentManagement')">
-                                    <option v-for="(name, type) in notificationNameList.incidentManagement" :key="type"
-                                        :value="type">
+                                    <option
+                                        v-for="(name, type) in notificationNameList.incidentManagement"
+                                        :key="type"
+                                        :value="type"
+                                    >
                                         {{ name }}
                                     </option>
                                 </optgroup>
                                 <optgroup :label="$t('notificationHomeAutomation')">
-                                    <option v-for="(name, type) in notificationNameList.homeAutomation" :key="type"
-                                        :value="type">
+                                    <option
+                                        v-for="(name, type) in notificationNameList.homeAutomation"
+                                        :key="type"
+                                        :value="type"
+                                    >
                                         {{ name }}
                                     </option>
                                 </optgroup>
                                 <optgroup :label="$t('notificationOther')">
-                                    <option v-for="(name, type) in notificationNameList.other" :key="type"
-                                        :value="type">
+                                    <option
+                                        v-for="(name, type) in notificationNameList.other"
+                                        :key="type"
+                                        :value="type"
+                                    >
                                         {{ name }}
                                     </option>
                                 </optgroup>
                                 <optgroup :label="$t('notificationRegional')">
-                                    <option v-for="(name, type) in notificationNameList.regional" :key="type"
-                                        :value="type">
+                                    <option
+                                        v-for="(name, type) in notificationNameList.regional"
+                                        :key="type"
+                                        :value="type"
+                                    >
                                         {{ name }}
                                     </option>
                                 </optgroup>
@@ -72,8 +99,13 @@
 
                         <div class="mb-3">
                             <label for="notification-name" class="form-label">{{ $t("Friendly Name") }}</label>
-                            <input id="notification-name" v-model="notification.name" type="text" class="form-control"
-                                required />
+                            <input
+                                id="notification-name"
+                                v-model="notification.name"
+                                type="text"
+                                class="form-control"
+                                required
+                            />
                         </div>
 
                         <!-- form body -->
@@ -100,8 +132,13 @@
                     </div>
 
                     <div class="modal-footer">
-                        <button v-if="id" type="button" class="btn btn-danger" :disabled="processing"
-                            @click="deleteConfirm">
+                        <button
+                            v-if="id"
+                            type="button"
+                            class="btn btn-danger"
+                            :disabled="processing"
+                            @click="deleteConfirm"
+                        >
                             {{ $t("Delete") }}
                         </button>
                         <button type="button" class="btn btn-warning" :disabled="processing" @click="test">
@@ -117,8 +154,13 @@
         </div>
     </form>
 
-    <Confirm ref="confirmDelete" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')"
-        @yes="deleteNotification">
+    <Confirm
+        ref="confirmDelete"
+        btn-style="btn-danger"
+        :yes-text="$t('Yes')"
+        :no-text="$t('No')"
+        @yes="deleteNotification"
+    >
         {{ $t("deleteNotificationMsg") }}
     </Confirm>
 </template>
@@ -490,7 +532,6 @@ export default {
 @import "../assets/vars.scss";
 
 .dark {
-
     .modal-dialog .form-text,
     .modal-dialog p {
         color: $dark-font-color;

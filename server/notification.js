@@ -100,6 +100,7 @@ const Max = require("./notification-providers/max");
 const VK = require("./notification-providers/vk");
 const VKTeams = require("./notification-providers/vkteams");
 const Milky = require("./notification-providers/milky");
+
 class Notification {
     providerList = {};
 
