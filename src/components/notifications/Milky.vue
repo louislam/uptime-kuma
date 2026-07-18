@@ -36,9 +36,7 @@
 
         <div class="form-text">
             <i18n-t tag="p" keypath="For more:">
-                <a href="https://milky.ntqqrev.org/" target="_blank">
-                    https://milky.ntqqrev.org/
-                </a>
+                <a href="https://milky.ntqqrev.org/" target="_blank">https://milky.ntqqrev.org/</a>
             </i18n-t>
         </div>
     </div>
