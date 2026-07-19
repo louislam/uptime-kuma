@@ -21,6 +21,7 @@ import * as jsonata from "jsonata";
 
 export const isDev = process.env.NODE_ENV === "development";
 export const isNode = typeof process !== "undefined" && process?.versions?.node;
+export const noColor = isNode && !!process.env.NO_COLOR;
 
 /**
  * Smarter dayjs import that supports both frontend and backend
@@ -307,7 +308,7 @@ class Logger {
         let modulePart: string;
         let levelPart: string;
 
-        if (isNode) {
+        if (isNode && !noColor) {
             // Add console colors
             switch (level) {
                 case "debug":
