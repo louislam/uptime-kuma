@@ -14,6 +14,11 @@ dayjs.extend(require("dayjs/plugin/customParseFormat"));
 // Load environment variables from `.env`
 require("dotenv").config();
 
+// NO_COLOR support: https://no-color.org/
+const noColor = !!process.env.NO_COLOR;
+const RED = noColor ? "" : "\x1b[31m";
+const RESET = noColor ? "" : "\x1b[0m";
+
 // Check Node.js Version
 const nodeVersion = process.versions.node;
 
@@ -31,7 +36,7 @@ const requiredNodeVersionsComma = requiredNodeVersions
 // Exit Uptime Kuma immediately if the Node.js version is banned
 if (semver.satisfies(nodeVersion, bannedNodeVersions)) {
     console.error(
-        "\x1b[31m%s\x1b[0m",
+        `${RED}%s${RESET}`,
         `Error: Your Node.js version: ${nodeVersion} is not supported, please upgrade your Node.js to ${requiredNodeVersionsComma}.`
     );
     process.exit(-1);
@@ -40,7 +45,7 @@ if (semver.satisfies(nodeVersion, bannedNodeVersions)) {
 // Warning if the Node.js version is not in the support list, but it maybe still works
 if (!semver.satisfies(nodeVersion, requiredNodeVersions)) {
     console.warn(
-        "\x1b[31m%s\x1b[0m",
+        `${RED}%s${RESET}`,
         `Warning: Your Node.js version: ${nodeVersion} is not officially supported, please upgrade your Node.js to ${requiredNodeVersionsComma}.`
     );
 }
