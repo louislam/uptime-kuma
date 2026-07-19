@@ -35,6 +35,11 @@ let doesntMatch = function (a) {
     };
 };
 
+// NO_COLOR support: https://no-color.org/
+const noColor = !!process.env.NO_COLOR;
+const YELLOW = noColor ? "" : "\x1b[33m";
+const RESET = noColor ? "" : "\x1b[0m";
+
 /**
  * Get log duration
  * @param {number} d Time in ms
@@ -43,7 +48,7 @@ let doesntMatch = function (a) {
  */
 let logDuration = function (d, prefix) {
     let str = d > 1000 ? (d / 1000).toFixed(2) + "sec" : d + "ms";
-    return "\x1b[33m- " + (prefix ? prefix + " " : "") + str + "\x1b[0m";
+    return `${YELLOW}- ${prefix ? prefix + " " : ""}${str}${RESET}`;
 };
 
 /**
@@ -469,9 +474,9 @@ function ApiCache() {
      * Converts a duration string to an integer number of milliseconds.
      * @param {(string|number)} duration The string to convert.
      * @param {number} defaultDuration The default duration to return if
-     * can't parse duration
+     * can\'t parse duration
      * @returns {number} The converted value in milliseconds, or the
-     * defaultDuration if it can't be parsed.
+     * defaultDuration if it can\'t be parsed.
      */
     function parseDuration(duration, defaultDuration) {
         if (typeof duration === "number") {
@@ -479,7 +484,7 @@ function ApiCache() {
         }
 
         if (typeof duration === "string") {
-            let split = duration.match(/^([\d\.,]+)\s?([a-zA-Z]+)$/);
+            let split = duration.match(/^(\d\.]+)\s?([a-zA-Z]+)$/);
 
             if (split.length === 3) {
                 let len = parseFloat(split[1]);
