@@ -41,8 +41,11 @@ const main = async () => {
                 // When called with "--new-password" argument for unattended modification (e.g. npm run reset-password -- --new_password=secret)
                 if ("new-password" in args) {
                     console.log("Using password from argument");
+                    const noColor = !!process.env.NO_COLOR;
+                    const RED = noColor ? "" : "\x1b[31m";
+                    const RESET = noColor ? "" : "\x1b[0m";
                     console.warn(
-                        "\x1b[31m%s\x1b[0m",
+                        `${RED}%s${RESET}`,
                         "Warning: the password might be stored, in plain text, in your shell's history"
                     );
                     password = confirmPassword = args["new-password"] + "";
