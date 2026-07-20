@@ -18,16 +18,30 @@ class Plivo extends NotificationProvider {
                         "Basic " +
                         Buffer.from(notification.plivoAuthID + ":" + notification.plivoAuthToken).toString("base64"),
                 },
+                timeout: 10000,
             };
             config = this.getAxiosConfigWithProxy(config);
 
-            const data = {
-                src: notification.plivoFromNumber,
-                dst: notification.plivoToNumber,
-                text: msg,
-            };
+            const baseURL = `https://api.plivo.com/v1/Account/${notification.plivoAuthID}`;
 
-            await axios.post(`https://api.plivo.com/v1/Account/${notification.plivoAuthID}/Message/`, data, config);
+            if (notification.plivoMessageType === "call") {
+                const answerUrl = new URL(notification.plivoAnswerUrl);
+                answerUrl.searchParams.set("message", msg);
+                const data = {
+                    from: notification.plivoFromNumber,
+                    to: notification.plivoToNumber,
+                    answer_url: answerUrl.toString(),
+                    answer_method: "GET",
+                };
+                await axios.post(`${baseURL}/Call/`, data, config);
+            } else {
+                const data = {
+                    src: notification.plivoFromNumber,
+                    dst: notification.plivoToNumber,
+                    text: msg,
+                };
+                await axios.post(`${baseURL}/Message/`, data, config);
+            }
 
             return okMsg;
         } catch (error) {
