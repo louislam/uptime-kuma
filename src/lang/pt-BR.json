@@ -1630,5 +1630,9 @@
     "Bearer Token": "Bearer Token",
     "Connection Timeout": "Tempo limite de conexão",
     "smtpAdditionalHeadersTitle": "Cabeçalhos adicionais",
-    "smtpAdditionalHeadersDesc": "Consulte os cabeçalhos personalizados do Nodemailer {0} para obter informações sobre o uso."
+    "smtpAdditionalHeadersDesc": "Consulte os cabeçalhos personalizados do Nodemailer {0} para obter informações sobre o uso.",
+    "Rybbit": "Rybbit",
+    "Flowtriq Webhook URL": "URL do Webhook",
+    "Flowtriq API Key": "Chave de API",
+    "flowtriqApiKeyDescription": "Chave de API opcional para autenticar solicitações de webhook para sua instância do Flowtriq."
 }
