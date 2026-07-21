@@ -1288,5 +1288,9 @@
     "retryOnlyOnStatusCodeFailureDescription": "Eğer etkinleştirilirse, yeniden denemeler sadece HTTP durum kodu denemesi hata verirse (ör., sunucu kapalı) gerçekleştirilir. Eğer durum kodu denemesi hatasız çalışırsa ama JSON isteği hata verirse servis yeniden denemesiz bir şekilde kapalı sayılır.",
     "Only retry if status code check fails": "Sadece bir durum kodu hata verirse yeniden dene",
     "wsCodeDescription": "Durum kodlarıyla ilgili daha fazla bilgi için bkz. {rfc6455}",
-    "Subprotocol(s)": "Alt protokol(ler)"
+    "Subprotocol(s)": "Alt protokol(ler)",
+    "saveResponseDescription": "HTTP yanıtını saklar ve {templateVariable} olarak bildirim şablonlarına sunar",
+    "saveResponseForNotifications": "Bildirimler için HTTP Başarılı Yanıtını Kaydet",
+    "saveErrorResponseForNotifications": "Bildirimler için HTTP Hata Yanıtını Kaydet",
+    "Connection Timeout": "Bağlantı Zaman Aşımı"
 }
