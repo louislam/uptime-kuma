@@ -1039,5 +1039,9 @@
     "hostnameCannotBeIP": "ชื่อโฮสต์ DNS ไม่สามารถเป็นที่อยู่ IP ได้ คุณต้องการใช้ช่องตัวแก้ไขใช่หรือไม่",
     "Past Incidents": "เหตุการณ์ที่ผ่านมา",
     "Pinned incidents are shown prominently on the status page": "เหตุการณ์ที่ปักหมุดไว้จะแสดงอย่างเด่นชัดบนหน้าสถานะ",
-    "steamApiKeyDescriptionAt": "ในการตรวจสอบสถานะเซิร์ฟเวอร์เกม Steam คุณต้องมีคีย์ Steam Web-API คุณสามารถลงทะเบียนคีย์ API ของคุณได้ที่ {url}"
+    "steamApiKeyDescriptionAt": "ในการตรวจสอบสถานะเซิร์ฟเวอร์เกม Steam คุณต้องมีคีย์ Steam Web-API คุณสามารถลงทะเบียนคีย์ API ของคุณได้ที่ {url}",
+    "monitorTypeGameServer": "เซิร์ฟเวอร์เกมส์",
+    "monitorTypeSpecial": "พิเศษ",
+    "oracledbConnectionString": "ฐานข้อมูล Oracle: {connectionString}",
+    "monitorTypeDatabase": "ชนิดมอนิเตอร์ดาต้าเบส"
 }

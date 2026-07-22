@@ -215,6 +215,7 @@ export default {
                 bale: "Bale",
                 Bitrix24: "Bitrix24",
                 discord: "Discord",
+                max: this.$t("maxMessenger"),
                 fluxer: "Fluxer",
                 GoogleChat: "Google Chat (Google Workspace)",
                 gorush: "Gorush",
@@ -271,9 +272,11 @@ export default {
                 gtxmessaging: "GtxMessaging",
                 octopush: "Octopush",
                 Onesender: "Onesender",
+                plivo: "Plivo",
                 SevenIO: "SevenIO",
                 SMSEagle: "SMSEagle",
                 SMSPartner: "SMS Partner",
+                telnyx: "Telnyx",
                 Teltonika: this.$t("Teltonika SMS Gateway"),
                 twilio: "Twilio",
             };
@@ -290,6 +293,7 @@ export default {
             let incidentManagement = {
                 alerta: "Alerta",
                 AlertNow: "AlertNow",
+                Flowtriq: "Flowtriq",
                 GoAlert: "GoAlert",
                 GrafanaOncall: "Grafana Oncall",
                 HeiiOnCall: "Heii On-Call",
@@ -316,10 +320,12 @@ export default {
             // Regional - Not supported in most regions or documentation is not in English
             let regional = {
                 AliyunSMS: "AliyunSMS (阿里云短信服务)",
+                egosms: "EgoSMS (Uganda)",
                 DingDing: "DingDing (钉钉自定义机器人)",
                 Feishu: "Feishu (飞书)",
                 FlashDuty: "FlashDuty (快猫星云)",
                 FreeMobile: "FreeMobile (mobile.free.fr)",
+                Ooredoo: "Ooredoo (Maldives)",
                 PushDeer: "PushDeer",
                 promosms: "PromoSMS",
                 serwersms: "SerwerSMS.pl",
@@ -331,8 +337,11 @@ export default {
                 smsc: "SMSC",
                 smsir: "SMS.IR",
                 WPush: "WPush(wpush.cn)",
+                WxPusher: "WxPusher SPT Push (WxPusher极简推送)",
                 YZJ: "YZJ (云之家自定义机器人)",
                 SMSPlanet: "SMSPlanet.pl",
+                VK: "VK",
+                VKTeams: "VKTeams",
             };
 
             // Sort by notification name alphabetically
@@ -416,6 +425,10 @@ export default {
                 for (let n of this.$root.notificationList) {
                     if (n.id === notificationID) {
                         this.notification = JSON.parse(n.config);
+
+                        // applyExisting is one time only, but it got saved to database previously. Workaround fix, set it to false here to deal with the problem.
+                        this.notification.applyExisting = false;
+
                         break;
                     }
                 }

@@ -15,7 +15,14 @@
             <p v-if="monitor.description" v-html="descriptionHTML"></p>
             <div class="d-flex">
                 <div class="tags">
-                    <Tag v-for="tag in monitor.tags" :key="tag.id" :item="tag" :size="'sm'" />
+                    <Tag
+                        v-for="tag in monitor.tags"
+                        :key="tag.id"
+                        :item="tag"
+                        :size="'sm'"
+                        :scrollable="true"
+                        :constrained="true"
+                    />
                 </div>
             </div>
             <p class="url">
@@ -86,6 +93,13 @@
                     MQTT: {{ monitor.hostname }}:{{ monitor.port }}/{{ monitor.mqttTopic }}
                 </span>
                 <span v-if="monitor.type === 'mysql'">{{ filterPassword(monitor.databaseConnectionString) }}</span>
+                <span v-if="monitor.type === 'oracledb'">
+                    {{
+                        $t("oracledbConnectionString", {
+                            connectionString: filterPassword(monitor.databaseConnectionString),
+                        })
+                    }}
+                </span>
                 <span v-if="monitor.type === 'postgres'">{{ filterPassword(monitor.databaseConnectionString) }}</span>
                 <span v-if="monitor.type === 'push'">
                     Push:
@@ -1003,6 +1017,7 @@ table {
 
 .tags {
     margin-bottom: 0.5rem;
+    max-width: 95vw;
 }
 
 .tags > div:first-child {

@@ -69,6 +69,24 @@ if (process.env.UPTIME_KUMA_WS_ORIGIN_CHECK === "bypass") {
     log.warn("server", "WebSocket Origin Check: " + process.env.UPTIME_KUMA_WS_ORIGIN_CHECK);
 }
 
+if (isDev || process.env.UPTIME_KUMA_DEBUG_INSPECTOR === "1") {
+    const inspector = require("inspector");
+    let inspectorHost = "127.0.0.1";
+
+    log.warn("server", "Node.js Inspector is enabled. You can connect to it via Chrome DevTools or VSCode.");
+    log.warn("server", "Node.js Inspector is listening on:", inspector.url());
+
+    if (process.env.UPTIME_KUMA_IS_CONTAINER === "1") {
+        log.warn(
+            "server",
+            "You need to expose the port 9229:9229 in your docker command or docker compose, and ssh tunneling in order to connect to it."
+        );
+        inspectorHost = "0.0.0.0";
+    }
+
+    inspector.open(9229, inspectorHost);
+}
+
 const checkVersion = require("./check-version");
 log.info("server", "Uptime Kuma Version:", checkVersion.version);
 
@@ -840,6 +858,7 @@ let needSetup = false;
                 bean.headers = monitor.headers;
                 bean.basic_auth_user = monitor.basic_auth_user;
                 bean.basic_auth_pass = monitor.basic_auth_pass;
+                bean.bearer_token = monitor.bearer_token;
                 bean.timeout = monitor.timeout;
                 bean.oauth_client_id = monitor.oauth_client_id;
                 bean.oauth_client_secret = monitor.oauth_client_secret;
@@ -917,7 +936,9 @@ let needSetup = false;
                 bean.kafkaProducerSsl = monitor.kafkaProducerSsl;
                 bean.kafkaProducerAllowAutoTopicCreation = monitor.kafkaProducerAllowAutoTopicCreation;
                 bean.gamedigGivenPortOnly = monitor.gamedigGivenPortOnly;
+                bean.gamedigToken = monitor.gamedigToken;
                 bean.remote_browser = monitor.remote_browser;
+                bean.screenshot_delay = monitor.screenshot_delay;
                 bean.smtpSecurity = monitor.smtpSecurity;
                 bean.snmpVersion = monitor.snmpVersion;
                 bean.snmpOid = monitor.snmpOid;
@@ -931,6 +952,9 @@ let needSetup = false;
                 bean.manual_status = monitor.manual_status;
                 bean.system_service_name = monitor.system_service_name;
                 bean.expected_tls_alert = monitor.expectedTlsAlert;
+                bean.ntp_stratum_threshold = monitor.ntpStratumThreshold;
+                bean.ntp_time_offset_threshold = monitor.ntpTimeOffsetThreshold;
+                bean.ntp_root_dispersion_threshold = monitor.ntpRootDispersionThreshold;
 
                 // ping advanced options
                 bean.ping_numeric = monitor.ping_numeric;
@@ -1745,7 +1769,8 @@ let needSetup = false;
     await server.start();
 
     server.httpServer.listen(port, hostname, async () => {
-        printServerUrls("server", port, hostname);
+        printServerUrls("server", port, hostname, config.isSSL);
+
         await startMonitors();
 
         // Put this here. Start background jobs after the db and server is ready to prevent clear up during db migration.

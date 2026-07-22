@@ -20,12 +20,17 @@ jobs:
     permissions:
       pull-requests: write
     if: |
+      github.repository == 'louislam/uptime-kuma' &&
       (
-        github.event.action == 'review_submitted' &&
-        github.event.review.state == 'changes_requested'
-      ) || (
-        github.event.action == 'labeled' &&
-        github.event.label.name == 'pr:please address review comments'
+        (
+          github.event.action == 'review_submitted' &&
+          github.event.review.state == 'changes_requested'
+        )
+        ||
+        (
+          github.event.action == 'labeled' &&
+          github.event.label.name == 'pr:please address review comments'
+        )
       )
     steps:
       - name: Add label on requested changes
@@ -50,7 +55,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
-    if: github.event.action == 'ready_for_review'
+    if: github.event.action == 'ready_for_review' && github.repository == 'louislam/uptime-kuma'
     steps:
       - name: Update labels for review
         env:
