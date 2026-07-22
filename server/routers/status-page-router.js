@@ -4,9 +4,10 @@ const { UptimeKumaServer } = require("../uptime-kuma-server");
 const StatusPage = require("../model/status_page");
 const { allowDevAllOrigin, sendHttpError } = require("../util-server");
 const { R } = require("redbean-node");
-const { badgeConstants, UP, DOWN, MAINTENANCE, PENDING } = require("../../src/util");
+const { badgeConstants, UP, DOWN, MAINTENANCE } = require("../../src/util");
 const { makeBadge } = require("badge-maker");
 const { UptimeCalculator } = require("../uptime-calculator");
+const { getAggregatedBuckets } = require("../utils/heartbeat-buckets");
 const dayjs = require("dayjs");
 
 let router = express.Router();
@@ -73,10 +74,11 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
         slug = slug.toLowerCase();
         let statusPageID = await StatusPage.slugToID(slug);
 
-        let monitorIDList = await R.getCol(
+        let monitorList = await R.getAll(
             `
-            SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
+            SELECT monitor_group.monitor_id, monitor.interval FROM monitor_group, \`group\`, monitor
             WHERE monitor_group.group_id = \`group\`.id
+            AND monitor.id = monitor_group.monitor_id
             AND public = 1
             AND \`group\`.status_page_id = ?
         `,
@@ -91,7 +93,8 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
         const maxBeats = Math.min(parseInt(request.query.maxBeats) || 100, 100);
 
         // Process all monitors in parallel using Promise.all
-        const monitorPromises = monitorIDList.map(async (monitorID) => {
+        const monitorPromises = monitorList.map(async (monitor) => {
+            const monitorID = monitor.monitor_id;
             const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);
 
             let heartbeats;
@@ -112,24 +115,15 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
                 heartbeats = list.reverse().map((row) => row.toPublicJSON());
             } else {
                 // For configured day ranges, use aggregated data from UptimeCalculator
-                const buckets = uptimeCalculator.getAggregatedBuckets(heartbeatBarDays, maxBeats);
+                const buckets = getAggregatedBuckets(uptimeCalculator, heartbeatBarDays, maxBeats, monitor.interval);
                 heartbeats = buckets.map((bucket) => {
                     // If bucket has no data, return 0 (empty beat) to match original behavior
-                    if (bucket.up === 0 && bucket.down === 0 && bucket.maintenance === 0 && bucket.pending === 0) {
+                    if (bucket.up === 0 && bucket.down === 0 && bucket.maintenance === 0) {
                         return 0;
                     }
 
                     return {
-                        status:
-                            bucket.down > 0
-                                ? DOWN
-                                : bucket.maintenance > 0
-                                  ? MAINTENANCE
-                                  : bucket.pending > 0
-                                    ? PENDING
-                                    : bucket.up > 0
-                                      ? UP
-                                      : 0,
+                        status: bucket.down > 0 ? DOWN : bucket.maintenance > 0 ? MAINTENANCE : UP,
                         time: dayjs.unix(bucket.end).toISOString(),
                         msg: "",
                         ping: null,
