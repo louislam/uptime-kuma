@@ -95,9 +95,6 @@ export default {
             if (this.type === "720") {
                 return this.$t("days", 30);
             }
-            if (this.type === "24") {
-                return this.$t("hours", 24);
-            }
             // Handle dynamic day formats (e.g., "7d", "14d", "30d")
             const dayMatch = this.type.match(/^(\d+)d$/);
             if (dayMatch) {

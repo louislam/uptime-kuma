@@ -928,16 +928,7 @@ export default {
                 this.$root.getSocket().emit("getStatusPage", this.slug, (res) => {
                     if (res.ok) {
                         this.config = res.config;
-
-                        if (
-                            this.config.heartbeatBarDays === undefined ||
-                            this.config.heartbeatBarDays === null ||
-                            this.config.heartbeatBarDays === ""
-                        ) {
-                            this.config.heartbeatBarDays = 0;
-                        } else {
-                            this.config.heartbeatBarDays = parseInt(this.config.heartbeatBarDays, 10) || 0;
-                        }
+                        this.config.heartbeatBarDays = this.normalizeHeartbeatBarDays(this.config.heartbeatBarDays);
 
                         if (!this.config.customCSS) {
                             this.config.customCSS = "body {\n" + "  \n" + "}\n";
@@ -1024,15 +1015,7 @@ export default {
                     this.config.domainNameList = [];
                 }
 
-                if (
-                    this.config.heartbeatBarDays === undefined ||
-                    this.config.heartbeatBarDays === null ||
-                    this.config.heartbeatBarDays === ""
-                ) {
-                    this.config.heartbeatBarDays = 0;
-                } else {
-                    this.config.heartbeatBarDays = parseInt(this.config.heartbeatBarDays, 10) || 0;
-                }
+                this.config.heartbeatBarDays = this.normalizeHeartbeatBarDays(this.config.heartbeatBarDays);
 
                 if (this.config.icon) {
                     this.imgDataUrl = this.config.icon;
@@ -1093,6 +1076,18 @@ export default {
          */
         highlighter(code) {
             return highlight(code, languages.css);
+        },
+
+        /**
+         * Coerce a stored heartbeatBarDays value to a valid number
+         * @param {number|string|null|undefined} value Raw config value
+         * @returns {number} Days as a number, 0 if unset or invalid
+         */
+        normalizeHeartbeatBarDays(value) {
+            if (value === undefined || value === null || value === "") {
+                return 0;
+            }
+            return parseInt(value, 10) || 0;
         },
 
         /**
