@@ -77,6 +77,7 @@ export default {
             beatHoverAreaPadding: 4,
             move: false,
             maxBeat: -1,
+            wrapWidth: 0,
             // Tooltip data
             tooltipVisible: false,
             tooltipContent: null,
@@ -146,8 +147,14 @@ export default {
                 return this.beatList;
             }
 
-            // For both configured days and auto mode, show only what fits on screen
-            // The server provides up to 100 beats, we slice to what fits the container width
+            // For configured ranges the server already returns at most maxBeat
+            // beats covering the whole range, so show them all: fewer beats than
+            // fit simply spread out (see beatFullWidth), they are never padded
+            if (this.normalizedHeartbeatBarDays > 0) {
+                return this.beatList;
+            }
+
+            // Auto mode: show only what fits on screen
             let placeholders = [];
             let start = this.beatList.length - this.maxBeat;
 
@@ -255,12 +262,26 @@ export default {
         },
 
         /**
+         * Width of one beat slot (beat plus its surrounding space).
+         * For configured ranges with fewer beats than fit the container, the
+         * slots grow so the beats spread over the full width - the beats
+         * themselves keep their normal size (see drawCanvas).
+         * @returns {number} Slot width in pixels
+         */
+        beatFullWidth() {
+            const defaultWidth = this.beatWidth + this.beatHoverAreaPadding * 2;
+            if (this.normalizedHeartbeatBarDays > 0 && this.wrapWidth > 0 && this.shortBeatList.length > 0 && this.shortBeatList.length < this.maxBeat) {
+                return this.wrapWidth / this.shortBeatList.length;
+            }
+            return defaultWidth;
+        },
+
+        /**
          * Canvas width based on number of beats
          * @returns {number} Canvas width in pixels
          */
         canvasWidth() {
-            const beatFullWidth = this.beatWidth + this.beatHoverAreaPadding * 2;
-            return this.shortBeatList.length * beatFullWidth;
+            return this.shortBeatList.length * this.beatFullWidth;
         },
 
         /**
@@ -368,8 +389,9 @@ export default {
          */
         resize() {
             if (this.$refs.wrap) {
+                this.wrapWidth = this.$refs.wrap.clientWidth;
                 const newMaxBeat = Math.floor(
-                    this.$refs.wrap.clientWidth / (this.beatWidth + this.beatHoverAreaPadding * 2)
+                    this.wrapWidth / (this.beatWidth + this.beatHoverAreaPadding * 2)
                 );
 
                 // If maxBeat changed and we're in configured days mode, notify parent to reload data
@@ -467,8 +489,7 @@ export default {
                 this.tooltipContent = beat;
 
                 // Calculate the beat's position within the canvas
-                const beatFullWidth = this.beatWidth + this.beatHoverAreaPadding * 2;
-                const beatCenterX = beatIndex * beatFullWidth + beatFullWidth / 2;
+                const beatCenterX = beatIndex * this.beatFullWidth + this.beatFullWidth / 2;
 
                 // Convert to viewport coordinates
                 const x = canvasRect.left + beatCenterX;
@@ -547,7 +568,7 @@ export default {
             // Clear canvas
             ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
 
-            const beatFullWidth = this.beatWidth + this.beatHoverAreaPadding * 2;
+            const beatFullWidth = this.beatFullWidth;
             const centerY = this.canvasHeight / 2;
 
             // Cache CSS colors once per redraw
@@ -563,7 +584,7 @@ export default {
 
             // Draw each beat
             this.shortBeatList.forEach((beat, index) => {
-                const x = index * beatFullWidth + this.beatHoverAreaPadding;
+                const x = index * beatFullWidth + (beatFullWidth - this.beatWidth) / 2;
                 const isHovered = index === this.hoveredBeatIndex;
 
                 let width = this.beatWidth;
@@ -686,8 +707,7 @@ export default {
 
             const rect = canvas.getBoundingClientRect();
             const x = event.clientX - rect.left;
-            const beatFullWidth = this.beatWidth + this.beatHoverAreaPadding * 2;
-            const beatIndex = Math.floor(x / beatFullWidth);
+            const beatIndex = Math.floor(x / this.beatFullWidth);
 
             if (beatIndex >= 0 && beatIndex < this.shortBeatList.length) {
                 const beat = this.shortBeatList[beatIndex];
