@@ -244,7 +244,11 @@ export default {
          * @returns {string} The elapsed time in a minutes, hours or "now".
          */
         timeSinceLastBeat() {
-            const lastValidBeat = this.shortBeatList.at(-1);
+            // Aggregated bars can end in empty buckets, use the newest beat with data
+            const lastValidBeat = this.shortBeatList
+                .slice()
+                .reverse()
+                .find((beat) => beat !== 0 && beat !== null);
             const seconds = dayjs().diff(dayjs.utc(lastValidBeat?.time), "seconds");
 
             let tolerance = 60 * 2; // default for when monitorList not available
@@ -323,6 +327,14 @@ export default {
 
         shortBeatList() {
             // Triggers on beatList, maxBeat, or move changes
+            this.$nextTick(() => {
+                this.drawCanvas();
+            });
+        },
+
+        canvasWidth() {
+            // Changing the width attribute wipes the canvas, redraw after a
+            // resize even when the beat data itself did not change
             this.$nextTick(() => {
                 this.drawCanvas();
             });

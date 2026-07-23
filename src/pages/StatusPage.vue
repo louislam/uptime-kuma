@@ -713,6 +713,8 @@ export default {
                 heartbeatBarDays: 0,
                 analyticsType: null,
             },
+            heartbeatMaxBeats: null,
+            heartbeatRequestSeq: 0,
             selectedMonitor: null,
             incident: null,
             previousIncident: null,
@@ -1096,11 +1098,21 @@ export default {
          * @returns {Promise} Promise that resolves when data is loaded
          */
         loadHeartbeatData(maxBeats = null) {
+            if (maxBeats === null) {
+                // Refreshes keep the beat count the bar last asked for
+                maxBeats = this.heartbeatMaxBeats;
+            }
+
+            const requestSeq = ++this.heartbeatRequestSeq;
             return axios
                 .get("/api/status-page/heartbeat/" + this.slug, {
                     params: { maxBeats },
                 })
                 .then((res) => {
+                    if (requestSeq !== this.heartbeatRequestSeq) {
+                        // A newer request was sent in the meantime, drop this response
+                        return;
+                    }
                     const { heartbeatList, uptimeList } = res.data;
 
                     this.$root.heartbeatList = heartbeatList;
@@ -1133,6 +1145,11 @@ export default {
          * @returns {void}
          */
         reloadHeartbeatData(maxBeats) {
+            if (maxBeats === this.heartbeatMaxBeats) {
+                // Every bar on the page reports the same width, one request is enough
+                return;
+            }
+            this.heartbeatMaxBeats = maxBeats;
             this.loadHeartbeatData(maxBeats);
         },
 
