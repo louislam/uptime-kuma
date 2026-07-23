@@ -1113,15 +1113,19 @@ export default {
                         // A newer request was sent in the meantime, drop this response
                         return;
                     }
-                    const { heartbeatList, uptimeList } = res.data;
+                    const { heartbeatList, uptimeList, lastHeartbeatList } = res.data;
 
                     this.$root.heartbeatList = heartbeatList;
                     this.$root.uptimeList = uptimeList;
 
+                    // Aggregated bars cannot express the current status, the
+                    // server sends the real latest heartbeats separately then
+                    this.$root.lastHeartbeatOverrideList = lastHeartbeatList || {};
+
                     const heartbeatIds = Object.keys(heartbeatList);
                     const downMonitors = heartbeatIds.reduce((downMonitorsAmount, currentId) => {
                         const monitorHeartbeats = heartbeatList[currentId];
-                        const lastHeartbeat = monitorHeartbeats.at(-1);
+                        const lastHeartbeat = this.$root.lastHeartbeatOverrideList[currentId] || monitorHeartbeats.at(-1);
 
                         if (lastHeartbeat) {
                             return lastHeartbeat.status === 0 ? downMonitorsAmount + 1 : downMonitorsAmount;
@@ -1196,6 +1200,9 @@ export default {
         edit() {
             if (this.hasToken) {
                 this.$root.initSocketIO(true);
+                // The websocket delivers raw heartbeats, their last entry is
+                // the current status again
+                this.$root.lastHeartbeatOverrideList = {};
                 this.enableEditMode = true;
                 this.clickedEditButton = true;
 

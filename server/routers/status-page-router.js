@@ -69,6 +69,7 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
     try {
         let heartbeatList = {};
         let uptimeList = {};
+        let lastHeartbeatList = {};
 
         let slug = request.params.slug;
         slug = slug.toLowerCase();
@@ -98,6 +99,7 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
             const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);
 
             let heartbeats;
+            let lastHeartbeat = null;
 
             if (heartbeatBarDays === 0) {
                 // Auto mode - use original LIMIT 100 logic
@@ -129,6 +131,25 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
                         ping: null,
                     };
                 });
+
+                // Aggregated buckets cannot express the monitor's current
+                // status, send the real latest heartbeat along for it
+                let lastBeat = await R.getRow(
+                    `
+                    SELECT status, time FROM heartbeat
+                    WHERE monitor_id = ?
+                    ORDER BY time DESC
+                    LIMIT 1
+                `,
+                    [monitorID]
+                );
+
+                if (lastBeat) {
+                    lastHeartbeat = {
+                        status: lastBeat.status,
+                        time: lastBeat.time,
+                    };
+                }
             }
 
             // Calculate uptime based on the range
@@ -143,6 +164,7 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
                 monitorID,
                 heartbeats,
                 uptime,
+                lastHeartbeat,
             };
         });
 
@@ -158,11 +180,16 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
             if (heartbeatBarDays === 0) {
                 uptimeList[`${result.monitorID}_24`] = result.uptime;
             }
+
+            if (result.lastHeartbeat) {
+                lastHeartbeatList[result.monitorID] = result.lastHeartbeat;
+            }
         }
 
         response.json({
             heartbeatList,
             uptimeList,
+            lastHeartbeatList,
         });
     } catch (error) {
         sendHttpError(response, error.message);

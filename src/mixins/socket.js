@@ -46,6 +46,7 @@ export default {
             maintenanceList: {},
             apiKeyList: {},
             heartbeatList: {},
+            lastHeartbeatOverrideList: {},
             avgPingList: {},
             uptimeList: {},
             tlsInfoList: {},
@@ -745,6 +746,14 @@ export default {
             let result = {};
 
             for (let monitorID in this.heartbeatList) {
+                // Status pages with an aggregated heartbeat bar receive the
+                // real latest heartbeat separately, the last list entry is
+                // a bucket there and cannot express the current status
+                if (this.lastHeartbeatOverrideList[monitorID]) {
+                    result[monitorID] = this.lastHeartbeatOverrideList[monitorID];
+                    continue;
+                }
+
                 let index = this.heartbeatList[monitorID].length - 1;
                 result[monitorID] = this.heartbeatList[monitorID][index];
             }
