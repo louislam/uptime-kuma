@@ -30,11 +30,11 @@ export default {
                 return this.$t("statusMaintenance");
             }
 
-            // Try direct monitor ID key (used by status page with configurable heartbeat range)
-            let key = this.monitor.id;
+            // Dashboard data uses suffixed keys, the status page API keys by
+            // plain monitor ID (its range follows the status page setting)
+            let key = this.monitor.id + "_" + this.type;
             if (this.$root.uptimeList[key] === undefined) {
-                // Fall back to suffixed key (used by dashboard)
-                key = this.monitor.id + "_" + this.type;
+                key = this.monitor.id;
             }
 
             if (this.$root.uptimeList[key] !== undefined) {

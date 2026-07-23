@@ -1053,6 +1053,17 @@ export default {
             this.edit();
         }
     },
+    beforeUnmount() {
+        clearInterval(feedInterval);
+
+        // Keep the status page overrides out of other views like the dashboard
+        this.$root.lastHeartbeatOverrideList = {};
+        for (const key of Object.keys(this.$root.uptimeList)) {
+            if (!String(key).includes("_")) {
+                delete this.$root.uptimeList[key];
+            }
+        }
+    },
     methods: {
         /**
          * Get status page data
@@ -1149,6 +1160,10 @@ export default {
          * @returns {void}
          */
         reloadHeartbeatData(maxBeats) {
+            if (this.editMode) {
+                // Edit mode uses live websocket data, don't overwrite it
+                return;
+            }
             if (maxBeats === this.heartbeatMaxBeats) {
                 // Every bar on the page reports the same width, one request is enough
                 return;
