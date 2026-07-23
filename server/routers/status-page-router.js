@@ -153,6 +153,11 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
         for (const result of monitorResults) {
             heartbeatList[result.monitorID] = result.heartbeats;
             uptimeList[result.monitorID] = result.uptime;
+
+            // Keep the pre-existing key shape for external consumers
+            if (heartbeatBarDays === 0) {
+                uptimeList[`${result.monitorID}_24`] = result.uptime;
+            }
         }
 
         response.json({
