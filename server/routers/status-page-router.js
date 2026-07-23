@@ -91,7 +91,7 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
         let heartbeatBarDays = statusPage ? statusPage.heartbeat_bar_days || 0 : 0;
 
         // Get max beats parameter from query string (for client-side screen width constraints)
-        const maxBeats = Math.min(parseInt(request.query.maxBeats) || 100, 100);
+        const maxBeats = Math.min(Math.max(parseInt(request.query.maxBeats, 10) || 100, 1), 100);
 
         // Process all monitors in parallel using Promise.all
         const monitorPromises = monitorList.map(async (monitor) => {

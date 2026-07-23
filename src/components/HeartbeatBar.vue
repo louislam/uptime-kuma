@@ -78,6 +78,7 @@ export default {
             move: false,
             maxBeat: -1,
             wrapWidth: 0,
+            reloadTimeout: null,
             // Tooltip data
             tooltipVisible: false,
             tooltipContent: null,
@@ -353,6 +354,7 @@ export default {
     },
     unmounted() {
         window.removeEventListener("resize", this.resize);
+        clearTimeout(this.reloadTimeout);
         // Clean up tooltip timeout
         if (this.tooltipTimeoutId) {
             clearTimeout(this.tooltipTimeoutId);
@@ -406,18 +408,22 @@ export default {
                     this.wrapWidth / (this.beatWidth + this.beatHoverAreaPadding * 2)
                 );
 
-                // If maxBeat changed and we're in configured days mode, notify parent to reload data
+                // If maxBeat changed and we're in configured days mode, notify parent to reload data.
+                // Debounced: dragging a window edge fires resize continuously
                 if (newMaxBeat !== this.maxBeat && this.normalizedHeartbeatBarDays > 0) {
                     this.maxBeat = newMaxBeat;
 
-                    // Find the closest parent with reloadHeartbeatData method (StatusPage)
-                    let parent = this.$parent;
-                    while (parent && !parent.reloadHeartbeatData) {
-                        parent = parent.$parent;
-                    }
-                    if (parent && parent.reloadHeartbeatData) {
-                        parent.reloadHeartbeatData(newMaxBeat);
-                    }
+                    clearTimeout(this.reloadTimeout);
+                    this.reloadTimeout = setTimeout(() => {
+                        // Find the closest parent with reloadHeartbeatData method (StatusPage)
+                        let parent = this.$parent;
+                        while (parent && !parent.reloadHeartbeatData) {
+                            parent = parent.$parent;
+                        }
+                        if (parent && parent.reloadHeartbeatData) {
+                            parent.reloadHeartbeatData(this.maxBeat);
+                        }
+                    }, 250);
                 } else {
                     this.maxBeat = newMaxBeat;
                 }
