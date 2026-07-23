@@ -50,16 +50,42 @@
         </div>
     </div>
 
+    <div class="mb-3">
+        <div class="form-check form-switch">
+            <input v-model="$parent.notification.openwaUseCustomMessage" class="form-check-input" type="checkbox" />
+            <label class="form-check-label">{{ $t("openwaCustomMessageTitle") }}</label>
+        </div>
+        <div class="form-text">{{ $t("openwaCustomMessageDesc") }}</div>
+    </div>
+
+    <template v-if="$parent.notification.openwaUseCustomMessage">
+        <div class="mb-3">
+            <TemplatedTextarea
+                id="openwa-custom-message"
+                v-model="$parent.notification.openwaCustomMessage"
+                :required="true"
+                :placeholder="customMessagePlaceholder"
+            ></TemplatedTextarea>
+        </div>
+    </template>
+
     <i18n-t tag="div" keypath="More info on:" class="mb-3 form-text">
         <a href="https://www.open-wa.org/" target="_blank">https://www.open-wa.org/</a>
     </i18n-t>
 </template>
 <script>
 import HiddenInput from "../HiddenInput.vue";
+import TemplatedTextarea from "../TemplatedTextarea.vue";
 
 export default {
     components: {
         HiddenInput,
+        TemplatedTextarea,
+    },
+    computed: {
+        customMessagePlaceholder() {
+            return this.$t("Example:", [`[{{ name }}] [{{ status }}]\n{{ msg }}`]);
+        },
     },
 };
 </script>

@@ -1358,6 +1358,8 @@
     "wayToGetOpenwaApiKey": "API key used for your OpenWA instance.",
     "wayToGetOpenwaSession": "Session ID used by OpenWA to send notifications.",
     "wayToWriteOpenwaChatId": "The phone number with the international prefix, but without the plus sign at the start ({0}), the Contact ID ({1}) or the Group ID ({2}). You can send to multiple Chat IDs by separating them with commas.",
+    "openwaCustomMessageTitle": "Custom Message (optional)",
+    "openwaCustomMessageDesc": "Leave empty to use the default message.",
     "360messengerAuthToken": "360messenger API Key",
     "360messengerRecipient": "Recipient phone number(s)",
     "360messengerGroupId": "360messenger Group ID",

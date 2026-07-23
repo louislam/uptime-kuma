@@ -11,6 +11,12 @@ class OpenWa extends NotificationProvider {
         const okMsg = "Sent Successfully.";
 
         try {
+            let text = msg;
+            const customMessage = notification.openwaCustomMessage;
+            if (notification.openwaUseCustomMessage && typeof customMessage === "string" && customMessage.trim()) {
+                text = await this.renderTemplate(customMessage, msg, monitorJSON, heartbeatJSON);
+            }
+
             let config = {
                 headers: {
                     Accept: "application/json",
@@ -20,20 +26,25 @@ class OpenWa extends NotificationProvider {
             };
             config = this.getAxiosConfigWithProxy(config);
 
-            const chatId = (notification.openwaChatId || "")
+            const chatIds = (notification.openwaChatId || "")
                 .split(",")
                 .map((id) => id.trim())
-                .find((id) => id.length > 0) || "";
+                .filter((id) => id.length > 0);
 
-            const data = {
-                chatId: chatId,
-                text: msg,
-            };
+            if (chatIds.length === 0) {
+                throw new Error("No valid OpenWA chat ID found.");
+            }
 
             const baseUrl = notification.openwaApiUrl.replace(/([^/])\/+$/, "$1");
             const sessionId = encodeURIComponent(notification.openwaSession);
             const url = `${baseUrl}/api/sessions/${sessionId}/messages/send-text`;
-            await axios.post(url, data, config);
+
+            for (const chatId of chatIds) {
+                await axios.post(url, {
+                    chatId,
+                    text,
+                }, config);
+            }
 
             return okMsg;
         } catch (error) {
