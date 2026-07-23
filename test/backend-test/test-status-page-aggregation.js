@@ -122,6 +122,35 @@ test("getAggregatedBuckets - partial downtime keeps both up and down counts", as
     assert.strictEqual(mixed[0].down, 1);
 });
 
+test("getAggregatedBuckets - monitor without data yields only empty buckets", async (t) => {
+    UptimeCalculator.currentDate = dayjs.utc("2026-07-01 12:00:00");
+    const c = new UptimeCalculator();
+
+    const buckets = getAggregatedBuckets(c, 35, 100, 60);
+
+    assert.strictEqual(buckets.length, 35);
+    for (const bucket of buckets) {
+        assert.strictEqual(bucket.up + bucket.down + bucket.maintenance, 0);
+    }
+});
+
+test("getAggregatedBuckets - beat on the exact range end is not dropped", async (t) => {
+    // Exactly on an hour boundary, so the current hourly key equals the range end
+    const currentTime = dayjs.utc("2026-07-01 12:00:00");
+    UptimeCalculator.currentDate = currentTime;
+    const c = new UptimeCalculator();
+
+    await c.update(1); // key 12:00:00 == end of the requested range
+    UptimeCalculator.currentDate = currentTime.subtract(90, "minute");
+    await c.update(1);
+    UptimeCalculator.currentDate = currentTime;
+
+    const buckets = getAggregatedBuckets(c, 1, 100, 60);
+    const totalUp = buckets.reduce((sum, b) => sum + b.up, 0);
+
+    assert.strictEqual(totalUp, 2);
+});
+
 test("getAggregatedBuckets - maintenance is aggregated on the hourly tier", async (t) => {
     const currentTime = dayjs.utc("2026-07-01 12:00:00");
     UptimeCalculator.currentDate = currentTime;

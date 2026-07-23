@@ -55,11 +55,9 @@ function getAggregatedBuckets(uptimeCalculator, days, maxBeats = 100, interval =
             bucketIndex++;
         }
 
-        if (bucketIndex >= buckets.length) {
-            break;
-        }
-
-        const bucket = buckets[bucketIndex];
+        // The current period's key can equal the range end when the request
+        // lands exactly on a tier boundary - count it in the newest bucket
+        const bucket = buckets[Math.min(bucketIndex, buckets.length - 1)];
         if (point.timestamp >= bucket.start) {
             bucket.up += point.up || 0;
             bucket.down += point.down || 0;
