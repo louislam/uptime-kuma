@@ -4,9 +4,11 @@ const { UptimeKumaServer } = require("../uptime-kuma-server");
 const StatusPage = require("../model/status_page");
 const { allowDevAllOrigin, sendHttpError } = require("../util-server");
 const { R } = require("redbean-node");
-const { badgeConstants } = require("../../src/util");
+const { badgeConstants, UP, DOWN, MAINTENANCE } = require("../../src/util");
 const { makeBadge } = require("badge-maker");
 const { UptimeCalculator } = require("../uptime-calculator");
+const { getAggregatedBuckets } = require("../utils/heartbeat-buckets");
+const dayjs = require("dayjs");
 
 let router = express.Router();
 
@@ -67,42 +69,127 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
     try {
         let heartbeatList = {};
         let uptimeList = {};
+        let lastHeartbeatList = {};
 
         let slug = request.params.slug;
         slug = slug.toLowerCase();
         let statusPageID = await StatusPage.slugToID(slug);
 
-        let monitorIDList = await R.getCol(
+        let monitorList = await R.getAll(
             `
-            SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
+            SELECT monitor_group.monitor_id, monitor.interval FROM monitor_group, \`group\`, monitor
             WHERE monitor_group.group_id = \`group\`.id
+            AND monitor.id = monitor_group.monitor_id
             AND public = 1
             AND \`group\`.status_page_id = ?
         `,
             [statusPageID]
         );
 
-        for (let monitorID of monitorIDList) {
-            let list = await R.getAll(
-                `
+        // Get the status page to determine the heartbeat range
+        let statusPage = await R.findOne("status_page", " id = ? ", [statusPageID]);
+        let heartbeatBarDays = statusPage ? statusPage.heartbeat_bar_days || 0 : 0;
+
+        // Get max beats parameter from query string (for client-side screen width constraints)
+        const maxBeats = Math.min(Math.max(parseInt(request.query.maxBeats, 10) || 100, 1), 100);
+
+        // Process all monitors in parallel using Promise.all
+        const monitorPromises = monitorList.map(async (monitor) => {
+            const monitorID = monitor.monitor_id;
+            const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);
+
+            let heartbeats;
+            let lastHeartbeat = null;
+
+            if (heartbeatBarDays === 0) {
+                // Auto mode - use original LIMIT 100 logic
+                let list = await R.getAll(
+                    `
                     SELECT * FROM heartbeat
                     WHERE monitor_id = ?
                     ORDER BY time DESC
                     LIMIT 100
-            `,
-                [monitorID]
-            );
+                `,
+                    [monitorID]
+                );
 
-            list = R.convertToBeans("heartbeat", list);
-            heartbeatList[monitorID] = list.reverse().map((row) => row.toPublicJSON());
+                list = R.convertToBeans("heartbeat", list);
+                heartbeats = list.reverse().map((row) => row.toPublicJSON());
+            } else {
+                // For configured day ranges, use aggregated data from UptimeCalculator
+                const buckets = getAggregatedBuckets(uptimeCalculator, heartbeatBarDays, maxBeats, monitor.interval);
+                heartbeats = buckets.map((bucket) => {
+                    // If bucket has no data, return 0 (empty beat) to match original behavior
+                    if (bucket.up === 0 && bucket.down === 0 && bucket.maintenance === 0) {
+                        return 0;
+                    }
 
-            const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);
-            uptimeList[`${monitorID}_24`] = uptimeCalculator.get24Hour().uptime;
+                    return {
+                        status: bucket.down > 0 ? DOWN : bucket.maintenance > 0 ? MAINTENANCE : UP,
+                        time: dayjs.unix(bucket.end).toISOString(),
+                        msg: "",
+                        ping: null,
+                    };
+                });
+
+                // Aggregated buckets cannot express the monitor's current
+                // status, send the real latest heartbeat along for it
+                let lastBeat = await R.getRow(
+                    `
+                    SELECT status, time FROM heartbeat
+                    WHERE monitor_id = ?
+                    ORDER BY time DESC
+                    LIMIT 1
+                `,
+                    [monitorID]
+                );
+
+                if (lastBeat) {
+                    lastHeartbeat = {
+                        status: lastBeat.status,
+                        time: lastBeat.time,
+                    };
+                }
+            }
+
+            // Calculate uptime based on the range
+            let uptime;
+            if (heartbeatBarDays <= 1) {
+                uptime = uptimeCalculator.get24Hour().uptime;
+            } else {
+                uptime = uptimeCalculator.getData(heartbeatBarDays, "day").uptime;
+            }
+
+            return {
+                monitorID,
+                heartbeats,
+                uptime,
+                lastHeartbeat,
+            };
+        });
+
+        // Wait for all monitors to be processed
+        const monitorResults = await Promise.all(monitorPromises);
+
+        // Populate the response objects
+        for (const result of monitorResults) {
+            heartbeatList[result.monitorID] = result.heartbeats;
+            uptimeList[result.monitorID] = result.uptime;
+
+            // Keep the pre-existing key shape for external consumers
+            if (heartbeatBarDays === 0) {
+                uptimeList[`${result.monitorID}_24`] = result.uptime;
+            }
+
+            if (result.lastHeartbeat) {
+                lastHeartbeatList[result.monitorID] = result.lastHeartbeat;
+            }
         }
 
         response.json({
             heartbeatList,
             uptimeList,
+            lastHeartbeatList,
         });
     } catch (error) {
         sendHttpError(response, error.message);
