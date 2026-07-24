@@ -154,6 +154,9 @@ export default {
             disableSelectAllWatcher: false,
             selectedMonitors: {},
             windowTop: 0,
+            // FIX #5977: Track window width reactively so boxStyle and mobile
+            // detection update on resize / orientation change.
+            windowWidth: window.innerWidth,
             bulkActionInProgress: false,
             filterState: {
                 status: null,
@@ -165,17 +168,30 @@ export default {
     },
     computed: {
         /**
+         * Returns true when the viewport is in mobile range (≤ 550 px).
+         * Using the reactive `windowWidth` data property so this recomputes
+         * whenever the window is resized or the device is rotated.
+         * @returns {boolean}
+         */
+        isMobile() {
+            return this.windowWidth <= 550;
+        },
+
+        /**
          * Improve the sticky appearance of the list by increasing its
          * height as user scrolls down.
-         * Not used on mobile.
+         * On mobile the height is fixed so the navbar is not displaced.
          * @returns {object} Style for monitor list
          */
         boxStyle() {
-            if (window.innerWidth > 550) {
+            if (!this.isMobile) {
                 return {
                     height: `calc(100vh - 160px + ${this.windowTop}px)`,
                 };
             } else {
+                // FIX #5977: On mobile do NOT add windowTop offset — this was
+                // causing the sticky box to grow and push the navbar out of
+                // position when the user scrolled the page.
                 return {
                     height: "calc(100vh - 160px)",
                 };
@@ -307,22 +323,53 @@ export default {
     },
     mounted() {
         window.addEventListener("scroll", this.onScroll);
+        // FIX #5977: Listen for resize and orientation change so isMobile /
+        // boxStyle recompute correctly on every viewport change.
+        window.addEventListener("resize", this.onResize);
+        window.addEventListener("orientationchange", this.onResize);
     },
     beforeUnmount() {
         window.removeEventListener("scroll", this.onScroll);
+        // FIX #5977: Clean up the new listeners to avoid memory leaks.
+        window.removeEventListener("resize", this.onResize);
+        window.removeEventListener("orientationchange", this.onResize);
     },
     methods: {
         /**
-         * Handle user scroll
+         * Handle user scroll.
+         * Only update windowTop on non-mobile viewports to prevent the navbar
+         * from being displaced on the list tab (fix for issue #5977).
+         * Uses window.scrollY instead of window.top.scrollY for safety.
          * @returns {void}
          */
         onScroll() {
-            if (window.top.scrollY <= 133) {
-                this.windowTop = window.top.scrollY;
+            if (this.isMobile) {
+                // Reset offset on mobile so the box height stays fixed.
+                this.windowTop = 0;
+                return;
+            }
+
+            // FIX: use window.scrollY (safe) instead of window.top.scrollY
+            // (cross-origin frames can throw a SecurityError).
+            if (window.scrollY <= 133) {
+                this.windowTop = window.scrollY;
             } else {
                 this.windowTop = 133;
             }
         },
+
+        /**
+         * Handle window resize and orientation change.
+         * Updates windowWidth so all computed properties that depend on
+         * viewport size (isMobile, boxStyle) recompute automatically.
+         * @returns {void}
+         */
+        onResize() {
+            this.windowWidth = window.innerWidth;
+            // Re-evaluate scroll offset for the new viewport size.
+            this.onScroll();
+        },
+
         /**
          * Get URL of monitor
          * @param {number} id ID of monitor
