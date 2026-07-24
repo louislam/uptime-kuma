@@ -1,7 +1,7 @@
 const { describe, test } = require("node:test");
 const assert = require("node:assert");
 const Monitor = require("../../server/model/monitor");
-const Heartbeat = require("../../server/model/heartbeat");
+const { HeartbeatDrop } = require("../../server/notification-providers/notification-provider");
 const { RESPONSE_BODY_LENGTH_DEFAULT } = require("../../src/util");
 
 describe("Monitor response saving", () => {
@@ -21,7 +21,7 @@ describe("Monitor response saving", () => {
         const bean = {};
         await monitor.saveResponseData(bean, "abcdef");
 
-        assert.strictEqual(await Heartbeat.decodeResponseValue(bean.response), "abcde... (truncated)");
+        assert.strictEqual(await HeartbeatDrop.decodeResponseValue(bean.response), "abcde... (truncated)");
     });
 
     test("saveResponseData stringifies objects", async () => {
@@ -31,6 +31,6 @@ describe("Monitor response saving", () => {
         const bean = {};
         await monitor.saveResponseData(bean, { ok: true });
 
-        assert.strictEqual(await Heartbeat.decodeResponseValue(bean.response), JSON.stringify({ ok: true }));
+        assert.strictEqual(await HeartbeatDrop.decodeResponseValue(bean.response), JSON.stringify({ ok: true }));
     });
 });
