@@ -10,7 +10,6 @@ module.exports.databaseSocketHandler = (socket) => {
     // Post or edit incident
     socket.on("getDatabaseSize", async (callback) => {
         try {
-            checkLogin(socket);
             callback({
                 ok: true,
                 size: await Database.getSize(),
@@ -25,7 +24,6 @@ module.exports.databaseSocketHandler = (socket) => {
 
     socket.on("shrinkDatabase", async (callback) => {
         try {
-            checkLogin(socket);
             await Database.shrink();
             callback({
                 ok: true,
