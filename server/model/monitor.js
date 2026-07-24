@@ -502,8 +502,7 @@ class Monitor extends BeanModel {
                                 this.oauthAccessToken = await this.makeOidcTokenClientCredentialsRequest();
                             }
                             oauth2AuthHeader = {
-                                Authorization:
-                                    this.oauthAccessToken.token_type + " " + this.oauthAccessToken.access_token,
+                                Authorization: this.getOAuth2AuthorizationHeader(),
                             };
                         } catch (e) {
                             throw new Error("The oauth config is invalid. " + e.message);
@@ -1175,7 +1174,7 @@ class Monitor extends BeanModel {
             if (this.auth_method === "oauth2-cc" && error.response.status === 401 && !finalCall) {
                 this.oauthAccessToken = await this.makeOidcTokenClientCredentialsRequest();
                 let oauth2AuthHeader = {
-                    Authorization: this.oauthAccessToken.token_type + " " + this.oauthAccessToken.access_token,
+                    Authorization: this.getOAuth2AuthorizationHeader(),
                 };
                 options.headers = { ...options.headers, ...oauth2AuthHeader };
 
@@ -2062,6 +2061,29 @@ class Monitor extends BeanModel {
         }
 
         return oAuthAccessToken;
+    }
+
+    /**
+     * Builds the Authorization header value from the last retrieved OAuth2
+     * access token.
+     *
+     * Some OAuth2 providers omit the `token_type` field from the token
+     * response, even though it is required by RFC 6749 section 5.1. Rather
+     * than sending a broken `Authorization: undefined ...` header, default to
+     * "Bearer" (the type used by every non-conformant provider seen in
+     * practice) and log a warning so the issue isn't silently hidden.
+     * See https://github.com/louislam/uptime-kuma/issues/7359
+     * @returns {string} Authorization header value
+     */
+    getOAuth2AuthorizationHeader() {
+        if (!this.oauthAccessToken.token_type) {
+            log.warn(
+                "monitor",
+                `Monitor #${this.id} '${this.name}': OAuth2 access-token response is missing "token_type". Defaulting to "Bearer".`
+            );
+        }
+
+        return (this.oauthAccessToken.token_type || "Bearer") + " " + this.oauthAccessToken.access_token;
     }
 
     /**
