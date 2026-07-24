@@ -407,8 +407,8 @@ let needSetup = false;
             "verifyToken",
             "twoFAStatus",
             "needSetup",
-            "setup"
-        ]
+            "setup",
+        ];
 
         socket.on("loginByToken", async (token, callback) => {
             const clientIP = await server.getClientIP(socket);
