@@ -5,7 +5,6 @@ const { log } = require("../../src/util");
 module.exports.chartSocketHandler = (socket) => {
     socket.on("getMonitorChartData", async (monitorID, period, callback) => {
         try {
-
             log.debug("monitor", `Get Monitor Chart Data: ${monitorID} User ID: ${socket.userID}`);
 
             if (period == null) {

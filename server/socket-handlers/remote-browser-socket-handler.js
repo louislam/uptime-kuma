@@ -13,7 +13,6 @@ const { testRemoteBrowser } = require("../monitor-types/real-browser-monitor-typ
 module.exports.remoteBrowserSocketHandler = (socket) => {
     socket.on("addRemoteBrowser", async (remoteBrowser, remoteBrowserID, callback) => {
         try {
-
             let remoteBrowserBean = await RemoteBrowser.save(remoteBrowser, remoteBrowserID, socket.userID);
             await sendRemoteBrowserList(socket);
 
@@ -33,7 +32,6 @@ module.exports.remoteBrowserSocketHandler = (socket) => {
 
     socket.on("deleteRemoteBrowser", async (dockerHostID, callback) => {
         try {
-
             await RemoteBrowser.delete(dockerHostID, socket.userID);
             await sendRemoteBrowserList(socket);
 

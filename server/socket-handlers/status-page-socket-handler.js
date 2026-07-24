@@ -33,7 +33,6 @@ module.exports.statusPageSocketHandler = (socket) => {
     // Post or edit incident
     socket.on("postIncident", async (slug, incident, callback) => {
         try {
-
             let statusPageID = await StatusPage.slugToID(slug);
 
             if (!statusPageID) {
@@ -82,7 +81,6 @@ module.exports.statusPageSocketHandler = (socket) => {
 
     socket.on("unpinIncident", async (slug, callback) => {
         try {
-
             let statusPageID = await StatusPage.slugToID(slug);
 
             await R.exec("UPDATE incident SET pin = 0 WHERE pin = 1 AND status_page_id = ? ", [statusPageID]);
@@ -121,7 +119,6 @@ module.exports.statusPageSocketHandler = (socket) => {
 
     socket.on("editIncident", async (slug, incidentID, incident, callback) => {
         try {
-
             let statusPageID = await StatusPage.slugToID(slug);
             if (!statusPageID) {
                 callback({
@@ -183,7 +180,6 @@ module.exports.statusPageSocketHandler = (socket) => {
 
     socket.on("deleteIncident", async (slug, incidentID, callback) => {
         try {
-
             let statusPageID = await StatusPage.slugToID(slug);
             if (!statusPageID) {
                 callback({
@@ -222,7 +218,6 @@ module.exports.statusPageSocketHandler = (socket) => {
 
     socket.on("resolveIncident", async (slug, incidentID, callback) => {
         try {
-
             let statusPageID = await StatusPage.slugToID(slug);
             if (!statusPageID) {
                 callback({
@@ -262,7 +257,6 @@ module.exports.statusPageSocketHandler = (socket) => {
 
     socket.on("getStatusPage", async (slug, callback) => {
         try {
-
             let statusPage = await R.findOne("status_page", " slug = ? ", [slug]);
 
             if (!statusPage) {
@@ -285,7 +279,6 @@ module.exports.statusPageSocketHandler = (socket) => {
     // imgDataUrl Only Accept PNG!
     socket.on("saveStatusPage", async (slug, config, imgDataUrl, publicGroupList, callback) => {
         try {
-
             // Save Config
             let statusPage = await R.findOne("status_page", " slug = ? ", [slug]);
 
@@ -428,7 +421,6 @@ module.exports.statusPageSocketHandler = (socket) => {
     // Add a new status page
     socket.on("addStatusPage", async (title, slug, callback) => {
         try {
-
             title = title?.trim();
             slug = slug?.trim();
 
@@ -475,7 +467,6 @@ module.exports.statusPageSocketHandler = (socket) => {
         const server = UptimeKumaServer.getInstance();
 
         try {
-
             let statusPageID = await StatusPage.slugToID(slug);
 
             if (statusPageID) {
