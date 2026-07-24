@@ -229,6 +229,7 @@ export default {
                 line: "LINE Messenger",
                 matrix: "Matrix",
                 mattermost: "Mattermost",
+                Milky: "Milky(QQ)",
                 nextcloudtalk: "Nextcloud Talk",
                 nostr: "Nostr",
                 OneChat: "OneChat",
