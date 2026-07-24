@@ -1,4 +1,5 @@
 let express = require("express");
+const jwt = require("jsonwebtoken");
 const {
     setting,
     allowDevAllOrigin,
@@ -559,3 +560,84 @@ router.get("/api/badge/:id/response", cache("5 minutes"), async (request, respon
 });
 
 module.exports = router;
+/**
+ * Auth middleware for the CSV export endpoint.
+ * Verifies the same JWT the frontend stores in localStorage.
+ */
+async function exportAuth(request, response, next) {
+    try {
+        const authHeader = request.headers.authorization || "";
+        const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
+
+        if (!token) {
+            return response.status(401).json({ ok: false, msg: "Not logged in." });
+        }
+
+        const decoded = jwt.verify(token, server.jwtSecret);
+
+        const user = await R.findOne("user", " username = ? AND active = 1 ", [
+            decoded.username,
+        ]);
+
+        if (!user) {
+            return response.status(401).json({ ok: false, msg: "Invalid or inactive user." });
+        }
+
+        request.userID = user.id;
+        next();
+    } catch (error) {
+        response.status(401).json({ ok: false, msg: "Unauthorized: " + error.message });
+    }
+}
+
+/**
+ * Escape a value for safe CSV output
+ * @param {*} value
+ * @returns {string}
+ */
+function csvEscape(value) {
+    const str = (value === null || value === undefined) ? "" : String(value);
+    if (/[",\n\r]/.test(str)) {
+        return `"${str.replace(/"/g, "\"\"")}"`;
+    }
+    return str;
+}
+
+router.get("/api/export/monitors/csv", exportAuth, async (request, response) => {
+    try {
+        const monitorList = await R.find("monitor", " user_id = ? ORDER BY weight DESC, name", [
+            request.userID,
+        ]);
+
+        const rows = [
+            [ "Group Path", "Monitor Name", "Type", "URL / Target", "Status", "Interval (s)", "Active" ],
+        ];
+
+        const statusLabels = { 0: "Down", 1: "Up", 2: "Pending", 3: "Maintenance" };
+
+        for (const bean of monitorList) {
+            const json = await bean.toJSON();
+            const heartbeat = await Monitor.getPreviousHeartbeat(bean.id);
+            const statusText = heartbeat ? (statusLabels[heartbeat.status] || "N/A") : "N/A";
+            const target = json.url || json.hostname || "";
+
+            rows.push([
+                json.pathName,
+                json.name,
+                json.type,
+                target,
+                statusText,
+                json.interval,
+                json.active ? "Yes" : "No",
+            ]);
+        }
+
+        const csv = rows.map((row) => row.map(csvEscape).join(",")).join("\r\n");
+
+        response.setHeader("Content-Type", "text/csv; charset=utf-8");
+        response.setHeader("Content-Disposition", "attachment; filename=\"uptime-kuma-monitors.csv\"");
+        response.send(csv);
+    } catch (e) {
+        sendHttpError(response, e.message);
+    }
+});
