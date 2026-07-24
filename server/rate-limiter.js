@@ -25,12 +25,10 @@ class KumaRateLimiter {
      */
     async pass(callback, num = 1) {
         const remainingRequests = await this.removeTokens(num);
-        // Only escalate to warn when the quota is close to exhaustion,
-        // otherwise this message would spam the log on every check (#5122)
         if (remainingRequests < this.tokensPerInterval * 0.2) {
-            log.warn("rate-limit", "remaining requests: " + remainingRequests);
+            log.warn("rate-limit", `${remainingRequests}/${this.tokensPerInterval} remaining requests until rate limiting`);
         } else {
-            log.debug("rate-limit", "remaining requests: " + remainingRequests);
+            log.debug("rate-limit", `${remainingRequests}/${this.tokensPerInterval} remaining requests until rate limiting`);
         }
         if (remainingRequests < 0) {
             if (callback) {
