@@ -116,6 +116,9 @@
                                         </option>
                                     </optgroup>
                                 </select>
+                                <div class="form-text">
+                                    {{ $t("monitorTypeDescription") }}
+                                </div>
                                 <i18n-t
                                     v-if="monitor.type === 'rabbitmq'"
                                     keypath="rabbitmqHelpText"
