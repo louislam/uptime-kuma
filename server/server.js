@@ -541,18 +541,13 @@ let needSetup = false;
             }
         });
 
-        // Middleware
-        socket.use(([event, ...args], next) => {
-            checkLogin(socket);
-            next();
-        });
-
         socket.on("prepare2FA", async (currentPassword, callback) => {
             try {
                 if (!(await twoFaRateLimiter.pass(callback))) {
                     return;
                 }
 
+                checkLogin(socket);
                 await doubleCheckPassword(socket, currentPassword);
 
                 let user = await R.findOne("user", " id = ? AND active = 1 ", [socket.userID]);
@@ -597,6 +592,7 @@ let needSetup = false;
                     return;
                 }
 
+                checkLogin(socket);
                 await doubleCheckPassword(socket, currentPassword);
 
                 await R.exec("UPDATE `user` SET twofa_status = 1 WHERE id = ? ", [socket.userID]);
@@ -626,6 +622,7 @@ let needSetup = false;
                     return;
                 }
 
+                checkLogin(socket);
                 await doubleCheckPassword(socket, currentPassword);
                 await TwoFA.disable2FA(socket.userID);
 
@@ -648,6 +645,7 @@ let needSetup = false;
 
         socket.on("verifyToken", async (token, currentPassword, callback) => {
             try {
+                checkLogin(socket);
                 await doubleCheckPassword(socket, currentPassword);
 
                 let user = await R.findOne("user", " id = ? AND active = 1 ", [socket.userID]);
@@ -677,6 +675,8 @@ let needSetup = false;
 
         socket.on("twoFAStatus", async (callback) => {
             try {
+                checkLogin(socket);
+
                 let user = await R.findOne("user", " id = ? AND active = 1 ", [socket.userID]);
 
                 if (user.twofa_status === 1) {
@@ -738,6 +738,10 @@ let needSetup = false;
         // ***************************
         // Auth Only API
         // ***************************
+        socket.use(([event, ...args], next) => {
+            checkLogin(socket);
+            next();
+        });
 
         // Add a new monitor
         socket.on("add", async (monitor, callback) => {
