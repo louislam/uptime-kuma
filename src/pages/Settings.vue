@@ -188,6 +188,10 @@ export default {
                     this.settings.trustProxy = false;
                 }
 
+                if (this.settings.healthCheckMonitorId === undefined) {
+                    this.settings.healthCheckMonitorId = null;
+                }
+
                 this.settingsLoaded = true;
             });
         },
