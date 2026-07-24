@@ -1,5 +1,4 @@
 const { R } = require("redbean-node");
-const { checkLogin } = require("../util-server");
 const dayjs = require("dayjs");
 const { log } = require("../../src/util");
 const ImageDataURI = require("../image-data-uri");

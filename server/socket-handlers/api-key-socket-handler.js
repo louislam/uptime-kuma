@@ -1,4 +1,3 @@
-const { checkLogin } = require("../util-server");
 const { log } = require("../../src/util");
 const { R } = require("redbean-node");
 const { nanoid } = require("nanoid");

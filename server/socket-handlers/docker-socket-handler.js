@@ -1,5 +1,4 @@
 const { sendDockerHostList } = require("../client");
-const { checkLogin } = require("../util-server");
 const { DockerHost } = require("../docker");
 const { log } = require("../../src/util");
 

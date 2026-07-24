@@ -1,4 +1,3 @@
-const { checkLogin } = require("../util-server");
 const Database = require("../database");
 
 /**

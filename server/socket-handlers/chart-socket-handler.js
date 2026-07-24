@@ -1,4 +1,3 @@
-const { checkLogin } = require("../util-server");
 const { UptimeCalculator } = require("../uptime-calculator");
 const { log } = require("../../src/util");
 
