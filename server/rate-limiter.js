@@ -26,9 +26,15 @@ class KumaRateLimiter {
     async pass(callback, num = 1) {
         const remainingRequests = await this.removeTokens(num);
         if (remainingRequests < this.tokensPerInterval * 0.2) {
-            log.warn("rate-limit", `${remainingRequests}/${this.tokensPerInterval} remaining requests until rate limiting`);
+            log.warn(
+                "rate-limit",
+                `${remainingRequests}/${this.tokensPerInterval} remaining requests until rate limiting`
+            );
         } else {
-            log.debug("rate-limit", `${remainingRequests}/${this.tokensPerInterval} remaining requests until rate limiting`);
+            log.debug(
+                "rate-limit",
+                `${remainingRequests}/${this.tokensPerInterval} remaining requests until rate limiting`
+            );
         }
         if (remainingRequests < 0) {
             if (callback) {
