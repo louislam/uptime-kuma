@@ -1092,6 +1092,19 @@ let needSetup = false;
                 await startMonitor(socket.userID, monitorID);
                 await server.sendUpdateMonitorIntoList(socket, monitorID);
 
+                let monitor = await R.findOne("monitor", " id = ? ", [monitorID]);
+                if (monitor && monitor.type === "group") {
+                    const childIDs = await Monitor.getAllChildrenIDs(monitor.id);
+                    for (let childID of childIDs) {
+                        try {
+                            await startMonitor(socket.userID, childID);
+                            await server.sendUpdateMonitorIntoList(socket, childID);
+                        } catch (err) {
+                            // ignore permission errors for maliciously linked children across users
+                        }
+                    }
+                }
+
                 callback({
                     ok: true,
                     msg: "successResumed",
@@ -1110,6 +1123,19 @@ let needSetup = false;
                 checkLogin(socket);
                 await pauseMonitor(socket.userID, monitorID);
                 await server.sendUpdateMonitorIntoList(socket, monitorID);
+
+                let monitor = await R.findOne("monitor", " id = ? ", [monitorID]);
+                if (monitor && monitor.type === "group") {
+                    const childIDs = await Monitor.getAllChildrenIDs(monitor.id);
+                    for (let childID of childIDs) {
+                        try {
+                            await pauseMonitor(socket.userID, childID);
+                            await server.sendUpdateMonitorIntoList(socket, childID);
+                        } catch (err) {
+                            // ignore permission errors for maliciously linked children across users
+                        }
+                    }
+                }
 
                 callback({
                     ok: true,
