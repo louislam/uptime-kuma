@@ -397,6 +397,18 @@ let needSetup = false;
         // ***************************
         // Public Socket API
         // ***************************
+        const publicEvents = [
+            "loginByToken",
+            "login",
+            "logout",
+            "prepare2FA",
+            "save2FA",
+            "disable2FA",
+            "verifyToken",
+            "twoFAStatus",
+            "needSetup",
+            "setup"
+        ]
 
         socket.on("loginByToken", async (token, callback) => {
             const clientIP = await server.getClientIP(socket);
@@ -739,6 +751,11 @@ let needSetup = false;
         // Auth Only API
         // ***************************
         socket.use(([event, ...args], next) => {
+            // The middleware filter every events, not only the one above it, so we need to check if the event is in the publicEvents list.
+            if (publicEvents.includes(event)) {
+                return next();
+            }
+
             checkLogin(socket);
             next();
         });
