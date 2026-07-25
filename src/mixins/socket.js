@@ -213,9 +213,9 @@ export default {
                 }
 
                 // Add to important list if it is important
-                // Also toast
+                // Also toast (silence events skip the toast)
                 if (data.important) {
-                    if (this.monitorList[data.monitorID] !== undefined) {
+                    if (data.type !== "silence" && this.monitorList[data.monitorID] !== undefined) {
                         if (data.status === 0) {
                             toast.error(`[${this.monitorList[data.monitorID].name}] [DOWN] ${data.msg}`, {
                                 timeout: getToastErrorTimeout(),
@@ -802,11 +802,16 @@ export default {
                 pending: 0,
                 unknown: 0,
                 pause: 0,
+                silenced: 0,
             };
 
             for (let monitorID in this.$root.monitorList) {
                 let beat = this.$root.lastHeartbeatList[monitorID];
                 let monitor = this.$root.monitorList[monitorID];
+
+                if (monitor && monitor.silenced) {
+                    result.silenced++;
+                }
 
                 if (monitor && !monitor.active) {
                     result.pause++;

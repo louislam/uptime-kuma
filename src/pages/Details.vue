@@ -130,6 +130,18 @@
                         <font-awesome-icon icon="play" />
                         {{ $t("Resume") }}
                     </button>
+                    <button
+                        v-if="!monitor.silenced && lastHeartBeat.status === 0"
+                        class="btn btn-normal text-silenced"
+                        @click="silenceDialog"
+                    >
+                        <font-awesome-icon icon="bell-slash" />
+                        {{ $t("Silence") }}
+                    </button>
+                    <button v-if="monitor.silenced" class="btn btn-normal text-silenced" @click="unsilenceMonitor">
+                        <font-awesome-icon icon="bell" />
+                        {{ $t("Unsilence") }}
+                    </button>
                     <router-link :to="'/edit/' + monitor.id" class="btn btn-normal">
                         <font-awesome-icon icon="edit" />
                         {{ $t("Edit") }}
@@ -142,6 +154,16 @@
                         <font-awesome-icon icon="trash" />
                         {{ $t("Delete") }}
                     </button>
+                </div>
+
+                <!-- Silence info banner -->
+                <div v-if="monitor.silenced" class="silence-info mt-2 p-2">
+                    <font-awesome-icon icon="bell-slash" class="me-1" />
+                    <strong>{{ $t("silencedMonitorMsg") }}</strong>
+                    <span v-if="monitor.silenceMessage" class="ms-1">— {{ monitor.silenceMessage }}</span>
+                    <span v-if="monitor.silencedAt" class="text-muted ms-2">
+                        ({{ $t("silencedAt") }}: <Datetime :value="monitor.silencedAt" />)
+                    </span>
                 </div>
             </div>
 
@@ -164,6 +186,12 @@
                         >
                             {{ status.text }}
                         </span>
+                        <div v-if="monitor.silenced" class="mt-2">
+                            <span class="badge bg-silenced">
+                                <font-awesome-icon icon="bell-slash" class="me-1" />
+                                {{ $t("Silenced") }}
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -358,11 +386,17 @@
                     </thead>
                     <tbody>
                         <tr v-for="(beat, index) in displayedRecords" :key="index" style="padding: 10px">
-                            <td><Status :status="beat.status" /></td>
+                            <td>
+                                <span v-if="beat.msg && beat.msg.startsWith('Silenced:')" class="badge bg-silenced">
+                                    <font-awesome-icon icon="bell-slash" class="me-1" />
+                                    {{ $t("Silenced") }}
+                                </span>
+                                <Status v-else :status="beat.status" />
+                            </td>
                             <td :class="{ 'border-0': !beat.msg }">
                                 <Datetime :value="beat.time" />
                             </td>
-                            <td class="border-0">{{ beat.msg }}</td>
+                            <td class="border-0">{{ beat.msg && beat.msg.startsWith('Silenced:') ? beat.msg.slice('Silenced:'.length).trim() : beat.msg }}</td>
                         </tr>
 
                         <tr v-if="importantHeartBeatListLength === 0">
@@ -386,6 +420,49 @@
             <Confirm ref="confirmPause" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="pauseMonitor">
                 {{ $t("pauseMonitorMsg") }}
             </Confirm>
+
+            <!-- Silence dialog with message input -->
+            <div
+                v-if="showSilenceModal"
+                class="modal-backdrop-silence"
+                @click.self="showSilenceModal = false"
+            >
+                <div class="silence-modal shadow-box p-4">
+                    <h5 class="mb-3">
+                        <font-awesome-icon icon="bell-slash" class="me-2" />
+                        {{ $t("silenceMonitor") }}
+                    </h5>
+                    <p class="text-muted">{{ $t("silenceMonitorDesc") }}</p>
+                    <div class="mb-3">
+                        <label class="form-label">
+                            {{ $t("silenceMessage") }}
+                            <span class="text-danger">*</span>
+                        </label>
+                        <textarea
+                            v-model="silenceMessageInput"
+                            class="form-control"
+                            rows="3"
+                            :placeholder="$t('silenceMessagePlaceholder')"
+                        ></textarea>
+                        <div v-if="silenceMessageInput.trim() === ''" class="form-text text-danger">
+                            {{ $t("silenceMessageRequired") }}
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2 justify-content-end">
+                        <button class="btn btn-normal" @click="showSilenceModal = false">
+                            {{ $t("Cancel") }}
+                        </button>
+                        <button
+                            class="btn bg-silenced"
+                            :disabled="silenceMessageInput.trim() === ''"
+                            @click="silenceMonitor"
+                        >
+                            <font-awesome-icon icon="bell-slash" class="me-1" />
+                            {{ $t("Silence") }}
+                        </button>
+                    </div>
+                </div>
+            </div>
 
             <Confirm
                 ref="confirmDelete"
@@ -498,6 +575,8 @@ export default {
                 code: "",
             },
             deleteChildrenMonitors: false,
+            showSilenceModal: false,
+            silenceMessageInput: "",
         };
     },
     computed: {
@@ -656,6 +735,24 @@ export default {
          */
         pauseDialog() {
             this.$refs.confirmPause.show();
+        },
+
+        silenceDialog() {
+            this.silenceMessageInput = "";
+            this.showSilenceModal = true;
+        },
+
+        silenceMonitor() {
+            this.$root.getSocket().emit("silenceMonitor", this.monitor.id, this.silenceMessageInput, (res) => {
+                this.showSilenceModal = false;
+                this.$root.toastRes(res);
+            });
+        },
+
+        unsilenceMonitor() {
+            this.$root.getSocket().emit("unsilenceMonitor", this.monitor.id, (res) => {
+                this.$root.toastRes(res);
+            });
         },
 
         /**
@@ -1047,6 +1144,44 @@ table {
 
     .dark & {
         opacity: 0.7;
+    }
+}
+
+.silence-info {
+    background-color: rgba(139, 92, 246, 0.08);
+    border-left: 3px solid $silenced;
+    border-radius: 6px;
+    font-size: 0.9em;
+    color: darken($silenced, 15%);
+
+    .dark & {
+        background-color: rgba(139, 92, 246, 0.15);
+        color: lighten($silenced, 20%);
+    }
+}
+
+.modal-backdrop-silence {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.silence-modal {
+    background: white;
+    border-radius: 12px;
+    max-width: 480px;
+    width: 90%;
+
+    .dark & {
+        background: #1f2937;
+        color: #f9fafb;
     }
 }
 </style>

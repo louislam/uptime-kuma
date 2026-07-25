@@ -36,7 +36,9 @@
                                 />
                             </span>
                             <div class="flex-fill text-truncate" style="min-width: 0">
-                                <div class="text-truncate">{{ monitor.name }}</div>
+                                <div class="text-truncate">
+                                    {{ monitor.name }}
+                                </div>
                                 <div v-if="monitor.tags.length > 0" class="tags gap-1">
                                     <Tag
                                         v-for="tag in monitor.tags"
@@ -338,6 +340,7 @@ export default {
     padding-left: 5px !important;
     padding-right: 5px !important;
 }
+
 
 .tags {
     margin-top: 4px;
