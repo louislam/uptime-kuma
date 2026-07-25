@@ -19,5 +19,22 @@
     "DateTime": "DataHora",
     "Message": "Mensaxe",
     "languageName": "Galego",
-    "Down": "Abaixo"
+    "Down": "Abaixo",
+    "Silence": "Silenciar",
+    "Unsilence": "Desilenciar",
+    "Silenced": "Silenciado",
+    "silenceMonitor": "Silenciar monitor",
+    "silenceMonitorDesc": "As notificacións serán suprimidas mentres o monitor segue funcionando. O silencio elimínase automaticamente cando o monitor se recupera.",
+    "silenceMessage": "Motivo / Mensaxe",
+    "silenceMessagePlaceholder": "ex. Problema coñecido, investigando...",
+    "silencedMonitorMsg": "Notificacións silenciadas",
+    "silencedAt": "Silenciado o",
+    "successSilenced": "Monitor silenciado correctamente.",
+    "successUnsilenced": "Monitor desilenciado correctamente.",
+    "silenceMessageRequired": "É necesario un motivo para silenciar un monitor.",
+    "silenceOnlyDownMonitor": "Só se pode silenciar un monitor en estado DOWN.",
+    "silencedMonitorsMsg": "Silenced {n} monitor | Silenced {n} monitors",
+    "noMonitorsSilencedMsg": "No monitors silenced (none were DOWN and unsilenced)",
+    "bulkSilenceErrorMsg": "Failed to silence {n} monitor | Failed to silence {n} monitors",
+    "silenceOnlyDownMonitorBulk": "Cannot silence: all selected monitors must be DOWN."
 }

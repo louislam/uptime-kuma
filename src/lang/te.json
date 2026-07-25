@@ -310,5 +310,22 @@
     "setAsDefaultProxyDescription": "కొత్త మానిటర్‌ల కోసం ఈ ప్రాక్సీ డిఫాల్ట్‌గా ప్రారంభించబడుతుంది. మీరు ఇప్పటికీ ప్రతి మానిటర్‌కు విడిగా ప్రాక్సీని నిలిపివేయవచ్చు.",
     "Accept characters:": "అక్షరాలను అంగీకరించండి:",
     "No consecutive dashes": "వరుస డాష్‌లను ఉపయోగించవద్దు",
-    "The slug is already taken. Please choose another slug.": "స్లగ్ ఇప్పటికే తీసుకోబడింది. దయచేసి మరొక స్లగ్‌ని ఎంచుకోండి."
+    "The slug is already taken. Please choose another slug.": "స్లగ్ ఇప్పటికే తీసుకోబడింది. దయచేసి మరొక స్లగ్‌ని ఎంచుకోండి.",
+    "Silence": "Silence",
+    "Unsilence": "Unsilence",
+    "Silenced": "Silenced",
+    "silenceMonitor": "Silence Monitor",
+    "silenceMonitorDesc": "Notifications will be suppressed while the monitor continues to run. The silence is automatically cleared when the monitor recovers.",
+    "silenceMessage": "Reason / Message",
+    "silenceMessagePlaceholder": "e.g. Known issue, investigating...",
+    "silencedMonitorMsg": "Notifications silenced",
+    "silencedAt": "Silenced at",
+    "successSilenced": "Monitor silenced successfully.",
+    "successUnsilenced": "Monitor unsilenced successfully.",
+    "silenceMessageRequired": "A reason is required to silence a monitor.",
+    "silenceOnlyDownMonitor": "Only a DOWN monitor can be silenced.",
+    "silencedMonitorsMsg": "Silenced {n} monitor | Silenced {n} monitors",
+    "noMonitorsSilencedMsg": "No monitors silenced (none were DOWN and unsilenced)",
+    "bulkSilenceErrorMsg": "Failed to silence {n} monitor | Failed to silence {n} monitors",
+    "silenceOnlyDownMonitorBulk": "Cannot silence: all selected monitors must be DOWN."
 }

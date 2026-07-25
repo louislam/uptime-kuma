@@ -48,5 +48,22 @@
     "Setup Notification": "വിജ്ഞാപനം സജ്ജമാക്കുക",
     "Light": "വെളിച്ചം",
     "Dark": "ഇരുട്ട്",
-    "Auto": "സ്വയം"
+    "Auto": "സ്വയം",
+    "Silence": "Silence",
+    "Unsilence": "Unsilence",
+    "Silenced": "Silenced",
+    "silenceMonitor": "Silence Monitor",
+    "silenceMonitorDesc": "Notifications will be suppressed while the monitor continues to run. The silence is automatically cleared when the monitor recovers.",
+    "silenceMessage": "Reason / Message",
+    "silenceMessagePlaceholder": "e.g. Known issue, investigating...",
+    "silencedMonitorMsg": "Notifications silenced",
+    "silencedAt": "Silenced at",
+    "successSilenced": "Monitor silenced successfully.",
+    "successUnsilenced": "Monitor unsilenced successfully.",
+    "silenceMessageRequired": "A reason is required to silence a monitor.",
+    "silenceOnlyDownMonitor": "Only a DOWN monitor can be silenced.",
+    "silencedMonitorsMsg": "Silenced {n} monitor | Silenced {n} monitors",
+    "noMonitorsSilencedMsg": "No monitors silenced (none were DOWN and unsilenced)",
+    "bulkSilenceErrorMsg": "Failed to silence {n} monitor | Failed to silence {n} monitors",
+    "silenceOnlyDownMonitorBulk": "Cannot silence: all selected monitors must be DOWN."
 }
