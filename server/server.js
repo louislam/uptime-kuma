@@ -201,6 +201,7 @@ const {
 const { proxySocketHandler } = require("./socket-handlers/proxy-socket-handler");
 const { dockerSocketHandler } = require("./socket-handlers/docker-socket-handler");
 const { maintenanceSocketHandler } = require("./socket-handlers/maintenance-socket-handler");
+const { silenceSocketHandler } = require("./socket-handlers/silence-socket-handler");
 const { apiKeySocketHandler } = require("./socket-handlers/api-key-socket-handler");
 const { generalSocketHandler } = require("./socket-handlers/general-socket-handler");
 const { Settings } = require("./settings");
@@ -1736,6 +1737,7 @@ let needSetup = false;
         proxySocketHandler(socket);
         dockerSocketHandler(socket);
         maintenanceSocketHandler(socket);
+        silenceSocketHandler(socket);
         apiKeySocketHandler(socket);
         remoteBrowserSocketHandler(socket);
         generalSocketHandler(socket, server);

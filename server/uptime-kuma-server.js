@@ -239,6 +239,19 @@ class UptimeKumaServer {
     }
 
     /**
+     * Update a single monitor in all connected clients for a given user
+     * @param {string} userID User ID to send to
+     * @param {number} monitorID Monitor ID to update
+     * @returns {Promise<void>}
+     */
+    async sendUpdateMonitorIntoListByUserID(userID, monitorID) {
+        let list = await this.getMonitorJSONList(userID, monitorID);
+        if (list && list[monitorID]) {
+            this.io.to(userID).emit("updateMonitorIntoList", list);
+        }
+    }
+
+    /**
      * Delete Monitor from list
      * @param {Socket} socket Socket to send list on
      * @param {number} monitorID update or deleted monitor id
