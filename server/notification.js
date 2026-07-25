@@ -45,6 +45,7 @@ const Pumble = require("./notification-providers/pumble");
 const FlashDuty = require("./notification-providers/flashduty");
 const Flowtriq = require("./notification-providers/flowtriq");
 const PagerTree = require("./notification-providers/pagertree");
+const Pinglet = require("./notification-providers/pinglet");
 const Plivo = require("./notification-providers/plivo");
 const PromoSMS = require("./notification-providers/promosms");
 const Pushbullet = require("./notification-providers/pushbullet");
@@ -159,6 +160,7 @@ class Notification {
             new FlashDuty(),
             new Flowtriq(),
             new PagerTree(),
+            new Pinglet(),
             new Plivo(),
             new PromoSMS(),
             new Pumble(),
