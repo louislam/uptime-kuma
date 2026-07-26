@@ -86,6 +86,7 @@ const Onesender = require("./notification-providers/onesender");
 const Wpush = require("./notification-providers/wpush");
 const WxPusher = require("./notification-providers/wxpusher");
 const SendGrid = require("./notification-providers/send-grid");
+const TurboSMTP = require("./notification-providers/turbosmtp");
 const Brevo = require("./notification-providers/brevo");
 const Resend = require("./notification-providers/resend");
 const YZJ = require("./notification-providers/yzj");
@@ -207,6 +208,7 @@ class Notification {
             new Notifery(),
             new SMSIR(),
             new SendGrid(),
+            new TurboSMTP(),
             new Whatsapp360messenger(),
             new Webpush(),
             new HaloPSA(),

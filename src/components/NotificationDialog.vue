@@ -287,6 +287,7 @@ export default {
                 Resend: "Resend",
                 SendGrid: "SendGrid",
                 smtp: this.$t("smtp"),
+                TurboSMTP: "TurboSMTP",
             };
 
             // Incident Management - On-call and alerting platforms

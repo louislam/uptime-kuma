@@ -86,6 +86,7 @@ import WPush from "./WPush.vue";
 import WxPusher from "./WxPusher.vue";
 import SIGNL4 from "./SIGNL4.vue";
 import SendGrid from "./SendGrid.vue";
+import TurboSMTP from "./TurboSMTP.vue";
 import Brevo from "./Brevo.vue";
 import YZJ from "./YZJ.vue";
 import SMSPlanet from "./SMSPlanet.vue";
@@ -191,6 +192,7 @@ const NotificationFormList = {
     WPush: WPush,
     WxPusher: WxPusher,
     SendGrid: SendGrid,
+    TurboSMTP: TurboSMTP,
     Brevo: Brevo,
     Resend: Resend,
     YZJ: YZJ,
