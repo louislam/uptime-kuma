@@ -1161,5 +1161,14 @@
     "OAuth Audience": "OAuth-yleisö",
     "Path": "Polku",
     "years": "{n} vuosi | {n} vuotta",
-    "Pin this incident": "Kiinnitä tämä tiedote"
+    "Pin this incident": "Kiinnitä tämä tiedote",
+    "No incidents recorded": "Ei kirjattuja tapauksia",
+    "days": "{n} päivä | {n} päivää",
+    "Load More": "Lataa lisää",
+    "Loading...": "Ladataan...",
+    "mariadbCaCertificateLabel": "CA-varmenteet",
+    "Monitors": "{n} Seurain | {n} Seurainta",
+    "hours": "{n} tunti | {n} tuntia",
+    "minutes": "{n} minuutti | {n} minuuttia",
+    "minuteShort": "{n} min | {n} min"
 }
