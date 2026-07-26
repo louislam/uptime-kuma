@@ -138,7 +138,7 @@
                         <font-awesome-icon icon="bell-slash" />
                         {{ $t("Silence") }}
                     </button>
-                    <button v-if="monitor.silenced" class="btn btn-normal text-silenced" @click="unsilenceMonitor">
+                    <button v-if="monitor.silenced" class="btn btn-normal text-silenced" @click="unsilenceDialog">
                         <font-awesome-icon icon="bell" />
                         {{ $t("Unsilence") }}
                     </button>
@@ -391,12 +391,20 @@
                                     <font-awesome-icon icon="bell-slash" class="me-1" />
                                     {{ $t("Silenced") }}
                                 </span>
+                                <span v-else-if="beat.msg && beat.msg.startsWith('Unsilenced:')" class="badge bg-silenced">
+                                    <font-awesome-icon icon="bell" class="me-1" />
+                                    {{ $t("Unsilenced") }}
+                                </span>
                                 <Status v-else :status="beat.status" />
                             </td>
                             <td :class="{ 'border-0': !beat.msg }">
                                 <Datetime :value="beat.time" />
                             </td>
-                            <td class="border-0">{{ beat.msg && beat.msg.startsWith('Silenced:') ? beat.msg.slice('Silenced:'.length).trim() : beat.msg }}</td>
+                            <td class="border-0">{{
+                                beat.msg && beat.msg.startsWith('Silenced:') ? beat.msg.slice('Silenced:'.length).trim() :
+                                beat.msg && beat.msg.startsWith('Unsilenced:') ? beat.msg.slice('Unsilenced:'.length).trim() :
+                                beat.msg
+                            }}</td>
                         </tr>
 
                         <tr v-if="importantHeartBeatListLength === 0">
@@ -420,6 +428,49 @@
             <Confirm ref="confirmPause" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="pauseMonitor">
                 {{ $t("pauseMonitorMsg") }}
             </Confirm>
+
+            <!-- Unsilence dialog with message input -->
+            <div
+                v-if="showUnsilenceModal"
+                class="modal-backdrop-silence"
+                @click.self="showUnsilenceModal = false"
+            >
+                <div class="silence-modal shadow-box p-4">
+                    <h5 class="mb-3">
+                        <font-awesome-icon icon="bell" class="me-2" />
+                        {{ $t("unsilenceMonitor") }}
+                    </h5>
+                    <p class="text-muted">{{ $t("unsilenceMonitorDesc") }}</p>
+                    <div class="mb-3">
+                        <label class="form-label">
+                            {{ $t("unsilenceMessage") }}
+                            <span class="text-danger">*</span>
+                        </label>
+                        <textarea
+                            v-model="unsilenceMessageInput"
+                            class="form-control"
+                            rows="3"
+                            :placeholder="$t('unsilenceMessagePlaceholder')"
+                        ></textarea>
+                        <div v-if="unsilenceMessageInput.trim() === ''" class="form-text text-danger">
+                            {{ $t("unsilenceMessageRequired") }}
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2 justify-content-end">
+                        <button class="btn btn-normal" @click="showUnsilenceModal = false">
+                            {{ $t("Cancel") }}
+                        </button>
+                        <button
+                            class="btn bg-silenced"
+                            :disabled="unsilenceMessageInput.trim() === ''"
+                            @click="unsilenceMonitor"
+                        >
+                            <font-awesome-icon icon="bell" class="me-1" />
+                            {{ $t("Unsilence") }}
+                        </button>
+                    </div>
+                </div>
+            </div>
 
             <!-- Silence dialog with message input -->
             <div
@@ -577,6 +628,8 @@ export default {
             deleteChildrenMonitors: false,
             showSilenceModal: false,
             silenceMessageInput: "",
+            showUnsilenceModal: false,
+            unsilenceMessageInput: "",
         };
     },
     computed: {
@@ -749,8 +802,14 @@ export default {
             });
         },
 
+        unsilenceDialog() {
+            this.unsilenceMessageInput = "";
+            this.showUnsilenceModal = true;
+        },
+
         unsilenceMonitor() {
-            this.$root.getSocket().emit("unsilenceMonitor", this.monitor.id, (res) => {
+            this.$root.getSocket().emit("unsilenceMonitor", this.monitor.id, this.unsilenceMessageInput, (res) => {
+                this.showUnsilenceModal = false;
                 this.$root.toastRes(res);
             });
         },
