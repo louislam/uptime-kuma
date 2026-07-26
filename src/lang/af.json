@@ -75,9 +75,5 @@
     "successSilenced": "Monitor suksesvol stilgemaak.",
     "successUnsilenced": "Stilmaak van monitor suksesvol verwyder.",
     "silenceMessageRequired": "'n Rede is nodig om 'n monitor stil te maak.",
-    "silenceOnlyDownMonitor": "Slegs 'n DOWN-monitor kan stilgemaak word.",
-    "silencedMonitorsMsg": "Silenced {n} monitor | Silenced {n} monitors",
-    "noMonitorsSilencedMsg": "No monitors silenced (none were DOWN and unsilenced)",
-    "bulkSilenceErrorMsg": "Failed to silence {n} monitor | Failed to silence {n} monitors",
-    "silenceOnlyDownMonitorBulk": "Cannot silence: all selected monitors must be DOWN."
+    "silenceOnlyDownMonitor": "Slegs 'n DOWN-monitor kan stilgemaak word."
 }

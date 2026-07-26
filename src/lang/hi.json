@@ -140,9 +140,5 @@
     "successSilenced": "मॉनिटर सफलतापूर्वक चुप कर दिया गया।",
     "successUnsilenced": "मॉनिटर की चुप्पी सफलतापूर्वक हटा दी गई।",
     "silenceMessageRequired": "मॉनिटर को चुप करने के लिए कारण आवश्यक है।",
-    "silenceOnlyDownMonitor": "केवल DOWN स्थिति में मॉनिटर को चुप किया जा सकता है।",
-    "silencedMonitorsMsg": "Silenced {n} monitor | Silenced {n} monitors",
-    "noMonitorsSilencedMsg": "No monitors silenced (none were DOWN and unsilenced)",
-    "bulkSilenceErrorMsg": "Failed to silence {n} monitor | Failed to silence {n} monitors",
-    "silenceOnlyDownMonitorBulk": "Cannot silence: all selected monitors must be DOWN."
+    "silenceOnlyDownMonitor": "केवल DOWN स्थिति में मॉनिटर को चुप किया जा सकता है।"
 }

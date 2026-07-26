@@ -110,9 +110,5 @@
     "successSilenced": "Monitors veiksmīgi apklusināts.",
     "successUnsilenced": "Monitora apklusināšana veiksmīgi atcelta.",
     "silenceMessageRequired": "Lai apklusinātu monitoru, ir nepieciešams iemesls.",
-    "silenceOnlyDownMonitor": "Var apklusināt tikai monitoru DOWN stāvoklī.",
-    "silencedMonitorsMsg": "Silenced {n} monitor | Silenced {n} monitors",
-    "noMonitorsSilencedMsg": "No monitors silenced (none were DOWN and unsilenced)",
-    "bulkSilenceErrorMsg": "Failed to silence {n} monitor | Failed to silence {n} monitors",
-    "silenceOnlyDownMonitorBulk": "Cannot silence: all selected monitors must be DOWN."
+    "silenceOnlyDownMonitor": "Var apklusināt tikai monitoru DOWN stāvoklī."
 }

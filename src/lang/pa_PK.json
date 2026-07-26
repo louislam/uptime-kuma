@@ -8,22 +8,5 @@
     "Dashboard": "ਡੈਸ਼ਬੋਰਡ",
     "Help": "ਮਦਦ ਕਰੋ",
     "New Update": "ਨਵਾਂ ਅੱਪਡੇਟ",
-    "setupDatabaseSQLite": "ਇੱਕ ਸਧਾਰਨ ਡੇਟਾਬੇਸ ਫਾਈਲ, ਛੋਟੇ ਪੈਮਾਨੇ ਦੀਆਂ ਤੈਨਾਤੀਆਂ ਲਈ ਸਿਫਾਰਸ਼ ਕੀਤੀ ਜਾਂਦੀ ਹੈ। v2.0.0 ਤੋਂ ਪਹਿਲਾਂ, ਅਪਟਾਈਮ ਕੁਮਾ ਨੇ ਡਿਫੌਲਟ ਡੇਟਾਬੇਸ ਵਜੋਂ SQLite ਦੀ ਵਰਤੋਂ ਕੀਤੀ।",
-    "Silence": "Silence",
-    "Unsilence": "Unsilence",
-    "Silenced": "Silenced",
-    "silenceMonitor": "Silence Monitor",
-    "silenceMonitorDesc": "Notifications will be suppressed while the monitor continues to run. The silence is automatically cleared when the monitor recovers.",
-    "silenceMessage": "Reason / Message",
-    "silenceMessagePlaceholder": "e.g. Known issue, investigating...",
-    "silencedMonitorMsg": "Notifications silenced",
-    "silencedAt": "Silenced at",
-    "successSilenced": "Monitor silenced successfully.",
-    "successUnsilenced": "Monitor unsilenced successfully.",
-    "silenceMessageRequired": "A reason is required to silence a monitor.",
-    "silenceOnlyDownMonitor": "Only a DOWN monitor can be silenced.",
-    "silencedMonitorsMsg": "Silenced {n} monitor | Silenced {n} monitors",
-    "noMonitorsSilencedMsg": "No monitors silenced (none were DOWN and unsilenced)",
-    "bulkSilenceErrorMsg": "Failed to silence {n} monitor | Failed to silence {n} monitors",
-    "silenceOnlyDownMonitorBulk": "Cannot silence: all selected monitors must be DOWN."
+    "setupDatabaseSQLite": "ਇੱਕ ਸਧਾਰਨ ਡੇਟਾਬੇਸ ਫਾਈਲ, ਛੋਟੇ ਪੈਮਾਨੇ ਦੀਆਂ ਤੈਨਾਤੀਆਂ ਲਈ ਸਿਫਾਰਸ਼ ਕੀਤੀ ਜਾਂਦੀ ਹੈ। v2.0.0 ਤੋਂ ਪਹਿਲਾਂ, ਅਪਟਾਈਮ ਕੁਮਾ ਨੇ ਡਿਫੌਲਟ ਡੇਟਾਬੇਸ ਵਜੋਂ SQLite ਦੀ ਵਰਤੋਂ ਕੀਤੀ।"
 }

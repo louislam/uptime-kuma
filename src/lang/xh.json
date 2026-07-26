@@ -3,22 +3,5 @@
     "setupDatabaseChooseDatabase": "Ngowuphi umthombo wedatha ofuna ukuwusebenzisa?",
     "setupDatabaseMariaDB": "Qhagamshela kwi-database yeMariaDB yangaphandle. Kuya kufuneka usethe ulwazi loqhagamshelo lwedathabase.",
     "setupDatabaseSQLite": "I database elula, ecetyiswayo kusetyenziso oluncinci. Ngaphambi kwe v2.0.0, i-Uptime Kuma yayisebenzisa i-SQLite njenge database yomdibaniso.",
-    "settingUpDatabaseMSG": "Ukumisela i-database. Kungathatha ixesha, nceda ube nomonde.",
-    "Silence": "Silence",
-    "Unsilence": "Unsilence",
-    "Silenced": "Silenced",
-    "silenceMonitor": "Silence Monitor",
-    "silenceMonitorDesc": "Notifications will be suppressed while the monitor continues to run. The silence is automatically cleared when the monitor recovers.",
-    "silenceMessage": "Reason / Message",
-    "silenceMessagePlaceholder": "e.g. Known issue, investigating...",
-    "silencedMonitorMsg": "Notifications silenced",
-    "silencedAt": "Silenced at",
-    "successSilenced": "Monitor silenced successfully.",
-    "successUnsilenced": "Monitor unsilenced successfully.",
-    "silenceMessageRequired": "A reason is required to silence a monitor.",
-    "silenceOnlyDownMonitor": "Only a DOWN monitor can be silenced.",
-    "silencedMonitorsMsg": "Silenced {n} monitor | Silenced {n} monitors",
-    "noMonitorsSilencedMsg": "No monitors silenced (none were DOWN and unsilenced)",
-    "bulkSilenceErrorMsg": "Failed to silence {n} monitor | Failed to silence {n} monitors",
-    "silenceOnlyDownMonitorBulk": "Cannot silence: all selected monitors must be DOWN."
+    "settingUpDatabaseMSG": "Ukumisela i-database. Kungathatha ixesha, nceda ube nomonde."
 }

@@ -250,9 +250,5 @@
     "successSilenced": "Monitor silenciado com sucesso.",
     "successUnsilenced": "Monitor dessilenciado com sucesso.",
     "silenceMessageRequired": "É necessário um motivo para silenciar um monitor.",
-    "silenceOnlyDownMonitor": "Apenas um monitor em estado DOWN pode ser silenciado.",
-    "silencedMonitorsMsg": "Silenced {n} monitor | Silenced {n} monitors",
-    "noMonitorsSilencedMsg": "No monitors silenced (none were DOWN and unsilenced)",
-    "bulkSilenceErrorMsg": "Failed to silence {n} monitor | Failed to silence {n} monitors",
-    "silenceOnlyDownMonitorBulk": "Cannot silence: all selected monitors must be DOWN."
+    "silenceOnlyDownMonitor": "Apenas um monitor em estado DOWN pode ser silenciado."
 }
