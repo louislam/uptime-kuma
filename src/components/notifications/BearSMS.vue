@@ -22,6 +22,17 @@
         ></HiddenInput>
     </div>
     <div class="mb-3">
+        <label for="bearsms-senderId" class="form-label">{{ $t("From Name/Number") }}</label>
+        <input
+            id="bearsms-senderId"
+            v-model="$parent.notification.bearsmsSenderId"
+            type="text"
+            maxlength="11"
+            class="form-control"
+        />
+        <div class="form-text">{{ $t("bearsmsSenderDescription") }}</div>
+    </div>
+    <div class="mb-3">
         <label for="bearsms-phoneNumber" class="form-label">{{ $t("Recipient Number") }}</label>
         <input
             id="bearsms-phoneNumber"

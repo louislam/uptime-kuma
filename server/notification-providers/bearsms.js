@@ -20,6 +20,10 @@ class BearSMS extends NotificationProvider {
                 msg: msg,
             });
 
+            if (notification.bearsmsSenderId) {
+                params.append("from", notification.bearsmsSenderId);
+            }
+
             // Non-GSM text (e.g. Hebrew) must be flagged as unicode
             if (/[^\x00-\x7F]/.test(msg)) {
                 params.append("unicode", "1");
