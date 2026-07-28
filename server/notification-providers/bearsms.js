@@ -20,11 +20,22 @@ class BearSMS extends NotificationProvider {
                 msg: msg,
             });
 
+            // Non-GSM text (e.g. Hebrew) must be flagged as unicode
+            if (/[^\x00-\x7F]/.test(msg)) {
+                params.append("unicode", "1");
+            }
+
             const url = `https://app.bearsms.com/index.php?${params.toString()}`;
             let config = this.getAxiosConfigWithProxy({});
             const response = await axios.get(url, config);
 
-            return response.data || okMsg;
+            // BearSMS responds with HTTP 200 even on failure, e.g.
+            // {"status":"ERR","error":"100","error_string":"authentication failed"}
+            if (response.data?.status !== "OK") {
+                throw new Error(response.data?.error_string || JSON.stringify(response.data));
+            }
+
+            return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }
