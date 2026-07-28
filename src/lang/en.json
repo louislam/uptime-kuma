@@ -1336,8 +1336,6 @@
     "SendGrid API Key": "SendGrid API Key",
     "turbosmtpConsumerKey": "Consumer Key",
     "turbosmtpConsumerSecret": "Consumer Secret",
-    "turbosmtpRegionUS": "US",
-    "turbosmtpRegionEU": "EU",
     "Separate multiple email addresses with commas": "Separate multiple email addresses with commas",
     "brevoApiKey": "Brevo API Key",
     "brevoApiHelp": "Create an API key here: {0}",

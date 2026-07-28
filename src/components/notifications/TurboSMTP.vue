@@ -25,8 +25,8 @@
             :required="true"
             class="form-select"
         >
-            <option value="us">{{ $t("turbosmtpRegionUS") }}</option>
-            <option value="eu">{{ $t("turbosmtpRegionEU") }}</option>
+            <option value="us">US (Default)</option>
+            <option value="eu">EU</option>
         </select>
     </div>
     <div class="mb-3">
