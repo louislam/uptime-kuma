@@ -272,6 +272,7 @@ export default {
                 gtxmessaging: "GtxMessaging",
                 octopush: "Octopush",
                 Onesender: "Onesender",
+                plivo: "Plivo",
                 SevenIO: "SevenIO",
                 SMSEagle: "SMSEagle",
                 SMSPartner: "SMS Partner",
