@@ -33,10 +33,13 @@ class BearSMS extends NotificationProvider {
             let config = this.getAxiosConfigWithProxy({});
             const response = await axios.get(url, config);
 
-            // BearSMS responds with HTTP 200 even on failure, e.g.
-            // {"status":"ERR","error":"100","error_string":"authentication failed"}
-            if (response.data?.status !== "OK") {
-                throw new Error(response.data?.error_string || JSON.stringify(response.data));
+            // BearSMS responds with HTTP 200 even on failure.
+            // Failure: {"status":"ERR","error":"100","error_string":"authentication failed"}
+            // Success: {"data":[{"status":"OK","error":"0","smslog_id":"..."}],"error_string":null}
+            const data = response.data;
+            const results = Array.isArray(data?.data) ? data.data : [];
+            if (data?.status === "ERR" || data?.error_string || !results.some(r => r.status === "OK")) {
+                throw new Error(data?.error_string || JSON.stringify(data));
             }
 
             return okMsg;
