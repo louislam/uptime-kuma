@@ -65,7 +65,7 @@ if (!dryRun) {
     );
 
     // Build full image (rootless)
-    buildImage(repoNames, ["2-rootless", ver(version, "rootless")], "rootless");
+    buildImage(repoNames, ["next-rootless", "2-rootless", ver(version, "rootless")], "rootless");
 
     // Build slim image
     buildImage(
