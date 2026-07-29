@@ -3,6 +3,7 @@ const assert = require("node:assert");
 const { HiveMQContainer } = require("@testcontainers/hivemq");
 const mqtt = require("mqtt");
 const { MqttMonitorType } = require("../../../server/monitor-types/mqtt");
+const { ConditionExpressionGroup } = require("../../../server/monitor-conditions/expression");
 const { UP, PENDING } = require("../../../src/util");
 
 /**
@@ -167,6 +168,33 @@ describe(
             await assert.rejects(
                 testMqtt("[wrong_success_messsage]", "json-query", '{"firstProp":"present"}'),
                 new Error("Message received but value is not equal to expected value, value was: [present]")
+            );
+        });
+
+        test("check() rejects when json query evaluation fails for conditions", async () => {
+            const mqttMonitorType = new MqttMonitorType();
+            const monitor = {
+                jsonPath: '$toMillis(timestamp)',
+            };
+            const heartbeat = {
+                msg: "",
+                status: PENDING,
+            };
+            const conditions = JSON.stringify([
+                {
+                    type: "expression",
+                    variable: "json_value",
+                    operator: "lt",
+                    value: "120",
+                    andOr: "and",
+                },
+            ]);
+            monitor.conditions = conditions;
+
+            const conditionsGroup = ConditionExpressionGroup.fromMonitor(monitor);
+            await assert.rejects(
+                mqttMonitorType.checkConditions(monitor, heartbeat, undefined, '{"timestamp":"junk"}', conditionsGroup),
+                /Error evaluating JSON query:.*toMillis.*Response from server was: \{"timestamp":"junk"\}/
             );
         });
 
