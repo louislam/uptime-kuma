@@ -1,9 +1,11 @@
 const { describe, test, mock } = require("node:test");
 const assert = require("node:assert");
+const { R } = require("redbean-node");
 const StatusPage = require("../../server/model/status_page");
 const dayjs = require("dayjs");
 const utc = require("dayjs/plugin/utc");
 const {
+    UP,
     STATUS_PAGE_ALL_UP,
     STATUS_PAGE_ALL_DOWN,
     STATUS_PAGE_PARTIAL_DOWN,
@@ -42,6 +44,40 @@ describe("StatusPage", () => {
         test("returns '?' for unknown status values", () => {
             const description = StatusPage.getStatusDescription(999);
             assert.strictEqual(description, "?");
+        });
+    });
+
+    describe("getRSSPageData()", () => {
+        test("statusDescription is 'All Systems Operational' when all services are up", async () => {
+            mock.method(StatusPage, "getStatusPageData", async () => ({
+                incidents: [],
+                publicGroupList: [
+                    {
+                        monitorList: [
+                            {
+                                id: 1,
+                                name: "Test Monitor",
+                            },
+                        ],
+                    },
+                ],
+            }));
+
+            mock.method(R, "findOne", async () => ({
+                status: UP,
+                time: "2026-01-24 13:16:25.400",
+            }));
+
+            try {
+                const { statusDescription, heartbeats } = await StatusPage.getRSSPageData({});
+
+                assert.strictEqual(statusDescription, "All Systems Operational");
+
+                // Only DOWN heartbeats are listed as RSS feed items
+                assert.strictEqual(heartbeats.length, 0);
+            } finally {
+                mock.restoreAll();
+            }
         });
     });
 
