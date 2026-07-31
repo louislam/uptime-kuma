@@ -307,6 +307,7 @@ export default {
     },
     mounted() {
         window.addEventListener("scroll", this.onScroll);
+        this.applyFilterFromQuery();
     },
     beforeUnmount() {
         window.removeEventListener("scroll", this.onScroll);
@@ -345,6 +346,25 @@ export default {
          */
         updateFilter(newFilter) {
             this.filterState = newFilter;
+        },
+        /**
+         * Apply the filter requested through the URL, so linking to a filtered
+         * list (e.g. from Quick Stats) survives a reload and can be shared
+         * @returns {void}
+         */
+        applyFilterFromQuery() {
+            const { status, active } = this.$route.query;
+            if (status == null && active == null) {
+                return;
+            }
+
+            const toArray = (value) => (Array.isArray(value) ? value : [ value ]);
+
+            this.filterState = {
+                status: status == null ? null : toArray(status).map(Number).filter((s) => !isNaN(s)),
+                active: active == null ? null : toArray(active).map((a) => a === "true"),
+                tags: null,
+            };
         },
         /**
          * Toggle collapse state for all group monitors
