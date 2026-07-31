@@ -17,6 +17,35 @@
         </div>
     </div>
     <div class="mb-3">
+        <div class="form-check form-switch">
+            <input
+                id="ntfy-make-addressable-notications"
+                v-model="$parent.notification.ntfyUseAddressableNotifications"
+                class="form-check-input"
+                type="checkbox"
+            />
+            <label class="form-check-label" for="ntfy-make-addressable-notications">
+                {{ $t("ntfyUseAddressableNotifications") }}
+            </label>
+        </div>
+        <div class="form-text">
+            {{ $t("ntfyUseAddressableNotificationsDescription") }}
+        </div>
+
+        <div v-if="$parent.notification.ntfyUseAddressableNotifications === true" class="mb-3">
+            <label for="up-notification-handler-method" class="form-label">{{ $t("ntfyAddressableUpNotificationHandleMethod") }}</label>
+            <select id="up-notification-handler-method" v-model="$parent.notification.ntfyAddressableUpNotificationHandler" class="form-select">
+                <option v-for="(name, type) in addressableUpNotificationHandlingMethods" :key="type" :value="type">{{ name }}</option>
+            </select>
+
+            <div class="form-text">
+                <p>
+                    {{ $t("ntfyAddressableUpNotificationHandleMethodHelpText") }}
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="mb-3">
         <label for="ntfy-priority" class="form-label">{{ $t("Priority") }}</label>
         <input
             id="ntfy-priority"
@@ -164,6 +193,12 @@ export default {
                 accessToken: this.$t("Access Token"),
             };
         },
+        addressableUpNotificationHandlingMethods() {
+            return {
+                replace: this.$t("Replace"),
+                clear: this.$t("Clear")
+            }
+        }
     },
     mounted() {
         if (typeof this.$parent.notification.ntfyPriority === "undefined") {
@@ -190,6 +225,15 @@ export default {
             const hasTitle = !!this.$parent.notification.ntfyCustomTitle?.trim();
             const hasMessage = !!this.$parent.notification.ntfyCustomMessage?.trim();
             this.$parent.notification.ntfyUseTemplate = hasTitle || hasMessage;
+        }
+
+        // Auto set addressable notification / sequence id checkbox to false if undefined
+        if (typeof this.$parent.notification.ntfyUseAddressableNotifications === "undefined") {
+            this.$parent.notification.ntfyUseAddressableNotifications = false;
+
+            if (typeof this.$parent.notification.ntfyAddressableUpNotificationHandler === "undefined") {
+                this.$parent.notification.ntfyAddressableUpNotificationHandler = "replace";
+            }
         }
     },
 };
