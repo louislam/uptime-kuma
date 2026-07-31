@@ -9,29 +9,33 @@
                 <div class="row">
                     <div class="col">
                         <h3>{{ $t("Up") }}</h3>
-                        <span class="num" :class="$root.stats.up === 0 && 'text-secondary'">
+                        <router-link class="num" :class="$root.stats.up === 0 && 'text-secondary'" :to="{ query: { status: '1' } }">
                             {{ $root.stats.up }}
-                        </span>
+                        </router-link>
                     </div>
                     <div class="col">
                         <h3>{{ $t("Down") }}</h3>
-                        <span class="num" :class="$root.stats.down > 0 ? 'text-danger' : 'text-secondary'">
+                        <router-link class="num" :class="$root.stats.down > 0 ? 'text-danger' : 'text-secondary'" :to="{ query: { status: '0' } }">
                             {{ $root.stats.down }}
-                        </span>
+                        </router-link>
                     </div>
                     <div class="col">
                         <h3>{{ $t("Maintenance") }}</h3>
-                        <span class="num" :class="$root.stats.maintenance > 0 ? 'text-maintenance' : 'text-secondary'">
+                        <router-link class="num" :class="$root.stats.maintenance > 0 ? 'text-maintenance' : 'text-secondary'" :to="{ query: { status: '3' } }">
                             {{ $root.stats.maintenance }}
-                        </span>
+                        </router-link>
                     </div>
                     <div class="col">
                         <h3>{{ $t("Unknown") }}</h3>
-                        <span class="num text-secondary">{{ $root.stats.unknown }}</span>
+                        <router-link class="num text-secondary" :to="{ query: { status: '2' } }">
+                            {{ $root.stats.unknown }}
+                        </router-link>
                     </div>
                     <div class="col">
                         <h3>{{ $t("pauseDashboardHome") }}</h3>
-                        <span class="num text-secondary">{{ $root.stats.pause }}</span>
+                        <router-link class="num text-secondary" :to="{ query: { active: 'false' } }">
+                            {{ $root.stats.pause }}
+                        </router-link>
                     </div>
                 </div>
             </div>
@@ -313,6 +317,11 @@ export default {
     color: $primary;
     font-weight: bold;
     display: block;
+    text-decoration: none;
+
+    &:hover {
+        text-decoration: underline;
+    }
 }
 
 .shadow-box {
