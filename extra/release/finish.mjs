@@ -49,7 +49,7 @@ const llmPrompt = await getPrompt(previousVersion);
 try {
     const result = childProcess.spawnSync(
         "opencode",
-        ["-p", llmPrompt, "-f", "text", "-q", "-m", "opencode/big-pickle"],
+        ["run", "-m", "opencode/big-pickle", "--format", "json", llmPrompt],
         {
             encoding: "utf-8",
             timeout: 120000,
@@ -59,18 +59,26 @@ try {
     );
 
     if (result.status === 0 && result.stdout) {
-        // Extract JSON from opencode's text output
-        const jsonMatch = result.stdout.match(/\{[^{}]*"improvements"[^{}]*\}/s) || result.stdout.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
+        // Parse NDJSON output: find "type":"text" line
+        for (const line of result.stdout.trim().split("\n")) {
             try {
-                categorizedMap = JSON.parse(jsonMatch[0]);
-                console.log("LLM categorization (opencode) applied.");
-            } catch (e) {
-                console.warn("Failed to parse opencode JSON output:", e.message);
-                console.warn("Raw output:", result.stdout.slice(0, 500));
+                const obj = JSON.parse(line);
+                if (obj.type === "text" && obj.part?.text) {
+                    const jsonMatch = obj.part.text.match(/\{[\s\S]*\}/);
+                    if (jsonMatch) {
+                        categorizedMap = JSON.parse(jsonMatch[0]);
+                        console.log("LLM categorization applied.");
+                        break;
+                    }
+                }
+            } catch {
+                // skip unparseable lines
             }
-        } else {
-            console.warn("Could not find JSON in opencode output.");
+        }
+
+        if (!categorizedMap) {
+            console.warn("No JSON found in opencode response.");
+            console.warn("Last 500 chars:", result.stdout.slice(-500));
         }
     } else {
         console.warn("opencode failed or returned no output (status:", result.status, ")");
