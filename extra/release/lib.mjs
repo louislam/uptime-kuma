@@ -389,7 +389,7 @@ export async function createRelease(version, changelog, isBeta = false, distTarG
 
 ${changelog}`;
 
-    const releaseArgs = ["release", "create", version];
+    let releaseArgs = ["release", "create", version];
 
     if (distTarGz) {
         if (!fs.existsSync(distTarGz)) {
@@ -400,7 +400,7 @@ ${changelog}`;
         releaseArgs.push(distTarGz);
     }
 
-    releaseArgs.concat(["--draft", "--title", version, "--notes", releaseBody]);
+    releaseArgs = releaseArgs.concat(["--draft", "--title", version, "--notes", releaseBody]);
 
     if (isBeta) {
         releaseArgs.push("--prerelease");
