@@ -27,11 +27,7 @@ const outputFormat = JSON.stringify({
     others: [192, 21],
 });
 
-const prompt = `Input Data:
-\`\`\`json
-{{ input }}
-\`\`\`
-
+const prompt = `Input Data: {{ input }}
 LLM Task:
 - Output a one-line JSON object in the following format:
 {{ outputFormat }}
@@ -188,6 +184,75 @@ export async function generateChangelog(previousVersion, categorizedMap) {
     }
 
     return content;
+}
+
+/**
+ * Generate Changelog using AI
+ * @param {string} previousVersion Previous Version Tag
+ * @returns {Promise<string>} Changelog Content
+ */
+export async function generateChangelogAI(previousVersion) {
+    // 1. Generate changelog
+    let categorizedMap = null;
+
+    console.log("Running opencode to categorize PRs...");
+    const llmPrompt = (await getPrompt(previousVersion)).replaceAll("\n", " ");
+
+    console.log(llmPrompt);
+
+    console.log("Running opencode with the above prompt...");
+
+    try {
+        const result = childProcess.spawnSync(
+            "opencode",
+            ["run", "-m", "opencode/big-pickle", "--format", "json", llmPrompt],
+            {
+                encoding: "utf-8",
+                timeout: 120000,
+                shell: true,
+                cwd: process.cwd(),
+                env: process.env,
+            }
+        );
+
+        if (result.status === 0 && result.stdout) {
+            // Parse NDJSON output: find "type":"text" line
+            for (const line of result.stdout.trim().split("\n")) {
+                try {
+                    const obj = JSON.parse(line);
+                    if (obj.type === "text" && obj.part?.text) {
+                        const jsonMatch = obj.part.text.match(/\{[\s\S]*\}/);
+                        if (jsonMatch) {
+                            categorizedMap = JSON.parse(jsonMatch[0]);
+                            console.log("LLM categorization applied.");
+                            break;
+                        }
+                    }
+                } catch {
+                    // skip unparseable lines
+                }
+            }
+
+            if (!categorizedMap) {
+                console.warn("No JSON found in opencode response.");
+                console.warn(result.stdout);
+            }
+        } else {
+            console.warn("opencode failed or returned no output (status:", result.status, ")");
+            if (result.stderr) {
+                console.warn("stderr:", result.stderr.slice(0, 500));
+            }
+        }
+    } catch (e) {
+        console.warn("Failed to run opencode:", e.message);
+    }
+
+    if (!categorizedMap) {
+        categorizedMap = {};
+        console.log("OpenCode unavailable, using uncategorized fallback.");
+    }
+
+    return await generateChangelog(previousVersion, categorizedMap);
 }
 
 /**
