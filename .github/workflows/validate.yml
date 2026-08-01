@@ -40,11 +40,12 @@ jobs:
         with:
           node-version: 25
 
-      - name: Validate language JSON files
-        run: node ./extra/check-lang-json.js
+      - parallel:
+          - name: Validate language JSON files
+            run: node ./extra/check-lang-json.js
 
-      - name: Validate knex migrations filename
-        run: node ./extra/check-knex-filenames.mjs
+          - name: Validate knex migrations filename
+            run: node ./extra/check-knex-filenames.mjs
 
-      - name: Validate package.json
-        run: node ./extra/check-package-json.mjs
+          - name: Validate package.json
+            run: node ./extra/check-package-json.mjs

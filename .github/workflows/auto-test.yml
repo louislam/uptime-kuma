@@ -126,6 +126,11 @@ jobs:
     env:
       PLAYWRIGHT_VERSION: ~1.39.0
     steps:
+      - name: Install Playwright ${{ env.PLAYWRIGHT_VERSION }}
+        id: playwright
+        background: true
+        run: npx playwright@${{ env.PLAYWRIGHT_VERSION }} install
+
       - run: git config --global core.autocrlf false # Mainly for Windows
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with: { persist-credentials: false }
@@ -147,8 +152,7 @@ jobs:
       - name: Rebuild native modules for ARM64
         run: npm rebuild @louislam/sqlite3
 
-      - name: Install Playwright ${{ env.PLAYWRIGHT_VERSION }}
-        run: npx playwright@${{ env.PLAYWRIGHT_VERSION }} install
+      - wait: playwright
 
       - run: npm run build
       - run: npm run test-e2e
