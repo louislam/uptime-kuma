@@ -76,6 +76,9 @@ jobs:
           username: ${{ secrets.GHCR_USERNAME }}
           password: ${{ secrets.GHCR_TOKEN }}
 
+      - name: Install opencode
+        run: curl -fsSL https://opencode.ai/install | bash
+
       - name: Run release-final
         env:
           RELEASE_VERSION: ${{ inputs.version }}
