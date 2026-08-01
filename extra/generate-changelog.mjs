@@ -195,7 +195,7 @@ export async function generateChangelog(previousVersion, categorizedMap) {
  * @param {boolean} removeAuthor Whether to strip the author field from the returned PR list
  * @returns {Promise<object>} List of Pull Requests merged since previousVersion
  */
-async function getPullRequestList(previousVersion, removeAuthor = false) {
+export async function getPullRequestList(previousVersion, removeAuthor = false) {
     // Get the date of previousVersion in iso8601-strict format (2026-02-19T13:34:03+08:00) from git
     const previousVersionDate = childProcess
         .execSync(`git log -1 --format=%cd --date=iso8601-strict ${previousVersion}`)
@@ -287,7 +287,7 @@ async function getAuthorList(prID) {
  * @param {Set<string>} authorSet Set of Authors
  * @returns {Set<string>} New Set with mainAuthor at the front
  */
-async function mainAuthorToFront(mainAuthor, authorSet) {
+export async function mainAuthorToFront(mainAuthor, authorSet) {
     if (ignoreList.includes(mainAuthor)) {
         return authorSet;
     }
