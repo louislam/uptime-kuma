@@ -373,3 +373,51 @@ The \`dist.tar.gz\` archive will be available as an artifact in the [workflow ru
     console.log("Successfully created draft pull request");
     return prNumber;
 }
+
+/**
+ * @param {string} version
+ * @param {string} distTarGz If empty, it will not be uploaded to the release
+ * @param {string} changelog
+ * @param {boolean} isBeta
+ * @returns {Promise<void>}
+ */
+export async function createRelease(version, changelog, isBeta = false, distTarGz = undefined) {
+    // 3. Create draft release with changelog and dist.tar.gz
+    console.log(`Creating draft release ${version}...`);
+
+    const releaseBody = `## ${version}
+
+${changelog}`;
+
+    let releaseArgs = ["release", "create", version];
+
+    if (distTarGz) {
+        if (!fs.existsSync(distTarGz)) {
+            console.error(`dist.tar.gz not found: ${distTarGz}`);
+            process.exit(1);
+        }
+
+        releaseArgs.push(distTarGz);
+    }
+
+    releaseArgs = releaseArgs.concat(["--draft", "--title", version, "--notes", releaseBody]);
+
+    if (isBeta) {
+        releaseArgs.push("--prerelease");
+    }
+
+    const result = childProcess.spawnSync("gh", releaseArgs, {
+        encoding: "utf-8",
+        stdio: "inherit",
+    });
+
+    if (result.status !== 0) {
+        console.error("Failed to create release");
+        process.exit(1);
+    }
+
+    console.log(`Release ${version} is ready (draft).`);
+    console.log("Next steps:");
+    console.log(`  1. Review the draft release: https://github.com/louislam/uptime-kuma/releases/tag/${version}`);
+    console.log(`  2. Edit if needed and publish.`);
+}
