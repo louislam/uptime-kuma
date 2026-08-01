@@ -7,25 +7,53 @@ permissions: {}
 
 jobs:
   close-incorrect-issue:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-slim
     permissions:
       issues: write
-
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        node-version: [lts/*]
-
     steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
-        with: { persist-credentials: false }
-
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
-        with:
-          node-version: ${{ matrix.node-version }}
-      - run: npm ci
       - name: Close incorrect issue
-        run: node extra/close-incorrect-issue.js ${{ secrets.GITHUB_TOKEN }} ${{ github.event.issue.number }} "$ISSUE_USER_LOGIN"
-        env:
-          ISSUE_USER_LOGIN: ${{ github.event.issue.user.login }}
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            try {
+                const username = context.payload.issue.user.login;
+
+                const labels = (
+                    await github.rest.issues.listLabelsOnIssue({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        issue_number: context.issue.number,
+                    })
+                ).data.map(({ name }) => name);
+
+                if (labels.length === 0) {
+                    console.log("Bad format here");
+
+                    await github.rest.issues.addLabels({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        issue_number: context.issue.number,
+                        labels: ["invalid-format"],
+                    });
+
+                    // Add the issue closing comment
+                    await github.rest.issues.createComment({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        issue_number: context.issue.number,
+                        body: `@${username}: Hello! :wave:\n\nThis issue is being automatically closed because it does not follow the issue template. Please **DO NOT open blank issues and use our [issue-templates](https://github.com/louislam/uptime-kuma/issues/new/choose) instead**.\nBlank Issues do not contain the context necessary for a good discussions.`,
+                    });
+
+                    // Close the issue
+                    await github.rest.issues.update({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        issue_number: context.issue.number,
+                        state: "closed",
+                    });
+                } else {
+                    console.log("Pass!");
+                }
+            } catch (e) {
+                console.log(e);
+            }
