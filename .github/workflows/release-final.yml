@@ -83,6 +83,7 @@ jobs:
           DRY_RUN: ${{ inputs.dry_run }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_RUN_ID: ${{ github.run_id }}
+          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
         run: npm run release-final
 
       - name: Upload dist.tar.gz as artifact

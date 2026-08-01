@@ -84,5 +84,8 @@ if (!dryRun) {
 // Create dist.tar.gz
 await createDistTarGz();
 
+// Auto-finish: generate changelog, squash merge PR (non-dry-run only), create draft release with dist.tar.gz
+await import("./finish.mjs");
+
 // Removed update wiki to keep it simple
 // Do this in the wiki repo instead
