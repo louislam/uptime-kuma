@@ -12,7 +12,7 @@ permissions: {}
 
 jobs:
   json-yaml-validate:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     permissions:
       contents: read
       pull-requests: write # enable write permissions for pull request comments
@@ -29,7 +29,7 @@ jobs:
 
   # General validations
   validate:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     permissions:
       contents: read
     steps:

@@ -17,7 +17,7 @@ on: # zizmor: ignore[dangerous-triggers]
 jobs:
   label:
     name: Labeling
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     if: ${{ github.repository == 'louislam/uptime-kuma' }}
     permissions:
       contents: read
