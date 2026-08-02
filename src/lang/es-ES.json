@@ -1374,5 +1374,16 @@
     "snmpV3Username": "Nombre de usuario SNMPv3",
     "ntfyUseTemplate": "Personalizar plantillas de notificación",
     "Monitors": "{n} Monitor | {n} Monitores",
-    "oracledbConnectionString": "Base de datos Oracle: {connectionString}"
+    "oracledbConnectionString": "Base de datos Oracle: {connectionString}",
+    "wayToGetMaxToken": "Puede obtener un token de bot MAX y otros detalles en {0}.",
+    "selectedMonitorCountMsg": "seleccionado: {n} | seleccionados: {n}",
+    "maxUseTemplate": "Usar plantilla de mensaje personalizada",
+    "certificateExpiryNotificationHelp": "El número de días de antelación se puede configurar en los Ajustes.",
+    "Bearer Token": "Token",
+    "matrixUseTemplate": "Usar plantilla de mensaje personalizada",
+    "matrixUseTemplateDescription": "Si está activo, el mensaje se enviará utilizando una plantilla personalizada.",
+    "Connection Timeout": "Tiempo de espera de conexión",
+    "slug is not found": "No se ha encontrador el “slug”",
+    "pingPacketSizeWarning": "Un tamaño de paquete menor que 16 no produce tiempos de ida y vuelta en Linux",
+    "hostnameCannotBeIP": "El nombre del host del DNS no puede ser una IP. Te referías a un campo resolver?"
 }
