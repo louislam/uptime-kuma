@@ -3550,11 +3550,11 @@ message HealthCheckResponse {
         },
 
         // Filter result by active state, weight and alphabetical
-        // Only return groups which arent't itself and one of its decendants
+        // Only return groups which arent't itself and one of its descendants
         sortedGroupMonitorList() {
             let result = Object.values(this.$root.monitorList);
 
-            // Only groups, not itself, not a decendant
+            // Only groups, not itself, not a descendant
             result = result.filter(
                 (monitor) =>
                     monitor.type === "group" &&
