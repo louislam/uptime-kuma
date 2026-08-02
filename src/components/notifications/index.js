@@ -44,6 +44,7 @@ import PagerDuty from "./PagerDuty.vue";
 import FlashDuty from "./FlashDuty.vue";
 import Flowtriq from "./Flowtriq.vue";
 import PagerTree from "./PagerTree.vue";
+import Pinglet from "./Pinglet.vue";
 import Plivo from "./Plivo.vue";
 import PromoSMS from "./PromoSMS.vue";
 import Pumble from "./Pumble.vue";
@@ -147,6 +148,7 @@ const NotificationFormList = {
     FlashDuty: FlashDuty,
     Flowtriq: Flowtriq,
     PagerTree: PagerTree,
+    pinglet: Pinglet,
     plivo: Plivo,
     promosms: PromoSMS,
     pumble: Pumble,
