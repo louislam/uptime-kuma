@@ -258,6 +258,7 @@ export default {
                 lunasea: "LunaSea",
                 notifery: "Notifery",
                 ntfy: "Ntfy",
+                pinglet: "Pinglet",
                 pushbullet: "Pushbullet",
                 PushByTechulus: "Push by Techulus",
                 pushover: "Pushover",

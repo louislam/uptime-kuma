@@ -1127,6 +1127,8 @@
     "Flowtriq Webhook URL": "Webhook URL",
     "Flowtriq API Key": "API Key",
     "flowtriqApiKeyDescription": "Optional API key for authenticating webhook requests to your Flowtriq instance.",
+    "Pinglet Topic URL": "Topic URL",
+    "pingletTopicUrlDescription": "The publish URL of the Pinglet topic to send alerts to, e.g. https://app.pinglet.co.uk/your-namespace/alerts. The topic is created on first publish if it doesn't exist yet.",
     "nostrRelays": "Nostr relays",
     "nostrRelaysHelp": "One relay URL per line",
     "nostrSender": "Sender Private Key (nsec)",
