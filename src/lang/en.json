@@ -1336,6 +1336,8 @@
     "RabbitMQ Password": "RabbitMQ Password",
     "rabbitmqHelpText": "To use the monitor, you will need to enable the Management Plugin in your RabbitMQ setup. For more information, please consult the {rabitmq_documentation}.",
     "SendGrid API Key": "SendGrid API Key",
+    "turbosmtpConsumerKey": "Consumer Key",
+    "turbosmtpConsumerSecret": "Consumer Secret",
     "Separate multiple email addresses with commas": "Separate multiple email addresses with commas",
     "brevoApiKey": "Brevo API Key",
     "brevoApiHelp": "Create an API key here: {0}",
