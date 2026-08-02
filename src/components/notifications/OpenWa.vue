@@ -46,7 +46,7 @@
             required
         />
         <div class="form-text">
-            {{ $t("wayToWriteOpenwaChatId", [ "00117612345678@c.us", "123456789012345678@g.us", "1234567890@lid"]) }}
+            {{ $t("wayToWriteOpenwaChatId", ["00117612345678@c.us", "123456789012345678@g.us", "1234567890@lid"]) }}
         </div>
     </div>
 

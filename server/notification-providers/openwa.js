@@ -40,10 +40,14 @@ class OpenWa extends NotificationProvider {
             const url = `${baseUrl}/api/sessions/${sessionId}/messages/send-text`;
 
             for (const chatId of chatIds) {
-                await axios.post(url, {
-                    chatId,
-                    text,
-                }, config);
+                await axios.post(
+                    url,
+                    {
+                        chatId,
+                        text,
+                    },
+                    config
+                );
             }
 
             return okMsg;
