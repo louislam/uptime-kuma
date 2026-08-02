@@ -82,6 +82,7 @@ import Whapi from "./Whapi.vue";
 import WAHA from "./WAHA.vue";
 import Whatsapp360messenger from "./360messenger.vue";
 import Evolution from "./Evolution.vue";
+import OpenWa from "./OpenWa.vue";
 import Cellsynt from "./Cellsynt.vue";
 import WPush from "./WPush.vue";
 import WxPusher from "./WxPusher.vue";
@@ -185,6 +186,7 @@ const NotificationFormList = {
     SevenIO: SevenIO,
     whapi: Whapi,
     evolution: Evolution,
+    openwa: OpenWa,
     notifery: Notifery,
     waha: WAHA,
     Whatsapp360messenger: Whatsapp360messenger,
