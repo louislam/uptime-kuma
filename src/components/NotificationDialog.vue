@@ -247,6 +247,7 @@ export default {
                 evolution: "WhatsApp (Evolution)",
                 waha: "WhatsApp (WAHA)",
                 Whatsapp360messenger: "WhatsApp (360messenger)",
+                openwa: "WhatsApp (OpenWA)",
             };
 
             // Push Services - Push notification services
@@ -257,6 +258,7 @@ export default {
                 lunasea: "LunaSea",
                 notifery: "Notifery",
                 ntfy: "Ntfy",
+                pinglet: "Pinglet",
                 pushbullet: "Pushbullet",
                 PushByTechulus: "Push by Techulus",
                 pushover: "Pushover",
@@ -287,6 +289,7 @@ export default {
                 Resend: "Resend",
                 SendGrid: "SendGrid",
                 smtp: this.$t("smtp"),
+                TurboSMTP: "TurboSMTP",
             };
 
             // Incident Management - On-call and alerting platforms

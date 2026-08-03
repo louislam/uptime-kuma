@@ -45,6 +45,7 @@ const Pumble = require("./notification-providers/pumble");
 const FlashDuty = require("./notification-providers/flashduty");
 const Flowtriq = require("./notification-providers/flowtriq");
 const PagerTree = require("./notification-providers/pagertree");
+const Pinglet = require("./notification-providers/pinglet");
 const Plivo = require("./notification-providers/plivo");
 const PromoSMS = require("./notification-providers/promosms");
 const Pushbullet = require("./notification-providers/pushbullet");
@@ -80,12 +81,14 @@ const SevenIO = require("./notification-providers/sevenio");
 const Whapi = require("./notification-providers/whapi");
 const WAHA = require("./notification-providers/waha");
 const Evolution = require("./notification-providers/evolution");
+const OpenWa = require("./notification-providers/openwa");
 const GtxMessaging = require("./notification-providers/gtx-messaging");
 const Cellsynt = require("./notification-providers/cellsynt");
 const Onesender = require("./notification-providers/onesender");
 const Wpush = require("./notification-providers/wpush");
 const WxPusher = require("./notification-providers/wxpusher");
 const SendGrid = require("./notification-providers/send-grid");
+const TurboSMTP = require("./notification-providers/turbosmtp");
 const Brevo = require("./notification-providers/brevo");
 const Resend = require("./notification-providers/resend");
 const YZJ = require("./notification-providers/yzj");
@@ -159,6 +162,7 @@ class Notification {
             new FlashDuty(),
             new Flowtriq(),
             new PagerTree(),
+            new Pinglet(),
             new Plivo(),
             new PromoSMS(),
             new Pumble(),
@@ -195,6 +199,7 @@ class Notification {
             new Whapi(),
             new WAHA(),
             new Evolution(),
+            new OpenWa(),
             new GtxMessaging(),
             new Cellsynt(),
             new Wpush(),
@@ -207,6 +212,7 @@ class Notification {
             new Notifery(),
             new SMSIR(),
             new SendGrid(),
+            new TurboSMTP(),
             new Whatsapp360messenger(),
             new Webpush(),
             new HaloPSA(),

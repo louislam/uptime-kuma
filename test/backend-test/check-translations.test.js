@@ -61,7 +61,7 @@ describe("Check Translations", () => {
     it("should not have missing translation keys", async () => {
         const enTranslations = JSON.parse(await fs.readFile("src/lang/en.json", "utf-8"));
 
-        // this is a resonably crude check, you can get around this trivially
+        // this is a reasonably crude check, you can get around this trivially
         /// this check is just to save on maintainer energy to explain this on every review ^^
         const translationRegex = /\$t\(['"](?<key1>.*?)['"]\s*[,)]|i18n-t[^>]*\s+keypath="(?<key2>[^"]+)"/dg;
 
