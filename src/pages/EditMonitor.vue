@@ -77,6 +77,7 @@
 
                                     <!-- Should sort from A to Z in this category -->
                                     <optgroup :label="$t('Specific Monitor Type')">
+                                        <option value="elasticsearch">Elasticsearch</option>
                                         <option value="globalping">
                                             {{ $t("Globalping - Access global monitoring probes") }}
                                         </option>
@@ -205,6 +206,85 @@
                                     data-testid="url-input"
                                 />
                             </div>
+
+                            <template v-if="monitor.type === 'elasticsearch'">
+                                <div class="my-3">
+                                    <label for="elasticsearch-nodes" class="form-label">
+                                        {{ $t("Elasticsearch Nodes") }}
+                                    </label>
+                                    <VueMultiselect
+                                        id="elasticsearch-nodes"
+                                        v-model="monitor.elasticsearchNodes"
+                                        :required="true"
+                                        :multiple="true"
+                                        :options="[]"
+                                        :placeholder="$t('Enter the list of Elasticsearch nodes')"
+                                        :tag-placeholder="$t('Press Enter to add node')"
+                                        :max-height="500"
+                                        :taggable="true"
+                                        :show-no-options="false"
+                                        :close-on-select="false"
+                                        :clear-on-select="false"
+                                        :preserve-search="false"
+                                        :preselect-first="false"
+                                        @tag="addElasticsearchNode"
+                                    ></VueMultiselect>
+                                    <div class="form-text">
+                                        {{ $t("elasticsearchNodesDescription", ["https://node1.example.com:9200"]) }}
+                                    </div>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="elasticsearch-status" class="form-label">
+                                        {{ $t("Elasticsearch Minimum Status") }}
+                                    </label>
+                                    <select
+                                        id="elasticsearch-status"
+                                        v-model="monitor.elasticsearchStatus"
+                                        class="form-select"
+                                    >
+                                        <option value="green">green</option>
+                                        <option value="yellow">yellow</option>
+                                    </select>
+                                    <div class="form-text">{{ $t("elasticsearchStatusDescription") }}</div>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="elasticsearch-minimum-nodes" class="form-label">
+                                        {{ $t("Elasticsearch Minimum Nodes") }}
+                                    </label>
+                                    <input
+                                        id="elasticsearch-minimum-nodes"
+                                        v-model.number="monitor.elasticsearchMinimumNodes"
+                                        type="number"
+                                        class="form-control"
+                                        min="0"
+                                        step="1"
+                                        placeholder="0"
+                                    />
+                                    <div class="form-text">{{ $t("elasticsearchMinimumNodesDescription") }}</div>
+                                </div>
+
+                                <h4 class="mt-5 mb-2">{{ $t("Authentication") }}</h4>
+                                <div class="my-3">
+                                    <label for="elasticsearch-username" class="form-label">{{ $t("Username") }}</label>
+                                    <input
+                                        id="elasticsearch-username"
+                                        v-model="monitor.basic_auth_user"
+                                        type="text"
+                                        class="form-control"
+                                        autocomplete="username"
+                                    />
+                                </div>
+                                <div class="my-3">
+                                    <label for="elasticsearch-password" class="form-label">{{ $t("Password") }}</label>
+                                    <HiddenInput
+                                        id="elasticsearch-password"
+                                        v-model="monitor.basic_auth_pass"
+                                        autocomplete="new-password"
+                                    />
+                                </div>
+                            </template>
 
                             <template v-if="monitor.type === 'websocket-upgrade'">
                                 <h2 class="mt-5 mb-2">{{ $t("WebSocket Options") }}</h2>
@@ -1627,6 +1707,7 @@
                                     monitor.type === 'keyword' ||
                                     monitor.type === 'ping' ||
                                     monitor.type === 'rabbitmq' ||
+                                    monitor.type === 'elasticsearch' ||
                                     monitor.type === 'snmp' ||
                                     monitor.type === 'websocket-upgrade' ||
                                     monitor.type === 'kafka-producer'
@@ -1784,6 +1865,7 @@
                                     monitor.type === 'keyword' ||
                                     monitor.type === 'json-query' ||
                                     monitor.type === 'redis' ||
+                                    monitor.type === 'elasticsearch' ||
                                     (monitor.type === 'globalping' && monitor.subtype === 'http')
                                 "
                                 class="my-3 form-check"
@@ -2420,7 +2502,8 @@
                                 v-if="
                                     monitor.type === 'http' ||
                                     monitor.type === 'keyword' ||
-                                    monitor.type === 'json-query'
+                                    monitor.type === 'json-query' ||
+                                    monitor.type === 'elasticsearch'
                                 "
                             >
                                 <h2 class="mt-5 mb-2">{{ $t("Proxy") }}</h2>
@@ -3317,6 +3400,9 @@ const monitorDefaults = {
     rabbitmqNodes: [],
     rabbitmqUsername: "",
     rabbitmqPassword: "",
+    elasticsearchNodes: [],
+    elasticsearchStatus: "yellow",
+    elasticsearchMinimumNodes: 0,
     conditions: [],
     system_service_name: "",
     ntpStratumThreshold: 5,
@@ -4116,6 +4202,10 @@ message HealthCheckResponse {
             this.monitor.rabbitmqNodes.push(newNode);
         },
 
+        addElasticsearchNode(newNode) {
+            this.monitor.elasticsearchNodes.push(newNode);
+        },
+
         /**
          * Validate form input
          * @returns {boolean} Is the form input valid?
@@ -4155,6 +4245,30 @@ message HealthCheckResponse {
                     )
                 ) {
                     toast.error(this.$t("rabbitmqNodesInvalid"));
+                    return false;
+                }
+            }
+
+            if (this.monitor.type === "elasticsearch") {
+                if (this.monitor.elasticsearchNodes.length === 0) {
+                    toast.error(this.$t("elasticsearchNodesRequired"));
+                    return false;
+                }
+                if (
+                    !this.monitor.elasticsearchNodes.every((node) => {
+                        try {
+                            const url = new URL(node);
+                            return (
+                                (url.protocol === "http:" || url.protocol === "https:") &&
+                                !url.username &&
+                                !url.password
+                            );
+                        } catch (error) {
+                            return false;
+                        }
+                    })
+                ) {
+                    toast.error(this.$t("elasticsearchNodesInvalid"));
                     return false;
                 }
             }
