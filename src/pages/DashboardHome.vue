@@ -285,9 +285,10 @@ export default {
          * @returns {void}
          */
         getHeartbeatEventListLength() {
-            const countEvent = this.eventTypeFilter === "relevant"
-                ? "monitorRelevantHeartbeatListCount"
-                : "monitorImportantHeartbeatListCount";
+            const countEvent =
+                this.eventTypeFilter === "relevant"
+                    ? "monitorRelevantHeartbeatListCount"
+                    : "monitorImportantHeartbeatListCount";
 
             this.$root.getSocket().emit(countEvent, null, (res) => {
                 if (res.ok) {
@@ -303,9 +304,10 @@ export default {
          */
         getHeartbeatEventListPaged() {
             const offset = (this.page - 1) * this.perPage;
-            const pagedEvent = this.eventTypeFilter === "relevant"
-                ? "monitorRelevantHeartbeatListPaged"
-                : "monitorImportantHeartbeatListPaged";
+            const pagedEvent =
+                this.eventTypeFilter === "relevant"
+                    ? "monitorRelevantHeartbeatListPaged"
+                    : "monitorImportantHeartbeatListPaged";
 
             this.$root.getSocket().emit(pagedEvent, null, offset, this.perPage, (res) => {
                 if (res.ok) {

@@ -239,8 +239,7 @@ export default {
                 const previousMsg = previousHeartbeat?.msg ?? "";
                 const currentMsg = data.msg ?? "";
                 const isUpOrDownStatus = data.status === 0 || data.status === 1;
-                const hasMessageDifference =
-                    currentMsg !== previousMsg && (currentMsg !== "" || previousMsg !== "");
+                const hasMessageDifference = currentMsg !== previousMsg && (currentMsg !== "" || previousMsg !== "");
                 const isRelevantNonImportant = !data.important && isUpOrDownStatus && hasMessageDifference;
 
                 if (data.important || isRelevantNonImportant) {

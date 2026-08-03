@@ -894,13 +894,11 @@ export default {
                 };
                 const pagedEvent = pagedEventByType[this.eventTypeFilter] ?? pagedEventByType.relevant;
 
-                this.$root
-                    .getSocket()
-                    .emit(pagedEvent, this.monitor.id, offset, this.perPage, (res) => {
-                        if (res.ok) {
-                            this.displayedRecords = res.data;
-                        }
-                    });
+                this.$root.getSocket().emit(pagedEvent, this.monitor.id, offset, this.perPage, (res) => {
+                    if (res.ok) {
+                        this.displayedRecords = res.data;
+                    }
+                });
             }
         },
 
