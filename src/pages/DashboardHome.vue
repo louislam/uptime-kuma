@@ -37,7 +37,26 @@
             </div>
 
             <div class="shadow-box table-shadow-box table-wrapper">
-                <div class="mb-3 text-end">
+                <div class="mb-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div class="btn-group btn-group-sm" role="group" aria-label="Event type filter">
+                        <button
+                            type="button"
+                            class="btn"
+                            :class="eventTypeFilter === 'relevant' ? 'btn-primary' : 'btn-outline-primary'"
+                            @click="setEventTypeFilter('relevant')"
+                        >
+                            {{ $t("Relevant") }}
+                        </button>
+                        <button
+                            type="button"
+                            class="btn"
+                            :class="eventTypeFilter === 'important' ? 'btn-primary' : 'btn-outline-primary'"
+                            @click="setEventTypeFilter('important')"
+                        >
+                            {{ $t("Important") }}
+                        </button>
+                    </div>
+
                     <button
                         class="btn btn-sm btn-outline-danger"
                         :disabled="clearingAllEvents"
@@ -81,9 +100,9 @@
                             <td class="border-0">{{ beat.msg }}</td>
                         </tr>
 
-                        <tr v-if="importantHeartBeatListLength === 0">
+                        <tr v-if="heartbeatEventListLength === 0">
                             <td :colspan="tableColumnCount">
-                                {{ $t("No important events") }}
+                                {{ noEventsText }}
                             </td>
                         </tr>
                     </tbody>
@@ -92,7 +111,7 @@
                 <div class="d-flex justify-content-center kuma_pagination">
                     <pagination
                         v-model="page"
-                        :records="importantHeartBeatListLength"
+                        :records="heartbeatEventListLength"
                         :per-page="perPage"
                         :options="paginationConfig"
                     />
@@ -140,7 +159,8 @@ export default {
                 hideCount: true,
                 chunksNavigation: "scroll",
             },
-            importantHeartBeatListLength: 0,
+            eventTypeFilter: "relevant",
+            heartbeatEventListLength: 0,
             displayedRecords: [],
             clearingAllEvents: false,
         };
@@ -152,23 +172,37 @@ export default {
         tableColumnCount() {
             return this.showGroupColumn ? 5 : 4;
         },
+        noEventsText() {
+            const noEventsTranslationKeys = {
+                relevant: "No relevant events",
+                important: "No important events",
+            };
+
+            return this.$t(noEventsTranslationKeys[this.eventTypeFilter] ?? noEventsTranslationKeys.important);
+        },
     },
     watch: {
         perPage() {
             this.$nextTick(() => {
-                this.getImportantHeartbeatListPaged();
+                this.getHeartbeatEventListPaged();
             });
         },
 
         page() {
-            this.getImportantHeartbeatListPaged();
+            this.getHeartbeatEventListPaged();
+        },
+
+        eventTypeFilter() {
+            this.page = 1;
+            this.getHeartbeatEventListLength();
         },
     },
 
     mounted() {
-        this.getImportantHeartbeatListLength();
+        this.getHeartbeatEventListLength();
 
         this.$root.emitter.on("newImportantHeartbeat", this.onNewImportantHeartbeat);
+        this.$root.emitter.on("newRelevantHeartbeat", this.onNewRelevantHeartbeat);
 
         this.initialPerPage = this.perPage;
 
@@ -178,6 +212,7 @@ export default {
 
     beforeUnmount() {
         this.$root.emitter.off("newImportantHeartbeat", this.onNewImportantHeartbeat);
+        this.$root.emitter.off("newRelevantHeartbeat", this.onNewRelevantHeartbeat);
 
         window.removeEventListener("resize", this.updatePerPage);
     },
@@ -207,41 +242,72 @@ export default {
             return monitor && monitor.parent != null ? monitor.parent : null;
         },
 
+        setEventTypeFilter(eventTypeFilter) {
+            if (this.eventTypeFilter !== eventTypeFilter) {
+                this.eventTypeFilter = eventTypeFilter;
+            }
+        },
+
+        prependHeartbeatEvent(heartbeat) {
+            if (this.page === 1) {
+                this.displayedRecords.unshift(heartbeat);
+                if (this.displayedRecords.length > this.perPage) {
+                    this.displayedRecords.pop();
+                }
+                this.heartbeatEventListLength += 1;
+            }
+        },
+
         /**
          * Updates the displayed records when a new important heartbeat arrives.
          * @param {object} heartbeat - The heartbeat object received.
          * @returns {void}
          */
         onNewImportantHeartbeat(heartbeat) {
-            if (this.page === 1) {
-                this.displayedRecords.unshift(heartbeat);
-                if (this.displayedRecords.length > this.perPage) {
-                    this.displayedRecords.pop();
-                }
-                this.importantHeartBeatListLength += 1;
+            if (this.eventTypeFilter === "important") {
+                this.prependHeartbeatEvent(heartbeat);
             }
         },
 
         /**
-         * Retrieves the length of the important heartbeat list for all monitors.
+         * Updates the displayed records when a new relevant heartbeat arrives.
+         * @param {object} heartbeat - The heartbeat object received.
          * @returns {void}
          */
-        getImportantHeartbeatListLength() {
-            this.$root.getSocket().emit("monitorImportantHeartbeatListCount", null, (res) => {
+        onNewRelevantHeartbeat(heartbeat) {
+            if (this.eventTypeFilter === "relevant") {
+                this.prependHeartbeatEvent(heartbeat);
+            }
+        },
+
+        /**
+         * Retrieves the length of the selected heartbeat event list for all monitors.
+         * @returns {void}
+         */
+        getHeartbeatEventListLength() {
+            const countEvent = this.eventTypeFilter === "relevant"
+                ? "monitorRelevantHeartbeatListCount"
+                : "monitorImportantHeartbeatListCount";
+
+            this.$root.getSocket().emit(countEvent, null, (res) => {
                 if (res.ok) {
-                    this.importantHeartBeatListLength = res.count;
-                    this.getImportantHeartbeatListPaged();
+                    this.heartbeatEventListLength = res.count;
+                    this.getHeartbeatEventListPaged();
                 }
             });
         },
 
         /**
-         * Retrieves the important heartbeat list for the current page.
+         * Retrieves the selected heartbeat event list for the current page.
          * @returns {void}
          */
-        getImportantHeartbeatListPaged() {
+        getHeartbeatEventListPaged() {
             const offset = (this.page - 1) * this.perPage;
-            this.$root.getSocket().emit("monitorImportantHeartbeatListPaged", null, offset, this.perPage, (res) => {
+            const pagedEvent = this.eventTypeFilter === "relevant"
+                ? "monitorRelevantHeartbeatListPaged"
+                : "monitorImportantHeartbeatListPaged";
+
+            this.$root.getSocket().emit(pagedEvent, null, offset, this.perPage, (res) => {
                 if (res.ok) {
                     this.displayedRecords = res.data;
                 }
@@ -289,7 +355,7 @@ export default {
             });
             this.clearingAllEvents = false;
             this.page = 1;
-            this.getImportantHeartbeatListLength();
+            this.getHeartbeatEventListLength();
             if (failed === 0) {
                 this.$root.toastSuccess(this.$t("Events cleared successfully"));
             } else {
