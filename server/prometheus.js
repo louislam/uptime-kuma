@@ -238,22 +238,35 @@ class Prometheus {
     }
 
     /**
+     * Remove a single metric's series for the given labels, isolating failures so one
+     * metric's removal can't block the others' — the class-wide try/catch previously
+     * wrapping all ten removals meant a single throw silently orphaned every metric
+     * removed after it in the sequence (see #7482).
+     * @param {PrometheusClient.Gauge} metric The metric to remove the series from
+     * @param {object} labels The label values identifying the series to remove
+     * @returns {void}
+     */
+    static safeRemoveMetric(metric, labels) {
+        try {
+            metric.remove(labels);
+        } catch (e) {
+            log.error("prometheus", `Failed to remove metric ${metric.name}`, e);
+        }
+    }
+
+    /**
      * Remove monitor from prometheus
      * @returns {void}
      */
     remove() {
-        try {
-            monitorCertDaysRemaining.remove(this.monitorLabelValues);
-            monitorCertIsValid.remove(this.monitorLabelValues);
-            ["1d", "30d", "365d"].forEach((window) => {
-                monitorUptimeRatio.remove({ ...this.monitorLabelValues, window });
-                monitorAverageResponseTimeSeconds.remove({ ...this.monitorLabelValues, window });
-            });
-            monitorResponseTime.remove(this.monitorLabelValues);
-            monitorStatus.remove(this.monitorLabelValues);
-        } catch (e) {
-            console.error(e);
-        }
+        Prometheus.safeRemoveMetric(monitorCertDaysRemaining, this.monitorLabelValues);
+        Prometheus.safeRemoveMetric(monitorCertIsValid, this.monitorLabelValues);
+        ["1d", "30d", "365d"].forEach((window) => {
+            Prometheus.safeRemoveMetric(monitorUptimeRatio, { ...this.monitorLabelValues, window });
+            Prometheus.safeRemoveMetric(monitorAverageResponseTimeSeconds, { ...this.monitorLabelValues, window });
+        });
+        Prometheus.safeRemoveMetric(monitorResponseTime, this.monitorLabelValues);
+        Prometheus.safeRemoveMetric(monitorStatus, this.monitorLabelValues);
     }
 
     /**
