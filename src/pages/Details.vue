@@ -324,29 +324,57 @@
                     <ScreenshotDialog ref="screenshotDialog" :imageURL="screenshotURL" />
                 </div>
             </div>
-
             <div class="shadow-box table-shadow-box">
-                <div class="dropdown dropdown-clear-data">
-                    <button
-                        class="btn btn-sm btn-outline-danger dropdown-toggle"
-                        type="button"
-                        data-bs-toggle="dropdown"
-                    >
-                        <font-awesome-icon icon="trash" />
-                        {{ $t("Clear Data") }}
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li>
-                            <button type="button" class="dropdown-item" @click="clearEventsDialog">
-                                {{ $t("Events") }}
-                            </button>
-                        </li>
-                        <li>
-                            <button type="button" class="dropdown-item" @click="clearHeartbeatsDialog">
-                                {{ $t("Heartbeats") }}
-                            </button>
-                        </li>
-                    </ul>
+                <div class="event-toolbar d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div class="btn-group btn-group-sm" role="group" aria-label="Event type filter">
+                        <button
+                            type="button"
+                            class="btn"
+                            :class="eventTypeFilter === 'all' ? 'btn-primary' : 'btn-outline-primary'"
+                            @click="setEventTypeFilter('all')"
+                        >
+                            {{ $t("All") }}
+                        </button>
+                        <button
+                            type="button"
+                            class="btn"
+                            :class="eventTypeFilter === 'relevant' ? 'btn-primary' : 'btn-outline-primary'"
+                            @click="setEventTypeFilter('relevant')"
+                        >
+                            {{ $t("Relevant") }}
+                        </button>
+                        <button
+                            type="button"
+                            class="btn"
+                            :class="eventTypeFilter === 'important' ? 'btn-primary' : 'btn-outline-primary'"
+                            @click="setEventTypeFilter('important')"
+                        >
+                            {{ $t("Important") }}
+                        </button>
+                    </div>
+
+                    <div class="dropdown dropdown-clear-data">
+                        <button
+                            class="btn btn-sm btn-outline-danger dropdown-toggle"
+                            type="button"
+                            data-bs-toggle="dropdown"
+                        >
+                            <font-awesome-icon icon="trash" />
+                            {{ $t("Clear Data") }}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <button type="button" class="dropdown-item" @click="clearEventsDialog">
+                                    {{ $t("Events") }}
+                                </button>
+                            </li>
+                            <li>
+                                <button type="button" class="dropdown-item" @click="clearHeartbeatsDialog">
+                                    {{ $t("Heartbeats") }}
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
                 <table class="table table-borderless table-hover">
                     <thead>
@@ -365,9 +393,9 @@
                             <td class="border-0">{{ beat.msg }}</td>
                         </tr>
 
-                        <tr v-if="importantHeartBeatListLength === 0">
+                        <tr v-if="heartbeatEventListLength === 0">
                             <td colspan="3">
-                                {{ $t("No important events") }}
+                                {{ noEventsTranslationKey }}
                             </td>
                         </tr>
                     </tbody>
@@ -376,7 +404,7 @@
                 <div class="d-flex justify-content-center kuma_pagination">
                     <pagination
                         v-model="page"
-                        :records="importantHeartBeatListLength"
+                        :records="heartbeatEventListLength"
                         :per-page="perPage"
                         :options="paginationConfig"
                     />
@@ -490,7 +518,8 @@ export default {
                 chunksNavigation: "scroll",
             },
             cacheTime: Date.now(),
-            importantHeartBeatListLength: 0,
+            eventTypeFilter: "relevant",
+            heartbeatEventListLength: 0,
             displayedRecords: [],
             pushMonitor: {
                 showPushExamples: false,
@@ -602,15 +631,30 @@ export default {
                 return "";
             }
         },
+
+        noEventsTranslationKey() {
+            const noEventsTranslationKeys = {
+                all: this.$t("No events"),
+                relevant: this.$t("No relevant events"),
+                important: this.$t("No important events"),
+            };
+
+            return noEventsTranslationKeys[this.eventTypeFilter] ?? noEventsTranslationKeys.relevant;
+        },
     },
 
     watch: {
-        page(to) {
-            this.getImportantHeartbeatListPaged();
+        page() {
+            this.getHeartbeatEventListPaged();
         },
 
-        monitor(to) {
-            this.getImportantHeartbeatListLength();
+        monitor() {
+            this.getHeartbeatEventListLength();
+        },
+
+        eventTypeFilter() {
+            this.page = 1;
+            this.getHeartbeatEventListLength();
         },
         "monitor.type"() {
             if (this.monitor && this.monitor.type === "push") {
@@ -623,9 +667,11 @@ export default {
     },
 
     mounted() {
-        this.getImportantHeartbeatListLength();
+        this.getHeartbeatEventListLength();
 
+        this.$root.emitter.on("newHeartbeat", this.onNewHeartbeat);
         this.$root.emitter.on("newImportantHeartbeat", this.onNewImportantHeartbeat);
+        this.$root.emitter.on("newRelevantHeartbeat", this.onNewRelevantHeartbeat);
 
         if (this.monitor && this.monitor.type === "push") {
             if (this.lastHeartBeat.status === -1) {
@@ -636,7 +682,9 @@ export default {
     },
 
     beforeUnmount() {
+        this.$root.emitter.off("newHeartbeat", this.onNewHeartbeat);
         this.$root.emitter.off("newImportantHeartbeat", this.onNewImportantHeartbeat);
+        this.$root.emitter.off("newRelevantHeartbeat", this.onNewRelevantHeartbeat);
     },
 
     methods: {
@@ -730,7 +778,7 @@ export default {
         clearEvents() {
             this.$root.clearEvents(this.monitor.id, (res) => {
                 if (res.ok) {
-                    this.getImportantHeartbeatListLength();
+                    this.getHeartbeatEventListLength();
                 } else {
                     toast.error(res.msg);
                 }
@@ -794,35 +842,63 @@ export default {
             }
         },
 
+        setEventTypeFilter(eventTypeFilter) {
+            if (this.eventTypeFilter !== eventTypeFilter) {
+                this.eventTypeFilter = eventTypeFilter;
+            }
+        },
+
+        prependHeartbeatEvent(heartbeat) {
+            if (this.page === 1) {
+                this.displayedRecords.unshift(heartbeat);
+                if (this.displayedRecords.length > this.perPage) {
+                    this.displayedRecords.pop();
+                }
+                this.heartbeatEventListLength += 1;
+            }
+        },
+
         /**
-         * Retrieves the length of the important heartbeat list for this monitor.
+         * Retrieves the length of the selected heartbeat event list for this monitor.
          * @returns {void}
          */
-        getImportantHeartbeatListLength() {
+        getHeartbeatEventListLength() {
             if (this.monitor) {
-                this.$root.getSocket().emit("monitorImportantHeartbeatListCount", this.monitor.id, (res) => {
+                const countEventByType = {
+                    all: "monitorHeartbeatListCount",
+                    relevant: "monitorRelevantHeartbeatListCount",
+                    important: "monitorImportantHeartbeatListCount",
+                };
+                const countEvent = countEventByType[this.eventTypeFilter] ?? countEventByType.relevant;
+
+                this.$root.getSocket().emit(countEvent, this.monitor.id, (res) => {
                     if (res.ok) {
-                        this.importantHeartBeatListLength = res.count;
-                        this.getImportantHeartbeatListPaged();
+                        this.heartbeatEventListLength = res.count;
+                        this.getHeartbeatEventListPaged();
                     }
                 });
             }
         },
 
         /**
-         * Retrieves the important heartbeat list for the current page.
+         * Retrieves the selected heartbeat event list for the current page.
          * @returns {void}
          */
-        getImportantHeartbeatListPaged() {
+        getHeartbeatEventListPaged() {
             if (this.monitor) {
                 const offset = (this.page - 1) * this.perPage;
-                this.$root
-                    .getSocket()
-                    .emit("monitorImportantHeartbeatListPaged", this.monitor.id, offset, this.perPage, (res) => {
-                        if (res.ok) {
-                            this.displayedRecords = res.data;
-                        }
-                    });
+                const pagedEventByType = {
+                    all: "monitorHeartbeatListPaged",
+                    relevant: "monitorRelevantHeartbeatListPaged",
+                    important: "monitorImportantHeartbeatListPaged",
+                };
+                const pagedEvent = pagedEventByType[this.eventTypeFilter] ?? pagedEventByType.relevant;
+
+                this.$root.getSocket().emit(pagedEvent, this.monitor.id, offset, this.perPage, (res) => {
+                    if (res.ok) {
+                        this.displayedRecords = res.data;
+                    }
+                });
             }
         },
 
@@ -832,14 +908,30 @@ export default {
          * @returns {void}
          */
         onNewImportantHeartbeat(heartbeat) {
-            if (heartbeat.monitorID === this.monitor?.id) {
-                if (this.page === 1) {
-                    this.displayedRecords.unshift(heartbeat);
-                    if (this.displayedRecords.length > this.perPage) {
-                        this.displayedRecords.pop();
-                    }
-                    this.importantHeartBeatListLength += 1;
-                }
+            if (this.eventTypeFilter === "important" && heartbeat.monitorID === this.monitor?.id) {
+                this.prependHeartbeatEvent(heartbeat);
+            }
+        },
+
+        /**
+         * Updates the displayed records when a new heartbeat arrives.
+         * @param {object} heartbeat - The heartbeat object received.
+         * @returns {void}
+         */
+        onNewHeartbeat(heartbeat) {
+            if (this.eventTypeFilter === "all" && heartbeat.monitorID === this.monitor?.id) {
+                this.prependHeartbeatEvent(heartbeat);
+            }
+        },
+
+        /**
+         * Updates the displayed records when a new relevant heartbeat arrives.
+         * @param {object} heartbeat - The heartbeat object received.
+         * @returns {void}
+         */
+        onNewRelevantHeartbeat(heartbeat) {
+            if (this.eventTypeFilter === "relevant" && heartbeat.monitorID === this.monitor?.id) {
+                this.prependHeartbeatEvent(heartbeat);
             }
         },
 
@@ -980,13 +1072,15 @@ table {
 }
 
 .dropdown-clear-data {
-    float: right;
-
     ul {
         width: 100%;
         min-width: unset;
         padding-left: 0;
     }
+}
+
+.event-toolbar {
+    margin-bottom: 12px;
 }
 
 .dark {

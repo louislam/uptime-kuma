@@ -1378,6 +1378,116 @@ let needSetup = false;
             }
         });
 
+        /**
+         * Build SQL fragment for relevant heartbeat events.
+         * Relevant events include all important beats plus non-important UP/DOWN beats
+         * where message changed compared to the previous beat of the same monitor.
+         * @param {?number} monitorID Monitor ID or null for all monitors
+         * @returns {{ selectionSql: string, params: unknown[] }} SQL selection and bound params
+         */
+        function buildRelevantHeartbeatSelection(monitorID) {
+            const monitorFilter = monitorID == null ? "" : "WHERE h.monitor_id = ?";
+            const params = monitorID == null ? [] : [monitorID];
+
+            const selectionSql = `
+                FROM (
+                    SELECT
+                        h.id,
+                        h.monitor_id AS monitorID,
+                        h.status,
+                        h.time,
+                        h.msg,
+                        h.ping,
+                        h.important,
+                        (
+                            SELECT COALESCE(p.msg, '')
+                            FROM heartbeat p
+                            WHERE p.monitor_id = h.monitor_id
+                              AND (p.time < h.time OR (p.time = h.time AND p.id < h.id))
+                            ORDER BY p.time DESC, p.id DESC
+                            LIMIT 1
+                        ) AS previousMsg
+                    FROM heartbeat h
+                    ${monitorFilter}
+                ) rh
+                WHERE rh.important = 1
+                OR (
+                    rh.important = 0
+                    AND rh.status IN (0, 1)
+                    AND COALESCE(rh.msg, '') != rh.previousMsg
+                    AND (COALESCE(rh.msg, '') != '' OR rh.previousMsg != '')
+                )
+            `;
+
+            return {
+                selectionSql,
+                params,
+            };
+        }
+
+        socket.on("monitorHeartbeatListCount", async (monitorID, callback) => {
+            try {
+                checkLogin(socket);
+
+                let count;
+                if (monitorID == null) {
+                    count = await R.count("heartbeat");
+                } else {
+                    count = await R.count("heartbeat", "monitor_id = ?", [monitorID]);
+                }
+
+                callback({
+                    ok: true,
+                    count: count,
+                });
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("monitorHeartbeatListPaged", async (monitorID, offset, count, callback) => {
+            try {
+                checkLogin(socket);
+
+                let list;
+                if (monitorID == null) {
+                    list = await R.find(
+                        "heartbeat",
+                        `
+                        ORDER BY time DESC
+                        LIMIT ?
+                        OFFSET ?
+                    `,
+                        [count, offset]
+                    );
+                } else {
+                    list = await R.find(
+                        "heartbeat",
+                        `
+                        monitor_id = ?
+                        ORDER BY time DESC
+                        LIMIT ?
+                        OFFSET ?
+                    `,
+                        [monitorID, count, offset]
+                    );
+                }
+
+                callback({
+                    ok: true,
+                    data: list,
+                });
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
         socket.on("monitorImportantHeartbeatListCount", async (monitorID, callback) => {
             try {
                 checkLogin(socket);
@@ -1430,6 +1540,53 @@ let needSetup = false;
                         [monitorID, count, offset]
                     );
                 }
+
+                callback({
+                    ok: true,
+                    data: list,
+                });
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("monitorRelevantHeartbeatListCount", async (monitorID, callback) => {
+            try {
+                checkLogin(socket);
+
+                const { selectionSql, params } = buildRelevantHeartbeatSelection(monitorID);
+                const result = await R.getRow(`SELECT COUNT(*) AS count ${selectionSql}`, params);
+
+                callback({
+                    ok: true,
+                    count: Number(result.count),
+                });
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("monitorRelevantHeartbeatListPaged", async (monitorID, offset, count, callback) => {
+            try {
+                checkLogin(socket);
+
+                const { selectionSql, params } = buildRelevantHeartbeatSelection(monitorID);
+                const list = await R.getAll(
+                    `
+                    SELECT rh.monitorID, rh.status, rh.time, rh.msg, rh.ping, rh.important
+                    ${selectionSql}
+                    ORDER BY rh.time DESC, rh.id DESC
+                    LIMIT ?
+                    OFFSET ?
+                `,
+                    [...params, count, offset]
+                );
 
                 callback({
                     ok: true,
