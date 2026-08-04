@@ -758,7 +758,7 @@ let needSetup = false;
                 monitor.kafkaProducerBrokers = JSON.stringify(monitor.kafkaProducerBrokers);
                 monitor.kafkaProducerSaslOptions = JSON.stringify(monitor.kafkaProducerSaslOptions);
 
-                monitor.conditions = JSON.stringify(monitor.conditions);
+                monitor.conditions = JSON.stringify(monitor.conditions || []);
 
                 monitor.rabbitmqNodes = JSON.stringify(monitor.rabbitmqNodes);
 
@@ -948,7 +948,7 @@ let needSetup = false;
                 bean.rabbitmqNodes = JSON.stringify(monitor.rabbitmqNodes);
                 bean.rabbitmqUsername = monitor.rabbitmqUsername;
                 bean.rabbitmqPassword = monitor.rabbitmqPassword;
-                bean.conditions = JSON.stringify(monitor.conditions);
+                bean.conditions = JSON.stringify(monitor.conditions || []);
                 bean.manual_status = monitor.manual_status;
                 bean.system_service_name = monitor.system_service_name;
                 bean.expected_tls_alert = monitor.expectedTlsAlert;
