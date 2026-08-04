@@ -7,6 +7,7 @@ const Apprise = require("./notification-providers/apprise");
 const Bale = require("./notification-providers/bale");
 const Bark = require("./notification-providers/bark");
 const Bitrix24 = require("./notification-providers/bitrix24");
+const ClickUp = require("./notification-providers/clickup");
 const ClickSendSMS = require("./notification-providers/clicksendsms");
 const CallMeBot = require("./notification-providers/call-me-bot");
 const SMSC = require("./notification-providers/smsc");
@@ -125,6 +126,7 @@ class Notification {
             new Bale(),
             new Bark(),
             new Bitrix24(),
+            new ClickUp(),
             new ClickSendSMS(),
             new CallMeBot(),
             new SMSC(),
