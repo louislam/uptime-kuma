@@ -115,7 +115,9 @@ describe("TCP Monitor", () => {
         // Regex: contains with "TLS Connection failed:" or "Certificate is invalid"
         const regex = /TLS Connection failed:|Certificate is invalid/;
 
-        await assert.rejects(tcpMonitor.check(monitor, heartbeat, {}), regex);
+        await retryExternalService(async () => {
+            await assert.rejects(tcpMonitor.check(monitor, heartbeat, {}), regex);
+        }, heartbeat);
     });
 
     test("check() sets status to UP when TLS certificate is valid (SSL)", async () => {
