@@ -17,7 +17,7 @@ jobs:
   build:
     if: github.repository == 'louislam/uptime-kuma'
     name: Hello new contributor
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     timeout-minutes: 60
     steps:
       - uses: plbstl/first-contribution@4b2b042fffa26792504a18e49aa9543a87bec077 # v4.1.0

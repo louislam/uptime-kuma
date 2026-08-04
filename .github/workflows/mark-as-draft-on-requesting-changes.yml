@@ -16,7 +16,7 @@ permissions: {}
 
 jobs:
   mark-draft:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     permissions:
       pull-requests: write
     if: |
@@ -52,7 +52,7 @@ jobs:
           # || true to ignore the case where the pr is already a draft
 
   ready-for-review:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     permissions:
       pull-requests: write
     if: github.event.action == 'ready_for_review' && github.repository == 'louislam/uptime-kuma'

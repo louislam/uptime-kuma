@@ -13,7 +13,7 @@ permissions: {}
 jobs:
   handle-ai-slop:
     if: github.event.label.name == 'ai-slop' && github.repository == 'louislam/uptime-kuma'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     permissions:
       pull-requests: write
       issues: write

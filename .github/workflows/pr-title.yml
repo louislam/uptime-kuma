@@ -24,7 +24,7 @@ jobs:
   auto-title:
     if: github.repository == 'louislam/uptime-kuma'
     name: Auto Title
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     permissions:
       pull-requests: write
     steps:
@@ -43,7 +43,7 @@ jobs:
   pr-title:
     if: ${{ github.repository == 'louislam/uptime-kuma' && always() }}
     name: Validate PR title follows https://conventionalcommits.org
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     needs: [auto-title]
     permissions:
       pull-requests: read

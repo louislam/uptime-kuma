@@ -46,7 +46,7 @@ jobs:
   zizmor:
     # Only run scheduled analysis on the original repository, not on forks
     if: github.event_name != 'schedule' || github.repository == 'louislam/uptime-kuma'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     permissions:
       security-events: write
       contents: read

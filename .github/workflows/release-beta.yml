@@ -38,6 +38,11 @@ jobs:
         with:
           node-version: 24
 
+      - name: Install dependencies
+        id: install-deps
+        background: true
+        run: npm clean-install --no-fund
+
       - name: Create release branch
         env:
           VERSION: ${{ inputs.version }}
@@ -53,9 +58,6 @@ jobs:
           # For testing purpose
           # git checkout beta-workflow
           git checkout -b "release-${VERSION}"
-
-      - name: Install dependencies
-        run: npm clean-install --no-fund
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@988b5a0280414f521da01fcc63a27aeeb4b104db # v3.6.1
@@ -78,6 +80,8 @@ jobs:
 
       - name: Install opencode
         run: curl -fsSL https://opencode.ai/install | bash
+
+      - wait: install-deps
 
       - name: Run release-beta
         env:
