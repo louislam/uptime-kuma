@@ -50,10 +50,6 @@ class UptimeCalculator {
     lastHourlyUptimeData = null;
     lastDailyUptimeData = null;
 
-    lastDailyStatBean = null;
-    lastHourlyStatBean = null;
-    lastMinutelyStatBean = null;
-
     /**
      * For migration purposes.
      * @type {boolean}
@@ -299,59 +295,20 @@ class UptimeCalculator {
             return date;
         }
 
-        let dailyStatBean = await this.getDailyStatBean(dailyKey);
-        dailyStatBean.up = dailyData.up;
-        dailyStatBean.down = dailyData.down;
-        dailyStatBean.ping = dailyData.avgPing;
-        dailyStatBean.pingMin = dailyData.minPing;
-        dailyStatBean.pingMax = dailyData.maxPing;
-        {
-            // eslint-disable-next-line no-unused-vars
-            const { up, down, avgPing, minPing, maxPing, timestamp, ...extras } = dailyData;
-            if (Object.keys(extras).length > 0) {
-                dailyStatBean.extras = JSON.stringify(extras);
-            }
-        }
-        await R.store(dailyStatBean);
+        await this.upsertStat("stat_daily", dailyKey, dailyData);
 
         let currentDate = this.getCurrentDate();
 
         // For migration mode, we don't need to store old hourly and minutely data, but we need 30-day's hourly data
         // Run anyway for non-migration mode
         if (!this.migrationMode || date.isAfter(currentDate.subtract(this.statHourlyKeepDay, "day"))) {
-            let hourlyStatBean = await this.getHourlyStatBean(hourlyKey);
-            hourlyStatBean.up = hourlyData.up;
-            hourlyStatBean.down = hourlyData.down;
-            hourlyStatBean.ping = hourlyData.avgPing;
-            hourlyStatBean.pingMin = hourlyData.minPing;
-            hourlyStatBean.pingMax = hourlyData.maxPing;
-            {
-                // eslint-disable-next-line no-unused-vars
-                const { up, down, avgPing, minPing, maxPing, timestamp, ...extras } = hourlyData;
-                if (Object.keys(extras).length > 0) {
-                    hourlyStatBean.extras = JSON.stringify(extras);
-                }
-            }
-            await R.store(hourlyStatBean);
+            await this.upsertStat("stat_hourly", hourlyKey, hourlyData);
         }
 
         // For migration mode, we don't need to store old hourly and minutely data, but we need 24-hour's minutely data
         // Run anyway for non-migration mode
         if (!this.migrationMode || date.isAfter(currentDate.subtract(this.statMinutelyKeepHour, "hour"))) {
-            let minutelyStatBean = await this.getMinutelyStatBean(divisionKey);
-            minutelyStatBean.up = minutelyData.up;
-            minutelyStatBean.down = minutelyData.down;
-            minutelyStatBean.ping = minutelyData.avgPing;
-            minutelyStatBean.pingMin = minutelyData.minPing;
-            minutelyStatBean.pingMax = minutelyData.maxPing;
-            {
-                // eslint-disable-next-line no-unused-vars
-                const { up, down, avgPing, minPing, maxPing, timestamp, ...extras } = minutelyData;
-                if (Object.keys(extras).length > 0) {
-                    minutelyStatBean.extras = JSON.stringify(extras);
-                }
-            }
-            await R.store(minutelyStatBean);
+            await this.upsertStat("stat_minutely", divisionKey, minutelyData);
         }
 
         // No need to remove old data in migration mode
@@ -374,69 +331,37 @@ class UptimeCalculator {
     }
 
     /**
-     * Get the daily stat bean
-     * @param {number} timestamp milliseconds
-     * @returns {Promise<import("redbean-node").Bean>} stat_daily bean
+     * Insert or update a stat bucket using an atomic upsert.
+     *
+     * Replaces the previous findOne()/dispense()/R.store() pattern, which was not
+     * atomic: update() is called concurrently from the push endpoint and the beat
+     * watcher, so two calls for the same (monitor_id, timestamp) could both miss the
+     * row, both INSERT, and collide on the UNIQUE constraint. The losing call also
+     * left an id-less bean cached, so every later beat in that period kept re-INSERTing
+     * and failing, wedging the monitor until the bucket rolled over or a restart.
+     * onConflict().merge() is idempotent, so neither can happen. (#5357)
+     * @param {string} table Stat table: "stat_minutely", "stat_hourly" or "stat_daily"
+     * @param {number} timestamp Bucket key (UNIX seconds)
+     * @param {object} data In-memory bucket data ({up, down, avgPing, minPing, maxPing, ...extras})
+     * @returns {Promise<void>}
      */
-    async getDailyStatBean(timestamp) {
-        if (this.lastDailyStatBean && this.lastDailyStatBean.timestamp === timestamp) {
-            return this.lastDailyStatBean;
-        }
-
-        let bean = await R.findOne("stat_daily", " monitor_id = ? AND timestamp = ?", [this.monitorID, timestamp]);
-
-        if (!bean) {
-            bean = R.dispense("stat_daily");
-            bean.monitor_id = this.monitorID;
-            bean.timestamp = timestamp;
-        }
-
-        this.lastDailyStatBean = bean;
-        return this.lastDailyStatBean;
-    }
-
-    /**
-     * Get the hourly stat bean
-     * @param {number} timestamp milliseconds
-     * @returns {Promise<import("redbean-node").Bean>} stat_hourly bean
-     */
-    async getHourlyStatBean(timestamp) {
-        if (this.lastHourlyStatBean && this.lastHourlyStatBean.timestamp === timestamp) {
-            return this.lastHourlyStatBean;
-        }
-
-        let bean = await R.findOne("stat_hourly", " monitor_id = ? AND timestamp = ?", [this.monitorID, timestamp]);
-
-        if (!bean) {
-            bean = R.dispense("stat_hourly");
-            bean.monitor_id = this.monitorID;
-            bean.timestamp = timestamp;
-        }
-
-        this.lastHourlyStatBean = bean;
-        return this.lastHourlyStatBean;
-    }
-
-    /**
-     * Get the minutely stat bean
-     * @param {number} timestamp milliseconds
-     * @returns {Promise<import("redbean-node").Bean>} stat_minutely bean
-     */
-    async getMinutelyStatBean(timestamp) {
-        if (this.lastMinutelyStatBean && this.lastMinutelyStatBean.timestamp === timestamp) {
-            return this.lastMinutelyStatBean;
-        }
-
-        let bean = await R.findOne("stat_minutely", " monitor_id = ? AND timestamp = ?", [this.monitorID, timestamp]);
-
-        if (!bean) {
-            bean = R.dispense("stat_minutely");
-            bean.monitor_id = this.monitorID;
-            bean.timestamp = timestamp;
-        }
-
-        this.lastMinutelyStatBean = bean;
-        return this.lastMinutelyStatBean;
+    async upsertStat(table, timestamp, data) {
+        // Pull out the known columns and collect anything else (e.g. `maintenance`) into
+        // `extras`. `timestamp` is renamed to `_timestamp` only to drop it from `extras`
+        // (the read path tags `data` with it); it's never read, hence the lint disable.
+        // eslint-disable-next-line no-unused-vars
+        const { up, down, avgPing, minPing, maxPing, timestamp: _timestamp, ...extras } = data;
+        let row = {
+            monitor_id: this.monitorID,
+            timestamp: timestamp,
+            up: up,
+            down: down,
+            ping: avgPing,
+            ping_min: minPing,
+            ping_max: maxPing,
+            extras: Object.keys(extras).length > 0 ? JSON.stringify(extras) : null,
+        };
+        await R.knex(table).insert(row).onConflict(["monitor_id", "timestamp"]).merge();
     }
 
     /**
