@@ -11,13 +11,15 @@ class BearSMS extends NotificationProvider {
         const okMsg = "Sent Successfully.";
 
         try {
+            // BearSMS rejects messages containing emoji (astral characters) with error 200
+            const cleanMsg = msg.replaceAll("🔴 ", "").replaceAll("✅ ", "");
             const params = new URLSearchParams({
                 app: "ws",
                 u: notification.bearsmsUsername,
                 h: notification.bearsmsHashKey,
                 op: "pv",
                 to: notification.bearsmsPhoneNumber,
-                msg: msg,
+                msg: cleanMsg,
             });
 
             if (notification.bearsmsSenderId) {
@@ -25,7 +27,7 @@ class BearSMS extends NotificationProvider {
             }
 
             // Non-GSM text (e.g. Hebrew) must be flagged as unicode
-            if (/[^\x00-\x7F]/.test(msg)) {
+            if (/[^\x00-\x7F]/.test(cleanMsg)) {
                 params.append("unicode", "1");
             }
 
