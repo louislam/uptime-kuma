@@ -278,14 +278,23 @@
                     </div>
                     <div v-if="domainInfo" class="col-12 col-sm col row d-flex align-items-center d-sm-block">
                         <h4 class="col-4 col-sm-12">{{ $t("labelDomainExpiry") }}</h4>
-                        <p class="col-4 col-sm-12 mb-0 mb-sm-2">
-                            (
-                            <Datetime :value="domainInfo.expiresOn" date-only />
-                            )
-                        </p>
-                        <span class="col-4 col-sm-12 num">
-                            {{ $t("days", domainInfo.daysRemaining) }}
-                        </span>
+
+                        <template v-if="domainInfo.expiresOn">
+                            <p class="col-4 col-sm-12 mb-0 mb-sm-2">
+                                (
+                                <Datetime :value="domainInfo.expiresOn" date-only />
+                                )
+                            </p>
+                            <span class="col-4 col-sm-12 num">
+                                {{ $t("days", domainInfo.daysRemaining) }}
+                            </span>
+                        </template>
+
+                        <template v-else>
+                            <p class="col-4 col-sm-12 mb-0 mb-sm-2 text-muted">
+                                ( {{ $t("Not Available") || "N/A" }} )
+                            </p>
+                        </template>
                     </div>
                 </div>
             </div>
