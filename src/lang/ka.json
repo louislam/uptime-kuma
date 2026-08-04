@@ -622,5 +622,18 @@
     "Host URL": "ჰოსტის URL",
     "Invert Keyword": "საკვანძო სიტყვის ინვერსია",
     "time ago": "{0}-ის წინ",
-    "programmingLanguages": "პროგრამირების ენები"
+    "programmingLanguages": "პროგრამირების ენები",
+    "Silence": "დადუმება",
+    "Unsilence": "დადუმების გაუქმება",
+    "Silenced": "დადუმებული",
+    "silenceMonitor": "მონიტორის დადუმება",
+    "silenceMonitorDesc": "შეტყობინებები ჩახშობილი იქნება, სანამ მონიტორი გაგრძელებს მუშაობას. დადუმება ავტომატურად მოიხსნება მონიტორის აღდგენის შემდეგ.",
+    "silenceMessage": "მიზეზი / შეტყობინება",
+    "silenceMessagePlaceholder": "მაგ: ცნობილი პრობლემა, გამოძიება...",
+    "silencedMonitorMsg": "შეტყობინებები დადუმებულია",
+    "silencedAt": "დადუმებულია",
+    "successSilenced": "მონიტორი წარმატებით დადუმდა.",
+    "successUnsilenced": "მონიტორის დადუმება წარმატებით გაუქმდა.",
+    "silenceMessageRequired": "მონიტორის დასადუმებლად საჭიროა მიზეზი.",
+    "silenceOnlyDownMonitor": "მხოლოდ DOWN სტატუსის მქონე მონიტორი შეიძლება დადუმდეს."
 }

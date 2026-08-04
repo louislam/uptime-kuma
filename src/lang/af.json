@@ -62,5 +62,18 @@
     "setupDatabaseSQLite": "'n Eenvoudige databasis leêr, aanbeveel vir klein-skaalse ontploiings. Voor weergawe 2.0.0 het Uptime Kuma SQLite as die verstekopsie.",
     "Primary Base URL": "Primêre Basis URL",
     "statusMaintenance": "Onderhoud",
-    "Passive Monitor Type": "Passiewe Monitor Tipe"
+    "Passive Monitor Type": "Passiewe Monitor Tipe",
+    "Silence": "Stilmaak",
+    "Unsilence": "Ontstilmaak",
+    "Silenced": "Stilgemaak",
+    "silenceMonitor": "Monitor stilmaak",
+    "silenceMonitorDesc": "Kennisgewings sal onderdruk word terwyl die monitor aanhou om te loop. Die stilmaak word outomaties verwyder wanneer die monitor herstel.",
+    "silenceMessage": "Rede / Boodskap",
+    "silenceMessagePlaceholder": "bv. Bekende probleem, ondersoek...",
+    "silencedMonitorMsg": "Kennisgewings stilgemaak",
+    "silencedAt": "Stilgemaak",
+    "successSilenced": "Monitor suksesvol stilgemaak.",
+    "successUnsilenced": "Stilmaak van monitor suksesvol verwyder.",
+    "silenceMessageRequired": "'n Rede is nodig om 'n monitor stil te maak.",
+    "silenceOnlyDownMonitor": "Slegs 'n DOWN-monitor kan stilgemaak word."
 }

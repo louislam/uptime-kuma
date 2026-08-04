@@ -39,6 +39,7 @@
                         :filterState="filterState"
                         :allCollapsed="allGroupsCollapsed"
                         :hasGroups="groupMonitors.length >= 2"
+                        :silencedCount="$root.stats.silenced"
                         @update-filter="updateFilter"
                         @toggle-collapse-all="toggleCollapseAll"
                     />
@@ -73,6 +74,12 @@
                                 <a class="dropdown-item" href="#" @click.prevent="resumeSelected">
                                     <font-awesome-icon icon="play" class="me-2" />
                                     {{ $t("Resume") }}
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item text-silenced" href="#" @click.prevent="silenceDialog">
+                                    <font-awesome-icon icon="bell-slash" class="me-2" />
+                                    {{ $t("Silence") }}
                                 </a>
                             </li>
                             <li>
@@ -126,6 +133,34 @@
     <Confirm ref="confirmDelete" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="deleteSelected">
         {{ $t("deleteMonitorsMsg") }}
     </Confirm>
+
+    <div v-if="showBulkSilenceModal" class="modal-backdrop-silence" @click.self="showBulkSilenceModal = false">
+        <div class="silence-modal shadow-box p-4">
+            <h5>{{ $t("silenceMonitor") }}</h5>
+            <p class="text-muted">{{ $t("silenceMonitorDesc") }}</p>
+            <label class="form-label">{{ $t("silenceMessage") }} <span class="text-danger">*</span></label>
+            <input
+                v-model="bulkSilenceMessage"
+                class="form-control"
+                :placeholder="$t('silenceMessagePlaceholder')"
+                autofocus
+                @keyup.enter="bulkSilenceMessage.trim() !== '' && silenceSelected()"
+            />
+            <div v-if="bulkSilenceMessage.trim() === ''" class="form-text text-danger">
+                {{ $t("silenceMessageRequired") }}
+            </div>
+            <div class="d-flex justify-content-end gap-2 mt-3">
+                <button class="btn btn-secondary" @click="showBulkSilenceModal = false">{{ $t("Cancel") }}</button>
+                <button
+                    class="btn bg-silenced"
+                    :disabled="bulkSilenceMessage.trim() === ''"
+                    @click="silenceSelected"
+                >
+                    {{ $t("Silence") }}
+                </button>
+            </div>
+        </div>
+    </div>
 </template>
 
 <script>
@@ -155,10 +190,13 @@ export default {
             selectedMonitors: {},
             windowTop: 0,
             bulkActionInProgress: false,
+            showBulkSilenceModal: false,
+            bulkSilenceMessage: "",
             filterState: {
                 status: null,
                 active: null,
                 tags: null,
+                showSilenced: false,
             },
             collapseKey: 0,
         };
@@ -236,6 +274,7 @@ export default {
                 this.filterState.status != null ||
                 this.filterState.active != null ||
                 this.filterState.tags != null ||
+                this.filterState.showSilenced === true ||
                 this.searchText !== ""
             );
         },
@@ -520,6 +559,69 @@ export default {
 
             this.cancelSelectMode();
         },
+        silenceDialog() {
+            this.bulkSilenceMessage = "";
+            this.showBulkSilenceModal = true;
+        },
+        async silenceSelected() {
+            if (this.bulkActionInProgress || this.bulkSilenceMessage.trim() === "") {
+                return;
+            }
+
+            const selectedIds = Object.keys(this.selectedMonitors);
+
+            const notDownMonitors = selectedIds.filter((id) => {
+                const monitor = this.$root.monitorList[id];
+                const lastBeat = this.$root.lastHeartbeatList[id];
+                return monitor && monitor.active && !monitor.silenced && (!lastBeat || lastBeat.status !== 0);
+            });
+
+            if (notDownMonitors.length > 0) {
+                this.$root.toastError(this.$t("silenceOnlyDownMonitorBulk"));
+                return;
+            }
+
+            const downMonitors = selectedIds.filter((id) => {
+                const monitor = this.$root.monitorList[id];
+                const lastBeat = this.$root.lastHeartbeatList[id];
+                return monitor && monitor.active && !monitor.silenced && lastBeat && lastBeat.status === 0;
+            });
+
+            if (downMonitors.length === 0) {
+                this.$root.toastError(this.$t("noMonitorsSilencedMsg"));
+                this.showBulkSilenceModal = false;
+                return;
+            }
+
+            this.bulkActionInProgress = true;
+            let successCount = 0;
+            let errorCount = 0;
+
+            for (const id of downMonitors) {
+                await new Promise((resolve) => {
+                    this.$root.getSocket().emit("silenceMonitor", id, this.bulkSilenceMessage.trim(), (res) => {
+                        if (res.ok) {
+                            successCount++;
+                        } else {
+                            errorCount++;
+                        }
+                        resolve();
+                    });
+                });
+            }
+
+            this.bulkActionInProgress = false;
+            this.showBulkSilenceModal = false;
+
+            if (successCount > 0) {
+                this.$root.toastSuccess(this.$t("silencedMonitorsMsg", successCount));
+            }
+            if (errorCount > 0) {
+                this.$root.toastError(this.$t("bulkSilenceErrorMsg", errorCount));
+            }
+
+            this.cancelSelectMode();
+        },
         /**
          * Whether a monitor should be displayed based on the filters
          * @param {object} monitor Monitor to check
@@ -572,7 +674,13 @@ export default {
                         .filter((monitorTagId) => this.filterState.tags.includes(monitorTagId)).length > 0; // perform Array Intersaction between filter and monitor's tags
             }
 
-            return searchTextMatch && statusMatch && activeMatch && tagsMatch;
+            // hide silenced monitors by default; show them only when the filter is active
+            let silencedMatch = true;
+            if (monitor.silenced && !this.filterState.showSilenced) {
+                silencedMatch = false;
+            }
+
+            return searchTextMatch && statusMatch && activeMatch && tagsMatch && silencedMatch;
         },
         /**
          * Function used in Array.sort to order monitors in a list.
@@ -832,6 +940,28 @@ export default {
             width: 100%;
             margin-top: 0.25rem;
         }
+    }
+}
+
+.modal-backdrop-silence {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.silence-modal {
+    background: white;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 480px;
+    margin: 0 1rem;
+
+    .dark & {
+        background: $dark-bg2;
     }
 }
 </style>

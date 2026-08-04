@@ -97,5 +97,18 @@
     "Expected Value": "Paredzamā vērtība",
     "resendEveryXTimes": "Nosūtīt atkārtoti ik pēc {0} reizēm",
     "retriesDescription": "Maksimālais atkārtoto mēģinājumu skaits, pirms pakalpojums tiek atzīmēts kā nedarbojošs un tiek nosūtīts paziņojums",
-    "Only retry if status code check fails": "Atkārtot mēģinājumu tikai tad, ja statusa koda pārbaude neizdodas"
+    "Only retry if status code check fails": "Atkārtot mēģinājumu tikai tad, ja statusa koda pārbaude neizdodas",
+    "Silence": "Apklusināt",
+    "Unsilence": "Atcelt apklusināšanu",
+    "Silenced": "Apklusināts",
+    "silenceMonitor": "Apklusināt monitoru",
+    "silenceMonitorDesc": "Paziņojumi tiks apturēti, kamēr monitors turpina darboties. Apklusināšana tiek automātiski noņemta, kad monitors atjaunojas.",
+    "silenceMessage": "Iemesls / Ziņojums",
+    "silenceMessagePlaceholder": "piemēram: Zināma problēma, tiek izmeklēts...",
+    "silencedMonitorMsg": "Paziņojumi apklusināti",
+    "silencedAt": "Apklusināts",
+    "successSilenced": "Monitors veiksmīgi apklusināts.",
+    "successUnsilenced": "Monitora apklusināšana veiksmīgi atcelta.",
+    "silenceMessageRequired": "Lai apklusinātu monitoru, ir nepieciešams iemesls.",
+    "silenceOnlyDownMonitor": "Var apklusināt tikai monitoru DOWN stāvoklī."
 }

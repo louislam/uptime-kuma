@@ -46,6 +46,10 @@ export default {
         },
 
         color() {
+            if (this.monitor.silenced) {
+                return "silenced";
+            }
+
             if (this.lastHeartBeat.status === MAINTENANCE) {
                 return "maintenance";
             }

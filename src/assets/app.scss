@@ -39,12 +39,21 @@ textarea.form-control {
     background-color: $maintenance !important;
 }
 
+.bg-silenced {
+    color: white !important;
+    background-color: $silenced !important;
+}
+
 .bg-dark {
     color: white;
 }
 
 .text-maintenance {
     color: $maintenance !important;
+}
+
+.text-silenced {
+    color: $silenced !important;
 }
 
 .incident a,
