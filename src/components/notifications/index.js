@@ -4,6 +4,7 @@ import AliyunSMS from "./AliyunSms.vue";
 import Apprise from "./Apprise.vue";
 import Bale from "./Bale.vue";
 import Bark from "./Bark.vue";
+import BearSMS from "./BearSMS.vue";
 import Bitrix24 from "./Bitrix24.vue";
 import Notifery from "./Notifery.vue";
 import ClickSendSMS from "./ClickSendSMS.vue";
@@ -111,6 +112,7 @@ const NotificationFormList = {
     apprise: Apprise,
     bale: Bale,
     Bark: Bark,
+    bearsms: BearSMS,
     Bitrix24: Bitrix24,
     clicksendsms: ClickSendSMS,
     CallMeBot: CallMeBot,
