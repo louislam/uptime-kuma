@@ -322,6 +322,10 @@ module.exports.statusPageSocketHandler = (socket) => {
             }
 
             statusPage.slug = config.slug;
+            if (typeof config.statusPageLanguage !== "string" || !config.statusPageLanguage.match(/^[A-Za-z0-9@_-]+$/)) {
+                throw new Error(`Invalid language ${lang}`);
+            }
+            statusPage.status_page_language = config.statusPageLanguage;
             statusPage.title = config.title;
             statusPage.description = config.description;
             statusPage.icon = config.logo;
@@ -457,6 +461,7 @@ module.exports.statusPageSocketHandler = (socket) => {
 
             let statusPage = R.dispense("status_page");
             statusPage.slug = slug;
+            statusPage.status_page_language = "en";
             statusPage.title = title;
             statusPage.theme = "auto";
             statusPage.icon = "";
