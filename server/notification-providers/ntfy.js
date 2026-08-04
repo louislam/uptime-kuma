@@ -126,7 +126,21 @@ class Ntfy extends NotificationProvider {
                 data.icon = notification.ntfyIcon;
             }
 
-            await axios.post(notification.ntfyserverurl, data, config);
+            let ntfyServerUrl = notification.ntfyserverurl;
+            if (notification.ntfyUseAddressableNotifications) {
+                const sanitizedMonitorName = encodeURIComponent(monitorJSON.name)
+                    .replaceAll("%20", "-") // replace spaces with dashes
+                    .replaceAll(/%[\w\d]{2}/g, ""); // strip out other symbols
+                headers["X-Sequence-ID"] = sanitizedMonitorName;
+                ntfyServerUrl = `${ntfyServerUrl}/${notification.ntfytopic}/${sanitizedMonitorName}`;
+
+                if (notification.ntfyAddressableUpNotificationHandler === "clear" && status === "Up") {
+                    await axios.put(`${ntfyServerUrl}/clear`, data, config);
+                    return okMsg;
+                }
+            }
+
+            await axios.post(ntfyServerUrl, data, config);
 
             return okMsg;
         } catch (error) {
