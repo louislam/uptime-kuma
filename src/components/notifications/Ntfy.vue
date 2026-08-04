@@ -33,9 +33,17 @@
         </div>
 
         <div v-if="$parent.notification.ntfyUseAddressableNotifications === true" class="mb-3">
-            <label for="up-notification-handler-method" class="form-label">{{ $t("ntfyAddressableUpNotificationHandleMethod") }}</label>
-            <select id="up-notification-handler-method" v-model="$parent.notification.ntfyAddressableUpNotificationHandler" class="form-select">
-                <option v-for="(name, type) in addressableUpNotificationHandlingMethods" :key="type" :value="type">{{ name }}</option>
+            <label for="up-notification-handler-method" class="form-label">
+                {{ $t("ntfyAddressableUpNotificationHandleMethod") }}
+            </label>
+            <select
+                id="up-notification-handler-method"
+                v-model="$parent.notification.ntfyAddressableUpNotificationHandler"
+                class="form-select"
+            >
+                <option v-for="(name, type) in addressableUpNotificationHandlingMethods" :key="type" :value="type">
+                    {{ name }}
+                </option>
             </select>
 
             <div class="form-text">
@@ -196,9 +204,9 @@ export default {
         addressableUpNotificationHandlingMethods() {
             return {
                 replace: this.$t("Replace"),
-                clear: this.$t("Clear")
-            }
-        }
+                clear: this.$t("Clear"),
+            };
+        },
     },
     mounted() {
         if (typeof this.$parent.notification.ntfyPriority === "undefined") {
