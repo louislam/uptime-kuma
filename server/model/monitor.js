@@ -463,7 +463,7 @@ class Monitor extends BeanModel {
             // Runtime patch timeout if it is 0
             // See https://github.com/louislam/uptime-kuma/pull/3961#issuecomment-1804149144
             if (!this.timeout || this.timeout <= 0) {
-                this.timeout = this.interval * 1000 * 0.8;
+                this.timeout = this.interval * 0.8;
             }
 
             try {
@@ -1755,7 +1755,7 @@ class Monitor extends BeanModel {
                     throw new Error("Screenshot delay must be a non-negative number");
                 }
 
-                // Must not exceed 0.8 * timeout (page.goto timeout is interval * 1000 * 0.8)
+                // Must not exceed 0.8 * timeout (page.goto timeout is interval * 0.8 seconds → ms)
                 const maxDelayFromTimeout = this.interval * 1000 * 0.8;
                 if (delay >= maxDelayFromTimeout) {
                     throw new Error(`Screenshot delay must be less than ${maxDelayFromTimeout}ms (0.8 × interval)`);
