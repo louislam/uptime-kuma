@@ -214,6 +214,7 @@ export default {
             let chatPlatforms = {
                 bale: "Bale",
                 Bitrix24: "Bitrix24",
+                ClickUp: "ClickUp",
                 discord: "Discord",
                 max: this.$t("maxMessenger"),
                 fluxer: "Fluxer",
@@ -323,6 +324,7 @@ export default {
             // Regional - Not supported in most regions or documentation is not in English
             let regional = {
                 AliyunSMS: "AliyunSMS (阿里云短信服务)",
+                bearsms: "BearSMS (Israel)",
                 egosms: "EgoSMS (Uganda)",
                 DingDing: "DingDing (钉钉自定义机器人)",
                 Feishu: "Feishu (飞书)",
