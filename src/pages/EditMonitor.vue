@@ -2224,6 +2224,14 @@
                                 <span v-if="notification.isDefault == true" class="badge bg-primary ms-2">
                                     {{ $t("Default") }}
                                 </span>
+
+                                <span
+                                    v-if="notification.triggersJson" class="ms-2 fs-5 lh-1 align-middle"
+                                    :title="$t('MonitorNotification', [JSON.parse(notification.triggersJson)
+                                    .map(tt => $t(String(tt).charAt(0).toUpperCase() + String(tt).slice(1)))
+                                    .join(', ')])">
+                                    <font-awesome-icon icon="info-circle" />
+                                </span>
                             </div>
 
                             <button class="btn btn-primary me-2" type="button" @click="$refs.notificationDialog.show()">

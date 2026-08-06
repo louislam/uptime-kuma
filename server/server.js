@@ -1566,6 +1566,13 @@ let needSetup = false;
                 let notificationBean = await Notification.save(notification, notificationID, socket.userID);
                 await sendNotificationList(socket);
 
+                // Ensure triggers are strings
+                if (!notification.triggers.every((trigger) => typeof trigger === "string")) {
+                    throw new Error("Notification triggers are not all strings");
+                }
+                notification.triggers_json = JSON.stringify(notification.triggers);
+                delete notification.triggers;
+
                 callback({
                     ok: true,
                     msg: "Saved.",

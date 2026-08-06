@@ -206,16 +206,57 @@ describe("Domain Expiry", () => {
                 httpMethod: "post",
                 webhookContentType: "json",
                 webhookURL: `http://127.0.0.1:${hook.port}/${hook.url}`,
+                triggers: ["domain"],
             }),
             active: 1,
             user_id: 1,
             name: "Testhook",
+            triggersJson: "[\"domain\"]",
         });
         const [, data] = await Promise.all([
             DomainExpiry.sendNotifications("google.com", [notif]),
             mockWebhook(hook.port, hook.url),
         ]);
         assert.match(data.msg, /will expire in/);
+    });
+
+    test("sendNotifications() will not trigger notifications for expiring domain if 'domain' trigger not set", async () => {
+        await DomainExpiry.findByName("google.com");
+        const hook = {
+            port: 3010,
+            url: "should-not-be-called-null",
+        };
+        const manyDays = 3650;
+        await setSetting("domainExpiryNotifyDays", [manyDays], "general");
+        const notif = R.convertToBean("notification", {
+            config: JSON.stringify({
+                type: "webhook",
+                httpMethod: "post",
+                webhookContentType: "json",
+                webhookURL: `http://127.0.0.1:${hook.port}/${hook.url}`,
+                triggers: ["up"],
+            }),
+            active: 1,
+            user_id: 1,
+            name: "Testhook",
+            triggersJson: "[\"up\"]",
+        });
+
+        const result = await Promise.race([
+            DomainExpiry.sendNotifications("google.com", [notif]),
+            mockWebhook(hook.port, hook.url, 500)
+                .then(() => {
+                    throw new Error("Webhook was called but should not have been when 'domain' trigger not set");
+                })
+                .catch((e) => {
+                    if (e.reason === "Timeout") {
+                        return "timeout"; // Expected - webhook was not called
+                    }
+                    throw e;
+                }),
+        ]);
+
+        assert.ok(result === undefined || result === "timeout", "Should not send notification when 'domain' trigger not set");
     });
 
     test("sendNotifications() handles domain with null expiry without sending NaN", async () => {
