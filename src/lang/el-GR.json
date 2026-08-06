@@ -636,7 +636,7 @@
     "SMSManager API Docs": "API βιβλιογραφία του SMSManager ",
     "Kook": "Kook",
     "statusMaintenance": "Συντήρηση",
-    "markdownSupported": "Υποστήριξη markdown συντακτικού",
+    "markdownSupported": "Υποστηρίζεται η σύνταξη Markdown. Εάν χρησιμοποιείτε HTML, αποφύγετε τα κενά διαστήματα στην αρχή για να αποτρέψετε προβλήματα μορφοποίησης.",
     "Packet Size": "Μέγεθος Πακέτου",
     "or": "ή",
     "recurringInterval": "Χρονικό Διάστημα",
@@ -787,5 +787,18 @@
     "Json Query Expression": "Έκφραση Json Query",
     "Request Timeout": "Timeout Αιτήματος",
     "timeoutAfter": "Λήξη χρόνου ύστερα από {0} δευτερόλεπτα",
-    "pushViewCode": "Πώς να χρησιμοποιήσω Οθόνη Push (βλέπε κώδικα)"
+    "pushViewCode": "Πώς να χρησιμοποιήσω Οθόνη Push (βλέπε κώδικα)",
+    "mariadbCaCertificateLabel": "Πιστοποιητικά CA",
+    "mariadbUseSSLHelptext": "Ενεργοποιήστε τη χρήση κρυπτογραφημένης σύνδεσης με τη βάση δεδομένων σας. Απαιτείται για τις περισσότερες βάσεις δεδομένων cloud.",
+    "No incidents recorded": "Δεν καταγράφηκαν περιστατικά",
+    "Load More": "Φόρτωση περισσότερων",
+    "Loading...": "Φόρτωση...",
+    "unknownDays": "Άγνωστες ημέρες",
+    "Monitors": "{n} Οθόνη | {n} Οθόνες",
+    "versionIs": "Έκδοση: {version}",
+    "monitorTypeGameServer": "Διακομιστής παιχνιδιών",
+    "monitorTypeDatabase": "Τύπος παρακολούθησης βάσης δεδομένων",
+    "Pin this incident": "Καρφίτσωμα αυτού του περιστατικού",
+    "days": "{n} ημέρα | {n} ημέρες",
+    "mariadbCaCertificateHelptext": "Επικολλήστε το πιστοποιητικό CA σε μορφή PEM για χρήση με αυτο-υπογεγραμμένα πιστοποιητικά. Αφήστε το κενό εάν η βάση δεδομένων σας χρησιμοποιεί πιστοποιητικό υπογεγραμμένο από δημόσια CA."
 }

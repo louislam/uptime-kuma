@@ -15,13 +15,16 @@
                 :disabled="processing"
                 @click="editTag(index)"
             >
-                <div class="col-10 col-sm-5">
-                    <Tag :item="tag" />
+                <div class="flex-grow-1 overflow-hidden pe-3">
+                    <Tag :item="tag" :title="tag.name" :scrollable="true" :constrained="true" />
                 </div>
-                <div class="col-5 px-1 d-none d-sm-block">
-                    <div>{{ $t("Monitors", monitorsByTag(tag.id).length) }}</div>
+
+                <div class="flex-shrink-0 px-1">
+                    <span class="d-none d-lg-inline">{{ $t("Monitors", monitorsByTag(tag.id).length) }}</span>
+                    <span class="d-lg-none">{{ monitorsByTag(tag.id).length }} M</span>
                 </div>
-                <div class="col-2 pe-2 pe-lg-3 d-flex justify-content-end">
+
+                <div class="flex-shrink-0 pe-2 pe-lg-3">
                     <button
                         type="button"
                         class="btn-rm-tag btn btn-outline-danger ms-2 py-1"

@@ -6,7 +6,9 @@ const AliyunSms = require("./notification-providers/aliyun-sms");
 const Apprise = require("./notification-providers/apprise");
 const Bale = require("./notification-providers/bale");
 const Bark = require("./notification-providers/bark");
+const BearSMS = require("./notification-providers/bearsms");
 const Bitrix24 = require("./notification-providers/bitrix24");
+const ClickUp = require("./notification-providers/clickup");
 const ClickSendSMS = require("./notification-providers/clicksendsms");
 const CallMeBot = require("./notification-providers/call-me-bot");
 const SMSC = require("./notification-providers/smsc");
@@ -37,12 +39,16 @@ const Ntfy = require("./notification-providers/ntfy");
 const Octopush = require("./notification-providers/octopush");
 const OneChat = require("./notification-providers/onechat");
 const OneBot = require("./notification-providers/onebot");
+const Ooredoo = require("./notification-providers/ooredoo");
 const Opsgenie = require("./notification-providers/opsgenie");
 const JiraServiceManagement = require("./notification-providers/jira-service-management");
 const PagerDuty = require("./notification-providers/pagerduty");
 const Pumble = require("./notification-providers/pumble");
 const FlashDuty = require("./notification-providers/flashduty");
+const Flowtriq = require("./notification-providers/flowtriq");
 const PagerTree = require("./notification-providers/pagertree");
+const Pinglet = require("./notification-providers/pinglet");
+const Plivo = require("./notification-providers/plivo");
 const PromoSMS = require("./notification-providers/promosms");
 const Pushbullet = require("./notification-providers/pushbullet");
 const PushDeer = require("./notification-providers/pushdeer");
@@ -77,11 +83,14 @@ const SevenIO = require("./notification-providers/sevenio");
 const Whapi = require("./notification-providers/whapi");
 const WAHA = require("./notification-providers/waha");
 const Evolution = require("./notification-providers/evolution");
+const OpenWa = require("./notification-providers/openwa");
 const GtxMessaging = require("./notification-providers/gtx-messaging");
 const Cellsynt = require("./notification-providers/cellsynt");
 const Onesender = require("./notification-providers/onesender");
 const Wpush = require("./notification-providers/wpush");
+const WxPusher = require("./notification-providers/wxpusher");
 const SendGrid = require("./notification-providers/send-grid");
+const TurboSMTP = require("./notification-providers/turbosmtp");
 const Brevo = require("./notification-providers/brevo");
 const Resend = require("./notification-providers/resend");
 const YZJ = require("./notification-providers/yzj");
@@ -117,7 +126,9 @@ class Notification {
             new Apprise(),
             new Bale(),
             new Bark(),
+            new BearSMS(),
             new Bitrix24(),
+            new ClickUp(),
             new ClickSendSMS(),
             new CallMeBot(),
             new SMSC(),
@@ -148,11 +159,15 @@ class Notification {
             new OneChat(),
             new OneBot(),
             new Onesender(),
+            new Ooredoo(),
             new Opsgenie(),
             new JiraServiceManagement(),
             new PagerDuty(),
             new FlashDuty(),
+            new Flowtriq(),
             new PagerTree(),
+            new Pinglet(),
+            new Plivo(),
             new PromoSMS(),
             new Pumble(),
             new Pushbullet(),
@@ -188,9 +203,11 @@ class Notification {
             new Whapi(),
             new WAHA(),
             new Evolution(),
+            new OpenWa(),
             new GtxMessaging(),
             new Cellsynt(),
             new Wpush(),
+            new WxPusher(),
             new Brevo(),
             new Resend(),
             new YZJ(),
@@ -199,6 +216,7 @@ class Notification {
             new Notifery(),
             new SMSIR(),
             new SendGrid(),
+            new TurboSMTP(),
             new Whatsapp360messenger(),
             new Webpush(),
             new HaloPSA(),

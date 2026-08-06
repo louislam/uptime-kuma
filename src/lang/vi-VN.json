@@ -630,5 +630,20 @@
     "smsplanetApiDocs": "Thông tin chi tiết về cách lấy mã thông báo API có thể được tìm thấy trong {the_smsplanet_documentation}.",
     "Globalping - Access global monitoring probes": "Globalping - Truy cập các thiết bị thăm dò giám sát toàn cầu",
     "halopsa_setup_step4": "Chọn xác thực cơ bản và tạo tên người dùng và mật khẩu. Sau đó nhập hoặc dán tên người dùng và mật khẩu đó vào các trường kiểm tra phía trên",
-    "pause": "Tạm dừng"
+    "pause": "Tạm dừng",
+    "monitorTypeSpecial": "Đặc biệt",
+    "ignoreSecWebsocketAcceptHeaderDescription": "Cho phép máy chủ không phản hồi với header Sec-WebSocket-Accept, nếu websocket nâng cấp thành công.",
+    "wsCodeDescription": "Để biết thêm thông tin về mã trạng thái, vui lòng tham khảo {rfc6455}",
+    "wsSubprotocolDescription": "Nhập danh sách các giao thức phụ được phân tách bằng dấu phẩy. Để biết thêm thông tin về các giao thức phụ, vui lòng tham khảo {documentation}",
+    "saveResponseDescription": "Lưu phản hồi HTTP và cung cấp nó cho các mẫu thông báo dưới dạng {templateVariable}",
+    "monitorTypeGameServer": "Máy chủ Game",
+    "Subprotocol(s)": "Giao thức phụ",
+    "oracledbConnectionString": "Cơ sở dữ liệu Oracle: {connectionString}",
+    "monitorTypeDatabase": "Kiểu cơ sở dữ liệu kênh theo dõi",
+    "Only retry if status code check fails": "Chỉ thử lại khi kiểm tra mã trạng thái thất bại",
+    "retryOnlyOnStatusCodeFailureDescription": "Nếu bật, các lần thử lại sẽ được thực hiện khi kiểm tra mã trạng thái HTTP thất bại (Ví dụ máy chủ đã tắt). Nếu kiểm tra mã trạng thái thành công nhưng truy vấn JSON thất bại, kênh theo dõi sẽ được đánh dấu là down ngay lập tức mà không thử lại.",
+    "ignoredTLSError": "Lỗi TLS/SSL đã được bỏ qua",
+    "Ignore Sec-WebSocket-Accept header": "Đã bỏ qua {0} header",
+    "saveResponseForNotifications": "Lưu phản hồi thành công của HTTP để Thông báo",
+    "saveErrorResponseForNotifications": "Lưu phản hồi thất bại của HTTP để Thông báo"
 }

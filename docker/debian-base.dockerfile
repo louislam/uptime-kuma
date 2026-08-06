@@ -58,6 +58,11 @@ RUN curl https://pkg.cloudflare.com/cloudflare-main.gpg --output /usr/share/keyr
 COPY ./docker/etc/nscd.conf /etc/nscd.conf
 COPY ./docker/etc/sudoers /etc/sudoers
 
+# Debian bookworm does not have Let's Encrypt's Gen Y root certs.
+# Not sure if it is the best solution, and not sure if Debian will add them in the future, but for now we can just add them manually.
+RUN curl -fsSL https://letsencrypt.org/certs/gen-y/root-ye.pem -o /usr/local/share/ca-certificates/isrg-root-ye.crt && \
+    curl -fsSL https://letsencrypt.org/certs/gen-y/root-yr.pem -o /usr/local/share/ca-certificates/isrg-root-yr.crt && \
+    update-ca-certificates
 
 # Full Base Image
 # MariaDB, Chromium and fonts
