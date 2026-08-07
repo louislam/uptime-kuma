@@ -492,7 +492,7 @@
                                     monitor.type === 'smtp' ||
                                     monitor.type === 'snmp' ||
                                     monitor.type === 'sip-options' ||
-                                    monitor.type === 'sftp'
+                                    monitor.type === 'sftp' ||
                                     monitor.type === 'ntp'
                                 "
                                 class="my-3"
@@ -824,10 +824,10 @@
                             <!-- SFTP Monitor Fields -->
                             <template v-if="monitor.type === 'sftp'">
                                 <div class="my-3">
-                                    <label for="sftp_username" class="form-label">{{ $t("Username") }}</label>
+                                    <label for="ssh_username" class="form-label">{{ $t("Username") }}</label>
                                     <input
-                                        id="sftp_username"
-                                        v-model="monitor.sftpUsername"
+                                        id="ssh_username"
+                                        v-model="monitor.sshUsername"
                                         type="text"
                                         class="form-control"
                                         required
@@ -837,54 +837,54 @@
 
                                 <!-- Auth Method -->
                                 <div class="my-3">
-                                    <label for="sftp_auth_method" class="form-label">
-                                        {{ $t("SFTP Auth Method") }}
+                                    <label for="ssh_auth_method" class="form-label">
+                                        {{ $t("Authentication Method") }}
                                     </label>
-                                    <select id="sftp_auth_method" v-model="monitor.sftpAuthMethod" class="form-select">
+                                    <select id="ssh_auth_method" v-model="monitor.sshAuthMethod" class="form-select">
                                         <option value="password">{{ $t("Password") }}</option>
                                         <option value="privateKey">{{ $t("SSH Private Key") }}</option>
                                     </select>
                                 </div>
 
                                 <!-- Password auth -->
-                                <div v-if="monitor.sftpAuthMethod !== 'privateKey'" class="my-3">
-                                    <label for="sftp_password" class="form-label">{{ $t("Password") }}</label>
+                                <div v-if="monitor.sshAuthMethod !== 'privateKey'" class="my-3">
+                                    <label for="ssh_password" class="form-label">{{ $t("Password") }}</label>
                                     <HiddenInput
-                                        id="sftp_password"
-                                        v-model="monitor.sftpPassword"
+                                        id="ssh_password"
+                                        v-model="monitor.sshPassword"
                                         autocomplete="current-password"
                                         required="true"
                                     ></HiddenInput>
                                 </div>
 
                                 <!-- SSH Key auth -->
-                                <template v-if="monitor.sftpAuthMethod === 'privateKey'">
+                                <template v-if="monitor.sshAuthMethod === 'privateKey'">
                                     <div class="my-3">
-                                        <label for="sftp_private_key" class="form-label">
+                                        <label for="ssh_private_key" class="form-label">
                                             {{ $t("SSH Private Key") }}
                                         </label>
                                         <textarea
-                                            id="sftp_private_key"
-                                            v-model="monitor.sftpPrivateKey"
+                                            id="ssh_private_key"
+                                            v-model="monitor.sshPrivateKey"
                                             class="form-control"
                                             rows="6"
-                                            :placeholder="$t('sftpPrivateKeyPlaceholder')"
+                                            :placeholder="$t('sshPrivateKeyPlaceholder')"
                                             required
                                             autocomplete="off"
                                         ></textarea>
-                                        <div class="form-text">{{ $t("sftpPrivateKeyHelpText") }}</div>
+                                        <div class="form-text">{{ $t("sshPrivateKeyHelpText") }}</div>
                                     </div>
                                     <div class="my-3">
-                                        <label for="sftp_passphrase" class="form-label">
+                                        <label for="ssh_passphrase" class="form-label">
                                             {{ $t("Passphrase") }}
                                             <span class="text-muted small">({{ $t("optional") }})</span>
                                         </label>
                                         <HiddenInput
-                                            id="sftp_passphrase"
-                                            v-model="monitor.sftpPassphrase"
+                                            id="ssh_passphrase"
+                                            v-model="monitor.sshPassphrase"
                                             autocomplete="off"
                                         ></HiddenInput>
-                                        <div class="form-text">{{ $t("sftpPassphraseHelpText") }}</div>
+                                        <div class="form-text">{{ $t("sshPassphraseHelpText") }}</div>
                                     </div>
                                 </template>
 
@@ -3403,7 +3403,7 @@ const monitorDefaults = {
     rabbitmqPassword: "",
     conditions: [],
     system_service_name: "",
-    sftpAuthMethod: "password",
+    sshAuthMethod: "password",
     ntpStratumThreshold: 5,
     ntpTimeOffsetThreshold: 1000,
     ntpRootDispersionThreshold: 500,
@@ -3871,7 +3871,8 @@ message HealthCheckResponse {
                 !this.monitor.port ||
                 this.monitor.port === "53" ||
                 this.monitor.port === "1812" ||
-                this.monitor.port === "123"
+                this.monitor.port === "123" ||
+                this.monitor.port === "22"
             ) {
                 if (this.monitor.type === "dns") {
                     this.monitor.port = "53";
@@ -3881,6 +3882,8 @@ message HealthCheckResponse {
                     this.monitor.port = "161";
                 } else if (this.monitor.type === "ntp") {
                     this.monitor.port = "123";
+                } else if (this.monitor.type === "sftp") {
+                    this.monitor.port = "22";
                 } else if (this.monitor.type === "globalping" && this.monitor.subtype === "ping") {
                     this.monitor.port = "80";
                 } else {

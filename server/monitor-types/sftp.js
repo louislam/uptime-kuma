@@ -1,5 +1,6 @@
 const { MonitorType } = require("./monitor-type");
 const { UP, log } = require("../../src/util");
+const dayjs = require("dayjs");
 const SftpClient = require("ssh2-sftp-client");
 
 /**
@@ -15,7 +16,7 @@ function formatSftpError(err, host, port) {
     const code = err.code || "";
 
     // Strip the "getConnection: " / "sftp: " prefix the library adds to every message
-    const rawMsg = (err.message || "").replace(/^[\w-]+:\s*/, "").trim();
+    const rawMsg = (err.message || "").replace(/^[\w-]+\s*:\s*/, "").trim();
 
     switch (code) {
         case "ECONNREFUSED":
@@ -55,25 +56,30 @@ class SFTPMonitorType extends MonitorType {
         const connectOptions = {
             host,
             port,
-            username: monitor.sftpUsername,
+            username: monitor.sshUsername,
             readyTimeout: timeoutMs,
             timeout: timeoutMs,
         };
 
-        if (monitor.sftpAuthMethod === "privateKey") {
-            if (!monitor.sftpPrivateKey) {
+        if (monitor.sshAuthMethod === "privateKey") {
+            if (!monitor.sshPrivateKey) {
                 throw new Error("SSH private key is required for key-based authentication");
             }
-            connectOptions.privateKey = monitor.sftpPrivateKey;
-            if (monitor.sftpPassphrase) {
-                connectOptions.passphrase = monitor.sftpPassphrase;
+            connectOptions.privateKey = monitor.sshPrivateKey;
+            if (monitor.sshPassphrase) {
+                connectOptions.passphrase = monitor.sshPassphrase;
             }
         } else {
-            connectOptions.password = monitor.sftpPassword;
+            connectOptions.password = monitor.sshPassword;
         }
 
+        let connected = false;
+
         try {
+            const startTime = dayjs().valueOf();
+
             await sftp.connect(connectOptions);
+            connected = true;
             log.debug("sftp", `Connected to SFTP server: ${host}:${port}`);
 
             if (monitor.sftpPath) {
@@ -84,20 +90,18 @@ class SFTPMonitorType extends MonitorType {
                 log.debug("sftp", `Path "${monitor.sftpPath}" exists on SFTP server`);
             }
 
+            heartbeat.ping = dayjs().valueOf() - startTime;
             heartbeat.status = UP;
             heartbeat.msg = "SFTP connection successful";
         } catch (err) {
             throw new Error(formatSftpError(err, host, port));
         } finally {
-            // Only tear down if a session was actually established (sftp.sftp is set by the
-            // library after connect() resolves). Swallow teardown errors so they never mask
-            // the real error from the try/catch above.
-            if (sftp.sftp) {
+            if (connected) {
                 try {
                     await sftp.end();
-                } catch (_) {
+                } catch (teardownErr) {
                     // cleanup errors are ignored, only log them for debugging purposes
-                    log.debug("sftp", `Error during SFTP teardown: ${_.message}`);
+                    log.debug("sftp", `Error during SFTP teardown: ${teardownErr.message}`);
                 }
             }
         }

@@ -204,6 +204,7 @@
         "qrcode": "~1.5.4",
         "rollup-plugin-visualizer": "^5.14.0",
         "sass": "~1.42.1",
+        "ssh2": "~1.17.0",
         "stylelint": "^15.11.0",
         "stylelint-config-prettier": "^9.0.5",
         "stylelint-config-standard": "~25.0.0",
