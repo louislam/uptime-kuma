@@ -1878,7 +1878,11 @@
                                     value=""
                                 />
                                 <label class="form-check-label" for="ignore-tls">
-                                    {{ monitor.type === "redis" ? $t("ignoreTLSErrorGeneral") : $t("ignoreTLSError") }}
+                                    {{
+                                        monitor.type === "redis" || monitor.type === "elasticsearch"
+                                            ? $t("ignoreTLSErrorGeneral")
+                                            : $t("ignoreTLSError")
+                                    }}
                                 </label>
                             </div>
 
