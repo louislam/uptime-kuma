@@ -1136,7 +1136,8 @@ export default {
                     const heartbeatIds = Object.keys(heartbeatList);
                     const downMonitors = heartbeatIds.reduce((downMonitorsAmount, currentId) => {
                         const monitorHeartbeats = heartbeatList[currentId];
-                        const lastHeartbeat = this.$root.lastHeartbeatOverrideList[currentId] || monitorHeartbeats.at(-1);
+                        const lastHeartbeat =
+                            this.$root.lastHeartbeatOverrideList[currentId] || monitorHeartbeats.at(-1);
 
                         if (lastHeartbeat) {
                             return lastHeartbeat.status === 0 ? downMonitorsAmount + 1 : downMonitorsAmount;

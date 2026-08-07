@@ -46,7 +46,9 @@ function getAggregatedBuckets(uptimeCalculator, days, maxBeats = 100, interval =
     }
 
     // getDataArray returns the points newest first
-    const sortedPoints = dataPoints.filter((point) => point && point.timestamp).sort((a, b) => a.timestamp - b.timestamp);
+    const sortedPoints = dataPoints
+        .filter((point) => point && point.timestamp)
+        .sort((a, b) => a.timestamp - b.timestamp);
 
     // Single pass: points and buckets are both in ascending time order
     let bucketIndex = 0;

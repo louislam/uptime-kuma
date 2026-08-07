@@ -27,7 +27,7 @@ test("getAggregatedBuckets - caps bucket count at tier resolution (no grey gaps 
 
     assert.strictEqual(buckets.length, 35);
 
-    for (const [ i, bucket ] of buckets.entries()) {
+    for (const [i, bucket] of buckets.entries()) {
         assert.ok(bucket.up > 0, `Bucket ${i} is empty - this is the grey gap bug`);
     }
 });
@@ -91,7 +91,7 @@ test("getAggregatedBuckets - a period without data stays empty, the rest does no
     const gapStart = currentTime.unix() - 6 * 86400;
     const gapEnd = currentTime.unix() - 4 * 86400;
 
-    for (const [ i, bucket ] of buckets.entries()) {
+    for (const [i, bucket] of buckets.entries()) {
         if (bucket.start >= gapStart && bucket.end <= gapEnd) {
             assert.strictEqual(bucket.up, 0, `Bucket ${i} inside the gap should be empty`);
         } else if (bucket.end <= gapStart || bucket.start >= gapEnd) {

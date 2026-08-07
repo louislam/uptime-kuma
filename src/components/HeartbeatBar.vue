@@ -275,7 +275,12 @@ export default {
          */
         beatFullWidth() {
             const defaultWidth = this.beatWidth + this.beatHoverAreaPadding * 2;
-            if (this.normalizedHeartbeatBarDays > 0 && this.wrapWidth > 0 && this.shortBeatList.length > 0 && this.shortBeatList.length < this.maxBeat) {
+            if (
+                this.normalizedHeartbeatBarDays > 0 &&
+                this.wrapWidth > 0 &&
+                this.shortBeatList.length > 0 &&
+                this.shortBeatList.length < this.maxBeat
+            ) {
                 return this.wrapWidth / this.shortBeatList.length;
             }
             return defaultWidth;
@@ -404,9 +409,7 @@ export default {
         resize() {
             if (this.$refs.wrap) {
                 this.wrapWidth = this.$refs.wrap.clientWidth;
-                const newMaxBeat = Math.floor(
-                    this.wrapWidth / (this.beatWidth + this.beatHoverAreaPadding * 2)
-                );
+                const newMaxBeat = Math.floor(this.wrapWidth / (this.beatWidth + this.beatHoverAreaPadding * 2));
 
                 // If maxBeat changed and we're in configured days mode, notify parent to reload data.
                 // Debounced: dragging a window edge fires resize continuously
