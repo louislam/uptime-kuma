@@ -21,7 +21,7 @@ class ElasticsearchMonitorType extends MonitorType {
     async check(monitor, heartbeat, _server) {
         const minimumStatus = monitor.elasticsearchStatus || "yellow";
         const minimumNodes = Number(monitor.elasticsearchMinimumNodes) || 0;
-        if (!(minimumStatus in STATUS_RANK)) {
+        if (!Object.hasOwn(STATUS_RANK, minimumStatus)) {
             throw new Error(`Invalid minimum Elasticsearch status: ${minimumStatus}`);
         }
         if (!Number.isInteger(minimumNodes) || minimumNodes < 0) {
@@ -143,7 +143,7 @@ class ElasticsearchMonitorType extends MonitorType {
         const response = await axios.request(options);
         const health = response.data;
 
-        if (!health || typeof health !== "object" || !(health.status in STATUS_RANK)) {
+        if (!health || typeof health !== "object" || !Object.hasOwn(STATUS_RANK, health.status)) {
             throw new Error("Elasticsearch returned an invalid cluster health response");
         }
         if (health.timed_out === true) {

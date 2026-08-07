@@ -207,6 +207,18 @@ describe("Elasticsearch monitor", () => {
         await assert.rejects(check(), /invalid cluster health response/);
     });
 
+    test("rejects prototype property names as minimum or health status", async () => {
+        response = { body: { status: "red", timed_out: false } };
+        await assert.rejects(
+            check({ elasticsearchStatus: "toString" }),
+            /Invalid minimum Elasticsearch status: toString/
+        );
+        response = { body: { status: "__proto__", timed_out: false } };
+        await assert.rejects(check(), /invalid cluster health response/);
+        response = { body: { status: "constructor", timed_out: false } };
+        await assert.rejects(check(), /invalid cluster health response/);
+    });
+
     test("surfaces HTTP errors and enforces the request timeout", async () => {
         response = { statusCode: 401, body: { error: "unauthorized" } };
         await assert.rejects(check(), /401/);
