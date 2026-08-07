@@ -2168,7 +2168,7 @@
                                 <ActionSelect
                                     id="monitorGroupSelector"
                                     v-model="monitor.parent"
-                                    :action-aria-label="$t('openModalTo', 'setup a new monitor group')"
+                                    :action-aria-label="$t('openModalTo', $t('setup a new monitor group'))"
                                     :options="parentMonitorOptionsList"
                                     :disabled="sortedGroupMonitorList.length === 0 && draftGroupName == null"
                                     :icon="'plus'"

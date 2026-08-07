@@ -317,7 +317,7 @@
                         <img
                             :src="screenshotURL"
                             style="width: 100%"
-                            alt="screenshot of the website"
+                            :alt="$t('screenshot of the website')"
                             @click="showScreenshotDialog"
                         />
                     </div>
