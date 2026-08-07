@@ -126,12 +126,21 @@ describe("Elasticsearch monitor", () => {
         assert.match(lastRequest.url, /filter_path=/);
     });
 
-    test("sends basic authentication without requiring both fields", async () => {
+    test("sends basic authentication when only the username is set", async () => {
         response = { body: { status: "yellow", timed_out: false } };
-        await check({ basic_auth_user: "elastic", basic_auth_pass: "secret" });
+        await check({ basic_auth_user: "elastic" });
         assert.strictEqual(
             lastRequest.headers.authorization,
-            `Basic ${Buffer.from("elastic:secret").toString("base64")}`
+            `Basic ${Buffer.from("elastic:").toString("base64")}`
+        );
+    });
+
+    test("sends basic authentication when only the password is set", async () => {
+        response = { body: { status: "yellow", timed_out: false } };
+        await check({ basic_auth_pass: "secret" });
+        assert.strictEqual(
+            lastRequest.headers.authorization,
+            `Basic ${Buffer.from(":secret").toString("base64")}`
         );
     });
 
