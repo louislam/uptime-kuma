@@ -4103,6 +4103,7 @@ message HealthCheckResponse {
             if (this.isAdd) {
                 this.monitor = {
                     ...monitorDefaults,
+                    elasticsearchNodes: [],
                     ping_count: 3,
                     ping_numeric: true,
                     packetSize: 56,
