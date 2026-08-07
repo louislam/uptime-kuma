@@ -129,19 +129,13 @@ describe("Elasticsearch monitor", () => {
     test("sends basic authentication when only the username is set", async () => {
         response = { body: { status: "yellow", timed_out: false } };
         await check({ basic_auth_user: "elastic" });
-        assert.strictEqual(
-            lastRequest.headers.authorization,
-            `Basic ${Buffer.from("elastic:").toString("base64")}`
-        );
+        assert.strictEqual(lastRequest.headers.authorization, `Basic ${Buffer.from("elastic:").toString("base64")}`);
     });
 
     test("sends basic authentication when only the password is set", async () => {
         response = { body: { status: "yellow", timed_out: false } };
         await check({ basic_auth_pass: "secret" });
-        assert.strictEqual(
-            lastRequest.headers.authorization,
-            `Basic ${Buffer.from(":secret").toString("base64")}`
-        );
+        assert.strictEqual(lastRequest.headers.authorization, `Basic ${Buffer.from(":secret").toString("base64")}`);
     });
 
     test("routes the cluster health request through the configured proxy", async () => {
