@@ -211,7 +211,7 @@ describe("Domain Expiry", () => {
             active: 1,
             user_id: 1,
             name: "Testhook",
-            triggersJson: "[\"domain\"]",
+            triggersJson: '["domain"]',
         });
         const [, data] = await Promise.all([
             DomainExpiry.sendNotifications("google.com", [notif]),
@@ -239,7 +239,7 @@ describe("Domain Expiry", () => {
             active: 1,
             user_id: 1,
             name: "Testhook",
-            triggersJson: "[\"up\"]",
+            triggersJson: '["up"]',
         });
 
         const result = await Promise.race([
@@ -256,7 +256,10 @@ describe("Domain Expiry", () => {
                 }),
         ]);
 
-        assert.ok(result === undefined || result === "timeout", "Should not send notification when 'domain' trigger not set");
+        assert.ok(
+            result === undefined || result === "timeout",
+            "Should not send notification when 'domain' trigger not set"
+        );
     });
 
     test("sendNotifications() handles domain with null expiry without sending NaN", async () => {

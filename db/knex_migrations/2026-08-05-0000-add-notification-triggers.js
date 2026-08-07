@@ -9,12 +9,14 @@ exports.up = async function (knex) {
 
     const notifications = await knex("notification").select("*");
     for (let n of notifications) {
-        await knex("notification").where("id", n.id).update({
-            config: JSON.stringify({
-                ...JSON.parse(n.config),
-                triggers: ["up", "down", "certificate", "domain"],
-            }),
-        });
+        await knex("notification")
+            .where("id", n.id)
+            .update({
+                config: JSON.stringify({
+                    ...JSON.parse(n.config),
+                    triggers: ["up", "down", "certificate", "domain"],
+                }),
+            });
     }
 };
 

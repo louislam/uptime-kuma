@@ -133,7 +133,7 @@
                                     id="notificationTriggers"
                                     v-model="notification.triggers"
                                     :options="notificationTriggerOptions"
-                                    :custom-label="opt => $t(opt.charAt(0).toUpperCase() + opt.slice(1))"
+                                    :custom-label="(opt) => $t(opt.charAt(0).toUpperCase() + opt.slice(1))"
                                     :multiple="true"
                                     :close-on-select="false"
                                     :clear-on-select="false"

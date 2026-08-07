@@ -2226,10 +2226,18 @@
                                 </span>
 
                                 <span
-                                    v-if="notification.triggersJson" class="ms-2 fs-5 lh-1 align-middle"
-                                    :title="$t('MonitorNotification', [JSON.parse(notification.triggersJson)
-                                    .map(tt => $t(String(tt).charAt(0).toUpperCase() + String(tt).slice(1)))
-                                    .join(', ')])">
+                                    v-if="notification.triggersJson"
+                                    class="ms-2 fs-5 lh-1 align-middle"
+                                    :title="
+                                        $t('MonitorNotification', [
+                                            JSON.parse(notification.triggersJson)
+                                                .map((tt) =>
+                                                    $t(String(tt).charAt(0).toUpperCase() + String(tt).slice(1))
+                                                )
+                                                .join(', '),
+                                        ])
+                                    "
+                                >
                                     <font-awesome-icon icon="info-circle" />
                                 </span>
                             </div>

@@ -1505,7 +1505,10 @@ class Monitor extends BeanModel {
             for (let notification of notificationList) {
                 try {
                     const triggers = JSON.parse(notification.triggersJson);
-                    if ((bean.status === UP && triggers.includes("up")) || (bean.status === DOWN && triggers.includes("down"))) {
+                    if (
+                        (bean.status === UP && triggers.includes("up")) ||
+                        (bean.status === DOWN && triggers.includes("down"))
+                    ) {
                         await Notification.send(
                             JSON.parse(notification.config),
                             msg,
