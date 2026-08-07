@@ -141,7 +141,7 @@
                                     :placeholder="$t('Pick Notification Triggers')"
                                     :preselect-first="false"
                                     :max-height="600"
-                                    :taggable="true"
+                                    :taggable="false"
                                 ></VueMultiselect>
 
                                 <div class="form-text">

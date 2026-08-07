@@ -277,9 +277,22 @@ class Notification {
         const applyExisting = notification.applyExisting || false;
         notification.applyExisting = false;
 
-        // Ensure triggers are strings
-        if (!notification.triggers.every((trigger) => typeof trigger === "string")) {
-            throw new Error("Notification triggers are not all strings");
+        // validate triggers array
+        const allowedTriggers = new Set(["up", "down", "certificate", "domain"]);
+        if (notification.triggers === undefined) {
+            notification.triggers = [...allowedTriggers];
+        } else {
+            if (!Array.isArray(notification.triggers)) {
+                throw new Error("Notification triggers is not array");
+            }
+            if (!notification.triggers.every((trigger) => typeof trigger === "string")) {
+                throw new Error("Notification triggers are not all strings");
+            }
+            if (!notification.triggers.every((trigger) => allowedTriggers.has(trigger))) {
+                throw new Error("Notification triggers includes invalid option");
+            }
+            // whitelist supported values and remove duplicates
+            // notification.triggers = [... new Set(notification.triggers.filter((trigger) => allowedTriggers.has(trigger)))];
         }
 
         bean.name = notification.name;
