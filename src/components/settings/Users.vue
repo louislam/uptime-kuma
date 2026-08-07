@@ -47,7 +47,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, useTemplateRef } from "vue";
 import { useToast } from "vue-toastification";
 import type { UserWithRole } from "better-auth/client/plugins";
 
@@ -59,37 +59,27 @@ import DisplayPasswordDialog from "../DisplayPasswordDialog.vue";
 
 // UI
 const toast = useToast();
-const confirmDelete = ref<InstanceType<typeof Confirm> | null>(null);
-const addUserDialog = ref<InstanceType<typeof AddUserDialog> | null>(null);
-const displayPasswordDialog = ref<InstanceType<typeof DisplayPasswordDialog> | null>(null);
+const confirmDelete = useTemplateRef<InstanceType<typeof Confirm>>("confirmDelete");
+const addUserDialog = useTemplateRef<InstanceType<typeof AddUserDialog>>("addUserDialog");
+const displayPasswordDialog = useTemplateRef<InstanceType<typeof DisplayPasswordDialog>>("displayPasswordDialog");
 
 // Data
 const userList = ref<UserWithRole[]>([]);
 const selectedUserId = ref<string | null>(null);
 const userPassword = ref<string>("");
 
-onMounted(() => {
-    fetchUsers();
-});
-
 // Functions
 /**
  * Fetch the list of users from the server
  */
-const fetchUsers = async () => {
-    const { data, error } = await authClient.admin.listUsers({
-        query: {
-            limit: 100,
-        },
-    });
+const fetchUsers = () => authClient.admin.listUsers({ query: { limit: 100 } })
+    .then(({ data, error }) => {
+        if (error) throw error;
+        return userList.value = data?.users ?? [];
+    })
+    .catch(err => toast.error(err.message || "Failed to fetch users"));
 
-    if (!data || !!error) {
-        toast.error(error.message || "Failed to fetch users");
-        return;
-    }
-
-    userList.value = data.users;
-};
+onMounted(fetchUsers);
 
 /**
  * Add a new user
@@ -174,56 +164,43 @@ const deleteUser = async (): Promise<void> => {
 /**
  * Generate a 20-character random password
  */
-const generatePassword = () => {
-    const length = 20;
-    const characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz~!@-#$";
-
-    const password = Array.from(crypto.getRandomValues(new Uint32Array(length)))
-        .map((x) => characters[x % characters.length])
-        .join("");
-
-    return password;
-};
+const newPasswordLength = 20;
+const newPasswordChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz~!@-#$";
+const generatePassword = () => Array
+    .from(crypto.getRandomValues(new Uint32Array(newPasswordLength)))
+    .reduce(
+        (acc, c) => `${acc}${newPasswordChars[c % newPasswordChars.length]}`,
+        ""
+    );
 </script>
 
 <style lang="scss" scoped>
 @import "../../assets/vars.scss";
 
-.mobile {
-    .item {
-        flex-direction: column;
-        align-items: flex-start;
-        margin-bottom: 20px;
-    }
-}
-
 .add-btn {
-    padding-top: 20px;
-    padding-bottom: 20px;
+    padding: 20px 0;
 }
 
 .item {
     display: flex;
     align-items: center;
-    gap: 10px;
-    text-decoration: none;
-    border-radius: 10px;
-    transition: all ease-in-out 0.15s;
     justify-content: space-between;
+    gap: 10px;
     padding: 10px;
     min-height: 90px;
     margin-bottom: 5px;
+    text-decoration: none;
+    border-radius: 10px;
+    transition: all ease-in-out 0.15s;
 
     .left-part {
         display: flex;
         gap: 12px;
         align-items: center;
 
-        .info {
-            .title {
-                font-weight: bold;
-                font-size: 20px;
-            }
+        .info .title {
+            font-weight: bold;
+            font-size: 20px;
         }
     }
 
@@ -238,11 +215,7 @@ const generatePassword = () => {
     }
 }
 
-.dark {
-    .item {
-        &:hover {
-            background-color: $dark-bg2;
-        }
-    }
+.dark .item:hover {
+    background-color: $dark-bg2;
 }
 </style>

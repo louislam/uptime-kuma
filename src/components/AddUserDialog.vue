@@ -43,10 +43,10 @@
 
 <script setup lang="ts">
 import { Modal } from "bootstrap";
-import { onMounted, ref } from "vue";
+import { onMounted, useTemplateRef, ref } from "vue";
 
 // UI
-const modalRef = ref<HTMLElement | null>(null);
+const modalRef = useTemplateRef<HTMLElement>("modalRef");
 const modal = ref<Modal | null>(null);
 
 // Data
