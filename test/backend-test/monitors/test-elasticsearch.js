@@ -290,3 +290,72 @@ describe("Elasticsearch monitor", () => {
         );
     });
 });
+
+describe("Elasticsearch SQLite add-path compatibility", () => {
+    test("defaults omitted elasticsearchNodes for a pre-PR monitor payload", async () => {
+        const fs = require("fs");
+        const path = require("path");
+        const testDbPath = path.join(__dirname, "../../../data/test-elasticsearch-sqlite-compat.db");
+        const testDbDir = path.dirname(testDbPath);
+
+        if (!fs.existsSync(testDbDir)) {
+            fs.mkdirSync(testDbDir, { recursive: true });
+        }
+        if (fs.existsSync(testDbPath)) {
+            fs.unlinkSync(testDbPath);
+        }
+
+        const Dialect = require("knex/lib/dialects/sqlite3/index.js");
+        Dialect.prototype._driver = () => require("@louislam/sqlite3");
+
+        const knex = require("knex")({
+            client: Dialect,
+            connection: {
+                filename: testDbPath,
+            },
+            useNullAsDefault: true,
+        });
+
+        const { R } = require("redbean-node");
+        const previousKnex = R.knex;
+        R.setup(knex);
+
+        try {
+            await knex.schema.createTable("monitor", (table) => {
+                table.increments("id");
+                table.string("name");
+                table.string("type");
+                table.text("elasticsearch_nodes").notNullable().defaultTo("[]");
+                table.string("elasticsearch_status", 16).notNullable().defaultTo("yellow");
+                table.integer("elasticsearch_minimum_nodes").notNullable().defaultTo(0);
+            });
+
+            // Pre-PR Socket.IO payload: no elasticsearch fields at all.
+            const monitor = {
+                name: "Legacy HTTP",
+                type: "http",
+            };
+
+            // Same assignments as the add path in server/server.js
+            monitor.elasticsearchNodes = JSON.stringify(monitor.elasticsearchNodes ?? []);
+            monitor.elasticsearchMinimumNodes = Number(monitor.elasticsearchMinimumNodes) || 0;
+
+            const bean = R.dispense("monitor");
+            bean.import(monitor);
+            const id = await R.store(bean);
+
+            const row = await knex("monitor").where({ id }).first();
+            assert.strictEqual(row.elasticsearch_nodes, "[]");
+            assert.strictEqual(row.elasticsearch_minimum_nodes, 0);
+            assert.strictEqual(row.elasticsearch_status, "yellow");
+        } finally {
+            await knex.destroy();
+            if (previousKnex) {
+                R.setup(previousKnex);
+            }
+            if (fs.existsSync(testDbPath)) {
+                fs.unlinkSync(testDbPath);
+            }
+        }
+    });
+});
