@@ -211,7 +211,7 @@ describe("Domain Expiry", () => {
             active: 1,
             user_id: 1,
             name: "Testhook",
-            triggersJson: '["domain"]',
+            triggers: '["domain"]',
         });
         const [, data] = await Promise.all([
             DomainExpiry.sendNotifications("google.com", [notif]),

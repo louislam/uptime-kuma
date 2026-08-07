@@ -1504,7 +1504,7 @@ class Monitor extends BeanModel {
 
             for (let notification of notificationList) {
                 try {
-                    const triggers = JSON.parse(notification.triggers_json);
+                    const triggers = JSON.parse(notification.triggers);
                     if (
                         (bean.status === UP && triggers.includes("up")) ||
                         (bean.status === DOWN && triggers.includes("down"))
@@ -1563,7 +1563,7 @@ class Monitor extends BeanModel {
         log.debug("monitor", "Send certificate notification");
 
         for (let notification of notificationList) {
-            const triggers = JSON.parse(notification.triggers_json);
+            const triggers = JSON.parse(notification.triggers);
             if (!triggers.includes("certificate")) {
                 log.debug("monitor", "Notification does not trigger on certificate expiry.");
                 continue;

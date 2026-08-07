@@ -2226,11 +2226,11 @@
                                 </span>
 
                                 <span
-                                    v-if="notification.triggersJson"
+                                    v-if="notification.triggers"
                                     class="ms-2 fs-5 lh-1 align-middle"
                                     :title="
                                         $t('MonitorNotification', [
-                                            JSON.parse(notification.triggersJson)
+                                            JSON.parse(notification.triggers)
                                                 .map((tt) =>
                                                     $t(String(tt).charAt(0).toUpperCase() + String(tt).slice(1))
                                                 )

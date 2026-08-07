@@ -299,7 +299,7 @@ class Notification {
         bean.user_id = userID;
         bean.config = JSON.stringify(notification);
         bean.is_default = notification.isDefault || false;
-        bean.triggers_json = JSON.stringify(notification.triggers);
+        bean.triggers = JSON.stringify(notification.triggers);
         await R.store(bean);
 
         if (applyExisting) {

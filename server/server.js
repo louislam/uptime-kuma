@@ -1566,8 +1566,7 @@ let needSetup = false;
                 let notificationBean = await Notification.save(notification, notificationID, socket.userID);
                 await sendNotificationList(socket);
 
-                notification.triggers_json = JSON.stringify(notification.triggers);
-                delete notification.triggers;
+                notification.triggers = JSON.stringify(notification.triggers);
 
                 callback({
                     ok: true,

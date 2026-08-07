@@ -152,7 +152,7 @@ async function sendDomainNotificationByTargetDays(domain, daysRemaining, targetD
     log.debug("domain_expiry", `Send domain expiry notification for ${targetDays} deadline.`);
 
     for (let notification of notificationList) {
-        const triggers = JSON.parse(notification.triggers_json);
+        const triggers = JSON.parse(notification.triggers);
         if (!triggers.includes("domain")) {
             log.debug("monitor", "Notification does not trigger on domain expiry.");
             continue;
