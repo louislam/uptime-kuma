@@ -129,7 +129,7 @@ test.describe("Status Page", () => {
         const updateCountdown = Number(
             (await page.getByTestId("update-countdown-text").textContent()).match(/(\d+):(\d+)/)[2]
         );
-        expect(updateCountdown).toBeGreaterThanOrEqual(refreshInterval - 10); // cant be certain when the timer will start, so ensure it's within expected range
+        expect(updateCountdown).toBeGreaterThanOrEqual(refreshInterval - 10); // can't be certain when the timer will start, so ensure it's within expected range
         expect(updateCountdown).toBeLessThanOrEqual(refreshInterval);
 
         await expect(page.locator("body")).toHaveClass(theme);

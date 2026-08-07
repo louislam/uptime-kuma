@@ -1,6 +1,6 @@
 {
     "name": "uptime-kuma",
-    "version": "2.4.0",
+    "version": "2.5.0",
     "license": "MIT",
     "repository": {
         "type": "git",
@@ -44,7 +44,7 @@
         "build-docker-pr-test": "docker buildx build -f docker/dockerfile --platform linux/amd64,linux/arm64 -t louislam/uptime-kuma:pr-test2 --target pr-test2 . --push",
         "upload-artifacts": "node extra/release/upload-artifacts.mjs",
         "upload-artifacts-beta": "node extra/release/upload-artifacts-beta.mjs",
-        "setup": "git checkout 2.4.0 && npm ci --omit dev --no-audit && npm run download-dist",
+        "setup": "git checkout 2.5.0 && npm ci --omit dev --no-audit && npm run download-dist",
         "download-dist": "node extra/download-dist.js",
         "mark-as-nightly": "node extra/mark-as-nightly.js",
         "reset-password": "node extra/reset-password.js",
@@ -66,7 +66,8 @@
         "start-dev-container": "cd docker && docker-compose -f docker-compose-dev.yml up --force-recreate",
         "rebase-pr-to-1.23.X": "node extra/rebase-pr.js 1.23.X",
         "reset-migrate-aggregate-table-state": "node extra/reset-migrate-aggregate-table-state.js",
-        "generate-changelog": "node ./extra/generate-changelog.mjs"
+        "generate-changelog": "node ./extra/generate-changelog.mjs",
+        "create-release": "node ./extra/release/create-release.mjs"
     },
     "dependencies": {
         "@grpc/grpc-js": "~1.8.22",

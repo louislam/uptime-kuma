@@ -214,6 +214,7 @@ export default {
             let chatPlatforms = {
                 bale: "Bale",
                 Bitrix24: "Bitrix24",
+                ClickUp: "ClickUp",
                 discord: "Discord",
                 max: this.$t("maxMessenger"),
                 fluxer: "Fluxer",
@@ -247,6 +248,7 @@ export default {
                 evolution: "WhatsApp (Evolution)",
                 waha: "WhatsApp (WAHA)",
                 Whatsapp360messenger: "WhatsApp (360messenger)",
+                openwa: "WhatsApp (OpenWA)",
             };
 
             // Push Services - Push notification services
@@ -257,6 +259,7 @@ export default {
                 lunasea: "LunaSea",
                 notifery: "Notifery",
                 ntfy: "Ntfy",
+                pinglet: "Pinglet",
                 pushbullet: "Pushbullet",
                 PushByTechulus: "Push by Techulus",
                 pushover: "Pushover",
@@ -287,6 +290,7 @@ export default {
                 Resend: "Resend",
                 SendGrid: "SendGrid",
                 smtp: this.$t("smtp"),
+                TurboSMTP: "TurboSMTP",
             };
 
             // Incident Management - On-call and alerting platforms
@@ -320,6 +324,7 @@ export default {
             // Regional - Not supported in most regions or documentation is not in English
             let regional = {
                 AliyunSMS: "AliyunSMS (阿里云短信服务)",
+                bearsms: "BearSMS (Israel)",
                 egosms: "EgoSMS (Uganda)",
                 DingDing: "DingDing (钉钉自定义机器人)",
                 Feishu: "Feishu (飞书)",
