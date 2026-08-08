@@ -24,7 +24,7 @@ exports.up = async function (knex) {
     });
 };
 
-exports.down = function (knex) {
+exports.down = async function (knex) {
     return knex.schema.alterTable("notification", function (table) {
         table.dropColumn("triggers");
     });
@@ -44,4 +44,5 @@ exports.down = function (knex) {
         } catch (error) {
             //
         }
+    }
 };
