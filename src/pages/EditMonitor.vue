@@ -2227,7 +2227,8 @@
 
                                 <button
                                     v-if="notification.triggers"
-                                    href="#"
+                                    type="button"
+                                    :aria-label="$t('Notification Triggers')"
                                     :aria-describedby="'notification-tooltip-' + notification.id"
                                     class="info-tooltip-parent ms-2 fs-5 lh-1 align-middle"
                                     @click.prevent

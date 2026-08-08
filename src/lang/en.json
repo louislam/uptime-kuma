@@ -1432,7 +1432,6 @@
     "Pick Notification Triggers": "Pick Notification Triggers...",
     "Certificate": "Certificate",
     "NotificationTriggerDescription": "Customize which alerts trigger this notification provider",
-    "MonitorNotification": "Notification will be sent on {0} status changes",
     "Triggered by": "Triggered by: {0}",
     "Suppress Notifications": "Suppress Notifications",
     "discordSuppressNotificationsHelptext": "When enabled, messages will be posted to the channel but won't trigger push or desktop notifications for recipients.",
