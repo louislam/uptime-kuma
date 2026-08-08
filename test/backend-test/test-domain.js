@@ -206,10 +206,12 @@ describe("Domain Expiry", () => {
                 httpMethod: "post",
                 webhookContentType: "json",
                 webhookURL: `http://127.0.0.1:${hook.port}/${hook.url}`,
+                triggers: ["domain"],
             }),
             active: 1,
             user_id: 1,
             name: "Testhook",
+            triggers: '["domain"]',
         });
         const [, data] = await Promise.all([
             DomainExpiry.sendNotifications("google.com", [notif]),
