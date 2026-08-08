@@ -25,10 +25,6 @@ exports.up = async function (knex) {
 };
 
 exports.down = async function (knex) {
-    return knex.schema.alterTable("notification", function (table) {
-        table.dropColumn("triggers");
-    });
-
     const notifications = await knex("notification").select("id", "config");
 
     for (const { id, config } of notifications) {
@@ -45,4 +41,8 @@ exports.down = async function (knex) {
             //
         }
     }
+
+    await knex.schema.alterTable("notification", function (table) {
+        table.dropColumn("triggers");
+    });
 };
