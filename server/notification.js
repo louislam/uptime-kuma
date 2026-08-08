@@ -279,7 +279,7 @@ class Notification {
 
         // validate triggers array
         const allowedTriggers = new Set(["up", "down", "certificate", "domain"]);
-        if (notification.triggers === undefined) {
+        if (typeof notification.triggers === "undefined") {
             notification.triggers = [...allowedTriggers];
         } else {
             if (!Array.isArray(notification.triggers)) {

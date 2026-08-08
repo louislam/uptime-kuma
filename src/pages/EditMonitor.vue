@@ -2225,21 +2225,31 @@
                                     {{ $t("Default") }}
                                 </span>
 
-                                <span
+                                <button
+                                    href="#"
+                                    :aria-describedby="'notification-tooltip-' + notification.id"
                                     v-if="notification.triggers"
-                                    class="ms-2 fs-5 lh-1 align-middle"
-                                    :title="
-                                        $t('MonitorNotification', [
-                                            JSON.parse(notification.triggers)
-                                                .map((tt) =>
-                                                    $t(String(tt).charAt(0).toUpperCase() + String(tt).slice(1))
-                                                )
-                                                .join(', '),
-                                        ])
-                                    "
+                                    class="info-tooltip-parent ms-2 fs-5 lh-1 align-middle"
+                                    @click.prevent
                                 >
                                     <font-awesome-icon icon="info-circle" />
-                                </span>
+                                    <div
+                                        :id="'notification-tooltip-' + notification.id"
+                                        class="info-tooltip-child"
+                                        role="tooltip"
+                                    >
+                                        <div class="info-tooltip-content">
+                                            {{ $t('Triggered by', [
+                                                JSON.parse(notification.triggers)
+                                                    .map((tt) =>
+                                                        $t(String(tt).charAt(0).toUpperCase() + String(tt).slice(1))
+                                                    )
+                                                    .join(', '),
+                                            ]) }}
+                                        </div>
+                                        <div class="info-tooltip-arrow"></div>
+                                    </div>
+                                </button>
                             </div>
 
                             <button class="btn btn-primary me-2" type="button" @click="$refs.notificationDialog.show()">
@@ -4553,5 +4563,118 @@ message HealthCheckResponse {
 
 textarea {
     min-height: 200px;
+}
+
+.info-tooltip-child {
+    position: absolute;
+    display: none;
+    z-index: 9999;
+    pointer-events: none;
+    transform: translateX(-50%);
+    left: 10px; // 10px is half width of info icon
+    top: 28px; // height of info icon + height of arrow
+
+    .info-tooltip-content {
+        background: rgba(17, 24, 39, 0.95);
+        color: #f3f4f6;
+        font-size: 12px;
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(75, 85, 99, 0.3);
+        border-radius: 8px;
+        padding: 8px 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+        min-width: 120px;
+        text-align: center;
+        position: relative;
+
+        &::before {
+            content: "";
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 14px;
+            height: 2px;
+            background: rgba(17, 24, 39, 0.95);
+            top: -1px;
+        }
+    }
+
+    .info-tooltip-arrow {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 12px;
+        height: 6px;
+        overflow: hidden;
+        top: -6px;
+
+        &::before {
+            content: "";
+            position: absolute;
+            left: 50%;
+            top: 100%;
+            transform: translateX(-50%) translateY(-50%) rotate(45deg);
+            width: 8px;
+            height: 8px;
+            background: rgba(17, 24, 39, 0.95);
+            border: 1px solid rgba(75, 85, 99, 0.3);
+            border-bottom: none;
+            border-right: none;
+        }
+    }
+
+    // Smooth entrance animation
+    animation: tooltip-fade-in 0.2s $easing-out;
+}
+
+.info-tooltip-parent {
+    all: unset;
+    position: relative;
+    display: inline-block;
+
+    &:hover, &:focus {
+        .info-tooltip-child {
+            display: block;
+        }
+    }
+}
+
+// Dark theme adjustments
+.dark .info-tooltip-child {
+    .info-tooltip-content {
+        background: rgba(31, 41, 55, 0.95);
+        border-color: rgba(107, 114, 128, 0.3);
+
+        &::before {
+            background: rgba(31, 41, 55, 0.95);
+        }
+    }
+
+    .info-tooltip-arrow {
+        &::before {
+            background: rgba(31, 41, 55, 0.95);
+            border-color: rgba(107, 114, 128, 0.3);
+        }
+    }
+}
+
+@keyframes tooltip-fade-in {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+// Accessibility improvements
+
+@media (prefers-reduced-motion: reduce) {
+    .info-tooltip-child {
+        animation: none !important;
+    }
 }
 </style>
