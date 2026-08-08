@@ -1702,5 +1702,17 @@
     "ntpDispersionThreshold": "根时钟偏差阈值 (ms)",
     "ntpDispersionThresholdHelp": "根时钟偏差超过此值时，标记为故障。偏差值表示服务器时钟的精度。",
     "ntpStratumThresholdHelp": "层级等于或高于此值时，标记为故障。层级表示时间源质量（1 代表来自GPS/原子钟，16 代表无法同步）。",
-    "ntpOffsetThresholdHelp": "时间偏移量超过此毫秒值时，标记为故障。"
+    "ntpOffsetThresholdHelp": "时间偏移量超过此毫秒值时，标记为故障。",
+    "Pinglet Topic URL": "主题 URL",
+    "pingletTopicUrlDescription": "用于发送告警的 Pinglet 主题发布 URL，例如 https://app.pinglet.co.uk/your-namespace/alerts。如果主题尚不存在，将在首次发布时自动创建。",
+    "wayToGetOpenwaApiUrl": "您的 OpenWA 实例 URL。",
+    "wayToGetOpenwaApiKey": "用于您的 OpenWA 实例的 API 密钥。",
+    "openwaSession": "会话",
+    "openwaChatId": "聊天 ID（电话号码 / 联系人 ID / 群组 ID）",
+    "openwaCustomMessageTitle": "自定义消息（可选）",
+    "wayToGetOpenwaSession": "OpenWA 用于发送通知的会话 ID。",
+    "turbosmtpConsumerKey": "消费者密钥",
+    "turbosmtpConsumerSecret": "消费者密钥（Secret）",
+    "wayToWriteOpenwaChatId": "带国际区号的电话号码（开头不带加号，{0}）、联系人 ID（{1}）或群组 ID（{2}）。多个聊天 ID 之间用逗号分隔。",
+    "openwaCustomMessageDesc": "留空则使用默认消息。"
 }
