@@ -2226,9 +2226,9 @@
                                 </span>
 
                                 <button
+                                    v-if="notification.triggers"
                                     href="#"
                                     :aria-describedby="'notification-tooltip-' + notification.id"
-                                    v-if="notification.triggers"
                                     class="info-tooltip-parent ms-2 fs-5 lh-1 align-middle"
                                     @click.prevent
                                 >
@@ -2239,13 +2239,15 @@
                                         role="tooltip"
                                     >
                                         <div class="info-tooltip-content">
-                                            {{ $t('Triggered by', [
-                                                JSON.parse(notification.triggers)
-                                                    .map((tt) =>
-                                                        $t(String(tt).charAt(0).toUpperCase() + String(tt).slice(1))
-                                                    )
-                                                    .join(', '),
-                                            ]) }}
+                                            {{
+                                                $t("Triggered by", [
+                                                    JSON.parse(notification.triggers)
+                                                        .map((tt) =>
+                                                            $t(String(tt).charAt(0).toUpperCase() + String(tt).slice(1))
+                                                        )
+                                                        .join(", "),
+                                                ])
+                                            }}
                                         </div>
                                         <div class="info-tooltip-arrow"></div>
                                     </div>
@@ -4632,7 +4634,8 @@ textarea {
     position: relative;
     display: inline-block;
 
-    &:hover, &:focus {
+    &:hover,
+    &:focus {
         .info-tooltip-child {
             display: block;
         }
