@@ -220,6 +220,35 @@ describe("Domain Expiry", () => {
         assert.match(data.msg, /will expire in/);
     });
 
+    test("sendNotifications() honors the domain trigger", async () => {
+    const domain = {
+        expiry: dayjs.utc().add(1, "day").toISOString(),
+        daysRemaining: 1,
+        lastExpiryNotificationSent: null,
+    };
+    const notification = {
+        name: "Testhook",
+        config: JSON.stringify({ type: "webhook" }),
+        triggers: "[]",
+    };
+
+    await setSetting("domainExpiryNotifyDays", [7], "general");
+    mock.method(DomainExpiry, "findByDomainNameOrCreate", async () => domain);
+    const sendMock = mock.method(Notification, "send", async () => "OK");
+    mock.method(R, "store", async () => {});
+
+    try {
+        await DomainExpiry.sendNotifications("example.com", [notification]);
+        assert.strictEqual(sendMock.mock.callCount(), 0);
+
+        notification.triggers = '["domain"]';
+        await DomainExpiry.sendNotifications("example.com", [notification]);
+        assert.strictEqual(sendMock.mock.callCount(), 1);
+    } finally {
+        mock.restoreAll();
+    }
+});
+
     test("sendNotifications() handles domain with null expiry without sending NaN", async () => {
         // Regression test for bug: "Domain name will expire in NaN days"
         // Mock findByDomainNameOrCreate to return a bean with null expiry
