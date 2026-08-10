@@ -457,8 +457,12 @@ class Monitor extends BeanModel {
 
             // Runtime patch timeout if it is 0
             // See https://github.com/louislam/uptime-kuma/pull/3961#issuecomment-1804149144
+            // this.timeout is in seconds (see the AbortSignal/log-message usages below),
+            // not milliseconds, so this fallback must not pre-multiply by 1000 — the
+            // caller that builds the request timeout already does `this.timeout * 1000`.
+            // Getting this wrong makes a timeout=0 monitor wait ~1000x longer than intended.
             if (!this.timeout || this.timeout <= 0) {
-                this.timeout = this.interval * 1000 * 0.8;
+                this.timeout = this.interval * 0.8;
             }
 
             try {
