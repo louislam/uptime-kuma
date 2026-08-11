@@ -150,10 +150,10 @@ class RadiusClient {
                     error.response = { code: "Access-Reject" };
                     reject(error);
                 } else if (responseCode === "Access-Challenge") {
-                    // Challenge response
-                    const error = new Error("Access-Challenge");
-                    error.response = { code: "Access-Challenge" };
-                    reject(error);
+                    // Resolve on Access-Challenge to match node-radius-client
+                    // behavior, as a challenge means the server is reachable
+                    // and responding (e.g. MFA/CHAP negotiation)
+                    resolve({ code: "Access-Challenge", ...response });
                 } else {
                     resolve({ code: responseCode, ...response });
                 }
