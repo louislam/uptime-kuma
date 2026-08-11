@@ -806,7 +806,7 @@ export default {
          * @returns {void}
          */
         submit() {
-            // While unusual, not requiring montiors can allow showing on status pages if a "currently unmonitored" service goes down
+            // While unusual, not requiring monitors can allow showing on status pages if a "currently unmonitored" service goes down
             if (!this.hasMonitors && this.hasStatusPages) {
                 this.$refs.confirmNoMonitors.show();
                 return;
