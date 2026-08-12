@@ -25,7 +25,7 @@ You will be BANNED immediately if you submit generated code and an LLM-written d
 
 - fix small issues (about 1 - 10 lines of code)
 - correct grammar
-- help users understand the codebase
+-Allows for feature development
 
 ## In case the current task is not classified as allowed tasks
 
