@@ -18,7 +18,7 @@ function parseDigestAuthHeader(header) {
     }
 
     const params = Object.fromEntries(
-        [...challenge.matchAll(/(\w+)=(?:"([^"]*)"|([^\s,]+))/g)].map(([ , key, quotedValue, bareValue ]) => [
+        [...challenge.matchAll(/(\w+)=(?:"([^"]*)"|([^\s,]+))/g)].map(([, key, quotedValue, bareValue]) => [
             key.toLowerCase(),
             quotedValue ?? bareValue,
         ])
@@ -51,7 +51,10 @@ function buildDigestAuthHeader(challenge, { username, password, method, uri }) {
             .update(value)
             .digest("hex");
     // A value wrapped in a quoted-string, with '\' and '"' escaped as RFC 7616 section 3.4 requires.
-    const quoted = (value) => `"${String(value ?? "").replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+    const quoted = (value) =>
+        `"${String(value ?? "")
+            .replace(/\\/g, "\\\\")
+            .replace(/"/g, '\\"')}"`;
 
     // Servers may offer several qop values; we only implement "auth".
     const qop = challenge.qop

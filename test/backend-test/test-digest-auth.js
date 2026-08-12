@@ -211,7 +211,9 @@ describe("HTTP Digest auth: buildDigestAuthHeader() — RFC 7616 conformance", (
     });
 
     test("honors a whitespace-separated qop list produced by the parser, not just a comma-tight one", () => {
-        const challenge = parseDigestAuthHeader('Digest realm="example.com", qop="auth, auth-int", nonce="abc123nonce"');
+        const challenge = parseDigestAuthHeader(
+            'Digest realm="example.com", qop="auth, auth-int", nonce="abc123nonce"'
+        );
 
         const header = buildDigestAuthHeader(challenge, {
             username: "alice",
@@ -228,9 +230,7 @@ describe("HTTP Digest auth: buildDigestAuthHeader() — RFC 7616 conformance", (
 // silent on - useful to pin down, but not something a conforming client is required to do.
 describe("HTTP Digest auth: buildDigestAuthHeader() — implementation-specific choices", () => {
     test("prefers auth when both auth and auth-int are offered", () => {
-        const challenge = parseDigestAuthHeader(
-            'Digest realm="example.com", qop="auth-int,auth", nonce="abc123nonce"'
-        );
+        const challenge = parseDigestAuthHeader('Digest realm="example.com", qop="auth-int,auth", nonce="abc123nonce"');
 
         const header = buildDigestAuthHeader(challenge, {
             username: "alice",
