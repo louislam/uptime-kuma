@@ -202,6 +202,27 @@
                     </div>
                 </div>
 
+                <!-- Subscriber Email Notification -->
+                <div class="my-3">
+                    <label for="subscription-notification" class="form-label">
+                        {{ $t("Subscriber Email Notification") }}
+                    </label>
+                    <select
+                        id="subscription-notification"
+                        v-model="config.subscriptionNotificationId"
+                        class="form-select"
+                        data-testid="subscription-notification-select"
+                    >
+                        <option :value="null">{{ $t("None") }}</option>
+                        <option v-for="n in smtpNotificationList" :key="n.id" :value="n.id">
+                            {{ n.name }}
+                        </option>
+                    </select>
+                    <div class="form-text">
+                        {{ $t("subscriptionNotificationDescription") }}
+                    </div>
+                </div>
+
                 <!-- Custom CSS -->
                 <div class="my-3">
                     <div class="mb-1">{{ $t("Custom CSS") }}</div>
@@ -272,8 +293,16 @@
                 <Editable v-model="config.title" tag="span" :contenteditable="editMode" :noNL="true" />
             </h1>
 
-            <!-- Admin functions -->
-            <div v-if="hasToken" class="mb-2">
+            <!-- Back link when viewing a single group's dedicated page -->
+            <div v-if="routeGroupId" class="mb-3">
+                <router-link :to="'/status/' + slug" class="btn btn-primary btn-sm" data-testid="back-to-status-page-link">
+                    <font-awesome-icon icon="arrow-left" class="me-1" />
+                    {{ $t("Back to status page") }}
+                </router-link>
+            </div>
+
+            <!-- Admin functions (editing is only available from the main status page, not a single group's page) -->
+            <div v-if="hasToken && !routeGroupId" class="mb-2">
                 <div v-if="!enableEditMode">
                     <button class="btn btn-primary mb-2 me-2" data-testid="edit-button" @click="edit">
                         <font-awesome-icon icon="edit" />
@@ -494,6 +523,8 @@
                     :show-tags="config.showTags"
                     :show-certificate-expiry="config.showCertificateExpiry"
                     :show-only-last-heartbeat="config.showOnlyLastHeartbeat"
+                    :slug="slug"
+                    :group-filter="routeGroupId"
                 />
             </div>
 
@@ -547,42 +578,51 @@
                 @incident-updated="loadIncidentHistory"
             />
 
-            <footer class="mt-5 mb-4">
-                <div class="custom-footer-text text-start">
-                    <strong v-if="enableEditMode">{{ $t("Custom Footer") }}:</strong>
+            <div class="page-footer-area mt-5">
+                <!-- Maintenance/incident log + subscribe to group notifications -
+                     only on a group's dedicated page, right above the footer -->
+                <div v-if="routeGroupId" class="group-footer-row mb-3">
+                    <GroupLogPanel :group-id="routeGroupId" :edit-mode="hasToken" class="group-log-col" />
+                    <GroupSubscribeForm :group-id="routeGroupId" class="subscribe-col" />
                 </div>
-                <Editable
-                    v-if="enableEditMode"
-                    v-model="config.footerText"
-                    tag="div"
-                    :contenteditable="enableEditMode"
-                    :noNL="false"
-                    class="alert-heading p-2"
-                    data-testid="custom-footer-editable"
-                />
-                <!-- eslint-disable vue/no-v-html-->
-                <div
-                    v-if="!enableEditMode"
-                    class="alert-heading p-2"
-                    data-testid="footer-text"
-                    v-html="footerHTML"
-                ></div>
-                <!-- eslint-enable vue/no-v-html-->
 
-                <p v-if="config.showPoweredBy" data-testid="powered-by">
-                    {{ $t("Powered by") }}
-                    <a target="_blank" rel="noopener noreferrer" href="https://github.com/louislam/uptime-kuma">
-                        {{ $t("Uptime Kuma") }}
-                    </a>
-                </p>
-
-                <div class="refresh-info mb-2">
-                    <div>{{ $t("lastUpdatedAt", { date: lastUpdateTimeDisplay }) }}</div>
-                    <div data-testid="update-countdown-text">
-                        {{ $t("statusPageRefreshIn", [updateCountdownText]) }}
+                <footer class="mb-4">
+                    <div class="custom-footer-text text-start">
+                        <strong v-if="enableEditMode">{{ $t("Custom Footer") }}:</strong>
                     </div>
-                </div>
-            </footer>
+                    <Editable
+                        v-if="enableEditMode"
+                        v-model="config.footerText"
+                        tag="div"
+                        :contenteditable="enableEditMode"
+                        :noNL="false"
+                        class="alert-heading p-2"
+                        data-testid="custom-footer-editable"
+                    />
+                    <!-- eslint-disable vue/no-v-html-->
+                    <div
+                        v-if="!enableEditMode"
+                        class="alert-heading p-2"
+                        data-testid="footer-text"
+                        v-html="footerHTML"
+                    ></div>
+                    <!-- eslint-enable vue/no-v-html-->
+
+                    <p v-if="config.showPoweredBy" data-testid="powered-by">
+                        {{ $t("Powered by") }}
+                        <a target="_blank" rel="noopener noreferrer" href="https://github.com/louislam/uptime-kuma">
+                            {{ $t("Uptime Kuma") }}
+                        </a>
+                    </p>
+
+                    <div class="refresh-info mb-2">
+                        <div>{{ $t("lastUpdatedAt", { date: lastUpdateTimeDisplay }) }}</div>
+                        <div data-testid="update-countdown-text">
+                            {{ $t("statusPageRefreshIn", [updateCountdownText]) }}
+                        </div>
+                    </div>
+                </footer>
+            </div>
         </div>
 
         <Confirm
@@ -619,6 +659,8 @@ import { marked } from "marked";
 import DOMPurify from "dompurify";
 import Confirm from "../components/Confirm.vue";
 import PublicGroupList from "../components/PublicGroupList.vue";
+import GroupSubscribeForm from "../components/GroupSubscribeForm.vue";
+import GroupLogPanel from "../components/GroupLogPanel.vue";
 import MaintenanceTime from "../components/MaintenanceTime.vue";
 import IncidentHistory from "../components/IncidentHistory.vue";
 import IncidentManageModal from "../components/IncidentManageModal.vue";
@@ -650,6 +692,8 @@ const favicon = new Favico({
 export default {
     components: {
         PublicGroupList,
+        GroupSubscribeForm,
+        GroupLogPanel,
         ImageCropUpload,
         Confirm,
         PrismEditor,
@@ -772,6 +816,29 @@ export default {
 
         isPublished() {
             return this.config.published;
+        },
+
+        /**
+         * Group id from the route, when viewing a single group's dedicated page
+         * @returns {string|null} Group id, or null if not on a group page
+         */
+        routeGroupId() {
+            return this.$route.params.groupId ?? null;
+        },
+
+        /**
+         * Admin's configured notifications, filtered down to SMTP-type ones,
+         * for the "Subscriber Email Notification" picker.
+         * @returns {object[]} SMTP-type notifications
+         */
+        smtpNotificationList() {
+            return this.$root.notificationList.filter((n) => {
+                try {
+                    return JSON.parse(n.config).type === "smtp";
+                } catch (e) {
+                    return false;
+                }
+            });
         },
 
         logoClass() {
@@ -964,6 +1031,15 @@ export default {
     async created() {
         this.hasToken = "token" in this.$root.storage();
 
+        // A logged-in admin viewing a group's dedicated page still needs a
+        // real socket connection to manage that group's Maintenance and
+        // Incident Log (full page edit mode itself stays main-page-only,
+        // see edit()) - bypass the anonymous-visitor socket.io skip just
+        // for this case.
+        if (this.hasToken && this.routeGroupId) {
+            this.$root.initSocketIO(true);
+        }
+
         // Browser change page
         // https://stackoverflow.com/questions/7317273/warn-user-before-leaving-web-page-with-unsaved-changes
         window.addEventListener("beforeunload", (e) => {
@@ -1132,7 +1208,7 @@ export default {
          * @returns {void}
          */
         edit() {
-            if (this.hasToken) {
+            if (this.hasToken && !this.routeGroupId) {
                 this.$root.initSocketIO(true);
                 this.enableEditMode = true;
                 this.clickedEditButton = true;
@@ -1525,10 +1601,40 @@ h1 {
 
 .main {
     transition: all ease-in-out 0.1s;
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 1rem);
 
     &.edit {
         margin-left: 300px;
     }
+}
+
+.page-footer-area {
+    margin-top: auto;
+}
+
+.group-footer-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.dark .group-footer-row {
+    border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+.group-log-col {
+    flex: 1 1 60%;
+    min-width: 260px;
+}
+
+.subscribe-col {
+    flex: 0 0 auto;
 }
 
 .sidebar {

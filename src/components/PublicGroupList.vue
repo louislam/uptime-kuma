@@ -1,6 +1,6 @@
 <template>
     <!-- Group List -->
-    <Draggable v-model="$root.publicGroupList" :disabled="!editMode" item-key="id" :animation="100">
+    <Draggable v-model="displayGroupList" :disabled="!editMode" item-key="id" :animation="100">
         <template #item="group">
             <div class="mb-5" data-testid="group">
                 <!-- Group Title -->
@@ -11,6 +11,13 @@
                         icon="times"
                         class="action remove me-3"
                         @click="removeGroup(group.index)"
+                    />
+                    <font-awesome-icon
+                        v-if="editMode && group.element.id"
+                        icon="users"
+                        class="action me-3"
+                        data-testid="group-subscribers-button"
+                        @click="$refs.groupSubscribersModal.show(group.element)"
                     />
                     <span class="collapse-toggle" @click="toggleGroup(group.element)">
                         <font-awesome-icon
@@ -25,12 +32,18 @@
                         tag="span"
                         :class="{ 'collapse-toggle': !editMode }"
                         data-testid="group-name"
-                        @click="!editMode && toggleGroup(group.element)"
+                        @click="titleClicked(group.element)"
                     />
                 </h2>
 
                 <transition name="slide-fade-up">
-                    <div v-if="!isGroupCollapsed(group.element)" class="shadow-box monitor-list mt-4 position-relative">
+                    <div
+                        v-if="!isGroupCollapsed(group.element)"
+                        class="shadow-box monitor-list mt-4 position-relative"
+                        :class="{ 'group-block-link': isGroupBlockClickable }"
+                        data-testid="group-block"
+                        @click="blockClicked(group.element, $event)"
+                    >
                         <div v-if="group.element.monitorList.length === 0" class="text-center no-monitor-msg">
                             {{ $t("No Monitors") }}
                         </div>
@@ -128,10 +141,12 @@
         </template>
     </Draggable>
     <MonitorSettingDialog ref="monitorSettingDialog" />
+    <GroupSubscribersModal ref="groupSubscribersModal" />
 </template>
 
 <script>
 import MonitorSettingDialog from "./MonitorSettingDialog.vue";
+import GroupSubscribersModal from "./GroupSubscribersModal.vue";
 import Draggable from "vuedraggable";
 import HeartbeatBar from "./HeartbeatBar.vue";
 import Uptime from "./Uptime.vue";
@@ -141,6 +156,7 @@ import Status from "./Status.vue";
 export default {
     components: {
         MonitorSettingDialog,
+        GroupSubscribersModal,
         Draggable,
         HeartbeatBar,
         Uptime,
@@ -165,6 +181,16 @@ export default {
         showOnlyLastHeartbeat: {
             type: Boolean,
         },
+        /** Slug of the current status page, used to build per-group links */
+        slug: {
+            type: String,
+            default: null,
+        },
+        /** If set, only the group with this id is shown (the group's dedicated page) */
+        groupFilter: {
+            type: String,
+            default: null,
+        },
     },
     data() {
         return {};
@@ -172,6 +198,36 @@ export default {
     computed: {
         showGroupDrag() {
             return this.$root.publicGroupList.length >= 2;
+        },
+
+        /**
+         * Whether clicking the group's monitor block navigates to its dedicated page
+         * @returns {boolean} True if the block is clickable
+         */
+        isGroupBlockClickable() {
+            return !this.editMode && !this.groupFilter;
+        },
+
+        /**
+         * The group list to render: the full list, or just the filtered group
+         * when viewing a group's dedicated page. Reordering is only written
+         * back to $root.publicGroupList when unfiltered.
+         * @returns {object[]} Group list to display
+         */
+        displayGroupList: {
+            get() {
+                if (!this.groupFilter) {
+                    return this.$root.publicGroupList;
+                }
+                return this.$root.publicGroupList.filter(
+                    (group) => this.getGroupIdentifier(group) === this.groupFilter
+                );
+            },
+            set(value) {
+                if (!this.groupFilter) {
+                    this.$root.publicGroupList = value;
+                }
+            },
         },
     },
     methods: {
@@ -203,6 +259,60 @@ export default {
             }
 
             this.$router.push({ query }).catch(() => {});
+        },
+
+        /**
+         * Handle a click on a group's title.
+         * On the main status page this opens the group's dedicated page;
+         * on that dedicated page itself, it just toggles the collapsed state.
+         * @param {object} group Group that was clicked
+         * @returns {void}
+         */
+        titleClicked(group) {
+            if (this.editMode) {
+                return;
+            }
+
+            if (this.groupFilter) {
+                this.toggleGroup(group);
+            } else {
+                this.openGroupPage(group);
+            }
+        },
+
+        /**
+         * Handle a click anywhere on a group's monitor block.
+         * Opens the group's dedicated page, unless the click was on an
+         * actual link (e.g. a monitor's clickable URL), which should be
+         * left to behave normally.
+         * @param {object} group Group that was clicked
+         * @param {MouseEvent} event Click event
+         * @returns {void}
+         */
+        blockClicked(group, event) {
+            if (!this.isGroupBlockClickable) {
+                return;
+            }
+
+            if (event.target.closest("a")) {
+                return;
+            }
+
+            this.openGroupPage(group);
+        },
+
+        /**
+         * Navigate to the dedicated page for a group
+         * @param {object} group Group to open
+         * @returns {void}
+         */
+        openGroupPage(group) {
+            if (!this.$router || !this.slug) {
+                return;
+            }
+
+            const groupId = this.getGroupIdentifier(group);
+            this.$router.push(`/status/${this.slug}/group/${groupId}`);
         },
 
         /**
@@ -388,6 +498,10 @@ export default {
 .collapse-toggle {
     cursor: pointer;
     padding: 2px;
+}
+
+.group-block-link {
+    cursor: pointer;
 }
 
 .chevron {

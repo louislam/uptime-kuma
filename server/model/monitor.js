@@ -45,6 +45,7 @@ const {
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification");
+const StatusPageSubscriber = require("./status_page_subscriber");
 const { Proxy } = require("../proxy");
 const { demoMode } = require("../config");
 const version = require("../../package.json").version;
@@ -1515,6 +1516,8 @@ class Monitor extends BeanModel {
                     log.error("monitor", e);
                 }
             }
+
+            await StatusPageSubscriber.notifyMonitorStatusChange(monitor, bean, msg);
         }
     }
 

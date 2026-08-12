@@ -323,4 +323,165 @@ test.describe("Status Page", () => {
 
         await screenshot(testInfo, page);
     });
+
+    test("clicking a group opens its dedicated page", async ({ page }, testInfo) => {
+        const monitorName = "Monitor for Group Page";
+        const groupName = "Nav Group";
+        const slug = "group-nav-test";
+
+        // Set up a monitor to add to the group
+        await page.goto("./add");
+        await login(page);
+        await expect(page.getByTestId("monitor-type-select")).toBeVisible();
+        await page.getByTestId("monitor-type-select").selectOption("http");
+        await page.getByTestId("friendly-name-input").fill(monitorName);
+        await page.getByTestId("url-input").fill("https://group-nav-test.example.com");
+        await page.getByTestId("save-button").click();
+        await page.waitForURL("/dashboard/*");
+
+        // Create a status page with a group containing the monitor
+        await page.goto("./add-status-page");
+        await page.getByTestId("name-input").fill("Group Nav Test");
+        await page.getByTestId("slug-input").fill(slug);
+        await page.getByTestId("submit-button").click();
+        await page.waitForURL(`/status/${slug}?edit`);
+
+        await page.getByTestId("add-group-button").click();
+        await page.getByTestId("group-name").fill(groupName);
+        await page.getByTestId("monitor-select").click();
+        await page.getByTestId("monitor-select").getByRole("option", { name: monitorName }).click();
+
+        await page.getByTestId("save-button").click();
+        await expect(page.getByTestId("edit-sidebar")).toHaveCount(0);
+        await screenshot(testInfo, page);
+
+        // On the public status page, clicking the group name should navigate to its dedicated page
+        await expect(page.getByTestId("group-name")).toContainText(groupName);
+        await page.getByTestId("group-name").click();
+        await page.waitForURL(new RegExp(`/status/${slug}/group/\\d+$`));
+        await screenshot(testInfo, page);
+
+        // The dedicated page shows only this group and its monitor, plus a way back
+        await expect(page.getByTestId("group")).toHaveCount(1);
+        await expect(page.getByTestId("group-name")).toContainText(groupName);
+        await expect(page.getByTestId("monitor-name")).toContainText(monitorName);
+        await expect(page.getByTestId("back-to-status-page-link")).toBeVisible();
+
+        // The back link returns to the full status page
+        await page.getByTestId("back-to-status-page-link").click();
+        await page.waitForURL(`/status/${slug}`);
+        await expect(page.getByTestId("back-to-status-page-link")).toHaveCount(0);
+
+        // Clicking anywhere in the group's monitor block (not just the title) also opens the group page
+        await page.getByTestId("group-block").click({ position: { x: 5, y: 5 } });
+        await page.waitForURL(new RegExp(`/status/${slug}/group/\\d+$`));
+        await page.goto(`./status/${slug}`);
+
+        // ...but clicking an actual monitor link is left alone, it does not get hijacked into group navigation
+        await page.getByTestId("edit-button").click();
+        await page.getByTestId("monitor-settings").click();
+        await page.getByTestId("show-clickable-link").check();
+        await page.getByTestId("custom-url-input").fill("https://group-nav-test.example.com/custom");
+        await page.getByTestId("monitor-settings-close").click();
+        await page.getByTestId("save-button").click();
+        await expect(page.getByTestId("edit-sidebar")).toHaveCount(0);
+
+        const [popup] = await Promise.all([
+            page.waitForEvent("popup"),
+            page.getByTestId("monitor-name").click(),
+        ]);
+        await popup.waitForLoadState();
+        expect(popup.url()).toBe("https://group-nav-test.example.com/custom");
+        await popup.close();
+
+        // The click on the link must not have also navigated the original tab to the group page
+        expect(page.url()).toBe(`${new URL(page.url()).origin}/status/${slug}`);
+    });
+
+    test("visitors can subscribe to a group's notifications", async ({ page }, testInfo) => {
+        test.setTimeout(60000);
+
+        const monitorName = "Monitor for Subscription Test";
+        const groupName = "Subscription Group";
+        const slug = "subscription-test";
+        const notificationName = "Subscription Test SMTP";
+        const subscriberEmail = "subscriber@example.com";
+
+        // Set up a monitor, an SMTP notification, and a status page with a group
+        await page.goto("./add");
+        await login(page);
+        await expect(page.getByTestId("monitor-type-select")).toBeVisible();
+        await page.getByTestId("monitor-type-select").selectOption("http");
+        await page.getByTestId("friendly-name-input").fill(monitorName);
+        await page.getByTestId("url-input").fill("https://subscription-test.example.com");
+        await page.getByTestId("save-button").click();
+        await page.waitForURL("/dashboard/*");
+
+        await page.goto("./settings/notifications");
+        await page.getByRole("button", { name: "Setup Notification" }).click();
+        await page.getByLabel("Notification Type").selectOption("smtp");
+        await page.getByLabel("Friendly Name").fill(notificationName);
+        await page.getByLabel("Hostname").fill("127.0.0.1");
+        await page.getByLabel("Port").fill("1025");
+        await page.getByLabel("From Email").fill("status@example.com");
+        await page.getByRole("button", { name: "Save", exact: true }).click();
+        await expect(page.getByRole("link", { name: "Edit" })).toBeVisible();
+
+        await page.goto("./add-status-page");
+        await page.getByTestId("name-input").fill("Subscription Test");
+        await page.getByTestId("slug-input").fill(slug);
+        await page.getByTestId("submit-button").click();
+        await page.waitForURL(`/status/${slug}?edit`);
+
+        await page.getByTestId("add-group-button").click();
+        await page.getByTestId("group-name").fill(groupName);
+        await page.getByTestId("monitor-select").click();
+        await page.getByTestId("monitor-select").getByRole("option", { name: monitorName }).click();
+        await page
+            .getByTestId("subscription-notification-select")
+            .selectOption({ label: notificationName });
+
+        await page.getByTestId("save-button").click();
+        await expect(page.getByTestId("edit-sidebar")).toHaveCount(0);
+        await screenshot(testInfo, page);
+
+        // Open the group's dedicated page and subscribe
+        await page.getByTestId("group-name").click();
+        await page.waitForURL(new RegExp(`/status/${slug}/group/(\\d+)$`));
+        const groupId = page.url().match(/\/group\/(\d+)$/)[1];
+
+        await expect(page.getByTestId("group-subscribe-form")).toBeVisible();
+        await page.getByTestId("subscribe-email-input").fill(subscriberEmail);
+        await page.getByTestId("subscribe-submit-button").click();
+        await expect(page.getByTestId("subscribe-message")).toBeVisible();
+        await screenshot(testInfo, page);
+
+        // Look up the confirmation token via the dev-only test hook (no real mailbox in e2e)
+        const tokenResponse = await page.request.get(
+            `./_e2e/subscriber-token?groupId=${groupId}&email=${encodeURIComponent(subscriberEmail)}`
+        );
+        const { token } = await tokenResponse.json();
+        expect(token).toBeTruthy();
+
+        // Confirm the subscription via the real HTTP route
+        await page.goto(`./api/status-page/subscription/confirm?token=${token}`);
+        await expect(page.getByRole("heading", { name: "Subscribed" })).toBeVisible();
+
+        // Admin can see the confirmed subscriber and remove them
+        await page.goto(`./status/${slug}?edit`);
+        await page.getByTestId("group-subscribers-button").click();
+        await expect(page.getByTestId("subscriber-row")).toHaveCount(1);
+        await expect(page.getByTestId("subscriber-row")).toContainText(subscriberEmail);
+        await expect(page.getByTestId("subscriber-row")).toContainText("Confirmed");
+        await screenshot(testInfo, page);
+
+        await page.getByTestId("remove-subscriber-button").click();
+        await expect(page.getByTestId("subscriber-row")).toHaveCount(0);
+
+        // Removed subscribers no longer resolve a token
+        const afterRemoval = await page.request.get(
+            `./_e2e/subscriber-token?groupId=${groupId}&email=${encodeURIComponent(subscriberEmail)}`
+        );
+        expect((await afterRemoval.json()).token).toBeNull();
+    });
 });

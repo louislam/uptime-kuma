@@ -336,6 +336,17 @@ let needSetup = false;
 
             response.send("Snapshot restored.");
         });
+
+        // Test-only hook so e2e tests can drive the confirm/unsubscribe flow
+        // without needing a real mailbox. Never enabled outside dev.
+        app.get("/_e2e/subscriber-token", async (request, response) => {
+            const { R } = require("redbean-node");
+            const row = await R.findOne("status_page_subscriber", " group_id = ? AND email = ? ", [
+                request.query.groupId,
+                request.query.email,
+            ]);
+            response.json({ token: row ? row.token : null });
+        });
     }
 
     // Robots.txt
@@ -375,6 +386,10 @@ let needSetup = false;
     // Status Page Router
     const statusPageRouter = require("./routers/status-page-router");
     app.use(statusPageRouter);
+
+    // Status Page Subscription Router
+    const subscriptionRouter = require("./routers/subscription-router");
+    app.use(subscriptionRouter);
 
     // Universal Route Handler, must be at the end of all express routes.
     app.get("*", async (_request, response) => {

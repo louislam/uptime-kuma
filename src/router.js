@@ -186,6 +186,10 @@ const routes = [
         component: StatusPage,
     },
     {
+        path: "/status/:slug/group/:groupId",
+        component: StatusPage,
+    },
+    {
         path: "/:pathMatch(.*)*",
         component: NotFound,
     },

@@ -4,6 +4,8 @@ const { R } = require("redbean-node");
 const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const Maintenance = require("../model/maintenance");
+const StatusPageSubscriber = require("../model/status_page_subscriber");
+const GroupLogEntry = require("../model/group_log_entry");
 const server = UptimeKumaServer.getInstance();
 
 /**
@@ -21,6 +23,9 @@ module.exports.maintenanceSocketHandler = (socket) => {
 
             let bean = await Maintenance.jsonToBean(R.dispense("maintenance"), maintenance);
             bean.user_id = socket.userID;
+            // Genuinely new maintenance - eligible for the one-time subscriber
+            // notification once monitors are attached (see addMonitorMaintenance).
+            bean.subscriber_notified = false;
             let maintenanceID = await R.store(bean);
 
             server.maintenanceList[maintenanceID] = bean;
@@ -91,6 +96,28 @@ module.exports.maintenanceSocketHandler = (socket) => {
             }
 
             apicache.clear();
+
+            // One-time subscriber notification + auto log entries, the first
+            // time this maintenance is actually linked to monitors. The
+            // atomic UPDATE...WHERE claim avoids a double-send if this event
+            // fires twice in quick succession (e.g. a rapid double-save).
+            if (monitors.length > 0) {
+                try {
+                    const claimed = await R.knex("maintenance")
+                        .where({ id: maintenanceID, subscriber_notified: false })
+                        .update({ subscriber_notified: true });
+
+                    if (claimed > 0) {
+                        const maintenanceBean = await R.findOne("maintenance", " id = ? ", [maintenanceID]);
+                        const monitorIds = monitors.map((monitor) => monitor.id);
+                        await StatusPageSubscriber.notifyMaintenanceScheduled(maintenanceBean, monitorIds);
+                        await GroupLogEntry.createAutoEntriesForMaintenance(maintenanceBean, monitorIds);
+                    }
+                } catch (e) {
+                    log.error("maintenance", "Failed to notify group subscribers / log new maintenance");
+                    log.error("maintenance", e);
+                }
+            }
 
             callback({
                 ok: true,

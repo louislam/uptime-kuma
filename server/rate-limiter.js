@@ -68,8 +68,21 @@ const twoFaRateLimiter = new KumaRateLimiter({
     errorMessage: "Too frequently, try again later.",
 });
 
+// Note: like the other limiters here, this is a single global token bucket,
+// not per-IP. It's a first line of defense against bulk abuse of the public
+// status-page subscribe endpoint; per-email resend cooldowns (handled in
+// StatusPageSubscriber) are the defense-in-depth layer against someone
+// targeting one specific victim address.
+const subscribeRateLimiter = new KumaRateLimiter({
+    tokensPerInterval: 10,
+    interval: "minute",
+    fireImmediately: true,
+    errorMessage: "Too frequently, try again later.",
+});
+
 module.exports = {
     loginRateLimiter,
     apiRateLimiter,
     twoFaRateLimiter,
+    subscribeRateLimiter,
 };

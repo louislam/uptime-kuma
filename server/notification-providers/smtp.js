@@ -6,11 +6,16 @@ class SMTP extends NotificationProvider {
     name = "smtp";
 
     /**
-     * @inheritdoc
+     * Build the nodemailer transport config for a given SMTP notification.
+     * Shared by the notification-send path and anything else (e.g. status-page
+     * subscriber emails) that needs to send mail through an admin-configured
+     * SMTP notification, so the security-relevant TLS/DKIM/auth handling only
+     * lives in one place.
+     * @param {object} notification SMTP notification config
+     * @returns {object} nodemailer transport config
+     * @throws {Error} If smtpAdditionalHeaders is not valid JSON
      */
-    async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        const okMsg = "Sent Successfully.";
-
+    static buildTransportConfig(notification) {
         const config = {
             host: notification.smtpHost,
             port: notification.smtpPort,
@@ -66,6 +71,17 @@ class SMTP extends NotificationProvider {
                 throw new Error("Additional Headers is not a valid JSON");
             }
         }
+
+        return config;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
+        const okMsg = "Sent Successfully.";
+
+        const config = SMTP.buildTransportConfig(notification);
 
         // default values in case the user does not want to template
         let subject = msg;

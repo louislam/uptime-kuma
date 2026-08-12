@@ -6,6 +6,8 @@ const ImageDataURI = require("../image-data-uri");
 const Database = require("../database");
 const apicache = require("../modules/apicache");
 const StatusPage = require("../model/status_page");
+const StatusPageSubscriber = require("../model/status_page_subscriber");
+const GroupLogEntry = require("../model/group_log_entry");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { Settings } = require("../settings");
 
@@ -41,6 +43,10 @@ module.exports.statusPageSocketHandler = (socket) => {
                 throw new Error("slug is not found");
             }
 
+            // Must be captured before the bean is dispensed/stored below,
+            // since the bean always has an id afterward.
+            const isNewIncident = !incident.id;
+
             let incidentBean;
 
             if (incident.id) {
@@ -68,6 +74,12 @@ module.exports.statusPageSocketHandler = (socket) => {
             }
 
             await R.store(incidentBean);
+
+            await StatusPageSubscriber.notifyIncidentSubscribers(statusPageID, incidentBean);
+
+            if (isNewIncident) {
+                await GroupLogEntry.createAutoEntriesForIncident(statusPageID, incidentBean);
+            }
 
             callback({
                 ok: true,
@@ -250,6 +262,8 @@ module.exports.statusPageSocketHandler = (socket) => {
 
             await bean.resolve();
 
+            await StatusPageSubscriber.notifyIncidentSubscribers(statusPageID, bean);
+
             callback({
                 ok: true,
                 msg: "Resolved",
@@ -261,6 +275,113 @@ module.exports.statusPageSocketHandler = (socket) => {
                 ok: false,
                 msg: error.message,
                 msgi18n: true,
+            });
+        }
+    });
+
+    // List a group's subscribers (admin only)
+    socket.on("getGroupSubscribers", async (groupId, callback) => {
+        try {
+            checkLogin(socket);
+
+            const subscribers = await StatusPageSubscriber.listByGroup(groupId);
+            callback({
+                ok: true,
+                subscribers,
+                count: subscribers.filter((s) => s.confirmed).length,
+            });
+        } catch (error) {
+            callback({
+                ok: false,
+                msg: error.message,
+            });
+        }
+    });
+
+    // Remove a group subscriber (admin only)
+    socket.on("removeGroupSubscriber", async (groupId, subscriberId, callback) => {
+        try {
+            checkLogin(socket);
+
+            await StatusPageSubscriber.removeSubscriber(groupId, subscriberId);
+            callback({
+                ok: true,
+            });
+        } catch (error) {
+            callback({
+                ok: false,
+                msg: error.message,
+            });
+        }
+    });
+
+    // Add a group log entry (admin only)
+    socket.on("addGroupLogEntry", async (groupId, entry, callback) => {
+        try {
+            checkLogin(socket);
+
+            const bean = await GroupLogEntry.create({
+                groupId,
+                type: entry.type,
+                title: entry.title,
+                content: entry.content,
+            });
+
+            apicache.clear();
+
+            callback({
+                ok: true,
+                entry: bean.toPublicJSON(),
+            });
+        } catch (error) {
+            callback({
+                ok: false,
+                msg: error.message,
+            });
+        }
+    });
+
+    // Edit a group log entry (admin only)
+    socket.on("editGroupLogEntry", async (groupId, entryId, entry, callback) => {
+        try {
+            checkLogin(socket);
+
+            const bean = await GroupLogEntry.update(entryId, groupId, {
+                type: entry.type,
+                title: entry.title,
+                content: entry.content,
+            });
+
+            apicache.clear();
+
+            callback({
+                ok: true,
+                entry: bean.toPublicJSON(),
+            });
+        } catch (error) {
+            callback({
+                ok: false,
+                msg: error.message,
+            });
+        }
+    });
+
+    // Delete a group log entry (admin only)
+    socket.on("deleteGroupLogEntry", async (groupId, entryId, callback) => {
+        try {
+            checkLogin(socket);
+
+            await GroupLogEntry.remove(entryId, groupId);
+
+            apicache.clear();
+
+            callback({
+                ok: true,
+            });
+        } catch (error) {
+            callback({
+                ok: false,
+                msg: error.message,
             });
         }
     });
@@ -344,6 +465,16 @@ module.exports.statusPageSocketHandler = (socket) => {
                 throw new Error("Invalid analytics type");
             }
             statusPage.analytics_type = config.analyticsType;
+
+            if (config.subscriptionNotificationId) {
+                const notification = await R.findOne("notification", " id = ? ", [config.subscriptionNotificationId]);
+                if (!notification || JSON.parse(notification.config).type !== "smtp") {
+                    throw new Error("Invalid subscription notification");
+                }
+                statusPage.subscription_notification_id = config.subscriptionNotificationId;
+            } else {
+                statusPage.subscription_notification_id = null;
+            }
 
             await R.store(statusPage);
 

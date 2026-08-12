@@ -8,6 +8,7 @@ import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 // 2) add the icon name to the library.add() statement below.
 import {
     faArrowAltCircleUp,
+    faArrowLeft,
     faCog,
     faEdit,
     faExclamationTriangle,
@@ -53,10 +54,13 @@ import {
     faCertificate,
     faFolder,
     faFolderOpen,
+    faEnvelope,
+    faUsers,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
     faArrowAltCircleUp,
+    faArrowLeft,
     faCog,
     faEdit,
     faExclamationTriangle,
@@ -103,6 +107,8 @@ library.add(
     faCertificate,
     faFolder,
     faFolderOpen,
+    faEnvelope,
+    faUsers,
 );
 
 export { FontAwesomeIcon };
