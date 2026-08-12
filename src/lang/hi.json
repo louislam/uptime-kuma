@@ -127,5 +127,18 @@
     "monitorTypeSpecial": "विशेष",
     "Load More": "और दिखायें",
     "monitorTypeDatabase": "डेटाबेस निगरानी प्रकार",
-    "oracledbConnectionString": "Oracle डेटाबेस: {connectionString}"
+    "oracledbConnectionString": "Oracle डेटाबेस: {connectionString}",
+    "Silence": "चुप",
+    "Unsilence": "अनचुप",
+    "Silenced": "चुप किया गया",
+    "silenceMonitor": "मॉनिटर को चुप करें",
+    "silenceMonitorDesc": "जब तक मॉनिटर चलता रहेगा तब तक सूचनाएं दबाई जाएंगी। जब मॉनिटर पुनर्प्राप्त होता है तो चुप्पी स्वचालित रूप से हटा दी जाती है।",
+    "silenceMessage": "कारण / संदेश",
+    "silenceMessagePlaceholder": "जैसे: ज्ञात समस्या, जांच जारी है...",
+    "silencedMonitorMsg": "सूचनाएं चुप",
+    "silencedAt": "चुप किया गया",
+    "successSilenced": "मॉनिटर सफलतापूर्वक चुप कर दिया गया।",
+    "successUnsilenced": "मॉनिटर की चुप्पी सफलतापूर्वक हटा दी गई।",
+    "silenceMessageRequired": "मॉनिटर को चुप करने के लिए कारण आवश्यक है।",
+    "silenceOnlyDownMonitor": "केवल DOWN स्थिति में मॉनिटर को चुप किया जा सकता है।"
 }

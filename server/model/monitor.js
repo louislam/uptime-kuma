@@ -216,6 +216,11 @@ class Monitor extends BeanModel {
             saveResponse: this.getSaveResponse(),
             saveErrorResponse: this.getSaveErrorResponse(),
             responseMaxLength: this.response_max_length ?? RESPONSE_BODY_LENGTH_DEFAULT,
+
+            // silence (alert acknowledgment)
+            silenced: Boolean(this.silenced),
+            silenceMessage: this.silence_message || null,
+            silencedAt: this.silenced_at || null,
         };
 
         if (includeSensitiveData) {
@@ -965,7 +970,23 @@ class Monitor extends BeanModel {
             if (isImportant) {
                 bean.important = true;
 
-                if (Monitor.isImportantForNotification(isFirstBeat, previousBeat?.status, bean.status)) {
+                if (this.silenced) {
+                    log.debug("monitor", `[${this.name}] will not sendNotification because monitor is silenced`);
+
+                    // Auto-clear silence when monitor recovers to UP
+                    if (bean.status === UP) {
+                        log.info("monitor", `[${this.name}] Auto-clearing silence because monitor recovered to UP`);
+                        this.silenced = false;
+                        this.silence_message = null;
+                        this.silenced_at = null;
+                        this.silenced_by = null;
+                        await R.exec(
+                            "UPDATE monitor SET silenced = 0, silence_message = NULL, silenced_at = NULL, silenced_by = NULL WHERE id = ?",
+                            [this.id]
+                        );
+                        await UptimeKumaServer.getInstance().sendUpdateMonitorIntoListByUserID(this.user_id, this.id);
+                    }
+                } else if (Monitor.isImportantForNotification(isFirstBeat, previousBeat?.status, bean.status)) {
                     log.debug("monitor", `[${this.name}] sendNotification`);
                     await Monitor.sendNotification(isFirstBeat, this, bean);
                 } else {
@@ -986,7 +1007,7 @@ class Monitor extends BeanModel {
             } else {
                 bean.important = false;
 
-                if (bean.status === DOWN && this.resendInterval > 0) {
+                if (!this.silenced && bean.status === DOWN && this.resendInterval > 0) {
                     ++bean.downCount;
                     if (bean.downCount >= this.resendInterval) {
                         // Send notification again, because we are still DOWN

@@ -1,17 +1,24 @@
 <template>
-    <MonitorListFilterDropdown :filterActive="filterState.status?.length > 0 || filterState.active?.length > 0">
+    <MonitorListFilterDropdown :filterActive="filterState.status?.length > 0 || filterState.active?.length > 0 || filterState.showSilenced">
         <template #status>
             <Status
                 v-if="filterState.status?.length === 1 && !filterState.active?.length"
                 :status="filterState.status[0]"
             />
             <span
-                v-else-if="!filterState.status?.length && filterState.active?.length === 1"
+                v-else-if="!filterState.status?.length && filterState.active?.length === 1 && !filterState.showSilenced"
                 class="badge status-pill"
                 :class="filterState.active[0] ? 'running' : 'paused'"
             >
                 <font-awesome-icon :icon="filterState.active[0] ? 'play' : 'pause'" class="icon-small" />
                 {{ filterState.active[0] ? $t("Running") : $t("filterActivePaused") }}
+            </span>
+            <span
+                v-else-if="filterState.showSilenced && !filterState.status?.length && !filterState.active?.length"
+                class="badge status-pill silenced"
+            >
+                <font-awesome-icon icon="bell-slash" class="icon-small" />
+                {{ $t("Silenced") }}
             </span>
             <span v-else>
                 {{ $t("Status") }}
@@ -45,12 +52,12 @@
                 </div>
             </li>
             <li>
-                <div class="dropdown-item" tabindex="0" @click.stop="toggleStatusFilter(2)">
+                <div class="dropdown-item" tabindex="0" @click.stop="toggleStatusFilter(3)">
                     <div class="d-flex align-items-center justify-content-between">
-                        <Status :status="2" />
+                        <Status :status="3" />
                         <span class="ps-3">
-                            {{ $root.stats.pending }}
-                            <span v-if="filterState.status?.includes(2)" class="px-1 filter-active">
+                            {{ $root.stats.maintenance }}
+                            <span v-if="filterState.status?.includes(3)" class="px-1 filter-active">
                                 <font-awesome-icon icon="check" />
                             </span>
                         </span>
@@ -58,12 +65,28 @@
                 </div>
             </li>
             <li>
-                <div class="dropdown-item" tabindex="0" @click.stop="toggleStatusFilter(3)">
+                <div class="dropdown-item" tabindex="0" @click.stop="toggleSilencedFilter">
                     <div class="d-flex align-items-center justify-content-between">
-                        <Status :status="3" />
+                        <span class="badge status-pill silenced">
+                            <font-awesome-icon icon="bell-slash" class="icon-small" />
+                            {{ $t("Silenced") }}
+                        </span>
                         <span class="ps-3">
-                            {{ $root.stats.maintenance }}
-                            <span v-if="filterState.status?.includes(3)" class="px-1 filter-active">
+                            {{ $root.stats.silenced }}
+                            <span v-if="filterState.showSilenced" class="px-1 filter-active">
+                                <font-awesome-icon icon="check" />
+                            </span>
+                        </span>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="dropdown-item" tabindex="0" @click.stop="toggleStatusFilter(2)">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <Status :status="2" />
+                        <span class="ps-3">
+                            {{ $root.stats.pending }}
+                            <span v-if="filterState.status?.includes(2)" class="px-1 filter-active">
                                 <font-awesome-icon icon="check" />
                             </span>
                         </span>
@@ -184,6 +207,10 @@ export default {
             type: Boolean,
             default: false,
         },
+        silencedCount: {
+            type: Number,
+            default: 0,
+        },
     },
     emits: ["updateFilter", "toggle-collapse-all"],
     data() {
@@ -196,7 +223,7 @@ export default {
             let num = 0;
 
             Object.values(this.filterState).forEach((item) => {
-                if (item != null && item.length > 0) {
+                if (typeof item === "boolean" ? item : item != null && item.length > 0) {
                     num += 1;
                 }
             });
@@ -255,6 +282,12 @@ export default {
                 }
             }
             this.$emit("updateFilter", newFilter);
+        },
+        toggleSilencedFilter() {
+            this.$emit("updateFilter", {
+                ...this.filterState,
+                showSilenced: !this.filterState.showSilenced,
+            });
         },
         clearFilters() {
             this.$emit("updateFilter", {
@@ -344,6 +377,17 @@ export default {
             border-color: #6b7280;
             color: $dark-font-color;
         }
+
+        .icon-small {
+            font-size: 0.75em;
+            margin-right: 4px;
+        }
+    }
+
+    &.silenced {
+        background-color: $silenced !important;
+        color: white !important;
+        border: none;
 
         .icon-small {
             font-size: 0.75em;

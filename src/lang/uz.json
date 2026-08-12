@@ -93,5 +93,18 @@
     "Not available, please setup.": "Mavjud emas, sozlang.",
     "Light": "Yorug'",
     "Dark": "Qorung'u",
-    "Auto": "Avto"
+    "Auto": "Avto",
+    "Silence": "Jimlashtirish",
+    "Unsilence": "Jimlashtirni bekor qilish",
+    "Silenced": "Jimlashtirilgan",
+    "silenceMonitor": "Monitorni jimlashtirish",
+    "silenceMonitorDesc": "Monitor ishlashda davom etayotgan vaqtda bildirishnomalar bostirilib qo'yiladi. Monitor tiklanganda jimlashtirish avtomatik ravishda olib tashlanadi.",
+    "silenceMessage": "Sabab / Xabar",
+    "silenceMessagePlaceholder": "masalan: Ma'lum muammo, tekshirilmoqda...",
+    "silencedMonitorMsg": "Bildirishnomalar jimlashtirilgan",
+    "silencedAt": "Jimlashtirildi",
+    "successSilenced": "Monitor muvaffaqiyatli jimlashtirildi.",
+    "successUnsilenced": "Monitorning jimlashtirishi muvaffaqiyatli bekor qilindi.",
+    "silenceMessageRequired": "Monitorni jimlashtirish uchun sabab talab qilinadi.",
+    "silenceOnlyDownMonitor": "Faqat DOWN holatidagi monitor jimlashtirish mumkin."
 }

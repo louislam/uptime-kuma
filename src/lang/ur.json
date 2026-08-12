@@ -565,5 +565,18 @@
     "Refresh Interval Description": "اسٹیٹس کا صفحہ ہر {0} سیکنڈ میں مکمل سائٹ ریفریش کرے گا",
     "ignoreTLSErrorGeneral": "کنکشن کے لیے TLS/SSL کی خرابی کو نظر انداز کریں",
     "locally configured mail transfer agent": "مقامی طور پر ترتیب شدہ میل ٹرانسفر ایجنٹ",
-    "Either enter the hostname of the server you want to connect to or localhost if you intend to use a locally configured mail transfer agent": "یا تو اس سرور کا میزبان نام درج کریں جس سے آپ جڑنا چاہتے ہیں یا اگر آپ {local_mta} استعمال کرنا چاہتے ہیں تو {localhost}"
+    "Either enter the hostname of the server you want to connect to or localhost if you intend to use a locally configured mail transfer agent": "یا تو اس سرور کا میزبان نام درج کریں جس سے آپ جڑنا چاہتے ہیں یا اگر آپ {local_mta} استعمال کرنا چاہتے ہیں تو {localhost}",
+    "Silence": "خاموش",
+    "Unsilence": "خاموشی ختم کریں",
+    "Silenced": "خاموش کر دیا گیا",
+    "silenceMonitor": "مانیٹر کو خاموش کریں",
+    "silenceMonitorDesc": "اطلاعات دبا دی جائیں گی جبکہ مانیٹر چلتا رہے گا۔ جب مانیٹر بحال ہو جاتا ہے تو خاموشی خودبخود ختم ہو جاتی ہے۔",
+    "silenceMessage": "وجہ / پیغام",
+    "silenceMessagePlaceholder": "مثلاً: معلوم مسئلہ، تحقیقات جاری...",
+    "silencedMonitorMsg": "اطلاعات خاموش",
+    "silencedAt": "خاموش کیا گیا",
+    "successSilenced": "مانیٹر کامیابی سے خاموش کر دیا گیا۔",
+    "successUnsilenced": "مانیٹر کی خاموشی کامیابی سے ختم ہو گئی۔",
+    "silenceMessageRequired": "مانیٹر کو خاموش کرنے کے لیے وجہ ضروری ہے۔",
+    "silenceOnlyDownMonitor": "صرف DOWN حالت میں مانیٹر کو خاموش کیا جا سکتا ہے۔"
 }
