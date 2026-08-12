@@ -31,6 +31,22 @@
                                 </div>
                             </div>
 
+                            <!-- Notify subscribers -->
+                            <div class="my-3 form-check">
+                                <input
+                                    id="notify-subscribers"
+                                    v-model="maintenance.notifySubscribers"
+                                    class="form-check-input"
+                                    type="checkbox"
+                                />
+                                <label class="form-check-label" for="notify-subscribers">
+                                    {{ $t("Notify Subscribers") }}
+                                </label>
+                                <div class="form-text">
+                                    {{ $t("notifySubscribersDescription") }}
+                                </div>
+                            </div>
+
                             <!-- Affected Monitors -->
                             <h2 class="mt-5">{{ $t("Affected Monitors") }}</h2>
 
@@ -697,6 +713,7 @@ export default {
                     description: "",
                     strategy: "single",
                     active: 1,
+                    notifySubscribers: false,
                     cron: "30 3 * * *",
                     durationMinutes: 60,
                     intervalDay: 1,

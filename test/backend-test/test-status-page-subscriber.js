@@ -416,7 +416,7 @@ describe("StatusPageSubscriber", () => {
             await R.store(confirmed);
 
             await StatusPageSubscriber.notifyMaintenanceScheduled(
-                { id: 1, title: "Router upgrade", description: "Brief network blip expected." },
+                { id: 1, title: "Router upgrade", description: "Brief network blip expected.", notify_subscribers: true },
                 [ monitor.id ]
             );
 
@@ -424,6 +424,35 @@ describe("StatusPageSubscriber", () => {
             assert.strictEqual(sentMails[0].to, "maint-sub@example.com");
             assert.match(sentMails[0].subject, /Maintenance scheduled: Router upgrade/);
             assert.match(sentMails[0].text, /Brief network blip expected/);
+        });
+
+        test("sends nothing when notify_subscribers is off (the default)", async () => {
+            const { groupId } = await makeStatusPageWithGroup();
+
+            const monitor = R.dispense("monitor");
+            monitor.name = "Quiet Monitor";
+            monitor.type = "http";
+            await R.store(monitor);
+
+            const rel = R.dispense("monitor_group");
+            rel.monitor_id = monitor.id;
+            rel.group_id = groupId;
+            await R.store(rel);
+
+            const confirmed = R.dispense("status_page_subscriber");
+            confirmed.group_id = groupId;
+            confirmed.email = "would-be-notified@example.com";
+            confirmed.token = "o".repeat(64);
+            confirmed.confirmed = true;
+            confirmed.created_date = R.isoDateTime();
+            await R.store(confirmed);
+
+            await StatusPageSubscriber.notifyMaintenanceScheduled(
+                { id: 2, title: "Minor tweak", notify_subscribers: false },
+                [ monitor.id ]
+            );
+
+            assert.strictEqual(sentMails.length, 0);
         });
 
         test("never throws and sends nothing for an empty monitor list", async () => {

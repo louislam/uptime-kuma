@@ -195,6 +195,8 @@
     "Auto Get": "Auto Get",
     "Schedule maintenance": "Schedule maintenance",
     "Affected Monitors": "Affected Monitors",
+    "Notify Subscribers": "Notify Subscribers",
+    "notifySubscribersDescription": "Send an email to subscribers of the affected groups when this maintenance is first scheduled. Off by default for minor maintenances - it's always recorded in the group's Maintenance and Incident Log either way.",
     "Pick Affected Monitors...": "Pick Affected Monitors…",
     "Start of maintenance": "Start of maintenance",
     "All Status Pages": "All Status Pages",

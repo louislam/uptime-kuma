@@ -218,13 +218,20 @@ class StatusPageSubscriber extends BeanModel {
      * Email a maintenance's affected groups' confirmed subscribers that a
      * new maintenance window has been scheduled. Called once, the first
      * time a maintenance is linked to monitors - must never throw, since a
-     * mail failure must not interrupt the admin's save.
+     * mail failure must not interrupt the admin's save. Does nothing unless
+     * the admin opted this specific maintenance into subscriber emails
+     * (off by default - the maintenance is still recorded in the group's
+     * log either way, see GroupLogEntry.createAutoEntriesForMaintenance).
      * @param {object} maintenanceBean The maintenance that was scheduled
      * @param {number[]} monitorIds Ids of monitors attached to the maintenance
      * @returns {Promise<void>}
      */
     static async notifyMaintenanceScheduled(maintenanceBean, monitorIds) {
         try {
+            if (!maintenanceBean.notify_subscribers) {
+                return;
+            }
+
             if (!monitorIds || monitorIds.length === 0) {
                 return;
             }

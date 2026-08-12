@@ -175,6 +175,16 @@ alerts — unsubscribe link and headers included).
   (via `R.knex`, since `R.exec()` in this redbean-node version discards the
   affected-row count) rather than a read-then-write, so two rapid saves of
   the same maintenance can't double-send.
+- **Off by default, per maintenance**: a "Notify Subscribers" checkbox on
+  the add/edit maintenance form (`maintenance.notify_subscribers`, defaults
+  `false`) controls whether *this* maintenance's one-time email fires at
+  all. Minor/routine maintenances can be left unchecked to avoid spamming
+  subscribers — the maintenance is still always recorded in the group's
+  Maintenance and Incident Log either way (see below), only the email is
+  gated. The check lives in `StatusPageSubscriber.notifyMaintenanceScheduled`
+  itself (early-returns if the flag is off), not in the socket handler, so
+  the "fires once" claim logic above is unaffected — it just becomes a
+  once-if-enabled send.
 
 ### Maintenance and Incident Log
 
@@ -216,13 +226,15 @@ from real events, and admins can also add fully custom entries.
 
 | Piece | File |
 |---|---|
-| DB schema | `db/knex_migrations/2026-08-11-0000-add-group-log-and-maintenance-notify.js` |
+| DB schema | `db/knex_migrations/2026-08-11-0000-add-group-log-and-maintenance-notify.js`, `db/knex_migrations/2026-08-12-0000-add-maintenance-notify-subscribers-flag.js` |
 | Log model (CRUD + auto-entry creation) | `server/model/group_log_entry.js` |
-| Maintenance-email method | `server/model/status_page_subscriber.js` (`notifyMaintenanceScheduled`) |
+| Maintenance-email method + notify-flag gate | `server/model/status_page_subscriber.js` (`notifyMaintenanceScheduled`) |
+| Maintenance model field | `server/model/maintenance.js` (`toPublicJSON`/`jsonToBean`, `notifySubscribers`) |
 | Maintenance hook (one-time claim) | `server/socket-handlers/maintenance-socket-handler.js` (`addMaintenance`, `addMonitorMaintenance`) |
 | Incident hook + admin log CRUD handlers | `server/socket-handlers/status-page-socket-handler.js` (`postIncident`, `addGroupLogEntry`/`editGroupLogEntry`/`deleteGroupLogEntry`) |
 | Public REST route | `server/routers/subscription-router.js` (`GET /api/status-page/group/:groupId/log`) |
 | Log panel (visitor + admin UI) | `src/components/GroupLogPanel.vue` |
+| Notify Subscribers checkbox | `src/pages/EditMaintenance.vue` |
 | Layout wiring | `src/pages/StatusPage.vue` (`.group-footer-row`) |
 
 ### Tests
@@ -248,3 +260,14 @@ npm run test-backend-22  # backend unit tests (node:test)
 
 A `.claude/launch.json` config named `uptime-kuma-dev` is set up in the
 parent repo for browser-preview tooling to attach to this dev server.
+
+**Gotcha**: `server/database.js`'s `getDevDataDir()` picks the SQLite data
+directory based on the current git branch name — `master` uses `./data/`,
+any other branch (e.g. a feature branch) gets its own empty
+`./data/dev-data/<branch>/`, to avoid migration conflicts between branches
+being tested in parallel. This means switching branches mid-session gives
+you a *different, unseeded* database unless you override it:
+```bash
+DATA_DIR=./data/ npm run dev   # force the shared master data dir regardless of branch
+```
+`process.env.DATA_DIR` always wins over the branch-based logic.
