@@ -192,11 +192,13 @@ const { EmbeddedMariaDB } = require("./embedded-mariadb");
 const { SetupDatabase } = require("./setup-database");
 const { chartSocketHandler } = require("./socket-handlers/chart-socket-handler");
 
-app.use(express.json({
+app.use("/api/telnyx-voice-callback", express.json({
     verify: (req, res, buf) => {
         req.rawBody = buf;
     },
 }));
+
+app.use(express.json());
 
 // Global Middleware
 app.use(function (req, res, next) {
