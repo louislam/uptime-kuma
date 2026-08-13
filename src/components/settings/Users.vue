@@ -72,16 +72,14 @@ const userPassword = ref<string>("");
 /**
  * Fetch the list of users from the server
  */
-const fetchUsers = () =>
-    authClient.admin
-        .listUsers({ query: { limit: 100 } })
-        .then(({ data, error }) => {
-            if (error) {
-                throw error;
-            }
-            return (userList.value = data?.users ?? []);
-        })
-        .catch((err) => toast.error(err.message || "Failed to fetch users"));
+const fetchUsers = () => {
+    const { data, error } = authClient.admin.listUsers({ query: { limit: 100 } });
+    if (error) {
+        toast.error(err.message || "Failed to fetch users");
+    }
+    
+    userList.value = data?.users ?? [];
+}
 
 onMounted(fetchUsers);
 
@@ -171,7 +169,10 @@ const deleteUser = async (): Promise<void> => {
 const newPasswordLength = 20;
 const newPasswordChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz~!@-#$";
 const generatePassword = () =>
-    Array.from(crypto.getRandomValues(new Uint32Array(newPasswordLength))).reduce(
+    Array.from(
+        crypto.getRandomValues(new Uint32Array(newPasswordLength))
+    )
+    .reduce(
         (acc, c) => `${acc}${newPasswordChars[c % newPasswordChars.length]}`,
         ""
     );
