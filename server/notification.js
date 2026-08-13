@@ -6,7 +6,9 @@ const AliyunSms = require("./notification-providers/aliyun-sms");
 const Apprise = require("./notification-providers/apprise");
 const Bale = require("./notification-providers/bale");
 const Bark = require("./notification-providers/bark");
+const BearSMS = require("./notification-providers/bearsms");
 const Bitrix24 = require("./notification-providers/bitrix24");
+const ClickUp = require("./notification-providers/clickup");
 const ClickSendSMS = require("./notification-providers/clicksendsms");
 const CallMeBot = require("./notification-providers/call-me-bot");
 const SMSC = require("./notification-providers/smsc");
@@ -102,6 +104,7 @@ const HaloPSA = require("./notification-providers/HaloPSA");
 const Max = require("./notification-providers/max");
 const VK = require("./notification-providers/vk");
 const VKTeams = require("./notification-providers/vkteams");
+const Milky = require("./notification-providers/milky");
 
 class Notification {
     providerList = {};
@@ -124,7 +127,9 @@ class Notification {
             new Apprise(),
             new Bale(),
             new Bark(),
+            new BearSMS(),
             new Bitrix24(),
+            new ClickUp(),
             new ClickSendSMS(),
             new CallMeBot(),
             new SMSC(),
@@ -219,6 +224,7 @@ class Notification {
             new Max(),
             new VK(),
             new VKTeams(),
+            new Milky(),
         ];
         for (let item of list) {
             if (!item.name) {

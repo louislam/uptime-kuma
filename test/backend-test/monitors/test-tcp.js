@@ -3,35 +3,9 @@ const assert = require("node:assert");
 const { TCPMonitorType } = require("../../../server/monitor-types/tcp");
 const { UP, PENDING } = require("../../../src/util");
 const net = require("net");
+const { retryExternalService } = require("../test-util");
 
 describe("TCP Monitor", () => {
-    /**
-     * Retries a test function with exponential backoff for external service reliability
-     * @param {Function} testFn - Async function to retry
-     * @param {object} heartbeat - Heartbeat object to reset between attempts
-     * @param {number} maxAttempts - Maximum number of retry attempts (default: 5)
-     * @returns {Promise<void>}
-     */
-    async function retryExternalService(testFn, heartbeat, maxAttempts = 5) {
-        let lastError;
-        for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-            try {
-                await testFn();
-                return; // Success, exit retry loop
-            } catch (error) {
-                lastError = error;
-                // Reset heartbeat for next attempt
-                heartbeat.msg = "";
-                heartbeat.status = PENDING;
-                // Wait a bit before retrying with exponential backoff
-                if (attempt < maxAttempts) {
-                    await new Promise((resolve) => setTimeout(resolve, 500 * 2 ** (attempt - 1)));
-                }
-            }
-        }
-        // If all retries failed, throw the last error
-        throw lastError;
-    }
     /**
      * Creates a TCP server on a specified port
      * @param {number} port - The port number to listen on
@@ -115,7 +89,9 @@ describe("TCP Monitor", () => {
         // Regex: contains with "TLS Connection failed:" or "Certificate is invalid"
         const regex = /TLS Connection failed:|Certificate is invalid/;
 
-        await assert.rejects(tcpMonitor.check(monitor, heartbeat, {}), regex);
+        await retryExternalService(async () => {
+            await assert.rejects(tcpMonitor.check(monitor, heartbeat, {}), regex);
+        });
     });
 
     test("check() sets status to UP when TLS certificate is valid (SSL)", async () => {
@@ -138,7 +114,7 @@ describe("TCP Monitor", () => {
 
         await retryExternalService(async () => {
             await tcpMonitor.check(monitor, heartbeat, {});
-        }, heartbeat);
+        });
         assert.strictEqual(heartbeat.status, UP);
     });
 
@@ -162,7 +138,7 @@ describe("TCP Monitor", () => {
 
         await retryExternalService(async () => {
             await tcpMonitor.check(monitor, heartbeat, {});
-        }, heartbeat);
+        });
         assert.strictEqual(heartbeat.status, UP);
     });
 
@@ -186,7 +162,9 @@ describe("TCP Monitor", () => {
 
         const regex = /does not match certificate/;
 
-        await assert.rejects(tcpMonitor.check(monitor, heartbeat, {}), regex);
+        await retryExternalService(async () => {
+            await assert.rejects(tcpMonitor.check(monitor, heartbeat, {}), regex);
+        });
     });
     test("check() sets status to UP for XMPP server with valid certificate (STARTTLS)", async () => {
         const tcpMonitor = new TCPMonitorType();
@@ -208,7 +186,7 @@ describe("TCP Monitor", () => {
 
         await retryExternalService(async () => {
             await tcpMonitor.check(monitor, heartbeat, {});
-        }, heartbeat);
+        });
         assert.strictEqual(heartbeat.status, UP);
     });
 
@@ -236,7 +214,7 @@ describe("TCP Monitor", () => {
                 tcpMonitor.check(monitor, heartbeat, {}),
                 /Expected TLS alert 'certificate_required' but connection succeeded/
             );
-        }, heartbeat);
+        });
     });
 
     test("parseTlsAlertNumber() extracts alert number from error message", async () => {
