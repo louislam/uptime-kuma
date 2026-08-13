@@ -1636,5 +1636,18 @@
     "Bearer Token": "Token Bearer",
     "Connection Timeout": "Scadenza connessione",
     "smtpAdditionalHeadersTitle": "Intestazioni aggiuntive",
-    "smtpAdditionalHeadersDesc": "Per l'utilizzo, fare riferimento alle intestazioni personalizzate di Nodemailer {0}."
+    "smtpAdditionalHeadersDesc": "Per l'utilizzo, fare riferimento alle intestazioni personalizzate di Nodemailer {0}.",
+    "Rybbit": "Rybbit",
+    "Flowtriq Webhook URL": "URL Webhook",
+    "Flowtriq API Key": "Chiave API",
+    "flowtriqApiKeyDescription": "Chiave API opzionale per autenticare le richieste webhook alla tua istanza di Flowtriq.",
+    "wxPusherDownloadApp": "scarica l'app",
+    "wxPusherSptDescription": "WxPusher Simple Push (SPT) è disponibile tramite l'app WxPusher standalone su 6 piattaforme: Android, iOS, HarmonyOS, Windows, macOS e Linux ({download}). Scansiona il codice QR qui sotto per ottenere il tuo SPT e sei pronto per inviare. Separa più SPT con una virgola (,) — consulta la {docs} per maggiori informazioni.",
+    "wxPusherDocs": "guida ufficiale",
+    "Access Key": "Chiave di accesso",
+    "ooredooAccessKeyDescription": "La trovi sotto \"Chiave di accesso API\" nel cruscotto di Ooredoo SMS. Incollala esattamente come mostrato: verrà codificata automaticamente in base64 prima dell'invio.",
+    "ooredooUsernameDescription": "L'indirizzo email che utilizzi per accedere al cruscotto di Ooredoo per l'invio di SMS di massa.",
+    "ooredooBearerTokenDescription": "Il token visualizzato dopo \"Authorizzazione: Bearer\" nell'esempio di comando cURL sul cruscotto di Ooredoo SMS.",
+    "ooredooRecipientDescription": "Inserisci uno o più numeri separati da una virgola o da uno spazio. Ai numeri locali di 7 cifre viene automaticamente aggiunto il prefisso 960.",
+    "Leave blank to use the default Ooredoo endpoint.": "Lascia vuoto per utilizzare l'endpoint Ooredoo predefinito."
 }

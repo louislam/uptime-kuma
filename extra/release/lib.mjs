@@ -1,7 +1,6 @@
 import "dotenv/config";
 import * as childProcess from "child_process";
 import semver from "semver";
-import { getPrompt } from "../generate-changelog.mjs";
 import fs from "fs";
 import tar from "tar";
 
@@ -305,11 +304,9 @@ export async function createDistTarGz() {
  * @param {boolean} dryRun Still create the PR, but add "[DRY RUN]" to the title
  * @param {string} branchName The branch name to use for the PR head (defaults to "release")
  * @param {string} githubRunId The GitHub Actions run ID for linking to artifacts
- * @returns {Promise<void>}
+ * @returns {Promise<number>} The PR number
  */
 export async function createReleasePR(version, previousVersion, dryRun, branchName = "release", githubRunId = null) {
-    const prompt = await getPrompt(previousVersion);
-
     const title = dryRun ? `chore: update to ${version} (dry run)` : `chore: update to ${version}`;
 
     // Build the artifact link - use direct run link if available, otherwise link to workflow file
@@ -317,33 +314,17 @@ export async function createReleasePR(version, previousVersion, dryRun, branchNa
         ? `https://github.com/louislam/uptime-kuma/actions/runs/${githubRunId}/workflow`
         : `https://github.com/louislam/uptime-kuma/actions/workflows/beta-release.yml`;
 
+    const tmpDir = "./tmp";
+    if (!fs.existsSync(tmpDir)) {
+        fs.mkdirSync(tmpDir, { recursive: true });
+    }
+
     const body = `## Release ${version}
 
 This PR prepares the release for version ${version}.
 
-### Manual Steps Required
-- [ ] Merge this PR (squash and merge)
-- [ ] Create a new release on GitHub with the tag \`${version}\`.
-- [ ] Ask any LLM to categorize the changelog into sections.
-- [ ] Place the changelog in the release note.
-- [ ] Download the \`dist.tar.gz\` artifact from the [workflow run](${artifactLink}) and upload it to the release.
-- [ ] (Beta only) Set prerelease
-- [ ] Publish the release note on GitHub.
-
-### Ask LLM to categorize the changelog
-
-\`\`\`md
-${prompt}
-\`\`\`
-
-Run the following command to generate the changelog with the categorized map from LLM:
-
-\`\`\`bash
-npm run generate-changelog ${previousVersion} generate 'JSON_MAPPING_BY_LLM_HERE'
-\`\`\`
-
 ### Release Artifacts
-The \`dist.tar.gz\` archive will be available as an artifact in the workflow run.
+The \`dist.tar.gz\` archive will be available as an artifact in the [workflow run](${artifactLink}).
 `;
 
     // Create the PR using gh CLI
@@ -365,17 +346,78 @@ The \`dist.tar.gz\` archive will be available as an artifact in the workflow run
 
     const result = childProcess.spawnSync("gh", args, {
         encoding: "utf-8",
-        stdio: "inherit",
-        env: {
-            ...process.env,
-            GH_TOKEN: process.env.GH_TOKEN || process.env.GITHUB_TOKEN,
-        },
+        stdio: "pipe",
     });
 
     if (result.status !== 0) {
+        console.error(result.stderr);
         console.error("Failed to create pull request");
         process.exit(1);
     }
 
+    const prUrl = result.stdout.trim();
+    console.log(prUrl);
+
+    // Extract PR number from URL (e.g., https://github.com/louislam/uptime-kuma/pull/1234)
+    const prNumberMatch = prUrl.match(/\/pull\/(\d+)/);
+    const prNumber = prNumberMatch ? parseInt(prNumberMatch[1], 10) : null;
+
+    if (prNumber) {
+        console.log(`PR number: ${prNumber}`);
+        // Save PR number to file for the finish script
+        fs.writeFileSync(`${tmpDir}/pr-number.txt`, String(prNumber));
+    } else {
+        console.warn("Could not extract PR number from URL, auto-finish will not be possible");
+    }
+
     console.log("Successfully created draft pull request");
+    return prNumber;
+}
+
+/**
+ * @param {string} version
+ * @param {string} distTarGz If empty, it will not be uploaded to the release
+ * @param {string} changelog
+ * @param {boolean} isBeta
+ * @returns {Promise<void>}
+ */
+export async function createRelease(version, changelog, isBeta = false, distTarGz = undefined) {
+    // 3. Create draft release with changelog and dist.tar.gz
+    console.log(`Creating draft release ${version}...`);
+
+    const releaseBody = `## ${version}
+
+${changelog}`;
+
+    let releaseArgs = ["release", "create", version];
+
+    if (distTarGz) {
+        if (!fs.existsSync(distTarGz)) {
+            console.error(`dist.tar.gz not found: ${distTarGz}`);
+            process.exit(1);
+        }
+
+        releaseArgs.push(distTarGz);
+    }
+
+    releaseArgs = releaseArgs.concat(["--draft", "--title", version, "--notes", releaseBody]);
+
+    if (isBeta) {
+        releaseArgs.push("--prerelease");
+    }
+
+    const result = childProcess.spawnSync("gh", releaseArgs, {
+        encoding: "utf-8",
+        stdio: "inherit",
+    });
+
+    if (result.status !== 0) {
+        console.error("Failed to create release");
+        process.exit(1);
+    }
+
+    console.log(`Release ${version} is ready (draft).`);
+    console.log("Next steps:");
+    console.log(`  1. Review the draft release: https://github.com/louislam/uptime-kuma/releases/tag/${version}`);
+    console.log(`  2. Edit if needed and publish.`);
 }
