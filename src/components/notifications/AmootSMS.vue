@@ -39,18 +39,12 @@
             class="form-check-input"
         />
 
-        <label
-            class="form-check-label"
-            for="amoot-use-pattern"
-        >
+        <label class="form-check-label" for="amoot-use-pattern">
             {{ $t("Use Pattern") }}
         </label>
     </div>
 
-    <div
-        v-if="$parent.notification.amootUsePattern"
-        class="mb-3"
-    >
+    <div v-if="$parent.notification.amootUsePattern" class="mb-3">
         <label for="amoot-pattern-code-id" class="form-label">
             {{ $t("Pattern Code ID") }}
         </label>
@@ -67,21 +61,14 @@
 
         <div class="form-text">
             <i18n-t keypath="Amoot SMS pattern help">
-                <a
-                    href="https://portal.amootsms.com/dev/PatternCode"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
+                <a href="https://portal.amootsms.com/dev/PatternCode" target="_blank" rel="noopener noreferrer">
                     {{ $t("Create an Amoot SMS pattern") }}
                 </a>
             </i18n-t>
         </div>
     </div>
 
-    <div
-        v-if="$parent.notification.amootUsePattern"
-        class="mb-3 form-check"
-    >
+    <div v-if="$parent.notification.amootUsePattern" class="mb-3 form-check">
         <input
             id="amoot-use-own-line"
             v-model="$parent.notification.amootUseOwnLine"
@@ -89,21 +76,12 @@
             class="form-check-input"
         />
 
-        <label
-            class="form-check-label"
-            for="amoot-use-own-line"
-        >
+        <label class="form-check-label" for="amoot-use-own-line">
             {{ $t("Use Own Line for Pattern") }}
         </label>
     </div>
 
-    <div
-        v-if="
-            !$parent.notification.amootUsePattern ||
-            $parent.notification.amootUseOwnLine
-        "
-        class="mb-3"
-    >
+    <div v-if="!$parent.notification.amootUsePattern || $parent.notification.amootUseOwnLine" class="mb-3">
         <label for="amoot-line-number" class="form-label">
             {{ $t("Line Number") }}
         </label>

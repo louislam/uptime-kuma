@@ -82,25 +82,14 @@ class AmootSMS extends NotificationProvider {
         }
 
         if (mobiles.length === 0) {
-            throw new Error(
-                "At least one Amoot SMS recipient number is required."
-            );
+            throw new Error("At least one Amoot SMS recipient number is required.");
         }
 
-        if (
-            notification.amootUsePattern &&
-            !notification.amootPatternCodeId
-        ) {
+        if (notification.amootUsePattern && !notification.amootPatternCodeId) {
             throw new Error("Amoot SMS Pattern Code ID is required.");
         }
 
-        if (
-            (
-                !notification.amootUsePattern ||
-                notification.amootUseOwnLine
-            ) &&
-            !notification.amootLineNumber
-        ) {
+        if ((!notification.amootUsePattern || notification.amootUseOwnLine) && !notification.amootLineNumber) {
             throw new Error("Amoot SMS line number is required.");
         }
 
@@ -157,33 +146,23 @@ class AmootSMS extends NotificationProvider {
             const result = response.data;
 
             if (!result || typeof result !== "object") {
-                throw new Error(
-                    "Amoot SMS API returned an unexpected response."
-                );
+                throw new Error("Amoot SMS API returned an unexpected response.");
             }
 
             if (result.Status && result.Status !== "Success") {
-                const errorMessage = result.ErrorMessage
-                    ? `: ${result.ErrorMessage}`
-                    : "";
+                const errorMessage = result.ErrorMessage ? `: ${result.ErrorMessage}` : "";
 
-                throw new Error(
-                    `Amoot SMS API error: ${result.Status}${errorMessage}`
-                );
+                throw new Error(`Amoot SMS API error: ${result.Status}${errorMessage}`);
             }
 
             if (!Array.isArray(result.Data) || result.Data.length === 0) {
-                throw new Error(
-                    "Amoot SMS API returned an unexpected response."
-                );
+                throw new Error("Amoot SMS API returned an unexpected response.");
             }
 
             const failedMessage = result.Data.find((item) => {
                 const status = item?.Status;
 
-                return status !== 1 &&
-                    status !== "1" &&
-                    status !== "Success";
+                return status !== 1 && status !== "1" && status !== "Success";
             });
 
             if (failedMessage) {
@@ -191,17 +170,12 @@ class AmootSMS extends NotificationProvider {
                 const numericStatus = Number(rawStatus);
 
                 if (!Number.isNaN(numericStatus)) {
-                    const statusTitle =
-                        statusMessages[numericStatus] || "UnknownError";
+                    const statusTitle = statusMessages[numericStatus] || "UnknownError";
 
-                    throw new Error(
-                        `Amoot SMS API error: ${statusTitle} (${numericStatus})`
-                    );
+                    throw new Error(`Amoot SMS API error: ${statusTitle} (${numericStatus})`);
                 }
 
-                throw new Error(
-                    `Amoot SMS API error: ${rawStatus}`
-                );
+                throw new Error(`Amoot SMS API error: ${rawStatus}`);
             }
 
             return "Sent Successfully.";
@@ -235,10 +209,7 @@ class AmootSMS extends NotificationProvider {
 
                 data.append("Token", notification.amootApiToken);
                 data.append("Mobile", mobile);
-                data.append(
-                    "PatternCodeID",
-                    String(notification.amootPatternCodeId)
-                );
+                data.append("PatternCodeID", String(notification.amootPatternCodeId));
                 data.append("PatternValues", msg);
 
                 const response = await axios.post(
@@ -250,19 +221,13 @@ class AmootSMS extends NotificationProvider {
                 const result = response.data;
 
                 if (!result || typeof result !== "object") {
-                    throw new Error(
-                        "Amoot SMS API returned an unexpected response."
-                    );
+                    throw new Error("Amoot SMS API returned an unexpected response.");
                 }
 
                 if (result.Status && result.Status !== "Success") {
-                    const errorMessage = result.ErrorMessage
-                        ? `: ${result.ErrorMessage}`
-                        : "";
+                    const errorMessage = result.ErrorMessage ? `: ${result.ErrorMessage}` : "";
 
-                    throw new Error(
-                        `Amoot SMS API error: ${result.Status}${errorMessage}`
-                    );
+                    throw new Error(`Amoot SMS API error: ${result.Status}${errorMessage}`);
                 }
             }
 
@@ -310,19 +275,13 @@ class AmootSMS extends NotificationProvider {
                 const result = response.data;
 
                 if (!result || typeof result !== "object") {
-                    throw new Error(
-                        "Amoot SMS API returned an unexpected response."
-                    );
+                    throw new Error("Amoot SMS API returned an unexpected response.");
                 }
 
                 if (result.Status && result.Status !== "Success") {
-                    const errorMessage = result.ErrorMessage
-                        ? `: ${result.ErrorMessage}`
-                        : "";
+                    const errorMessage = result.ErrorMessage ? `: ${result.ErrorMessage}` : "";
 
-                    throw new Error(
-                        `Amoot SMS API error: ${result.Status}${errorMessage}`
-                    );
+                    throw new Error(`Amoot SMS API error: ${result.Status}${errorMessage}`);
                 }
             }
 
