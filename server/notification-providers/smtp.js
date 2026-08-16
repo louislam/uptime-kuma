@@ -78,9 +78,7 @@ class SMTP extends NotificationProvider {
             if (heartbeatJSON["status"] === UP && heartbeatJSON["lastDownTime"]) {
                 const backOnlineTimestamp = dayjs.utc(heartbeatJSON["time"]).unix();
                 const wentOfflineTimestamp = dayjs.utc(heartbeatJSON["lastDownTime"]).unix();
-                const downtimeDuration = this.formatDuration(
-                    backOnlineTimestamp - wentOfflineTimestamp
-                );
+                const downtimeDuration = this.formatDuration(backOnlineTimestamp - wentOfflineTimestamp);
                 body += `\nDowntime Duration: ${downtimeDuration}`;
             }
         }
