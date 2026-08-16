@@ -1,6 +1,7 @@
 const nodemailer = require("nodemailer");
 const NotificationProvider = require("./notification-provider");
-const { log } = require("../../src/util");
+const { log, UP } = require("../../src/util");
+const dayjs = require("dayjs");
 
 class SMTP extends NotificationProvider {
     name = "smtp";
@@ -73,6 +74,15 @@ class SMTP extends NotificationProvider {
         let useHTMLBody = false;
         if (heartbeatJSON) {
             body = `${msg}\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`;
+            // Include downtime duration for UP notifications
+            if (heartbeatJSON["status"] === UP && heartbeatJSON["lastDownTime"]) {
+                const backOnlineTimestamp = dayjs.utc(heartbeatJSON["time"]).unix();
+                const wentOfflineTimestamp = dayjs.utc(heartbeatJSON["lastDownTime"]).unix();
+                const downtimeDuration = this.formatDuration(
+                    backOnlineTimestamp - wentOfflineTimestamp
+                );
+                body += `\nDowntime Duration: ${downtimeDuration}`;
+            }
         }
         // subject and body are templated
         if ((monitorJSON && heartbeatJSON) || msg.endsWith("Testing")) {
@@ -89,7 +99,8 @@ class SMTP extends NotificationProvider {
         }
 
         // send mail with defined transport object
-        let transporter = nodemailer.createTransport(config);
+        const transporter = nodemailer.createTransport(config);
+
         await transporter.sendMail({
             from: notification.smtpFrom,
             cc: notification.smtpCC,
@@ -102,6 +113,29 @@ class SMTP extends NotificationProvider {
         });
 
         return okMsg;
+    }
+
+    /**
+     * Format duration as human-readable string (e.g. "1h 23m", "45m 30s")
+     * @param {number} timeInSeconds The time in seconds to format a duration for
+     * @returns {string} The formatted duration
+     */
+    formatDuration(timeInSeconds) {
+        const hours = Math.floor(timeInSeconds / 3600);
+        const minutes = Math.floor((timeInSeconds % 3600) / 60);
+        const seconds = timeInSeconds % 60;
+        const durationParts = [];
+        if (hours > 0) {
+            durationParts.push(`${hours}h`);
+        }
+        if (minutes > 0) {
+            durationParts.push(`${minutes}m`);
+        }
+        if (seconds > 0 && hours === 0) {
+            // Only show seconds if less than an hour
+            durationParts.push(`${seconds}s`);
+        }
+        return durationParts.length > 0 ? durationParts.join(" ") : "0s";
     }
 }
 
