@@ -294,7 +294,7 @@ export default {
                 this.syncFiltersToQuery();
             },
         },
-        "$route.fullPath"(to, from) {
+        $route(to, from) {
             // Writes here bypass Vue Router (see writeFiltersToQuery), so moving to
             // another page rebuilds the URL from router state that never held our
             // params. Re-assert them in that case, so the filters survive - and stay
@@ -304,9 +304,8 @@ export default {
             // (a link to a filtered view, or back/forward onto one), and any change
             // within the same path, including clearing the params.
             const params = new URLSearchParams(window.location.search);
-            const pathChanged = to.split("?")[0] !== from.split("?")[0];
 
-            if (pathChanged && !filterParams.some((param) => params.has(param))) {
+            if (to.path !== from.path && !filterParams.some((param) => params.has(param))) {
                 this.writeFiltersToQuery();
             } else {
                 this.readFiltersFromUrl();
@@ -360,19 +359,27 @@ export default {
             const params = new URLSearchParams(window.location.search);
 
             /**
+             * Entries that do not parse are dropped, so a hand-written or
+             * truncated URL cannot filter the list down to nothing.
              * @param {string} key Query parameter to read
-             * @param {Function} parse Maps each comma-separated entry
-             * @returns {Array|null} Parsed values, or null when absent
+             * @param {Function} parse Maps one entry, null when unusable
+             * @returns {Array|null} Parsed values, or null when none are usable
              */
             const parseList = (key, parse) => {
-                const value = params.get(key);
-                return value === null ? null : value.split(",").map(parse);
+                const values = (params.get(key) ?? "")
+                    .split(",")
+                    .map(parse)
+                    .filter((value) => value !== null);
+
+                return values.length > 0 ? values : null;
             };
+            const toId = (value) => (/^\d+$/.test(value) ? Number(value) : null);
+            const toBoolean = (value) => (value === "true" || value === "false" ? value === "true" : null);
 
             this.searchText = params.get("search") ?? "";
-            this.filterState.status = parseList("status", Number);
-            this.filterState.active = parseList("active", (value) => value === "true");
-            this.filterState.tags = parseList("tags", Number);
+            this.filterState.status = parseList("status", toId);
+            this.filterState.active = parseList("active", toBoolean);
+            this.filterState.tags = parseList("tags", toId);
         },
         /**
          * Reflect the current search text and filter state into the URL
