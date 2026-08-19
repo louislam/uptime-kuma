@@ -290,6 +290,12 @@ export default {
                 this.syncFiltersToQuery();
             },
         },
+        "$route.query": {
+            deep: true,
+            handler() {
+                this.applyFiltersFromQuery();
+            },
+        },
         selectAll() {
             if (!this.disableSelectAllWatcher) {
                 this.selectedMonitors = {};
@@ -321,42 +327,60 @@ export default {
     },
     beforeUnmount() {
         window.removeEventListener("scroll", this.onScroll);
+        clearTimeout(this.filterQuerySyncTimeoutId);
     },
     methods: {
         /**
          * Populate search text and filter state from the current URL query
-         * string, so a filtered view can be linked to directly.
+         * string, so a filtered view can be linked to directly. Also runs
+         * whenever $route.query changes via real in-app navigation (e.g. a
+         * shared filter link), so the sidebar stays in sync in both
+         * directions instead of only applying the query once on load.
          * @returns {void}
          */
         applyFiltersFromQuery() {
             const query = this.$route.query;
 
-            if (typeof query.search === "string") {
-                this.searchText = query.search;
-            }
-            if (typeof query.status === "string") {
-                this.filterState.status = query.status.split(",").map(Number);
-            }
-            if (typeof query.active === "string") {
-                this.filterState.active = query.active.split(",").map((value) => value === "true");
-            }
-            if (typeof query.tags === "string") {
-                this.filterState.tags = query.tags.split(",").map(Number);
-            }
+            this.searchText = typeof query.search === "string" ? query.search : "";
+            this.filterState.status = typeof query.status === "string" ? query.status.split(",").map(Number) : null;
+            this.filterState.active =
+                typeof query.active === "string" ? query.active.split(",").map((value) => value === "true") : null;
+            this.filterState.tags = typeof query.tags === "string" ? query.tags.split(",").map(Number) : null;
         },
         /**
          * Reflect the current search text and filter state into the URL
          * query string, so the filtered view can be bookmarked or shared.
+         *
+         * Uses the raw History API instead of $router.replace(): Dashboard.vue
+         * keys its router-view on $route.fullPath, so a router-mediated query
+         * change would remount the whole detail pane on every keystroke. This
+         * also sidesteps feeding back into the $route.query watcher above,
+         * since $route itself never changes.
+         *
+         * Debounced because this runs on every searchText keystroke; besides
+         * being wasteful, WebKit throws SecurityError past ~100
+         * history.replaceState() calls per 30s.
          * @returns {void}
          */
         syncFiltersToQuery() {
-            const query = { ...this.$route.query };
+            if (this.filterQuerySyncTimeoutId) {
+                clearTimeout(this.filterQuerySyncTimeoutId);
+            }
+            this.filterQuerySyncTimeoutId = setTimeout(this.writeFiltersToQuery, 300);
+        },
+        /**
+         * Does the actual work of writing filters/searchText into the URL,
+         * debounced via syncFiltersToQuery().
+         * @returns {void}
+         */
+        writeFiltersToQuery() {
+            const params = new URLSearchParams(window.location.search);
 
             const setOrDelete = (key, value) => {
                 if (value) {
-                    query[key] = value;
+                    params.set(key, value);
                 } else {
-                    delete query[key];
+                    params.delete(key);
                 }
             };
 
@@ -365,7 +389,12 @@ export default {
             setOrDelete("active", this.filterState.active?.length > 0 ? this.filterState.active.join(",") : null);
             setOrDelete("tags", this.filterState.tags?.length > 0 ? this.filterState.tags.join(",") : null);
 
-            this.$router.replace({ query }).catch(() => {});
+            const search = params.toString();
+            const newUrl = `${window.location.pathname}${search ? `?${search}` : ""}${window.location.hash}`;
+
+            if (newUrl !== `${window.location.pathname}${window.location.search}${window.location.hash}`) {
+                window.history.replaceState(window.history.state, "", newUrl);
+            }
         },
         /**
          * Handle user scroll
