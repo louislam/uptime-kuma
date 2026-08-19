@@ -281,6 +281,14 @@ export default {
                     break;
                 }
             }
+
+            this.syncFiltersToQuery();
+        },
+        filterState: {
+            deep: true,
+            handler() {
+                this.syncFiltersToQuery();
+            },
         },
         selectAll() {
             if (!this.disableSelectAllWatcher) {
@@ -305,6 +313,9 @@ export default {
             }
         },
     },
+    created() {
+        this.applyFiltersFromQuery();
+    },
     mounted() {
         window.addEventListener("scroll", this.onScroll);
     },
@@ -312,6 +323,50 @@ export default {
         window.removeEventListener("scroll", this.onScroll);
     },
     methods: {
+        /**
+         * Populate search text and filter state from the current URL query
+         * string, so a filtered view can be linked to directly.
+         * @returns {void}
+         */
+        applyFiltersFromQuery() {
+            const query = this.$route.query;
+
+            if (typeof query.search === "string") {
+                this.searchText = query.search;
+            }
+            if (typeof query.status === "string") {
+                this.filterState.status = query.status.split(",").map(Number);
+            }
+            if (typeof query.active === "string") {
+                this.filterState.active = query.active.split(",").map((value) => value === "true");
+            }
+            if (typeof query.tags === "string") {
+                this.filterState.tags = query.tags.split(",").map(Number);
+            }
+        },
+        /**
+         * Reflect the current search text and filter state into the URL
+         * query string, so the filtered view can be bookmarked or shared.
+         * @returns {void}
+         */
+        syncFiltersToQuery() {
+            const query = { ...this.$route.query };
+
+            const setOrDelete = (key, value) => {
+                if (value) {
+                    query[key] = value;
+                } else {
+                    delete query[key];
+                }
+            };
+
+            setOrDelete("search", this.searchText !== "" ? this.searchText : null);
+            setOrDelete("status", this.filterState.status?.length > 0 ? this.filterState.status.join(",") : null);
+            setOrDelete("active", this.filterState.active?.length > 0 ? this.filterState.active.join(",") : null);
+            setOrDelete("tags", this.filterState.tags?.length > 0 ? this.filterState.tags.join(",") : null);
+
+            this.$router.replace({ query }).catch(() => {});
+        },
         /**
          * Handle user scroll
          * @returns {void}
