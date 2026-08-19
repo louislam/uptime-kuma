@@ -134,6 +134,10 @@ import MonitorListItem from "../components/MonitorListItem.vue";
 import MonitorListFilter from "./MonitorListFilter.vue";
 import { getMonitorRelativeURL } from "../util.ts";
 
+// Query parameters the monitor list keeps in the URL. Must match the ones
+// readFiltersFromUrl() and writeFiltersToQuery() handle.
+const filterParams = ["search", "status", "active", "tags"];
+
 export default {
     components: {
         Confirm,
@@ -291,17 +295,18 @@ export default {
             },
         },
         "$route.fullPath"(to, from) {
-            // Writes here bypass Vue Router (see writeFiltersToQuery), so the router
-            // rebuilds a URL that never held our params whenever the path changes.
-            // Treat the filters as sticky sidebar state in that case and re-assert
-            // them, rather than reading the rebuilt URL as "filters cleared".
-            // A query-only change is a real URL change (back/forward, or a link to a
-            // filtered view), so the URL wins there.
+            // Writes here bypass Vue Router (see writeFiltersToQuery), so moving to
+            // another page rebuilds the URL from router state that never held our
+            // params. Re-assert them in that case, so the filters survive - and stay
+            // in the URL - instead of the rebuilt URL reading as "filters cleared".
             //
-            // Trade-off: going back across a path change keeps the current filters
-            // instead of restoring that entry's. Sticky matches master, where the
-            // filters never cleared on navigation at all.
-            if (to.split("?")[0] !== from.split("?")[0]) {
+            // Everything else is authoritative: a URL that carries filter params
+            // (a link to a filtered view, or back/forward onto one), and any change
+            // within the same path, including clearing the params.
+            const params = new URLSearchParams(window.location.search);
+            const pathChanged = to.split("?")[0] !== from.split("?")[0];
+
+            if (pathChanged && !filterParams.some((param) => params.has(param))) {
                 this.writeFiltersToQuery();
             } else {
                 this.readFiltersFromUrl();
