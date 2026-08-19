@@ -290,11 +290,22 @@ export default {
                 this.syncFiltersToQuery();
             },
         },
-        "$route.query": {
-            deep: true,
-            handler() {
-                this.applyFiltersFromQuery();
-            },
+        "$route.fullPath"(to, from) {
+            // Writes here bypass Vue Router (see writeFiltersToQuery), so the router
+            // rebuilds a URL that never held our params whenever the path changes.
+            // Treat the filters as sticky sidebar state in that case and re-assert
+            // them, rather than reading the rebuilt URL as "filters cleared".
+            // A query-only change is a real URL change (back/forward, or a link to a
+            // filtered view), so the URL wins there.
+            //
+            // Trade-off: going back across a path change keeps the current filters
+            // instead of restoring that entry's. Sticky matches master, where the
+            // filters never cleared on navigation at all.
+            if (to.split("?")[0] !== from.split("?")[0]) {
+                this.writeFiltersToQuery();
+            } else {
+                this.readFiltersFromUrl();
+            }
         },
         selectAll() {
             if (!this.disableSelectAllWatcher) {
@@ -320,7 +331,7 @@ export default {
         },
     },
     created() {
-        this.applyFiltersFromQuery();
+        this.readFiltersFromUrl();
     },
     mounted() {
         window.addEventListener("scroll", this.onScroll);
@@ -332,20 +343,31 @@ export default {
     methods: {
         /**
          * Populate search text and filter state from the current URL query
-         * string, so a filtered view can be linked to directly. Also runs
-         * whenever $route.query changes via real in-app navigation (e.g. a
-         * shared filter link), so the sidebar stays in sync in both
-         * directions instead of only applying the query once on load.
+         * string, so a filtered view can be linked to directly.
+         *
+         * Reads window.location rather than $route.query, for the same reason
+         * writeFiltersToQuery() writes it: Vue Router never observes our
+         * history.replaceState, so $route.query does not reflect the address bar.
+         * Both sides share the one source of truth.
          * @returns {void}
          */
-        applyFiltersFromQuery() {
-            const query = this.$route.query;
+        readFiltersFromUrl() {
+            const params = new URLSearchParams(window.location.search);
 
-            this.searchText = typeof query.search === "string" ? query.search : "";
-            this.filterState.status = typeof query.status === "string" ? query.status.split(",").map(Number) : null;
-            this.filterState.active =
-                typeof query.active === "string" ? query.active.split(",").map((value) => value === "true") : null;
-            this.filterState.tags = typeof query.tags === "string" ? query.tags.split(",").map(Number) : null;
+            /**
+             * @param {string} key Query parameter to read
+             * @param {Function} parse Maps each comma-separated entry
+             * @returns {Array|null} Parsed values, or null when absent
+             */
+            const parseList = (key, parse) => {
+                const value = params.get(key);
+                return value === null ? null : value.split(",").map(parse);
+            };
+
+            this.searchText = params.get("search") ?? "";
+            this.filterState.status = parseList("status", Number);
+            this.filterState.active = parseList("active", (value) => value === "true");
+            this.filterState.tags = parseList("tags", Number);
         },
         /**
          * Reflect the current search text and filter state into the URL
