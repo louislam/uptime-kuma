@@ -183,6 +183,31 @@
             </div>
         </div>
 
+        <div class="mb-3">
+            <div class="form-check form-switch">
+                <input v-model="showAdditionalHeadersField" class="form-check-input" type="checkbox" />
+                <label class="form-check-label">{{ $t("smtpAdditionalHeadersTitle") }}</label>
+            </div>
+            <i18n-t
+                v-if="showAdditionalHeadersField"
+                tag="div"
+                keypath="smtpAdditionalHeadersDesc"
+                class="form-text mb-3"
+            >
+                <a href="https://nodemailer.com/message/custom-headers" target="_blank">{{ $t("documentation") }}</a>
+            </i18n-t>
+
+            <textarea
+                v-if="showAdditionalHeadersField"
+                id="additional-headers"
+                v-model="$parent.notification.smtpAdditionalHeaders"
+                class="form-control"
+                rows="5"
+                :placeholder="headersPlaceholder"
+                :required="showAdditionalHeadersField"
+            ></textarea>
+        </div>
+
         <ToggleSection :heading="$t('smtpDkimSettings')">
             <i18n-t tag="div" keypath="smtpDkimDesc" class="form-text mb-3">
                 <a href="https://nodemailer.com/dkim/" target="_blank">{{ $t("documentation") }}</a>
@@ -272,6 +297,11 @@ export default {
         TemplatedTextarea,
         ToggleSection,
     },
+    data() {
+        return {
+            showAdditionalHeadersField: this.$parent.notification.smtpAdditionalHeaders != null,
+        };
+    },
     computed: {
         hasRecipient() {
             if (
@@ -283,6 +313,13 @@ export default {
             } else {
                 return false;
             }
+        },
+        headersPlaceholder() {
+            return this.$t("Example:", [
+                `{
+    "X-Custom-Header": "Additional Header"
+}`,
+            ]);
         },
     },
     mounted() {

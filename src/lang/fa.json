@@ -179,7 +179,7 @@
     "Partially Degraded Service": "افت نسبی کیفیت سرویس",
     "Degraded Service": "افت کامل کیفیت سرویس",
     "Add Group": "اضافه کردن گروه",
-    "Add a monitor": "اضافه کردن پایشگر",
+    "Add a monitor": "افزودن پایشگر",
     "Edit Status Page": "ویرایش صفحه وضعیت",
     "Status Page": "صفحه وضعیت",
     "Status Pages": "صفحه وضعیت",
@@ -906,7 +906,7 @@
     "threemaBasicModeInfo": "توجه: این ادغام از ورودی Threema در حالت اولیه (رمزگذاری مبتنی بر سرور) استفاده می کند. جزئیات بیشتر را می توان در {0} یافت.",
     "smspartnerApiurl": "شما می‌توانید کلید API را در داشبورد خود در {0} پیدا کنید",
     "smspartnerPhoneNumber": "شماره موبایل(ها)",
-    "Host URL": "نشانی هاست",
+    "Host URL": "نشانی میزبان",
     "gtxMessagingApiKeyHint": "شما می‌توانید کلید API خود را در این آدرس پیدا کنید: My Routing Accounts > Show Account Information > API Credentials > REST API (v2.x)",
     "Bitrix24 Webhook URL": "آدرس وب هوک Bitrix24",
     "wayToGetBitrix24Webhook": "شما می توانید با دنبال کردن مراحل در {0} یک وب هوک ایجاد کنید",
@@ -1207,5 +1207,12 @@
     "monitorTypeDatabase": "پایش پایگاه‌داده",
     "monitorTypeSpecial": "ویژه",
     "notificationSmsServices": "پیامک خدمات",
-    "notificationPushServices": "خدمات پوش"
+    "notificationPushServices": "خدمات پوش",
+    "unknownDays": "روزهای نامعلوم",
+    "enableSSL": "به کار گیری SSL/TLS",
+    "oracledbConnectionString": "پایگاه‌داده اوراکل: {connectionString}",
+    "No incidents recorded": "هنوز هیچ حادثه‌ای ثبت نشده است",
+    "years": "{n} سال | {n} سال",
+    "logoutCurrentUser": "از {username} خارج شو",
+    "minuteShort": "{n} دقیقه| {n} دقیقه"
 }

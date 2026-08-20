@@ -70,7 +70,9 @@
                     </div>
                 </div>
             </li>
-            <li><hr class="dropdown-divider" /></li>
+            <li>
+                <hr class="dropdown-divider" />
+            </li>
             <li>
                 <div class="dropdown-item" tabindex="0" @click.stop="toggleActiveFilter(true)">
                     <div class="d-flex align-items-center justify-content-between">
@@ -107,11 +109,13 @@
     </MonitorListFilterDropdown>
     <MonitorListFilterDropdown :filterActive="filterState.tags?.length > 0" @open-menu="getExistingTags">
         <template #status>
-            <Tag
+            <span
                 v-if="filterState.tags?.length === 1"
-                :item="tagsList.find((tag) => tag.id === filterState.tags[0])"
-                :size="'sm'"
-            />
+                class="selected-tag-wrapper"
+                :title="tagsList.find((tag) => tag.id === filterState.tags[0])?.name"
+            >
+                <Tag :item="tagsList.find((tag) => tag.id === filterState.tags[0])" :size="'sm'" :constrained="true" />
+            </span>
             <span v-else>
                 {{ $t("Tags") }}
             </span>
@@ -123,7 +127,9 @@
                         <li v-for="tag in tagsList" :key="tag.id">
                             <div class="dropdown-item" tabindex="0" @click.stop="toggleTagFilter(tag)">
                                 <div class="d-flex align-items-center justify-content-between">
-                                    <span><Tag :item="tag" :size="'sm'" /></span>
+                                    <span class="tag-name-wrapper" :title="tag.name">
+                                        <Tag :item="tag" :size="'sm'" :scrollable="true" :constrained="true" />
+                                    </span>
                                     <span class="ps-3">
                                         {{ getTaggedMonitorCount(tag) }}
                                         <span v-if="filterState.tags?.includes(tag.id)" class="px-1 filter-active">
@@ -352,6 +358,21 @@ export default {
 
 .tags-dropdown-scroll {
     max-height: min(50vh, 320px);
+    max-width: 45vw;
     overflow-y: auto;
+}
+
+.tag-name-wrapper {
+    min-width: 0;
+    overflow: hidden;
+    max-width: min(800px, 38vw);
+    display: flex;
+    align-items: center;
+}
+
+.selected-tag-wrapper {
+    max-width: 120px;
+    display: flex;
+    align-items: center;
 }
 </style>

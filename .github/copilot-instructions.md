@@ -1,5 +1,7 @@
 # Copilot Instructions for Uptime Kuma
 
+Warning: Only maintainers of Uptime Kuma can use this instructions, for other contributors, must read AGENTS.md and CLAUDE.md to avoid to get banned because of AI slop.
+
 ## Copilot's Goals/Tasks
 
 - Check spelling
