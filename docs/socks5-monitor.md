@@ -12,16 +12,16 @@ The `handshake` and `connect` modes do not send or read application data. In `co
 
 ## Fields
 
-| Socket.IO field | UI field | Rules |
-| --- | --- | --- |
-| `type` | Monitor Type | Must be `socks5` |
-| `hostname` | Hostname | Proxy hostname or IPv4; IPv6 and URL strings are rejected |
-| `port` | Port | Required, `1` to `65535`; no default |
-| `socks5Username` | Username | Optional; must be paired with password; UTF-8 length `1` to `255` bytes |
-| `socks5Password` | Password | Optional; must be paired with username; UTF-8 length `1` to `255` bytes |
-| `socks5CheckMode` | Check Mode | `handshake`, `connect`, or `exit-ip`; defaults to `handshake` |
-| `socks5TargetHost` | Target Host | Required in `connect`; hostname or IPv4; IPv6 is rejected |
-| `socks5TargetPort` | Target Port | Required in `connect`; `1` to `65535`; no default |
+| Socket.IO field        | UI field          | Rules                                                                                                                             |
+| ---------------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `type`                 | Monitor Type      | Must be `socks5`                                                                                                                  |
+| `hostname`             | Hostname          | Proxy hostname or IPv4; IPv6 and URL strings are rejected                                                                         |
+| `port`                 | Port              | Required, `1` to `65535`; no default                                                                                              |
+| `socks5Username`       | Username          | Optional; must be paired with password; UTF-8 length `1` to `255` bytes                                                           |
+| `socks5Password`       | Password          | Optional; must be paired with username; UTF-8 length `1` to `255` bytes                                                           |
+| `socks5CheckMode`      | Check Mode        | `handshake`, `connect`, or `exit-ip`; defaults to `handshake`                                                                     |
+| `socks5TargetHost`     | Target Host       | Required in `connect`; hostname or IPv4; IPv6 is rejected                                                                         |
+| `socks5TargetPort`     | Target Port       | Required in `connect`; `1` to `65535`; no default                                                                                 |
 | `socks5ExitIpCheckUrl` | Exit IP check URL | Optional in `exit-ip`; defaults to `https://api.ipify.org`; only `http://` and `https://` plain-text IPv4 endpoints are supported |
 
 In `exit-ip` mode, `hostname` must be an IPv4 address. The returned response body is trimmed and compared exactly with `hostname`.

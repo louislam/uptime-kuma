@@ -112,7 +112,11 @@ describe("SOCKS5 Monitor", () => {
                 const target = Buffer.from("service.internal", "utf8");
                 assert.deepStrictEqual(
                     request,
-                    Buffer.concat([Buffer.from([0x05, 0x01, 0x00, 0x03, target.length]), target, Buffer.from([0x20, 0xfb])])
+                    Buffer.concat([
+                        Buffer.from([0x05, 0x01, 0x00, 0x03, target.length]),
+                        target,
+                        Buffer.from([0x20, 0xfb]),
+                    ])
                 );
                 connectRequestReceived = true;
                 socket.write(Buffer.from([0x05, 0x00, 0x00, 0x01, 127, 0, 0, 1, 0x04, 0x38]));
@@ -276,7 +280,11 @@ describe("SOCKS5 Monitor", () => {
                     const target = Buffer.from("ip-check.local", "utf8");
                     assert.deepStrictEqual(
                         request,
-                        Buffer.concat([Buffer.from([0x05, 0x01, 0x00, 0x03, target.length]), target, Buffer.from([0x00, 0x50])])
+                        Buffer.concat([
+                            Buffer.from([0x05, 0x01, 0x00, 0x03, target.length]),
+                            target,
+                            Buffer.from([0x00, 0x50]),
+                        ])
                     );
                     connectRequestReceived = true;
                     stage = "http";
@@ -360,7 +368,9 @@ describe("SOCKS5 Monitor", () => {
                     return;
                 }
 
-                socket.end("HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: close\r\n\r\n3\r\n127\r\n6\r\n.0.0.1\r\n0\r\n\r\n");
+                socket.end(
+                    "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: close\r\n\r\n3\r\n127\r\n6\r\n.0.0.1\r\n0\r\n\r\n"
+                );
             });
         });
         const heartbeat = { msg: "", status: PENDING };

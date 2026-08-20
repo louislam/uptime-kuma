@@ -75,7 +75,14 @@ class Socks5MonitorType extends MonitorType {
         if (hasCredentials) {
             const username = Buffer.from(monitor.socks5Username, "utf8");
             const password = Buffer.from(monitor.socks5Password, "utf8");
-            socket.write(Buffer.concat([Buffer.from([0x01, username.length]), username, Buffer.from([password.length]), password]));
+            socket.write(
+                Buffer.concat([
+                    Buffer.from([0x01, username.length]),
+                    username,
+                    Buffer.from([password.length]),
+                    password,
+                ])
+            );
 
             const authResponse = await readExactly(socket, 2);
             if (authResponse[0] !== 0x01) {
@@ -327,10 +334,7 @@ function getExitIpCheckUrl(monitor) {
  * @returns {Promise<string>} Plain text response body
  */
 async function requestExitIp(socket, checkUrl) {
-    const requestSocket =
-        checkUrl.protocol === "https:"
-            ? await connectTls(socket, checkUrl.hostname)
-            : socket;
+    const requestSocket = checkUrl.protocol === "https:" ? await connectTls(socket, checkUrl.hostname) : socket;
     const path = `${checkUrl.pathname || "/"}${checkUrl.search || ""}`;
     const hostHeader = checkUrl.port ? `${checkUrl.hostname}:${checkUrl.port}` : checkUrl.hostname;
 
@@ -452,7 +456,11 @@ function parseHttpResponse(data, bodyLimit) {
     }
 
     const headers = parseHttpHeaders(headerLines.slice(1));
-    const body = headers["transfer-encoding"]?.toLowerCase().split(",").map((value) => value.trim()).includes("chunked")
+    const body = headers["transfer-encoding"]
+        ?.toLowerCase()
+        .split(",")
+        .map((value) => value.trim())
+        .includes("chunked")
         ? decodeChunkedBody(data.subarray(headerEnd + 4), bodyLimit)
         : data.subarray(headerEnd + 4);
 

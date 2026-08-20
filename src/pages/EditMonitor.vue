@@ -727,17 +727,31 @@
 
                             <template v-if="monitor.type === 'socks5'">
                                 <div class="my-3">
-                                    <label for="socks5-check-mode" class="form-label">{{ $t("SOCKS5 Check Mode") }}</label>
-	                                    <select id="socks5-check-mode" v-model="monitor.socks5CheckMode" class="form-select" required>
-	                                        <option value="handshake">{{ $t("SOCKS5 Handshake Authentication") }}</option>
-	                                        <option value="connect">{{ $t("SOCKS5 Proxy Chain") }}</option>
-	                                        <option value="exit-ip">{{ $t("SOCKS5 Exit IP Check") }}</option>
-	                                    </select>
-	                                </div>
+                                    <label for="socks5-check-mode" class="form-label">
+                                        {{ $t("SOCKS5 Check Mode") }}
+                                    </label>
+                                    <select
+                                        id="socks5-check-mode"
+                                        v-model="monitor.socks5CheckMode"
+                                        class="form-select"
+                                        required
+                                    >
+                                        <option value="handshake">{{ $t("SOCKS5 Handshake Authentication") }}</option>
+                                        <option value="connect">{{ $t("SOCKS5 Proxy Chain") }}</option>
+                                        <option value="exit-ip">{{ $t("SOCKS5 Exit IP Check") }}</option>
+                                    </select>
+                                </div>
 
                                 <div class="form-check my-3">
-                                    <input id="socks5-auth" v-model="monitor.socks5Auth" class="form-check-input" type="checkbox" />
-                                    <label class="form-check-label" for="socks5-auth">{{ $t("SOCKS5 Authentication") }}</label>
+                                    <input
+                                        id="socks5-auth"
+                                        v-model="monitor.socks5Auth"
+                                        class="form-check-input"
+                                        type="checkbox"
+                                    />
+                                    <label class="form-check-label" for="socks5-auth">
+                                        {{ $t("SOCKS5 Authentication") }}
+                                    </label>
                                 </div>
 
                                 <template v-if="monitor.socks5Auth">
@@ -764,7 +778,9 @@
 
                                 <template v-if="monitor.socks5CheckMode === 'connect'">
                                     <div class="my-3">
-                                        <label for="socks5-target-host" class="form-label">{{ $t("SOCKS5 Target Host") }}</label>
+                                        <label for="socks5-target-host" class="form-label">
+                                            {{ $t("SOCKS5 Target Host") }}
+                                        </label>
                                         <input
                                             id="socks5-target-host"
                                             v-model="monitor.socks5TargetHost"
@@ -774,7 +790,9 @@
                                         />
                                     </div>
                                     <div class="my-3">
-                                        <label for="socks5-target-port" class="form-label">{{ $t("SOCKS5 Target Port") }}</label>
+                                        <label for="socks5-target-port" class="form-label">
+                                            {{ $t("SOCKS5 Target Port") }}
+                                        </label>
                                         <input
                                             id="socks5-target-port"
                                             v-model="monitor.socks5TargetPort"
@@ -785,22 +803,24 @@
                                             step="1"
                                             required
                                         />
-	                                    </div>
-	                                </template>
+                                    </div>
+                                </template>
 
-	                                <template v-if="monitor.socks5CheckMode === 'exit-ip'">
-	                                    <div class="my-3">
-	                                        <label for="socks5-exit-ip-check-url" class="form-label">{{ $t("SOCKS5 Exit IP Check URL") }}</label>
-	                                        <input
-	                                            id="socks5-exit-ip-check-url"
-	                                            v-model="monitor.socks5ExitIpCheckUrl"
-	                                            class="form-control"
-	                                            type="url"
-	                                            placeholder="https://api.ipify.org"
-	                                        />
-	                                    </div>
-	                                </template>
-	                            </template>
+                                <template v-if="monitor.socks5CheckMode === 'exit-ip'">
+                                    <div class="my-3">
+                                        <label for="socks5-exit-ip-check-url" class="form-label">
+                                            {{ $t("SOCKS5 Exit IP Check URL") }}
+                                        </label>
+                                        <input
+                                            id="socks5-exit-ip-check-url"
+                                            v-model="monitor.socks5ExitIpCheckUrl"
+                                            class="form-control"
+                                            type="url"
+                                            placeholder="https://api.ipify.org"
+                                        />
+                                    </div>
+                                </template>
+                            </template>
 
                             <!-- Gamedig Token -->
                             <div v-if="monitor.type === 'gamedig'" class="my-3">

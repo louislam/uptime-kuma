@@ -10,6 +10,10 @@ if (requireAuth && (!username || !password)) {
     throw new Error("SOCKS5_USERNAME and SOCKS5_PASSWORD must be provided together");
 }
 
+/**
+ * @param socket
+ * @param length
+ */
 function readExactly(socket, length) {
     return new Promise((resolve, reject) => {
         const chunks = [];
@@ -48,6 +52,10 @@ function readExactly(socket, length) {
     });
 }
 
+/**
+ * @param socket
+ * @param addressType
+ */
 async function readAddress(socket, addressType) {
     if (addressType === 0x01) {
         return Array.from(await readExactly(socket, 4)).join(".");
@@ -59,6 +67,9 @@ async function readAddress(socket, addressType) {
     throw new Error("unsupported address type");
 }
 
+/**
+ * @param client
+ */
 async function handleClient(client) {
     try {
         const greeting = await readExactly(client, 2);
