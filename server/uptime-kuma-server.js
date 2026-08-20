@@ -126,6 +126,7 @@ class UptimeKumaServer {
         UptimeKumaServer.monitorTypeList["gamedig"] = new GameDigMonitorType();
         UptimeKumaServer.monitorTypeList["steam"] = new SteamMonitorType();
         UptimeKumaServer.monitorTypeList["port"] = new TCPMonitorType();
+        UptimeKumaServer.monitorTypeList["socks5"] = new Socks5MonitorType();
         UptimeKumaServer.monitorTypeList["manual"] = new ManualMonitorType();
         UptimeKumaServer.monitorTypeList["globalping"] = new GlobalpingMonitorType(this.getUserAgent());
         UptimeKumaServer.monitorTypeList["redis"] = new RedisMonitorType();
@@ -581,6 +582,7 @@ const { SIPMonitorType } = require("./monitor-types/sip-options");
 const { GameDigMonitorType } = require("./monitor-types/gamedig");
 const { SteamMonitorType } = require("./monitor-types/steam");
 const { TCPMonitorType } = require("./monitor-types/tcp.js");
+const { Socks5MonitorType } = require("./monitor-types/socks5");
 const { ManualMonitorType } = require("./monitor-types/manual");
 const { GlobalpingMonitorType } = require("./monitor-types/globalping");
 const { RedisMonitorType } = require("./monitor-types/redis");

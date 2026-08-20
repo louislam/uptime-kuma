@@ -770,6 +770,7 @@ let needSetup = false;
                     "humanReadableInterval",
                     "globalpingdnsresolvetypeoptions",
                     "responsecheck",
+                    "socks5Auth",
                 ];
                 for (const prop of frontendOnlyProperties) {
                     if (prop in monitor) {
@@ -907,6 +908,13 @@ let needSetup = false;
                 bean.mqttSuccessMessage = monitor.mqttSuccessMessage;
                 bean.mqttCheckType = monitor.mqttCheckType;
                 bean.mqttWebsocketPath = monitor.mqttWebsocketPath;
+                bean.socks5Username = monitor.socks5Username || null;
+                bean.socks5Password = monitor.socks5Password || null;
+                bean.socks5CheckMode = monitor.socks5CheckMode;
+                bean.socks5TargetHost = monitor.socks5CheckMode === "connect" ? monitor.socks5TargetHost?.trim() : null;
+                bean.socks5TargetPort = monitor.socks5CheckMode === "connect" ? parseInt(monitor.socks5TargetPort) : null;
+                bean.socks5ExitIpCheckUrl =
+                    monitor.socks5CheckMode === "exit-ip" ? monitor.socks5ExitIpCheckUrl?.trim() || null : null;
                 bean.databaseConnectionString = monitor.databaseConnectionString;
                 bean.databaseQuery = monitor.databaseQuery;
                 bean.authMethod = monitor.authMethod;

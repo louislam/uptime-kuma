@@ -40,6 +40,7 @@
                                         <option value="http">HTTP(s)</option>
                                         <option value="keyword">HTTP(s) - {{ $t("Keyword") }}</option>
                                         <option value="port">TCP Port</option>
+                                        <option value="socks5">SOCKS5 Proxy</option>
                                         <option value="ping">Ping</option>
                                         <option value="dns">DNS</option>
                                         <option value="docker">
@@ -480,6 +481,7 @@
                             <div
                                 v-if="
                                     monitor.type === 'port' ||
+                                    monitor.type === 'socks5' ||
                                     monitor.type === 'ping' ||
                                     monitor.type === 'dns' ||
                                     monitor.type === 'steam' ||
@@ -695,6 +697,7 @@
                             <div
                                 v-if="
                                     monitor.type === 'port' ||
+                                    monitor.type === 'socks5' ||
                                     monitor.type === 'steam' ||
                                     monitor.type === 'gamedig' ||
                                     monitor.type === 'mqtt' ||
@@ -716,11 +719,88 @@
                                     type="number"
                                     class="form-control"
                                     required
-                                    min="0"
+                                    :min="monitor.type === 'socks5' ? 1 : 0"
                                     max="65535"
                                     step="1"
                                 />
                             </div>
+
+                            <template v-if="monitor.type === 'socks5'">
+                                <div class="my-3">
+                                    <label for="socks5-check-mode" class="form-label">{{ $t("SOCKS5 Check Mode") }}</label>
+	                                    <select id="socks5-check-mode" v-model="monitor.socks5CheckMode" class="form-select" required>
+	                                        <option value="handshake">{{ $t("SOCKS5 Handshake Authentication") }}</option>
+	                                        <option value="connect">{{ $t("SOCKS5 Proxy Chain") }}</option>
+	                                        <option value="exit-ip">{{ $t("SOCKS5 Exit IP Check") }}</option>
+	                                    </select>
+	                                </div>
+
+                                <div class="form-check my-3">
+                                    <input id="socks5-auth" v-model="monitor.socks5Auth" class="form-check-input" type="checkbox" />
+                                    <label class="form-check-label" for="socks5-auth">{{ $t("SOCKS5 Authentication") }}</label>
+                                </div>
+
+                                <template v-if="monitor.socks5Auth">
+                                    <div class="my-3">
+                                        <label for="socks5-username" class="form-label">{{ $t("Username") }}</label>
+                                        <input
+                                            id="socks5-username"
+                                            v-model="monitor.socks5Username"
+                                            class="form-control"
+                                            type="text"
+                                            autocomplete="username"
+                                            required
+                                        />
+                                    </div>
+                                    <div class="my-3">
+                                        <label for="socks5-password" class="form-label">{{ $t("Password") }}</label>
+                                        <HiddenInput
+                                            id="socks5-password"
+                                            v-model="monitor.socks5Password"
+                                            :required="true"
+                                        ></HiddenInput>
+                                    </div>
+                                </template>
+
+                                <template v-if="monitor.socks5CheckMode === 'connect'">
+                                    <div class="my-3">
+                                        <label for="socks5-target-host" class="form-label">{{ $t("SOCKS5 Target Host") }}</label>
+                                        <input
+                                            id="socks5-target-host"
+                                            v-model="monitor.socks5TargetHost"
+                                            class="form-control"
+                                            type="text"
+                                            required
+                                        />
+                                    </div>
+                                    <div class="my-3">
+                                        <label for="socks5-target-port" class="form-label">{{ $t("SOCKS5 Target Port") }}</label>
+                                        <input
+                                            id="socks5-target-port"
+                                            v-model="monitor.socks5TargetPort"
+                                            class="form-control"
+                                            type="number"
+                                            min="1"
+                                            max="65535"
+                                            step="1"
+                                            required
+                                        />
+	                                    </div>
+	                                </template>
+
+	                                <template v-if="monitor.socks5CheckMode === 'exit-ip'">
+	                                    <div class="my-3">
+	                                        <label for="socks5-exit-ip-check-url" class="form-label">{{ $t("SOCKS5 Exit IP Check URL") }}</label>
+	                                        <input
+	                                            id="socks5-exit-ip-check-url"
+	                                            v-model="monitor.socks5ExitIpCheckUrl"
+	                                            class="form-control"
+	                                            type="url"
+	                                            placeholder="https://api.ipify.org"
+	                                        />
+	                                    </div>
+	                                </template>
+	                            </template>
 
                             <!-- Gamedig Token -->
                             <div v-if="monitor.type === 'gamedig'" class="my-3">
@@ -1619,12 +1699,13 @@
                                 </div>
                             </div>
 
-                            <!-- Timeout: HTTP / JSON query / Keyword / Ping / RabbitMQ / SNMP / Websocket Upgrade only -->
+                            <!-- Timeout: network request monitor types -->
                             <div
                                 v-if="
                                     monitor.type === 'http' ||
                                     monitor.type === 'json-query' ||
                                     monitor.type === 'keyword' ||
+                                    monitor.type === 'socks5' ||
                                     monitor.type === 'ping' ||
                                     monitor.type === 'rabbitmq' ||
                                     monitor.type === 'snmp' ||
@@ -3322,6 +3403,13 @@ const monitorDefaults = {
     ntpStratumThreshold: 5,
     ntpTimeOffsetThreshold: 1000,
     ntpRootDispersionThreshold: 500,
+    socks5Auth: false,
+    socks5Username: "",
+    socks5Password: "",
+    socks5CheckMode: "handshake",
+    socks5TargetHost: "",
+    socks5TargetPort: undefined,
+    socks5ExitIpCheckUrl: "",
 };
 
 export default {
@@ -3736,6 +3824,12 @@ message HealthCheckResponse {
                 this.monitor.dns_resolve_server = "1.1.1.1";
             }
 
+            if (newType === "socks5") {
+                this.monitor.socks5CheckMode ||= "handshake";
+                this.monitor.socks5ExitIpCheckUrl ||= "";
+                this.monitor.socks5Auth = Boolean(this.monitor.socks5Username && this.monitor.socks5Password);
+            }
+
             // Change to websocket-upgrade (override http defaults)
             if (newType === "websocket-upgrade") {
                 if (!this.monitor.url || this.monitor.url === defaultValueList.http.url) {
@@ -3863,6 +3957,23 @@ message HealthCheckResponse {
             // Reset conditions since condition variables likely change:
             if (oldType && newType !== oldType) {
                 this.monitor.conditions = [];
+            }
+        },
+
+        "monitor.socks5Auth"(enabled) {
+            if (!enabled) {
+                this.monitor.socks5Username = "";
+                this.monitor.socks5Password = "";
+            }
+        },
+
+        "monitor.socks5CheckMode"(mode) {
+            if (mode !== "connect") {
+                this.monitor.socks5TargetHost = "";
+                this.monitor.socks5TargetPort = undefined;
+            }
+            if (mode !== "exit-ip") {
+                this.monitor.socks5ExitIpCheckUrl = "";
             }
         },
 
@@ -4293,6 +4404,17 @@ message HealthCheckResponse {
                 return;
             }
 
+            if (this.monitor.type === "socks5" && this.monitor.socks5Auth) {
+                const encoder = new TextEncoder();
+                const usernameLength = encoder.encode(this.monitor.socks5Username).length;
+                const passwordLength = encoder.encode(this.monitor.socks5Password).length;
+                if (usernameLength < 1 || usernameLength > 255 || passwordLength < 1 || passwordLength > 255) {
+                    toast.error(this.$t("SOCKS5 credential length error"));
+                    this.processing = false;
+                    return;
+                }
+            }
+
             this.lowIntervalConfirmation.confirmed = false;
             this.lowIntervalConfirmation.editedValue = false;
 
@@ -4312,6 +4434,14 @@ message HealthCheckResponse {
 
             if (this.monitor.hostname) {
                 this.monitor.hostname = this.monitor.hostname.trim();
+            }
+
+            if (this.monitor.type === "socks5" && this.monitor.socks5TargetHost) {
+                this.monitor.socks5TargetHost = this.monitor.socks5TargetHost.trim();
+            }
+
+            if (this.monitor.type === "socks5" && this.monitor.socks5ExitIpCheckUrl) {
+                this.monitor.socks5ExitIpCheckUrl = this.monitor.socks5ExitIpCheckUrl.trim();
             }
 
             if (this.monitor.url) {

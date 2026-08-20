@@ -62,8 +62,39 @@ const zlib = require("node:zlib");
 const { promisify } = require("node:util");
 const brotliCompress = promisify(zlib.brotliCompress);
 const DomainExpiry = require("./domain_expiry");
+const { validateSocks5Monitor } = require("../monitor-types/socks5");
 
 const rootCertificates = rootCertificatesFingerprints();
+
+/**
+ * Parse a monitor JSON field while tolerating legacy or already-decoded values.
+ * @param {any} value Stored field value
+ * @param {any} fallback Value to use when parsing fails
+ * @param {string} fieldName Field name for logs
+ * @param {number} monitorID Monitor ID for logs
+ * @returns {any} Parsed value or fallback
+ */
+function parseJSONField(value, fallback, fieldName, monitorID) {
+    if (value === undefined || value === null || value === "") {
+        return fallback;
+    }
+
+    if (typeof value === "object") {
+        return value;
+    }
+
+    if (typeof value !== "string") {
+        log.warn("monitor", `Monitor ${monitorID}: ${fieldName} is not a JSON string, using default value`);
+        return fallback;
+    }
+
+    try {
+        return JSON.parse(value);
+    } catch (e) {
+        log.warn("monitor", `Monitor ${monitorID}: invalid ${fieldName} JSON, using default value: ${e.message}`);
+        return fallback;
+    }
+}
 
 /**
  * status:
@@ -187,7 +218,7 @@ class Monitor extends BeanModel {
             expectedValue: this.expectedValue,
             system_service_name: this.system_service_name,
             kafkaProducerTopic: this.kafkaProducerTopic,
-            kafkaProducerBrokers: JSON.parse(this.kafkaProducerBrokers),
+            kafkaProducerBrokers: parseJSONField(this.kafkaProducerBrokers, [], "kafkaProducerBrokers", this.id),
             kafkaProducerSsl: this.getKafkaProducerSsl(),
             kafkaProducerAllowAutoTopicCreation: this.getKafkaProducerAllowAutoTopicCreation(),
             kafkaProducerMessage: this.kafkaProducerMessage,
@@ -199,13 +230,17 @@ class Monitor extends BeanModel {
             jsonPathOperator: this.jsonPathOperator,
             snmpVersion: this.snmpVersion,
             smtpSecurity: this.smtpSecurity,
-            rabbitmqNodes: JSON.parse(this.rabbitmqNodes),
-            conditions: JSON.parse(this.conditions),
+            rabbitmqNodes: parseJSONField(this.rabbitmqNodes, [], "rabbitmqNodes", this.id),
+            conditions: parseJSONField(this.conditions, [], "conditions", this.id),
             ntpStratumThreshold: this.ntp_stratum_threshold,
             ntpTimeOffsetThreshold: this.ntp_time_offset_threshold,
             ntpRootDispersionThreshold: this.ntp_root_dispersion_threshold,
             ipFamily: this.ipFamily,
             expectedTlsAlert: this.expected_tls_alert,
+            socks5CheckMode: this.socks5CheckMode,
+            socks5TargetHost: this.socks5TargetHost,
+            socks5TargetPort: this.socks5TargetPort,
+            socks5ExitIpCheckUrl: this.socks5ExitIpCheckUrl,
 
             // ping advanced options
             ping_numeric: this.isPingNumeric(),
@@ -243,12 +278,21 @@ class Monitor extends BeanModel {
                 mqttUsername: this.mqttUsername,
                 mqttPassword: this.mqttPassword,
                 mqttWebsocketPath: this.mqttWebsocketPath,
+                socks5Username: this.socks5Username,
+                socks5Password: this.socks5Password,
                 authWorkstation: this.authWorkstation,
                 authDomain: this.authDomain,
                 tlsCa: this.tlsCa,
                 tlsCert: this.tlsCert,
                 tlsKey: this.tlsKey,
-                kafkaProducerSaslOptions: JSON.parse(this.kafkaProducerSaslOptions),
+                kafkaProducerSaslOptions: parseJSONField(
+                    this.kafkaProducerSaslOptions,
+                    {
+                        mechanism: "None",
+                    },
+                    "kafkaProducerSaslOptions",
+                    this.id
+                ),
                 rabbitmqUsername: this.rabbitmqUsername,
                 rabbitmqPassword: this.rabbitmqPassword,
             };
@@ -1700,6 +1744,16 @@ class Monitor extends BeanModel {
 
         if (this.type === "system-service" && !/^[a-zA-Z0-9._\-@]+$/.test(this.system_service_name)) {
             throw new Error("Invalid service name. Please use the internal Service Name (no spaces).");
+        }
+
+        if (this.type === "socks5") {
+            this.hostname = this.hostname?.trim();
+            this.socks5CheckMode ||= "handshake";
+            this.socks5TargetHost = this.socks5CheckMode === "connect" ? this.socks5TargetHost?.trim() : null;
+            this.socks5TargetPort = this.socks5CheckMode === "connect" ? this.socks5TargetPort : null;
+            this.socks5ExitIpCheckUrl =
+                this.socks5CheckMode === "exit-ip" ? this.socks5ExitIpCheckUrl?.trim() || null : null;
+            validateSocks5Monitor(this);
         }
 
         if (this.type === "pm2" && /[\u0000-\u001F\u007F]/.test(this.system_service_name)) {
