@@ -17,20 +17,19 @@ describe("DNS Monitor", () => {
 
         const dnsMonitor = new DnsMonitorType();
 
-        await assert.rejects(
-            dnsMonitor.dnsResolve("example.com", [ "1.1.1.1" ], "53", "AAAA"),
-            { message: "No AAAA records found for example.com" }
-        );
+        await assert.rejects(dnsMonitor.dnsResolve("example.com", ["1.1.1.1"], "53", "AAAA"), {
+            message: "No AAAA records found for example.com",
+        });
     });
 
     test("dnsResolve() returns records when the DNS response is not empty", async () => {
-        const records = [ "192.0.2.1" ];
+        const records = ["192.0.2.1"];
         mock.method(Resolver.prototype, "setServers", () => {});
         mock.method(Resolver.prototype, "resolve", async () => records);
 
         const dnsMonitor = new DnsMonitorType();
 
-        const result = await dnsMonitor.dnsResolve("example.com", [ "1.1.1.1" ], "53", "A");
+        const result = await dnsMonitor.dnsResolve("example.com", ["1.1.1.1"], "53", "A");
         assert.deepStrictEqual(result, records);
     });
 });
