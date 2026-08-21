@@ -374,12 +374,20 @@ export default {
                 return values.length > 0 ? values : null;
             };
             const toId = (value) => (/^\d+$/.test(value) ? Number(value) : null);
+            // Status is a closed set (see filterFunc), so anything outside it would
+            // only filter the list down to nothing and then be written back as canonical.
+            const toStatus = (value) => (/^[0-3]$/.test(value) ? Number(value) : null);
             const toBoolean = (value) => (value === "true" || value === "false" ? value === "true" : null);
 
             this.searchText = params.get("search") ?? "";
-            this.filterState.status = parseList("status", toId);
+            this.filterState.status = parseList("status", toStatus);
             this.filterState.active = parseList("active", toBoolean);
             this.filterState.tags = parseList("tags", toId);
+
+            // A URL carrying only unusable params leaves every value above unchanged,
+            // so nothing would trigger the watchers and the junk would stay in the
+            // address bar to be shared again. Write the parsed state back directly.
+            this.writeFiltersToQuery();
         },
         /**
          * Reflect the current search text and filter state into the URL
@@ -427,7 +435,11 @@ export default {
             const newUrl = `${window.location.pathname}${search ? `?${search}` : ""}${window.location.hash}`;
 
             if (newUrl !== `${window.location.pathname}${window.location.search}${window.location.hash}`) {
-                window.history.replaceState(window.history.state, "", newUrl);
+                // Vue Router rewrites the outgoing entry's URL from history.state.current
+                // when navigating away (it replaces the entry to save scroll position),
+                // so leaving that untouched drops the filters from the history entry and
+                // the back button returns to an unfiltered URL.
+                window.history.replaceState({ ...window.history.state, current: newUrl }, "", newUrl);
             }
         },
         /**

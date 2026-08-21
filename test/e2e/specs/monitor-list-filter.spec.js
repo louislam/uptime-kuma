@@ -102,4 +102,105 @@ test.describe("Monitor List Filter", () => {
         await expect(page.getByTestId("monitor-list")).not.toContainText("OtherMonitor");
         await screenshot(testInfo, page);
     });
+
+    test("filter params that cannot be used are dropped", async ({ page }, testInfo) => {
+        await loginAndWait(page);
+        await addMonitor(page, "ReproMonitor");
+        await addMonitor(page, "OtherMonitor");
+
+        // status=9 is outside the status enum and tags= is empty: neither can filter
+        // anything, so they must be ignored rather than emptying the list, and must
+        // not be written back into the URL where they could be shared again.
+        await page.goto("./dashboard?status=9&tags=&search=Repro");
+
+        await expect(page.getByLabel("Search monitored sites")).toHaveValue("Repro");
+        await expect(page.getByTestId("monitor-list")).toContainText("ReproMonitor");
+        await expect(page.getByTestId("monitor-list")).not.toContainText("OtherMonitor");
+        await expect(page).toHaveURL(/\/dashboard\?search=Repro$/);
+        await screenshot(testInfo, page);
+
+        // Same URL with nothing usable left in it at all. This leaves the filters
+        // untouched rather than changing them, so the write has to happen on the
+        // strength of the read alone, or the junk stays in the address bar.
+        await page.goto("./dashboard?status=9");
+
+        await expect(page.getByTestId("monitor-list")).toContainText("ReproMonitor");
+        await expect(page.getByTestId("monitor-list")).toContainText("OtherMonitor");
+        await expect(page).toHaveURL(/\/dashboard$/);
+        await screenshot(testInfo, page);
+    });
+
+    test("search survives back and forward", async ({ page }, testInfo) => {
+        await loginAndWait(page);
+        await addMonitor(page, "ReproMonitor");
+
+        await page.goto("./dashboard");
+        const searchInput = page.getByLabel("Search monitored sites");
+        await searchInput.fill("Repro");
+        await expect(page).toHaveURL(/[?&]search=Repro/);
+
+        await page.getByTestId("monitor-list").getByRole("link").first().click();
+        await page.waitForURL(/\/dashboard\/\d+\?search=Repro/);
+
+        // Change the search here, so this history entry and the one behind it hold
+        // different filters. The list itself never unmounts, so this is the only way
+        // back/forward can disagree with component state - and the only case that
+        // actually proves the URL is being read back rather than merely re-asserted.
+        await searchInput.fill("Other");
+        await expect(page).toHaveURL(/\/dashboard\/\d+\?search=Other/);
+
+        await page.goBack();
+        await expect(page).toHaveURL(/\/dashboard\?search=Repro/);
+        await expect(searchInput).toHaveValue("Repro");
+
+        await page.goForward();
+        await expect(page).toHaveURL(/\/dashboard\/\d+\?search=Other/);
+        await expect(searchInput).toHaveValue("Other");
+        await screenshot(testInfo, page);
+    });
+
+    test("a filter set in the UI round-trips through the URL", async ({ page }, testInfo) => {
+        await loginAndWait(page);
+        await addMonitor(page, "ReproMonitor");
+
+        await page.goto("./dashboard");
+        await expect(page.getByTestId("monitor-list")).toContainText("ReproMonitor");
+
+        // Filters reach the URL through a different watcher than the search text.
+        // Nothing is paused, so filtering by Paused empties the list.
+        const pausedOption = page
+            .locator(".filter-dropdown-menu")
+            .first()
+            .locator(".dropdown-item")
+            .filter({ hasText: "Paused" });
+
+        await page.locator(".filter-dropdown-status").first().click();
+        await pausedOption.click();
+
+        await expect(page).toHaveURL(/[?&]active=false/);
+        await expect(page.getByTestId("monitor-list")).not.toContainText("ReproMonitor");
+        await screenshot(testInfo, page);
+
+        // Turning the filter back off has to take the param out of the URL again,
+        // otherwise an unfiltered view stays shareable as a filtered one.
+        await pausedOption.click();
+
+        await expect(page).toHaveURL(/\/dashboard$/);
+        await expect(page.getByTestId("monitor-list")).toContainText("ReproMonitor");
+        await screenshot(testInfo, page);
+    });
+
+    test("a valid filter param survives being loaded directly", async ({ page }, testInfo) => {
+        await loginAndWait(page);
+        await addMonitor(page, "ReproMonitor");
+
+        // The kiosk case from the issue: a link opened straight into a filtered view.
+        // Reading the URL now rewrites it, so a valid param has to round-trip intact
+        // rather than being normalised away.
+        await page.goto("./dashboard?active=true");
+
+        await expect(page.getByTestId("monitor-list")).toContainText("ReproMonitor");
+        await expect(page).toHaveURL(/\/dashboard\?active=true$/);
+        await screenshot(testInfo, page);
+    });
 });
