@@ -259,6 +259,7 @@ export default {
                 gotify: "Gotify",
                 lunasea: "LunaSea",
                 notifery: "Notifery",
+                notifyapp: "Notify! (getnotifyapp.com)",
                 ntfy: "Ntfy",
                 pinglet: "Pinglet",
                 pushbullet: "Pushbullet",
