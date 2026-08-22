@@ -59,6 +59,7 @@ import RocketChat from "./RocketChat.vue";
 import ServerChan from "./ServerChan.vue";
 import SerwerSMS from "./SerwerSMS.vue";
 import Signal from "./Signal.vue";
+import SMSGateway from "./SMSGateway.vue";
 import SMSManager from "./SMSManager.vue";
 import SMSPartner from "./SMSPartner.vue";
 import Slack from "./Slack.vue";
@@ -171,6 +172,7 @@ const NotificationFormList = {
     serwersms: SerwerSMS,
     signal: Signal,
     SIGNL4: SIGNL4,
+    SMSGateway: SMSGateway,
     SMSManager: SMSManager,
     SMSPartner: SMSPartner,
     slack: Slack,

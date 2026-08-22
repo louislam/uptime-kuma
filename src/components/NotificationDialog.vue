@@ -279,6 +279,7 @@ export default {
                 plivo: "Plivo",
                 SevenIO: "SevenIO",
                 SMSEagle: "SMSEagle",
+                SMSGateway: "SMS Gateway",
                 SMSPartner: "SMS Partner",
                 telnyx: "Telnyx",
                 Teltonika: this.$t("Teltonika SMS Gateway"),
