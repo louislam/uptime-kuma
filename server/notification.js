@@ -95,6 +95,7 @@ const TurboSMTP = require("./notification-providers/turbosmtp");
 const Brevo = require("./notification-providers/brevo");
 const Resend = require("./notification-providers/resend");
 const YZJ = require("./notification-providers/yzj");
+const AmootSMS = require("./notification-providers/amootsms");
 const SMSPlanet = require("./notification-providers/sms-planet");
 const SpugPush = require("./notification-providers/spugpush");
 const SMSIR = require("./notification-providers/smsir");
@@ -214,6 +215,7 @@ class Notification {
             new Brevo(),
             new Resend(),
             new YZJ(),
+            new AmootSMS(),
             new SMSPlanet(),
             new SpugPush(),
             new Notifery(),

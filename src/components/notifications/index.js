@@ -94,6 +94,7 @@ import SendGrid from "./SendGrid.vue";
 import TurboSMTP from "./TurboSMTP.vue";
 import Brevo from "./Brevo.vue";
 import YZJ from "./YZJ.vue";
+import AmootSMS from "./AmootSMS.vue";
 import SMSPlanet from "./SMSPlanet.vue";
 import SMSIR from "./SMSIR.vue";
 import Webpush from "./Webpush.vue";
@@ -120,6 +121,7 @@ const NotificationFormList = {
     ClickUp: ClickUp,
     clicksendsms: ClickSendSMS,
     CallMeBot: CallMeBot,
+    amootsms: AmootSMS,
     smsc: SMSC,
     smsir: SMSIR,
     DingDing: DingDing,
