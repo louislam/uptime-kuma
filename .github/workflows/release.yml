@@ -58,7 +58,8 @@ jobs:
           git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git"
 
       - name: Install dependencies
-        run: npm clean-install --no-fund
+        run: npm ci --no-fund
+        working-directory: extra/release
 
       - name: Prepare release branch and PR
         env:

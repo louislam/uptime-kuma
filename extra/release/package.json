@@ -1,0 +1,14 @@
+{
+    "name": "uptime-kuma-release",
+    "private": true,
+    "version": "1.0.0",
+    "type": "module",
+    "engines": {
+        "node": ">= 20.4.0"
+    },
+    "dependencies": {
+        "dotenv": "~16.0.3",
+        "semver": "~7.5.4",
+        "tar": "~6.2.1"
+    }
+}

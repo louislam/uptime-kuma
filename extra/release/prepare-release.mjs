@@ -71,7 +71,7 @@ export async function runPrepare({ setupBranch = false } = {}) {
     }
 
     // Bump the version, commit and force push the branch
-    await import("../update-version.mjs");
+    await import("./update-version.mjs");
 
     // Create Pull Request (gh pr create will handle pushing the branch)
     return await createReleasePR(version, previousVersion, dryRun, branchName, githubRunId);
