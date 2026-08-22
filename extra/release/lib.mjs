@@ -16,11 +16,11 @@ export function getVersionFromEnv() {
 }
 
 /**
- * Check if this is a beta release based on env vars
+ * Check if this is a beta release
  * @returns {boolean} Is a beta release
  */
 export function isBetaRelease() {
-    return !!process.env.RELEASE_BETA_VERSION;
+    return process.env.RELEASE_IS_BETA === "true" || !!process.env.RELEASE_BETA_VERSION;
 }
 
 /**
@@ -592,7 +592,7 @@ export async function createReleasePR(version, previousVersion, dryRun, branchNa
     // Build the artifact link - use direct run link if available, otherwise link to workflow file
     const artifactLink = githubRunId
         ? `https://github.com/louislam/uptime-kuma/actions/runs/${githubRunId}/workflow`
-        : `https://github.com/louislam/uptime-kuma/actions/workflows/beta-release.yml`;
+        : `https://github.com/louislam/uptime-kuma/actions/workflows/release.yml`;
 
     const tmpDir = "./tmp";
     if (!fs.existsSync(tmpDir)) {

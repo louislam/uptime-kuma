@@ -1,16 +1,21 @@
-name: Beta Release
+name: Release
 
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Beta version number (e.g., 2.1.0-beta.2)"
+        description: "Release version number (e.g., 2.1.0, or 2.1.0-beta.2 for beta)"
         required: true
         type: string
       previous_version:
-        description: "Previous version tag for changelog (e.g., 2.1.0-beta.1)"
+        description: "Previous version tag for changelog (e.g., 2.1.0-beta.3)"
         required: true
         type: string
+      is_beta:
+        description: "Mark this as a beta (pre-release) release"
+        required: false
+        type: boolean
+        default: false
       dry_run:
         description: "Dry Run (The docker image will not be pushed to registries. PR will still be created.)"
         required: false
@@ -22,7 +27,7 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: release-beta-${{ inputs.version }}
+  group: release-${{ inputs.is_beta }}-${{ inputs.version }}
   cancel-in-progress: false
 
 jobs:
@@ -33,14 +38,14 @@ jobs:
     timeout-minutes: 20
 
     steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: master
           persist-credentials: true
           fetch-depth: 0 # Fetch all history and tags for update-version
 
       - name: Set up Node.js
-        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
           node-version: 24
 
@@ -57,7 +62,8 @@ jobs:
 
       - name: Prepare release branch and PR
         env:
-          RELEASE_BETA_VERSION: ${{ inputs.version }}
+          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_IS_BETA: ${{ inputs.is_beta }}
           RELEASE_PREVIOUS_VERSION: ${{ inputs.previous_version }}
           DRY_RUN: ${{ inputs.dry_run }}
           GH_TOKEN: ${{ secrets.RELEASE_PAT }}
@@ -80,13 +86,13 @@ jobs:
 
     steps:
       - name: Set up Node.js
-        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
           node-version: 24
 
       - name: Merge release PR
         env:
-          RELEASE_BETA_VERSION: ${{ inputs.version }}
+          RELEASE_VERSION: ${{ inputs.version }}
           DRY_RUN: ${{ inputs.dry_run }}
           PR_NUMBER: ${{ needs.prepare.outputs.pr_number }}
           GH_TOKEN: ${{ secrets.RELEASE_PAT }}
@@ -109,13 +115,14 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: master
+          persist-credentials: false
           fetch-depth: 0 # Fetch all history and tags for changelog generation
 
       - name: Set up Node.js
-        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
           node-version: 24
 
@@ -124,7 +131,8 @@ jobs:
 
       - name: Create draft release
         env:
-          RELEASE_BETA_VERSION: ${{ inputs.version }}
+          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_IS_BETA: ${{ inputs.is_beta }}
           RELEASE_PREVIOUS_VERSION: ${{ inputs.previous_version }}
           DRY_RUN: ${{ inputs.dry_run }}
           MERGE_SHA: ${{ needs.merge-pr.outputs.merge_sha }}
@@ -140,12 +148,13 @@ jobs:
     timeout-minutes: 120
 
     steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: master
+          persist-credentials: false
 
       - name: Set up Node.js
-        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
           node-version: 24
 
@@ -153,19 +162,19 @@ jobs:
         run: npm clean-install --no-fund
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@988b5a0280414f521da01fcc63a27aeeb4b104db # v3.6.1
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3.7.0
 
       - name: Login to Docker Hub
-        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
         with:
           registry: ghcr.io
           username: ${{ secrets.GHCR_USERNAME }}
@@ -173,7 +182,8 @@ jobs:
 
       - name: Build and push images
         env:
-          RELEASE_BETA_VERSION: ${{ inputs.version }}
+          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_IS_BETA: ${{ inputs.is_beta }}
           DRY_RUN: ${{ inputs.dry_run }}
         run: node extra/release/build-images.mjs
 
@@ -185,12 +195,13 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: master
+          persist-credentials: false
 
       - name: Set up Node.js
-        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
           node-version: 24
 
@@ -199,14 +210,14 @@ jobs:
 
       - name: Upload assets to the draft release
         env:
-          RELEASE_BETA_VERSION: ${{ inputs.version }}
+          RELEASE_VERSION: ${{ inputs.version }}
           DRY_RUN: ${{ inputs.dry_run }}
           GH_TOKEN: ${{ secrets.RELEASE_PAT }}
           GH_REPO: ${{ github.repository }}
         run: node extra/release/upload-assets.mjs
 
       - name: Upload dist.tar.gz as artifact
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: dist-${{ inputs.version }}
           path: ./tmp/dist.tar.gz

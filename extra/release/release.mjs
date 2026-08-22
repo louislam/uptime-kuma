@@ -1,12 +1,30 @@
+// Unified release orchestrator for both final and beta releases.
+// Beta is enabled with the --beta flag (or RELEASE_IS_BETA=true env var).
+//
+// Sequence:
+//   1. Prepare: validate version, bump it on the release branch, create the draft PR
+//   2. Merge: squash merge the PR into master
+//   3. Draft release: generate changelog (LLM) and create the draft GitHub Release
+//   4. Images: build and push all docker images
+//   5. Assets: upload dist.tar.gz to the draft release
+//
+// Usage:
+//   node extra/release/release.mjs          # final release
+//   node extra/release/release.mjs --beta   # beta release
+
 import "dotenv/config";
-import { checkDocker } from "./lib.mjs";
+import { checkDocker, getVersionFromEnv } from "./lib.mjs";
 import { runPrepare } from "./prepare-release.mjs";
 import { runMergePR } from "./merge-pr.mjs";
 import { runCreateDraftRelease } from "./create-draft-release.mjs";
 import { runBuildImages } from "./build-images.mjs";
 import { runUploadAssets } from "./upload-assets.mjs";
 
-const version = process.env.RELEASE_VERSION;
+if (process.argv.includes("--beta")) {
+    process.env.RELEASE_IS_BETA = "true";
+}
+
+const version = getVersionFromEnv();
 const dryRun = process.env.DRY_RUN === "true";
 
 if (dryRun) {
