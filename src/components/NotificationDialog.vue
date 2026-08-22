@@ -124,6 +124,33 @@
 
                             <br />
 
+                            <div class="my-3">
+                                <label for="notificationTriggers" class="form-label">
+                                    {{ $t("Notification Triggers") }}
+                                </label>
+
+                                <VueMultiselect
+                                    id="notificationTriggers"
+                                    v-model="notification.triggers"
+                                    :options="notificationTriggerOptions"
+                                    :custom-label="(opt) => $t(opt.charAt(0).toUpperCase() + opt.slice(1))"
+                                    :multiple="true"
+                                    :close-on-select="false"
+                                    :clear-on-select="false"
+                                    :preserve-search="true"
+                                    :placeholder="$t('Pick Notification Triggers')"
+                                    :preselect-first="false"
+                                    :max-height="600"
+                                    :taggable="false"
+                                ></VueMultiselect>
+
+                                <div class="form-text">
+                                    {{ $t("NotificationTriggerDescription") }}
+                                </div>
+                            </div>
+
+                            <br />
+
                             <div class="form-check form-switch">
                                 <input v-model="notification.applyExisting" class="form-check-input" type="checkbox" />
                                 <label class="form-check-label">{{ $t("Apply on all existing monitors") }}</label>
@@ -170,10 +197,12 @@ import { Modal } from "bootstrap";
 
 import Confirm from "./Confirm.vue";
 import NotificationFormList from "./notifications";
+import VueMultiselect from "vue-multiselect";
 
 export default {
     components: {
         Confirm,
+        VueMultiselect,
     },
     props: {},
     emits: ["added"],
@@ -185,11 +214,13 @@ export default {
             notificationTypes: Object.keys(NotificationFormList).sort((a, b) => {
                 return a.toLowerCase().localeCompare(b.toLowerCase());
             }),
+            notificationTriggerOptions: [],
             notification: {
                 name: "",
                 /** @type { null | keyof NotificationFormList } */
                 type: null,
                 isDefault: false,
+                triggers: [],
                 // Do not set default value here, please scroll to show()
             },
         };
@@ -406,6 +437,8 @@ export default {
     },
     mounted() {
         this.modal = new Modal(this.$refs.modal);
+        let notificationTriggerOptions = ["up", "down", "certificate", "domain"];
+        this.notificationTriggerOptions = notificationTriggerOptions;
     },
     beforeUnmount() {
         this.cleanupModal();
@@ -445,6 +478,7 @@ export default {
                     name: "",
                     type: "telegram",
                     isDefault: false,
+                    triggers: ["up", "down", "certificate", "domain"],
                 };
             }
 
