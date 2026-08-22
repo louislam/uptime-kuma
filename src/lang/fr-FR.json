@@ -1726,7 +1726,7 @@
     "milkyMessageType": "Type de message Milky",
     "milkyGroupMessage": "Groupe",
     "milkyPrivateMessage": "privé",
-    "milkySafetyTips": "Pour des raisons de sécurité, doit définir un jeton d’accès",
+    "milkySafetyTips": "Pour des raisons de sécurité, le jeton d'accès doit être défini",
     "milkyHttpAddress": "Adresse HTTP Milky (sans le suffixe '/api')",
     "milkyUserOrGroupId": "ID de groupe/utilisateur"
 }

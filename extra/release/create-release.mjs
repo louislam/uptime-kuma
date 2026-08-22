@@ -1,7 +1,7 @@
-import { createRelease } from "./lib.mjs";
-import { generateChangelogAI } from "../generate-changelog.mjs";
+import { createDraftRelease, getVersionFromEnv, isBetaRelease } from "./lib.mjs";
+import { generateChangelogAI } from "./generate-changelog.mjs";
 
-const version = process.env.RELEASE_VERSION || process.env.RELEASE_BETA_VERSION;
+const version = getVersionFromEnv();
 const previousVersion = process.env.RELEASE_PREVIOUS_VERSION;
 
 if (!version) {
@@ -14,6 +14,6 @@ if (!previousVersion) {
     process.exit(1);
 }
 
-const isBeta = !!process.env.RELEASE_BETA_VERSION;
+const isBeta = isBetaRelease();
 const changelog = await generateChangelogAI(previousVersion);
-await createRelease(version, changelog, isBeta, "");
+await createDraftRelease(version, changelog, isBeta);

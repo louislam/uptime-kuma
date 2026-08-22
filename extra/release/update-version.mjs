@@ -1,20 +1,29 @@
 import { createRequire } from "module";
+import semver from "semver";
+import { isBetaRelease } from "./lib.mjs";
+
 const require = createRequire(import.meta.url);
 
 const pkg = require("../../package.json");
 const fs = require("fs");
 const childProcess = require("child_process");
-const util = require("../../src/util");
 
-util.polyfill();
+const version = process.env.RELEASE_VERSION;
+const isBeta = isBetaRelease();
 
-const version = process.env.RELEASE_BETA_VERSION;
+console.log("New Version: " + version);
 
-console.log("Beta Version: " + version);
-
-if (!version || !version.includes("-beta.")) {
-    console.error("invalid version, beta version only");
+if (!version) {
+    console.error("invalid version");
     process.exit(1);
+}
+
+if (isBeta) {
+    const identifier = semver.prerelease(version)?.[0];
+    if (identifier !== "beta") {
+        console.error("invalid version, beta version only");
+        process.exit(1);
+    }
 }
 
 const exists = tagExists(version);
@@ -22,6 +31,12 @@ const exists = tagExists(version);
 if (!exists) {
     // Process package.json
     pkg.version = version;
+
+    if (!isBeta) {
+        // Replace the version: https://regex101.com/r/hmj2Bc/1
+        pkg.scripts.setup = pkg.scripts.setup.replace(/(git checkout )([^\s]+)/, `$1${version}`);
+    }
+
     fs.writeFileSync("package.json", JSON.stringify(pkg, null, 4) + "\n");
 
     // Also update package-lock.json
@@ -32,7 +47,7 @@ if (!exists) {
         console.error("error npm version!");
         process.exit(1);
     }
-    const resultInstall = childProcess.spawnSync(npm, ["install"], { shell: true });
+    const resultInstall = childProcess.spawnSync(npm, ["install", "--package-lock-only"], { shell: true });
     if (resultInstall.error) {
         console.error(resultInstall.error);
         console.error("error update package-lock!");
@@ -48,7 +63,7 @@ if (!exists) {
  * Commit updated files
  * @param {string} version Version to update to
  * @returns {void}
- * @throws Error committing files
+ * @throws Error when committing files
  */
 function commit(version) {
     let msg = "Update to " + version;
