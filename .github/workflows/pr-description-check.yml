@@ -43,6 +43,13 @@ jobs:
               return;
             }
 
+            // If is revert PR, skip
+            const isRevertPR = (pr?.title || "").toLowerCase().startsWith("Revert ");
+            if (isRevertPR) {
+              core.info(`PR #${pr.number} is a revert PR, skipping template check.`);
+              return;
+            }
+
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const number = pr.number;
