@@ -12,7 +12,7 @@ import {
     isBetaRelease,
     readMergeSha,
 } from "./lib.mjs";
-import { generateChangelogAI } from "../generate-changelog.mjs";
+import { generateChangelogAI } from "./generate-changelog.mjs";
 
 /**
  * Run the draft release stage
