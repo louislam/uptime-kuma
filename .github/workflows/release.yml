@@ -57,11 +57,8 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git"
 
-      - name: Remove package.json package-lock.json
-        run: rm -f package.json package-lock.json
-
       - name: Install dependencies
-        run: npm install --no-save --no-fund dotenv@~16.0.3 semver@~7.5.4 tar@~6.2.1
+        run: node extra/release/install-deps.mjs
 
       - name: Prepare release branch and PR
         env:
@@ -98,11 +95,8 @@ jobs:
         with:
           node-version: 24
 
-      - name: Remove package.json package-lock.json
-        run: rm -f package.json package-lock.json
-
       - name: Install dependencies
-        run: npm install --no-save --no-fund dotenv@~16.0.3 semver@~7.5.4 tar@~6.2.1
+        run: node extra/release/install-deps.mjs
 
       - name: Merge release PR
         env:
@@ -143,11 +137,8 @@ jobs:
       - name: Install opencode
         run: curl -fsSL https://opencode.ai/install | bash
 
-      - name: Remove package.json package-lock.json
-        run: rm -f package.json package-lock.json
-
       - name: Install dependencies
-        run: npm install --no-save --no-fund dotenv@~16.0.3 semver@~7.5.4 tar@~6.2.1
+        run: node extra/release/install-deps.mjs
 
       - name: Create draft release
         env:
