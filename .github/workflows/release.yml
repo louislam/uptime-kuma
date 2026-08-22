@@ -22,9 +22,7 @@ on:
         type: boolean
         default: false
 
-permissions:
-    contents: write
-    pull-requests: write
+permissions: {}
 
 concurrency:
   group: release-${{ inputs.is_beta }}-${{ inputs.version }}
@@ -37,9 +35,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
+    permissions:
+      contents: write
+
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
+          ref: master
           persist-credentials: true
           fetch-depth: 0 # Fetch all history and tags for update-version
 
@@ -50,14 +52,14 @@ jobs:
 
       - name: Configure Git
         env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git"
 
       - name: Install dependencies
-        run: node extra/release/install-deps.mjs
+        run: npm clean-install --no-fund
 
       - name: Prepare release branch and PR
         env:
@@ -65,7 +67,7 @@ jobs:
           RELEASE_IS_BETA: ${{ inputs.is_beta }}
           RELEASE_PREVIOUS_VERSION: ${{ inputs.previous_version }}
           DRY_RUN: ${{ inputs.dry_run }}
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.RELEASE_PAT }}
           GITHUB_RUN_ID: ${{ github.run_id }}
         run: node extra/release/prepare-release.mjs --setup-branch
 
@@ -84,17 +86,10 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          persist-credentials: false
-
       - name: Set up Node.js
         uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
           node-version: 24
-
-      - name: Install dependencies
-        run: node extra/release/install-deps.mjs
 
       - name: Merge release PR
         env:
@@ -123,6 +118,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
+          ref: master
           persist-credentials: false
           fetch-depth: 0 # Fetch all history and tags for changelog generation
 
@@ -133,9 +129,6 @@ jobs:
 
       - name: Install opencode
         run: curl -fsSL https://opencode.ai/install | bash
-
-      - name: Install dependencies
-        run: node extra/release/install-deps.mjs
 
       - name: Create draft release
         env:
@@ -158,6 +151,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
+          ref: master
           persist-credentials: false
 
       - name: Set up Node.js
@@ -204,6 +198,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
+          ref: master
           persist-credentials: false
 
       - name: Set up Node.js
