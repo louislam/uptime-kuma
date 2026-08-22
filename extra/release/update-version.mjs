@@ -1,15 +1,12 @@
 import { createRequire } from "module";
 import semver from "semver";
-import { isBetaRelease } from "./release/lib.mjs";
+import { isBetaRelease } from "./lib.mjs";
 
 const require = createRequire(import.meta.url);
 
-const pkg = require("../package.json");
+const pkg = require("../../package.json");
 const fs = require("fs");
 const childProcess = require("child_process");
-const util = require("../src/util");
-
-util.polyfill();
 
 const version = process.env.RELEASE_VERSION;
 const isBeta = isBetaRelease();
@@ -50,7 +47,7 @@ if (!exists) {
         console.error("error npm version!");
         process.exit(1);
     }
-    const resultInstall = childProcess.spawnSync(npm, ["install"], { shell: true });
+    const resultInstall = childProcess.spawnSync(npm, ["install", "--package-lock-only"], { shell: true });
     if (resultInstall.error) {
         console.error(resultInstall.error);
         console.error("error update package-lock!");
