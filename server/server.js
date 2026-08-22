@@ -761,6 +761,8 @@ let needSetup = false;
                 monitor.conditions = JSON.stringify(monitor.conditions);
 
                 monitor.rabbitmqNodes = JSON.stringify(monitor.rabbitmqNodes);
+                monitor.elasticsearchNodes = JSON.stringify(monitor.elasticsearchNodes ?? []);
+                monitor.elasticsearchMinimumNodes = Number(monitor.elasticsearchMinimumNodes) || 0;
 
                 /*
                  * List of frontend-only properties that should not be saved to the database.
@@ -948,6 +950,9 @@ let needSetup = false;
                 bean.rabbitmqNodes = JSON.stringify(monitor.rabbitmqNodes);
                 bean.rabbitmqUsername = monitor.rabbitmqUsername;
                 bean.rabbitmqPassword = monitor.rabbitmqPassword;
+                bean.elasticsearchNodes = JSON.stringify(monitor.elasticsearchNodes ?? []);
+                bean.elasticsearchStatus = monitor.elasticsearchStatus;
+                bean.elasticsearchMinimumNodes = Number(monitor.elasticsearchMinimumNodes) || 0;
                 bean.conditions = JSON.stringify(monitor.conditions);
                 bean.manual_status = monitor.manual_status;
                 bean.system_service_name = monitor.system_service_name;
