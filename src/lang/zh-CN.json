@@ -1724,5 +1724,14 @@
     "ClickUp Workspace ID Description": "您可以在工作区的 URL 中找到它，紧跟在 app.clickup.com/ 之后，例如 app.clickup.com/12345678/home。",
     "ClickUp Channel ID": "ClickUp 频道 ID",
     "ClickUp Channel ID Description": "您可以在聊天频道的 URL 中找到它，紧跟在 /chat/r/ 之后，例如 .../chat/r/abc123-4567。",
-    "ClickUp API Token Description": "您可以在 ClickUp 中创建个人访问令牌，方法是转到“设置”(Settings) -> “集成与 ClickApps”(Integrations & ClickApps) -> “ClickUp API” -> “API 令牌”(API Token)"
+    "ClickUp API Token Description": "您可以在 ClickUp 中创建个人访问令牌，方法是转到“设置”(Settings) -> “集成与 ClickApps”(Integrations & ClickApps) -> “ClickUp API” -> “API 令牌”(API Token)",
+    "smsgatewayTo": "(多个)手机号码",
+    "smsgatewayToHelptext": "用逗号分割的国际号码格式收件人手机号列表(例: +15551234567)",
+    "smsgatewayUrlHelptext": "您的SMS网关的根地址，不包含API路径。",
+    "milkyHttpAddress": "Milky HTTP地址(无需“/api”后缀)",
+    "milkyMessageType": "Milky消息类型",
+    "milkyGroupMessage": "群聊",
+    "milkyPrivateMessage": "私信",
+    "milkyUserOrGroupId": "群聊/用户ID",
+    "milkySafetyTips": "为了安全起见，必须设置访问令牌"
 }

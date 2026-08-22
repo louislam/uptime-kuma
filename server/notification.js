@@ -62,6 +62,7 @@ const SIGNL4 = require("./notification-providers/signl4");
 const Slack = require("./notification-providers/slack");
 const SMSPartner = require("./notification-providers/smspartner");
 const SMSEagle = require("./notification-providers/smseagle");
+const SMSGateway = require("./notification-providers/sms-gateway");
 const SMTP = require("./notification-providers/smtp");
 const Squadcast = require("./notification-providers/squadcast");
 const Stackfield = require("./notification-providers/stackfield");
@@ -185,6 +186,7 @@ class Notification {
             new SMSPartner(),
             new Slack(),
             new SMSEagle(),
+            new SMSGateway(),
             new SMTP(),
             new Squadcast(),
             new Stackfield(),

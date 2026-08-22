@@ -1680,5 +1680,14 @@
     "ClickUp Workspace ID": "ID pracovného priestoru ClickUp",
     "ClickUp Workspace ID Description": "Nájdete ho na URL adrese vášho pracovného priestoru, hneď za app.clickup.com/, napr. app.clickup.com/12345678/home.",
     "ClickUp Channel ID": "ID kanála ClickUp",
-    "ClickUp Channel ID Description": "Nájdete ho v adrese kanála konverzácie, hneď za /chat/r/, napr. .../chat/r/abc123-4567."
+    "ClickUp Channel ID Description": "Nájdete ho v adrese kanála konverzácie, hneď za /chat/r/, napr. .../chat/r/abc123-4567.",
+    "milkyHttpAddress": "Adresa Milky HTTP (bez koncovky „/api“)",
+    "milkyMessageType": "Typ správy Milky",
+    "milkyGroupMessage": "Skupina",
+    "milkyPrivateMessage": "Súkromné",
+    "milkyUserOrGroupId": "ID skupiny/používateľa",
+    "milkySafetyTips": "Z bezpečnostných dôvodov je potrebné nastaviť prístupový token",
+    "smsgatewayUrlHelptext": "Základná URL adresa vašej SMS brány bez cesty k API.",
+    "smsgatewayTo": "Telefónne číslo (-la)",
+    "smsgatewayToHelptext": "Zoznam telefónnych čísel príjemcov oddelených čiarkami v medzinárodnom formáte (napr. +15551234567)"
 }

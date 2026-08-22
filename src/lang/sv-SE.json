@@ -1674,5 +1674,11 @@
     "ntpStratumThresholdHelp": "Markera som nere om stratum är vid eller över detta värde. Stratum indikerar tidskällans kvalitet (1=GPS/atomur, 16=osynkroniserad).",
     "ntpOffsetThresholdHelp": "Markera som nere om tidsförskjutningen överstiger detta värde i millisekunder.",
     "ntpDispersionThreshold": "Tröskelvärde för rotspridning (ms)",
-    "ntpOffsetThreshold": "Tröskelvärde för tidsförskjutning (ms)"
+    "ntpOffsetThreshold": "Tröskelvärde för tidsförskjutning (ms)",
+    "milkyHttpAddress": "Milky HTTP-adress(utan '/api' suffixet)",
+    "milkyMessageType": "Milky-meddelandetyp",
+    "milkyGroupMessage": "Grupp",
+    "milkyPrivateMessage": "Privat",
+    "milkyUserOrGroupId": "Grupp/användar-ID",
+    "milkySafetyTips": "Av säkerhetsskäl måste åtkomst-token anges"
 }
