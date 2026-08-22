@@ -1728,5 +1728,8 @@
     "milkyPrivateMessage": "privé",
     "milkySafetyTips": "Pour des raisons de sécurité, le jeton d'accès doit être défini",
     "milkyHttpAddress": "Adresse HTTP Milky (sans le suffixe '/api')",
-    "milkyUserOrGroupId": "ID de groupe/utilisateur"
+    "milkyUserOrGroupId": "ID de groupe/utilisateur",
+    "smsgatewayUrlHelptext": "URL de base de votre passerelle SMS, sans chemin d’accès API.",
+    "smsgatewayTo": "Numéro(s) de téléphone",
+    "smsgatewayToHelptext": "Liste de numéros de téléphone des destinataires séparés par une virgule au format international (par exemple +15551234567)"
 }
