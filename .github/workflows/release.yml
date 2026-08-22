@@ -148,17 +148,22 @@ jobs:
           OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
         run: node extra/release/create-draft-release.mjs
 
-  # 4. Build and push all docker images from the merged master
-  #    Re-runnable: partial pushes are overwritten safely
-  docker-images:
-    needs: merge-pr
+  # 4. Build the frontend dist ONCE, upload it to the draft release and share
+  #    it with the docker-images job via a workflow artifact
+  #    Re-runnable: rebuilds only if ./tmp/dist.tar.gz is missing, uploads with --clobber
+  build-and-upload-assets:
+    needs: [merge-pr, draft-release]
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 30
 
     steps:
+      # Checkout the merged master code (merge_sha), not the workflow-dispatch SHA,
+      # so package.json is already bumped to the release version before building.
+      # Otherwise the frontend FRONTEND_VERSION (from npm_package_version) would be stale.
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
+          ref: ${{ needs.merge-pr.outputs.merge_sha || github.sha }}
 
       - name: Set up Node.js
         uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
@@ -167,6 +172,56 @@ jobs:
 
       - name: Install dependencies
         run: npm clean-install --no-fund
+
+      - name: Build dist and upload assets to the draft release
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          GH_TOKEN: ${{ secrets.RELEASE_PAT }}
+          GH_REPO: ${{ github.repository }}
+        run: node extra/release/build-and-upload-assets.mjs
+
+      - name: Upload dist as artifact
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: dist-${{ inputs.version }}
+          path: ./dist
+          retention-days: 90
+
+      - name: Upload dist.tar.gz as artifact
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: dist-tar-${{ inputs.version }}
+          path: ./tmp/dist.tar.gz
+          retention-days: 90
+
+  # 5. Build and push all docker images from the merged master, reusing the dist
+  #    built by build-and-upload-assets (the frontend is never rebuilt here)
+  #    Re-runnable: partial pushes are overwritten safely
+  docker-images:
+    needs: [merge-pr, build-and-upload-assets]
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          ref: ${{ needs.merge-pr.outputs.merge_sha || github.sha }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: node extra/release/install-deps.mjs
+
+      - name: Download dist artifact
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
+        with:
+          name: dist-${{ inputs.version }}
+          path: ./dist
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
@@ -193,38 +248,3 @@ jobs:
           RELEASE_IS_BETA: ${{ inputs.is_beta }}
           DRY_RUN: ${{ inputs.dry_run }}
         run: node extra/release/build-images.mjs
-
-  # 5. Upload dist.tar.gz to the draft release
-  #    Re-runnable: uploads with --clobber
-  upload-assets:
-    needs: [draft-release, docker-images]
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          persist-credentials: false
-
-      - name: Set up Node.js
-        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
-        with:
-          node-version: 24
-
-      - name: Install dependencies
-        run: npm clean-install --no-fund
-
-      - name: Upload assets to the draft release
-        env:
-          RELEASE_VERSION: ${{ inputs.version }}
-          DRY_RUN: ${{ inputs.dry_run }}
-          GH_TOKEN: ${{ secrets.RELEASE_PAT }}
-          GH_REPO: ${{ github.repository }}
-        run: node extra/release/upload-assets.mjs
-
-      - name: Upload dist.tar.gz as artifact
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
-        with:
-          name: dist-${{ inputs.version }}
-          path: ./tmp/dist.tar.gz
-          retention-days: 90

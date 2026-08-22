@@ -1,8 +1,12 @@
-// Asset upload stage of a release:
-// 1. Make sure ./tmp/dist.tar.gz exists (build it if missing)
-// 2. Upload it to the draft GitHub Release (--clobber, so this stage can be re-run)
+// Build + asset upload stage of a release:
+// 1. Build the frontend dist ONCE (only if ./tmp/dist.tar.gz is missing)
+// 2. Create ./tmp/dist.tar.gz from the built dist
+// 3. Upload it to the draft GitHub Release (--clobber, so this stage can be re-run)
 //
-// Usage: node extra/release/upload-assets.mjs
+// The docker-images job reuses this built dist, so the frontend is compiled a
+// single time per release.
+//
+// Usage: node extra/release/build-and-upload-assets.mjs
 
 import "dotenv/config";
 import * as childProcess from "child_process";
@@ -17,10 +21,10 @@ import {
 const distTarGz = "./tmp/dist.tar.gz";
 
 /**
- * Run the asset upload stage
+ * Run the build + asset upload stage
  * @returns {Promise<void>}
  */
-export async function runUploadAssets() {
+export async function runBuildAndUploadAssets() {
     const version = getVersionFromEnv();
     const dryRun = process.env.DRY_RUN === "true";
 
@@ -50,5 +54,5 @@ export async function runUploadAssets() {
 }
 
 if (import.meta.main) {
-    await runUploadAssets();
+    await runBuildAndUploadAssets();
 }

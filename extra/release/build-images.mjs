@@ -1,14 +1,16 @@
 // Image build stage of a release:
 // 1. Check the version tag does not exist on Docker Hub yet (double-release guard)
-// 2. Build the frontend dist
-// 3. Build and push all docker images (skipped in dry run)
+// 2. Build and push all docker images (skipped in dry run)
+//
+// The frontend dist is built once by the build-and-upload-assets job (or the
+// local orchestrator) and is expected to already exist in ./dist.
 //
 // Usage: node extra/release/build-images.mjs
 
 import "dotenv/config";
+import fs from "fs";
 import {
     buildAllImages,
-    buildDist,
     checkDocker,
     checkTagExists,
     checkVersionFormat,
@@ -42,12 +44,15 @@ export async function runBuildImages() {
     await checkTagExists(repoNames, version);
 
     if (!dryRun) {
-        // Build frontend dist (bundled into the images)
-        buildDist();
+        // dist must be built by the build-and-upload-assets job before this stage
+        if (!fs.existsSync("dist")) {
+            console.error("dist directory not found. Run the build-and-upload-assets job first.");
+            process.exit(1);
+        }
 
         buildAllImages(repoNames, version, isBeta);
     } else {
-        console.log("Dry run mode - skipping dist and image build and push.");
+        console.log("Dry run mode - skipping image build and push.");
     }
 }
 
