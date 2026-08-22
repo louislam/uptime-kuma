@@ -66,7 +66,7 @@ jobs:
           RELEASE_IS_BETA: ${{ inputs.is_beta }}
           RELEASE_PREVIOUS_VERSION: ${{ inputs.previous_version }}
           DRY_RUN: ${{ inputs.dry_run }}
-          GH_TOKEN: ${{ secrets.RELEASE_PAT }}
+          GH_TOKEN: ${{ github.token }}
           GITHUB_RUN_ID: ${{ github.run_id }}
         run: node extra/release/prepare-release.mjs --setup-branch
 
@@ -85,10 +85,18 @@ jobs:
     timeout-minutes: 10
 
     steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: master
+          persist-credentials: false
+
       - name: Set up Node.js
         uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
           node-version: 24
+
+      - name: Install dependencies
+        run: npm install --no-save --no-fund dotenv@~16.0.3 semver@~7.5.4 tar@~6.2.1
 
       - name: Merge release PR
         env:
@@ -128,6 +136,9 @@ jobs:
 
       - name: Install opencode
         run: curl -fsSL https://opencode.ai/install | bash
+
+      - name: Install dependencies
+        run: npm install --no-save --no-fund dotenv@~16.0.3 semver@~7.5.4 tar@~6.2.1
 
       - name: Create draft release
         env:
