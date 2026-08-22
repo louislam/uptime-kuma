@@ -285,6 +285,10 @@ class Database {
             min: 0,
             max: parsedMaxPoolConnections,
             idleTimeoutMillis: 30000,
+            afterCreate(conn, done) {
+                // Set to utf8mb4 for MariaDB
+                conn.query("SET CHARACTER SET utf8mb4;", (err) => done(err, conn));
+            },
         };
 
         log.info("db", `Database Type: ${dbConfig.type}`);
@@ -407,15 +411,6 @@ class Database {
             };
         } else {
             throw new Error("Unknown Database type: " + dbConfig.type);
-        }
-
-        // Set to utf8mb4 for MariaDB
-        if (dbConfig.type.endsWith("mariadb")) {
-            config.pool = {
-                afterCreate(conn, done) {
-                    conn.query("SET CHARACTER SET utf8mb4;", (err) => done(err, conn));
-                },
-            };
         }
 
         const knexInstance = knex(config);

@@ -62,6 +62,7 @@ const SIGNL4 = require("./notification-providers/signl4");
 const Slack = require("./notification-providers/slack");
 const SMSPartner = require("./notification-providers/smspartner");
 const SMSEagle = require("./notification-providers/smseagle");
+const SMSGateway = require("./notification-providers/sms-gateway");
 const SMTP = require("./notification-providers/smtp");
 const Squadcast = require("./notification-providers/squadcast");
 const Stackfield = require("./notification-providers/stackfield");
@@ -104,6 +105,7 @@ const HaloPSA = require("./notification-providers/HaloPSA");
 const Max = require("./notification-providers/max");
 const VK = require("./notification-providers/vk");
 const VKTeams = require("./notification-providers/vkteams");
+const Milky = require("./notification-providers/milky");
 
 class Notification {
     providerList = {};
@@ -184,6 +186,7 @@ class Notification {
             new SMSPartner(),
             new Slack(),
             new SMSEagle(),
+            new SMSGateway(),
             new SMTP(),
             new Squadcast(),
             new Stackfield(),
@@ -223,6 +226,7 @@ class Notification {
             new Max(),
             new VK(),
             new VKTeams(),
+            new Milky(),
         ];
         for (let item of list) {
             if (!item.name) {
