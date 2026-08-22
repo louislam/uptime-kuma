@@ -2,7 +2,7 @@
 // 1. Validate version format
 // 2. Reuse the existing open release PR if there is one (safe to re-run)
 // 3. Otherwise create the release branch (--setup-branch, used by GitHub Actions),
-//    bump the version (commit + push), and create a draft PR
+//    bump the version (commit + push), and create a PR
 //
 // Usage: node extra/release/prepare-release.mjs [--setup-branch]
 

@@ -399,7 +399,12 @@ export function buildAllImages(repoNames, version, isBeta) {
         buildImage(repoNames, ["beta-rootless", ver(version, "rootless")], "rootless");
 
         // Build slim image
-        buildImage(repoNames, ["beta-slim", ver(version, "slim")], "release", "BASE_IMAGE=louislam/uptime-kuma:base2-slim");
+        buildImage(
+            repoNames,
+            ["beta-slim", ver(version, "slim")],
+            "release",
+            "BASE_IMAGE=louislam/uptime-kuma:base2-slim"
+        );
 
         // Build full image
         buildImage(repoNames, ["beta", version], "release");
@@ -608,20 +613,9 @@ The \`dist.tar.gz\` archive will be available as an artifact in the [workflow ru
 `;
 
     // Create the PR using gh CLI
-    const args = [
-        "pr",
-        "create",
-        "--title",
-        title,
-        "--body",
-        body,
-        "--base",
-        "master",
-        "--head",
-        branchName,
-    ];
+    const args = ["pr", "create", "--title", title, "--body", body, "--base", "master", "--head", branchName];
 
-    console.log(`Creating draft PR: ${title}`);
+    console.log(`Creating PR: ${title}`);
 
     const result = childProcess.spawnSync("gh", args, {
         encoding: "utf-8",
@@ -649,7 +643,7 @@ The \`dist.tar.gz\` archive will be available as an artifact in the [workflow ru
         console.warn("Could not extract PR number from URL, auto-finish will not be possible");
     }
 
-    console.log("Successfully created draft pull request");
+    console.log("Successfully created pull request");
     return prNumber;
 }
 
