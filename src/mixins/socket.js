@@ -36,6 +36,7 @@ export default {
                 connected: false,
                 connectCount: 0,
                 initedSocketIO: false,
+                unloading: false,
             },
             username: null,
             remember: localStorage.remember !== "0",
@@ -103,6 +104,16 @@ export default {
             }
 
             this.socket.initedSocketIO = true;
+            this.socket.unloading = false;
+
+            // function to mark the socket as unloading to be used later on page reload
+            const markPageUnloading = () => {
+                this.socket.unloading = true;
+            };
+
+            // catch the page reloading to prevent glitched "connection lost" in firefox
+            window.addEventListener("beforeunload", markPageUnloading);
+            window.addEventListener("pagehide", markPageUnloading);
 
             let protocol = location.protocol + "//";
 
@@ -267,6 +278,10 @@ export default {
 
             socket.on("disconnect", () => {
                 console.log("disconnect");
+                if (this.socket.unloading) {
+                    // exit out now so firefox does not show glitched connection lost during a reload
+                    return;
+                }
                 this.connectionErrorMsg = `${this.$t("Lost connection to the socket server.")} ${this.$t("Reconnecting...")}`;
                 this.socket.connected = false;
             });
