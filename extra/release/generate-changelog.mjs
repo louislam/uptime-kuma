@@ -1,5 +1,5 @@
 // Script to generate changelog
-// Usage: node generate-changelog.mjs <previous-version-tag>
+// Usage: node extra/release/generate-changelog.mjs <previous-version-tag>
 // GitHub CLI (gh command) is required
 
 import * as childProcess from "child_process";
@@ -27,11 +27,7 @@ const outputFormat = JSON.stringify({
     others: [192, 21],
 });
 
-const prompt = `Input Data:
-\`\`\`json
-{{ input }}
-\`\`\`
-
+const prompt = `Input Data: {{ input }}
 LLM Task:
 - Output a one-line JSON object in the following format:
 {{ outputFormat }}
@@ -191,11 +187,92 @@ export async function generateChangelog(previousVersion, categorizedMap) {
 }
 
 /**
+ * Generate Changelog using AI
+ * The LLM API can be flaky, so it retries a few times before falling back to uncategorized.
+ * @param {string} previousVersion Previous Version Tag
+ * @returns {Promise<string>} Changelog Content
+ */
+export async function generateChangelogAI(previousVersion) {
+    // 1. Generate changelog
+    let categorizedMap = null;
+
+    console.log("Running opencode to categorize PRs...");
+    const llmPrompt = (await getPrompt(previousVersion)).replaceAll("\n", " ");
+
+    console.log(llmPrompt);
+
+    const maxAttempts = 3;
+    const retryDelays = [15000, 45000];
+
+    for (let attempt = 1; attempt <= maxAttempts && !categorizedMap; attempt++) {
+        console.log(`Running opencode with the above prompt... (attempt ${attempt}/${maxAttempts})`);
+
+        try {
+            const result = childProcess.spawnSync(
+                "opencode",
+                ["run", "-m", "opencode/big-pickle", "--format", "json", llmPrompt],
+                {
+                    encoding: "utf-8",
+                    timeout: 300000,
+                    shell: true,
+                    cwd: process.cwd(),
+                    env: process.env,
+                }
+            );
+
+            if (result.status === 0 && result.stdout) {
+                // Parse NDJSON output: find "type":"text" line
+                for (const line of result.stdout.trim().split("\n")) {
+                    try {
+                        const obj = JSON.parse(line);
+                        if (obj.type === "text" && obj.part?.text) {
+                            const jsonMatch = obj.part.text.match(/\{[\s\S]*\}/);
+                            if (jsonMatch) {
+                                categorizedMap = JSON.parse(jsonMatch[0]);
+                                console.log("LLM categorization applied.");
+                                break;
+                            }
+                        }
+                    } catch {
+                        // skip unparseable lines
+                    }
+                }
+
+                if (!categorizedMap) {
+                    console.warn("No JSON found in opencode response.");
+                    console.warn(result.stdout);
+                }
+            } else {
+                console.warn("opencode failed or returned no output (status:", result.status, ")");
+                if (result.stderr) {
+                    console.warn("stderr:", result.stderr.slice(0, 500));
+                }
+            }
+        } catch (e) {
+            console.warn("Failed to run opencode:", e.message);
+        }
+
+        if (!categorizedMap && attempt < maxAttempts) {
+            const delayMs = retryDelays[attempt - 1];
+            console.warn(`Attempt ${attempt} failed. Retrying in ${delayMs / 1000}s...`);
+            await new Promise((resolve) => setTimeout(resolve, delayMs));
+        }
+    }
+
+    if (!categorizedMap) {
+        categorizedMap = {};
+        console.warn(`OpenCode unavailable after ${maxAttempts} attempts, using uncategorized fallback.`);
+    }
+
+    return await generateChangelog(previousVersion, categorizedMap);
+}
+
+/**
  * @param {string} previousVersion Previous Version Tag
  * @param {boolean} removeAuthor Whether to strip the author field from the returned PR list
  * @returns {Promise<object>} List of Pull Requests merged since previousVersion
  */
-async function getPullRequestList(previousVersion, removeAuthor = false) {
+export async function getPullRequestList(previousVersion, removeAuthor = false) {
     // Get the date of previousVersion in iso8601-strict format (2026-02-19T13:34:03+08:00) from git
     const previousVersionDate = childProcess
         .execSync(`git log -1 --format=%cd --date=iso8601-strict ${previousVersion}`)
@@ -287,7 +364,7 @@ async function getAuthorList(prID) {
  * @param {Set<string>} authorSet Set of Authors
  * @returns {Set<string>} New Set with mainAuthor at the front
  */
-async function mainAuthorToFront(mainAuthor, authorSet) {
+export async function mainAuthorToFront(mainAuthor, authorSet) {
     if (ignoreList.includes(mainAuthor)) {
         return authorSet;
     }

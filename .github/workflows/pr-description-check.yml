@@ -36,6 +36,20 @@ jobs:
               return;
             }
 
+            // Skip release PRs (created by the release workflow)
+            const isReleasePR = (pr?.head?.ref || "").startsWith("release-");
+            if (isReleasePR) {
+              core.info(`PR #${pr.number} is a release PR, skipping template check.`);
+              return;
+            }
+
+            // If is revert PR, skip
+            const isRevertPR = (pr?.title || "").toLowerCase().startsWith("Revert ");
+            if (isRevertPR) {
+              core.info(`PR #${pr.number} is a revert PR, skipping template check.`);
+              return;
+            }
+
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const number = pr.number;

@@ -6,7 +6,9 @@ const AliyunSms = require("./notification-providers/aliyun-sms");
 const Apprise = require("./notification-providers/apprise");
 const Bale = require("./notification-providers/bale");
 const Bark = require("./notification-providers/bark");
+const BearSMS = require("./notification-providers/bearsms");
 const Bitrix24 = require("./notification-providers/bitrix24");
+const ClickUp = require("./notification-providers/clickup");
 const ClickSendSMS = require("./notification-providers/clicksendsms");
 const CallMeBot = require("./notification-providers/call-me-bot");
 const SMSC = require("./notification-providers/smsc");
@@ -45,6 +47,7 @@ const Pumble = require("./notification-providers/pumble");
 const FlashDuty = require("./notification-providers/flashduty");
 const Flowtriq = require("./notification-providers/flowtriq");
 const PagerTree = require("./notification-providers/pagertree");
+const Pinglet = require("./notification-providers/pinglet");
 const Plivo = require("./notification-providers/plivo");
 const PromoSMS = require("./notification-providers/promosms");
 const Pushbullet = require("./notification-providers/pushbullet");
@@ -59,6 +62,7 @@ const SIGNL4 = require("./notification-providers/signl4");
 const Slack = require("./notification-providers/slack");
 const SMSPartner = require("./notification-providers/smspartner");
 const SMSEagle = require("./notification-providers/smseagle");
+const SMSGateway = require("./notification-providers/sms-gateway");
 const SMTP = require("./notification-providers/smtp");
 const Squadcast = require("./notification-providers/squadcast");
 const Stackfield = require("./notification-providers/stackfield");
@@ -80,12 +84,14 @@ const SevenIO = require("./notification-providers/sevenio");
 const Whapi = require("./notification-providers/whapi");
 const WAHA = require("./notification-providers/waha");
 const Evolution = require("./notification-providers/evolution");
+const OpenWa = require("./notification-providers/openwa");
 const GtxMessaging = require("./notification-providers/gtx-messaging");
 const Cellsynt = require("./notification-providers/cellsynt");
 const Onesender = require("./notification-providers/onesender");
 const Wpush = require("./notification-providers/wpush");
 const WxPusher = require("./notification-providers/wxpusher");
 const SendGrid = require("./notification-providers/send-grid");
+const TurboSMTP = require("./notification-providers/turbosmtp");
 const Brevo = require("./notification-providers/brevo");
 const Resend = require("./notification-providers/resend");
 const YZJ = require("./notification-providers/yzj");
@@ -99,6 +105,7 @@ const HaloPSA = require("./notification-providers/HaloPSA");
 const Max = require("./notification-providers/max");
 const VK = require("./notification-providers/vk");
 const VKTeams = require("./notification-providers/vkteams");
+const Milky = require("./notification-providers/milky");
 
 class Notification {
     providerList = {};
@@ -121,7 +128,9 @@ class Notification {
             new Apprise(),
             new Bale(),
             new Bark(),
+            new BearSMS(),
             new Bitrix24(),
+            new ClickUp(),
             new ClickSendSMS(),
             new CallMeBot(),
             new SMSC(),
@@ -159,6 +168,7 @@ class Notification {
             new FlashDuty(),
             new Flowtriq(),
             new PagerTree(),
+            new Pinglet(),
             new Plivo(),
             new PromoSMS(),
             new Pumble(),
@@ -176,6 +186,7 @@ class Notification {
             new SMSPartner(),
             new Slack(),
             new SMSEagle(),
+            new SMSGateway(),
             new SMTP(),
             new Squadcast(),
             new Stackfield(),
@@ -195,6 +206,7 @@ class Notification {
             new Whapi(),
             new WAHA(),
             new Evolution(),
+            new OpenWa(),
             new GtxMessaging(),
             new Cellsynt(),
             new Wpush(),
@@ -207,12 +219,14 @@ class Notification {
             new Notifery(),
             new SMSIR(),
             new SendGrid(),
+            new TurboSMTP(),
             new Whatsapp360messenger(),
             new Webpush(),
             new HaloPSA(),
             new Max(),
             new VK(),
             new VKTeams(),
+            new Milky(),
         ];
         for (let item of list) {
             if (!item.name) {

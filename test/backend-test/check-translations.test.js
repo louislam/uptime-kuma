@@ -2,6 +2,7 @@ const { describe, it } = require("node:test");
 const assert = require("node:assert");
 const fs = require("fs/promises");
 const path = require("path");
+const { retryExternalService } = require("./test-util");
 
 /**
  * Recursively walks a directory and yields file paths.
@@ -61,7 +62,7 @@ describe("Check Translations", () => {
     it("should not have missing translation keys", async () => {
         const enTranslations = JSON.parse(await fs.readFile("src/lang/en.json", "utf-8"));
 
-        // this is a resonably crude check, you can get around this trivially
+        // this is a reasonably crude check, you can get around this trivially
         /// this check is just to save on maintainer energy to explain this on every review ^^
         const translationRegex = /\$t\(['"](?<key1>.*?)['"]\s*[,)]|i18n-t[^>]*\s+keypath="(?<key2>[^"]+)"/dg;
 
@@ -137,36 +138,38 @@ describe("Check Translations", () => {
     });
 
     it("en.json translations must not change placeholder parameters", async () => {
-        // Load local reference (the one translators are synced against)
-        const enTranslations = JSON.parse(await fs.readFile("src/lang/en.json", "utf-8"));
+        await retryExternalService(async () => {
+            // Load local reference (the one translators are synced against)
+            const enTranslations = JSON.parse(await fs.readFile("src/lang/en.json", "utf-8"));
 
-        // Fetch upstream version
-        const res = await fetch(UPSTREAM_EN_JSON);
-        assert.equal(res.ok, true, "Failed to fetch upstream en.json");
+            // Fetch upstream version
+            const res = await fetch(UPSTREAM_EN_JSON);
+            assert.equal(res.ok, true, "Failed to fetch upstream en.json");
 
-        const upstreamEn = await res.json();
+            const upstreamEn = await res.json();
 
-        for (const [key, upstreamValue] of Object.entries(upstreamEn)) {
-            if (!(key in enTranslations)) {
-                // deleted keys are fine
-                continue;
+            for (const [key, upstreamValue] of Object.entries(upstreamEn)) {
+                if (!(key in enTranslations)) {
+                    // deleted keys are fine
+                    continue;
+                }
+
+                const localParams = extractParams(enTranslations[key]);
+                const upstreamParams = extractParams(upstreamValue);
+
+                assert.deepEqual(
+                    localParams,
+                    upstreamParams,
+                    [
+                        `Translation key "${key}" changed placeholder parameters.`,
+                        `This is a breaking change for existing translations.`,
+                        `Please rename the translation key instead of changing placeholders.`,
+                        ``,
+                        `your version: ${[...localParams].join(", ")}`,
+                        `on master:    ${[...upstreamParams].join(", ")}`,
+                    ].join("\n")
+                );
             }
-
-            const localParams = extractParams(enTranslations[key]);
-            const upstreamParams = extractParams(upstreamValue);
-
-            assert.deepEqual(
-                localParams,
-                upstreamParams,
-                [
-                    `Translation key "${key}" changed placeholder parameters.`,
-                    `This is a breaking change for existing translations.`,
-                    `Please rename the translation key instead of changing placeholders.`,
-                    ``,
-                    `your version: ${[...localParams].join(", ")}`,
-                    `on master:    ${[...upstreamParams].join(", ")}`,
-                ].join("\n")
-            );
-        }
+        });
     });
 });
