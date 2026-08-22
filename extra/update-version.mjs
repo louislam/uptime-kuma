@@ -1,4 +1,7 @@
 import { createRequire } from "module";
+import semver from "semver";
+import { isBetaRelease } from "./release/lib.mjs";
+
 const require = createRequire(import.meta.url);
 
 const pkg = require("../package.json");
@@ -9,6 +12,7 @@ const util = require("../src/util");
 util.polyfill();
 
 const version = process.env.RELEASE_VERSION;
+const isBeta = isBetaRelease();
 
 console.log("New Version: " + version);
 
@@ -17,14 +21,25 @@ if (!version) {
     process.exit(1);
 }
 
+if (isBeta) {
+    const identifier = semver.prerelease(version)?.[0];
+    if (identifier !== "beta") {
+        console.error("invalid version, beta version only");
+        process.exit(1);
+    }
+}
+
 const exists = tagExists(version);
 
 if (!exists) {
     // Process package.json
     pkg.version = version;
 
-    // Replace the version: https://regex101.com/r/hmj2Bc/1
-    pkg.scripts.setup = pkg.scripts.setup.replace(/(git checkout )([^\s]+)/, `$1${version}`);
+    if (!isBeta) {
+        // Replace the version: https://regex101.com/r/hmj2Bc/1
+        pkg.scripts.setup = pkg.scripts.setup.replace(/(git checkout )([^\s]+)/, `$1${version}`);
+    }
+
     fs.writeFileSync("package.json", JSON.stringify(pkg, null, 4) + "\n");
 
     // Also update package-lock.json
