@@ -22,7 +22,9 @@ on:
         type: boolean
         default: false
 
-permissions: {}
+permissions:
+    contents: write
+    pull-requests: write
 
 concurrency:
   group: release-${{ inputs.is_beta }}-${{ inputs.version }}
@@ -52,7 +54,7 @@ jobs:
 
       - name: Configure Git
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.REALSE_PAT }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -67,7 +69,7 @@ jobs:
           RELEASE_IS_BETA: ${{ inputs.is_beta }}
           RELEASE_PREVIOUS_VERSION: ${{ inputs.previous_version }}
           DRY_RUN: ${{ inputs.dry_run }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.REALSE_PAT }}
           GITHUB_RUN_ID: ${{ github.run_id }}
         run: node extra/release/prepare-release.mjs --setup-branch
 
@@ -96,7 +98,7 @@ jobs:
           RELEASE_VERSION: ${{ inputs.version }}
           DRY_RUN: ${{ inputs.dry_run }}
           PR_NUMBER: ${{ needs.prepare.outputs.pr_number }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.REALSE_PAT }}
           GH_REPO: ${{ github.repository }}
         run: node extra/release/merge-pr.mjs
 
@@ -137,7 +139,7 @@ jobs:
           RELEASE_PREVIOUS_VERSION: ${{ inputs.previous_version }}
           DRY_RUN: ${{ inputs.dry_run }}
           MERGE_SHA: ${{ needs.merge-pr.outputs.merge_sha }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.REALSE_PAT }}
           OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
         run: node extra/release/create-draft-release.mjs
 
