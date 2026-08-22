@@ -399,12 +399,7 @@ export function buildAllImages(repoNames, version, isBeta) {
         buildImage(repoNames, ["beta-rootless", ver(version, "rootless")], "rootless");
 
         // Build slim image
-        buildImage(
-            repoNames,
-            ["beta-slim", ver(version, "slim")],
-            "release",
-            "BASE_IMAGE=louislam/uptime-kuma:base2-slim"
-        );
+        buildImage(repoNames, ["beta-slim", ver(version, "slim")], "release", "BASE_IMAGE=louislam/uptime-kuma:base2-slim");
 
         // Build full image
         buildImage(repoNames, ["beta", version], "release");
@@ -575,7 +570,7 @@ export async function createDistTarGz() {
 }
 
 /**
- * Create a release PR
+ * Create a draft release PR
  * @param {string} version Version
  * @param {string} previousVersion Previous version tag
  * @param {boolean} dryRun Still create the PR, but add "[DRY RUN]" to the title
@@ -613,9 +608,21 @@ The \`dist.tar.gz\` archive will be available as an artifact in the [workflow ru
 `;
 
     // Create the PR using gh CLI
-    const args = ["pr", "create", "--title", title, "--body", body, "--base", "master", "--head", branchName];
+    const args = [
+        "pr",
+        "create",
+        "--title",
+        title,
+        "--body",
+        body,
+        "--base",
+        "master",
+        "--head",
+        branchName,
+        "--draft",
+    ];
 
-    console.log(`Creating PR: ${title}`);
+    console.log(`Creating draft PR: ${title}`);
 
     const result = childProcess.spawnSync("gh", args, {
         encoding: "utf-8",
@@ -643,7 +650,7 @@ The \`dist.tar.gz\` archive will be available as an artifact in the [workflow ru
         console.warn("Could not extract PR number from URL, auto-finish will not be possible");
     }
 
-    console.log("Successfully created pull request");
+    console.log("Successfully created draft pull request");
     return prNumber;
 }
 

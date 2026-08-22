@@ -1,5 +1,5 @@
 // Script to generate changelog
-// Usage: node extra/release/generate-changelog.mjs <previous-version-tag>
+// Usage: node generate-changelog.mjs <previous-version-tag>
 // GitHub CLI (gh command) is required
 
 import * as childProcess from "child_process";
