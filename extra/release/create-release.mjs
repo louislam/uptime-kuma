@@ -1,5 +1,5 @@
 import { createDraftRelease, getVersionFromEnv, isBetaRelease } from "./lib.mjs";
-import { generateChangelogAI } from "./generate-changelog.mjs";
+import { generateChangelogAI } from "../generate-changelog.mjs";
 
 const version = getVersionFromEnv();
 const previousVersion = process.env.RELEASE_PREVIOUS_VERSION;
