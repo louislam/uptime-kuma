@@ -1964,6 +1964,7 @@
                                         :preselect-first="false"
                                         :max-height="600"
                                         :taggable="true"
+                                        @tag="addAcceptedStatusCode"
                                     ></VueMultiselect>
 
                                     <div class="form-text">
@@ -2108,6 +2109,7 @@
                                         :preselect-first="false"
                                         :max-height="600"
                                         :taggable="true"
+                                        @tag="addAcceptedStatusCode"
                                     ></VueMultiselect>
 
                                     <div class="form-text">
@@ -2155,6 +2157,7 @@
                                     :preselect-first="false"
                                     :max-height="600"
                                     :taggable="true"
+                                    @tag="addAcceptedStatusCode"
                                 ></VueMultiselect>
 
                                 <div class="form-text">
@@ -4122,6 +4125,10 @@ message HealthCheckResponse {
 
         addRabbitmqNode(newNode) {
             this.monitor.rabbitmqNodes.push(newNode);
+        },
+
+        addAcceptedStatusCode(newCode) {
+            this.monitor.accepted_statuscodes.push(newCode);
         },
 
         /**
