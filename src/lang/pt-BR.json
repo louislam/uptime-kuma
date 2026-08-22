@@ -1689,5 +1689,11 @@
     "ClickUp Workspace ID Description": "Você pode encontrá-lo na URL do seu espaço de trabalho, logo após app.clickup.com/, por exemplo: app.clickup.com/12345678/home.",
     "ClickUp Channel ID": "ID do canal do ClickUp",
     "ClickUp API Token Description": "Você pode criar um token de acesso pessoal no ClickUp acessando Configurações -> Integrações e ClickApps -> API do ClickUp -> Token de API",
-    "ClickUp Channel ID Description": "Você pode encontrá-lo na URL do canal de chat, logo após /chatr/, por exemplo: .../chatr/abc 123-4567."
+    "ClickUp Channel ID Description": "Você pode encontrá-lo na URL do canal de chat, logo após /chatr/, por exemplo: .../chatr/abc 123-4567.",
+    "milkyHttpAddress": "Endereço HTTP do Milky (sem o sufixo '/api')",
+    "milkyMessageType": "Tipo de Mensagem Milky",
+    "milkyGroupMessage": "Grupo",
+    "milkyPrivateMessage": "Privado",
+    "milkyUserOrGroupId": "Grupo/ID do Usuário",
+    "milkySafetyTips": "Por segurança, é necessário definir o token de acesso"
 }

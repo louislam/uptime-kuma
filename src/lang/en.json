@@ -1606,5 +1606,8 @@
     "milkyGroupMessage": "Group",
     "milkyPrivateMessage": "Private",
     "milkyUserOrGroupId": "Group/User ID",
-    "milkySafetyTips": "For safety, must set access token"
+    "milkySafetyTips": "For safety, must set access token",
+    "smsgatewayUrlHelptext": "The base URL of your SMS Gateway, without an API path.",
+    "smsgatewayTo": "Phone Number(s)",
+    "smsgatewayToHelptext": "Comma-separated list of recipient phone numbers in international format (e.g. +15551234567)"
 }
