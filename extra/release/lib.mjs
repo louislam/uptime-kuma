@@ -570,7 +570,7 @@ export async function createDistTarGz() {
 }
 
 /**
- * Create a draft release PR
+ * Create a release PR
  * @param {string} version Version
  * @param {string} previousVersion Previous version tag
  * @param {boolean} dryRun Still create the PR, but add "[DRY RUN]" to the title
@@ -619,7 +619,6 @@ The \`dist.tar.gz\` archive will be available as an artifact in the [workflow ru
         "master",
         "--head",
         branchName,
-        "--draft",
     ];
 
     console.log(`Creating draft PR: ${title}`);
