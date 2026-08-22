@@ -5,7 +5,7 @@
 //   1. Prepare: validate version, bump it on the release branch, create the draft PR
 //   2. Merge: squash merge the PR into master
 //   3. Draft release: generate changelog (LLM) and create the draft GitHub Release
-//   4. Images: build and push all docker images
+//   4. Images: build the frontend dist once, then build and push all docker images
 //   5. Assets: upload dist.tar.gz to the draft release
 //
 // Usage:
@@ -13,12 +13,12 @@
 //   node extra/release/release.mjs --beta   # beta release
 
 import "dotenv/config";
-import { checkDocker, getVersionFromEnv } from "./lib.mjs";
+import { buildDist, checkDocker, getVersionFromEnv } from "./lib.mjs";
 import { runPrepare } from "./prepare-release.mjs";
 import { runMergePR } from "./merge-pr.mjs";
 import { runCreateDraftRelease } from "./create-draft-release.mjs";
 import { runBuildImages } from "./build-images.mjs";
-import { runUploadAssets } from "./upload-assets.mjs";
+import { runBuildAndUploadAssets } from "./build-and-upload-assets.mjs";
 
 if (process.argv.includes("--beta")) {
     process.env.RELEASE_IS_BETA = "true";
@@ -46,8 +46,9 @@ await runMergePR();
 // 3. Generate changelog (LLM categorization) and create the draft release
 await runCreateDraftRelease();
 
-// 4. Build and push all docker images
+// 4. Build the frontend dist once, then build and push all docker images
+buildDist();
 await runBuildImages();
 
 // 5. Upload dist.tar.gz to the draft release
-await runUploadAssets();
+await runBuildAndUploadAssets();
