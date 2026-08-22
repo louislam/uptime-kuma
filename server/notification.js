@@ -35,6 +35,7 @@ const Matrix = require("./notification-providers/matrix");
 const Mattermost = require("./notification-providers/mattermost");
 const NextcloudTalk = require("./notification-providers/nextcloudtalk");
 const Nostr = require("./notification-providers/nostr");
+const NotifyApp = require("./notification-providers/notifyapp");
 const Ntfy = require("./notification-providers/ntfy");
 const Octopush = require("./notification-providers/octopush");
 const OneChat = require("./notification-providers/onechat");
@@ -156,6 +157,7 @@ class Notification {
             new Mattermost(),
             new NextcloudTalk(),
             new Nostr(),
+            new NotifyApp(),
             new Ntfy(),
             new Octopush(),
             new OneChat(),
