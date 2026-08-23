@@ -203,4 +203,3 @@ If you want to translate Uptime Kuma into your language, please visit [Weblate R
 
 Feel free to correct the grammar in the documentation or code.
 My mother language is not English and my grammar is not that great.
-
