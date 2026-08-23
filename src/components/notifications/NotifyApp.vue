@@ -23,6 +23,15 @@
         ></HiddenInput>
     </div>
     <div class="mb-3">
+        <label for="notifyapp-icon-url" class="form-label">{{ $t("Icon URL") }}</label>
+        <input
+            id="notifyapp-icon-url"
+            v-model="$parent.notification.notifyAppIconUrl"
+            type="text"
+            class="form-control"
+        />
+    </div>
+    <div class="mb-3">
         <i18n-t tag="p" keypath="notifyAppSetup" class="form-text">
             <a href="https://getnotifyapp.com" target="_blank" rel="noopener">getnotifyapp.com</a>
         </i18n-t>
