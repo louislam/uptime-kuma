@@ -154,7 +154,7 @@ export default {
             }
 
             if (this.isSystemMonitor) {
-                return this.$t("System Service");
+                return this.$t("systemService");
             }
 
             if (this.isNodeMonitor) {
