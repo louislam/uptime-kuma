@@ -1,5 +1,5 @@
 // Script to generate changelog
-// Usage: node generate-changelog.mjs <previous-version-tag>
+// Usage: node extra/release/generate-changelog.mjs <previous-version-tag>
 // GitHub CLI (gh command) is required
 
 import * as childProcess from "child_process";
@@ -188,6 +188,7 @@ export async function generateChangelog(previousVersion, categorizedMap) {
 
 /**
  * Generate Changelog using AI
+ * The LLM API can be flaky, so it retries a few times before falling back to uncategorized.
  * @param {string} previousVersion Previous Version Tag
  * @returns {Promise<string>} Changelog Content
  */
@@ -200,56 +201,67 @@ export async function generateChangelogAI(previousVersion) {
 
     console.log(llmPrompt);
 
-    console.log("Running opencode with the above prompt...");
+    const maxAttempts = 3;
+    const retryDelays = [15000, 45000];
 
-    try {
-        const result = childProcess.spawnSync(
-            "opencode",
-            ["run", "-m", "opencode/big-pickle", "--format", "json", llmPrompt],
-            {
-                encoding: "utf-8",
-                timeout: 120000,
-                shell: true,
-                cwd: process.cwd(),
-                env: process.env,
-            }
-        );
+    for (let attempt = 1; attempt <= maxAttempts && !categorizedMap; attempt++) {
+        console.log(`Running opencode with the above prompt... (attempt ${attempt}/${maxAttempts})`);
 
-        if (result.status === 0 && result.stdout) {
-            // Parse NDJSON output: find "type":"text" line
-            for (const line of result.stdout.trim().split("\n")) {
-                try {
-                    const obj = JSON.parse(line);
-                    if (obj.type === "text" && obj.part?.text) {
-                        const jsonMatch = obj.part.text.match(/\{[\s\S]*\}/);
-                        if (jsonMatch) {
-                            categorizedMap = JSON.parse(jsonMatch[0]);
-                            console.log("LLM categorization applied.");
-                            break;
+        try {
+            const result = childProcess.spawnSync(
+                "opencode",
+                ["run", "-m", "opencode/big-pickle", "--format", "json", llmPrompt],
+                {
+                    encoding: "utf-8",
+                    timeout: 300000,
+                    shell: true,
+                    cwd: process.cwd(),
+                    env: process.env,
+                }
+            );
+
+            if (result.status === 0 && result.stdout) {
+                // Parse NDJSON output: find "type":"text" line
+                for (const line of result.stdout.trim().split("\n")) {
+                    try {
+                        const obj = JSON.parse(line);
+                        if (obj.type === "text" && obj.part?.text) {
+                            const jsonMatch = obj.part.text.match(/\{[\s\S]*\}/);
+                            if (jsonMatch) {
+                                categorizedMap = JSON.parse(jsonMatch[0]);
+                                console.log("LLM categorization applied.");
+                                break;
+                            }
                         }
+                    } catch {
+                        // skip unparseable lines
                     }
-                } catch {
-                    // skip unparseable lines
+                }
+
+                if (!categorizedMap) {
+                    console.warn("No JSON found in opencode response.");
+                    console.warn(result.stdout);
+                }
+            } else {
+                console.warn("opencode failed or returned no output (status:", result.status, ")");
+                if (result.stderr) {
+                    console.warn("stderr:", result.stderr.slice(0, 500));
                 }
             }
-
-            if (!categorizedMap) {
-                console.warn("No JSON found in opencode response.");
-                console.warn(result.stdout);
-            }
-        } else {
-            console.warn("opencode failed or returned no output (status:", result.status, ")");
-            if (result.stderr) {
-                console.warn("stderr:", result.stderr.slice(0, 500));
-            }
+        } catch (e) {
+            console.warn("Failed to run opencode:", e.message);
         }
-    } catch (e) {
-        console.warn("Failed to run opencode:", e.message);
+
+        if (!categorizedMap && attempt < maxAttempts) {
+            const delayMs = retryDelays[attempt - 1];
+            console.warn(`Attempt ${attempt} failed. Retrying in ${delayMs / 1000}s...`);
+            await new Promise((resolve) => setTimeout(resolve, delayMs));
+        }
     }
 
     if (!categorizedMap) {
         categorizedMap = {};
-        console.log("OpenCode unavailable, using uncategorized fallback.");
+        console.warn(`OpenCode unavailable after ${maxAttempts} attempts, using uncategorized fallback.`);
     }
 
     return await generateChangelog(previousVersion, categorizedMap);

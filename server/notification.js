@@ -35,6 +35,7 @@ const Matrix = require("./notification-providers/matrix");
 const Mattermost = require("./notification-providers/mattermost");
 const NextcloudTalk = require("./notification-providers/nextcloudtalk");
 const Nostr = require("./notification-providers/nostr");
+const NotifyApp = require("./notification-providers/notifyapp");
 const Ntfy = require("./notification-providers/ntfy");
 const Octopush = require("./notification-providers/octopush");
 const OneChat = require("./notification-providers/onechat");
@@ -62,6 +63,7 @@ const SIGNL4 = require("./notification-providers/signl4");
 const Slack = require("./notification-providers/slack");
 const SMSPartner = require("./notification-providers/smspartner");
 const SMSEagle = require("./notification-providers/smseagle");
+const SMSGateway = require("./notification-providers/sms-gateway");
 const SMTP = require("./notification-providers/smtp");
 const Squadcast = require("./notification-providers/squadcast");
 const Stackfield = require("./notification-providers/stackfield");
@@ -155,6 +157,7 @@ class Notification {
             new Mattermost(),
             new NextcloudTalk(),
             new Nostr(),
+            new NotifyApp(),
             new Ntfy(),
             new Octopush(),
             new OneChat(),
@@ -185,6 +188,7 @@ class Notification {
             new SMSPartner(),
             new Slack(),
             new SMSEagle(),
+            new SMSGateway(),
             new SMTP(),
             new Squadcast(),
             new Stackfield(),

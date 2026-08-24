@@ -128,6 +128,8 @@ I will assign requests/issues to the next milestone.
 
 Thank you so much! (GitHub Sponsors will be updated manually. OpenCollective sponsors will be updated automatically, the list will be cached by GitHub though. It may need some time to be updated)
 
+[![Build with Ona](https://ona.com/build-with-ona.svg)](https://app.ona.com/#https://github.com/louislam/uptime-kuma)
+
 <img src="https://uptime.kuma.pet/sponsors?v=6" alt="Uptime Kuma Sponsors" />
 
 ## 🖼 More Screenshots
