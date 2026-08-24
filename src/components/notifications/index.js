@@ -34,6 +34,7 @@ import Matrix from "./Matrix.vue";
 import Mattermost from "./Mattermost.vue";
 import NextcloudTalk from "./NextcloudTalk.vue";
 import Nostr from "./Nostr.vue";
+import NotifyApp from "./NotifyApp.vue";
 import Ntfy from "./Ntfy.vue";
 import Octopush from "./Octopush.vue";
 import OneChat from "./OneChat.vue";
@@ -144,6 +145,7 @@ const NotificationFormList = {
     mattermost: Mattermost,
     nextcloudtalk: NextcloudTalk,
     nostr: Nostr,
+    notifyapp: NotifyApp,
     ntfy: Ntfy,
     octopush: Octopush,
     OneChat: OneChat,

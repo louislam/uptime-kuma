@@ -2021,7 +2021,7 @@
                                     class="form-control"
                                     required
                                     min="0"
-                                    max="300"
+                                    :max="pingPerRequestTimeoutMax"
                                     step="1"
                                 />
                                 <div class="form-text">
@@ -2048,6 +2048,7 @@
                                         :preselect-first="false"
                                         :max-height="600"
                                         :taggable="true"
+                                        @tag="addAcceptedStatusCode"
                                     ></VueMultiselect>
 
                                     <div class="form-text">
@@ -2192,6 +2193,7 @@
                                         :preselect-first="false"
                                         :max-height="600"
                                         :taggable="true"
+                                        @tag="addAcceptedStatusCode"
                                     ></VueMultiselect>
 
                                     <div class="form-text">
@@ -2239,6 +2241,7 @@
                                     :preselect-first="false"
                                     :max-height="600"
                                     :taggable="true"
+                                    @tag="addAcceptedStatusCode"
                                 ></VueMultiselect>
 
                                 <div class="form-text">
@@ -3322,7 +3325,14 @@ import DockerHostDialog from "../components/DockerHostDialog.vue";
 import RemoteBrowserDialog from "../components/RemoteBrowserDialog.vue";
 import ProxyDialog from "../components/ProxyDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
-import { genSecret, MIN_INTERVAL_SECOND, sleep, TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD } from "../util.ts";
+import {
+    genSecret,
+    MIN_INTERVAL_SECOND,
+    PING_GLOBAL_TIMEOUT_MAX,
+    PING_PER_REQUEST_TIMEOUT_MAX,
+    sleep,
+    TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD,
+} from "../util.ts";
 import { timeDurationFormatter } from "../util-frontend";
 import isFQDN from "validator/lib/isFQDN";
 import isIP from "validator/lib/isIP";
@@ -3428,6 +3438,7 @@ export default {
     data() {
         return {
             minInterval: MIN_INTERVAL_SECOND,
+            pingPerRequestTimeoutMax: PING_PER_REQUEST_TIMEOUT_MAX,
             processing: false,
             monitor: {
                 notificationIDList: {},
@@ -3472,7 +3483,7 @@ export default {
         },
 
         timeoutMax() {
-            return this.monitor.type === "ping" ? 60 : undefined;
+            return this.monitor.type === "ping" ? PING_GLOBAL_TIMEOUT_MAX : undefined;
         },
 
         defaultFriendlyName() {
@@ -4202,6 +4213,10 @@ message HealthCheckResponse {
 
         addRabbitmqNode(newNode) {
             this.monitor.rabbitmqNodes.push(newNode);
+        },
+
+        addAcceptedStatusCode(newCode) {
+            this.monitor.accepted_statuscodes.push(newCode);
         },
 
         /**
