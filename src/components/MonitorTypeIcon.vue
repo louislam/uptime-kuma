@@ -252,10 +252,6 @@ export default {
             return this.monitor.type === "dns" || this.isGlobalpingDnsMonitor;
         },
 
-        isDockerMonitor() {
-            return this.monitor.type === "docker";
-        },
-
         isSystemMonitor() {
             return this.monitor.type === "system-service";
         },
