@@ -24,7 +24,8 @@
             <router-link :to="monitorURL(monitor.id)" class="item" :class="{ disabled: !monitor.active }">
                 <div class="row">
                     <div class="small-padding d-flex gap-2 align-items-center" :class="monitorStyle">
-                        <div class="me-1">
+                        <div class="me-1 d-flex align-items-center">
+                            <MonitorTypeIcon :monitor="monitor" class="me-2" />
                             <Uptime :monitor="monitor" type="24" :pill="true" />
                         </div>
                         <div class="d-flex align-items-center gap-2 flex-fill" style="min-width: 0">
@@ -87,6 +88,7 @@
 
 <script>
 import HeartbeatBar from "../components/HeartbeatBar.vue";
+import MonitorTypeIcon from "../components/MonitorTypeIcon.vue";
 import Tag from "../components/Tag.vue";
 import Uptime from "../components/Uptime.vue";
 import { getMonitorRelativeURL } from "../util.ts";
@@ -94,6 +96,7 @@ import { getMonitorRelativeURL } from "../util.ts";
 export default {
     name: "MonitorListItem",
     components: {
+        MonitorTypeIcon,
         Uptime,
         HeartbeatBar,
         Tag,
