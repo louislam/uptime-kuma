@@ -59,9 +59,7 @@ class GrpcKeywordMonitorType extends MonitorType {
                 const serviceMethod = serviceFQDN.pop();
                 const serviceMethodClientImpl = `/${serviceFQDN.slice(1).join(".")}/${serviceMethod}`;
                 log.debug(this.name, `gRPC method ${serviceMethodClientImpl}`);
-                const deadlineMs = Date.now() + (
-                    this.timeout > 0 ? this.timeout : 48
-                ) * 1000;
+                const deadlineMs = Date.now() + (this.timeout > 0 ? this.timeout : 48) * 1000;
                 client.makeUnaryRequest(
                     serviceMethodClientImpl,
                     (arg) => arg,
