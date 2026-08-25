@@ -16,9 +16,17 @@ class Mattermost extends NotificationProvider {
             const mattermostUserName = notification.mattermostusername || "Uptime Kuma";
             // If heartbeatJSON is null, assume non monitoring notification (Certificate warning) or testing.
             if (heartbeatJSON == null) {
+                // Icon emoji may contain two emojis (online/offline); use the online one for testing.
+                let mattermostTestIconEmoji = notification.mattermosticonemo;
+                if (typeof mattermostTestIconEmoji === "string" && mattermostTestIconEmoji.includes(" ")) {
+                    mattermostTestIconEmoji = mattermostTestIconEmoji.split(" ")[0];
+                }
                 let mattermostTestData = {
                     username: mattermostUserName,
                     text: msg,
+                    channel: typeof notification.mattermostchannel === "string" ? notification.mattermostchannel.toLowerCase() : notification.mattermostchannel,
+                    icon_url: notification.mattermosticonurl,
+                    icon_emoji: mattermostTestIconEmoji,
                 };
                 await axios.post(notification.mattermostWebhookUrl, mattermostTestData, config);
                 return okMsg;
