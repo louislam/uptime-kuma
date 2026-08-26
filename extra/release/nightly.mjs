@@ -10,7 +10,7 @@ checkDocker();
 buildDist();
 
 // Build full image (rootless)
-buildImage(repoNames, [ "nightly2-rootless" ], "nightly-rootless");
+buildImage(repoNames, ["nightly3-rootless"], "nightly-rootless");
 
 // Build full image
-buildImage(repoNames, [ "nightly2" ], "nightly");
+buildImage(repoNames, ["nightly3"], "nightly");
