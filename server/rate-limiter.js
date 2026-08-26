@@ -7,6 +7,7 @@ class KumaRateLimiter {
      */
     constructor(config) {
         this.errorMessage = config.errorMessage;
+        this.tokensPerInterval = config.tokensPerInterval;
         this.rateLimiter = new RateLimiter(config);
     }
 
@@ -24,7 +25,17 @@ class KumaRateLimiter {
      */
     async pass(callback, num = 1) {
         const remainingRequests = await this.removeTokens(num);
-        log.info("rate-limit", "remaining requests: " + remainingRequests);
+        if (remainingRequests < this.tokensPerInterval * 0.2) {
+            log.warn(
+                "rate-limit",
+                `${remainingRequests}/${this.tokensPerInterval} remaining requests until rate limiting`
+            );
+        } else {
+            log.debug(
+                "rate-limit",
+                `${remainingRequests}/${this.tokensPerInterval} remaining requests until rate limiting`
+            );
+        }
         if (remainingRequests < 0) {
             if (callback) {
                 callback({

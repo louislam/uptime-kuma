@@ -56,7 +56,6 @@ export const SQL_DATE_FORMAT = "YYYY-MM-DD";
 export const SQL_DATETIME_FORMAT = "YYYY-MM-DD HH:mm:ss";
 export const SQL_DATETIME_FORMAT_WITHOUT_SECOND = "YYYY-MM-DD HH:mm";
 
-export const MAX_INTERVAL_SECOND = 2073600; // 24 days
 export const MIN_INTERVAL_SECOND = 1; // 1 second
 
 export const INCIDENT_PAGE_SIZE = 10;
@@ -412,27 +411,6 @@ export const log = new Logger();
 declare global {
     interface String {
         replaceAll(str: string, newStr: string): string;
-    }
-}
-
-/**
- * String.prototype.replaceAll() polyfill
- * https://gomakethings.com/how-to-replace-a-section-of-a-string-with-another-one-with-vanilla-js/
- * @author Chris Ferdinandi
- * @license MIT
- * @returns {void}
- */
-export function polyfill() {
-    if (!String.prototype.replaceAll) {
-        String.prototype.replaceAll = function (str: string, newStr: string) {
-            // If a regex pattern
-            if (Object.prototype.toString.call(str).toLowerCase() === "[object regexp]") {
-                return this.replace(str, newStr);
-            }
-
-            // If a string
-            return this.replace(new RegExp(str, "g"), newStr);
-        };
     }
 }
 

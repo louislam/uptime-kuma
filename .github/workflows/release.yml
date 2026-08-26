@@ -1,0 +1,250 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version number (e.g., 2.1.0, or 2.1.0-beta.2 for beta)"
+        required: true
+        type: string
+      previous_version:
+        description: "Previous version tag for changelog (e.g., 2.1.0-beta.3)"
+        required: true
+        type: string
+      is_beta:
+        description: "Mark this as a beta (pre-release) release"
+        required: false
+        type: boolean
+        default: false
+      dry_run:
+        description: "Dry Run (The docker image will not be pushed to registries. PR will still be created.)"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: release-${{ inputs.is_beta }}-${{ inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  # 1. Create the release branch, bump the version and create the draft PR
+  #    Re-runnable: reuses the existing open PR if there is one
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: true
+          fetch-depth: 0 # Fetch all history and tags for update-version
+
+      - name: Set up Node.js
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+        with:
+          node-version: 24
+
+      - name: Configure Git
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_PAT }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git"
+
+      - name: Install dependencies
+        run: node extra/release/install-deps.mjs
+
+      - name: Prepare release branch and PR
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_IS_BETA: ${{ inputs.is_beta }}
+          RELEASE_PREVIOUS_VERSION: ${{ inputs.previous_version }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+        run: node extra/release/prepare-release.mjs --setup-branch
+
+      - name: Set PR number output
+        id: pr
+        run: echo "pr_number=$(cat ./tmp/pr-number.txt)" >> "$GITHUB_OUTPUT"
+
+    outputs:
+      pr_number: ${{ steps.pr.outputs.pr_number }}
+
+  # 2. Squash merge the release PR into master
+  #    Re-runnable: skips if the PR is already merged
+  merge-pr:
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: node extra/release/install-deps.mjs
+
+      - name: Merge release PR
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          PR_NUMBER: ${{ needs.prepare.outputs.pr_number }}
+          GH_TOKEN: ${{ secrets.RELEASE_PAT }}
+          GH_REPO: ${{ github.repository }}
+        run: node extra/release/merge-pr.mjs
+
+      - name: Set merge SHA output
+        id: sha
+        if: hashFiles('tmp/merge-sha.txt') != ''
+        run: echo "sha=$(cat ./tmp/merge-sha.txt)" >> "$GITHUB_OUTPUT"
+
+    outputs:
+      merge_sha: ${{ steps.sha.outputs.sha }}
+
+  # 3. Generate changelog (LLM categorization) and create the draft release
+  #    Re-runnable independently: this is the flaky LLM part, re-run just this job on failure
+  draft-release:
+    needs: merge-pr
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 0 # Fetch all history and tags for changelog generation
+
+      - name: Set up Node.js
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+        with:
+          node-version: 24
+
+      - name: Install opencode
+        run: curl -fsSL https://opencode.ai/install | bash
+
+      - name: Install dependencies
+        run: node extra/release/install-deps.mjs
+
+      - name: Create draft release
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_IS_BETA: ${{ inputs.is_beta }}
+          RELEASE_PREVIOUS_VERSION: ${{ inputs.previous_version }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          MERGE_SHA: ${{ needs.merge-pr.outputs.merge_sha }}
+          GH_TOKEN: ${{ secrets.RELEASE_PAT }}
+          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
+        run: node extra/release/create-draft-release.mjs
+
+  # 4. Build the frontend dist ONCE, upload it to the draft release and share
+  #    it with the docker-images job via a workflow artifact
+  #    Re-runnable: rebuilds only if ./tmp/dist.tar.gz is missing, uploads with --clobber
+  build-and-upload-assets:
+    needs: [merge-pr, draft-release]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      # Checkout the merged master code (merge_sha), not the workflow-dispatch SHA,
+      # so package.json is already bumped to the release version before building.
+      # Otherwise the frontend FRONTEND_VERSION (from npm_package_version) would be stale.
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          ref: ${{ needs.merge-pr.outputs.merge_sha || github.sha }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: npm clean-install --no-fund
+
+      - name: Build dist and upload assets to the draft release
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          GH_TOKEN: ${{ secrets.RELEASE_PAT }}
+          GH_REPO: ${{ github.repository }}
+        run: node extra/release/build-and-upload-assets.mjs
+
+      - name: Upload dist as artifact
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: dist-${{ inputs.version }}
+          path: ./dist
+          retention-days: 90
+
+      - name: Upload dist.tar.gz as artifact
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: dist-tar-${{ inputs.version }}
+          path: ./tmp/dist.tar.gz
+          retention-days: 90
+
+  # 5. Build and push all docker images from the merged master, reusing the dist
+  #    built by build-and-upload-assets (the frontend is never rebuilt here)
+  #    Re-runnable: partial pushes are overwritten safely
+  docker-images:
+    needs: [merge-pr, build-and-upload-assets]
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          ref: ${{ needs.merge-pr.outputs.merge_sha || github.sha }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: node extra/release/install-deps.mjs
+
+      - name: Download dist artifact
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
+        with:
+          name: dist-${{ inputs.version }}
+          path: ./dist
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3.7.0
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.GHCR_USERNAME }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Build and push images
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_IS_BETA: ${{ inputs.is_beta }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: node extra/release/build-images.mjs

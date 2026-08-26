@@ -531,7 +531,7 @@ export default {
         },
 
         /**
-         * Clear the hearbeat list
+         * Clear the heartbeat list
          * @returns {void}
          */
         clearData() {

@@ -41,7 +41,7 @@
         "build-docker-pr-test": "docker buildx build -f docker/dockerfile --platform linux/amd64,linux/arm64 -t louislam/uptime-kuma:pr-test3 --target pr-test3 . --push",
         "upload-artifacts": "node extra/release/upload-artifacts.mjs",
         "upload-artifacts-beta": "node extra/release/upload-artifacts-beta.mjs",
-        "setup": "git checkout 2.4.0 && npm ci --omit dev --no-audit && node --run download-dist",
+        "setup": "git checkout 2.5.3 && npm ci --omit dev --no-audit && npm run download-dist",
         "download-dist": "node extra/download-dist.js",
         "mark-as-nightly": "node extra/mark-as-nightly.js",
         "reset-password": "node --import=tsx extra/reset-password.mts",
@@ -52,8 +52,8 @@
         "simple-mongo": "docker run --rm -p 27017:27017 mongo",
         "simple-postgres": "docker run --rm -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres",
         "simple-mariadb": "docker run --rm -p 3306:3306 -e MYSQL_ROOT_PASSWORD=mariadb# mariadb",
-        "release-final": "node ./extra/release/final.mjs",
-        "release-beta": "node ./extra/release/beta.mjs",
+        "release-final": "node ./extra/release/release.mjs",
+        "release-beta": "node ./extra/release/release.mjs --beta",
         "release-nightly": "node ./extra/release/nightly.mjs",
         "git-remove-tag": "git tag -d",
         "build-dist-and-restart": "node --run build && node --run start-server-dev",
@@ -62,7 +62,8 @@
         "quick-run-nightly": "docker run --rm --env NODE_ENV=development -p 3001:3001 louislam/uptime-kuma:nightly3",
         "start-dev-container": "cd docker && docker-compose -f docker-compose-dev.yml up --force-recreate",
         "reset-migrate-aggregate-table-state": "node extra/reset-migrate-aggregate-table-state.js",
-        "generate-changelog": "node ./extra/generate-changelog.mjs"
+        "generate-changelog": "node ./extra/release/generate-changelog.mjs",
+        "create-release": "node ./extra/release/create-release.mjs"
     },
     "dependencies": {
         "@better-auth/api-key": "1.6.11",
@@ -143,6 +144,7 @@
         "tldts": "~7.0.23",
         "tough-cookie": "~4.1.4",
         "tsx": "~4.23.1",
+        "unlimited-timeout": "~0.1.0",
         "validator": "~13.15.26",
         "web-push": "~3.6.7",
         "ws": "~8.19.0",
