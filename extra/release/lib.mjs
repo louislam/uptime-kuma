@@ -390,13 +390,15 @@ export async function uploadReleaseAssets(version, files) {
  * @returns {void}
  */
 export function buildAllImages(repoNames, version, isBeta) {
+    const majorVersion = semver.parse(version).major;
+
     if (isBeta) {
         // Build slim image (rootless)
         buildImage(
             repoNames,
             ["beta-slim-rootless", ver(version, "slim-rootless")],
             "rootless",
-            "BASE_IMAGE=louislam/uptime-kuma:base2-slim"
+            `BASE_IMAGE=louislam/uptime-kuma:base${majorVersion}-slim`
         );
 
         // Build full image (rootless)
@@ -407,7 +409,7 @@ export function buildAllImages(repoNames, version, isBeta) {
             repoNames,
             ["beta-slim", ver(version, "slim")],
             "release",
-            "BASE_IMAGE=louislam/uptime-kuma:base2-slim"
+            `BASE_IMAGE=louislam/uptime-kuma:base${majorVersion}-slim`
         );
 
         // Build full image
@@ -416,24 +418,24 @@ export function buildAllImages(repoNames, version, isBeta) {
         // Build slim image (rootless)
         buildImage(
             repoNames,
-            ["2-slim-rootless", ver(version, "slim-rootless")],
+            [`${majorVersion}-slim-rootless`, ver(version, "slim-rootless")],
             "rootless",
-            "BASE_IMAGE=louislam/uptime-kuma:base2-slim"
+            `BASE_IMAGE=louislam/uptime-kuma:base${majorVersion}-slim`
         );
 
         // Build full image (rootless)
-        buildImage(repoNames, ["next-rootless", "2-rootless", ver(version, "rootless")], "rootless");
+        buildImage(repoNames, ["next-rootless", `${majorVersion}-rootless`, ver(version, "rootless")], "rootless");
 
         // Build slim image
         buildImage(
             repoNames,
-            ["next-slim", "2-slim", ver(version, "slim")],
+            ["next-slim", `${majorVersion}-slim`, ver(version, "slim")],
             "release",
-            "BASE_IMAGE=louislam/uptime-kuma:base2-slim"
+            `BASE_IMAGE=louislam/uptime-kuma:base${majorVersion}-slim`
         );
 
         // Build full image
-        buildImage(repoNames, ["next", "2", version], "release");
+        buildImage(repoNames, ["next", `${majorVersion}`, version], "release");
     }
 }
 
