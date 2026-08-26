@@ -263,9 +263,31 @@ test.describe("Status Page", () => {
         await expect(page.getByText("35d")).toBeVisible();
         await screenshot(testInfo, page);
 
-        // Out of range values are clamped by the server
+        /**
+         * Wait for the status page heartbeat request of a given day range
+         * @param {string} days Expected days query parameter
+         * @returns {Promise<Request>} Promise of the matching request
+         */
+        function waitForHeartbeatRequest(days) {
+            return page.waitForRequest((request) => {
+                const url = new URL(request.url());
+                return (
+                    url.pathname.endsWith("/api/status-page/heartbeat/heartbeat-range") &&
+                    url.searchParams.get("days") === days
+                );
+            });
+        }
+
+        // Edit mode previews the configured range with the same data as the public page
+        const savedRangeRequest = waitForHeartbeatRequest("35");
         await page.getByTestId("edit-button").click();
+        await savedRangeRequest;
+        await expect(page.getByText("35d")).toBeVisible();
+
+        // Out of range values are clamped by the server, the preview follows the input
+        const changedRangeRequest = waitForHeartbeatRequest("500");
         await fillDays("500");
+        await changedRangeRequest;
         await page.getByTestId("save-button").click();
         await expect(page.getByTestId("edit-sidebar")).toHaveCount(0);
         await page.getByTestId("edit-button").click();

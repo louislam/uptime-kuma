@@ -935,6 +935,11 @@ export default {
                         if (!this.config.customCSS) {
                             this.config.customCSS = "body {\n" + "  \n" + "}\n";
                         }
+
+                        // The socket has just replaced the bars with raw beats
+                        if (this.editMode && this.config.heartbeatBarDays > 0) {
+                            this.loadHeartbeatData();
+                        }
                     } else {
                         this.$root.toastError(res.msg);
                     }
@@ -968,6 +973,13 @@ export default {
 
         "config.title"(title) {
             document.title = title;
+        },
+
+        "config.heartbeatBarDays"() {
+            // Preview the range while editing, 0 reloads the raw beats again
+            if (this.editMode) {
+                this.loadHeartbeatData();
+            }
         },
 
         "$root.monitorList"() {
@@ -1114,10 +1126,16 @@ export default {
                 maxBeats = this.heartbeatMaxBeats;
             }
 
+            const params = { maxBeats };
+            if (this.editMode) {
+                // Unsaved range, the server would use the stored one otherwise
+                params.days = this.config.heartbeatBarDays;
+            }
+
             const requestSeq = ++this.heartbeatRequestSeq;
             return axios
                 .get("/api/status-page/heartbeat/" + this.slug, {
-                    params: { maxBeats },
+                    params,
                 })
                 .then((res) => {
                     if (requestSeq !== this.heartbeatRequestSeq) {
@@ -1161,7 +1179,7 @@ export default {
          * @returns {void}
          */
         reloadHeartbeatData(maxBeats) {
-            if (this.editMode) {
+            if (this.editMode && this.config.heartbeatBarDays === 0) {
                 // Edit mode uses live websocket data, don't overwrite it
                 return;
             }
@@ -1179,7 +1197,7 @@ export default {
          */
         updateHeartbeatList() {
             // If editMode, it will use the data from websocket.
-            if (!this.editMode) {
+            if (!this.editMode || this.config.heartbeatBarDays > 0) {
                 this.loadHeartbeatData();
             }
         },
