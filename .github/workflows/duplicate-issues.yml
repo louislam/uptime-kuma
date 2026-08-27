@@ -42,7 +42,7 @@ jobs:
               "webfetch": "deny"
             }
         run: |
-          opencode run "An issue has been submitted (or a duplicate check was requested on it):
+          opencode run -m opencode/big-pickle "An issue has been submitted (or a duplicate check was requested on it):
 
           Issue number: ${{ github.event.issue.number }}
 
