@@ -21,7 +21,7 @@
     "Cannot connect to the socket server": "Verbindung zum Socket-Server nicht möglich",
     "Reconnecting...": "Verbindung wird wiederhergestellt …",
     "Pause": "Pausieren",
-    "pauseDashboardHome": "Pausieren",
+    "pauseDashboardHome": "Pausiert",
     "Name": "Name",
     "Status": "Status",
     "DateTime": "Datum/Uhrzeit",
