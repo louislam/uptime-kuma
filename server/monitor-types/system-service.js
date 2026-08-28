@@ -85,7 +85,7 @@ class SystemServiceMonitorType extends MonitorType {
                 `(Get-Service -Name '${serviceName.replaceAll("'", "''")}').Status`,
             ];
 
-            execFile(cmd, args, { timeout: 5000 }, (error, stdout, stderr) => {
+            execFile(cmd, args, { timeout: 10000 }, (error, stdout, stderr) => {
                 let output = (stderr || stdout || "").toString().trim();
                 if (output.length > 200) {
                     output = output.substring(0, 200) + "...";
