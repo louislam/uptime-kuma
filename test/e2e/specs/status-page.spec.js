@@ -308,10 +308,17 @@ test.describe("Status Page", () => {
         await page.getByTestId("save-button").click();
         await expect(page.getByTestId("edit-sidebar")).toHaveCount(0);
 
-        // Fetch RSS feed again - should use custom RSS title
-        const rssResponseCustom = await page.request.get("/status/security-test/rss");
-        expect(rssResponseCustom.status()).toBe(200);
-        const rssContentCustom = await rssResponseCustom.text();
+        // Fetch RSS feed again - retry until custom title appears (DB write may not be committed yet)
+        let rssContentCustom;
+        for (let i = 0; i < 10; i++) {
+            const rssResponseCustom = await page.request.get("/status/security-test/rss");
+            expect(rssResponseCustom.status()).toBe(200);
+            rssContentCustom = await rssResponseCustom.text();
+            if (rssContentCustom.includes(`<title>${customRssTitle}</title>`)) {
+                break;
+            }
+            await page.waitForTimeout(500);
+        }
 
         // Verify RSS feed uses custom title
         expect(rssContentCustom).toContain(`<title>${customRssTitle}</title>`);

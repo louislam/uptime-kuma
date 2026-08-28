@@ -48,9 +48,9 @@ describe("SystemServiceMonitorType", { skip: shouldSkip() }, () => {
     });
 
     test("check() returns UP for a running service", async () => {
-        // Windows: 'Dnscache' is always running.
+        // Windows: 'EventLog' is always running.
         // Linux: 'dbus' or 'cron' are standard services.
-        const serviceName = process.platform === "win32" ? "Dnscache" : "dbus";
+        const serviceName = process.platform === "win32" ? "EventLog" : "dbus";
 
         const monitor = {
             system_service_name: serviceName,
