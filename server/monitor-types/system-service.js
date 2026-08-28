@@ -85,6 +85,7 @@ class SystemServiceMonitorType extends MonitorType {
                 `(Get-Service -Name '${serviceName.replaceAll("'", "''")}').Status`,
             ];
 
+            // Using 10s timeout, powershell can take more than 5 sec to start on a Github runner
             execFile(cmd, args, { timeout: 10000 }, (error, stdout, stderr) => {
                 let output = (stderr || stdout || "").toString().trim();
                 if (output.length > 200) {
