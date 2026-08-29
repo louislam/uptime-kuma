@@ -973,9 +973,35 @@ let needSetup = false;
 
                 if (await Monitor.isActive(bean.id, bean.active)) {
                     await restartMonitor(socket.userID, bean.id);
+                } else if (bean.id in server.monitorList) {
+                    // Monitor is paused: restartMonitor won't run, so the
+                    // Prometheus labels (monitor_parent_id / monitor_path_ids)
+                    // would go stale after a parent change. Refresh them in-place.
+                    try {
+                        await server.monitorList[bean.id].refreshPrometheus();
+                    } catch (e) {
+                        log.error("prometheus", "refreshPrometheus error:", e.message);
+                    }
+                }
+
+                // When a group monitor is reparented, all of its descendants
+                // inherit the new path.  Refresh Prometheus labels for every
+                // active descendant so Grafana queries are correct immediately.
+                if (bean.type === "group") {
+                    const descendantIDs = await Monitor.getAllChildrenIDs(bean.id);
+                    for (const childID of descendantIDs) {
+                        if (childID in server.monitorList) {
+                            try {
+                                await server.monitorList[childID].refreshPrometheus();
+                            } catch (e) {
+                                log.error("prometheus", `refreshPrometheus error for child ${childID}:`, e.message);
+                            }
+                        }
+                    }
                 }
 
                 await server.sendUpdateMonitorIntoList(socket, bean.id);
+
 
                 callback({
                     ok: true,
