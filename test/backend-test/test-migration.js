@@ -20,12 +20,9 @@ describe("Database Migration", () => {
         }
 
         // Use the same SQLite driver as the project
-        const Dialect = require("knex/lib/dialects/sqlite3/index.js");
-        Dialect.prototype._driver = () => require("@louislam/sqlite3");
-
         const knex = require("knex");
         const db = knex({
-            client: Dialect,
+            client: "better-sqlite3",
             connection: {
                 filename: testDbPath,
             },
@@ -59,7 +56,9 @@ describe("Database Migration", () => {
     test(
         "MariaDB migrations run successfully from fresh database",
         {
-            skip: !!process.env.CI && (process.platform !== "linux" || process.arch !== "x64"),
+            skip:
+                (!!process.env.CI && (process.platform !== "linux" || process.arch !== "x64")) ||
+                process.env.SKIP_TESTCONTAINER,
         },
         async () => {
             // Start MariaDB container (using MariaDB 12 to match current production)
@@ -131,7 +130,9 @@ describe("Database Migration", () => {
     test(
         "MySQL migrations run successfully from fresh database",
         {
-            skip: !!process.env.CI && (process.platform !== "linux" || process.arch !== "x64"),
+            skip:
+                (!!process.env.CI && (process.platform !== "linux" || process.arch !== "x64")) ||
+                process.env.SKIP_TESTCONTAINER,
         },
         async () => {
             // Start MySQL 8.0 container (the version mentioned in the issue)

@@ -1,18 +1,20 @@
 const fs = require("fs");
 const fsAsync = fs.promises;
 const { R } = require("redbean-node");
-const { setSetting, setting } = require("./util-server");
-const { log, sleep, isDev } = require("../src/util");
+const { log, sleep, isDevEnv } = require("../src/util");
 const knex = require("knex");
 const path = require("path");
 const { EmbeddedMariaDB } = require("./embedded-mariadb");
 const mysql = require("mysql2/promise");
+const { Pool } = mysql;
 const { Settings } = require("./settings");
 const { UptimeCalculator } = require("./uptime-calculator");
 const dayjs = require("dayjs");
 const { SimpleMigrationServer } = require("./utils/simple-migration-server");
+const BetterSqlite3Database = require("better-sqlite3");
 const KumaColumnCompiler = require("./utils/knex/lib/dialects/mysql2/schema/mysql2-columncompiler");
 const SqlString = require("sqlstring");
+const { auth } = require("./better-auth");
 
 /**
  * Database & App Data Folder
@@ -58,6 +60,16 @@ class Database {
      * @type {boolean}
      */
     static patched = false;
+
+    /**
+     * @type {BetterSqlite3Database.Database}
+     */
+    static authSQLite = null;
+
+    /**
+     * @type {Pool}
+     */
+    static authMariaDB = null;
 
     /**
      * SQLite only
@@ -123,6 +135,9 @@ class Database {
 
     static noReject = true;
 
+    /**
+     * @type {Record<string, string>}
+     */
     static dbConfig = {};
 
     static knexMigrationsPath = "./db/knex_migrations";
@@ -168,7 +183,7 @@ class Database {
      * @returns {string} The dev data dir, empty string if not in dev mode or in master branch
      */
     static getDevDataDir() {
-        if (isDev) {
+        if (isDevEnv()) {
             const gitBranch = this.getCurrentGitBranch();
 
             // HEAD means detached head. Don't handle this case, becasuse it is not common.
@@ -220,7 +235,7 @@ class Database {
 
     /**
      * @typedef {string|undefined} envString
-     * @param {{type: "sqlite"} | {type:envString, hostname:envString, port:envString, database:envString, username:envString, password:envString, socketPath:envString}} dbConfig the database configuration that should be written
+     * @param {Record<string, string>} dbConfig the database configuration that should be written
      * @returns {void}
      */
     static writeDBConfig(dbConfig) {
@@ -299,9 +314,6 @@ class Database {
                 fs.copyFileSync(Database.templatePath, Database.sqlitePath);
             }
 
-            const Dialect = require("knex/lib/dialects/sqlite3/index.js");
-            Dialect.prototype._driver = () => require("@louislam/sqlite3");
-
             // SQLite is actually multiple connections for WAL mode, so we can set it to a higher number.
             // See: https://github.com/knex/knex/issues/3176#issuecomment-3389054899
             let poolConfig = {
@@ -320,7 +332,7 @@ class Database {
             }
 
             config = {
-                client: Dialect,
+                client: "better-sqlite3",
                 connection: {
                     filename: Database.sqlitePath,
                     acquireConnectionTimeout: acquireConnectionTimeout,
@@ -330,9 +342,12 @@ class Database {
                     ...poolConfig,
                     acquireTimeoutMillis: acquireConnectionTimeout,
                     afterCreate: (rawConn, done) => {
-                        this.initSQLite(rawConn, testMode)
-                            .then(() => done(undefined, rawConn))
-                            .catch((err) => done(err, rawConn));
+                        try {
+                            this.initSQLite(rawConn, testMode);
+                            done(undefined, rawConn);
+                        } catch (err) {
+                            done(err, rawConn);
+                        }
                     },
                 },
             };
@@ -438,39 +453,39 @@ class Database {
         } else if (dbConfig.type.endsWith("mariadb")) {
             await this.initMariaDB();
         }
+
+        // Also connect better-auth
+        auth(true);
     }
 
     /**
      * Initialize SQLite for each connection
-     * @param {any} rawConn The raw node-sqlite3 Database object
+     * @param {import("better-sqlite3").Database} rawConn The raw better-sqlite3 Database object
      * @param {boolean} testMode Should the connection be started in test mode?
-     * @returns {Promise<void>}
      */
-    static async initSQLite(rawConn, testMode) {
-        // Since rawConn.run is callback based, in order to avoid callback hell, wrap it in a promise
-        const asyncRun = (sql) => {
-            return new Promise((resolve, reject) => rawConn.run(sql, (err) => (err ? reject(err) : resolve())));
-        };
+    static initSQLite(rawConn, testMode) {
+        // Required for legacy SQL patch files that use unsafe PRAGMAs (e.g. PRAGMA writable_schema)
+        rawConn.unsafeMode(true);
 
         if (testMode) {
             // Change to MEMORY
-            await asyncRun("PRAGMA journal_mode = MEMORY");
+            rawConn.exec("PRAGMA journal_mode = MEMORY");
         } else {
             // Change to WAL
-            await asyncRun("PRAGMA journal_mode = WAL");
+            rawConn.exec("PRAGMA journal_mode = WAL");
         }
 
-        await asyncRun("PRAGMA foreign_keys = ON");
-        await asyncRun("PRAGMA cache_size = -12000");
-        await asyncRun("PRAGMA auto_vacuum = INCREMENTAL");
+        rawConn.exec("PRAGMA foreign_keys = ON");
+        rawConn.exec("PRAGMA cache_size = -12000");
+        rawConn.exec("PRAGMA auto_vacuum = INCREMENTAL");
 
         // Avoid error "SQLITE_BUSY: database is locked" by allowing SQLITE to wait up to 5 seconds to do a write
-        await asyncRun("PRAGMA busy_timeout = 5000");
+        rawConn.exec("PRAGMA busy_timeout = 5000");
 
         // This ensures that an operating system crash or power failure will not corrupt the database.
         // FULL synchronous is very safe, but it is also slower.
         // Read more: https://sqlite.org/pragma.html#pragma_synchronous
-        await asyncRun("PRAGMA synchronous = NORMAL");
+        rawConn.exec("PRAGMA synchronous = NORMAL");
     }
 
     /**
@@ -534,6 +549,41 @@ class Database {
     }
 
     /**
+     * Create a database connection for better-auth, because better-auth doesn't use knex, so it needs a separate connection.
+     * @param {object} dbConfig The database configuration
+     * @returns {Pool|BetterSqlite3Database.Database} The database connection
+     */
+    static createAuthDatabase(dbConfig) {
+        let database;
+        if (dbConfig.type.includes("mariadb")) {
+            database = mysql.createPool({
+                host: dbConfig.host,
+                port: Number(dbConfig.port),
+                database: dbConfig.database,
+                user: dbConfig.username,
+                password: dbConfig.password,
+                timezone: "Z",
+                ...(dbConfig.socketPath ? { socketPath: dbConfig.socketPath } : {}),
+            });
+            Database.authMariaDB = database;
+        } else if (dbConfig.type === "embedded-mariadb") {
+            let embeddedMariaDB = EmbeddedMariaDB.getInstance();
+            database = mysql.createPool({
+                socketPath: embeddedMariaDB.socketPath,
+                user: embeddedMariaDB.username,
+                database: "kuma",
+                timezone: "Z",
+            });
+            Database.authMariaDB = database;
+        } else {
+            database = new BetterSqlite3Database(Database.sqlitePath);
+            Database.initSQLite(database, false);
+            Database.authSQLite = database;
+        }
+        return database;
+    }
+
+    /**
      * TODO
      * @returns {Promise<void>}
      */
@@ -545,7 +595,7 @@ class Database {
      * @deprecated
      */
     static async patchSqlite() {
-        let version = parseInt(await setting("database_version"));
+        let version = parseInt(await Settings.get("database_version"));
 
         if (!version) {
             version = 0;
@@ -570,7 +620,7 @@ class Database {
                     log.info("db", `Patching ${sqlFile}`);
                     await Database.importSQLFile(sqlFile);
                     log.info("db", `Patched ${sqlFile}`);
-                    await setSetting("database_version", i);
+                    await Settings.set("database_version", i);
                 }
             } catch (ex) {
                 await Database.close();
@@ -599,7 +649,7 @@ class Database {
      */
     static async patchSqlite2() {
         log.debug("db", "Database Patch 2.0 Process");
-        let databasePatchedFiles = await setting("databasePatchedFiles");
+        let databasePatchedFiles = await Settings.get("databasePatchedFiles");
 
         if (!databasePatchedFiles) {
             databasePatchedFiles = {};
@@ -629,7 +679,7 @@ class Database {
             process.exit(1);
         }
 
-        await setSetting("databasePatchedFiles", databasePatchedFiles);
+        await Settings.set("databasePatchedFiles", databasePatchedFiles);
     }
 
     /**
@@ -641,7 +691,7 @@ class Database {
         // Fix 1.13.0 empty slug bug
         await R.exec("UPDATE status_page SET slug = 'empty-slug-recover' WHERE TRIM(slug) = ''");
 
-        let title = await setting("title");
+        let title = await Settings.get("title");
 
         if (title) {
             log.info("database", "Migrating Status Page");
@@ -656,12 +706,12 @@ class Database {
             let statusPage = R.dispense("status_page");
             statusPage.slug = "default";
             statusPage.title = title;
-            statusPage.description = await setting("description");
-            statusPage.icon = await setting("icon");
-            statusPage.theme = await setting("statusPageTheme");
-            statusPage.published = !!(await setting("statusPagePublished"));
-            statusPage.search_engine_index = !!(await setting("searchEngineIndex"));
-            statusPage.show_tags = !!(await setting("statusPageTags"));
+            statusPage.description = await Settings.get("description");
+            statusPage.icon = await Settings.get("icon");
+            statusPage.theme = await Settings.get("statusPageTheme");
+            statusPage.published = !!(await Settings.get("statusPagePublished"));
+            statusPage.search_engine_index = !!(await Settings.get("searchEngineIndex"));
+            statusPage.show_tags = !!(await Settings.get("statusPageTags"));
             statusPage.password = null;
 
             if (!statusPage.title) {
@@ -685,10 +735,10 @@ class Database {
             await R.exec("DELETE FROM setting WHERE type = 'statusPage'");
 
             // Migrate Entry Page if it is status page
-            let entryPage = await setting("entryPage");
+            let entryPage = await Settings.get("entryPage");
 
             if (entryPage === "statusPage") {
-                await setSetting("entryPage", "statusPage-default", "general");
+                await Settings.set("entryPage", "statusPage-default", "general");
             }
 
             log.info("database", "Migrating Status Page - Done");
@@ -768,6 +818,8 @@ class Database {
     }
 
     /**
+     * Close Database
+     * Warning: It is used for shutdown the application. After closed database, it cannot be connected again! Because Better-auth would not reconnect the database.
      * Special handle, because tarn.js throw a promise reject that cannot be caught
      * @returns {Promise<void>}
      */
@@ -786,7 +838,19 @@ class Database {
 
         while (true) {
             Database.noReject = true;
+
             await R.close();
+
+            // Also close auth db
+            if (Database.authMariaDB) {
+                await Database.authMariaDB.end();
+                Database.authMariaDB = null;
+            }
+            if (Database.authSQLite) {
+                Database.authSQLite.close();
+                Database.authSQLite = null;
+            }
+
             await sleep(2000);
 
             if (Database.noReject) {

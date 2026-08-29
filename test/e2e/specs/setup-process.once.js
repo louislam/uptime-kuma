@@ -13,7 +13,7 @@ test.describe("Uptime Kuma Setup", () => {
      */
 
     test("setup sqlite", async ({ page }, testInfo) => {
-        await page.goto("./");
+        await page.goto("./setup-database");
         await page.getByText("SQLite").click();
         await page.getByRole("button", { name: "Next" }).click();
         await screenshot(testInfo, page);
@@ -21,14 +21,14 @@ test.describe("Uptime Kuma Setup", () => {
     });
 
     test("setup admin", async ({ page }) => {
-        await page.goto("./");
-        await page.getByPlaceholder("Username").click();
-        await page.getByPlaceholder("Username").fill("admin");
-        await page.getByPlaceholder("Username").press("Tab");
-        await page.getByPlaceholder("Password", { exact: true }).fill("admin123");
-        await page.getByPlaceholder("Password", { exact: true }).press("Tab");
-        await page.getByPlaceholder("Repeat Password").fill("admin123");
+        await page.goto("./setup");
+        await page.getByRole("textbox", { name: "Username" }).click();
+        await page.getByRole("textbox", { name: "Username" }).fill("admin");
+        await page.getByRole("textbox", { name: "Password", exact: true }).fill("admin123");
+        await page.getByRole("textbox", { name: "Repeat Password" }).fill("admin123");
         await page.getByRole("button", { name: "Create" }).click();
+        // User is auto-logged in and redirected to dashboard
+        await page.waitForURL("/dashboard");
     });
 
     /*
@@ -38,6 +38,15 @@ test.describe("Uptime Kuma Setup", () => {
     test("login", async ({ page }) => {
         await page.goto("./dashboard");
         await login(page);
+    });
+
+    test("failed login shows error alert", async ({ page }, testInfo) => {
+        await page.goto("./dashboard");
+        await page.getByPlaceholder("Username").fill("admin");
+        await page.getByPlaceholder("Password").fill("wrongpassword");
+        await page.getByRole("button", { name: "Log in" }).click();
+        await page.waitForSelector(".alert.alert-danger", { state: "visible" });
+        await screenshot(testInfo, page);
     });
 
     test("logout", async ({ page }) => {
