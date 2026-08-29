@@ -1002,7 +1002,6 @@ let needSetup = false;
 
                 await server.sendUpdateMonitorIntoList(socket, bean.id);
 
-
                 callback({
                     ok: true,
                     msg: "Saved.",

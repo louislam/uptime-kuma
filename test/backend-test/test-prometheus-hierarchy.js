@@ -7,11 +7,17 @@ const Monitor = require("../../server/model/monitor");
  * Related issue: https://github.com/louislam/uptime-kuma/issues/3905
  */
 describe("Monitor Prometheus hierarchy labels", () => {
-
+    /**
+     * @param id
+     * @param parentId
+     */
     function makeMonitorStub(id, parentId = null) {
         return { id, parent: parentId };
     }
 
+    /**
+     * @param parentMap
+     */
     function stubGetParent(parentMap) {
         const original = Monitor.getParent;
         Monitor.getParent = async (monitorID) => parentMap.get(monitorID) ?? null;
@@ -29,7 +35,12 @@ describe("Monitor Prometheus hierarchy labels", () => {
     });
 
     test("getAllPathIDs returns /parentId/childId/ for single-level nested monitor", async () => {
-        const original = stubGetParent(new Map([[9, { id: 4 }], [4, null]]));
+        const original = stubGetParent(
+            new Map([
+                [9, { id: 4 }],
+                [4, null],
+            ])
+        );
         try {
             const path = await Monitor.getAllPathIDs(9);
             assert.strictEqual(path, "/4/9/");
@@ -39,7 +50,13 @@ describe("Monitor Prometheus hierarchy labels", () => {
     });
 
     test("getAllPathIDs builds full path for deeply nested monitor", async () => {
-        const original = stubGetParent(new Map([[20, { id: 10 }], [10, { id: 5 }], [5, null]]));
+        const original = stubGetParent(
+            new Map([
+                [20, { id: 10 }],
+                [10, { id: 5 }],
+                [5, null],
+            ])
+        );
         try {
             const path = await Monitor.getAllPathIDs(20);
             assert.strictEqual(path, "/5/10/20/");
@@ -49,7 +66,13 @@ describe("Monitor Prometheus hierarchy labels", () => {
     });
 
     test("getAllPathIDs places root group first in path", async () => {
-        const original = stubGetParent(new Map([[3, { id: 2 }], [2, { id: 1 }], [1, null]]));
+        const original = stubGetParent(
+            new Map([
+                [3, { id: 2 }],
+                [2, { id: 1 }],
+                [1, null],
+            ])
+        );
         try {
             const path = await Monitor.getAllPathIDs(3);
             assert.strictEqual(path, "/1/2/3/");
