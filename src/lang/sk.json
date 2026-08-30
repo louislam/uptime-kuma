@@ -1689,5 +1689,8 @@
     "milkySafetyTips": "Z bezpečnostných dôvodov je potrebné nastaviť prístupový token",
     "smsgatewayUrlHelptext": "Základná URL adresa vašej SMS brány bez cesty k API.",
     "smsgatewayTo": "Telefónne číslo (-la)",
-    "smsgatewayToHelptext": "Zoznam telefónnych čísel príjemcov oddelených čiarkami v medzinárodnom formáte (napr. +15551234567)"
+    "smsgatewayToHelptext": "Zoznam telefónnych čísel príjemcov oddelených čiarkami v medzinárodnom formáte (napr. +15551234567)",
+    "Device ID or Group ID": "ID zariadenia alebo ID skupiny",
+    "notifyAppDeviceIdDescription": "ID zariadenia z aplikácie Notify! alebo ID skupiny, aby sa naraz upozornili všetky zariadenia v skupine.",
+    "notifyAppSetup": "Otvorte Notify! a v časti Nastavenia vyhľadajte ID zariadenia a token. Nie je potrebný žiadny účet. Viac informácií nájdete na {0}."
 }
