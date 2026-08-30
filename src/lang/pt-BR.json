@@ -1695,5 +1695,10 @@
     "milkyGroupMessage": "Grupo",
     "milkyPrivateMessage": "Privado",
     "milkyUserOrGroupId": "Grupo/ID do Usuário",
-    "milkySafetyTips": "Por segurança, é necessário definir o token de acesso"
+    "milkySafetyTips": "Por segurança, é necessário definir o token de acesso",
+    "Device ID or Group ID": "ID do dispositivo ou ID do grupo",
+    "notifyAppDeviceIdDescription": "O ID do dispositivo do aplicativo Notify!, ou um ID de grupo para alertar todos os dispositivos de um grupo de uma só vez.",
+    "notifyAppSetup": "Abra o Notify! e encontre o ID do seu dispositivo e o token em Configurações. Não é necessário criar uma conta. Saiba mais em {0}.",
+    "smsgatewayUrlHelptext": "A URL base do seu gateway de SMS, sem o caminho da API.",
+    "smsgatewayTo": "Número(s) de telefone"
 }
