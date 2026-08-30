@@ -65,7 +65,7 @@ class SystemServiceMonitorType extends MonitorType {
     }
 
     /**
-     * Windows Check (PowerShell)
+     * Windows Check (sc.exe)
      * @param {string} serviceName The name of the service to check.
      * @param {object} heartbeat The heartbeat object.
      * @returns {Promise<void>} Resolves on success, rejects on error.
@@ -77,31 +77,23 @@ class SystemServiceMonitorType extends MonitorType {
                 throw new Error("Invalid service name. Only alphanumeric characters and '.', '_', '-' are allowed.");
             }
 
-            const cmd = "powershell";
-            const args = [
-                "-NoProfile",
-                "-NonInteractive",
-                "-Command",
-                `(Get-Service -Name '${serviceName.replaceAll("'", "''")}').Status`,
-            ];
+            const cmd = "sc.exe";
+            const args = ["query", serviceName];
 
             execFile(cmd, args, { timeout: 5000 }, (error, stdout, stderr) => {
                 let output = (stderr || stdout || "").toString().trim();
-                if (output.length > 200) {
-                    output = output.substring(0, 200) + "...";
-                }
 
-                if (error || stderr) {
+                if (error) {
                     reject(new Error(`Service '${serviceName}' is not running/found.`));
                     return;
                 }
 
-                if (output === "Running") {
+                if (output.includes("RUNNING")) {
                     heartbeat.status = UP;
                     heartbeat.msg = `Service '${serviceName}' is running.`;
                     resolve();
                 } else {
-                    reject(new Error(`Service '${serviceName}' is ${output}.`));
+                    reject(new Error(`Service '${serviceName}' is not running.`));
                 }
             });
         });
