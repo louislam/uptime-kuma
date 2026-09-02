@@ -513,6 +513,7 @@
                     :show-tags="config.showTags"
                     :show-certificate-expiry="config.showCertificateExpiry"
                     :heartbeat-bar-days="config.heartbeatBarDays || 0"
+                    :aggregated-monitor-ids="aggregatedMonitorIds"
                     :show-only-last-heartbeat="config.showOnlyLastHeartbeat"
                 />
             </div>
@@ -714,6 +715,7 @@ export default {
                 analyticsType: null,
             },
             heartbeatMaxBeats: null,
+            aggregatedMonitorIds: null,
             heartbeatRequestSeq: 0,
             selectedMonitor: null,
             incident: null,
@@ -1144,7 +1146,10 @@ export default {
                     }
                     const { heartbeatList, uptimeList, lastHeartbeatList } = res.data;
 
-                    this.$root.heartbeatList = heartbeatList;
+                    // Merge, so monitors added in the editor but not saved yet
+                    // keep the beats the socket delivered for them
+                    Object.assign(this.$root.heartbeatList, heartbeatList);
+                    this.aggregatedMonitorIds = Object.keys(heartbeatList).map(Number);
                     this.$root.uptimeList = uptimeList;
 
                     // Aggregated bars cannot express the current status, the

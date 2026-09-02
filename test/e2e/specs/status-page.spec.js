@@ -254,8 +254,12 @@ test.describe("Status Page", () => {
             }).toPass({ timeout: 15000 });
         }
 
-        // Configure a 35 day heartbeat range and save
+        // Configure a 35 day heartbeat range, the unsaved monitor keeps its beats
         await fillDays("35");
+        await expect(page.locator(".heartbeat-canvas")).not.toHaveAttribute("aria-label", /No data/, {
+            timeout: 15000,
+        });
+        await expect(page.getByText("Showing recent heartbeats until saved")).toBeVisible();
         await page.getByTestId("save-button").click();
         await expect(page.getByTestId("edit-sidebar")).toHaveCount(0);
 
