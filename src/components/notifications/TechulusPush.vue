@@ -21,7 +21,7 @@
             v-model="$parent.notification.pushChannel"
             type="text"
             class="form-control"
-            patttern="[A-Za-z0-9-]+"
+            pattern="[A-Za-z0-9-]+"
         />
         <div class="form-text">
             {{ $t("Alphanumerical string and hyphens only") }}

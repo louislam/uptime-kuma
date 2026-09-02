@@ -214,6 +214,7 @@ export default {
             let chatPlatforms = {
                 bale: "Bale",
                 Bitrix24: "Bitrix24",
+                ClickUp: "ClickUp",
                 discord: "Discord",
                 max: this.$t("maxMessenger"),
                 fluxer: "Fluxer",
@@ -229,6 +230,7 @@ export default {
                 line: "LINE Messenger",
                 matrix: "Matrix",
                 mattermost: "Mattermost",
+                Milky: "Milky(QQ)",
                 nextcloudtalk: "Nextcloud Talk",
                 nostr: "Nostr",
                 OneChat: "OneChat",
@@ -247,6 +249,7 @@ export default {
                 evolution: "WhatsApp (Evolution)",
                 waha: "WhatsApp (WAHA)",
                 Whatsapp360messenger: "WhatsApp (360messenger)",
+                openwa: "WhatsApp (OpenWA)",
             };
 
             // Push Services - Push notification services
@@ -256,7 +259,9 @@ export default {
                 gotify: "Gotify",
                 lunasea: "LunaSea",
                 notifery: "Notifery",
+                notifyapp: "Notify!",
                 ntfy: "Ntfy",
+                pinglet: "Pinglet",
                 pushbullet: "Pushbullet",
                 PushByTechulus: "Push by Techulus",
                 pushover: "Pushover",
@@ -275,6 +280,7 @@ export default {
                 plivo: "Plivo",
                 SevenIO: "SevenIO",
                 SMSEagle: "SMSEagle",
+                SMSGateway: "SMS Gateway",
                 SMSPartner: "SMS Partner",
                 telnyx: "Telnyx",
                 Teltonika: this.$t("Teltonika SMS Gateway"),
@@ -287,6 +293,7 @@ export default {
                 Resend: "Resend",
                 SendGrid: "SendGrid",
                 smtp: this.$t("smtp"),
+                TurboSMTP: "TurboSMTP",
             };
 
             // Incident Management - On-call and alerting platforms
@@ -320,6 +327,7 @@ export default {
             // Regional - Not supported in most regions or documentation is not in English
             let regional = {
                 AliyunSMS: "AliyunSMS (阿里云短信服务)",
+                bearsms: "BearSMS (Israel)",
                 egosms: "EgoSMS (Uganda)",
                 DingDing: "DingDing (钉钉自定义机器人)",
                 Feishu: "Feishu (飞书)",

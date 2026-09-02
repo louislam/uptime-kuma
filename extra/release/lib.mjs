@@ -1,11 +1,68 @@
 import "dotenv/config";
 import * as childProcess from "child_process";
 import semver from "semver";
-import { getPrompt } from "../generate-changelog.mjs";
 import fs from "fs";
 import tar from "tar";
 
-export const dryRun = process.env.RELEASE_DRY_RUN === "1";
+// Support both the legacy RELEASE_DRY_RUN=1 format and DRY_RUN=true used by GitHub Actions workflows
+export const dryRun = process.env.RELEASE_DRY_RUN === "1" || process.env.DRY_RUN === "true";
+
+/**
+ * Read the release version from environment variables
+ * @returns {string|undefined} Release version
+ */
+export function getVersionFromEnv() {
+    return process.env.RELEASE_VERSION || process.env.RELEASE_BETA_VERSION;
+}
+
+/**
+ * Check if this is a beta release
+ * @returns {boolean} Is a beta release
+ */
+export function isBetaRelease() {
+    return process.env.RELEASE_IS_BETA === "true" || !!process.env.RELEASE_BETA_VERSION;
+}
+
+/**
+ * Save PR number to tmp/pr-number.txt for later stages
+ * @param {number} prNumber PR number
+ * @returns {void}
+ */
+export function savePrNumber(prNumber) {
+    const tmpDir = "./tmp";
+    if (!fs.existsSync(tmpDir)) {
+        fs.mkdirSync(tmpDir, { recursive: true });
+    }
+    fs.writeFileSync(`${tmpDir}/pr-number.txt`, String(prNumber));
+}
+
+/**
+ * Save the squash merge commit SHA to tmp/merge-sha.txt for later stages
+ * @param {string} sha Merge commit SHA
+ * @returns {void}
+ */
+export function saveMergeSha(sha) {
+    const tmpDir = "./tmp";
+    if (!fs.existsSync(tmpDir)) {
+        fs.mkdirSync(tmpDir, { recursive: true });
+    }
+    fs.writeFileSync(`${tmpDir}/merge-sha.txt`, sha);
+}
+
+/**
+ * Read the merge commit SHA from env or tmp/merge-sha.txt
+ * @returns {string|null} Merge commit SHA or null
+ */
+export function readMergeSha() {
+    if (process.env.MERGE_SHA) {
+        return process.env.MERGE_SHA;
+    }
+    const file = "./tmp/merge-sha.txt";
+    if (fs.existsSync(file)) {
+        return fs.readFileSync(file, "utf-8").trim() || null;
+    }
+    return null;
+}
 
 if (dryRun) {
     console.info("Dry run enabled.");
@@ -158,6 +215,225 @@ export function checkVersionFormat(version) {
 }
 
 /**
+ * Find an open pull request by its head branch
+ * @param {string} branchName Head branch name
+ * @returns {Promise<number|null>} PR number or null if not found
+ */
+export async function findOpenPrByHead(branchName) {
+    const result = childProcess.spawnSync(
+        "gh",
+        ["pr", "list", "--head", branchName, "--state", "open", "--json", "number", "--limit", "1"],
+        {
+            encoding: "utf-8",
+        }
+    );
+
+    if (result.status !== 0) {
+        console.error(result.stderr);
+        console.error("Failed to list pull requests");
+        process.exit(1);
+    }
+
+    const prs = JSON.parse(result.stdout);
+    return prs.length > 0 ? prs[0].number : null;
+}
+
+/**
+ * Check whether a pull request has been merged
+ * @param {number} prNumber PR number
+ * @returns {Promise<boolean>} Is the PR merged
+ */
+export async function isPrMerged(prNumber) {
+    const result = childProcess.spawnSync("gh", ["pr", "view", String(prNumber), "--json", "state"], {
+        encoding: "utf-8",
+    });
+
+    if (result.status !== 0) {
+        console.error(result.stderr);
+        console.error(`Failed to get state of PR #${prNumber}`);
+        process.exit(1);
+    }
+
+    return JSON.parse(result.stdout).state === "MERGED";
+}
+
+/**
+ * Get the squash merge commit SHA of a merged pull request
+ * @param {number} prNumber PR number
+ * @returns {Promise<string|null>} Merge commit SHA or null if not merged
+ */
+export async function getPrMergeCommit(prNumber) {
+    const result = childProcess.spawnSync("gh", ["pr", "view", String(prNumber), "--json", "mergeCommit"], {
+        encoding: "utf-8",
+    });
+
+    if (result.status !== 0) {
+        console.error(result.stderr);
+        console.error(`Failed to get merge commit of PR #${prNumber}`);
+        process.exit(1);
+    }
+
+    const obj = JSON.parse(result.stdout);
+    return obj.mergeCommit ? obj.mergeCommit.oid : null;
+}
+
+/**
+ * Check whether a GitHub release already exists (draft or published)
+ * @param {string} version Version tag
+ * @returns {Promise<boolean>} Does the release exist
+ */
+export async function releaseExists(version) {
+    const result = childProcess.spawnSync("gh", ["release", "view", version, "--json", "tagName"], {
+        encoding: "utf-8",
+    });
+
+    if (result.status === 0) {
+        return true;
+    }
+
+    // gh exits with a non-zero code both when the release is missing and on real errors
+    if ((result.stderr || "").includes("not found")) {
+        return false;
+    }
+
+    console.error(result.stderr);
+    console.error(`Failed to check if release ${version} exists`);
+    process.exit(1);
+}
+
+/**
+ * Create a draft GitHub Release without assets
+ * Skips creation if the release already exists, so it can be safely re-run
+ * @param {string} version Version tag
+ * @param {string} changelog Changelog content
+ * @param {boolean} isBeta Mark as pre-release
+ * @param {string|null} targetSha Commit SHA the tag should point to when published
+ * @returns {Promise<boolean>} true if created, false if it already existed
+ */
+export async function createDraftRelease(version, changelog, isBeta = false, targetSha = null) {
+    if (await releaseExists(version)) {
+        console.log(`Release ${version} already exists, skipping creation.`);
+        return false;
+    }
+
+    console.log(`Creating draft release ${version}...`);
+
+    const releaseBody = `## ${version}
+
+${changelog}`;
+
+    let releaseArgs = ["release", "create", version];
+
+    if (targetSha) {
+        releaseArgs.push("--target", targetSha);
+    }
+
+    releaseArgs = releaseArgs.concat(["--draft", "--title", version, "--notes", releaseBody]);
+
+    if (isBeta) {
+        releaseArgs.push("--prerelease");
+    }
+
+    const result = childProcess.spawnSync("gh", releaseArgs, {
+        encoding: "utf-8",
+    });
+
+    if (result.status !== 0) {
+        console.error(result.stderr);
+        console.error("Failed to create release");
+        process.exit(1);
+    }
+
+    console.log(`Draft release ${version} created.`);
+    console.log("Next steps:");
+    console.log(`  1. Review the draft release: https://github.com/louislam/uptime-kuma/releases/tag/${version}`);
+    console.log("  2. Edit if needed and publish.");
+    return true;
+}
+
+/**
+ * Upload asset files to an existing GitHub release
+ * Uses --clobber, so it can be safely re-run
+ * @param {string} version Version tag
+ * @param {string[]} files File paths to upload
+ * @returns {Promise<void>}
+ */
+export async function uploadReleaseAssets(version, files) {
+    if (dryRun) {
+        console.log(`[DRY RUN] gh release upload ${version} --clobber ${files.join(" ")}`);
+        return;
+    }
+
+    const args = ["release", "upload", version, "--clobber", ...files];
+
+    const result = childProcess.spawnSync("gh", args, {
+        stdio: "inherit",
+    });
+
+    if (result.status !== 0) {
+        console.error("Failed to upload assets");
+        process.exit(1);
+    }
+
+    console.log("Assets uploaded.");
+}
+
+/**
+ * Build and push all docker images for a release
+ * @param {string[]} repoNames Docker repository names
+ * @param {string} version Version tag
+ * @param {boolean} isBeta Beta tags instead of final ones
+ * @returns {void}
+ */
+export function buildAllImages(repoNames, version, isBeta) {
+    if (isBeta) {
+        // Build slim image (rootless)
+        buildImage(
+            repoNames,
+            ["beta-slim-rootless", ver(version, "slim-rootless")],
+            "rootless",
+            "BASE_IMAGE=louislam/uptime-kuma:base2-slim"
+        );
+
+        // Build full image (rootless)
+        buildImage(repoNames, ["beta-rootless", ver(version, "rootless")], "rootless");
+
+        // Build slim image
+        buildImage(
+            repoNames,
+            ["beta-slim", ver(version, "slim")],
+            "release",
+            "BASE_IMAGE=louislam/uptime-kuma:base2-slim"
+        );
+
+        // Build full image
+        buildImage(repoNames, ["beta", version], "release");
+    } else {
+        // Build slim image (rootless)
+        buildImage(
+            repoNames,
+            ["2-slim-rootless", ver(version, "slim-rootless")],
+            "rootless",
+            "BASE_IMAGE=louislam/uptime-kuma:base2-slim"
+        );
+
+        // Build full image (rootless)
+        buildImage(repoNames, ["next-rootless", "2-rootless", ver(version, "rootless")], "rootless");
+
+        // Build slim image
+        buildImage(
+            repoNames,
+            ["next-slim", "2-slim", ver(version, "slim")],
+            "release",
+            "BASE_IMAGE=louislam/uptime-kuma:base2-slim"
+        );
+
+        // Build full image
+        buildImage(repoNames, ["next", "2", version], "release");
+    }
+}
+
+/**
  * Press any key to continue
  * @returns {Promise<void>}
  */
@@ -299,83 +575,95 @@ export async function createDistTarGz() {
 }
 
 /**
- * Create a draft release PR
+ * Create a release PR
  * @param {string} version Version
  * @param {string} previousVersion Previous version tag
  * @param {boolean} dryRun Still create the PR, but add "[DRY RUN]" to the title
  * @param {string} branchName The branch name to use for the PR head (defaults to "release")
  * @param {string} githubRunId The GitHub Actions run ID for linking to artifacts
- * @returns {Promise<void>}
+ * @returns {Promise<number>} The PR number
  */
 export async function createReleasePR(version, previousVersion, dryRun, branchName = "release", githubRunId = null) {
-    const prompt = await getPrompt(previousVersion);
+    // Reuse the existing open PR for this branch, so re-running does not close or duplicate it
+    const existingPrNumber = await findOpenPrByHead(branchName);
+    if (existingPrNumber) {
+        console.log(`Found existing open PR #${existingPrNumber} for branch ${branchName}, reusing it.`);
+        savePrNumber(existingPrNumber);
+        return existingPrNumber;
+    }
 
     const title = dryRun ? `chore: update to ${version} (dry run)` : `chore: update to ${version}`;
 
     // Build the artifact link - use direct run link if available, otherwise link to workflow file
     const artifactLink = githubRunId
         ? `https://github.com/louislam/uptime-kuma/actions/runs/${githubRunId}/workflow`
-        : `https://github.com/louislam/uptime-kuma/actions/workflows/beta-release.yml`;
+        : `https://github.com/louislam/uptime-kuma/actions/workflows/release.yml`;
+
+    const tmpDir = "./tmp";
+    if (!fs.existsSync(tmpDir)) {
+        fs.mkdirSync(tmpDir, { recursive: true });
+    }
 
     const body = `## Release ${version}
 
 This PR prepares the release for version ${version}.
 
-### Manual Steps Required
-- [ ] Merge this PR (squash and merge)
-- [ ] Create a new release on GitHub with the tag \`${version}\`.
-- [ ] Ask any LLM to categorize the changelog into sections.
-- [ ] Place the changelog in the release note.
-- [ ] Download the \`dist.tar.gz\` artifact from the [workflow run](${artifactLink}) and upload it to the release.
-- [ ] (Beta only) Set prerelease
-- [ ] Publish the release note on GitHub.
-
-### Ask LLM to categorize the changelog
-
-\`\`\`md
-${prompt}
-\`\`\`
-
-Run the following command to generate the changelog with the categorized map from LLM:
-
-\`\`\`bash
-npm run generate-changelog ${previousVersion} generate 'JSON_MAPPING_BY_LLM_HERE'
-\`\`\`
-
 ### Release Artifacts
-The \`dist.tar.gz\` archive will be available as an artifact in the workflow run.
+The \`dist.tar.gz\` archive will be available as an artifact in the [workflow run](${artifactLink}).
 `;
 
     // Create the PR using gh CLI
-    const args = [
-        "pr",
-        "create",
-        "--title",
-        title,
-        "--body",
-        body,
-        "--base",
-        "master",
-        "--head",
-        branchName,
-        "--draft",
-    ];
+    const args = ["pr", "create", "--title", title, "--body", body, "--base", "master", "--head", branchName];
 
-    console.log(`Creating draft PR: ${title}`);
+    console.log(`Creating PR: ${title}`);
 
     const result = childProcess.spawnSync("gh", args, {
         encoding: "utf-8",
-        stdio: "inherit",
-        env: {
-            ...process.env,
-            GH_TOKEN: process.env.GH_TOKEN || process.env.GITHUB_TOKEN,
-        },
+        stdio: "pipe",
     });
 
     if (result.status !== 0) {
+        console.error(result.stderr);
         console.error("Failed to create pull request");
         process.exit(1);
     }
 
-    console.log("Successfully created draft pull request");
+    const prUrl = result.stdout.trim();
+    console.log(prUrl);
+
+    // Extract PR number from URL (e.g., https://github.com/louislam/uptime-kuma/pull/1234)
+    const prNumberMatch = prUrl.match(/\/pull\/(\d+)/);
+    const prNumber = prNumberMatch ? parseInt(prNumberMatch[1], 10) : null;
+
+    if (prNumber) {
+        console.log(`PR number: ${prNumber}`);
+        // Save PR number to file for the finish script
+        savePrNumber(prNumber);
+    } else {
+        console.warn("Could not extract PR number from URL, auto-finish will not be possible");
+    }
+
+    console.log("Successfully created pull request");
+    return prNumber;
+}
+
+/**
+ * Create a draft release, optionally with dist.tar.gz uploaded as an asset
+ * @param {string} version Version tag
+ * @param {string} changelog Changelog content
+ * @param {boolean} isBeta Mark as pre-release
+ * @param {string} distTarGz If empty, it will not be uploaded to the release
+ * @returns {Promise<void>}
+ */
+export async function createRelease(version, changelog, isBeta = false, distTarGz = undefined) {
+    await createDraftRelease(version, changelog, isBeta);
+
+    if (distTarGz) {
+        if (!fs.existsSync(distTarGz)) {
+            console.error(`dist.tar.gz not found: ${distTarGz}`);
+            process.exit(1);
+        }
+
+        await uploadReleaseAssets(version, [distTarGz]);
+    }
 }
