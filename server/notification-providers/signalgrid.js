@@ -35,11 +35,7 @@ class Signalgrid extends NotificationProvider {
             data.append("type", type);
             data.append("critical", "false");
 
-            const response = await axios.post(
-                "https://api.signalgrid.co/v1/push",
-                data,
-                config
-            );
+            const response = await axios.post("https://api.signalgrid.co/v1/push", data, config);
 
             if (response.data?.code && String(response.data.code) !== "200") {
                 throw new Error(response.data.text || "Signalgrid API request failed");
