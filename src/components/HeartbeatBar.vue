@@ -79,6 +79,7 @@ export default {
             maxBeat: -1,
             wrapWidth: 0,
             reloadTimeout: null,
+            resizeObserver: null,
             // Tooltip data
             tooltipVisible: false,
             tooltipContent: null,
@@ -359,6 +360,7 @@ export default {
     },
     unmounted() {
         window.removeEventListener("resize", this.resize);
+        this.resizeObserver.disconnect();
         clearTimeout(this.reloadTimeout);
         // Clean up tooltip timeout
         if (this.tooltipTimeoutId) {
@@ -394,6 +396,11 @@ export default {
         }
 
         window.addEventListener("resize", this.resize);
+
+        // The container can change width without the window doing so, e.g.
+        // when the status page editor opens its sidebar
+        this.resizeObserver = new ResizeObserver(() => this.resize());
+        this.resizeObserver.observe(this.$refs.wrap);
         this.resize();
 
         // Initial canvas draw

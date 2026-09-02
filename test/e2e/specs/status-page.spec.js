@@ -284,6 +284,16 @@ test.describe("Status Page", () => {
         await savedRangeRequest;
         await expect(page.getByText("35d")).toBeVisible();
 
+        // The sidebar narrows the page, the bar has to fit the new width
+        await expect
+            .poll(() =>
+                page
+                    .locator(".heartbeat-canvas")
+                    .first()
+                    .evaluate((canvas) => canvas.getBoundingClientRect().width - canvas.closest(".wrap").clientWidth)
+            )
+            .toBeLessThanOrEqual(1);
+
         // Out of range values are clamped by the server, the preview follows the input
         const changedRangeRequest = waitForHeartbeatRequest("500");
         await fillDays("500");
