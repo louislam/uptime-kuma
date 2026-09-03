@@ -1684,5 +1684,11 @@
     "milkyGroupMessage": "Skupina",
     "milkyPrivateMessage": "Soukromé",
     "milkyUserOrGroupId": "ID skupiny/uživatele",
-    "milkySafetyTips": "Z bezpečnostních důvodů je nutné nastavit přístupový token"
+    "milkySafetyTips": "Z bezpečnostních důvodů je nutné nastavit přístupový token",
+    "Device ID or Group ID": "ID zařízení nebo ID skupiny",
+    "notifyAppDeviceIdDescription": "ID zařízení z aplikace Notify! nebo ID skupiny, pomocí kterého lze najednou upozornit všechna zařízení ve skupině.",
+    "notifyAppSetup": "Spusťte aplikaci Notify! a v části Nastavení vyhledejte ID zařízení a token. Není třeba mít žádný účet. Více informací najdete na {0}.",
+    "smsgatewayUrlHelptext": "Základní URL vaší SMS brány bez cesty k API.",
+    "smsgatewayTo": "Telefonní číslo (čísla)",
+    "smsgatewayToHelptext": "Seznam telefonních čísel příjemců oddělených čárkami v mezinárodním formátu (např. +15551234567)"
 }
