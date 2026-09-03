@@ -85,6 +85,15 @@ export function currentLocale() {
             if (regionalLocale in messages) {
                 return regionalLocale;
             }
+            // The constructed key assumes region === language (fr-FR, de-DE), which fails
+            // for languages like Czech (cs-CZ), Danish (da-DK), Korean (ko-KR), etc.
+            // Fall back to the first registered locale whose language prefix matches.
+            const prefixMatch = Object.keys(messages).find(
+                (key) => key.toLowerCase().startsWith(locale.toLowerCase() + "-")
+            );
+            if (prefixMatch) {
+                return prefixMatch;
+            }
         } else {
             // Some locales are further specified such as "en-US".
             // If we only have a generic locale for this, we can use it too
