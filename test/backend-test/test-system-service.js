@@ -55,19 +55,20 @@ describe("SystemServiceMonitorType", { skip: shouldSkip() }, () => {
             skip: process.platform === "win32",
         },
         async () => {
-        // Windows: 'EventLog' is always running.
-        // Linux: 'dbus' or 'cron' are standard services.
-        const serviceName = process.platform === "win32" ? "EventLog" : "dbus";
+            // Windows: 'EventLog' is always running.
+            // Linux: 'dbus' or 'cron' are standard services.
+            const serviceName = process.platform === "win32" ? "EventLog" : "dbus";
 
-        const monitor = {
-            system_service_name: serviceName,
-        };
+            const monitor = {
+                system_service_name: serviceName,
+            };
 
-        await monitorType.check(monitor, heartbeat);
+            await monitorType.check(monitor, heartbeat);
 
-        assert.strictEqual(heartbeat.status, UP);
-        assert.ok(heartbeat.msg.includes("is running"));
-    });
+            assert.strictEqual(heartbeat.status, UP);
+            assert.ok(heartbeat.msg.includes("is running"));
+        }
+    );
 
     test("check() returns DOWN for a stopped service", async () => {
         const monitor = {
