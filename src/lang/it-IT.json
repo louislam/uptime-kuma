@@ -105,7 +105,7 @@
     "disableauth.message2": "{intendThirdPartyAuth} prima di Uptime Kuma, come ad esempio Cloudflare Access.",
     "where you intend to implement third-party authentication": "Questa opzione è per chi possiede un sistema di autenticazione gestito da terze parti",
     "Please use this option carefully!": "Utilizzare con attenzione!",
-    "Logout": "Disconnettiti",
+    "Logout": "Disconnetti",
     "Leave": "Annulla",
     "I understand, please disable": "Lo capisco, disabilita l'autenticazione",
     "Confirm": "Conferma",
@@ -1704,5 +1704,8 @@
     "milkySafetyTips": "Per sicurezza, è necessario impostare il token di accesso",
     "smsgatewayUrlHelptext": "L'URL di base del tuo gateway SMS, senza percorso API.",
     "smsgatewayTo": "Numer(i) di telefono",
-    "smsgatewayToHelptext": "Elenco di numeri di telefono dei destinatari separati da virgole, in formato internazionale (ad esempio +15551234567)"
+    "smsgatewayToHelptext": "Elenco di numeri di telefono dei destinatari separati da virgole, in formato internazionale (ad esempio +15551234567)",
+    "Device ID or Group ID": "ID dispositivo o ID gruppo",
+    "notifyAppDeviceIdDescription": "ID del dispositivo dall'app Notify! oppure un ID di gruppo per inviare una notifica a tutti i dispositivi di un gruppo contemporaneamente.",
+    "notifyAppSetup": "Apri Notify! e trova l'ID del dispositivo e il token in Impostazioni. Non è necessario alcun account. Scopri di più su {0}."
 }
