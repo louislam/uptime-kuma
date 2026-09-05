@@ -2,7 +2,7 @@
     <transition name="slide-fade" appear>
         <div>
             <h1 class="mb-3">{{ pageName }}</h1>
-            <form @submit.prevent="submit">
+            <form @submit.prevent="submit" @click="isFormChanged = true" @change="isFormChanged = true" @input="isFormChanged = true">
                 <div class="shadow-box shadow-box-with-fixed-bottom-bar">
                     <div class="row">
                         <div class="col-md-6">
@@ -3201,7 +3201,7 @@
                             id="monitor-submit-btn"
                             class="btn btn-primary"
                             type="submit"
-                            :disabled="processing"
+                            :disabled="processing || !isChanged"
                             data-testid="save-button"
                         >
                             {{ $t("Save") }}
@@ -3355,6 +3355,7 @@ export default {
             minInterval: MIN_INTERVAL_SECOND,
             pingPerRequestTimeoutMax: PING_PER_REQUEST_TIMEOUT_MAX,
             processing: false,
+            isFormChanged: false,
             monitor: {
                 notificationIDList: {},
                 // Do not add default value here, please check init() method
@@ -3389,6 +3390,13 @@ export default {
     },
 
     computed: {
+        isChanged() {
+            if (this.isEdit) {
+                const t = this.$refs.tagsManager;
+                return this.isFormChanged || (t && (t.newTags.length || t.deleteTags.length))
+            }
+            return true;
+        },
         timeoutStep() {
             return this.monitor.type === "ping" ? 1 : 0.1;
         },
@@ -4021,6 +4029,7 @@ message HealthCheckResponse {
          * @returns {void}
          */
         init() {
+            this.isFormChanged = false;
             if (this.isAdd) {
                 this.monitor = {
                     ...monitorDefaults,
@@ -4285,6 +4294,7 @@ message HealthCheckResponse {
          */
         async submit() {
             this.processing = true;
+            this.isFormChanged = false;
 
             // Check user has confirmed use of low interval value. Only
             // do this if the interval value has changed since last save.
