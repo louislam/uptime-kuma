@@ -10,6 +10,20 @@ let monitorResponseTime = null;
 let monitorStatus = null;
 
 class Prometheus {
+    /**
+     * Static set of tag labels that were registered at init time.
+     * Tags not in this set will be filtered out to prevent Prometheus errors.
+     * @type {Set<string>}
+     */
+    static registeredTagLabels = new Set();
+
+    /**
+     * Static set to track which unregistered tags we've already warned about.
+     * Prevents spamming the log with the same warning message.
+     * @type {Set<string>}
+     */
+    static warnedTagLabels = new Set();
+
     monitorLabelValues = {};
 
     /**
@@ -48,6 +62,10 @@ class Prometheus {
                 })
                 .sort(this.sortTags)
         );
+
+        // Store the registered tag labels for later validation
+        // Tags created after init() will not be included and will be filtered out
+        Prometheus.registeredTagLabels = tags;
 
         const commonLabels = [
             ...tags,
@@ -119,6 +137,20 @@ class Prometheus {
             let sanitizedTag = Prometheus.sanitizeForPrometheus(tag.name);
             if (sanitizedTag === "") {
                 return; // Skip empty tag names
+            }
+
+            // Skip tags that were not registered at init time to prevent Prometheus errors
+            // New tags require a server restart to be included in metrics
+            if (!Prometheus.registeredTagLabels.has(sanitizedTag)) {
+                // Only warn once per tag to avoid log spam
+                if (!Prometheus.warnedTagLabels.has(sanitizedTag)) {
+                    Prometheus.warnedTagLabels.add(sanitizedTag);
+                    log.warn(
+                        "prometheus",
+                        `Tag "${tag.name}" (sanitized: "${sanitizedTag}") is not in the initial labelset and will be ignored. Restart the server to include new tags in Prometheus metrics.`
+                    );
+                }
+                return;
             }
 
             if (mappedTags[sanitizedTag] === undefined) {
