@@ -344,6 +344,7 @@ module.exports.statusPageSocketHandler = (socket) => {
                 throw new Error("Invalid analytics type");
             }
             statusPage.analytics_type = config.analyticsType;
+            statusPage.show_cookie_consent = config.showCookieConsent ?? false; // ← ADD THIS
 
             await R.store(statusPage);
 
