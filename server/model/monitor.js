@@ -918,8 +918,15 @@ class Monitor extends BeanModel {
                     bean.msg = error.message;
                 }
 
-                if (this.getSaveErrorResponse() && error?.response?.data !== undefined) {
-                    await this.saveResponseData(bean, error.response.data);
+                if (this.getSaveErrorResponse() && error?.response) {
+                    if (error.response.headers) {
+                        bean.response_headers = Buffer.from(JSON.stringify(error.response.headers), "utf8").toString(
+                            "base64"
+                        );
+                    }
+                    if (error.response.data !== undefined) {
+                        await this.saveResponseData(bean, error.response.data);
+                    }
                 }
 
                 // If UP come in here, it must be upside down mode
