@@ -480,6 +480,10 @@ class Monitor extends BeanModel {
                         basicAuthHeader = {
                             Authorization: "Basic " + encodeBase64(this.basic_auth_user, this.basic_auth_pass),
                         };
+                    } else if (this.auth_method === "proxy-basic") {
+                        basicAuthHeader = {
+                            "Proxy-Authorization": "Basic " + encodeBase64(this.basic_auth_user, this.basic_auth_pass),
+                        };
                     }
 
                     // Bearer token auth
@@ -624,6 +628,23 @@ class Monitor extends BeanModel {
                         if (this.tlsKey !== null && this.tlsKey !== "") {
                             options.httpsAgent.options.key = Buffer.from(this.tlsKey);
                         }
+                    }
+
+                    // Axios silently strips any header literally named "Proxy-Authorization" unless a real
+                    // upstream proxy is configured (see axios/lib/adapters/http.js removeProxyAuthorization),
+                    // even when the user explicitly set it as a custom header. Re-apply it directly on the
+                    // outgoing request once the agent claims a socket, after axios has already sanitized options.headers.
+                    const proxyAuthKey = Object.keys(options.headers).find(
+                        (key) => key.toLowerCase() === "proxy-authorization"
+                    );
+                    if (proxyAuthKey) {
+                        const proxyAuthValue = options.headers[proxyAuthKey];
+                        const agent = this.getUrl()?.protocol === "https:" ? options.httpsAgent : options.httpAgent;
+                        const originalAddRequest = agent.addRequest.bind(agent);
+                        agent.addRequest = (req, opts) => {
+                            req.setHeader(proxyAuthKey, proxyAuthValue);
+                            return originalAddRequest(req, opts);
+                        };
                     }
 
                     let tlsInfo = {};
