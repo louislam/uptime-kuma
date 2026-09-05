@@ -1504,12 +1504,18 @@ class Monitor extends BeanModel {
 
             for (let notification of notificationList) {
                 try {
-                    await Notification.send(
-                        JSON.parse(notification.config),
-                        msg,
-                        monitor.toJSON(preloadData, false),
-                        heartbeatJSON
-                    );
+                    const triggers = JSON.parse(notification.triggers);
+                    if (
+                        (bean.status === UP && triggers.includes("up")) ||
+                        (bean.status === DOWN && triggers.includes("down"))
+                    ) {
+                        await Notification.send(
+                            JSON.parse(notification.config),
+                            msg,
+                            monitor.toJSON(preloadData, false),
+                            heartbeatJSON
+                        );
+                    }
                 } catch (e) {
                     log.error("monitor", "Cannot send notification to " + notification.name);
                     log.error("monitor", e);
@@ -1557,6 +1563,11 @@ class Monitor extends BeanModel {
         log.debug("monitor", "Send certificate notification");
 
         for (let notification of notificationList) {
+            const triggers = JSON.parse(notification.triggers);
+            if (!triggers.includes("certificate")) {
+                log.debug("monitor", "Notification does not trigger on certificate expiry.");
+                continue;
+            }
             try {
                 log.debug("monitor", "Sending to " + notification.name);
                 await Notification.send(

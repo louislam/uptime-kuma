@@ -206,16 +206,47 @@ describe("Domain Expiry", () => {
                 httpMethod: "post",
                 webhookContentType: "json",
                 webhookURL: `http://127.0.0.1:${hook.port}/${hook.url}`,
+                triggers: ["domain"],
             }),
             active: 1,
             user_id: 1,
             name: "Testhook",
+            triggers: '["domain"]',
         });
         const [, data] = await Promise.all([
             DomainExpiry.sendNotifications("google.com", [notif]),
             mockWebhook(hook.port, hook.url),
         ]);
         assert.match(data.msg, /will expire in/);
+    });
+
+    test("sendNotifications() honors the domain trigger", async () => {
+        const domain = {
+            expiry: dayjs.utc().add(1, "day").toISOString(),
+            daysRemaining: 1,
+            lastExpiryNotificationSent: null,
+        };
+        const notification = {
+            name: "Testhook",
+            config: JSON.stringify({ type: "webhook" }),
+            triggers: "[]",
+        };
+
+        await setSetting("domainExpiryNotifyDays", [7], "general");
+        mock.method(DomainExpiry, "findByDomainNameOrCreate", async () => domain);
+        const sendMock = mock.method(Notification, "send", async () => "OK");
+        mock.method(R, "store", async () => {});
+
+        try {
+            await DomainExpiry.sendNotifications("example.com", [notification]);
+            assert.strictEqual(sendMock.mock.callCount(), 0);
+
+            notification.triggers = '["domain"]';
+            await DomainExpiry.sendNotifications("example.com", [notification]);
+            assert.strictEqual(sendMock.mock.callCount(), 1);
+        } finally {
+            mock.restoreAll();
+        }
     });
 
     test("sendNotifications() handles domain with null expiry without sending NaN", async () => {
