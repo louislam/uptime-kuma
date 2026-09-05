@@ -343,6 +343,7 @@ export default {
                 ServerChan: "ServerChan (Server酱)",
                 PushPlus: "PushPlus (推送加)",
                 SpugPush: "SpugPush（Spug推送助手）",
+                amootsms: "Amoot SMS",
                 smsc: "SMSC",
                 smsir: "SMS.IR",
                 WPush: "WPush(wpush.cn)",

@@ -1612,7 +1612,11 @@
     "milkyPrivateMessage": "Private",
     "milkyUserOrGroupId": "Group/User ID",
     "milkySafetyTips": "For safety, must set access token",
-    "smsgatewayUrlHelptext": "The base URL of your SMS Gateway, without an API path.",
-    "smsgatewayTo": "Phone Number(s)",
-    "smsgatewayToHelptext": "Comma-separated list of recipient phone numbers in international format (e.g. +15551234567)"
+    "Line Number": "Line Number",
+    "Amoot SMS recipient numbers help": "Enter one or more mobile numbers separated by commas.",
+    "Use Pattern": "Use Pattern",
+    "Pattern Code ID": "Pattern Code ID",
+    "Amoot SMS pattern help": "Enter the Pattern Code ID from your Amoot SMS panel. {0}",
+    "Create an Amoot SMS pattern": "Create an Amoot SMS pattern",
+    "Use Own Line for Pattern": "Use Own Line for Pattern"
 }
