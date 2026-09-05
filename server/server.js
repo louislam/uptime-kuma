@@ -1090,6 +1090,24 @@ let needSetup = false;
             try {
                 checkLogin(socket);
                 await startMonitor(socket.userID, monitorID);
+                const monitor = await R.findOne("monitor", " id = ? AND user_id = ? ", [monitorID, socket.userID]);
+
+                if (monitor?.type === "group") {
+                    const childrenIDs = await Monitor.getAllChildrenIDs(monitorID);
+
+                    for (const childID of childrenIDs) {
+                        const child = await R.findOne("monitor", " id = ? AND user_id = ? ", [childID, socket.userID]);
+
+                        if (child && await Monitor.isActive(child.id, child.active)) {
+                            if (child.id in server.monitorList) {
+                                await server.monitorList[child.id].stop();
+                            }
+
+                            server.monitorList[child.id] = child;
+                            await child.start(io);
+                        }
+                    }
+                }
                 await server.sendUpdateMonitorIntoList(socket, monitorID);
 
                 callback({
@@ -1941,6 +1959,18 @@ async function pauseMonitor(userID, monitorID) {
     if (monitorID in server.monitorList) {
         await server.monitorList[monitorID].stop();
         server.monitorList[monitorID].active = 0;
+    }
+
+    const monitor = await R.findOne("monitor", " id = ? AND user_id = ? ", [monitorID, userID]);
+
+    if (monitor?.type === "group") {
+        const childrenIDs = await Monitor.getAllChildrenIDs(monitorID);
+
+        for (const childID of childrenIDs) {
+            if (childID in server.monitorList) {
+                await server.monitorList[childID].stop();
+            }
+        }
     }
 }
 
