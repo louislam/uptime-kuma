@@ -70,6 +70,7 @@
                                                     data-testid="monitor-settings"
                                                     @click="$refs.monitorSettingDialog.show(group, monitor)"
                                                 />
+                                                <MonitorTypeIcon :monitor="monitor.element" class="me-2" />
                                                 <Status
                                                     v-if="showOnlyLastHeartbeat"
                                                     :status="statusOfLastHeartbeat(monitor.element.id)"
@@ -134,6 +135,7 @@
 import MonitorSettingDialog from "./MonitorSettingDialog.vue";
 import Draggable from "vuedraggable";
 import HeartbeatBar from "./HeartbeatBar.vue";
+import MonitorTypeIcon from "./MonitorTypeIcon.vue";
 import Uptime from "./Uptime.vue";
 import Tag from "./Tag.vue";
 import Status from "./Status.vue";
@@ -143,6 +145,7 @@ export default {
         MonitorSettingDialog,
         Draggable,
         HeartbeatBar,
+        MonitorTypeIcon,
         Uptime,
         Tag,
         Status,
