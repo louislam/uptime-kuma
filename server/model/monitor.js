@@ -42,6 +42,7 @@ const {
     encodeBase64,
     checkCertExpiryNotifications,
 } = require("../util-server");
+const { parseDigestAuthHeader, buildDigestAuthHeader } = require("../digest-auth");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification");
@@ -481,6 +482,11 @@ class Monitor extends BeanModel {
                             Authorization: "Basic " + encodeBase64(this.basic_auth_user, this.basic_auth_pass),
                         };
                     }
+
+                    // HTTP digest auth: nothing is sent up front. The Authorization header is
+                    // computed in makeAxiosRequest() once the server responds with a 401 challenge.
+                    // If the server never challenges (e.g. the URL doesn't require auth), the
+                    // request just succeeds without ever using the configured credentials.
 
                     // Bearer token auth
                     let bearerAuthHeader = {};
@@ -1180,6 +1186,27 @@ class Monitor extends BeanModel {
                 options.headers = { ...options.headers, ...oauth2AuthHeader };
 
                 return this.makeAxiosRequest(options, true);
+            }
+
+            // HTTP digest auth requires a round trip: the server must first challenge us
+            // with a 401 + WWW-Authenticate header before we can compute a valid response.
+            if (this.auth_method === "digest" && error.response?.status === 401 && !finalCall) {
+                const challenge = parseDigestAuthHeader(error.response.headers["www-authenticate"]);
+
+                if (challenge) {
+                    const { pathname, search } = new URL(options.url);
+                    options.headers = {
+                        ...options.headers,
+                        Authorization: buildDigestAuthHeader(challenge, {
+                            username: this.basic_auth_user,
+                            password: this.basic_auth_pass,
+                            method: options.method,
+                            uri: pathname + search,
+                        }),
+                    };
+
+                    return this.makeAxiosRequest(options, true);
+                }
             }
 
             // Fix #2253
