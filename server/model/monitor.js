@@ -206,6 +206,8 @@ class Monitor extends BeanModel {
             ntpRootDispersionThreshold: this.ntp_root_dispersion_threshold,
             ipFamily: this.ipFamily,
             expectedTlsAlert: this.expected_tls_alert,
+            sftpPath: this.sftpPath,
+            sshAuthMethod: this.sshAuthMethod || "password",
 
             // ping advanced options
             ping_numeric: this.isPingNumeric(),
@@ -251,6 +253,10 @@ class Monitor extends BeanModel {
                 kafkaProducerSaslOptions: JSON.parse(this.kafkaProducerSaslOptions),
                 rabbitmqUsername: this.rabbitmqUsername,
                 rabbitmqPassword: this.rabbitmqPassword,
+                sshUsername: this.sshUsername,
+                sshPassword: this.sshPassword,
+                sshPrivateKey: this.sshPrivateKey,
+                sshPassphrase: this.sshPassphrase,
             };
         }
 
