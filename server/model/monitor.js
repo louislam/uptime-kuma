@@ -418,6 +418,7 @@ class Monitor extends BeanModel {
         this.rootCertificates = rootCertificates;
 
         try {
+            this.pathIds = await Monitor.getAllPathIDs(this.id);
             this.prometheus = new Prometheus(this, await this.getTags());
         } catch (e) {
             log.error("prometheus", "Please submit an issue to our GitHub repo. Prometheus update error: ", e.message);
@@ -1216,6 +1217,16 @@ class Monitor extends BeanModel {
     }
 
     /**
+     * Refresh prometheus labels without restarting the monitor
+     * @returns {Promise<void>}
+     */
+    async refreshPrometheus() {
+        this.prometheus?.remove();
+        this.pathIds = await Monitor.getAllPathIDs(this.id);
+        this.prometheus = new Prometheus(this, await this.getTags());
+    }
+
+    /**
      * Get prometheus instance
      * @returns {Prometheus|undefined} Current prometheus instance
      */
@@ -1946,6 +1957,23 @@ class Monitor extends BeanModel {
         }
 
         return path;
+    }
+
+    /**
+     * Gets the full ID path for metrics labels
+     * @param {number} monitorID ID of the monitor to get
+     * @returns {Promise<string>} Slash-wrapped IDs from root group to monitor, e.g. "/1/4/9/"
+     */
+    static async getAllPathIDs(monitorID) {
+        const path = [monitorID];
+
+        let parent = await Monitor.getParent(monitorID);
+        while (parent !== null) {
+            path.unshift(parent.id);
+            parent = await Monitor.getParent(parent.id);
+        }
+
+        return `/${path.join("/")}/`;
     }
 
     /**
