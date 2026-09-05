@@ -456,6 +456,7 @@ class StatusPage extends BeanModel {
             showCertificateExpiry: !!this.show_certificate_expiry,
             showOnlyLastHeartbeat: !!this.show_only_last_heartbeat,
             rssTitle: this.rss_title,
+            notificationEmail: this.notification_email,
         };
     }
 
