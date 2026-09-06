@@ -1680,5 +1680,11 @@
     "milkyGroupMessage": "Grupp",
     "milkyPrivateMessage": "Privat",
     "milkyUserOrGroupId": "Grupp/användar-ID",
-    "milkySafetyTips": "Av säkerhetsskäl måste åtkomst-token anges"
+    "milkySafetyTips": "Av säkerhetsskäl måste åtkomst-token anges",
+    "Device ID or Group ID": "Enhets-ID eller grupp-ID",
+    "notifyAppDeviceIdDescription": "Enhets-ID:t från Notify!-appen, eller ett grupp-ID för att varna alla enheter i en grupp samtidigt.",
+    "notifyAppSetup": "Öppna Notify! och hitta ditt enhets-ID och din token under Inställningar. Inget konto krävs. Läs mer på {0}.",
+    "smsgatewayUrlHelptext": "Bas-URL:en för din SMS Gateway, utan en API-sökväg.",
+    "smsgatewayTo": "Telefonnummer",
+    "smsgatewayToHelptext": "Kommaavgränsad lista över mottagartelefonnummer i internationellt format (t.ex. +15551234567)"
 }

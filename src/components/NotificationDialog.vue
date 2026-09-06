@@ -266,6 +266,7 @@ export default {
                 PushByTechulus: "Push by Techulus",
                 pushover: "Pushover",
                 pushy: "Pushy",
+                signalgrid: "Signalgrid",
                 Webpush: "Webpush",
             };
 

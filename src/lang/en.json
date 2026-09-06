@@ -452,6 +452,8 @@
     "API Username": "API Username",
     "API Key": "API Key",
     "API Token": "API Token",
+    "Client Key": "Client Key",
+    "Channel": "Channel",
     "See Jira Cloud Docs": "See Jira Cloud Docs",
     "Show update if available": "Show update if available",
     "Also check beta release": "Also check beta release",

@@ -1067,7 +1067,7 @@
     "docker networks": "réseaux dockers",
     "CurlDebugInfoOAuth2CCUnsupported": "Le flux complet des informations d'identification du client OAuth n'est pas pris en charge dans {curl}. {newline}Veuillez obtenir un jeton d'accès bearer token et le transmettre via l'option {oauth2_bearer}.",
     "CurlDebugInfoProxiesUnsupported": "La prise en charge du proxy dans la commande {curl} ci-dessus n'est actuellement pas implémentée.",
-    "Message format": "Format des messages",
+    "Message format": "Format de message",
     "Send rich messages": "Envoyer des messages enrichis",
     "Sound": "Son",
     "Arcade": "Arcade",
@@ -1728,5 +1728,11 @@
     "milkyPrivateMessage": "privé",
     "milkySafetyTips": "Pour des raisons de sécurité, le jeton d'accès doit être défini",
     "milkyHttpAddress": "Adresse HTTP Milky (sans le suffixe '/api')",
-    "milkyUserOrGroupId": "ID de groupe/utilisateur"
+    "milkyUserOrGroupId": "ID de groupe/utilisateur",
+    "smsgatewayUrlHelptext": "URL de base de votre passerelle SMS, sans chemin d’accès API.",
+    "smsgatewayTo": "Numéro(s) de téléphone",
+    "smsgatewayToHelptext": "Liste de numéros de téléphone des destinataires séparés par une virgule au format international (par exemple +15551234567)",
+    "Device ID or Group ID": "ID d’appareil ou ID de groupe",
+    "notifyAppDeviceIdDescription": "L’ID d’appareil de l’application Notify!, ou un ID de groupe pour alerter tous les appareils d’un groupe en même temps.",
+    "notifyAppSetup": "Ouvrez Notify ! et trouvez votre ID d’appareil et jeton sous Paramètres. Aucun compte n’est requis. Pour en savoir plus, rendez-vous sur {0}."
 }
