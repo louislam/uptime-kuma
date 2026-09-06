@@ -48,6 +48,7 @@
                                 <i18n-t tag="li" keypath="statusPageSpecialSlugDesc">
                                     <mark class="me-1">default</mark>
                                 </i18n-t>
+                                <li>{{ $t("statusPageMustCreateFirst") }}</li>
                             </ul>
                         </div>
                     </div>

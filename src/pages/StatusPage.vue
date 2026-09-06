@@ -1,5 +1,18 @@
 <template>
-    <div v-if="loadedTheme" class="container mt-3">
+    <div v-if="notFound" class="container mt-3" data-testid="status-page-empty">
+        <div class="status-page-empty">
+            <h1>
+                <span aria-hidden="true">🐻</span>
+                {{ $t("No status pages") }}
+            </h1>
+            <div class="guide">
+                <i18n-t keypath="statusPageNotCreatedGuide" tag="p">
+                    <a href="/add-status-page">{{ $t("here") }}</a>
+                </i18n-t>
+            </div>
+        </div>
+    </div>
+    <div v-else-if="loadedTheme" class="container mt-3">
         <!-- Sidebar for edit mode -->
         <div v-if="enableEditMode" class="sidebar" data-testid="edit-sidebar">
             <div class="sidebar-body">
@@ -706,6 +719,7 @@ export default {
             updateCountdown: null,
             updateCountdownText: null,
             loading: true,
+            notFound: false,
             incidentHistory: [],
             incidentHistoryLoading: false,
             incidentHistoryNextCursor: null,
@@ -1025,11 +1039,14 @@ export default {
 
                 this.updateUpdateTimer();
             })
-            .catch(function (error) {
-                if (error.response.status === 404) {
-                    location.href = "/page-not-found";
+            .catch((error) => {
+                if (error.response && error.response.status === 404) {
+                    this.notFound = true;
+                    this.loading = false;
+                    document.title = this.$t("No status pages");
+                } else {
+                    console.log(error);
                 }
-                console.log(error);
             });
 
         this.updateHeartbeatList();
@@ -1098,6 +1115,8 @@ export default {
                     this.loadedData = true;
                     this.lastUpdateTime = dayjs();
                     this.updateUpdateTimer();
+                }).catch(() => {
+                    // Missing status pages 404 here; the empty state is shown from getData().
                 });
             }
         },
@@ -1495,6 +1514,30 @@ export default {
 
 <style lang="scss" scoped>
 @import "../assets/vars.scss";
+
+.status-page-empty {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 50px;
+    padding-top: 30px;
+
+    h1 {
+        font-size: 24px;
+        font-weight: bold;
+    }
+
+    .guide {
+        max-width: 800px;
+        font-size: 14px;
+    }
+
+    a {
+        text-decoration: none;
+        color: $primary;
+    }
+}
 
 .overall-status {
     font-weight: bold;

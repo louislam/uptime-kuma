@@ -6,6 +6,20 @@ test.describe("Status Page", () => {
         await restoreSqliteSnapshot(page);
     });
 
+    test("shows empty state when no status page exists", async ({ page }) => {
+        await page.goto("./status");
+        const emptyState = page.getByTestId("status-page-empty");
+        await expect(emptyState).toBeVisible();
+        await expect(emptyState).toContainText("No status pages currently exist");
+        await expect(emptyState.getByRole("link", { name: "here" })).toHaveAttribute("href", "/add-status-page");
+    });
+
+    test("shows empty state when the requested slug does not exist", async ({ page }) => {
+        await page.goto("./status/missing-slug");
+        await expect(page.getByTestId("status-page-empty")).toBeVisible();
+        await expect(page.getByTestId("status-page-empty")).toContainText("You can create status pages");
+    });
+
     test("create and edit", async ({ page }, testInfo) => {
         test.setTimeout(60000); // Keep the timeout increase for stability
 
