@@ -254,10 +254,34 @@ class Notification {
      * @throws Error with fail msg
      */
     static async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        if (this.providerList[notification.type]) {
-            return this.providerList[notification.type].send(notification, msg, monitorJSON, heartbeatJSON);
-        } else {
-            throw new Error("Notification type is not supported");
+        const notificationID = notification.id || null;
+        const monitorID = monitorJSON ? monitorJSON.id : null;
+        const heartbeatID = heartbeatJSON ? heartbeatJSON.id : null;
+        const type = notification.type;
+
+        let logBean = R.dispense("notification_log");
+        logBean.notification_id = notificationID;
+        logBean.monitor_id = monitorID;
+        logBean.heartbeat_id = heartbeatID;
+        logBean.type = type;
+        logBean.status = "unknown";
+        await R.store(logBean);
+
+        try {
+            const result = await this.providerList[type].send(notification, msg, monitorJSON, heartbeatJSON);
+            logBean.status = "success";
+            logBean.message = result;
+            await R.store(logBean);
+            return result;
+        } catch (e) {
+            logBean.status = "failed";
+            let errorMessage = e.message || String(e);
+            if (errorMessage.length > 1000) {
+                errorMessage = errorMessage.substring(0, 1000) + "...";
+            }
+            logBean.message = errorMessage;
+            await R.store(logBean);
+            throw e;
         }
     }
 

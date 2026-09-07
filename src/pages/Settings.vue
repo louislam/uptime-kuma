@@ -94,6 +94,9 @@ export default {
                 notifications: {
                     title: this.$t("Notifications"),
                 },
+                "notification-history": {
+                    title: this.$t("تاریخچه اطلاع رسانی"),
+                },
                 "reverse-proxy": {
                     title: this.$t("Reverse Proxy"),
                 },

@@ -1620,6 +1620,118 @@ let needSetup = false;
             }
         });
 
+        socket.on("getNotificationHistory", async (monitorID, notificationID, status, offset, limit, callback) => {
+            try {
+                checkLogin(socket);
+
+                let sql = `
+                    SELECT notification_log.*, notification.name as notification_name, monitor.name as monitor_name
+                    FROM notification_log
+                    JOIN notification ON notification_log.notification_id = notification.id
+                    LEFT JOIN monitor ON notification_log.monitor_id = monitor.id
+                    WHERE notification.user_id = ?
+                `;
+                const params = [socket.userID];
+
+                if (monitorID) {
+                    sql += " AND notification_log.monitor_id = ?";
+                    params.push(monitorID);
+                }
+
+                if (notificationID) {
+                    sql += " AND notification_log.notification_id = ?";
+                    params.push(notificationID);
+                }
+
+                if (status) {
+                    sql += " AND notification_log.status = ?";
+                    params.push(status);
+                }
+
+                sql += " ORDER BY notification_log.created_date DESC";
+
+                let countSql = `
+                    SELECT COUNT(*) as count
+                    FROM notification_log
+                    JOIN notification ON notification_log.notification_id = notification.id
+                    WHERE notification.user_id = ?
+                `;
+                const countParams = [socket.userID];
+
+                if (monitorID) {
+                    countSql += " AND notification_log.monitor_id = ?";
+                    countParams.push(monitorID);
+                }
+
+                if (notificationID) {
+                    countSql += " AND notification_log.notification_id = ?";
+                    countParams.push(notificationID);
+                }
+
+                if (status) {
+                    countSql += " AND notification_log.status = ?";
+                    countParams.push(status);
+                }
+
+                const countResult = await R.getRow(countSql, countParams);
+                const total = countResult.count;
+
+                sql += ` LIMIT ${parseInt(limit)} OFFSET ${parseInt(offset)}`;
+                const list = await R.getAll(sql, params);
+
+                callback({
+                    ok: true,
+                    data: list,
+                    total,
+                });
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("getNotificationHistoryCount", async (monitorID, notificationID, status, callback) => {
+            try {
+                checkLogin(socket);
+
+                let sql = `
+                    SELECT COUNT(*) as count
+                    FROM notification_log
+                    JOIN notification ON notification_log.notification_id = notification.id
+                    WHERE notification.user_id = ?
+                `;
+                const params = [socket.userID];
+
+                if (monitorID) {
+                    sql += " AND notification_log.monitor_id = ?";
+                    params.push(monitorID);
+                }
+
+                if (notificationID) {
+                    sql += " AND notification_log.notification_id = ?";
+                    params.push(notificationID);
+                }
+
+                if (status) {
+                    sql += " AND notification_log.status = ?";
+                    params.push(status);
+                }
+
+                const result = await R.getRow(sql, params);
+                callback({
+                    ok: true,
+                    count: result.count,
+                });
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
         socket.on("checkApprise", async (callback) => {
             try {
                 checkLogin(socket);
