@@ -1,52 +1,50 @@
 {
- 
-"$schema": "https://opencode.ai/config.json",
-  "provider": {
-    "nara": {
-      "npm": "@ai-sdk/openai-compatible",
-      "name": "NaraRouter",
-      "options": {
-        "baseURL": "https://router.bynara.id/v1"
-      },
-      "models": {
-        "glm-5.3-flash-free": {
-          "name": "GLM 5.3 Flash Free"
-        },
-        "qwen3.8-27b": {
-          "name": "Qwen 3.8 27B"
-        },
-        "deepseek-v4-flash": {
-          "name": "DeepSeek V4 Flash"
-        },
-        "minimax-m3-free": {
-          "name": "MiniMax M3 Free"
-        },
-        "laguna-s-2.1": {
-          "name": "Laguna S 2.1"
-        },
-        "nemotron-3-ultra": {
-          "name": "Nemotron 3 Ultra"
-        },
-        "tencent-hy3-free": {
-          "name": "Tencent HY3 Free"
-        },
-        "stepfun-3.7-flash": {
-          "name": "StepFun 3.7 Flash"
-        },
-        "mistral-medium-3-5": {
-          "name": "Mistral Medium 3.5"
-        },
-        "mistral-large": {
-          "name": "Mistral Large"
-        },
-        "agnes-2.5-flash": {
-          "name": "Agnes 2.5 Flash"
-        },
-        "agnes-2.0-flash": {
-          "name": "Agnes 2.0 Flash"
+    "$schema": "https://opencode.ai/config.json",
+    "provider": {
+        "nara": {
+            "npm": "@ai-sdk/openai-compatible",
+            "name": "NaraRouter",
+            "options": {
+                "baseURL": "https://router.bynara.id/v1"
+            },
+            "models": {
+                "glm-5.3-flash-free": {
+                    "name": "GLM 5.3 Flash Free"
+                },
+                "qwen3.8-27b": {
+                    "name": "Qwen 3.8 27B"
+                },
+                "deepseek-v4-flash": {
+                    "name": "DeepSeek V4 Flash"
+                },
+                "minimax-m3-free": {
+                    "name": "MiniMax M3 Free"
+                },
+                "laguna-s-2.1": {
+                    "name": "Laguna S 2.1"
+                },
+                "nemotron-3-ultra": {
+                    "name": "Nemotron 3 Ultra"
+                },
+                "tencent-hy3-free": {
+                    "name": "Tencent HY3 Free"
+                },
+                "stepfun-3.7-flash": {
+                    "name": "StepFun 3.7 Flash"
+                },
+                "mistral-medium-3-5": {
+                    "name": "Mistral Medium 3.5"
+                },
+                "mistral-large": {
+                    "name": "Mistral Large"
+                },
+                "agnes-2.5-flash": {
+                    "name": "Agnes 2.5 Flash"
+                },
+                "agnes-2.0-flash": {
+                    "name": "Agnes 2.0 Flash"
+                }
+            }
         }
-      }
     }
-  }
-
 }
