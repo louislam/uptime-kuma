@@ -1505,7 +1505,7 @@ class Monitor extends BeanModel {
             for (let notification of notificationList) {
                 try {
                     await Notification.send(
-                        JSON.parse(notification.config),
+                        { ...JSON.parse(notification.config), id: notification.id },
                         msg,
                         monitor.toJSON(preloadData, false),
                         heartbeatJSON
