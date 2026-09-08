@@ -100,7 +100,20 @@
             :style="monitorListStyle"
             data-testid="monitor-list"
         >
-            <div v-if="Object.keys($root.monitorList).length === 0" class="text-center mt-3">
+            <!-- The list is rendered before the server has sent it, so an empty
+                 list means "still arriving" until it actually has. -->
+            <div v-if="!$root.monitorListLoaded" class="monitor-list-skeleton" :aria-label="$t('Loading...')" aria-busy="true">
+                <div v-for="n in 8" :key="n" class="skeleton-row">
+                    <div class="skeleton-pill" />
+                    <div class="skeleton-name" />
+                    <div class="skeleton-bar" />
+                </div>
+            </div>
+
+            <div
+                v-else-if="Object.keys($root.monitorList).length === 0"
+                class="text-center mt-3"
+            >
                 {{ $t("No Monitors, please") }}
                 <router-link to="/add">{{ $t("add one") }}</router-link>
             </div>
@@ -677,6 +690,55 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+// Placeholder rows shown while the monitor list is on its way. They take the
+// same room a real row does, so the list does not jump when it arrives.
+.monitor-list-skeleton {
+    .skeleton-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 13px 8px;
+    }
+
+    .skeleton-pill,
+    .skeleton-name,
+    .skeleton-bar {
+        border-radius: 4px;
+        background: rgba(128, 128, 128, 0.16);
+        animation: skeleton-pulse 1.4s ease-in-out infinite;
+    }
+
+    .skeleton-pill {
+        width: 44px;
+        height: 20px;
+        border-radius: 10px;
+        flex-shrink: 0;
+    }
+
+    .skeleton-name {
+        height: 14px;
+        flex: 1 1 auto;
+        max-width: 160px;
+    }
+
+    .skeleton-bar {
+        height: 24px;
+        flex: 1 1 auto;
+    }
+}
+
+@keyframes skeleton-pulse {
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.45;
+    }
+}
+
+
 @import "../assets/vars.scss";
 
 .shadow-box {
