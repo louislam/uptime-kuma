@@ -146,8 +146,14 @@ export default {
             type: Boolean,
         },
     },
+    provide() {
+        return {
+            beatsRegistry: this.beatsRegistry,
+        };
+    },
     data() {
         return {
+            beatsRegistry: this.createBeatsRegistry(),
             searchText: "",
             selectMode: false,
             selectAll: false,
@@ -310,8 +316,71 @@ export default {
     },
     beforeUnmount() {
         window.removeEventListener("scroll", this.onScroll);
+
+        if (this.beatsRegistry) {
+            this.beatsRegistry.disconnect();
+        }
     },
     methods: {
+        /**
+         * Build the shared visibility registry handed to every row.
+         *
+         * Mounting a HeartbeatBar creates a <canvas> and its 2D context, so on
+         * a large instance mounting them all at once is what keeps the
+         * dashboard blank. Rows start with a placeholder and swap in their bar
+         * when they come near the viewport.
+         * @returns {object|null} The registry, or null when the browser has no
+         * IntersectionObserver, in which case rows render their bar immediately.
+         */
+        createBeatsRegistry() {
+            if (typeof IntersectionObserver === "undefined") {
+                return null;
+            }
+
+            const callbacks = new Map();
+
+            const observer = new IntersectionObserver(
+                (entries) => {
+                    for (const entry of entries) {
+                        if (!entry.isIntersecting) {
+                            continue;
+                        }
+
+                        const callback = callbacks.get(entry.target);
+                        if (callback) {
+                            callback();
+                        }
+
+                        // Once a bar is mounted it stays mounted: unmounting it
+                        // again would only trade the initial stall for canvas
+                        // churn while scrolling.
+                        callbacks.delete(entry.target);
+                        observer.unobserve(entry.target);
+                    }
+                },
+                {
+                    // Mount a screen ahead of the viewport, so a bar is already
+                    // there by the time it is scrolled to.
+                    rootMargin: "400px 0px",
+                }
+            );
+
+            return {
+                observe(element, callback) {
+                    callbacks.set(element, callback);
+                    observer.observe(element);
+                },
+                unobserve(element) {
+                    callbacks.delete(element);
+                    observer.unobserve(element);
+                },
+                disconnect() {
+                    callbacks.clear();
+                    observer.disconnect();
+                },
+            };
+        },
+
         /**
          * Handle user scroll
          * @returns {void}
