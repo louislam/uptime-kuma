@@ -119,7 +119,7 @@
             </div>
 
             <MonitorListItem
-                v-for="item in sortedMonitorList"
+                v-for="item in visibleMonitorList"
                 :key="`${item.id}-${collapseKey}`"
                 :monitor="item"
                 :isSelectMode="selectMode"
@@ -129,6 +129,15 @@
                 :filter-func="filterFunc"
                 :sort-func="sortFunc"
             />
+
+            <div v-if="paginated" class="d-flex justify-content-center kuma_pagination">
+                <pagination
+                    v-model="page"
+                    :records="sortedMonitorList.length"
+                    :per-page="pageSize"
+                    :options="paginationConfig"
+                />
+            </div>
         </div>
     </div>
 
@@ -144,6 +153,7 @@
 <script>
 import Confirm from "../components/Confirm.vue";
 import MonitorListItem from "../components/MonitorListItem.vue";
+import Pagination from "v-pagination-3";
 import MonitorListFilter from "./MonitorListFilter.vue";
 import { getMonitorRelativeURL } from "../util.ts";
 
@@ -151,6 +161,7 @@ export default {
     components: {
         Confirm,
         MonitorListItem,
+        Pagination,
         MonitorListFilter,
     },
     props: {
@@ -180,6 +191,11 @@ export default {
                 tags: null,
             },
             collapseKey: 0,
+            page: 1,
+            paginationConfig: {
+                hideCount: true,
+                chunksNavigation: "scroll",
+            },
         };
     },
     computed: {
@@ -221,6 +237,38 @@ export default {
             result.sort(this.sortFunc);
 
             return result;
+        },
+
+        /**
+         * Monitors per page, or 0 when the user has left pagination off.
+         * @returns {number} The configured page size.
+         */
+        pageSize() {
+            return Number(this.$root.monitorListPageSize) || 0;
+        },
+
+        /**
+         * Whether the list is currently split into pages. A page size that is
+         * set but not reached shows no controls, so a small instance looks
+         * exactly as it did before.
+         * @returns {boolean} True when page controls should be shown.
+         */
+        paginated() {
+            return this.pageSize > 0 && this.sortedMonitorList.length > this.pageSize;
+        },
+
+        /**
+         * The monitors actually rendered. Selecting and filtering still work on
+         * the whole list; only what reaches the DOM is narrowed here.
+         * @returns {Array} The monitors to render.
+         */
+        visibleMonitorList() {
+            if (!this.paginated) {
+                return this.sortedMonitorList;
+            }
+
+            const start = (this.page - 1) * this.pageSize;
+            return this.sortedMonitorList.slice(start, start + this.pageSize);
         },
 
         isDarkTheme() {
@@ -290,6 +338,21 @@ export default {
         },
     },
     watch: {
+        // Searching, filtering or deleting monitors can leave the current page
+        // past the end of the list, which would render nothing at all. Step
+        // back to the last page that still has monitors on it.
+        sortedMonitorList() {
+            if (!this.paginated) {
+                this.page = 1;
+                return;
+            }
+
+            const lastPage = Math.ceil(this.sortedMonitorList.length / this.pageSize);
+            if (this.page > lastPage) {
+                this.page = lastPage;
+            }
+        },
+
         searchText() {
             for (let monitor of this.sortedMonitorList) {
                 if (!this.selectedMonitors[monitor.id]) {

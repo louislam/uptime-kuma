@@ -147,6 +147,19 @@
                 </div>
             </div>
         </div>
+
+        <!-- Monitor list pagination -->
+        <div class="my-4">
+            <label for="monitorListPageSize" class="form-label">{{ $t("monitorListPageSize") }}</label>
+            <select id="monitorListPageSize" v-model.number="$root.monitorListPageSize" class="form-select">
+                <option :value="0">{{ $t("monitorListPageSizeOff") }}</option>
+                <option :value="25">25</option>
+                <option :value="50">50</option>
+                <option :value="100">100</option>
+                <option :value="200">200</option>
+            </select>
+            <div class="form-text">{{ $t("monitorListPageSizeDescription") }}</div>
+        </div>
     </div>
 </template>
 
