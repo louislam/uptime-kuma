@@ -1057,6 +1057,44 @@ let needSetup = false;
             }
         });
 
+        // Send heartbeat lists and stats for the monitors the client is
+        // actually showing. Called as the dashboard renders a page of the
+        // monitor list, so the cost scales with what is on screen rather than
+        // with the size of the instance.
+        socket.on("requestMonitorData", async (monitorIDs, callback) => {
+            try {
+                checkLogin(socket);
+
+                if (!Array.isArray(monitorIDs)) {
+                    throw new Error("monitorIDs must be an array");
+                }
+
+                // A client asking for everything at once would put us back
+                // where we started, so the batch is bounded.
+                if (monitorIDs.length > 200) {
+                    throw new Error("Too many monitors requested at once, ask for at most 200");
+                }
+
+                await Promise.all(
+                    monitorIDs.map(async (monitorID) => {
+                        // Only ever the caller's own monitors.
+                        await checkOwner(socket.userID, monitorID);
+                        await sendHeartbeatList(socket, monitorID);
+                        await Monitor.sendStats(io, monitorID, socket.userID);
+                    })
+                );
+
+                callback({
+                    ok: true,
+                });
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
         socket.on("getMonitorBeats", async (monitorID, period, callback) => {
             try {
                 checkLogin(socket);
@@ -1871,13 +1909,11 @@ async function afterLogin(socket, user) {
 
     await StatusPage.sendStatusPageList(io, socket);
 
-    const monitorPromises = [];
-    for (let monitorID in monitorList) {
-        monitorPromises.push(sendHeartbeatList(socket, monitorID));
-        monitorPromises.push(Monitor.sendStats(io, monitorID, user.id));
-    }
-
-    await Promise.all(monitorPromises);
+    // Heartbeat lists and stats are no longer sent for every monitor here.
+    // Each one is a query, so on an instance with a thousand monitors this loop
+    // alone was two thousand queries and the larger part of what the client had
+    // to download before it could show anything. The client asks for the rows
+    // it actually displays instead, through "requestMonitorData" below.
 
     // Set server timezone from client browser if not set
     // It should be run once only

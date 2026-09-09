@@ -95,17 +95,17 @@ import { getMonitorRelativeURL } from "../util.ts";
 
 export default {
     name: "MonitorListItem",
+    components: {
+        Uptime,
+        HeartbeatBar,
+        Tag,
+    },
     // Supplied by MonitorList. One IntersectionObserver is shared by every row:
     // giving each row its own costs more than the mounting it saves.
     inject: {
         beatsRegistry: {
             default: null,
         },
-    },
-    components: {
-        Uptime,
-        HeartbeatBar,
-        Tag,
     },
     props: {
         /** Monitor this represents */
@@ -229,9 +229,13 @@ export default {
             return;
         }
 
-        this.beatsRegistry.observe(this.$el, () => {
-            this.beatsVisible = true;
-        });
+        this.beatsRegistry.observe(
+            this.$el,
+            () => {
+                this.beatsVisible = true;
+            },
+            this.monitor.id
+        );
     },
     beforeUnmount() {
         if (this.beatsRegistry) {

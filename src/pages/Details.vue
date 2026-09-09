@@ -611,6 +611,7 @@ export default {
 
         monitor(to) {
             this.getImportantHeartbeatListLength();
+            this.requestOwnData();
         },
         "monitor.type"() {
             if (this.monitor && this.monitor.type === "push") {
@@ -624,6 +625,10 @@ export default {
 
     mounted() {
         this.getImportantHeartbeatListLength();
+
+        // The server only sends heartbeats for the monitors a view asks for, so
+        // opening a monitor directly has to ask for its own.
+        this.requestOwnData();
 
         this.$root.emitter.on("newImportantHeartbeat", this.onNewImportantHeartbeat);
 
@@ -641,6 +646,20 @@ export default {
 
     methods: {
         getResBaseURL,
+
+        /**
+         * Ask the server for this monitor's heartbeats and stats, and for those
+         * of its children so the group view is not empty either.
+         * @returns {void}
+         */
+        requestOwnData() {
+            if (!this.monitor) {
+                return;
+            }
+
+            const ids = [ this.monitor.id, ...(this.monitor.childrenIDs || []) ];
+            this.$root.requestMonitorData(ids);
+        },
         /**
          * Request a test notification be sent for this monitor
          * @returns {void}

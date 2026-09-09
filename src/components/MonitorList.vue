@@ -164,16 +164,16 @@ export default {
         Pagination,
         MonitorListFilter,
     },
+    provide() {
+        return {
+            beatsRegistry: this.beatsRegistry,
+        };
+    },
     props: {
         /** Should the scrollbar be shown */
         scrollbar: {
             type: Boolean,
         },
-    },
-    provide() {
-        return {
-            beatsRegistry: this.beatsRegistry,
-        };
     },
     data() {
         return {
@@ -414,6 +414,35 @@ export default {
             }
 
             const callbacks = new Map();
+            const monitorIDs = new Map();
+            const requested = new Set();
+            let pending = new Set();
+            let flushTimer = null;
+
+            // Rows come into view in bursts, so their requests are collected for
+            // a moment and sent together rather than one round trip per row.
+            const flush = () => {
+                flushTimer = null;
+                const batch = [ ...pending ].slice(0, 200);
+                pending = new Set([ ...pending ].slice(200));
+                if (batch.length > 0) {
+                    this.$root.requestMonitorData(batch);
+                }
+                if (pending.size > 0) {
+                    flushTimer = setTimeout(flush, 60);
+                }
+            };
+
+            const request = (monitorID) => {
+                if (monitorID === undefined || requested.has(monitorID)) {
+                    return;
+                }
+                requested.add(monitorID);
+                pending.add(monitorID);
+                if (flushTimer === null) {
+                    flushTimer = setTimeout(flush, 60);
+                }
+            };
 
             const observer = new IntersectionObserver(
                 (entries) => {
@@ -427,10 +456,15 @@ export default {
                             callback();
                         }
 
+                        // The row is on screen, so it is worth the round trip
+                        // to fetch its heartbeats and stats.
+                        request(monitorIDs.get(entry.target));
+
                         // Once a bar is mounted it stays mounted: unmounting it
                         // again would only trade the initial stall for canvas
                         // churn while scrolling.
                         callbacks.delete(entry.target);
+                        monitorIDs.delete(entry.target);
                         observer.unobserve(entry.target);
                     }
                 },
@@ -442,16 +476,23 @@ export default {
             );
 
             return {
-                observe(element, callback) {
+                observe(element, callback, monitorID) {
                     callbacks.set(element, callback);
+                    monitorIDs.set(element, monitorID);
                     observer.observe(element);
                 },
                 unobserve(element) {
                     callbacks.delete(element);
+                    monitorIDs.delete(element);
                     observer.unobserve(element);
                 },
                 disconnect() {
+                    if (flushTimer !== null) {
+                        clearTimeout(flushTimer);
+                        flushTimer = null;
+                    }
                     callbacks.clear();
+                    monitorIDs.clear();
                     observer.disconnect();
                 },
             };
