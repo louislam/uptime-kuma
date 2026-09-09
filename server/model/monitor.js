@@ -1813,6 +1813,159 @@ class Monitor extends BeanModel {
     }
 
     /**
+     * Read the whole parent/child tree in one query.
+     *
+     * Everything the monitor list needs to know about ancestry — children,
+     * paths, inherited active state, inherited maintenance — can be answered
+     * from this, instead of a query per monitor per question.
+     * @returns {Promise<{parent: Map<number, number|null>, active: Map<number, number>, name: Map<number, string>, children: Map<number, number[]>}>} The tree.
+     */
+    static async loadTree() {
+        const rows = await R.getAll("SELECT id, parent, active, name FROM monitor");
+
+        const parent = new Map();
+        const active = new Map();
+        const name = new Map();
+        const children = new Map();
+
+        for (const row of rows) {
+            parent.set(row.id, row.parent);
+            active.set(row.id, row.active);
+            name.set(row.id, row.name);
+        }
+
+        for (const row of rows) {
+            if (row.parent !== null && row.parent !== undefined) {
+                if (!children.has(row.parent)) {
+                    children.set(row.parent, []);
+                }
+                children.get(row.parent).push(row.id);
+            }
+        }
+
+        return {
+            parent,
+            active,
+            name,
+            children,
+        };
+    }
+
+    /**
+     * The monitors covered by a maintenance window that is currently running.
+     * @returns {Promise<Set<number>>} Monitor IDs directly under maintenance.
+     */
+    static async loadActiveMaintenanceMonitorIDs() {
+        const rows = await R.getAll("SELECT monitor_id, maintenance_id FROM monitor_maintenance");
+
+        const server = UptimeKumaServer.getInstance();
+        const underMaintenance = new Set();
+        const checked = new Map();
+
+        for (const row of rows) {
+            if (!checked.has(row.maintenance_id)) {
+                const maintenance = await server.getMaintenance(row.maintenance_id);
+                checked.set(row.maintenance_id, maintenance ? await maintenance.isUnderMaintenance() : false);
+            }
+
+            if (checked.get(row.maintenance_id)) {
+                underMaintenance.add(row.monitor_id);
+            }
+        }
+
+        return underMaintenance;
+    }
+
+    /**
+     * Whether this monitor, or any monitor above it, is under maintenance.
+     * @param {number} monitorID Monitor to check
+     * @param {object} tree Tree from loadTree()
+     * @param {Set<number>} maintenanceIDs Monitors directly under maintenance
+     * @returns {boolean} True when under maintenance.
+     */
+    static isUnderMaintenanceInTree(monitorID, tree, maintenanceIDs) {
+        let current = monitorID;
+        const seen = new Set();
+
+        while (current !== null && current !== undefined && !seen.has(current)) {
+            if (maintenanceIDs.has(current)) {
+                return true;
+            }
+            seen.add(current);
+            current = tree.parent.get(current);
+        }
+
+        return false;
+    }
+
+    /**
+     * Every monitor below this one, at any depth.
+     * @param {number} monitorID Monitor to start from
+     * @param {object} tree Tree from loadTree()
+     * @param {Set<number>} seen Monitors already walked, guarding against a cycle
+     * @returns {number[]} Descendant monitor IDs.
+     */
+    static getAllChildrenIDsInTree(monitorID, tree, seen = new Set()) {
+        const result = [];
+
+        if (seen.has(monitorID)) {
+            return result;
+        }
+        seen.add(monitorID);
+
+        // Pre-order, each child followed by its own descendants, so the order
+        // matches what the per-monitor version produced.
+        for (const childID of tree.children.get(monitorID) || []) {
+            result.push(childID);
+            result.push(...Monitor.getAllChildrenIDsInTree(childID, tree, seen));
+        }
+
+        return result;
+    }
+
+    /**
+     * Whether every monitor above this one is active.
+     * @param {number} monitorID Monitor to check
+     * @param {object} tree Tree from loadTree()
+     * @returns {boolean} True when no ancestor is paused.
+     */
+    static isParentActiveInTree(monitorID, tree) {
+        let current = tree.parent.get(monitorID);
+        const seen = new Set();
+
+        while (current !== null && current !== undefined && !seen.has(current)) {
+            if (tree.active.get(current) !== 1) {
+                return false;
+            }
+            seen.add(current);
+            current = tree.parent.get(current);
+        }
+
+        return true;
+    }
+
+    /**
+     * The names from the root of the tree down to this monitor.
+     * @param {number} monitorID Monitor to build the path for
+     * @param {string} monitorName Name of that monitor
+     * @param {object} tree Tree from loadTree()
+     * @returns {string[]} Names, outermost first.
+     */
+    static getAllPathInTree(monitorID, monitorName, tree) {
+        const path = [ monitorName ];
+        let current = tree.parent.get(monitorID);
+        const seen = new Set();
+
+        while (current !== null && current !== undefined && !seen.has(current)) {
+            path.unshift(tree.name.get(current));
+            seen.add(current);
+            current = tree.parent.get(current);
+        }
+
+        return path;
+    }
+
+    /**
      * prepare preloaded data for efficient access
      * @param {Array} monitorData IDs & active field of monitor to get
      * @returns {Promise<LooseObject<any>>} object
@@ -1830,17 +1983,24 @@ class Monitor extends BeanModel {
             const monitorIDs = monitorData.map((monitor) => monitor.id);
             const notifications = await Monitor.getMonitorNotification(monitorIDs);
             const tags = await Monitor.getMonitorTag(monitorIDs);
-            const maintenanceStatuses = await Promise.all(
-                monitorData.map((monitor) => Monitor.isUnderMaintenance(monitor.id))
+
+            // Children, paths, active state and maintenance all answer questions
+            // about the parent/child tree. Asking them one monitor at a time
+            // meant five queries per monitor, each of which walked the tree with
+            // more queries of its own. The tree is read once here instead, and
+            // every one of those questions is answered from it.
+            const tree = await Monitor.loadTree();
+            const maintenanceIDs = await Monitor.loadActiveMaintenanceMonitorIDs();
+
+            const maintenanceStatuses = monitorData.map((monitor) =>
+                Monitor.isUnderMaintenanceInTree(monitor.id, tree, maintenanceIDs)
             );
-            const childrenIDs = await Promise.all(monitorData.map((monitor) => Monitor.getAllChildrenIDs(monitor.id)));
-            const activeStatuses = await Promise.all(
-                monitorData.map((monitor) => Monitor.isActive(monitor.id, monitor.active))
+            const childrenIDs = monitorData.map((monitor) => Monitor.getAllChildrenIDsInTree(monitor.id, tree));
+            const forceInactiveStatuses = monitorData.map((monitor) => Monitor.isParentActiveInTree(monitor.id, tree));
+            const activeStatuses = monitorData.map(
+                (monitor, index) => monitor.active === 1 && forceInactiveStatuses[index]
             );
-            const forceInactiveStatuses = await Promise.all(
-                monitorData.map((monitor) => Monitor.isParentActive(monitor.id))
-            );
-            const paths = await Promise.all(monitorData.map((monitor) => Monitor.getAllPath(monitor.id, monitor.name)));
+            const paths = monitorData.map((monitor) => Monitor.getAllPathInTree(monitor.id, monitor.name, tree));
 
             notifications.forEach((row) => {
                 if (!notificationsMap.has(row.monitor_id)) {
