@@ -184,6 +184,22 @@ describe("Domain Expiry", () => {
         });
     });
 
+    test("checkExpiry() stores null expiry and returns undefined when getExpiryDate returns null", async () => {
+        const testDomain = "test-fail-expiry.com";
+        const bean = await DomainExpiry.findByDomainNameOrCreate(testDomain);
+        mock.method(bean, "getExpiryDate", async () => null);
+        mock.method(DomainExpiry, "findByDomainNameOrCreate", async () => bean);
+
+        try {
+            const result = await DomainExpiry.checkExpiry(testDomain);
+            assert.strictEqual(result, undefined);
+            const savedBean = await DomainExpiry.findByName(testDomain);
+            assert.strictEqual(savedBean.expiry, null);
+        } finally {
+            mock.restoreAll();
+        }
+    });
+
     test("checkExpiry() caches expiration date in database", async () => {
         await retryExternalService(async () => {
             await DomainExpiry.checkExpiry("google.com"); // RDAP -> Cache

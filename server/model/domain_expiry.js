@@ -257,9 +257,12 @@ class DomainExpiry extends BeanModel {
     }
 
     /**
-     * @returns {number} number of days remaining before expiry
+     * @returns {number|null} number of days remaining before expiry
      */
     get daysRemaining() {
+        if (!this.expiry || isNaN(new Date(this.expiry).getTime())) {
+            return null;
+        }
         return dayjs.utc(this.expiry).diff(dayjs.utc(), "day");
     }
 
@@ -281,20 +284,20 @@ class DomainExpiry extends BeanModel {
 
         if (bean?.lastCheck && dayjs.utc().diff(dayjs.utc(bean.lastCheck), "day") < 1) {
             log.debug("domain_expiry", `Domain expiry already checked recently for ${bean.domain}, won't re-check.`);
-            return bean.expiry;
+            return bean.expiry && !isNaN(new Date(bean.expiry).getTime()) ? new Date(bean.expiry) : undefined;
         } else if (bean) {
             expiryDate = await bean.getExpiryDate();
 
-            if (dayjs.utc(expiryDate).isAfter(dayjs.utc(bean.expiry))) {
+            if (expiryDate && dayjs.utc(expiryDate).isAfter(dayjs.utc(bean.expiry))) {
                 bean.lastExpiryNotificationSent = null;
             }
 
-            bean.expiry = R.isoDateTimeMillis(expiryDate);
+            bean.expiry = expiryDate ? R.isoDateTimeMillis(expiryDate) : null;
             bean.lastCheck = R.isoDateTimeMillis(dayjs.utc());
             await R.store(bean);
         }
 
-        if (expiryDate === null) {
+        if (expiryDate === null || expiryDate === undefined) {
             return;
         }
 
