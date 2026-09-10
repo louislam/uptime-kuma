@@ -1,6 +1,6 @@
 <template>
     <div class="tv-stage">
-        <div class="tv-frame" :style="frameStyle">
+        <div class="tv-frame" :class="{ 'tv-frame--alarme': emAlarme }" :style="frameStyle">
             <!-- Cabeçalho -->
             <header class="tv-header">
                 <div class="tv-header__identity">
@@ -17,8 +17,12 @@
             </header>
 
             <!-- Bloco de destaque: quem está fora do ar -->
-            <section v-if="downMonitors.length > 0" class="tv-alert" :class="{ 'tv-alert--pulsing': pulsing }">
-                <div class="tv-alert__band" :class="{ 'tv-alert__band--pulsing': pulsing }">
+            <section
+                v-if="downMonitors.length > 0"
+                class="tv-alert"
+                :class="{ 'tv-alert--alarme': emAlarme, 'tv-alert--pulsing': pulsing }"
+            >
+                <div class="tv-alert__band">
                     <!-- Onda contínua enquanto houver queda, e não só durante o pulso: passados os
                          30 s o bloco ficava imóvel, que é quando uma queda vira paisagem e some da
                          atenção de quem passa pela sala. -->
@@ -254,6 +258,19 @@ export default {
         /** @returns {object[]} Monitors that are down. Maintenance is not an outage. */
         downMonitors() {
             return this.monitors.filter((monitor) => monitor.status === DOWN);
+        },
+
+        /**
+         * Whether the panel is announcing an outage right now.
+         *
+         * Deliberately NOT `pulsing`: that one is the 30 s announcement of a CHANGE, and it is also
+         * what postpones the screen reload. The alarm is about the situation, which lasts as long as
+         * the outage does — a block that goes quiet after half a minute is a block nobody sees,
+         * because nobody is watching the wall at the second something breaks.
+         * @returns {boolean} True while at least one monitor is down.
+         */
+        emAlarme() {
+            return this.downMonitors.length > 0;
         },
 
         /**
@@ -772,6 +789,26 @@ body.tv-panel-body {
     h3 {
         margin: 0;
     }
+
+    /* Moldura de alarme: enquanto houver serviço fora do ar, a borda da tela inteira pisca. É o
+       que se nota sem estar olhando para o painel — a laje vermelha só chama quem já virou a
+       cabeça. `top/right/bottom/left` explícitos em vez de `inset`, pelo mesmo motivo documentado
+       em `.tv-stage`: o navegador embutido da TV ignora `inset`, e ali a falha seria a moldura
+       ancorada no canto errado, com o alarme aparecendo onde ninguém pediu. */
+    &--alarme::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 5;
+        pointer-events: none;
+        box-shadow:
+            inset 0 0 0 16px var(--tv-danger),
+            inset 0 0 70px 24px rgba(245, 61, 61, 0.45);
+        animation: tv-frame-alarme 1.6s ease-in-out infinite;
+    }
 }
 
 /* ---- Cabeçalho ---- */
@@ -838,22 +875,28 @@ body.tv-panel-body {
         0 0 0 5px rgba(245, 61, 61, 0.18);
     border: 4px solid var(--tv-danger);
 
+    /* Enquanto houver queda, a laje inteira pisca. A ordem importa: `--pulsing` vem DEPOIS, com a
+       mesma especificidade, e é o que faz a mudança recente bater mais rápido que o alarme de
+       fundo. */
+    &--alarme {
+        animation: tv-alert-alarme 1.6s ease-in-out infinite;
+    }
+
     &--pulsing {
-        animation: tv-alert-pulse 1s ease-in-out infinite;
+        animation: tv-alert-alarme 0.8s ease-in-out infinite;
     }
 
     &__band {
         position: relative;
-        background: var(--tv-danger);
+
+        /* Sem fundo próprio: quem pinta aqui é o bloco, e é assim que faixa e corpo piscam como uma
+           laje só. Fundo próprio deixava o pisca preso aos 90 px do topo — de longe, uma tarja
+           trocando de tom sobre um card imóvel. */
         color: #fff;
         padding: 40px 36px;
         display: flex;
         align-items: center;
         gap: 20px;
-
-        &--pulsing {
-            animation: tv-band-flash 1s ease-in-out infinite;
-        }
     }
 
     &__dot {
@@ -1345,33 +1388,40 @@ body.tv-panel-body {
     }
 }
 
-@keyframes tv-alert-pulse {
-    0%,
-    100% {
-        box-shadow:
-            var(--tv-shadow-alert),
-            0 0 0 0 rgba(245, 61, 61, 0.85);
-        border-color: #ff2d2d;
-    }
-
-    50% {
-        box-shadow:
-            var(--tv-shadow-alert),
-            0 0 0 32px rgba(245, 61, 61, 0);
-        border-color: var(--tv-danger);
-    }
-}
-
-/* A faixa bate entre o vermelho da marca de erro e um mais fundo. Fundo, e não mais claro: no
-   claro o texto branco de cima perde contraste justo no instante que devia chamar mais. */
-@keyframes tv-band-flash {
+/* A laje bate entre o vermelho da marca de erro e um mais fundo. Fundo, e não mais claro: no
+   claro o texto branco de cima perde contraste justo no instante que devia chamar mais — e o
+   mesmo vale para as réguas cinza do corpo do bloco. O anel abre no mesmo compasso, senão o
+   bloco pisca por dentro e fica parado na borda. */
+@keyframes tv-alert-alarme {
     0%,
     100% {
         background: var(--tv-danger);
+        border-color: #ff2d2d;
+        box-shadow:
+            var(--tv-shadow-alert),
+            0 0 0 0 rgba(245, 61, 61, 0.85);
     }
 
     50% {
         background: #b81414;
+        border-color: #b81414;
+        box-shadow:
+            var(--tv-shadow-alert),
+            0 0 0 34px rgba(245, 61, 61, 0);
+    }
+}
+
+/* Alarme periférico: a moldura da tela inteira. É o que se nota sem estar olhando para o painel —
+   a laje só chama quem já virou a cabeça. Fica num pseudo-elemento para não disputar o
+   `box-shadow` do quadro nem entrar no fluxo. */
+@keyframes tv-frame-alarme {
+    0%,
+    100% {
+        opacity: 0.15;
+    }
+
+    50% {
+        opacity: 1;
     }
 }
 
