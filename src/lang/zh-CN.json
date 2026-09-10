@@ -1733,5 +1733,8 @@
     "milkyGroupMessage": "群聊",
     "milkyPrivateMessage": "私信",
     "milkyUserOrGroupId": "群聊/用户ID",
-    "milkySafetyTips": "为了安全起见，必须设置访问令牌"
+    "milkySafetyTips": "为了安全起见，必须设置访问令牌",
+    "notifyAppSetup": "打开 Notify! 并在设置中找到设备 ID（Device ID）和令牌（token）。无需账户。了解更多信息，请访问 {0}。",
+    "notifyAppDeviceIdDescription": "Notify! App 的设备 ID（Device ID），或分组 ID（用于同时向分组内所有设备发送警报）。",
+    "Device ID or Group ID": "设备 ID（Device ID）或分组 ID"
 }
