@@ -1651,5 +1651,22 @@
     "milkySafetyTips": "Per seguretat, cal establir un testimoni d'accés",
     "smsgatewayUrlHelptext": "La URL base de la vostra passarel·la SMS, sense un camí d'API.",
     "smsgatewayTo": "Número(s) de telèfon",
-    "smsgatewayToHelptext": "Llista separada per comes de números de telèfon dels destinataris en format internacional (p. ex. +15551234567)"
+    "smsgatewayToHelptext": "Llista separada per comes de números de telèfon dels destinataris en format internacional (p. ex. +15551234567)",
+    "Client Key": "Clau del client",
+    "Channel": "Canal",
+    "SFTP Path to Check": "Camí SFTP a comprovar",
+    "sftpPathHelpText": "Opcional. Si s'especifica, el monitor verificarà que aquest camí existeix al servidor SFTP.",
+    "SSH Private Key": "Clau privada SSH",
+    "Passphrase": "Contrasenya",
+    "sshPrivateKeyPlaceholder": "-----BEGIN OPENSSH PRIVATE KEY-----\n...\n-----END OPENSSH PRIVATE KEY-----",
+    "sshPrivateKeyHelpText": "Enganxa el contingut del fitxer de clau privada (p. ex. id_rsa o id_ed25519).",
+    "sshPassphraseHelpText": "Opcional. Només es requereix si la vostra clau privada està encriptada amb una contrasenya.",
+    "optional": "opcional",
+    "Line Number": "Número de línia",
+    "Amoot SMS recipient numbers help": "Introduïu un o més números mòbils separats per comes.",
+    "Use Pattern": "Usa el patró",
+    "Pattern Code ID": "ID del codi del patró",
+    "Amoot SMS pattern help": "Introduïu l'ID del codi del patró del tauler d'Amoot SMS. {0}",
+    "Create an Amoot SMS pattern": "Crea un patró d'Amoot SMS",
+    "Use Own Line for Pattern": "Usa una línia pròpia per al patró"
 }

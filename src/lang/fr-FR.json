@@ -159,7 +159,7 @@
     "Heartbeats": "Vérifications",
     "Auto Get": "Récupérer automatiquement",
     "backupDescription": "Vous pouvez sauvegarder toutes les sondes et toutes les notifications dans un fichier JSON.",
-    "backupDescription2": "PS : Les données relatives à l'historique et aux événements ne sont pas incluses.",
+    "backupDescription2": "PS : Les données relatives à l'historique et aux événements ne sont pas incluses.",
     "backupDescription3": "Les données sensibles telles que les jetons de notification sont incluses dans le fichier d'exportation, veuillez les conserver soigneusement.",
     "alertNoFile": "Veuillez sélectionner un fichier à importer.",
     "alertWrongFileType": "Veuillez sélectionner un fichier JSON à importer.",
@@ -1116,7 +1116,7 @@
     "wahaChatId": "ID de discussion (numéro de téléphone / ID de contact / ID de groupe)",
     "wayToGetWahaApiKey": "La clé API est la valeur de la variable d'environnement WHATSAPP_API_KEY que vous avez utilisée pour exécuter WAHA.",
     "wayToWriteWahaChatId": "Le numéro de téléphone avec le préfixe international, mais sans le signe plus ({0}), l'identifiant de contact ({1}) ni l'identifiant de groupe ({2}). Les notifications sont envoyées à cet identifiant de chat depuis la session WAHA.",
-    "telegramServerUrlDescription": "Pour lever les limitations de l’API des bots Telegram ou accéder aux zones bloquées (Chine, Iran, etc.). Pour plus d’informations, cliquez sur {0}. Par défaut : {1}",
+    "telegramServerUrlDescription": "Pour lever les limitations de l’API des bots Telegram ou accéder aux zones bloquées (Chine, Iran, etc.). Pour plus d’informations, cliquez sur {0}. Par défaut : {1}",
     "telegramServerUrl": "(Facultatif) URL du serveur",
     "Font Twemoji by Twitter licensed under": "La police Twemoji de Twitter est sous licence",
     "the smsplanet documentation": "la documentation de smsplanet",
@@ -1734,5 +1734,7 @@
     "smsgatewayToHelptext": "Liste de numéros de téléphone des destinataires séparés par une virgule au format international (par exemple +15551234567)",
     "Device ID or Group ID": "ID d’appareil ou ID de groupe",
     "notifyAppDeviceIdDescription": "L’ID d’appareil de l’application Notify!, ou un ID de groupe pour alerter tous les appareils d’un groupe en même temps.",
-    "notifyAppSetup": "Ouvrez Notify ! et trouvez votre ID d’appareil et jeton sous Paramètres. Aucun compte n’est requis. Pour en savoir plus, rendez-vous sur {0}."
+    "notifyAppSetup": "Ouvrez Notify ! et trouvez votre ID d’appareil et jeton sous Paramètres. Aucun compte n’est requis. Pour en savoir plus, rendez-vous sur {0}.",
+    "Client Key": "Clé du client",
+    "Channel": "Canal"
 }

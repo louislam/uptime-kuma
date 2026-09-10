@@ -1707,5 +1707,7 @@
     "smsgatewayToHelptext": "Elenco di numeri di telefono dei destinatari separati da virgole, in formato internazionale (ad esempio +15551234567)",
     "Device ID or Group ID": "ID dispositivo o ID gruppo",
     "notifyAppDeviceIdDescription": "ID del dispositivo dall'app Notify! oppure un ID di gruppo per inviare una notifica a tutti i dispositivi di un gruppo contemporaneamente.",
-    "notifyAppSetup": "Apri Notify! e trova l'ID del dispositivo e il token in Impostazioni. Non è necessario alcun account. Scopri di più su {0}."
+    "notifyAppSetup": "Apri Notify! e trova l'ID del dispositivo e il token in Impostazioni. Non è necessario alcun account. Scopri di più su {0}.",
+    "Client Key": "Chiave client",
+    "Channel": "Canale"
 }
