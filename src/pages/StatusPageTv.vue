@@ -26,19 +26,19 @@
                         <svg class="tv-wave__layer tv-wave__layer--back" viewBox="0 0 1200 120" preserveAspectRatio="none">
                             <path
                                 vector-effect="non-scaling-stroke"
-                                d="M0,60 q75,-58 150,0 t150,0 t150,0 t150,0 t150,0 t150,0 t150,0 t150,0"
+                                d="M0,60 q150,-76 300,0 t300,0 t300,0 t300,0"
                             />
                         </svg>
                         <svg class="tv-wave__layer tv-wave__layer--mid" viewBox="0 0 1200 120" preserveAspectRatio="none">
                             <path
                                 vector-effect="non-scaling-stroke"
-                                d="M0,60 q75,-40 150,0 t150,0 t150,0 t150,0 t150,0 t150,0 t150,0 t150,0"
+                                d="M0,60 q150,-56 300,0 t300,0 t300,0 t300,0"
                             />
                         </svg>
                         <svg class="tv-wave__layer tv-wave__layer--front" viewBox="0 0 1200 120" preserveAspectRatio="none">
                             <path
                                 vector-effect="non-scaling-stroke"
-                                d="M0,60 q75,-26 150,0 t150,0 t150,0 t150,0 t150,0 t150,0 t150,0 t150,0"
+                                d="M0,60 q150,-38 300,0 t300,0 t300,0 t300,0"
                             />
                         </svg>
                     </div>
@@ -846,7 +846,7 @@ body.tv-panel-body {
         position: relative;
         background: var(--tv-danger);
         color: #fff;
-        padding: 30px 36px;
+        padding: 40px 36px;
         display: flex;
         align-items: center;
         gap: 20px;
@@ -874,8 +874,13 @@ body.tv-panel-body {
         letter-spacing: 0.06em;
         text-transform: uppercase;
 
-        /* A onda passa por baixo do texto: a sombra garante a leitura no pico claro dela. */
-        text-shadow: 0 2px 6px rgba(120, 0, 0, 0.45);
+        /* A onda passa por baixo do texto, e com o traço grosso ela cruza a linha das letras em
+           branco quase puro: o que sustenta a leitura ali é o halo escuro colado no glifo, não a
+           sombra projetada — texto branco sobre pico branco só se separa por contorno. */
+        text-shadow:
+            0 0 4px rgba(120, 0, 0, 0.9),
+            0 0 14px rgba(120, 0, 0, 0.7),
+            0 2px 6px rgba(120, 0, 0, 0.5);
     }
 
     &__count {
@@ -884,7 +889,10 @@ body.tv-panel-body {
         margin-left: auto;
         font-size: 30px;
         font-weight: 700;
-        text-shadow: 0 2px 6px rgba(120, 0, 0, 0.45);
+        text-shadow:
+            0 0 4px rgba(120, 0, 0, 0.9),
+            0 0 14px rgba(120, 0, 0, 0.7),
+            0 2px 6px rgba(120, 0, 0, 0.5);
     }
 
     &__single {
@@ -978,17 +986,16 @@ body.tv-panel-body {
     height: 100%;
     overflow: hidden;
     pointer-events: none;
-    opacity: 0.72;
+    opacity: 1;
     transform: scaleY(1);
-    transition:
-        transform 0.4s ease-out,
-        opacity 0.4s ease-out;
+    transition: transform 0.4s ease-out;
 
-    /* Enquanto a mudança é notícia a onda cresce e clareia. Amplitude e opacidade ficam aqui, no
-       pai, porque a translação de cada camada já ocupa o transform delas. */
+    /* Enquanto a mudança é notícia a onda cresce. Não clareia: fora do pulso ela já está no opaco
+       máximo, porque o pulso dura 30 s e a queda dura o que durar — guardar brilho para o pulso
+       deixava a onda apagada na maior parte do tempo em que este bloco fica na parede. A amplitude
+       fica aqui, no pai, porque a translação de cada camada já ocupa o transform delas. */
     &--pulsing {
-        opacity: 1;
-        transform: scaleY(1.4);
+        transform: scaleY(1.45);
     }
 
     &__layer {
@@ -996,8 +1003,9 @@ body.tv-panel-body {
         top: 0;
         left: 0;
 
-        /* 200% + translateX(-50%) fecha o ciclo sem emenda: a largura do container cobre duas
-           ondas inteiras do viewBox, então o fim coincide com o começo. */
+        /* 200% + translateX(-50%) fecha o ciclo sem emenda: o viewBox tem duas ondulações
+           inteiras e é esticado sobre o dobro da largura do container, então a translação de meia
+           largura própria (= uma tela, = uma ondulação) cai exatamente onde o desenho recomeça. */
         width: 200%;
         height: 100%;
         fill: none;
@@ -1006,23 +1014,26 @@ body.tv-panel-body {
         will-change: transform;
     }
 
+    /* Espessura em PIXEL DE TELA (`vector-effect="non-scaling-stroke"`, no template): o traço não
+       acompanha o esticamento do viewBox, então estes números são a grossura que sai no painel de
+       1920 — e é por isso que 9 px, que parece razoável num gráfico, desaparece numa parede. */
     &__layer--back {
-        opacity: 0.26;
-        stroke-width: 9;
-        animation-duration: 13s;
+        opacity: 0.22;
+        stroke-width: 30;
+        animation-duration: 8.5s;
     }
 
     &__layer--mid {
         opacity: 0.4;
-        stroke-width: 6;
-        animation-duration: 9s;
+        stroke-width: 19;
+        animation-duration: 6s;
         animation-direction: reverse;
     }
 
     &__layer--front {
-        opacity: 0.62;
-        stroke-width: 4;
-        animation-duration: 6.5s;
+        opacity: 0.8;
+        stroke-width: 13;
+        animation-duration: 4s;
     }
 }
 
