@@ -53,7 +53,22 @@ import {
     faCertificate,
     faFolder,
     faFolderOpen,
+    faCloud,
+    faDatabase,
+    faCogs,
+    faHandPointUp,
+    faCode,
+    faPaperPlane,
+    faEnvelope,
+    faGamepad,
+    faClock,
+    faPhone,
+    faBroadcastTower,
+    faNetworkWired,
+    faGlobe,
 } from "@fortawesome/free-solid-svg-icons";
+
+import { faDocker, faNodeJs } from "@fortawesome/free-brands-svg-icons";
 
 library.add(
     faArrowAltCircleUp,
@@ -103,6 +118,21 @@ library.add(
     faCertificate,
     faFolder,
     faFolderOpen,
+    faCloud,
+    faDatabase,
+    faDocker,
+    faCogs,
+    faNodeJs,
+    faHandPointUp,
+    faCode,
+    faPaperPlane,
+    faEnvelope,
+    faGamepad,
+    faClock,
+    faPhone,
+    faBroadcastTower,
+    faNetworkWired,
+    faGlobe,
 );
 
 export { FontAwesomeIcon };
