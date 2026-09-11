@@ -5,6 +5,7 @@ export default {
             userTheme: localStorage.theme,
             userHeartbeatBar: localStorage.heartbeatBarTheme,
             styleElapsedTime: localStorage.styleElapsedTime,
+            monitorListPageSize: Number(localStorage.monitorListPageSize ?? 0),
             statusPageTheme: "light",
             forceStatusPageTheme: false,
             path: "",
@@ -85,6 +86,10 @@ export default {
 
         userHeartbeatBar(to, from) {
             localStorage.heartbeatBarTheme = to;
+        },
+
+        monitorListPageSize(to) {
+            localStorage.monitorListPageSize = to;
         },
 
         heartbeatBarTheme(to, from) {

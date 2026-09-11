@@ -100,13 +100,28 @@
             :style="monitorListStyle"
             data-testid="monitor-list"
         >
-            <div v-if="Object.keys($root.monitorList).length === 0" class="text-center mt-3">
+            <!-- The list is rendered before the server has sent it, so an empty
+                 list means "still arriving" until it actually has. -->
+            <div
+                v-if="!$root.monitorListLoaded"
+                class="monitor-list-skeleton"
+                :aria-label="$t('Loading...')"
+                aria-busy="true"
+            >
+                <div v-for="n in 8" :key="n" class="skeleton-row">
+                    <div class="skeleton-pill" />
+                    <div class="skeleton-name" />
+                    <div class="skeleton-bar" />
+                </div>
+            </div>
+
+            <div v-else-if="Object.keys($root.monitorList).length === 0" class="text-center mt-3">
                 {{ $t("No Monitors, please") }}
                 <router-link to="/add">{{ $t("add one") }}</router-link>
             </div>
 
             <MonitorListItem
-                v-for="item in sortedMonitorList"
+                v-for="item in visibleMonitorList"
                 :key="`${item.id}-${collapseKey}`"
                 :monitor="item"
                 :isSelectMode="selectMode"
@@ -116,6 +131,15 @@
                 :filter-func="filterFunc"
                 :sort-func="sortFunc"
             />
+
+            <div v-if="paginated" class="d-flex justify-content-center kuma_pagination">
+                <pagination
+                    v-model="page"
+                    :records="sortedMonitorList.length"
+                    :per-page="pageSize"
+                    :options="paginationConfig"
+                />
+            </div>
         </div>
     </div>
 
@@ -131,6 +155,7 @@
 <script>
 import Confirm from "../components/Confirm.vue";
 import MonitorListItem from "../components/MonitorListItem.vue";
+import Pagination from "v-pagination-3";
 import MonitorListFilter from "./MonitorListFilter.vue";
 import { getMonitorRelativeURL } from "../util.ts";
 
@@ -138,7 +163,13 @@ export default {
     components: {
         Confirm,
         MonitorListItem,
+        Pagination,
         MonitorListFilter,
+    },
+    provide() {
+        return {
+            beatsRegistry: this.beatsRegistry,
+        };
     },
     props: {
         /** Should the scrollbar be shown */
@@ -148,6 +179,7 @@ export default {
     },
     data() {
         return {
+            beatsRegistry: this.createBeatsRegistry(),
             searchText: "",
             selectMode: false,
             selectAll: false,
@@ -161,6 +193,11 @@ export default {
                 tags: null,
             },
             collapseKey: 0,
+            page: 1,
+            paginationConfig: {
+                hideCount: true,
+                chunksNavigation: "scroll",
+            },
         };
     },
     computed: {
@@ -202,6 +239,38 @@ export default {
             result.sort(this.sortFunc);
 
             return result;
+        },
+
+        /**
+         * Monitors per page, or 0 when the user has left pagination off.
+         * @returns {number} The configured page size.
+         */
+        pageSize() {
+            return Number(this.$root.monitorListPageSize) || 0;
+        },
+
+        /**
+         * Whether the list is currently split into pages. A page size that is
+         * set but not reached shows no controls, so a small instance looks
+         * exactly as it did before.
+         * @returns {boolean} True when page controls should be shown.
+         */
+        paginated() {
+            return this.pageSize > 0 && this.sortedMonitorList.length > this.pageSize;
+        },
+
+        /**
+         * The monitors actually rendered. Selecting and filtering still work on
+         * the whole list; only what reaches the DOM is narrowed here.
+         * @returns {Array} The monitors to render.
+         */
+        visibleMonitorList() {
+            if (!this.paginated) {
+                return this.sortedMonitorList;
+            }
+
+            const start = (this.page - 1) * this.pageSize;
+            return this.sortedMonitorList.slice(start, start + this.pageSize);
         },
 
         isDarkTheme() {
@@ -271,6 +340,21 @@ export default {
         },
     },
     watch: {
+        // Searching, filtering or deleting monitors can leave the current page
+        // past the end of the list, which would render nothing at all. Step
+        // back to the last page that still has monitors on it.
+        sortedMonitorList() {
+            if (!this.paginated) {
+                this.page = 1;
+                return;
+            }
+
+            const lastPage = Math.ceil(this.sortedMonitorList.length / this.pageSize);
+            if (this.page > lastPage) {
+                this.page = lastPage;
+            }
+        },
+
         searchText() {
             for (let monitor of this.sortedMonitorList) {
                 if (!this.selectedMonitors[monitor.id]) {
@@ -310,8 +394,112 @@ export default {
     },
     beforeUnmount() {
         window.removeEventListener("scroll", this.onScroll);
+
+        if (this.beatsRegistry) {
+            this.beatsRegistry.disconnect();
+        }
     },
     methods: {
+        /**
+         * Build the shared visibility registry handed to every row.
+         *
+         * Mounting a HeartbeatBar creates a <canvas> and its 2D context, so on
+         * a large instance mounting them all at once is what keeps the
+         * dashboard blank. Rows start with a placeholder and swap in their bar
+         * when they come near the viewport.
+         * @returns {object|null} The registry, or null when the browser has no
+         * IntersectionObserver, in which case rows render their bar immediately.
+         */
+        createBeatsRegistry() {
+            if (typeof IntersectionObserver === "undefined") {
+                return null;
+            }
+
+            const callbacks = new Map();
+            const monitorIDs = new Map();
+            const requested = new Set();
+            let pending = new Set();
+            let flushTimer = null;
+
+            // Rows come into view in bursts, so their requests are collected for
+            // a moment and sent together rather than one round trip per row.
+            const flush = () => {
+                flushTimer = null;
+                const batch = [...pending].slice(0, 200);
+                pending = new Set([...pending].slice(200));
+                if (batch.length > 0) {
+                    this.$root.requestMonitorData(batch);
+                }
+                if (pending.size > 0) {
+                    flushTimer = setTimeout(flush, 60);
+                }
+            };
+
+            const request = (monitorID) => {
+                if (monitorID === undefined || requested.has(monitorID)) {
+                    return;
+                }
+                requested.add(monitorID);
+                pending.add(monitorID);
+                if (flushTimer === null) {
+                    flushTimer = setTimeout(flush, 60);
+                }
+            };
+
+            const observer = new IntersectionObserver(
+                (entries) => {
+                    for (const entry of entries) {
+                        if (!entry.isIntersecting) {
+                            continue;
+                        }
+
+                        const callback = callbacks.get(entry.target);
+                        if (callback) {
+                            callback();
+                        }
+
+                        // The row is on screen, so it is worth the round trip
+                        // to fetch its heartbeats and stats.
+                        request(monitorIDs.get(entry.target));
+
+                        // Once a bar is mounted it stays mounted: unmounting it
+                        // again would only trade the initial stall for canvas
+                        // churn while scrolling.
+                        callbacks.delete(entry.target);
+                        monitorIDs.delete(entry.target);
+                        observer.unobserve(entry.target);
+                    }
+                },
+                {
+                    // Mount a screen ahead of the viewport, so a bar is already
+                    // there by the time it is scrolled to.
+                    rootMargin: "400px 0px",
+                }
+            );
+
+            return {
+                observe(element, callback, monitorID) {
+                    callbacks.set(element, callback);
+                    monitorIDs.set(element, monitorID);
+                    observer.observe(element);
+                },
+                unobserve(element) {
+                    callbacks.delete(element);
+                    monitorIDs.delete(element);
+                    observer.unobserve(element);
+                },
+                disconnect() {
+                    if (flushTimer !== null) {
+                        clearTimeout(flushTimer);
+                        flushTimer = null;
+                    }
+                    callbacks.clear();
+                    monitorIDs.clear();
+                    observer.disconnect();
+                },
+            };
+        },
+
         /**
          * Handle user scroll
          * @returns {void}
@@ -609,6 +797,54 @@ export default {
 
 <style lang="scss" scoped>
 @import "../assets/vars.scss";
+
+// Placeholder rows shown while the monitor list is on its way. They take the
+// same room a real row does, so the list does not jump when it arrives.
+.monitor-list-skeleton {
+    .skeleton-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 13px 8px;
+    }
+
+    .skeleton-pill,
+    .skeleton-name,
+    .skeleton-bar {
+        border-radius: 4px;
+        background: rgba(128, 128, 128, 0.16);
+        animation: skeleton-pulse 1.4s ease-in-out infinite;
+    }
+
+    .skeleton-pill {
+        width: 44px;
+        height: 20px;
+        border-radius: 10px;
+        flex-shrink: 0;
+    }
+
+    .skeleton-name {
+        height: 14px;
+        flex: 1 1 auto;
+        max-width: 160px;
+    }
+
+    .skeleton-bar {
+        height: 24px;
+        flex: 1 1 auto;
+    }
+}
+
+@keyframes skeleton-pulse {
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.45;
+    }
+}
 
 .shadow-box {
     height: calc(100vh - 150px);

@@ -416,15 +416,20 @@ let needSetup = false;
                         throw new Error("The token is invalid due to password change or old token");
                     }
 
-                    log.debug("auth", "afterLogin");
-                    await afterLogin(socket, user);
-                    log.debug("auth", "afterLogin ok");
-
                     log.info("auth", `Successfully logged in user ${decoded.username}. IP=${clientIP}`);
 
+                    // Acknowledge before pushing any data. The client gates its
+                    // whole UI on this callback, and afterLogin() sends the
+                    // monitor list plus a heartbeat list and a stats query per
+                    // monitor. Awaiting it first leaves the browser on a blank
+                    // page for as long as that takes, which on an instance with
+                    // a thousand monitors is several seconds.
                     callback({
                         ok: true,
                     });
+
+                    log.debug("auth", "afterLogin");
+                    startAfterLogin(socket, user);
                 } else {
                     log.info("auth", `Inactive or deleted user ${decoded.username}. IP=${clientIP}`);
 
@@ -471,14 +476,14 @@ let needSetup = false;
 
             if (user) {
                 if (user.twofa_status === 0) {
-                    await afterLogin(socket, user);
-
                     log.info("auth", `Successfully logged in user ${data.username}. IP=${clientIP}`);
 
                     callback({
                         ok: true,
                         token: User.createJWT(user, server.jwtSecret),
                     });
+
+                    startAfterLogin(socket, user);
                 }
 
                 if (user.twofa_status === 1 && !data.token) {
@@ -493,7 +498,7 @@ let needSetup = false;
                     let verify = notp.totp.verify(data.token, user.twofa_secret, twoFAVerifyOptions);
 
                     if (user.twofa_last_token !== data.token && verify) {
-                        await afterLogin(socket, user);
+                        socket.userID = user.id;
 
                         await R.exec("UPDATE `user` SET twofa_last_token = ? WHERE id = ? ", [
                             data.token,
@@ -506,6 +511,8 @@ let needSetup = false;
                             ok: true,
                             token: User.createJWT(user, server.jwtSecret),
                         });
+
+                        startAfterLogin(socket, user);
                     } else {
                         log.warn("auth", `Invalid token provided for user ${data.username}. IP=${clientIP}`);
 
@@ -1052,6 +1059,44 @@ let needSetup = false;
                     msg: e.message,
                     msgi18n: !!e.msgi18n,
                     meta: e.meta ?? {},
+                });
+            }
+        });
+
+        // Send heartbeat lists and stats for the monitors the client is
+        // actually showing. Called as the dashboard renders a page of the
+        // monitor list, so the cost scales with what is on screen rather than
+        // with the size of the instance.
+        socket.on("requestMonitorData", async (monitorIDs, callback) => {
+            try {
+                checkLogin(socket);
+
+                if (!Array.isArray(monitorIDs)) {
+                    throw new Error("monitorIDs must be an array");
+                }
+
+                // A client asking for everything at once would put us back
+                // where we started, so the batch is bounded.
+                if (monitorIDs.length > 200) {
+                    throw new Error("Too many monitors requested at once, ask for at most 200");
+                }
+
+                await Promise.all(
+                    monitorIDs.map(async (monitorID) => {
+                        // Only ever the caller's own monitors.
+                        await checkOwner(socket.userID, monitorID);
+                        await sendHeartbeatList(socket, monitorID);
+                        await Monitor.sendStats(io, monitorID, socket.userID);
+                    })
+                );
+
+                callback({
+                    ok: true,
+                });
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
                 });
             }
         });
@@ -1825,6 +1870,27 @@ async function checkOwner(userID, monitorID) {
 }
 
 /**
+ * Start sending a freshly logged-in client its data, without making the
+ * login acknowledgement wait for it.
+ * @param {Socket} socket Socket.io instance
+ * @param {object} user User object
+ * @returns {void}
+ */
+function startAfterLogin(socket, user) {
+    afterLogin(socket, user)
+        .then(() => {
+            log.debug("auth", "afterLogin ok");
+        })
+        .catch((e) => {
+            // The client is already logged in at this point, so a failure here
+            // leaves it with a UI and no data rather than stuck on a blank
+            // page. Tell it, so it can say so instead of looking empty.
+            log.error("auth", `afterLogin failed for user ${user.id}: ${e.message}`);
+            socket.emit("afterLoginFailed", e.message);
+        });
+}
+
+/**
  * Function called after user login
  * This function is used to send the heartbeat list of a monitor.
  * @param {Socket} socket Socket.io instance
@@ -1849,13 +1915,11 @@ async function afterLogin(socket, user) {
 
     await StatusPage.sendStatusPageList(io, socket);
 
-    const monitorPromises = [];
-    for (let monitorID in monitorList) {
-        monitorPromises.push(sendHeartbeatList(socket, monitorID));
-        monitorPromises.push(Monitor.sendStats(io, monitorID, user.id));
-    }
-
-    await Promise.all(monitorPromises);
+    // Heartbeat lists and stats are no longer sent for every monitor here.
+    // Each one is a query, so on an instance with a thousand monitors this loop
+    // alone was two thousand queries and the larger part of what the client had
+    // to download before it could show anything. The client asks for the rows
+    // it actually displays instead, through "requestMonitorData" below.
 
     // Set server timezone from client browser if not set
     // It should be run once only

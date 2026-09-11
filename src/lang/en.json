@@ -1629,5 +1629,8 @@
     "Pattern Code ID": "Pattern Code ID",
     "Amoot SMS pattern help": "Enter the Pattern Code ID from your Amoot SMS panel. {0}",
     "Create an Amoot SMS pattern": "Create an Amoot SMS pattern",
-    "Use Own Line for Pattern": "Use Own Line for Pattern"
+    "Use Own Line for Pattern": "Use Own Line for Pattern",
+    "monitorListPageSize": "Monitors per page",
+    "monitorListPageSizeOff": "Show all",
+    "monitorListPageSizeDescription": "Split the monitor list into pages. Useful on instances with a few hundred monitors or more, where rendering the whole list at once makes the dashboard slow to appear."
 }

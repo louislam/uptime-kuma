@@ -42,6 +42,10 @@ export default {
             allowLoginDialog: false, // Allowed to show login dialog, but "loggedIn" have to be true too. This exists because prevent the login dialog show 0.1s in first before the socket server auth-ed.
             loggedIn: false,
             monitorList: {},
+            // False from the moment the client is logged in until the server
+            // has sent the monitor list. The UI is rendered during that window
+            // now, so it needs to know it is waiting rather than looking empty.
+            monitorListLoaded: false,
             monitorTypeList: {},
             maintenanceList: {},
             apiKeyList: {},
@@ -147,6 +151,7 @@ export default {
             socket.on("monitorList", (data) => {
                 this.assignMonitorUrlParser(data);
                 this.monitorList = data;
+                this.monitorListLoaded = true;
             });
 
             socket.on("updateMonitorIntoList", (data) => {
@@ -269,6 +274,9 @@ export default {
                 console.log("disconnect");
                 this.connectionErrorMsg = `${this.$t("Lost connection to the socket server.")} ${this.$t("Reconnecting...")}`;
                 this.socket.connected = false;
+                // The next connection sends the list again; until it arrives we
+                // are waiting, not empty.
+                this.monitorListLoaded = false;
             });
 
             socket.on("connect", () => {
@@ -464,6 +472,7 @@ export default {
             this.storage().removeItem("token");
             this.socket.token = null;
             this.loggedIn = false;
+            this.monitorListLoaded = false;
             this.username = null;
             this.clearData();
         },
@@ -716,6 +725,25 @@ export default {
          * @param {socketCB} callback Callback for socket response
          * @returns {void}
          */
+        /**
+         * Ask the server for the heartbeat lists and stats of the given
+         * monitors. The server no longer sends these for every monitor on
+         * login, so a view asks for the rows it is about to show.
+         * @param {number[]} monitorIDs Monitors to fetch data for
+         * @returns {void}
+         */
+        requestMonitorData(monitorIDs) {
+            if (!monitorIDs || monitorIDs.length === 0) {
+                return;
+            }
+
+            socket.emit("requestMonitorData", monitorIDs, (res) => {
+                if (res && !res.ok) {
+                    console.error("requestMonitorData failed:", res.msg);
+                }
+            });
+        },
+
         getMonitorBeats(monitorID, period, callback) {
             socket.emit("getMonitorBeats", monitorID, period, callback);
         },

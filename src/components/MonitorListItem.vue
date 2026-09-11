@@ -54,13 +54,15 @@
                         :key="$root.userHeartbeatBar"
                         class="col-3 col-xl-6"
                     >
-                        <HeartbeatBar ref="heartbeatBar" size="small" :monitor-id="monitor.id" />
+                        <HeartbeatBar v-if="beatsVisible" ref="heartbeatBar" size="small" :monitor-id="monitor.id" />
+                        <div v-else class="heartbeat-placeholder" />
                     </div>
                 </div>
 
                 <div v-if="$root.userHeartbeatBar == 'bottom'" class="row">
                     <div class="col-12 bottom-style">
-                        <HeartbeatBar ref="heartbeatBar" size="small" :monitor-id="monitor.id" />
+                        <HeartbeatBar v-if="beatsVisible" ref="heartbeatBar" size="small" :monitor-id="monitor.id" />
+                        <div v-else class="heartbeat-placeholder" />
                     </div>
                 </div>
             </router-link>
@@ -97,6 +99,13 @@ export default {
         Uptime,
         HeartbeatBar,
         Tag,
+    },
+    // Supplied by MonitorList. One IntersectionObserver is shared by every row:
+    // giving each row its own costs more than the mounting it saves.
+    inject: {
+        beatsRegistry: {
+            default: null,
+        },
     },
     props: {
         /** Monitor this represents */
@@ -144,6 +153,14 @@ export default {
         return {
             isCollapsed: true,
             dragOverCount: 0,
+            // Whether this row's HeartbeatBar has been mounted yet. Every bar
+            // creates a <canvas> and its 2D context, so on an instance with a
+            // few hundred monitors mounting them all at once is what makes the
+            // dashboard sit blank for tens of seconds. The bar is mounted once
+            // the row comes near the viewport, and then left mounted: tearing
+            // it down again would only trade the stall for canvas churn while
+            // scrolling.
+            beatsVisible: false,
         };
     },
     computed: {
@@ -203,6 +220,27 @@ export default {
         }
 
         this.isCollapsed = storageObject[`monitor_${this.monitor.id}`];
+    },
+    mounted() {
+        // No registry to watch us (an ancestor that does not provide one, or a
+        // browser without IntersectionObserver): behave exactly as before.
+        if (!this.beatsRegistry) {
+            this.beatsVisible = true;
+            return;
+        }
+
+        this.beatsRegistry.observe(
+            this.$el,
+            () => {
+                this.beatsVisible = true;
+            },
+            this.monitor.id
+        );
+    },
+    beforeUnmount() {
+        if (this.beatsRegistry) {
+            this.beatsRegistry.unobserve(this.$el);
+        }
     },
     methods: {
         /**
@@ -333,6 +371,13 @@ export default {
 
 <style lang="scss" scoped>
 @import "../assets/vars.scss";
+
+// Same height as a rendered small HeartbeatBar (beatHeight 16 * hoverScale 1.5,
+// plus the 4px the bar pads itself with above and below), so that mounting the
+// real bar does not shift the row.
+.heartbeat-placeholder {
+    height: 32px;
+}
 
 .small-padding {
     padding-left: 5px !important;
