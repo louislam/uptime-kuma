@@ -1,7 +1,6 @@
 const { log } = require("../../src/util");
 const { Settings } = require("../settings");
 const { sendInfo } = require("../client");
-const { checkLogin } = require("../util-server");
 const { games } = require("gamedig");
 const { testChrome } = require("../monitor-types/real-browser-monitor-type");
 const { getPM2ProcessList } = require("../util/pm2");
@@ -44,7 +43,6 @@ function getGameList() {
 module.exports.generalSocketHandler = (socket, server) => {
     socket.on("initServerTimezone", async (timezone) => {
         try {
-            checkLogin(socket);
             log.debug("generalSocketHandler", "Timezone: " + timezone);
             await Settings.set("initServerTimezone", true);
             await server.setTimezone(timezone);
@@ -56,7 +54,6 @@ module.exports.generalSocketHandler = (socket, server) => {
 
     socket.on("getGameList", async (callback) => {
         try {
-            checkLogin(socket);
             callback({
                 ok: true,
                 gameList: getGameList(),
@@ -71,7 +68,6 @@ module.exports.generalSocketHandler = (socket, server) => {
 
     socket.on("getPM2ProcessList", async (callback) => {
         try {
-            checkLogin(socket);
             callback({
                 ok: true,
                 processList: await getPM2ProcessList(),
@@ -86,7 +82,6 @@ module.exports.generalSocketHandler = (socket, server) => {
 
     socket.on("testChrome", (executable, callback) => {
         try {
-            checkLogin(socket);
             // Just noticed that await call could block the whole socket.io server!!! Use pure promise instead.
             testChrome(executable)
                 .then((version) => {
@@ -115,7 +110,6 @@ module.exports.generalSocketHandler = (socket, server) => {
 
     socket.on("getPushExample", async (language, callback) => {
         try {
-            checkLogin(socket);
             if (!/^[a-z-]+$/.test(language)) {
                 throw new Error("Invalid language");
             }
@@ -151,7 +145,6 @@ module.exports.generalSocketHandler = (socket, server) => {
     // Disconnect all other socket clients of the user
     socket.on("disconnectOtherSocketClients", async () => {
         try {
-            checkLogin(socket);
             server.disconnectAllSocketClients(socket.userID, socket.id);
         } catch (e) {
             log.warn("disconnectAllSocketClients", e.message);
