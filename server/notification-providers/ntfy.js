@@ -132,10 +132,10 @@ class Ntfy extends NotificationProvider {
                     .replaceAll("%20", "-") // replace spaces with dashes
                     .replaceAll(/%[\w\d]{2}/g, ""); // strip out other symbols
                 headers["X-Sequence-ID"] = sanitizedMonitorName;
-                ntfyServerUrl = `${ntfyServerUrl}/${notification.ntfytopic}/${sanitizedMonitorName}`;
 
                 if (notification.ntfyAddressableUpNotificationHandler === "clear" && status === "Up") {
-                    await axios.put(`${ntfyServerUrl}/clear`, data, config);
+                    const clearUrl = `${ntfyServerUrl}/${notification.ntfytopic}/${sanitizedMonitorName}/clear`;
+                    await axios.put(clearUrl, data, config);
                     return okMsg;
                 }
             }
