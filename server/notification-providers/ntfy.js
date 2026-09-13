@@ -131,16 +131,21 @@ class Ntfy extends NotificationProvider {
                 const sanitizedMonitorName = encodeURIComponent(monitorJSON.name)
                     .replaceAll("%20", "-") // replace spaces with dashes
                     .replaceAll(/%[\w\d]{2}/g, ""); // strip out other symbols
-                headers["X-Sequence-ID"] = sanitizedMonitorName;
+                // Non-ASCII monitor names (e.g. CJK characters, emoji) get stripped
+                // down to nothing above, which can make two differently-named
+                // monitors collide onto the same sequence id. Append the monitor's
+                // id (unique per Uptime Kuma instance) as a disambiguating suffix.
+                const sequenceId = `${sanitizedMonitorName}_id${monitorJSON.id}`;
+                headers["X-Sequence-ID"] = sequenceId;
 
                 if (notification.ntfyAddressableUpNotificationHandler === "clear" && status === "Up") {
-                    const clearUrl = `${ntfyServerUrl}/${notification.ntfytopic}/${sanitizedMonitorName}/clear`;
+                    const clearUrl = `${ntfyServerUrl}/${notification.ntfytopic}/${sequenceId}/clear`;
                     await axios.put(clearUrl, data, config);
                     return okMsg;
                 }
 
                 if (notification.ntfyAddressableUpNotificationHandler === "delete" && status === "Up") {
-                    const deleteUrl = `${ntfyServerUrl}/${notification.ntfytopic}/${sanitizedMonitorName}`;
+                    const deleteUrl = `${ntfyServerUrl}/${notification.ntfytopic}/${sequenceId}`;
                     await axios.delete(deleteUrl, config);
                     return okMsg;
                 }
