@@ -1048,7 +1048,7 @@
     "ntfyUseAddressableNotifications": "Make notifications addressable",
     "ntfyUseAddressableNotificationsDescription": "Enable this to use monitor names as addressable sequence ids for Ntfy notifications. This allows existing notifications to be replaced or dismissed on some clients.",
     "ntfyAddressableUpNotificationHandleMethod": "Addressable UP notifications handling method",
-    "ntfyAddressableUpNotificationHandleMethodHelpText": "Replace will replace the latest notification. Clear will mark the latest notification as read and dismiss it from your notification drawer on supported clients.",
+    "ntfyAddressableUpNotificationHandleMethodHelpText": "Replace will replace the latest notification. Clear will mark the latest notification as read and dismiss it from your notification drawer on supported clients. Delete will permanently remove the latest notification from your notification drawer and history on supported clients.",
     "telnyxApiKey": "API Key (V2)",
     "telnyxApiKeyHelptext": "Your Telnyx V2 API key from the Telnyx Portal under API Keys",
     "telnyxPhoneNumber": "From Number",

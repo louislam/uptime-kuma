@@ -205,6 +205,7 @@ export default {
             return {
                 replace: this.$t("Replace"),
                 clear: this.$t("Clear"),
+                delete: this.$t("Delete"),
             };
         },
     },

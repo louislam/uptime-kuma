@@ -138,6 +138,12 @@ class Ntfy extends NotificationProvider {
                     await axios.put(clearUrl, data, config);
                     return okMsg;
                 }
+
+                if (notification.ntfyAddressableUpNotificationHandler === "delete" && status === "Up") {
+                    const deleteUrl = `${ntfyServerUrl}/${notification.ntfytopic}/${sanitizedMonitorName}`;
+                    await axios.delete(deleteUrl, config);
+                    return okMsg;
+                }
             }
 
             await axios.post(ntfyServerUrl, data, config);
