@@ -26,13 +26,21 @@ jobs:
             const body = (pr && pr.body) ? pr.body : "";
             const requiredPhrase = "avoid unnecessary back and forth";
 
-            const exclude = ["UptimeKumaBot", "Copilot", "copilot-swe-agent"];
+            const exclude = ["UptimeKumaBot", "Copilot", "copilot-swe-agent", "dependabot[bot]"];
             const excludeLower = exclude.map((e) => e.toLowerCase());
             const author = pr?.user?.login || "";
 
             // If author is in exclude list, skip
             if (author && excludeLower.includes(author.toLowerCase())) {
               core.info(`PR #${pr.number} opened by excluded user '${author}', skipping template check.`);
+              return;
+            }
+
+            // Skip maintainers/admins (repo owner, org members, and collaborators with write access)
+            const exemptAssociations = ["OWNER", "MEMBER", "COLLABORATOR"];
+            const association = pr?.author_association || "";
+            if (exemptAssociations.includes(association)) {
+              core.info(`PR #${pr.number} opened by maintainer/admin '${author}' (${association}), skipping template check.`);
               return;
             }
 
