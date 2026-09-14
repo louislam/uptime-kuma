@@ -1694,5 +1694,20 @@
     "notifyAppDeviceIdDescription": "ID zariadenia z aplikácie Notify! alebo ID skupiny, aby sa naraz upozornili všetky zariadenia v skupine.",
     "notifyAppSetup": "Otvorte Notify! a v časti Nastavenia vyhľadajte ID zariadenia a token. Nie je potrebný žiadny účet. Viac informácií nájdete na {0}.",
     "Client Key": "Kľúč klienta",
-    "Channel": "Kanál"
+    "Channel": "Kanál",
+    "SFTP Path to Check": "Cesta SFTP, ktorú treba overiť",
+    "sftpPathHelpText": "Voliteľné. Ak je táto možnosť určená, monitor overí, či táto cesta na SFTP serveri existuje.",
+    "SSH Private Key": "Súkromný kľúč SSH",
+    "Passphrase": "Prístupová fráza",
+    "sshPrivateKeyPlaceholder": "-----BEGIN OPENSSH PRIVATE KEY-----\n...\n-----END OPENSSH PRIVATE KEY-----",
+    "sshPrivateKeyHelpText": "Vložte obsah súboru so súkromným kľúčom (napr. id_rsa alebo id_ed25519).",
+    "sshPassphraseHelpText": "Voliteľné. Vyžaduje sa len v prípade, ak je váš súkromný kľúč zašifrovaný heslom.",
+    "optional": "voliteľné",
+    "Amoot SMS recipient numbers help": "Zadajte jedno alebo viacero mobilných čísel oddelených čiarkami.",
+    "Use Pattern": "Použiť vzor",
+    "Create an Amoot SMS pattern": "Vytvorte šablónu SMS v aplikácii Amoot",
+    "Line Number": "Číslo linky",
+    "Pattern Code ID": "ID kódu šablóny",
+    "Amoot SMS pattern help": "Zadajte identifikačný kód šablóny z vášho SMS panela Amoot. {0}",
+    "Use Own Line for Pattern": "Použiť vlastnú linku pre šablónu"
 }

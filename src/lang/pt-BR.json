@@ -1703,5 +1703,20 @@
     "smsgatewayTo": "Número(s) de telefone",
     "smsgatewayToHelptext": "Lista de números de telefone dos destinatários separados por vírgula, em formato internacional (por exemplo, +15551234567)",
     "Client Key": "Client Key",
-    "Channel": "Canal"
+    "Channel": "Canal",
+    "SFTP Path to Check": "Caminho SFTP para verificar",
+    "sftpPathHelpText": "Opcional. Se especificado, o monitor verificará se esse caminho existe no servidor SFTP.",
+    "SSH Private Key": "Chave SSH privada",
+    "Passphrase": "Senha",
+    "sshPrivateKeyPlaceholder": "-----BEGIN OPENSSH PRIVATE KEY-----\n...\n-----END OPENSSH PRIVATE KEY-----",
+    "sshPrivateKeyHelpText": "Cole o conteúdo do seu arquivo de chave privada (por exemplo, id_rsa ou id_ed25519).",
+    "sshPassphraseHelpText": "Opcional. Necessário apenas se sua chave privada estiver criptografada com uma senha.",
+    "optional": "opcional",
+    "Line Number": "Número da linha",
+    "Amoot SMS recipient numbers help": "Insira um ou mais números de celular separados por vírgulas.",
+    "Use Pattern": "Usar padrão",
+    "Pattern Code ID": "ID do código do padrão",
+    "Amoot SMS pattern help": "Insira o código de padrão (ID) do seu painel de SMS da Amoot. {0}",
+    "Create an Amoot SMS pattern": "Crie um padrão de SMS Amoot",
+    "Use Own Line for Pattern": "Use sua própria linha para o padrão"
 }

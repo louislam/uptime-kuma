@@ -1610,5 +1610,9 @@
     "maxUseTemplateDescription": "Wenn diese Option aktiviert ist, wird die Nachricht anhand einer benutzerdefinierten Vorlage versendet.",
     "API Version": "API-Version",
     "Peer ID": "Peer-ID",
-    "wxPusherDownloadApp": "App herunterladen"
+    "wxPusherDownloadApp": "App herunterladen",
+    "Channel": "Kanal",
+    "maxMessenger": "MAX Messenger",
+    "maxApiUrlDescription": "Basis-API-URL für MAX Messenger. Standard: https://platform-api.max.ru",
+    "Client Key": "Client Key"
 }
