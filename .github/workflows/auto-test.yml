@@ -25,7 +25,7 @@ jobs:
 
     steps:
       - run: git config --global core.autocrlf false # Mainly for Windows
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with: { persist-credentials: false }
 
       #    Tempoary disable until we understand TanStack npm supply-chain compromise
@@ -37,7 +37,7 @@ jobs:
       #          key: node-modules-${{ runner.os }}-node${{ matrix.node }}-${{ hashFiles('**/package-lock.json') }}
 
       - name: Use Node.js ${{ matrix.node }}
-        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ matrix.node }}
 
@@ -61,7 +61,7 @@ jobs:
 
     steps:
       - run: git config --global core.autocrlf false # Mainly for Windows
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with: { persist-credentials: false }
 
       #    Tempoary disable until we understand TanStack npm supply-chain compromise
@@ -73,7 +73,7 @@ jobs:
       #          key: node-modules-${{ runner.os }}-node${{ matrix.node }}-${{ hashFiles('**/package-lock.json') }}
 
       - name: Use Node.js 24
-        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
       - run: npm clean-install --no-fund
@@ -87,7 +87,7 @@ jobs:
       PLAYWRIGHT_VERSION: ~1.61.1
     steps:
       - run: git config --global core.autocrlf false # Mainly for Windows
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with: { persist-credentials: false }
 
       #    Tempoary disable until we understand TanStack npm supply-chain compromise
@@ -99,7 +99,7 @@ jobs:
       #          key: node-modules-${{ runner.os }}-node${{ matrix.node }}-${{ hashFiles('**/package-lock.json') }}
 
       - name: Setup Node.js
-        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 26
       - run: npm clean-install --no-fund
@@ -112,7 +112,7 @@ jobs:
 
       - name: Upload Playwright Report
         if: always()
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: playwright-report
           path: private/playwright-report
@@ -120,7 +120,7 @@ jobs:
 
       - name: Upload Playwright Test Results
         if: always()
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: playwright-test-results
           path: private/playwright-test-results
