@@ -1097,7 +1097,7 @@ app.use(function (req, res, next) {
 
                 callback({
                     ok: true,
-                    data: list,
+                    data: list.map((bean) => bean.toJSON()),
                 });
             } catch (e) {
                 callback({
