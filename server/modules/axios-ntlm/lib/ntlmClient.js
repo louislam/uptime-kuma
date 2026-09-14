@@ -213,14 +213,12 @@ function NtlmClient(credentials, AxiosConfig) {
                                     .split(",")
                                     .find((_) => _.match(/ *NTLM/))
                                     ?.trim() || "";
-                            if (
-                                !(
-                                    error &&
-                                    error.status === 401 &&
-                                    error.headers["www-authenticate"] &&
-                                    error.headers["www-authenticate"].includes("NTLM")
-                                )
-                            )
+                            if (!(
+                                error &&
+                                error.status === 401 &&
+                                error.headers["www-authenticate"] &&
+                                error.headers["www-authenticate"].includes("NTLM")
+                            ))
                                 return [3 /*break*/, 3];
                             // This length check is a hack because SharePoint is awkward and will
                             // include the Negotiate option when responding with the T2 message
