@@ -41,11 +41,6 @@ class PostgresMonitorType extends MonitorType {
                 config.ssl = config.ssl === "true";
             }
 
-            if (config.password === "") {
-                // See https://github.com/brianc/node-postgres/issues/1927
-                reject(new Error("Password is undefined."));
-                return;
-            }
             const client = new Client(config);
 
             client.on("error", (error) => {
