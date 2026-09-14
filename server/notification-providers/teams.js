@@ -88,6 +88,13 @@ class Teams extends NotificationProvider {
             });
         }
 
+        if (monitorJSON?.description) {
+            facts.push({
+                title: "Monitor Description",
+                value: monitorJSON.description,
+            });
+        }
+
         if (monitorUrl && monitorUrl !== "https://") {
             facts.push({
                 title: "URL",
