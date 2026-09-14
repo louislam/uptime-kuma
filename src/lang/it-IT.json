@@ -1709,5 +1709,20 @@
     "notifyAppDeviceIdDescription": "ID del dispositivo dall'app Notify! oppure un ID di gruppo per inviare una notifica a tutti i dispositivi di un gruppo contemporaneamente.",
     "notifyAppSetup": "Apri Notify! e trova l'ID del dispositivo e il token in Impostazioni. Non è necessario alcun account. Scopri di più su {0}.",
     "Client Key": "Chiave client",
-    "Channel": "Canale"
+    "Channel": "Canale",
+    "SFTP Path to Check": "Percorso SFTP da verificare",
+    "sftpPathHelpText": "Facoltativo. Se specificato, il monitoraggio verificherà che questo percorso esista sul server SFTP.",
+    "SSH Private Key": "Chiave privata SSH",
+    "Passphrase": "Frase d'accesso",
+    "sshPrivateKeyPlaceholder": "-----INIZIO CHIAVE PRIVATA OPENSSH-----\n...\n-----FINE CHIAVE PRIVATA OPENSSH-----",
+    "sshPrivateKeyHelpText": "Incolla il contenuto del file della tua chiave privata (ad es. id_rsa o id_ed25519).",
+    "sshPassphraseHelpText": "Facoltativo. Richiesto solo se la chiave privata è crittografata con una frase d'accesso.",
+    "optional": "facoltativo",
+    "Line Number": "Numero di riga",
+    "Amoot SMS recipient numbers help": "Inserisci uno o più numeri di cellulare separati da virgole.",
+    "Use Pattern": "Modello di utilizzo",
+    "Pattern Code ID": "Codice identificativo del modello",
+    "Amoot SMS pattern help": "Inserisci l'ID del codice modello dal tuo pannello SMS Amoot. {0}",
+    "Create an Amoot SMS pattern": "Crea un modello di SMS Amoot",
+    "Use Own Line for Pattern": "Utilizza una linea propria per il modello"
 }
