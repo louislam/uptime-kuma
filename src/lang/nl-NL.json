@@ -1611,5 +1611,7 @@
     "Hash Key": "Hash-sleutel",
     "Client Key": "Cliënt sleutel",
     "Channel": "Kanaal",
-    "wayToGetMaxChatID": "Specificeer de chat-ID in MAX waarnaar berichten moeten worden verzonden."
+    "wayToGetMaxChatID": "Specificeer de chat-ID in MAX waarnaar berichten moeten worden verzonden.",
+    "homeAssistantNotificationActionHelptext": "Een lijst van notificatie acties kunnen in home Assistent gevonden worden onder \"Instellingen > ontwikkelaar hulpmiddelen > acties\" zoek voor melding om uw actie te vinden. voer alleen het gedeelte na \"melding.\" e.g. voor de actie \"notify.mobile_app_xyz\" voer in \"mobile_app_xyz\". voor ingebouwde mobile notificaties, kijk voor \"Verstuur een notificatie via mobile_app_xyz\" (niet \"stuur een notificatie\").",
+    "wayToGetBearSMSToken": "U kunt een BearSMS API gebruikernaam en hash sleutel ophalen van {0}."
 }
