@@ -613,7 +613,9 @@ The \`dist.tar.gz\` archive will be available as an artifact in the [workflow ru
 `;
 
     // Create the PR using gh CLI
-    const args = ["pr", "create", "--title", title, "--body", body, "--base", "master", "--head", branchName];
+    // RELEASE_BASE_BRANCH lets the release workflow target a maintenance branch (e.g. 2.5.X) instead of master
+    const baseBranch = process.env.RELEASE_BASE_BRANCH || "master";
+    const args = ["pr", "create", "--title", title, "--body", body, "--base", baseBranch, "--head", branchName];
 
     console.log(`Creating PR: ${title}`);
 

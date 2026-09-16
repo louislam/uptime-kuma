@@ -293,7 +293,7 @@ export async function getPullRequestList(previousVersion, removeAuthor = false) 
             "--state",
             "merged",
             "--base",
-            "master",
+            process.env.RELEASE_BASE_BRANCH || "master",
             "--search",
             `merged:>=${previousVersionDate}`,
             "--json",
