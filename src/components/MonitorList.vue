@@ -141,7 +141,7 @@ const STATUS_QUERY_SLUGS = {
     pending: 2,
     maintenance: 3,
 };
-const STATUS_CODE_TO_SLUG = Object.fromEntries(Object.entries(STATUS_QUERY_SLUGS).map(([ slug, code ]) => [ code, slug ]));
+const STATUS_CODE_TO_SLUG = Object.fromEntries(Object.entries(STATUS_QUERY_SLUGS).map(([slug, code]) => [code, slug]));
 
 // Maps the "active" URL query param (e.g. ?active=paused) to the running/paused boolean.
 const ACTIVE_QUERY_SLUGS = {
