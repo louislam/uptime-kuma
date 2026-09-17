@@ -1,7 +1,6 @@
-const github = require("@actions/github");
-
 (async () => {
     try {
+        const github = await import("@actions/github");
         const token = process.argv[2];
         const issueNumber = process.argv[3];
         const username = process.argv[4];
@@ -51,6 +50,7 @@ const github = require("@actions/github");
             console.log("Pass!");
         }
     } catch (e) {
-        console.log(e);
+        console.error(e);
+        process.exitCode = 1;
     }
 })();
