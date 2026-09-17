@@ -134,6 +134,22 @@ import MonitorListItem from "../components/MonitorListItem.vue";
 import MonitorListFilter from "./MonitorListFilter.vue";
 import { getMonitorRelativeURL } from "../util.ts";
 
+// Maps the "status" URL query param (e.g. ?status=down,pending) to monitor status codes.
+const STATUS_QUERY_SLUGS = {
+    up: 1,
+    down: 0,
+    pending: 2,
+    maintenance: 3,
+};
+const STATUS_CODE_TO_SLUG = Object.fromEntries(Object.entries(STATUS_QUERY_SLUGS).map(([ slug, code ]) => [ code, slug ]));
+
+// Maps the "active" URL query param (e.g. ?active=paused) to the running/paused boolean.
+const ACTIVE_QUERY_SLUGS = {
+    running: true,
+    paused: false,
+};
+const ACTIVE_VALUE_TO_SLUG = { true: "running", false: "paused" };
+
 export default {
     components: {
         Confirm,
@@ -307,6 +323,7 @@ export default {
     },
     mounted() {
         window.addEventListener("scroll", this.onScroll);
+        this.loadFilterFromQuery();
     },
     beforeUnmount() {
         window.removeEventListener("scroll", this.onScroll);
@@ -345,6 +362,80 @@ export default {
          */
         updateFilter(newFilter) {
             this.filterState = newFilter;
+            this.syncFilterToQuery();
+        },
+        /**
+         * Populate filterState from the "status", "active" and "tags" URL query
+         * parameters, so a filtered view can be linked to directly (e.g.
+         * "?status=down" or "?status=down,pending&active=running&tags=1,2").
+         * @returns {void}
+         */
+        loadFilterFromQuery() {
+            const query = this.$route.query;
+            const newFilter = { ...this.filterState };
+
+            if (typeof query.status === "string" && query.status !== "") {
+                const codes = query.status
+                    .split(",")
+                    .map((slug) => STATUS_QUERY_SLUGS[slug.trim().toLowerCase()])
+                    .filter((code) => code !== undefined);
+                if (codes.length > 0) {
+                    newFilter.status = codes;
+                }
+            }
+
+            if (typeof query.active === "string" && query.active !== "") {
+                const values = query.active
+                    .split(",")
+                    .map((slug) => ACTIVE_QUERY_SLUGS[slug.trim().toLowerCase()])
+                    .filter((value) => value !== undefined);
+                if (values.length > 0) {
+                    newFilter.active = values;
+                }
+            }
+
+            if (typeof query.tags === "string" && query.tags !== "") {
+                const ids = query.tags
+                    .split(",")
+                    .map((id) => parseInt(id.trim(), 10))
+                    .filter((id) => !isNaN(id));
+                if (ids.length > 0) {
+                    newFilter.tags = ids;
+                }
+            }
+
+            this.filterState = newFilter;
+        },
+        /**
+         * Reflect the current filterState into the URL's "status", "active" and
+         * "tags" query parameters, so the current filtered view can be bookmarked
+         * or shared as a link.
+         * @returns {void}
+         */
+        syncFilterToQuery() {
+            const query = { ...this.$route.query };
+
+            if (this.filterState.status?.length > 0) {
+                query.status = this.filterState.status.map((code) => STATUS_CODE_TO_SLUG[code]).join(",");
+            } else {
+                delete query.status;
+            }
+
+            if (this.filterState.active?.length > 0) {
+                query.active = this.filterState.active.map((value) => ACTIVE_VALUE_TO_SLUG[value]).join(",");
+            } else {
+                delete query.active;
+            }
+
+            if (this.filterState.tags?.length > 0) {
+                query.tags = this.filterState.tags.join(",");
+            } else {
+                delete query.tags;
+            }
+
+            this.$router.replace({ query }).catch(() => {
+                // Ignore NavigationDuplicated when the query is unchanged
+            });
         },
         /**
          * Toggle collapse state for all group monitors
