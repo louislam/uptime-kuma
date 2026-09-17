@@ -772,8 +772,12 @@ app.use(function (req, res, next) {
         socket.on("pauseMonitor", async (monitorID, callback) => {
             try {
                 checkLogin(socket);
+                const childrenIDs = await Monitor.getAllChildrenIDs(monitorID);
                 await pauseMonitor(socket.userID, monitorID);
-                await server.sendUpdateMonitorIntoList(socket, monitorID);
+
+                for (const id of [ monitorID, ...childrenIDs ]) {
+                    await server.sendUpdateMonitorIntoList(socket, id);
+                }
 
                 callback({
                     ok: true,
@@ -1549,11 +1553,15 @@ async function pauseMonitor(userID, monitorID) {
 
     log.info("manage", `Pause Monitor: ${monitorID} User ID: ${userID}`);
 
-    await R.exec("UPDATE monitor SET active = 0 WHERE id = ? AND user_id = ? ", [monitorID, userID]);
+    const childrenIDs = await Monitor.getAllChildrenIDs(monitorID);
 
-    if (monitorID in server.monitorList) {
-        await server.monitorList[monitorID].stop();
-        server.monitorList[monitorID].active = 0;
+    for (const id of [ monitorID, ...childrenIDs ]) {
+        await R.exec("UPDATE monitor SET active = 0 WHERE id = ? AND user_id = ? ", [id, userID]);
+
+        if (id in server.monitorList) {
+            await server.monitorList[id].stop();
+            server.monitorList[id].active = 0;
+        }
     }
 }
 
