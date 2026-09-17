@@ -1,6 +1,7 @@
+import * as github from "@actions/github";
+
 (async () => {
     try {
-        const github = await import("@actions/github");
         const token = process.argv[2];
         const issueNumber = process.argv[3];
         const username = process.argv[4];
