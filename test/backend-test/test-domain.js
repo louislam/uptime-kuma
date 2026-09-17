@@ -13,7 +13,7 @@ const dayjs = require("dayjs");
 const { retryExternalService } = require("./test-util");
 dayjs.extend(require("dayjs/plugin/utc"));
 
-const testDb = new TestDB();
+const testDb = new TestDB("./data/test-domain");
 
 describe("Domain Expiry", () => {
     const monHttpCom = {
@@ -28,7 +28,6 @@ describe("Domain Expiry", () => {
     });
 
     after(async () => {
-        Settings.stopCacheCleaner();
         await testDb.destroy();
     });
 

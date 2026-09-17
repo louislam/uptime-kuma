@@ -59,6 +59,7 @@ const Pushy = require("./notification-providers/pushy");
 const RocketChat = require("./notification-providers/rocket-chat");
 const SerwerSMS = require("./notification-providers/serwersms");
 const Signal = require("./notification-providers/signal");
+const Signalgrid = require("./notification-providers/signalgrid");
 const SIGNL4 = require("./notification-providers/signl4");
 const Slack = require("./notification-providers/slack");
 const SMSPartner = require("./notification-providers/smspartner");
@@ -96,6 +97,7 @@ const TurboSMTP = require("./notification-providers/turbosmtp");
 const Brevo = require("./notification-providers/brevo");
 const Resend = require("./notification-providers/resend");
 const YZJ = require("./notification-providers/yzj");
+const AmootSMS = require("./notification-providers/amootsms");
 const SMSPlanet = require("./notification-providers/sms-planet");
 const SpugPush = require("./notification-providers/spugpush");
 const SMSIR = require("./notification-providers/smsir");
@@ -183,6 +185,7 @@ class Notification {
             new ServerChan(),
             new SerwerSMS(),
             new Signal(),
+            new Signalgrid(),
             new SIGNL4(),
             new SMSManager(),
             new SMSPartner(),
@@ -216,6 +219,7 @@ class Notification {
             new Brevo(),
             new Resend(),
             new YZJ(),
+            new AmootSMS(),
             new SMSPlanet(),
             new SpugPush(),
             new Notifery(),
