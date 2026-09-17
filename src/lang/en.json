@@ -264,6 +264,7 @@
     "Content Type": "Content Type",
     "webhookJsonDesc": "{0} is good for any modern HTTP servers such as Express.js",
     "webhookFormDataDesc": "{multipart} is good for PHP. The JSON will need to be parsed with {decodeFunction}",
+    "webhookCustomBodyJsonEscapeDesc": "If a variable such as msg may contain quotes, newlines or other special characters, apply the json filter to it (without surrounding quotes) instead of using the variable directly, to keep the body valid JSON. See the template variables reference below for details.",
     "liquidIntroduction": "Templatability is achieved via the Liquid templating language. Please refer to the {0} for usage instructions.",
     "templateAvailableVariables": "Available variables",
     "example": "Example",

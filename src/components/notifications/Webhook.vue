@@ -56,6 +56,9 @@
                 :required="true"
                 :placeholder="customBodyPlaceholder"
             ></TemplatedTextarea>
+            <div class="form-text">
+                {{ $t("webhookCustomBodyJsonEscapeDesc") }}
+            </div>
         </template>
     </div>
 
@@ -100,7 +103,7 @@ export default {
             return this.$t("Example:", [
                 `{
     "Title": "Uptime Kuma Alert{% if monitorJSON %} - {{ monitorJSON['name'] }}{% endif %}",
-    "Body": "{{ msg }}"
+    "Body": {{ msg | json }}
 }`,
             ]);
         },
