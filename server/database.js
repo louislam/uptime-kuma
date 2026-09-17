@@ -557,9 +557,9 @@ class Database {
         let database;
         if (dbConfig.type.includes("mariadb")) {
             database = mysql.createPool({
-                host: dbConfig.host,
+                host: dbConfig.hostname,
                 port: Number(dbConfig.port),
-                database: dbConfig.database,
+                database: dbConfig.dbName,
                 user: dbConfig.username,
                 password: dbConfig.password,
                 timezone: "Z",
