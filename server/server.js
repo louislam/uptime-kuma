@@ -775,7 +775,7 @@ app.use(function (req, res, next) {
                 const childrenIDs = await Monitor.getAllChildrenIDs(monitorID);
                 await pauseMonitor(socket.userID, monitorID);
 
-                for (const id of [ monitorID, ...childrenIDs ]) {
+                for (const id of [monitorID, ...childrenIDs]) {
                     await server.sendUpdateMonitorIntoList(socket, id);
                 }
 
@@ -1555,7 +1555,7 @@ async function pauseMonitor(userID, monitorID) {
 
     const childrenIDs = await Monitor.getAllChildrenIDs(monitorID);
 
-    for (const id of [ monitorID, ...childrenIDs ]) {
+    for (const id of [monitorID, ...childrenIDs]) {
         await R.exec("UPDATE monitor SET active = 0 WHERE id = ? AND user_id = ? ", [id, userID]);
 
         if (id in server.monitorList) {
