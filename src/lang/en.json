@@ -720,6 +720,7 @@
     "affectedStatusPages": "Show this maintenance message on selected status pages",
     "Sets end time based on start time": "Sets end time based on start time",
     "Please set start time first": "Please set start time first",
+    "endDateBeforeStartDate": "End date/time is before the start date/time",
     "noMonitorsSelectedWarning": "You are creating a maintenance without any affected monitors. Are you sure you want to continue?",
     "noMonitorsOrStatusPagesSelectedError": "Cannot create maintenance without affected monitors or status pages",
     "passwordNotMatchMsg": "The repeat password does not match.",

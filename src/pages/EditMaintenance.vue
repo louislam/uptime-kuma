@@ -312,6 +312,7 @@
                                                 max="9999-12-31T23:59"
                                                 class="form-control"
                                                 :required="maintenance.strategy === 'single'"
+                                                @change="onStartDateChange"
                                             />
                                         </div>
 
@@ -323,8 +324,13 @@
                                                 max="9999-12-31T23:59"
                                                 class="form-control"
                                                 :required="maintenance.strategy === 'single'"
+                                                @change="onEndDateChange"
                                             />
                                         </div>
+                                    </div>
+
+                                    <div v-if="isDateRangeInvalid" class="form-text text-danger">
+                                        {{ $t("endDateBeforeStartDate") }}
                                     </div>
                                 </div>
                             </template>
@@ -467,6 +473,8 @@ export default {
             selectedStatusPages: [],
             dark: this.$root.theme === "dark",
             neverEnd: false,
+            endManuallySet: false,
+            durationMinutesMemory: 60,
             lastDays: [
                 {
                     langKey: "lastDay1",
@@ -620,6 +628,22 @@ export default {
             }
             return Math.round((end.getTime() - start.getTime()) / 60000);
         },
+
+        /**
+         * Whether the currently selected end date/time is before the start date/time
+         * @returns {boolean} True if the date range is invalid
+         */
+        isDateRangeInvalid() {
+            if (!this.maintenance.dateRange?.[0] || !this.maintenance.dateRange?.[1]) {
+                return false;
+            }
+            const start = new Date(this.maintenance.dateRange[0]);
+            const end = new Date(this.maintenance.dateRange[1]);
+            if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+                return false;
+            }
+            return end.getTime() < start.getTime();
+        },
     },
     watch: {
         "$route.fullPath"() {
@@ -683,14 +707,8 @@ export default {
                 const now = new Date();
                 const oneHourLater = new Date(now.getTime() + 60 * 60000);
 
-                const formatDateTime = (date) => {
-                    const year = date.getFullYear();
-                    const month = String(date.getMonth() + 1).padStart(2, "0");
-                    const day = String(date.getDate()).padStart(2, "0");
-                    const hours = String(date.getHours()).padStart(2, "0");
-                    const minutes = String(date.getMinutes()).padStart(2, "0");
-                    return `${year}-${month}-${day}T${hours}:${minutes}`;
-                };
+                this.endManuallySet = false;
+                this.durationMinutesMemory = 60;
 
                 this.maintenance = {
                     title: "",
@@ -700,7 +718,7 @@ export default {
                     cron: "30 3 * * *",
                     durationMinutes: 60,
                     intervalDay: 1,
-                    dateRange: [formatDateTime(now), formatDateTime(oneHourLater)],
+                    dateRange: [this.formatDateTimeLocal(now), this.formatDateTimeLocal(oneHourLater)],
                     timeRange: [
                         {
                             hours: 2,
@@ -719,6 +737,11 @@ export default {
                 this.$root.getSocket().emit("getMaintenance", this.$route.params.id, (res) => {
                     if (res.ok) {
                         this.maintenance = res.maintenance;
+
+                        // Existing maintenance already has an explicit end date, treat it as manually set
+                        // so loading it for edit does not silently shift the end date around.
+                        this.endManuallySet = true;
+                        this.durationMinutesMemory = this.currentDurationMinutes ?? 60;
 
                         if (this.isClone) {
                             this.maintenance.id = undefined; // Remove id when cloning as we want a new id
@@ -778,6 +801,21 @@ export default {
         },
 
         /**
+         * Format a Date as a "YYYY-MM-DDTHH:mm" string in local time, matching
+         * the format expected by <input type="datetime-local">.
+         * @param {Date} date Date to format
+         * @returns {string} Formatted date/time string
+         */
+        formatDateTimeLocal(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, "0");
+            const day = String(date.getDate()).padStart(2, "0");
+            const hours = String(date.getHours()).padStart(2, "0");
+            const minutes = String(date.getMinutes()).padStart(2, "0");
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        },
+
+        /**
          * Set quick duration for single maintenance
          * Calculates end time based on start time + duration in minutes
          * @param {number} minutes Duration in minutes
@@ -789,16 +827,54 @@ export default {
                 return;
             }
 
+            this.durationMinutesMemory = minutes;
+            this.endManuallySet = false;
+            this.applyDurationToEndDate();
+        },
+
+        /**
+         * Recompute the end date from the current start date and the
+         * remembered duration, keeping the maintenance window length constant.
+         * @returns {void}
+         */
+        applyDurationToEndDate() {
+            if (!this.maintenance.dateRange?.[0]) {
+                return;
+            }
+
             const startDate = new Date(this.maintenance.dateRange[0]);
-            const endDate = new Date(startDate.getTime() + minutes * 60000);
+            if (isNaN(startDate.getTime())) {
+                return;
+            }
 
-            const year = endDate.getFullYear();
-            const month = String(endDate.getMonth() + 1).padStart(2, "0");
-            const day = String(endDate.getDate()).padStart(2, "0");
-            const hours = String(endDate.getHours()).padStart(2, "0");
-            const mins = String(endDate.getMinutes()).padStart(2, "0");
+            const endDate = new Date(startDate.getTime() + this.durationMinutesMemory * 60000);
+            this.maintenance.dateRange[1] = this.formatDateTimeLocal(endDate);
+        },
 
-            this.maintenance.dateRange[1] = `${year}-${month}-${day}T${hours}:${mins}`;
+        /**
+         * Called when the user manually edits the start date/time input.
+         * If the end date hasn't been manually overridden, shift it to keep
+         * the previously selected duration. Otherwise leave the end date as-is.
+         * @returns {void}
+         */
+        onStartDateChange() {
+            if (this.endManuallySet) {
+                return;
+            }
+            this.applyDurationToEndDate();
+        },
+
+        /**
+         * Called when the user manually edits the end date/time input.
+         * Remembers the resulting duration so future start-date changes keep it,
+         * and marks the end date as manually set so it won't be auto-shifted.
+         * @returns {void}
+         */
+        onEndDateChange() {
+            this.endManuallySet = true;
+            if (this.currentDurationMinutes !== null && this.currentDurationMinutes >= 0) {
+                this.durationMinutesMemory = this.currentDurationMinutes;
+            }
         },
 
         /**
@@ -806,6 +882,11 @@ export default {
          * @returns {void}
          */
         submit() {
+            if (this.isDateRangeInvalid) {
+                this.$root.toastError(this.$t("endDateBeforeStartDate"));
+                return;
+            }
+
             // While unusual, not requiring monitors can allow showing on status pages if a "currently unmonitored" service goes down
             if (!this.hasMonitors && this.hasStatusPages) {
                 this.$refs.confirmNoMonitors.show();
