@@ -134,6 +134,10 @@ import MonitorListItem from "../components/MonitorListItem.vue";
 import MonitorListFilter from "./MonitorListFilter.vue";
 import { getMonitorRelativeURL } from "../util.ts";
 
+// Query parameters the monitor list keeps in the URL. Must match the ones
+// readFiltersFromUrl() and writeFiltersToQuery() handle.
+const filterParams = ["search", "status", "active", "tags"];
+
 export default {
     components: {
         Confirm,
@@ -281,6 +285,31 @@ export default {
                     break;
                 }
             }
+
+            this.syncFiltersToQuery();
+        },
+        filterState: {
+            deep: true,
+            handler() {
+                this.syncFiltersToQuery();
+            },
+        },
+        $route(to, from) {
+            // Writes here bypass Vue Router (see writeFiltersToQuery), so moving to
+            // another page rebuilds the URL from router state that never held our
+            // params. Re-assert them in that case, so the filters survive - and stay
+            // in the URL - instead of the rebuilt URL reading as "filters cleared".
+            //
+            // Everything else is authoritative: a URL that carries filter params
+            // (a link to a filtered view, or back/forward onto one), and any change
+            // within the same path, including clearing the params.
+            const params = new URLSearchParams(window.location.search);
+
+            if (to.path !== from.path && !filterParams.some((param) => params.has(param))) {
+                this.writeFiltersToQuery();
+            } else {
+                this.readFiltersFromUrl();
+            }
         },
         selectAll() {
             if (!this.disableSelectAllWatcher) {
@@ -305,13 +334,114 @@ export default {
             }
         },
     },
+    created() {
+        this.readFiltersFromUrl();
+    },
     mounted() {
         window.addEventListener("scroll", this.onScroll);
     },
     beforeUnmount() {
         window.removeEventListener("scroll", this.onScroll);
+        clearTimeout(this.filterQuerySyncTimeoutId);
     },
     methods: {
+        /**
+         * Populate search text and filter state from the current URL query
+         * string, so a filtered view can be linked to directly.
+         *
+         * Reads window.location rather than $route.query, for the same reason
+         * writeFiltersToQuery() writes it: Vue Router never observes our
+         * history.replaceState, so $route.query does not reflect the address bar.
+         * Both sides share the one source of truth.
+         * @returns {void}
+         */
+        readFiltersFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+
+            /**
+             * Entries that do not parse are dropped, so a hand-written or
+             * truncated URL cannot filter the list down to nothing.
+             * @param {string} key Query parameter to read
+             * @param {Function} parse Maps one entry, null when unusable
+             * @returns {Array|null} Parsed values, or null when none are usable
+             */
+            const parseList = (key, parse) => {
+                const values = (params.get(key) ?? "")
+                    .split(",")
+                    .map(parse)
+                    .filter((value) => value !== null);
+
+                return values.length > 0 ? values : null;
+            };
+            const toId = (value) => (/^\d+$/.test(value) ? Number(value) : null);
+            // Status is a closed set (see filterFunc), so anything outside it would
+            // only filter the list down to nothing and then be written back as canonical.
+            const toStatus = (value) => (/^[0-3]$/.test(value) ? Number(value) : null);
+            const toBoolean = (value) => (value === "true" || value === "false" ? value === "true" : null);
+
+            this.searchText = params.get("search") ?? "";
+            this.filterState.status = parseList("status", toStatus);
+            this.filterState.active = parseList("active", toBoolean);
+            this.filterState.tags = parseList("tags", toId);
+
+            // A URL carrying only unusable params leaves every value above unchanged,
+            // so nothing would trigger the watchers and the junk would stay in the
+            // address bar to be shared again. Write the parsed state back directly.
+            this.writeFiltersToQuery();
+        },
+        /**
+         * Reflect the current search text and filter state into the URL
+         * query string, so the filtered view can be bookmarked or shared.
+         *
+         * Uses the raw History API instead of $router.replace(): Dashboard.vue
+         * keys its router-view on $route.fullPath, so a router-mediated query
+         * change would remount the whole detail pane on every keystroke. This
+         * also sidesteps feeding back into the $route.query watcher above,
+         * since $route itself never changes.
+         *
+         * Debounced because this runs on every searchText keystroke; besides
+         * being wasteful, WebKit throws SecurityError past ~100
+         * history.replaceState() calls per 30s.
+         * @returns {void}
+         */
+        syncFiltersToQuery() {
+            if (this.filterQuerySyncTimeoutId) {
+                clearTimeout(this.filterQuerySyncTimeoutId);
+            }
+            this.filterQuerySyncTimeoutId = setTimeout(this.writeFiltersToQuery, 300);
+        },
+        /**
+         * Does the actual work of writing filters/searchText into the URL,
+         * debounced via syncFiltersToQuery().
+         * @returns {void}
+         */
+        writeFiltersToQuery() {
+            const params = new URLSearchParams(window.location.search);
+
+            const setOrDelete = (key, value) => {
+                if (value) {
+                    params.set(key, value);
+                } else {
+                    params.delete(key);
+                }
+            };
+
+            setOrDelete("search", this.searchText !== "" ? this.searchText : null);
+            setOrDelete("status", this.filterState.status?.length > 0 ? this.filterState.status.join(",") : null);
+            setOrDelete("active", this.filterState.active?.length > 0 ? this.filterState.active.join(",") : null);
+            setOrDelete("tags", this.filterState.tags?.length > 0 ? this.filterState.tags.join(",") : null);
+
+            const search = params.toString();
+            const newUrl = `${window.location.pathname}${search ? `?${search}` : ""}${window.location.hash}`;
+
+            if (newUrl !== `${window.location.pathname}${window.location.search}${window.location.hash}`) {
+                // Vue Router rewrites the outgoing entry's URL from history.state.current
+                // when navigating away (it replaces the entry to save scroll position),
+                // so leaving that untouched drops the filters from the history entry and
+                // the back button returns to an unfiltered URL.
+                window.history.replaceState({ ...window.history.state, current: newUrl }, "", newUrl);
+            }
+        },
         /**
          * Handle user scroll
          * @returns {void}
