@@ -126,9 +126,14 @@ class Prometheus {
             }
 
             let tagValue = Prometheus.sanitizeForPrometheus(tag.value || "");
-            if (tagValue !== "") {
-                mappedTags[sanitizedTag].push(tagValue);
-            }
+
+            // A "name-only" tag (no value set) would otherwise leave this label
+            // as an empty array, which prom-client renders as an empty string.
+            // That makes it indistinguishable from a monitor that doesn't have
+            // the tag at all, so it cannot be filtered on reliably. Fall back to
+            // the tag's own (sanitized) name so the label is always non-empty
+            // whenever the monitor actually has the tag.
+            mappedTags[sanitizedTag].push(tagValue !== "" ? tagValue : sanitizedTag);
 
             mappedTags[sanitizedTag] = mappedTags[sanitizedTag].sort();
         });
