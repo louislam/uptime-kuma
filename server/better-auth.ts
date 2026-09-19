@@ -71,7 +71,7 @@ function createAuthInstance() {
         emailAndPassword: {
             revokeSessionsOnPasswordReset: true,
             enabled: true,
-            disableSignUp: false,
+            disableSignUp: true,
         },
         rateLimit: {
             // Seconds
