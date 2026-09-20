@@ -15,7 +15,6 @@ const StatusPage = require("../model/status_page");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { makeBadge } = require("badge-maker");
 const { Prometheus } = require("../prometheus");
-const Database = require("../database");
 const { UptimeCalculator } = require("../uptime-calculator");
 const { Settings } = require("../settings");
 
@@ -370,31 +369,22 @@ router.get("/api/badge/:id/avg-response/:duration?", cache("5 minutes"), async (
         const requestedDuration = Math.min(request.params.duration ? parseInt(request.params.duration, 10) : 24, 720);
         const overrideValue = value && parseFloat(value);
 
-        const sqlHourOffset = Database.sqlHourOffset();
+        const publicMonitor = await isMonitorPublic(requestedMonitorId);
 
-        const publicAvgPing = parseInt(
-            await R.getCell(
-                `
-            SELECT AVG(ping) FROM monitor_group, \`group\`, heartbeat
-            WHERE monitor_group.group_id = \`group\`.id
-            AND heartbeat.time > ${sqlHourOffset}
-            AND heartbeat.ping IS NOT NULL
-            AND public = 1
-            AND heartbeat.monitor_id = ?
-            `,
-                [-requestedDuration, requestedMonitorId]
-            )
-        );
+        let avgPing;
+
+        if (publicMonitor) {
+            const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(requestedMonitorId);
+            avgPing = uptimeCalculator.getDataByDuration(`${requestedDuration}h`).avgPing;
+        }
 
         const badgeValues = { style };
 
-        if (!publicAvgPing) {
-            // return a "N/A" badge in naColor (grey), if monitor is not public / not available / non existent
-
+        if (!publicMonitor || !avgPing) {
             badgeValues.message = "N/A";
             badgeValues.color = badgeConstants.naColor;
         } else {
-            const avgPing = parseInt(overrideValue ?? publicAvgPing);
+            const avgPingValue = parseInt(overrideValue ?? avgPing);
 
             badgeValues.color = color;
             // use a given, custom labelColor or use the default badge label color (defined by badge-maker)
@@ -405,7 +395,7 @@ router.get("/api/badge/:id/avg-response/:duration?", cache("5 minutes"), async (
                 label ?? `Avg. Response (${requestedDuration}h)`,
                 labelSuffix,
             ]);
-            badgeValues.message = filterAndJoin([prefix, avgPing, suffix]);
+            badgeValues.message = filterAndJoin([prefix, avgPingValue, suffix]);
         }
 
         // build the SVG based on given values
