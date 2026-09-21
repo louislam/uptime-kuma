@@ -78,6 +78,12 @@ module.exports.maintenanceSocketHandler = (socket) => {
         try {
             checkLogin(socket);
 
+            let maintenance = server.getMaintenance(maintenanceID);
+
+            if (!maintenance || maintenance.user_id !== socket.userID) {
+                throw new Error("Permission denied.");
+            }
+
             await R.exec("DELETE FROM monitor_maintenance WHERE maintenance_id = ?", [maintenanceID]);
 
             for await (const monitor of monitors) {
@@ -109,6 +115,12 @@ module.exports.maintenanceSocketHandler = (socket) => {
     socket.on("addMaintenanceStatusPage", async (maintenanceID, statusPages, callback) => {
         try {
             checkLogin(socket);
+
+            let maintenance = server.getMaintenance(maintenanceID);
+
+            if (!maintenance || maintenance.user_id !== socket.userID) {
+                throw new Error("Permission denied.");
+            }
 
             await R.exec("DELETE FROM maintenance_status_page WHERE maintenance_id = ?", [maintenanceID]);
 
@@ -263,6 +275,10 @@ module.exports.maintenanceSocketHandler = (socket) => {
                 throw new Error("Maintenance not found");
             }
 
+            if (maintenance.user_id !== socket.userID) {
+                throw new Error("Permission denied.");
+            }
+
             maintenance.active = false;
             await R.store(maintenance);
             maintenance.stop();
@@ -294,6 +310,10 @@ module.exports.maintenanceSocketHandler = (socket) => {
 
             if (!maintenance) {
                 throw new Error("Maintenance not found");
+            }
+
+            if (maintenance.user_id !== socket.userID) {
+                throw new Error("Permission denied.");
             }
 
             maintenance.active = true;
