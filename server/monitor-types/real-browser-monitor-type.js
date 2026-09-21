@@ -1,5 +1,4 @@
 const { MonitorType } = require("./monitor-type");
-const { chromium } = require("playwright-core");
 const { UP, log } = require("../../src/util");
 const { Settings } = require("../settings");
 const childProcess = require("child_process");
@@ -8,6 +7,16 @@ const Database = require("../database");
 const config = require("../config");
 const { RemoteBrowser } = require("../remote-browser");
 const { commandExists } = require("../util-server");
+
+/**
+ * playwright-core is a heavy dependency (headless Chromium automation), so it is
+ * only required on first actual use instead of at module load time, keeping its
+ * memory cost out of instances that never use a real-browser monitor.
+ * @returns {import ("playwright-core").BrowserType} The playwright-core chromium browser type
+ */
+function getChromium() {
+    return require("playwright-core").chromium;
+}
 
 /**
  * Cached instance of a browser
@@ -82,7 +91,7 @@ async function getBrowser() {
 
         executablePath = await prepareChromeExecutable(executablePath);
 
-        browser = await chromium.launch({
+        browser = await getChromium().launch({
             //headless: false,
             executablePath,
         });
@@ -100,7 +109,7 @@ async function getBrowser() {
 async function getRemoteBrowser(remoteBrowserID, userId) {
     let remoteBrowser = await RemoteBrowser.get(remoteBrowserID, userId);
     log.debug("chromium", `Using remote browser: ${remoteBrowser.name} (${remoteBrowser.id})`);
-    browser = await chromium.connect(remoteBrowser.url);
+    browser = await getChromium().connect(remoteBrowser.url);
     return browser;
 }
 
@@ -217,7 +226,7 @@ async function testChrome(executablePath) {
 
         log.info("chromium", "Testing Chromium executable: " + executablePath);
 
-        const browser = await chromium.launch({
+        const browser = await getChromium().launch({
             executablePath,
         });
         const version = browser.version();
@@ -234,7 +243,7 @@ async function testChrome(executablePath) {
  */
 async function testRemoteBrowser(remoteBrowserURL) {
     try {
-        const browser = await chromium.connect(remoteBrowserURL);
+        const browser = await getChromium().connect(remoteBrowserURL);
         browser.version();
         await browser.close();
         return true;
@@ -265,7 +274,11 @@ class RealBrowserMonitorType extends MonitorType {
             }
 
             const res = await page.goto(monitor.url, {
-                waitUntil: "networkidle",
+                // "networkidle" never resolves for pages with persistent background
+                // network activity (analytics, websockets, chat widgets), causing checks
+                // to time out even though the page loaded fine. "load" is the standard,
+                // reliable choice; use screenshot_delay for any additional settle time.
+                waitUntil: "load",
                 timeout: monitor.interval * 1000 * 0.8,
             });
 
