@@ -970,6 +970,7 @@ app.use(function (req, res, next) {
         socket.on("addMonitorTag", async (tagID, monitorID, value, callback) => {
             try {
                 checkLogin(socket);
+                await checkOwner(socket.userID, monitorID);
 
                 await R.exec("INSERT INTO monitor_tag (tag_id, monitor_id, value) VALUES (?, ?, ?)", [
                     tagID,
@@ -995,6 +996,7 @@ app.use(function (req, res, next) {
         socket.on("editMonitorTag", async (tagID, monitorID, value, callback) => {
             try {
                 checkLogin(socket);
+                await checkOwner(socket.userID, monitorID);
 
                 await R.exec("UPDATE monitor_tag SET value = ? WHERE tag_id = ? AND monitor_id = ?", [
                     value,
@@ -1020,6 +1022,7 @@ app.use(function (req, res, next) {
         socket.on("deleteMonitorTag", async (tagID, monitorID, value, callback) => {
             try {
                 checkLogin(socket);
+                await checkOwner(socket.userID, monitorID);
 
                 await R.exec("DELETE FROM monitor_tag WHERE tag_id = ? AND monitor_id = ? AND value = ?", [
                     tagID,
@@ -1290,6 +1293,7 @@ app.use(function (req, res, next) {
         socket.on("clearEvents", async (monitorID, callback) => {
             try {
                 checkLogin(socket);
+                await checkOwner(socket.userID, monitorID);
 
                 log.info("manage", `Clear Events Monitor: ${monitorID} User ID: ${socket.userID}`);
 
@@ -1309,6 +1313,7 @@ app.use(function (req, res, next) {
         socket.on("clearHeartbeats", async (monitorID, callback) => {
             try {
                 checkLogin(socket);
+                await checkOwner(socket.userID, monitorID);
 
                 log.info("manage", `Clear Heartbeats Monitor: ${monitorID} User ID: ${socket.userID}`);
 
