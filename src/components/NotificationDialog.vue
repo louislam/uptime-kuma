@@ -259,12 +259,14 @@ export default {
                 gotify: "Gotify",
                 lunasea: "LunaSea",
                 notifery: "Notifery",
+                notifyapp: "Notify!",
                 ntfy: "Ntfy",
                 pinglet: "Pinglet",
                 pushbullet: "Pushbullet",
                 PushByTechulus: "Push by Techulus",
                 pushover: "Pushover",
                 pushy: "Pushy",
+                signalgrid: "Signalgrid",
                 Webpush: "Webpush",
             };
 
@@ -341,6 +343,7 @@ export default {
                 ServerChan: "ServerChan (Server酱)",
                 PushPlus: "PushPlus (推送加)",
                 SpugPush: "SpugPush（Spug推送助手）",
+                amootsms: "Amoot SMS",
                 smsc: "SMSC",
                 smsir: "SMS.IR",
                 WPush: "WPush(wpush.cn)",

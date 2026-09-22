@@ -23,8 +23,8 @@ on:
         default: false
 
 permissions:
-    contents: write
-    pull-requests: write
+  contents: write
+  pull-requests: write
 
 concurrency:
   group: release-${{ inputs.is_beta }}-${{ inputs.version }}

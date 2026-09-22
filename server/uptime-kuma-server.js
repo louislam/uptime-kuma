@@ -133,6 +133,7 @@ class UptimeKumaServer {
         UptimeKumaServer.monitorTypeList["system-service"] = new SystemServiceMonitorType();
         UptimeKumaServer.monitorTypeList["sqlserver"] = new MssqlMonitorType();
         UptimeKumaServer.monitorTypeList["mysql"] = new MysqlMonitorType();
+        UptimeKumaServer.monitorTypeList["sftp"] = new SFTPMonitorType();
         UptimeKumaServer.monitorTypeList["oracledb"] = new OracleDbMonitorType();
         UptimeKumaServer.monitorTypeList["ntp"] = new NTPMonitorType();
 
@@ -588,6 +589,7 @@ const { PM2MonitorType } = require("./monitor-types/pm2");
 const { SystemServiceMonitorType } = require("./monitor-types/system-service");
 const { MssqlMonitorType } = require("./monitor-types/mssql");
 const { MysqlMonitorType } = require("./monitor-types/mysql");
+const { SFTPMonitorType } = require("./monitor-types/sftp");
 const { OracleDbMonitorType } = require("./monitor-types/oracledb");
 const { NTPMonitorType } = require("./monitor-types/ntp");
 const Monitor = require("./model/monitor");

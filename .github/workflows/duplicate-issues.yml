@@ -1,0 +1,71 @@
+# Copied from https://github.com/anomalyco/opencode/blob/dev/.github/workflows/duplicate-issues.yml
+# And modified
+# Original license: MIT License Copyright (c) 2025 opencode
+
+name: duplicate-issues
+
+on:
+  issues:
+    types: [opened]
+  issue_comment:
+    types: [created]
+
+permissions: {}
+
+jobs:
+  check-duplicates:
+    if: >-
+      (github.event_name == 'issues' && github.event.action == 'opened') ||
+      (github.event_name == 'issue_comment' && github.event.issue.pull_request == null && contains(github.event.comment.body, '/check-dup'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Install opencode
+        run: curl -fsSL https://opencode.ai/install | bash
+
+      - name: Check for duplicate issues
+        env:
+          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENCODE_PERMISSION: |
+            {
+              "bash": {
+                "*": "deny",
+                "gh issue*": "allow"
+              },
+              "webfetch": "deny"
+            }
+        run: |
+          opencode run -m opencode/big-pickle "An issue has been submitted (or a duplicate check was requested on it):
+
+          Issue number: ${{ github.event.issue.number }}
+
+          Lookup this issue with gh issue view ${{ github.event.issue.number }}.
+
+          Search through existing issues (excluding #${{ github.event.issue.number }}) in this repository to find any potential duplicates or related issues.
+          Consider:
+          1. Similar titles or descriptions
+          2. Same error messages or symptoms
+          3. Related functionality or components
+          4. Similar feature requests
+
+          After listing candidates with gh issue list, run gh issue view <number> on the top few to compare their bodies (error messages, reproduction steps, stack traces) against this issue before deciding.
+
+          If you find any potential duplicates or related issues, please comment on the issue with:
+          - A brief explanation of why it might be a duplicate or related
+          - Links to the potentially duplicate issues
+          - A suggestion to check those issues first
+
+          Use this exact format for the comment:
+          'This issue might be a duplicate of or related to existing issues. Please check:
+          - #[issue_number]: [brief description of similarity]
+
+          Feel free to ignore if none of these address your specific case.'
+
+          If no clear duplicates or related issues are found, do not comment."

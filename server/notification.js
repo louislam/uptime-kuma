@@ -35,6 +35,7 @@ const Matrix = require("./notification-providers/matrix");
 const Mattermost = require("./notification-providers/mattermost");
 const NextcloudTalk = require("./notification-providers/nextcloudtalk");
 const Nostr = require("./notification-providers/nostr");
+const NotifyApp = require("./notification-providers/notifyapp");
 const Ntfy = require("./notification-providers/ntfy");
 const Octopush = require("./notification-providers/octopush");
 const OneChat = require("./notification-providers/onechat");
@@ -58,6 +59,7 @@ const Pushy = require("./notification-providers/pushy");
 const RocketChat = require("./notification-providers/rocket-chat");
 const SerwerSMS = require("./notification-providers/serwersms");
 const Signal = require("./notification-providers/signal");
+const Signalgrid = require("./notification-providers/signalgrid");
 const SIGNL4 = require("./notification-providers/signl4");
 const Slack = require("./notification-providers/slack");
 const SMSPartner = require("./notification-providers/smspartner");
@@ -95,6 +97,7 @@ const TurboSMTP = require("./notification-providers/turbosmtp");
 const Brevo = require("./notification-providers/brevo");
 const Resend = require("./notification-providers/resend");
 const YZJ = require("./notification-providers/yzj");
+const AmootSMS = require("./notification-providers/amootsms");
 const SMSPlanet = require("./notification-providers/sms-planet");
 const SpugPush = require("./notification-providers/spugpush");
 const SMSIR = require("./notification-providers/smsir");
@@ -156,6 +159,7 @@ class Notification {
             new Mattermost(),
             new NextcloudTalk(),
             new Nostr(),
+            new NotifyApp(),
             new Ntfy(),
             new Octopush(),
             new OneChat(),
@@ -181,6 +185,7 @@ class Notification {
             new ServerChan(),
             new SerwerSMS(),
             new Signal(),
+            new Signalgrid(),
             new SIGNL4(),
             new SMSManager(),
             new SMSPartner(),
@@ -214,6 +219,7 @@ class Notification {
             new Brevo(),
             new Resend(),
             new YZJ(),
+            new AmootSMS(),
             new SMSPlanet(),
             new SpugPush(),
             new Notifery(),

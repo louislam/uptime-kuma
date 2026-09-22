@@ -34,6 +34,7 @@ import Matrix from "./Matrix.vue";
 import Mattermost from "./Mattermost.vue";
 import NextcloudTalk from "./NextcloudTalk.vue";
 import Nostr from "./Nostr.vue";
+import NotifyApp from "./NotifyApp.vue";
 import Ntfy from "./Ntfy.vue";
 import Octopush from "./Octopush.vue";
 import OneChat from "./OneChat.vue";
@@ -59,6 +60,7 @@ import RocketChat from "./RocketChat.vue";
 import ServerChan from "./ServerChan.vue";
 import SerwerSMS from "./SerwerSMS.vue";
 import Signal from "./Signal.vue";
+import Signalgrid from "./Signalgrid.vue";
 import SMSGateway from "./SMSGateway.vue";
 import SMSManager from "./SMSManager.vue";
 import SMSPartner from "./SMSPartner.vue";
@@ -94,6 +96,7 @@ import SendGrid from "./SendGrid.vue";
 import TurboSMTP from "./TurboSMTP.vue";
 import Brevo from "./Brevo.vue";
 import YZJ from "./YZJ.vue";
+import AmootSMS from "./AmootSMS.vue";
 import SMSPlanet from "./SMSPlanet.vue";
 import SMSIR from "./SMSIR.vue";
 import Webpush from "./Webpush.vue";
@@ -120,6 +123,7 @@ const NotificationFormList = {
     ClickUp: ClickUp,
     clicksendsms: ClickSendSMS,
     CallMeBot: CallMeBot,
+    amootsms: AmootSMS,
     smsc: SMSC,
     smsir: SMSIR,
     DingDing: DingDing,
@@ -144,6 +148,7 @@ const NotificationFormList = {
     mattermost: Mattermost,
     nextcloudtalk: NextcloudTalk,
     nostr: Nostr,
+    notifyapp: NotifyApp,
     ntfy: Ntfy,
     octopush: Octopush,
     OneChat: OneChat,
@@ -169,6 +174,7 @@ const NotificationFormList = {
     "rocket.chat": RocketChat,
     serwersms: SerwerSMS,
     signal: Signal,
+    signalgrid: Signalgrid,
     SIGNL4: SIGNL4,
     SMSGateway: SMSGateway,
     SMSManager: SMSManager,
