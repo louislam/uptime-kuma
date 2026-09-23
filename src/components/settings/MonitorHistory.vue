@@ -4,6 +4,7 @@
             <label for="keepDataPeriodDays" class="form-label">
                 {{ $t("clearDataOlderThan", [settings.keepDataPeriodDays]) }}
                 {{ $t("infiniteRetention") }}
+                {{ $t("minusOneRetention") }}
             </label>
             <input
                 id="keepDataPeriodDays"
@@ -11,10 +12,10 @@
                 type="number"
                 class="form-control"
                 required
-                min="0"
+                min="-1"
                 step="1"
             />
-            <div v-if="settings.keepDataPeriodDays < 0" class="form-text">
+            <div v-if="settings.keepDataPeriodDays < -1" class="form-text">
                 {{ $t("dataRetentionTimeError") }}
             </div>
         </div>
