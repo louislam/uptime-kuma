@@ -57,7 +57,7 @@ class Ntfy extends NotificationProvider {
                     priority: notification.ntfyPriority,
                     tags: ["test_tube"],
                 };
-                await axios.post(notification.ntfyserverurl, ntfyTestData, config);
+                this.checkPublishResponse(await axios.post(notification.ntfyserverurl, ntfyTestData, config));
                 return okMsg;
             }
             let tags = [];
@@ -126,11 +126,25 @@ class Ntfy extends NotificationProvider {
                 data.icon = notification.ntfyIcon;
             }
 
-            await axios.post(notification.ntfyserverurl, data, config);
+            this.checkPublishResponse(await axios.post(notification.ntfyserverurl, data, config));
 
             return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);
+        }
+    }
+
+    /**
+     * Checks that ntfy returned the message it created
+     * @param {object} response Axios response of the publish request
+     * @returns {void}
+     * @throws {Error} The response did not come from ntfy
+     */
+    checkPublishResponse(response) {
+        if (!response.data?.id) {
+            throw new Error(
+                "The server did not confirm the notification. Please check that the server URL points to ntfy and is reachable without a redirect."
+            );
         }
     }
 }
