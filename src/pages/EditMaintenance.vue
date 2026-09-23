@@ -461,6 +461,8 @@ export default {
             timezoneList: timezoneList(),
             processing: false,
             maintenance: {},
+            isUpdatingEndDateProgrammatically: false,
+            endDateManuallyEdited: false,
             affectedMonitors: [],
             affectedMonitorsOptions: [],
             showOnAllPages: false,
@@ -613,12 +615,31 @@ export default {
             if (!this.maintenance.dateRange?.[0] || !this.maintenance.dateRange?.[1]) {
                 return null;
             }
-            const start = new Date(this.maintenance.dateRange[0]);
-            const end = new Date(this.maintenance.dateRange[1]);
-            if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+            const start = this.parseDateTime(this.maintenance.dateRange[0]);
+            const end = this.parseDateTime(this.maintenance.dateRange[1]);
+            if (!start || !end) {
                 return null;
             }
             return Math.round((end.getTime() - start.getTime()) / 60000);
+        },
+
+        singleStartDate() {
+            return this.maintenance.dateRange?.[0] ?? "";
+        },
+
+        singleEndDate() {
+            return this.maintenance.dateRange?.[1] ?? "";
+        },
+
+        hasInvalidDateRange() {
+            const start = this.parseDateTime(this.maintenance.dateRange?.[0]);
+            const end = this.parseDateTime(this.maintenance.dateRange?.[1]);
+
+            if (!start || !end) {
+                return false;
+            }
+
+            return end.getTime() < start.getTime();
         },
     },
     watch: {
@@ -629,6 +650,45 @@ export default {
         neverEnd(value) {
             if (value) {
                 this.maintenance.recurringEndDate = "";
+            }
+        },
+
+        singleStartDate(newStart, oldStart) {
+            if (this.maintenance.strategy !== "single") {
+                return;
+            }
+
+            const newStartDate = this.parseDateTime(newStart);
+            const oldStartDate = this.parseDateTime(oldStart);
+            const currentEndDate = this.parseDateTime(this.maintenance.dateRange?.[1]);
+
+            if (!newStartDate || !oldStartDate || !currentEndDate || this.endDateManuallyEdited) {
+                return;
+            }
+
+            const durationMinutes = Math.round((currentEndDate.getTime() - oldStartDate.getTime()) / 60000);
+            if (!Number.isFinite(durationMinutes)) {
+                return;
+            }
+
+            this.updateEndDateFromDuration(newStartDate, durationMinutes);
+        },
+
+        singleEndDate(newEnd, oldEnd) {
+            if (this.maintenance.strategy !== "single") {
+                return;
+            }
+
+            if (!oldEnd || !newEnd || this.isUpdatingEndDateProgrammatically) {
+                return;
+            }
+
+            this.endDateManuallyEdited = true;
+        },
+
+        "maintenance.strategy"(value) {
+            if (value === "single") {
+                this.endDateManuallyEdited = false;
             }
         },
     },
@@ -671,26 +731,70 @@ export default {
     },
     methods: {
         /**
+         * Parse datetime-local string
+         * @param {string} value Datetime-local value
+         * @returns {Date|null} Parsed date
+         */
+        parseDateTime(value) {
+            if (!value) {
+                return null;
+            }
+
+            const date = new Date(value);
+            if (isNaN(date.getTime())) {
+                return null;
+            }
+
+            return date;
+        },
+
+        /**
+         * Format date to datetime-local compatible string
+         * @param {Date} date Date to format
+         * @returns {string} Datetime-local string
+         */
+        formatDateTime(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, "0");
+            const day = String(date.getDate()).padStart(2, "0");
+            const hours = String(date.getHours()).padStart(2, "0");
+            const minutes = String(date.getMinutes()).padStart(2, "0");
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        },
+
+        /**
+         * Update end date from start date and duration
+         * @param {Date} startDate Start date
+         * @param {number} durationMinutes Duration in minutes
+         * @returns {void}
+         */
+        updateEndDateFromDuration(startDate, durationMinutes) {
+            if (!startDate || !Number.isFinite(durationMinutes)) {
+                return;
+            }
+
+            const endDate = new Date(startDate.getTime() + durationMinutes * 60000);
+
+            this.isUpdatingEndDateProgrammatically = true;
+            this.maintenance.dateRange[1] = this.formatDateTime(endDate);
+            this.$nextTick(() => {
+                this.isUpdatingEndDateProgrammatically = false;
+            });
+        },
+        /**
          * Initialise page
          * @returns {void}
          */
         init() {
             this.affectedMonitors = [];
             this.selectedStatusPages = [];
+            this.endDateManuallyEdited = false;
+            this.isUpdatingEndDateProgrammatically = false;
 
             if (this.isAdd) {
                 // Get current date/time in local timezone
                 const now = new Date();
                 const oneHourLater = new Date(now.getTime() + 60 * 60000);
-
-                const formatDateTime = (date) => {
-                    const year = date.getFullYear();
-                    const month = String(date.getMonth() + 1).padStart(2, "0");
-                    const day = String(date.getDate()).padStart(2, "0");
-                    const hours = String(date.getHours()).padStart(2, "0");
-                    const minutes = String(date.getMinutes()).padStart(2, "0");
-                    return `${year}-${month}-${day}T${hours}:${minutes}`;
-                };
 
                 this.maintenance = {
                     title: "",
@@ -700,7 +804,7 @@ export default {
                     cron: "30 3 * * *",
                     durationMinutes: 60,
                     intervalDay: 1,
-                    dateRange: [formatDateTime(now), formatDateTime(oneHourLater)],
+                    dateRange: [this.formatDateTime(now), this.formatDateTime(oneHourLater)],
                     timeRange: [
                         {
                             hours: 2,
@@ -789,16 +893,14 @@ export default {
                 return;
             }
 
-            const startDate = new Date(this.maintenance.dateRange[0]);
-            const endDate = new Date(startDate.getTime() + minutes * 60000);
+            const startDate = this.parseDateTime(this.maintenance.dateRange[0]);
+            if (!startDate) {
+                this.$root.toastError(this.$t("Please set start time first"));
+                return;
+            }
 
-            const year = endDate.getFullYear();
-            const month = String(endDate.getMonth() + 1).padStart(2, "0");
-            const day = String(endDate.getDate()).padStart(2, "0");
-            const hours = String(endDate.getHours()).padStart(2, "0");
-            const mins = String(endDate.getMinutes()).padStart(2, "0");
-
-            this.maintenance.dateRange[1] = `${year}-${month}-${day}T${hours}:${mins}`;
+            this.endDateManuallyEdited = false;
+            this.updateEndDateFromDuration(startDate, minutes);
         },
 
         /**
@@ -823,6 +925,12 @@ export default {
 
             if (!this.hasMonitors && !this.hasStatusPages) {
                 this.$root.toastError(this.$t("noMonitorsOrStatusPagesSelectedError"));
+                this.processing = false;
+                return;
+            }
+
+            if (this.hasInvalidDateRange) {
+                this.$root.toastError("End date must be after start date");
                 this.processing = false;
                 return;
             }
