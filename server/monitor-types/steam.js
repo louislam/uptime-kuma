@@ -14,6 +14,17 @@ const http = require("http");
 const https = require("https");
 const net = require("node:net");
 
+const MAX_STEAM_APP_ID = 4294967295;
+
+/**
+ * Check whether a Steam App ID can safely be used in a server-list filter.
+ * @param {unknown} steamAppId Steam App ID.
+ * @returns {boolean} True if the value is a valid Steam App ID.
+ */
+function isValidSteamAppId(steamAppId) {
+    return Number.isInteger(steamAppId) && steamAppId > 0 && steamAppId <= MAX_STEAM_APP_ID;
+}
+
 class SteamMonitorType extends MonitorType {
     name = "steam";
 
@@ -45,7 +56,7 @@ class SteamMonitorType extends MonitorType {
             throw new Error("Steam API Key not found");
         }
 
-        const filter = await this.buildServerFilter(monitor.hostname, monitor.port);
+        const filter = await this.buildServerFilter(monitor.hostname, monitor.port, monitor.steamAppId);
 
         let res = await this.steamApiClient.get(steamApiUrl, {
             timeout: monitor.timeout * 1000,
@@ -94,11 +105,13 @@ class SteamMonitorType extends MonitorType {
      * Builds the Steam API server filter.
      * @param {string} hostname Steam server hostname or IP address.
      * @param {number} port Steam server port.
+     * @param {number} steamAppId Optional Steam App ID to include in the filter.
      * @returns {Promise<string>} Steam API addr filter.
      */
-    async buildServerFilter(hostname, port) {
+    async buildServerFilter(hostname, port, steamAppId) {
         const resolvedHostname = await this.resolveSteamHostname(hostname);
-        return `addr\\${resolvedHostname}:${port}`;
+        const appIdFilter = isValidSteamAppId(steamAppId) ? `\\appid\\${steamAppId}` : "";
+        return `addr\\${resolvedHostname}:${port}${appIdFilter}`;
     }
 
     /**
@@ -131,4 +144,5 @@ class SteamMonitorType extends MonitorType {
 
 module.exports = {
     SteamMonitorType,
+    isValidSteamAppId,
 };

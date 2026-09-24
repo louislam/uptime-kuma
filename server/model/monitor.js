@@ -181,6 +181,7 @@ class Monitor extends BeanModel {
             radiusCallingStationId: this.radiusCallingStationId,
             game: this.game,
             gamedigGivenPortOnly: this.getGameDigGivenPortOnly(),
+            steamAppId: this.steamAppId,
             httpBodyEncoding: this.httpBodyEncoding,
             jsonPath: this.jsonPath,
             expectedValue: this.expectedValue,

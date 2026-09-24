@@ -1158,6 +1158,8 @@
     "cacheBusterParamDescription": "Randomly generated parameter to skip caches.",
     "gamedigToken": "Token",
     "gamedigTokenDescription": "Optional. Some game servers require an authentication token.",
+    "steamAppId": "Steam App ID",
+    "steamAppIdDescription": "Optional. Use this if your server is not found without an App ID filter.",
     "gamedigGuessPort": "Gamedig: Guess Port",
     "gamedigGuessPortDescription": "The port used by Valve Server Query Protocol may be different from the client port. Try this if the monitor cannot connect to your server.",
     "Message format": "Message format",

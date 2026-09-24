@@ -190,6 +190,7 @@ const { generalSocketHandler } = require("./socket-handlers/general-socket-handl
 const { Settings } = require("./settings");
 const apicache = require("./modules/apicache");
 const { resetChrome } = require("./monitor-types/real-browser-monitor-type");
+const { isValidSteamAppId } = require("./monitor-types/steam");
 const { EmbeddedMariaDB } = require("./embedded-mariadb");
 const { SetupDatabase } = require("./setup-database");
 const { chartSocketHandler } = require("./socket-handlers/chart-socket-handler");
@@ -595,6 +596,7 @@ app.use(function (req, res, next) {
                 bean.kafkaProducerAllowAutoTopicCreation = monitor.kafkaProducerAllowAutoTopicCreation;
                 bean.gamedigGivenPortOnly = monitor.gamedigGivenPortOnly;
                 bean.gamedigToken = monitor.gamedigToken;
+                bean.steamAppId = isValidSteamAppId(monitor.steamAppId) ? monitor.steamAppId : null;
                 bean.remote_browser = monitor.remote_browser;
                 bean.screenshot_delay = monitor.screenshot_delay;
                 bean.smtpSecurity = monitor.smtpSecurity;

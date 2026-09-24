@@ -40,6 +40,22 @@ describe("Steam Monitor", () => {
         assert.deepStrictEqual(capturedOptions, { all: true });
     });
 
+    test("buildServerFilter() ignores invalid Steam App IDs", async () => {
+        const steamMonitor = new SteamMonitorType({
+            lookup: async () => [
+                {
+                    address: "203.0.113.11",
+                    family: 4,
+                },
+            ],
+        });
+
+        for (const steamAppId of [0, -1, 1.5, 4294967296, "3545060"]) {
+            const filter = await steamMonitor.buildServerFilter("server.example.com", 27015, steamAppId);
+            assert.strictEqual(filter, "addr\\203.0.113.11:27015");
+        }
+    });
+
     test("resolveSteamHostname() prefers IPv4 addresses returned by DNS lookup", async () => {
         const steamMonitor = new SteamMonitorType({
             lookup: async () => {
@@ -95,6 +111,7 @@ describe("Steam Monitor", () => {
         const monitor = {
             hostname: "server.example.com",
             port: 27015,
+            steamAppId: 3545060,
             timeout: 30,
             maxredirects: 10,
             packetSize: 56,
@@ -109,7 +126,7 @@ describe("Steam Monitor", () => {
         await steamMonitor.check(monitor, heartbeat);
 
         assert.strictEqual(capturedUrl, "https://api.steampowered.com/IGameServersService/GetServerList/v1/");
-        assert.strictEqual(capturedOptions.params.filter, "addr\\203.0.113.30:27015");
+        assert.strictEqual(capturedOptions.params.filter, "addr\\203.0.113.30:27015\\appid\\3545060");
         assert.strictEqual(capturedOptions.params.key, "test-steam-api-key");
         assert.strictEqual(heartbeat.status, UP);
         assert.strictEqual(heartbeat.msg, "Test Steam Server");

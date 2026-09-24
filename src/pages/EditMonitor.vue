@@ -726,6 +726,21 @@
                                 />
                             </div>
 
+                            <!-- Steam App ID -->
+                            <div v-if="monitor.type === 'steam'" class="my-3">
+                                <label for="steam-app-id" class="form-label">{{ $t("steamAppId") }}</label>
+                                <input
+                                    id="steam-app-id"
+                                    v-model.number="monitor.steamAppId"
+                                    type="number"
+                                    class="form-control"
+                                    min="1"
+                                    max="4294967295"
+                                    step="1"
+                                />
+                                <div class="form-text">{{ $t("steamAppIdDescription") }}</div>
+                            </div>
+
                             <!-- Gamedig Token -->
                             <div v-if="monitor.type === 'gamedig'" class="my-3">
                                 <label for="gamedig-token" class="form-label">{{ $t("gamedigToken") }}</label>
@@ -3406,6 +3421,7 @@ const monitorDefaults = {
     kafkaProducerAllowAutoTopicCreation: false,
     gamedigGivenPortOnly: true,
     gamedigToken: "",
+    steamAppId: null,
     remote_browser: null,
     screenshot_delay: 0,
     rabbitmqNodes: [],
