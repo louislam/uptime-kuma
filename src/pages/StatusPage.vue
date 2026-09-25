@@ -273,7 +273,7 @@
             </h1>
 
             <!-- Admin functions -->
-            <div v-if="hasToken" class="mb-2">
+            <div v-if="authenticated" class="mb-2">
                 <div v-if="!enableEditMode">
                     <button class="btn btn-primary mb-2 me-2" data-testid="edit-button" @click="edit">
                         <font-awesome-icon icon="edit" />
@@ -624,6 +624,7 @@ import IncidentHistory from "../components/IncidentHistory.vue";
 import IncidentManageModal from "../components/IncidentManageModal.vue";
 import IncidentEditForm from "../components/IncidentEditForm.vue";
 import { getResBaseURL } from "../util-frontend";
+import { authClient } from "../auth-client";
 import {
     STATUS_PAGE_ALL_DOWN,
     STATUS_PAGE_ALL_UP,
@@ -648,6 +649,8 @@ const favicon = new Favico({
 });
 
 export default {
+    _authPromise: null,
+
     components: {
         PublicGroupList,
         ImageCropUpload,
@@ -688,7 +691,7 @@ export default {
             slug: null,
             enableEditMode: false,
             enableEditIncidentMode: false,
-            hasToken: false,
+            authenticated: false,
             config: {
                 analyticsType: null,
             },
@@ -904,6 +907,7 @@ export default {
          */
         "$root.loggedIn"(loggedIn) {
             if (loggedIn) {
+                this.authenticated = true;
                 this.$root.getSocket().emit("getStatusPage", this.slug, (res) => {
                     if (res.ok) {
                         this.config = res.config;
@@ -961,8 +965,15 @@ export default {
             }
         },
     },
-    async created() {
-        this.hasToken = "token" in this.$root.storage();
+    created() {
+        this._authPromise = authClient
+            .getSession()
+            .then((session) => {
+                this.authenticated = session.data !== null;
+            })
+            .catch(() => {
+                this.authenticated = false;
+            });
 
         // Browser change page
         // https://stackoverflow.com/questions/7317273/warn-user-before-leaving-web-page-with-unsaved-changes
@@ -1038,6 +1049,7 @@ export default {
         // Go to edit page if ?edit present
         // null means ?edit present, but no value
         if (this.$route.query.edit || this.$route.query.edit === null) {
+            await this._authPromise;
             this.edit();
         }
     },
@@ -1132,7 +1144,7 @@ export default {
          * @returns {void}
          */
         edit() {
-            if (this.hasToken) {
+            if (this.authenticated) {
                 this.$root.initSocketIO(true);
                 this.enableEditMode = true;
                 this.clickedEditButton = true;
