@@ -133,7 +133,7 @@
         "protobufjs": "~8.8.0",
         "qs": "~6.16.0",
         "radius": "~1.1.4",
-        "redbean-node": "~0.3.3",
+        "redbean-node": "~0.4.0",
         "redis": "~5.9.0",
         "semver": "~7.5.4",
         "socket.io": "~4.8.3",
