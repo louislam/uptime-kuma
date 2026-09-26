@@ -30,7 +30,12 @@ export default {
                 return this.$t("statusMaintenance");
             }
 
+            // Dashboard data uses suffixed keys, the status page API keys by
+            // plain monitor ID (its range follows the status page setting)
             let key = this.monitor.id + "_" + this.type;
+            if (this.$root.uptimeList[key] === undefined) {
+                key = this.monitor.id;
+            }
 
             if (this.$root.uptimeList[key] !== undefined) {
                 let result = Math.round(this.$root.uptimeList[key] * 10000) / 100;
@@ -89,6 +94,11 @@ export default {
             }
             if (this.type === "720") {
                 return this.$t("days", 30);
+            }
+            // Handle dynamic day formats (e.g., "7d", "14d", "30d")
+            const dayMatch = this.type.match(/^(\d+)d$/);
+            if (dayMatch) {
+                return this.$t("days", parseInt(dayMatch[1]));
             }
             return this.$t("hours", 24);
         },
