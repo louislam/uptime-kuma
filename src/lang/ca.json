@@ -68,7 +68,7 @@
     "timeoutAfter": "¡Timeout' després de {0} segons",
     "locally configured mail transfer agent": "Agent de transferència de correu configurat localment",
     "Either enter the hostname of the server you want to connect to or localhost if you intend to use a locally configured mail transfer agent": "Introduïu el nom del servidor al qual voleu connectar-vos o {localhost} si voleu utilitzar un {local_mta}",
-    "Host URL": "URL del servidor",
+    "Host URL": "URL de l'amfitrió",
     "Friendly Name": "Nom senzill",
     "markdownSupported": "Sintaxi de Markdown suportada. Si fas servir HTML, evita espais blancs a l'inici per prevenir problemes de format.",
     "Retries": "Reintents",
@@ -503,7 +503,7 @@
     "clearDataOlderThan": "Conserva les dades de l'historial del monitor durant {0} dies.",
     "steamApiKeyDescription": "Per a monitoritzar un servidor de jocs de vapor, necessiteu una clau Steam Web-API. Podeu registrar la vostra clau API aquí: ",
     "shrinkDatabaseDescriptionSqlite": "Activa la base de dades {vacuum} per a SQLite. {auto.vacuum} ja està activat, però això no desfragmenta la base de dades ni reempaqueta les pàgines individuals de la base de dades de la manera com ho fa l'ordre {vacuum}.",
-    "liquidIntroduction": "S'aconsegueix la flexibilitat mitjançant el llenguatge de templatació líquid. Consulteu el {0} per a les instruccions d'ús. Aquestes són les variables disponibles:",
+    "liquidIntroduction": "S'aconsegueix la flexibilitat mitjançant el llenguatge de templatació líquid. Consulteu el {0} per a les instruccions d'ús.",
     "selectedMonitorCount": "Seleccionat: {0}",
     "deleteStatusPageMsg": "Esteu segur que voleu suprimir aquesta pàgina d'estat?",
     "proxyDescription": "Els intermediaris s'han d'assignar a un monitor perquè funcioni.",
@@ -1668,5 +1668,13 @@
     "Pattern Code ID": "ID del codi del patró",
     "Amoot SMS pattern help": "Introduïu l'ID del codi del patró del tauler d'Amoot SMS. {0}",
     "Create an Amoot SMS pattern": "Crea un patró d'Amoot SMS",
-    "Use Own Line for Pattern": "Usa una línia pròpia per al patró"
+    "Use Own Line for Pattern": "Usa una línia pròpia per al patró",
+    "Indigo URL": "URL d'Indigo",
+    "indigoUrlHelptext": "La vostra adreça de Reflector Indigo (https://NAME.indigodomo.net) o el Servidor Web Indigo a la vostra xarxa (https://IP:8176).",
+    "indigoIgnoreTlsErrorHelptext": "Es necessita per al Servidor Web Indigo de la vostra xarxa, que utilitza un certificat autosignat. No és necessari per al reflector.",
+    "indigoApiKeyHelptext": "Una clau API del vostre compte Indigo (Autoritzacions), o un secret local per al servidor web a la vostra xarxa.",
+    "Variable ID": "ID variable",
+    "indigoVariableIdHelptext": "El missatge d'alerta s'escriu a aquesta variable.",
+    "Action Group ID": "ID del grup d'acció",
+    "indigoActionGroupIdHelptext": "S'executa després que s'actualitzi la variable. Estableix una variable, un grup d'acció o tots dos. Copia els ID d'Indigo amb el clic dret . Copia l'ID."
 }
