@@ -142,7 +142,7 @@ test("a healthy snapshot reports UP with the health message and correction age a
     createSession.sessions[0].snapshotValue = {
         state: "streaming",
         healthy: true,
-        message: "Receiving RTCM 3 observations (1074, 1084).",
+        message: "Receiving corrections from GPS, GLONASS.",
         lastProgressAt: 1000,
         correctionAgeMs: 1250,
     };
@@ -150,7 +150,7 @@ test("a healthy snapshot reports UP with the health message and correction age a
     await type.check(monitor, heartbeat, null);
 
     assert.equal(heartbeat.status, UP);
-    assert.equal(heartbeat.msg, "Receiving RTCM 3 observations (1074, 1084).");
+    assert.equal(heartbeat.msg, "Receiving corrections from GPS, GLONASS.");
     assert.equal(heartbeat.ping, 1250);
 });
 
@@ -171,11 +171,14 @@ test("a stale stream fails the check with the health reason", async () => {
     createSession.sessions[0].snapshotValue = {
         state: "streaming",
         healthy: false,
-        message: "No observation progress for 45 s.",
+        message: "Satellite observations stopped. None received for 45 s.",
         lastProgressAt: 1000,
     };
 
-    await assert.rejects(() => type.check(monitor, {}, null), /No observation progress for 45 s\./);
+    await assert.rejects(
+        () => type.check(monitor, {}, null),
+        /Satellite observations stopped. None received for 45 s\./
+    );
 });
 
 test("backoff state fails the check so normal retry handling applies", async () => {
@@ -186,11 +189,11 @@ test("backoff state fails the check so normal retry handling applies", async () 
     createSession.sessions[0].snapshotValue = {
         state: "backoff",
         healthy: false,
-        message: "Caster refused the connection.",
+        message: "The caster refused the connection on port 2101.",
         lastProgressAt: null,
     };
 
-    await assert.rejects(() => type.check(monitor, {}, null), /Caster refused the connection\./);
+    await assert.rejects(() => type.check(monitor, {}, null), /The caster refused the connection on port 2101\./);
 });
 
 test("invalid configuration fails without starting a session or echoing the password", async () => {
