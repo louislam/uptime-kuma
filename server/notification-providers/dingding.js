@@ -15,7 +15,7 @@ class DingDing extends NotificationProvider {
         const mobileList = notification.mentioning === "specify-mobiles" ? notification.mobileList : [];
         const userList = notification.mentioning === "specify-users" ? notification.userList : [];
         const finalList = [...(mobileList || []), ...(userList || [])];
-        const mentionStr = finalList.length > 0 ? "\n" : "" + finalList.map((item) => `@${item}`).join(" ");
+        const mentionStr = finalList.length > 0 ? "\n" + finalList.map((item) => `@${item}`).join(" ") : "";
         try {
             if (heartbeatJSON != null) {
                 let params = {
