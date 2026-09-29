@@ -1,4 +1,4 @@
-const { RtcmFrameReader, isObservationMessage } = require("./rtcm-frames");
+const { RtcmFrameReader, isObservationMessage, constellationOf, CONSTELLATIONS } = require("./rtcm-frames");
 const { formatGga } = require("./gga");
 const { observationEpochUtc } = require("./correction-age");
 
@@ -61,7 +61,7 @@ class NtripSession {
         this.frames = new RtcmFrameReader({
             onFrame: (messageType, payload) => this.#onFrame(messageType, payload),
         });
-        this.observedTypes = new Set();
+        this.constellations = new Set();
         this.lastProgressAt = null;
         this.latestEpochUtcMs = null;
         this.arrivalLatencyMs = null;
@@ -146,7 +146,7 @@ class NtripSession {
      * @param {string} reason Message reported by later snapshots
      * @returns {void}
      */
-    dispose(reason = "Session disposed.") {
+    dispose(reason = "Monitor stopped.") {
         if (this.disposed) {
             return;
         }
@@ -187,7 +187,7 @@ class NtripSession {
      */
     #resetStream() {
         this.frames.reset();
-        this.observedTypes.clear();
+        this.constellations.clear();
         this.lastProgressAt = null;
         this.latestEpochUtcMs = null;
         this.arrivalLatencyMs = null;
@@ -242,7 +242,7 @@ class NtripSession {
             eligible = await this.isEligible();
         } catch {
             // Failure to determine eligibility must never authorize a connection.
-            this.dispose("Could not determine maintenance state; disconnected.");
+            this.dispose("Could not check the maintenance schedule, so the monitor disconnected.");
             return;
         }
 
@@ -264,14 +264,16 @@ class NtripSession {
         const attemptId = ++this.attemptCounter;
         this.currentAttemptId = attemptId;
         this.attemptTerminated = false;
+        // Keep the failure that caused a retry visible while reconnecting.
+        this.message =
+            this.state === "backoff" ? `Reconnecting. Last failure: ${this.message}` : "Connecting to caster.";
         this.state = "connecting";
-        this.message = "Connecting to caster.";
 
         let eligible;
         try {
             eligible = await this.isEligible();
         } catch {
-            this.dispose("Could not determine maintenance state; not connecting.");
+            this.dispose("Could not check the maintenance schedule, so the monitor did not connect.");
             return;
         }
 
@@ -280,7 +282,7 @@ class NtripSession {
             return;
         }
         if (!eligible) {
-            this.dispose("Not connecting during scheduled maintenance.");
+            this.dispose("Not connecting: scheduled maintenance is in progress.");
             return;
         }
 
@@ -303,7 +305,7 @@ class NtripSession {
 
         this.#setDeadline(
             this.config.handshakeTimeoutMs,
-            `Handshake did not complete within ${Math.round(this.config.handshakeTimeoutMs / 1000)}s.`
+            `The caster did not respond to the connection request within ${Math.round(this.config.handshakeTimeoutMs / 1000)} s.`
         );
     }
 
@@ -332,10 +334,10 @@ class NtripSession {
             return;
         }
         this.state = "awaiting";
-        this.message = "Connected; waiting for RTCM 3 observation messages.";
+        this.message = "Connected. Waiting for correction data.";
         this.#setDeadline(
             this.config.initialTimeoutMs,
-            `No RTCM 3 observation messages within ${Math.round(this.config.initialTimeoutMs / 1000)}s of connecting.`
+            `Connected, but no satellite observations arrived within ${Math.round(this.config.initialTimeoutMs / 1000)} s.`
         );
         this.#startGga();
     }
@@ -369,7 +371,7 @@ class NtripSession {
 
         const now = this.clock.now();
         this.lastProgressAt = now;
-        this.observedTypes.add(messageType);
+        this.constellations.add(constellationOf(messageType));
 
         // One epoch is usually sent as several messages, one per constellation.
         // Only the first message of a newer epoch marks its arrival.
@@ -388,7 +390,7 @@ class NtripSession {
             this.state = "streaming";
             this.healthySince = now;
         }
-        this.message = `Receiving RTCM 3 observations (${[...this.observedTypes].sort().join(", ")}).`;
+        this.message = `Receiving corrections from ${CONSTELLATIONS.filter((name) => this.constellations.has(name)).join(", ")}.`;
 
         // A handshake alone never resets backoff; sustained health does.
         if (this.healthySince !== null && now - this.healthySince >= HEALTHY_RESET_MS) {
@@ -397,7 +399,7 @@ class NtripSession {
 
         this.#setDeadline(
             this.config.staleTimeoutMs,
-            `No RTCM 3 observation messages for ${Math.round(this.config.staleTimeoutMs / 1000)}s.`
+            `Satellite observations stopped. None received for ${Math.round(this.config.staleTimeoutMs / 1000)} s.`
         );
     }
 
@@ -434,7 +436,7 @@ class NtripSession {
 
         this.backoffIndex = Math.min(this.backoffIndex + 1, BACKOFF_DELAYS_MS.length - 1);
         this.state = "backoff";
-        this.message = error && error.message ? error.message : "Connection failed.";
+        this.message = error && error.message ? error.message : "The connection to the caster failed.";
         this.healthySince = null;
 
         this.#clearTimer("retryTimer");
