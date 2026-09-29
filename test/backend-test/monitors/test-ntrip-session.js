@@ -1,7 +1,13 @@
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const { NtripSession } = require("../../../server/ntrip/session");
-const { createFakeClock, createFakeTransport, buildLegacyGps, buildMetadataMessage } = require("./ntrip-support");
+const {
+    createFakeClock,
+    createFakeTransport,
+    buildLegacyGps,
+    buildMetadataMessage,
+    buildMsm,
+} = require("./ntrip-support");
 
 /**
  * Use virtual time and a controlled transport to reproduce connection races.
@@ -142,6 +148,25 @@ test("a busy refusal enforces the same cooldown as a rejected credential", async
     assert.equal(h.connections.length, 1);
     await h.advance(1);
     assert.equal(h.connections.length, 2);
+    h.session.dispose();
+});
+
+test("a reconnect keeps the failure that caused it in the message", async () => {
+    const h = harness();
+    h.session.start();
+    await h.advance(0);
+    assert.equal(h.session.snapshot().message, "Connecting to caster.");
+
+    h.connections[0].callbacks.onFailure(new Error("The caster closed the stream."));
+    await h.advance(5000);
+    assert.equal(h.connections.length, 2);
+    assert.equal(h.session.snapshot().message, "Reconnecting. Last failure: The caster closed the stream.");
+
+    // A second failure replaces the first rather than nesting inside it.
+    h.connections[1].callbacks.onFailure(new Error("The connection to the caster was reset."));
+    await h.advance(10000);
+    assert.equal(h.connections.length, 3);
+    assert.equal(h.session.snapshot().message, "Reconnecting. Last failure: The connection to the caster was reset.");
     h.session.dispose();
 });
 
@@ -310,6 +335,24 @@ test("observation frames make the session healthy", async () => {
     h.session.dispose();
 });
 
+test("a healthy stream names its constellations in a fixed order", async () => {
+    const h = streaming();
+    h.session.start();
+    await h.clock.advance(0);
+    h.fake.connections[0].callbacks.onAccepted();
+
+    for (const messageType of [1124, 1005, 1074, 1084, 1077]) {
+        const frame =
+            messageType === 1005
+                ? buildMetadataMessage(1005)
+                : buildMsm({ messageType, stationId: 1234, epochMs: 0, satellites: [1], signals: [1] });
+        h.fake.connections[0].callbacks.onData(frame);
+    }
+
+    assert.equal(h.session.snapshot().message, "Receiving corrections from GPS, GLONASS, BeiDou.");
+    h.session.dispose();
+});
+
 test("a healthy stream survives far past the initial deadline on one connection", async () => {
     const h = streaming();
     h.session.start();
@@ -343,7 +386,7 @@ test("a stream that stops sending observations goes stale, closes and reconnects
     await h.clock.advance(1);
     assert.equal(h.fake.connections[0].closes, 1);
     assert.equal(h.session.snapshot().state, "backoff");
-    assert.match(h.session.snapshot().message, /No RTCM 3 observation messages for 30s/);
+    assert.equal(h.session.snapshot().message, "Satellite observations stopped. None received for 30 s.");
     h.session.dispose();
 });
 
