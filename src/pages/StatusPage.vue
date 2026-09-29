@@ -1579,6 +1579,33 @@ h1 {
     }
 }
 
+// The fixed 300px sidebar plus its matching margin does not fit on a phone,
+// which pushed the edit buttons off screen and made the page overflow sideways.
+@media (max-width: 770px) {
+    .main {
+        &.edit {
+            margin-left: 0;
+        }
+    }
+
+    .sidebar {
+        position: static;
+        width: 100%;
+        height: auto;
+
+        .sidebar-body {
+            height: auto;
+            overflow-y: visible;
+        }
+
+        .sidebar-footer {
+            position: static;
+            width: 100%;
+            height: auto;
+        }
+    }
+}
+
 footer {
     text-align: center;
     font-size: 14px;
