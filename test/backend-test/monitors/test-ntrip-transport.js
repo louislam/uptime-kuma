@@ -1,6 +1,6 @@
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
-const { openNtripTransport, BUSY_STATUS_CODES } = require("../../../server/ntrip/transport");
+const { openNtripTransport, describeSocketError, BUSY_STATUS_CODES } = require("../../../server/ntrip/transport");
 const { createMockCaster, waitFor, buildLegacyGps } = require("./ntrip-support");
 
 const frame = buildLegacyGps({ messageType: 1004, stationId: 1234, towMs: 432000000, satelliteCount: 8 });
@@ -213,12 +213,12 @@ test("rejects a sourcetable response instead of treating it as a stream", async 
         reply: (socket) => socket.write("SOURCETABLE 200 OK\r\nContent-Type: gnss/sourcetable\r\n\r\nSTR;BASE;\r\n"),
     });
     await waitFor(() => h.failures.length > 0, "failure");
-    assert.match(h.failures[0].message, /sourcetable/i);
+    assert.match(h.failures[0].message, /not active/);
     assert.deepEqual(h.accepted, []);
     await h.cleanup();
 });
 
-test("a sourcetable names the mountpoint and says it may have stopped streaming", async () => {
+test("a sourcetable reports the mountpoint as not active", async () => {
     // The caster answers this way when a mountpoint is unfed as well as when it
     // is unknown, and for a monitor the first is by far the likelier case.
     const h = await connect({
@@ -226,8 +226,7 @@ test("a sourcetable names the mountpoint and says it may have stopped streaming"
     });
     await waitFor(() => h.failures.length > 0, "failure");
 
-    assert.match(h.failures[0].message, /'BASE'/);
-    assert.match(h.failures[0].message, /stopped streaming/);
+    assert.equal(h.failures[0].message, "Mountpoint 'BASE' is not active on the caster.");
     await h.cleanup();
 });
 
@@ -236,7 +235,7 @@ test("rejects a Rev2 sourcetable advertised only by content type", async () => {
         reply: (socket) => socket.write("HTTP/1.1 200 OK\r\nContent-Type: gnss/sourcetable\r\n\r\nSTR;BASE;\r\n"),
     });
     await waitFor(() => h.failures.length > 0, "failure");
-    assert.match(h.failures[0].message, /sourcetable|mountpoint/i);
+    assert.match(h.failures[0].message, /not active/);
     await h.cleanup();
 });
 
@@ -257,8 +256,7 @@ test("reads 406 as a mountpoint with no data source, not a client error", async 
     });
     await waitFor(() => h.failures.length > 0, "failure");
 
-    assert.match(h.failures[0].message, /BASE/);
-    assert.match(h.failures[0].message, /no data from its source/);
+    assert.equal(h.failures[0].message, "Mountpoint 'BASE' currently has no data source.");
     assert.deepEqual(h.accepted, []);
     await h.cleanup();
 });
@@ -286,63 +284,21 @@ test("categorizes every busy status the same way", async () => {
     }
 });
 
-test("reports the caster's reason phrase so a refusal can be diagnosed", async () => {
-    const h = await connect({
-        reply: (socket) => socket.write("HTTP/1.1 409 Maximum connections for this user reached\r\n\r\n"),
-    });
-    await waitFor(() => h.failures.length > 0, "failure");
+test("rejection messages leave out the status code and caster text", async () => {
+    for (const reply of [
+        "HTTP/1.1 401 Unauthorized\r\n\r\nbad password",
+        "HTTP/1.1 404 Not Found\r\n\r\nno such mountpoint",
+        "HTTP/1.1 406 Not Acceptable\r\n\r\nGGA position outside network",
+        "HTTP/1.1 409 Maximum connections for this user reached\r\n\r\n",
+        "HTTP/1.1 402 Payment Required\r\n\r\n",
+    ]) {
+        const h = await connect({ reply: (socket) => socket.write(reply) });
+        await waitFor(() => h.failures.length > 0, `failure for ${reply}`);
 
-    assert.match(h.failures[0].message, /Maximum connections for this user reached/);
-    await h.cleanup();
-});
-
-test("reports an explanatory response body alongside the status", async () => {
-    const h = await connect({
-        reply: (socket) =>
-            socket.write("HTTP/1.1 406 Not Acceptable\r\nContent-Type: text/plain\r\n\r\nGGA position outside network"),
-    });
-    await waitFor(() => h.failures.length > 0, "failure");
-
-    assert.match(h.failures[0].message, /GGA position outside network/);
-    await h.cleanup();
-});
-
-test("collapses and truncates caster text instead of pasting it into the message", async () => {
-    const noisy = `line one\r\n\tline two ${"x".repeat(400)}`;
-    const h = await connect({
-        reply: (socket) => socket.write(`HTTP/1.1 406 Not Acceptable\r\n\r\n${noisy}`),
-    });
-    await waitFor(() => h.failures.length > 0, "failure");
-
-    const message = h.failures[0].message;
-    assert.ok(!/[\r\n\t]/.test(message), message);
-    assert.match(message, /\.\.\.$/);
-
-    // The cap applies to the caster's text, not to the whole message, so assert
-    // on how much of the 400-character run survived rather than a total length.
-    assert.ok(!message.includes("x".repeat(250)), "caster text was not truncated");
-    await h.cleanup();
-});
-
-test("never leaks credentials through a caster-supplied explanation", async () => {
-    const h = await connect({
-        config: { username: "user", password: "hunter2" },
-        reply: (socket) => socket.write("HTTP/1.1 406 Not Acceptable\r\n\r\nrejected"),
-    });
-    await waitFor(() => h.failures.length > 0, "failure");
-
-    const text = `${h.failures[0].message} ${h.failures[0].stack}`;
-    assert.ok(!text.includes("hunter2"), text);
-    assert.ok(!text.includes("dXNlcjpodW50ZXIy"), text);
-    await h.cleanup();
-});
-
-test("says nothing extra when the caster explains nothing", async () => {
-    const h = await connect({ reply: (socket) => socket.write("HTTP/1.1 402 \r\n\r\n") });
-    await waitFor(() => h.failures.length > 0, "failure");
-
-    assert.ok(!h.failures[0].message.includes("The caster said"), h.failures[0].message);
-    await h.cleanup();
+        const message = h.failures[0].message;
+        assert.doesNotMatch(message, /\d{3}|bad password|no such|GGA|Maximum|Payment/, message);
+        await h.cleanup();
+    }
 });
 
 test("does not follow redirects", async () => {
@@ -382,7 +338,7 @@ test("rejects an unsupported content encoding", async () => {
         reply: (socket) => socket.write("HTTP/1.1 200 OK\r\nContent-Encoding: gzip\r\n\r\n"),
     });
     await waitFor(() => h.failures.length > 0, "failure");
-    assert.match(h.failures[0].message, /encoding/i);
+    assert.match(h.failures[0].message, /compressed/);
     await h.cleanup();
 });
 
@@ -402,6 +358,7 @@ test("reports the caster closing an accepted stream", async () => {
     });
     await waitFor(() => h.accepted.length > 0, "acceptance");
     await waitFor(() => h.failures.length > 0, "failure");
+    assert.equal(h.failures[0].message, "The caster closed the stream.");
     await h.cleanup();
 });
 
@@ -474,8 +431,36 @@ test("reports a connection refused to a closed port", async () => {
     );
 
     await waitFor(() => failures.length > 0, "connection failure");
-    assert.ok(failures[0] instanceof Error);
+    assert.equal(failures[0].message, `The caster refused the connection on port ${port}.`);
     connection.close();
+});
+
+test("socket errors are described in plain words", () => {
+    const config = { hostname: "caster.example.com", port: 2101 };
+    const cases = [
+        ["ENOTFOUND", "Could not find the caster's host name 'caster.example.com'."],
+        ["EAI_AGAIN", "Could not look up 'caster.example.com' (DNS is not responding)."],
+        ["ECONNREFUSED", "The caster refused the connection on port 2101."],
+        ["ECONNRESET", "The connection to the caster was reset."],
+        ["EHOSTUNREACH", "Could not reach the caster at caster.example.com:2101."],
+        ["ENETUNREACH", "Could not reach the caster at caster.example.com:2101."],
+        ["ETIMEDOUT", "Could not reach the caster at caster.example.com:2101."],
+        ["CERT_HAS_EXPIRED", "The caster's TLS certificate was not accepted."],
+        ["DEPTH_ZERO_SELF_SIGNED_CERT", "The caster's TLS certificate was not accepted."],
+        ["ERR_TLS_CERT_ALTNAME_INVALID", "The caster's TLS certificate was not accepted."],
+    ];
+    for (const [code, expected] of cases) {
+        const error = Object.assign(new Error(`connect ${code} 203.0.113.5:2101`), { code });
+        assert.equal(describeSocketError(error, config), expected, code);
+    }
+});
+
+test("unrecognised socket errors keep their own text", () => {
+    const config = { hostname: "caster.example.com", port: 2101 };
+    const error = Object.assign(new Error("write EPIPE"), { code: "EPIPE" });
+
+    assert.equal(describeSocketError(error, config), "write EPIPE");
+    assert.equal(describeSocketError(undefined, config), "The connection to the caster failed.");
 });
 
 test("selects a TLS connection when the monitor enables it", () => {
