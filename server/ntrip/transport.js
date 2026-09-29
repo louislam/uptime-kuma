@@ -29,9 +29,6 @@ const RTCM_PREAMBLE = 0xd3;
 /** Identifies the client to the caster, as NTRIP requires. */
 const USER_AGENT = "NTRIP UptimeKuma";
 
-/** Longest caster-supplied explanation kept in a rejection message. */
-const MAX_REASON_LENGTH = 200;
-
 /**
  * Response codes meaning the caster is throttling this client.
  *
@@ -47,30 +44,39 @@ const MAX_REASON_LENGTH = 200;
 const BUSY_STATUS_CODES = new Set([409, 429]);
 
 /**
- * Summarize what the caster said about a rejection.
+ * Describe a socket failure in plain words.
  *
- * Casters explain refusals in the reason phrase or a short body far more often
- * than the bare status code suggests, and without that text a 406 is
- * indistinguishable from every other refusal. Caster text is collapsed to one
- * line and truncated: it is diagnostic detail rather than a protocol field, and
- * it reaches logs and heartbeat messages. The body may still be arriving, so
- * whatever has been received is used as-is.
- * @param {string} reason Reason phrase from the status line
- * @param {Buffer} body Bytes received after the header, possibly incomplete
- * @returns {string} Sentence to append, or an empty string when nothing was said
+ * Node reports these as terse codes such as "connect ECONNREFUSED 1.2.3.4:2101",
+ * which read as noise in an event list. Anything not recognised keeps Node's text.
+ * @param {unknown} error Socket or TLS error
+ * @param {object} config Normalized NTRIP configuration
+ * @returns {string} Message for the heartbeat
  */
-function describeRejection(reason, body) {
-    const text = `${reason} ${body.toString("utf8")}`
-        .replace(/[\p{Cc}\p{Cf}]+/gu, " ")
-        .replace(/\s+/g, " ")
-        .trim();
+function describeSocketError(error, config) {
+    const code = error && typeof error.code === "string" ? error.code : "";
 
-    if (text === "") {
-        return "";
+    if (code === "ENOTFOUND") {
+        return `Could not find the caster's host name '${config.hostname}'.`;
     }
-
-    const summary = text.length > MAX_REASON_LENGTH ? `${text.slice(0, MAX_REASON_LENGTH)}...` : text;
-    return ` The caster said: ${summary}`;
+    if (code === "EAI_AGAIN") {
+        return `Could not look up '${config.hostname}' (DNS is not responding).`;
+    }
+    if (code === "ECONNREFUSED") {
+        return `The caster refused the connection on port ${config.port}.`;
+    }
+    if (code === "ECONNRESET") {
+        return "The connection to the caster was reset.";
+    }
+    if (["EHOSTUNREACH", "ENETUNREACH", "ETIMEDOUT"].includes(code)) {
+        return `Could not reach the caster at ${config.hostname}:${config.port}.`;
+    }
+    if (/CERT|SELF_SIGNED|UNABLE_TO_|ERR_TLS/.test(code)) {
+        return "The caster's TLS certificate was not accepted.";
+    }
+    if (error instanceof Error && error.message) {
+        return error.message;
+    }
+    return "The connection to the caster failed.";
 }
 
 /**
@@ -118,7 +124,7 @@ function createChunkedDecoder(emit, fail) {
                     }
                     const size = parseInt(buffer.subarray(0, lineEnd).toString("ascii").split(";")[0].trim(), 16);
                     if (!Number.isInteger(size) || size < 0) {
-                        fail(new Error("The caster sent a malformed chunked response."));
+                        fail(new Error("The caster sent a corrupted stream (bad chunked encoding)."));
                         return;
                     }
                     buffer = Buffer.from(buffer.subarray(lineEnd + 2));
@@ -296,13 +302,7 @@ function openNtripTransport(config, callbacks, dependencies = {}) {
         }
 
         if (/^SOURCETABLE/i.test(statusLine)) {
-            fail(
-                new Error(
-                    `The caster answered with its sourcetable instead of a stream, so mountpoint ` +
-                        `'${config.mountpoint}' is not currently being fed. It has either stopped streaming, or ` +
-                        `the name is wrong.`
-                )
-            );
+            fail(new Error(`Mountpoint '${config.mountpoint}' is not active on the caster.`));
             return;
         }
 
@@ -311,75 +311,67 @@ function openNtripTransport(config, callbacks, dependencies = {}) {
             return;
         }
 
-        const status = /^HTTP\/1\.[01] (\d{3})(?: +(.*))?$/.exec(statusLine);
+        const status = /^HTTP\/1\.[01] (\d{3})(?: .*)?$/.exec(statusLine);
         if (!status) {
-            fail(new Error("The caster sent an unrecognized NTRIP response."));
+            fail(
+                new Error(
+                    "The caster sent a response this monitor does not recognise. Check the host, port and NTRIP version."
+                )
+            );
             return;
         }
 
         const code = Number(status[1]);
-        const explanation = describeRejection(status[2] ?? "", body);
 
         if (code === 401 || code === 403) {
             // Categorized so the session applies its longer cooldown instead of
             // hammering a caster that is rejecting these credentials.
             fail(
-                Object.assign(new Error(`NTRIP authentication was rejected by the caster (${code}).${explanation}`), {
+                Object.assign(new Error("The caster rejected the username or password."), {
                     code: "AUTH",
                 })
             );
             return;
         }
         if (code === 404) {
-            fail(new Error(`The NTRIP mountpoint was not found (404).${explanation}`));
+            fail(new Error(`Mountpoint '${config.mountpoint}' was not found on the caster.`));
             return;
         }
         if (code >= 300 && code < 400) {
             // Following a redirect would resend credentials to an unverified host.
-            fail(new Error(`The caster returned a redirect (${code}), which is not followed.${explanation}`));
+            fail(new Error("The caster tried to redirect the connection. Redirects are not followed."));
             return;
         }
         if (code === 406) {
             // Not a client error in practice. Casters answer this way when the
             // mountpoint is listed but its source has stopped feeding it, so the
             // message has to name the likely cause rather than the HTTP wording.
-            fail(
-                new Error(
-                    `The caster will not serve mountpoint '${config.mountpoint}' (406). This usually ` +
-                        `means the mountpoint exists but is receiving no data from its source.${explanation}`
-                )
-            );
+            fail(new Error(`Mountpoint '${config.mountpoint}' currently has no data source.`));
             return;
         }
         if (BUSY_STATUS_CODES.has(code)) {
             // Categorized so the session waits the caster out instead of
             // reconnecting into an identical refusal every few seconds.
             fail(
-                Object.assign(new Error(`The caster is currently refusing the connection (${code}).${explanation}`), {
+                Object.assign(new Error("The caster is limiting connections. Waiting before retrying."), {
                     code: "BUSY",
                 })
             );
             return;
         }
         if (code !== 200) {
-            fail(new Error(`The caster returned an unexpected NTRIP response status (${code}).${explanation}`));
+            fail(new Error("The caster returned an unexpected response."));
             return;
         }
 
         if ((headers["content-type"] ?? "").toLowerCase().includes("sourcetable")) {
-            fail(
-                new Error(
-                    `The caster answered with its sourcetable instead of a stream, so mountpoint ` +
-                        `'${config.mountpoint}' is not currently being fed. It has either stopped streaming, or ` +
-                        `the name is wrong.`
-                )
-            );
+            fail(new Error(`Mountpoint '${config.mountpoint}' is not active on the caster.`));
             return;
         }
 
         const encoding = (headers["content-encoding"] ?? "").toLowerCase();
         if (encoding !== "" && encoding !== "identity") {
-            fail(new Error(`The caster used an unsupported content encoding (${encoding}).`));
+            fail(new Error("The caster compressed the stream, which is not supported."));
             return;
         }
 
@@ -455,8 +447,8 @@ function openNtripTransport(config, callbacks, dependencies = {}) {
 
     try {
         socket = createConnection(options, Boolean(config.tls));
-    } catch (error) {
-        fail(error instanceof Error ? error : new Error("Could not open a connection to the caster."));
+    } catch {
+        fail(new Error("Could not open a connection to the caster."));
         return { write: () => {}, close: finish };
     }
 
@@ -475,7 +467,7 @@ function openNtripTransport(config, callbacks, dependencies = {}) {
         try {
             socket.write(buildRequest(config));
         } catch {
-            fail(new Error("Could not send the NTRIP request to the caster."));
+            fail(new Error("Could not send the request to the caster."));
         }
     };
 
@@ -493,35 +485,33 @@ function openNtripTransport(config, callbacks, dependencies = {}) {
 
         headerBuffer = Buffer.concat([headerBuffer, chunk]);
         if (headerBuffer.length > MAX_HEADER_BYTES) {
-            fail(new Error("The caster sent a response header larger than 16 KiB."));
+            fail(new Error("The caster's response header was too large (over 16 KiB)."));
             return;
         }
         processHeader();
     });
 
     socket.on("error", (error) => {
-        fail(error instanceof Error ? error : new Error("The NTRIP connection failed."));
+        fail(new Error(describeSocketError(error, config)));
     });
 
-    socket.on("close", () => {
+    /**
+     * Report the caster hanging up. Close and end both mean this, and
+     * whichever arrives first wins.
+     * @returns {void}
+     */
+    const hangUp = () => {
         fail(
             new Error(
                 streaming
                     ? "The caster closed the stream."
-                    : "The caster closed the connection before accepting the request."
+                    : "The caster closed the connection without answering the request."
             )
         );
-    });
+    };
 
-    socket.on("end", () => {
-        fail(
-            new Error(
-                streaming
-                    ? "The caster ended the stream."
-                    : "The caster ended the connection before accepting the request."
-            )
-        );
-    });
+    socket.on("close", hangUp);
+    socket.on("end", hangUp);
 
     return {
         /**
@@ -549,6 +539,7 @@ function openNtripTransport(config, callbacks, dependencies = {}) {
 }
 
 module.exports = {
+    describeSocketError,
     openNtripTransport,
     MAX_HEADER_BYTES,
     USER_AGENT,
