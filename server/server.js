@@ -1198,6 +1198,8 @@ app.use(function (req, res, next) {
                 let notificationBean = await Notification.save(notification, notificationID, socket.userID);
                 await sendNotificationList(socket);
 
+                notification.triggers = JSON.stringify(notification.triggers);
+
                 callback({
                     ok: true,
                     msg: "Saved.",
