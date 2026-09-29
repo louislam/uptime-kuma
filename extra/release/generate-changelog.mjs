@@ -216,17 +216,13 @@ export async function generateChangelogAI(previousVersion) {
         console.log(`Running opencode with the above prompt... (model: ${model})`);
 
         try {
-            const result = childProcess.spawnSync(
-                "opencode",
-                ["run", "-m", model, "--format", "json", llmPrompt],
-                {
-                    encoding: "utf-8",
-                    timeout: 300000,
-                    shell: true,
-                    cwd: process.cwd(),
-                    env: process.env,
-                }
-            );
+            const result = childProcess.spawnSync("opencode", ["run", "-m", model, "--format", "json", llmPrompt], {
+                encoding: "utf-8",
+                timeout: 300000,
+                shell: true,
+                cwd: process.cwd(),
+                env: process.env,
+            });
 
             if (result.status === 0 && result.stdout) {
                 // Parse NDJSON output: find "type":"text" line
@@ -268,7 +264,9 @@ export async function generateChangelogAI(previousVersion) {
 
     if (!categorizedMap) {
         categorizedMap = {};
-        console.warn(`OpenCode unavailable on all fallback models (${models.join(", ")}), using uncategorized fallback.`);
+        console.warn(
+            `OpenCode unavailable on all fallback models (${models.join(", ")}), using uncategorized fallback.`
+        );
     }
 
     return await generateChangelog(previousVersion, categorizedMap);
