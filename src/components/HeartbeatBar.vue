@@ -77,6 +77,9 @@ export default {
             beatHoverAreaPadding: 4,
             move: false,
             maxBeat: -1,
+            wrapWidth: 0,
+            reloadTimeout: null,
+            resizeObserver: null,
             // Tooltip data
             tooltipVisible: false,
             tooltipContent: null,
@@ -141,20 +144,20 @@ export default {
                 return [];
             }
 
-            // If heartbeat days is configured (not auto), data is already aggregated from server
-            if (this.normalizedHeartbeatBarDays > 0 && this.beatList.length > 0) {
-                // Show all beats from server - they are already properly aggregated
-                return this.beatList;
-            }
-
-            // Original logic for auto mode (heartbeatBarDays = 0)
-            let placeholders = [];
-
             // Handle case where maxBeat is -1 (no limit)
             if (this.maxBeat <= 0) {
                 return this.beatList;
             }
 
+            // For configured ranges the server already returns at most maxBeat
+            // beats covering the whole range, so show them all: fewer beats than
+            // fit simply spread out (see beatFullWidth), they are never padded
+            if (this.normalizedHeartbeatBarDays > 0) {
+                return this.beatList;
+            }
+
+            // Auto mode: show only what fits on screen
+            let placeholders = [];
             let start = this.beatList.length - this.maxBeat;
 
             if (this.move) {
@@ -243,7 +246,11 @@ export default {
          * @returns {string} The elapsed time in a minutes, hours or "now".
          */
         timeSinceLastBeat() {
-            const lastValidBeat = this.shortBeatList.at(-1);
+            // Aggregated bars can end in empty buckets, use the newest beat with data
+            const lastValidBeat = this.shortBeatList
+                .slice()
+                .reverse()
+                .find((beat) => beat !== 0 && beat !== null);
             const seconds = dayjs().diff(dayjs.utc(lastValidBeat?.time), "seconds");
 
             let tolerance = 60 * 2; // default for when monitorList not available
@@ -261,12 +268,31 @@ export default {
         },
 
         /**
+         * Width of one beat slot (beat plus its surrounding space).
+         * For configured ranges with fewer beats than fit the container, the
+         * slots grow so the beats spread over the full width - the beats
+         * themselves keep their normal size (see drawCanvas).
+         * @returns {number} Slot width in pixels
+         */
+        beatFullWidth() {
+            const defaultWidth = this.beatWidth + this.beatHoverAreaPadding * 2;
+            if (
+                this.normalizedHeartbeatBarDays > 0 &&
+                this.wrapWidth > 0 &&
+                this.shortBeatList.length > 0 &&
+                this.shortBeatList.length < this.maxBeat
+            ) {
+                return this.wrapWidth / this.shortBeatList.length;
+            }
+            return defaultWidth;
+        },
+
+        /**
          * Canvas width based on number of beats
          * @returns {number} Canvas width in pixels
          */
         canvasWidth() {
-            const beatFullWidth = this.beatWidth + this.beatHoverAreaPadding * 2;
-            return this.shortBeatList.length * beatFullWidth;
+            return this.shortBeatList.length * this.beatFullWidth;
         },
 
         /**
@@ -313,6 +339,14 @@ export default {
             });
         },
 
+        canvasWidth() {
+            // Changing the width attribute wipes the canvas, redraw after a
+            // resize even when the beat data itself did not change
+            this.$nextTick(() => {
+                this.drawCanvas();
+            });
+        },
+
         "$root.theme"() {
             // Redraw canvas when theme changes (nextTick ensures .dark class is applied)
             this.$nextTick(() => {
@@ -326,6 +360,8 @@ export default {
     },
     unmounted() {
         window.removeEventListener("resize", this.resize);
+        this.resizeObserver.disconnect();
+        clearTimeout(this.reloadTimeout);
         // Clean up tooltip timeout
         if (this.tooltipTimeoutId) {
             clearTimeout(this.tooltipTimeoutId);
@@ -360,6 +396,11 @@ export default {
         }
 
         window.addEventListener("resize", this.resize);
+
+        // The container can change width without the window doing so, e.g.
+        // when the status page editor opens its sidebar
+        this.resizeObserver = new ResizeObserver(() => this.resize());
+        this.resizeObserver.observe(this.$refs.wrap);
         this.resize();
 
         // Initial canvas draw
@@ -374,22 +415,25 @@ export default {
          */
         resize() {
             if (this.$refs.wrap) {
-                const newMaxBeat = Math.floor(
-                    this.$refs.wrap.clientWidth / (this.beatWidth + this.beatHoverAreaPadding * 2)
-                );
+                this.wrapWidth = this.$refs.wrap.clientWidth;
+                const newMaxBeat = Math.floor(this.wrapWidth / (this.beatWidth + this.beatHoverAreaPadding * 2));
 
-                // If maxBeat changed and we're in configured days mode, notify parent to reload data
+                // If maxBeat changed and we're in configured days mode, notify parent to reload data.
+                // Debounced: dragging a window edge fires resize continuously
                 if (newMaxBeat !== this.maxBeat && this.normalizedHeartbeatBarDays > 0) {
                     this.maxBeat = newMaxBeat;
 
-                    // Find the closest parent with reloadHeartbeatData method (StatusPage)
-                    let parent = this.$parent;
-                    while (parent && !parent.reloadHeartbeatData) {
-                        parent = parent.$parent;
-                    }
-                    if (parent && parent.reloadHeartbeatData) {
-                        parent.reloadHeartbeatData(newMaxBeat);
-                    }
+                    clearTimeout(this.reloadTimeout);
+                    this.reloadTimeout = setTimeout(() => {
+                        // Find the closest parent with reloadHeartbeatData method (StatusPage)
+                        let parent = this.$parent;
+                        while (parent && !parent.reloadHeartbeatData) {
+                            parent = parent.$parent;
+                        }
+                        if (parent && parent.reloadHeartbeatData) {
+                            parent.reloadHeartbeatData(this.maxBeat);
+                        }
+                    }, 250);
                 } else {
                     this.maxBeat = newMaxBeat;
                 }
@@ -473,8 +517,7 @@ export default {
                 this.tooltipContent = beat;
 
                 // Calculate the beat's position within the canvas
-                const beatFullWidth = this.beatWidth + this.beatHoverAreaPadding * 2;
-                const beatCenterX = beatIndex * beatFullWidth + beatFullWidth / 2;
+                const beatCenterX = beatIndex * this.beatFullWidth + this.beatFullWidth / 2;
 
                 // Convert to viewport coordinates
                 const x = canvasRect.left + beatCenterX;
@@ -553,7 +596,7 @@ export default {
             // Clear canvas
             ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
 
-            const beatFullWidth = this.beatWidth + this.beatHoverAreaPadding * 2;
+            const beatFullWidth = this.beatFullWidth;
             const centerY = this.canvasHeight / 2;
 
             // Cache CSS colors once per redraw
@@ -569,7 +612,7 @@ export default {
 
             // Draw each beat
             this.shortBeatList.forEach((beat, index) => {
-                const x = index * beatFullWidth + this.beatHoverAreaPadding;
+                const x = index * beatFullWidth + (beatFullWidth - this.beatWidth) / 2;
                 const isHovered = index === this.hoveredBeatIndex;
 
                 let width = this.beatWidth;
@@ -692,8 +735,7 @@ export default {
 
             const rect = canvas.getBoundingClientRect();
             const x = event.clientX - rect.left;
-            const beatFullWidth = this.beatWidth + this.beatHoverAreaPadding * 2;
-            const beatIndex = Math.floor(x / beatFullWidth);
+            const beatIndex = Math.floor(x / this.beatFullWidth);
 
             if (beatIndex >= 0 && beatIndex < this.shortBeatList.length) {
                 const beat = this.shortBeatList[beatIndex];

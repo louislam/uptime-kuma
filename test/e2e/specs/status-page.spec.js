@@ -213,6 +213,108 @@ test.describe("Status Page", () => {
     // @todo Test certificate expiry
     // @todo Test domain names
 
+    test("heartbeat bar days", async ({ page }, testInfo) => {
+        test.setTimeout(60000);
+
+        const monitorName = "Heartbeat Range Monitor";
+
+        // Set up a monitor
+        await page.goto("./add");
+        await login(page);
+        await expect(page.getByTestId("monitor-type-select")).toBeVisible();
+        await page.getByTestId("monitor-type-select").selectOption("http");
+        await page.getByTestId("friendly-name-input").fill(monitorName);
+        await page.getByTestId("url-input").fill("https://www.example.com/");
+        await page.getByTestId("save-button").click();
+        await page.waitForURL("/dashboard/*");
+
+        // Create a status page with the monitor
+        await page.goto("./add-status-page");
+        await page.getByTestId("name-input").fill("Heartbeat Range");
+        await page.getByTestId("slug-input").fill("heartbeat-range");
+        await page.getByTestId("submit-button").click();
+        await page.waitForURL("/status/heartbeat-range?edit");
+
+        await page.getByTestId("add-group-button").click();
+        await page.getByTestId("group-name").fill("Test Group");
+        await page.getByTestId("monitor-select").click();
+        await page.getByTestId("monitor-select").getByRole("option", { name: monitorName }).click();
+
+        /**
+         * Fill the heartbeat bar days input so the value survives the async
+         * config refresh that happens shortly after entering edit mode
+         * @param {string} value Days value to fill
+         * @returns {Promise<void>}
+         */
+        async function fillDays(value) {
+            await expect(async () => {
+                await page.getByTestId("heartbeat-bar-days-input").fill(value);
+                await page.waitForTimeout(400);
+                await expect(page.getByTestId("heartbeat-bar-days-input")).toHaveValue(value, { timeout: 100 });
+            }).toPass({ timeout: 15000 });
+        }
+
+        // Configure a 35 day heartbeat range, the unsaved monitor keeps its beats
+        await fillDays("35");
+        await expect(page.locator(".heartbeat-canvas")).not.toHaveAttribute("aria-label", /No data/, {
+            timeout: 15000,
+        });
+        await expect(page.getByText("Showing recent heartbeats until saved")).toBeVisible();
+        await page.getByTestId("save-button").click();
+        await expect(page.getByTestId("edit-sidebar")).toHaveCount(0);
+
+        // The public page should show the configured range on the heartbeat bar
+        await expect(page.getByText("35d")).toBeVisible();
+        await screenshot(testInfo, page);
+
+        /**
+         * Wait for the status page heartbeat request of a given day range
+         * @param {string} days Expected days query parameter
+         * @returns {Promise<Request>} Promise of the matching request
+         */
+        function waitForHeartbeatRequest(days) {
+            return page.waitForRequest((request) => {
+                const url = new URL(request.url());
+                return (
+                    url.pathname.endsWith("/api/status-page/heartbeat/heartbeat-range") &&
+                    url.searchParams.get("days") === days
+                );
+            });
+        }
+
+        // Edit mode previews the configured range with the same data as the public page
+        const savedRangeRequest = waitForHeartbeatRequest("35");
+        await page.getByTestId("edit-button").click();
+        await savedRangeRequest;
+        await expect(page.getByText("35d")).toBeVisible();
+
+        // The sidebar narrows the page, the bar has to fit the new width
+        await expect
+            .poll(() =>
+                page
+                    .locator(".heartbeat-canvas")
+                    .first()
+                    .evaluate((canvas) => canvas.getBoundingClientRect().width - canvas.closest(".wrap").clientWidth)
+            )
+            .toBeLessThanOrEqual(1);
+
+        // Out of range values are clamped by the server, the preview follows the input
+        const changedRangeRequest = waitForHeartbeatRequest("500");
+        await fillDays("500");
+        await changedRangeRequest;
+        await page.getByTestId("save-button").click();
+        await expect(page.getByTestId("edit-sidebar")).toHaveCount(0);
+        await page.getByTestId("edit-button").click();
+        await expect(page.getByTestId("heartbeat-bar-days-input")).toHaveValue("365", { timeout: 10000 });
+
+        // 0 restores the default behaviour
+        await fillDays("0");
+        await page.getByTestId("save-button").click();
+        await expect(page.getByTestId("edit-sidebar")).toHaveCount(0);
+        await expect(page.getByText("35d")).toHaveCount(0);
+        await screenshot(testInfo, page);
+    });
+
     test("RSS feed escapes malicious monitor names", async ({ page }, testInfo) => {
         test.setTimeout(60000);
 
