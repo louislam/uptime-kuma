@@ -1,6 +1,6 @@
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
-const { RtcmFrameReader, isObservationMessage, crc24q } = require("../../../server/ntrip/rtcm-frames");
+const { RtcmFrameReader, isObservationMessage, constellationOf, crc24q } = require("../../../server/ntrip/rtcm-frames");
 const { buildMetadataMessage, buildRtcmFrame } = require("./ntrip-support");
 
 /**
@@ -73,5 +73,30 @@ test("observation messages are recognised and metadata is not", () => {
     }
     for (const type of [1005, 1006, 1008, 1013, 1019, 1020, 1033, 1070, 1078, 1230, 1138, 4072]) {
         assert.equal(isObservationMessage(type), false, `${type} should not be an observation`);
+    }
+});
+
+test("observation messages map to their constellation", () => {
+    const cases = [
+        [1001, "GPS"],
+        [1004, "GPS"],
+        [1009, "GLONASS"],
+        [1012, "GLONASS"],
+        [1074, "GPS"],
+        [1087, "GLONASS"],
+        [1094, "Galileo"],
+        [1104, "SBAS"],
+        [1114, "QZSS"],
+        [1124, "BeiDou"],
+        [1137, "NavIC"],
+    ];
+    for (const [messageType, expected] of cases) {
+        assert.equal(constellationOf(messageType), expected, String(messageType));
+    }
+});
+
+test("messages that are not observations have no constellation", () => {
+    for (const messageType of [1005, 1033, 1070, 1078, 1230]) {
+        assert.equal(constellationOf(messageType), null, String(messageType));
     }
 });
