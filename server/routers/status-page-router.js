@@ -7,6 +7,7 @@ const { R } = require("redbean-node");
 const { badgeConstants } = require("../../src/util");
 const { makeBadge } = require("badge-maker");
 const { UptimeCalculator } = require("../uptime-calculator");
+const { isPingChartPeriod, getChartDataArrayForPeriod } = require("../util-chart-period");
 
 let router = express.Router();
 
@@ -103,6 +104,71 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
         response.json({
             heartbeatList,
             uptimeList,
+        });
+    } catch (error) {
+        sendHttpError(response, error.message);
+    }
+});
+
+/**
+ * Public ping-chart aggregates for a monitor that is already listed on the status page.
+ * Same data as getMonitorChartData, but only after verifying membership in a public group
+ * and that the status page has "Show ping chart" enabled.
+ * Allowed hours: 3, 6, 24, 168 (matches PingChart period options; "Recent" uses heartbeats).
+ */
+router.get("/api/status-page/:slug/monitor/:monitorID/chart", cache("1 minutes"), async (request, response) => {
+    allowDevAllOrigin(response);
+
+    try {
+        const slug = request.params.slug.toLowerCase();
+        const monitorID = parseInt(request.params.monitorID, 10);
+        const period = parseInt(request.query.hours, 10);
+
+        if (!Number.isInteger(monitorID) || monitorID <= 0) {
+            sendHttpError(response, "Monitor Not Found");
+            return;
+        }
+
+        if (!isPingChartPeriod(period)) {
+            sendHttpError(response, "Invalid period.");
+            return;
+        }
+
+        const statusPage = await R.findOne("status_page", " slug = ? ", [slug]);
+
+        if (!statusPage) {
+            sendHttpError(response, "Status Page Not Found");
+            return;
+        }
+
+        // Same generic 404 when the feature is disabled, so clients cannot probe the setting.
+        if (!statusPage.show_ping_chart) {
+            sendHttpError(response, "Monitor Not Found");
+            return;
+        }
+
+        const isPublicOnPage = await R.getCell(
+            `
+            SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
+            WHERE monitor_group.group_id = \`group\`.id
+            AND public = 1
+            AND \`group\`.status_page_id = ?
+            AND monitor_group.monitor_id = ?
+        `,
+            [statusPage.id, monitorID]
+        );
+
+        if (!isPublicOnPage) {
+            sendHttpError(response, "Monitor Not Found");
+            return;
+        }
+
+        const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);
+        const data = getChartDataArrayForPeriod(uptimeCalculator, period);
+
+        response.json({
+            ok: true,
+            data,
         });
     } catch (error) {
         sendHttpError(response, error.message);
