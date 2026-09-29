@@ -37,6 +37,9 @@ const HEALTHY_RESET_MS = 60000;
 /** Interval between effective-maintenance evaluations. */
 const GUARD_INTERVAL_MS = 1000;
 
+/** Assumed gap between epochs until two have been seen. 1 Hz is the common rate. */
+const DEFAULT_EPOCH_INTERVAL_MS = 1000;
+
 class NtripSession {
     /**
      * @param {object} config Normalized NTRIP configuration
@@ -61,6 +64,9 @@ class NtripSession {
         this.observedTypes = new Set();
         this.lastProgressAt = null;
         this.latestEpochUtcMs = null;
+        this.arrivalLatencyMs = null;
+        this.arrivalAt = null;
+        this.epochIntervalMs = null;
 
         this.state = "idle";
         this.message = "Not started.";
@@ -112,9 +118,12 @@ class NtripSession {
     }
 
     /**
-     * How old the latest observation is now.
+     * How old the latest observation was when it arrived, plus any time the
+     * next one is overdue.
      *
-     * Measured when read rather than when the frame arrived, so a stream that
+     * Measuring at arrival keeps the value independent of when a heartbeat
+     * reads it within the gap between epochs. Once the next epoch is later
+     * than the stream's own interval, the wait is added, so a stream that
      * stalls shows a rising age instead of a gap. The value includes any error
      * in this server's clock and in the base receiver's clock. A negative age
      * can only come from such an error and is reported as 0.
@@ -124,7 +133,9 @@ class NtripSession {
         if (this.latestEpochUtcMs === null) {
             return null;
         }
-        return Math.max(0, Math.round(this.clock.utcNow().getTime() - this.latestEpochUtcMs));
+        const interval = this.epochIntervalMs ?? DEFAULT_EPOCH_INTERVAL_MS;
+        const overdue = Math.max(0, this.clock.now() - this.arrivalAt - interval);
+        return Math.max(0, Math.round(this.arrivalLatencyMs + overdue));
     }
 
     /**
@@ -179,6 +190,9 @@ class NtripSession {
         this.observedTypes.clear();
         this.lastProgressAt = null;
         this.latestEpochUtcMs = null;
+        this.arrivalLatencyMs = null;
+        this.arrivalAt = null;
+        this.epochIntervalMs = null;
     }
 
     /**
@@ -357,9 +371,17 @@ class NtripSession {
         this.lastProgressAt = now;
         this.observedTypes.add(messageType);
 
-        const epochUtcMs = observationEpochUtc(messageType, payload, this.clock.utcNow().getTime());
-        if (epochUtcMs !== null) {
+        // One epoch is usually sent as several messages, one per constellation.
+        // Only the first message of a newer epoch marks its arrival.
+        const nowUtcMs = this.clock.utcNow().getTime();
+        const epochUtcMs = observationEpochUtc(messageType, payload, nowUtcMs);
+        if (epochUtcMs !== null && (this.latestEpochUtcMs === null || epochUtcMs > this.latestEpochUtcMs)) {
+            if (this.latestEpochUtcMs !== null) {
+                this.epochIntervalMs = epochUtcMs - this.latestEpochUtcMs;
+            }
             this.latestEpochUtcMs = epochUtcMs;
+            this.arrivalLatencyMs = nowUtcMs - epochUtcMs;
+            this.arrivalAt = now;
         }
 
         if (this.state !== "streaming") {
