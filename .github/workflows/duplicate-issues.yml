@@ -29,7 +29,7 @@ jobs:
       - name: Install opencode
         run: curl -fsSL https://opencode.ai/v2/install | bash
 
-      - uses: ./.github/actions/setup-atlascloud
+      - uses: $/.github/actions/setup-atlascloud
         with:
           api-key: ${{ secrets.ATLASCLOUD_API_KEY }}
 
