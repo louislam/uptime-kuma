@@ -369,22 +369,80 @@ test("correction age is null until the first observation", async () => {
     h.session.dispose();
 });
 
-test("correction age comes from the latest epoch and rises while the stream is silent", async () => {
+// The fake clock starts at 2026-09-07T12:00:00Z. GPS time of week 129617000 is
+// 11:59:59Z (computed independently), so this epoch is 800 ms old at start.
+const TOW_800_MS_OLD = 129617200;
+
+test("correction age is the delay at arrival and rises once the next epoch is overdue", async () => {
     const h = streaming();
     h.session.start();
     await h.clock.advance(0);
     h.fake.connections[0].callbacks.onAccepted();
 
-    // The fake clock starts at 2026-09-07T12:00:00Z; this epoch is 11:59:59Z
-    // (GPS time of week computed independently).
     h.fake.connections[0].callbacks.onData(gpsFrame(129617000));
     assert.equal(h.session.snapshot().correctionAgeMs, 1000);
 
-    await h.clock.advance(10000);
-    assert.equal(h.session.snapshot().correctionAgeMs, 11000);
+    // Within the assumed 1 s interval nothing is overdue.
+    await h.clock.advance(1000);
+    assert.equal(h.session.snapshot().correctionAgeMs, 1000);
+
+    await h.clock.advance(9000);
+    assert.equal(h.session.snapshot().correctionAgeMs, 10000);
 
     h.fake.connections[0].callbacks.onData(gpsFrame(129617000 + 10500));
     assert.equal(h.session.snapshot().correctionAgeMs, 500);
+    h.session.dispose();
+});
+
+test("correction age does not depend on when it is read between epochs", async () => {
+    const h = streaming();
+    h.session.start();
+    await h.clock.advance(0);
+    h.fake.connections[0].callbacks.onAccepted();
+
+    h.fake.connections[0].callbacks.onData(gpsFrame(TOW_800_MS_OLD));
+    for (const step of [0, 300, 699]) {
+        await h.clock.advance(step);
+        assert.equal(h.session.snapshot().correctionAgeMs, 800);
+    }
+
+    await h.clock.advance(1);
+    h.fake.connections[0].callbacks.onData(gpsFrame(TOW_800_MS_OLD + 1000));
+    assert.equal(h.session.snapshot().correctionAgeMs, 800);
+    h.session.dispose();
+});
+
+test("later messages for the same or an older epoch do not change correction age", async () => {
+    const h = streaming();
+    h.session.start();
+    await h.clock.advance(0);
+    h.fake.connections[0].callbacks.onAccepted();
+
+    h.fake.connections[0].callbacks.onData(gpsFrame(TOW_800_MS_OLD));
+    await h.clock.advance(50);
+    h.fake.connections[0].callbacks.onData(gpsFrame(TOW_800_MS_OLD));
+    assert.equal(h.session.snapshot().correctionAgeMs, 800);
+
+    h.fake.connections[0].callbacks.onData(gpsFrame(TOW_800_MS_OLD - 1000));
+    assert.equal(h.session.snapshot().correctionAgeMs, 800);
+    h.session.dispose();
+});
+
+test("the overdue allowance follows the stream's own epoch interval", async () => {
+    const h = streaming();
+    h.session.start();
+    await h.clock.advance(0);
+    h.fake.connections[0].callbacks.onAccepted();
+
+    h.fake.connections[0].callbacks.onData(gpsFrame(TOW_800_MS_OLD));
+    await h.clock.advance(5000);
+    h.fake.connections[0].callbacks.onData(gpsFrame(TOW_800_MS_OLD + 5000));
+
+    // A 5 s stream is not overdue after 4 s, only after 5 s.
+    await h.clock.advance(4000);
+    assert.equal(h.session.snapshot().correctionAgeMs, 800);
+    await h.clock.advance(2000);
+    assert.equal(h.session.snapshot().correctionAgeMs, 1800);
     h.session.dispose();
 });
 
