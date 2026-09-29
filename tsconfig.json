@@ -11,6 +11,5 @@
         "sourceMap": false,
         "strict": true,
         "esModuleInterop": true
-    },
-    "files": []
+    }
 }
