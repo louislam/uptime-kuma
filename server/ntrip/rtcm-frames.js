@@ -55,6 +55,27 @@ function isObservationMessage(messageType) {
     return messageType >= 1071 && messageType <= 1137 && msm >= 1 && msm <= 7;
 }
 
+/** Constellations of the MSM blocks 107x to 113x, in message number order. */
+const CONSTELLATIONS = ["GPS", "GLONASS", "Galileo", "SBAS", "QZSS", "BeiDou", "NavIC"];
+
+/**
+ * Name the constellation an observation message belongs to.
+ * @param {number} messageType RTCM 3 observation message number
+ * @returns {string|null} Constellation name, or null for other messages
+ */
+function constellationOf(messageType) {
+    if (!isObservationMessage(messageType)) {
+        return null;
+    }
+    if (messageType <= 1004) {
+        return "GPS";
+    }
+    if (messageType <= 1012) {
+        return "GLONASS";
+    }
+    return CONSTELLATIONS[Math.floor(messageType / 10) - 107];
+}
+
 class RtcmFrameReader {
     /**
      * @param {object} options Reader options
@@ -125,5 +146,7 @@ class RtcmFrameReader {
 module.exports = {
     RtcmFrameReader,
     isObservationMessage,
+    constellationOf,
+    CONSTELLATIONS,
     crc24q,
 };
