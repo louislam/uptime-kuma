@@ -138,7 +138,11 @@ jobs:
           node-version: 24
 
       - name: Install opencode
-        run: curl -fsSL https://opencode.ai/install | bash
+        run: curl -fsSL https://opencode.ai/v2/install | bash
+
+      - uses: $/.github/actions/setup-atlascloud
+        with:
+          api-key: ${{ secrets.ATLASCLOUD_API_KEY }}
 
       - name: Install dependencies
         run: node extra/release/install-deps.mjs
@@ -152,7 +156,7 @@ jobs:
           DRY_RUN: ${{ inputs.dry_run }}
           MERGE_SHA: ${{ needs.merge-pr.outputs.merge_sha }}
           GH_TOKEN: ${{ secrets.RELEASE_PAT }}
-          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
+          ATLASCLOUD_API_KEY: ${{ secrets.ATLASCLOUD_API_KEY }}
         run: node extra/release/create-draft-release.mjs
 
   # 4. Build the frontend dist ONCE, upload it to the draft release and share
