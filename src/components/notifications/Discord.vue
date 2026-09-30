@@ -127,18 +127,36 @@
     <div class="mb-3">
         <div class="form-check form-switch">
             <input
-                id="discord-suppress-notifications"
-                v-model="$parent.notification.discordSuppressNotifications"
+                id="discord-suppress-up"
+                v-model="$parent.notification.discordSuppressUp"
                 class="form-check-input"
                 type="checkbox"
                 role="switch"
             />
-            <label class="form-check-label" for="discord-suppress-notifications">
-                {{ $t("Suppress Notifications") }}
+            <label class="form-check-label" for="discord-suppress-up">
+                {{ $t("Suppress UP Notifications") }}
             </label>
         </div>
         <div class="form-text">
-            {{ $t("discordSuppressNotificationsHelptext") }}
+            {{ $t("discordSuppressUpHelptext") }}
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <div class="form-check form-switch">
+            <input
+                id="discord-suppress-down"
+                v-model="$parent.notification.discordSuppressDown"
+                class="form-check-input"
+                type="checkbox"
+                role="switch"
+            />
+            <label class="form-check-label" for="discord-suppress-down">
+                {{ $t("Suppress DOWN Notifications") }}
+            </label>
+        </div>
+        <div class="form-text">
+            {{ $t("discordSuppressDownHelptext") }}
         </div>
     </div>
 </template>

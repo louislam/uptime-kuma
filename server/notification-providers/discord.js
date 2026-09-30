@@ -59,9 +59,6 @@ class Discord extends NotificationProvider {
                 if (notification.discordChannelType === "createNewForumPost") {
                     discordtestdata.thread_name = notification.postName;
                 }
-                if (notification.discordSuppressNotifications) {
-                    discordtestdata.flags = SUPPRESS_NOTIFICATIONS_FLAG;
-                }
                 await axios.post(webhookUrl.toString(), discordtestdata, config);
                 return okMsg;
             }
@@ -85,7 +82,10 @@ class Discord extends NotificationProvider {
                 if (notification.discordChannelType === "createNewForumPost") {
                     payload.thread_name = notification.postName;
                 }
-                if (notification.discordSuppressNotifications) {
+                if (notification.discordSuppressDown && heartbeatJSON["status"] === DOWN) {
+                    payload.flags = SUPPRESS_NOTIFICATIONS_FLAG;
+                }
+                if (notification.discordSuppressUp && heartbeatJSON["status"] === UP) {
                     payload.flags = SUPPRESS_NOTIFICATIONS_FLAG;
                 }
                 await axios.post(webhookUrl.toString(), payload, config);
@@ -112,7 +112,10 @@ class Discord extends NotificationProvider {
                 if (notification.discordChannelType === "createNewForumPost") {
                     payload.thread_name = notification.postName;
                 }
-                if (notification.discordSuppressNotifications) {
+                if (notification.discordSuppressDown && heartbeatJSON["status"] === DOWN) {
+                    payload.flags = SUPPRESS_NOTIFICATIONS_FLAG;
+                }
+                if (notification.discordSuppressUp && heartbeatJSON["status"] === UP) {
                     payload.flags = SUPPRESS_NOTIFICATIONS_FLAG;
                 }
                 await axios.post(webhookUrl.toString(), payload, config);
@@ -168,7 +171,7 @@ class Discord extends NotificationProvider {
                 if (notification.discordPrefixMessage) {
                     discorddowndata.content = notification.discordPrefixMessage;
                 }
-                if (notification.discordSuppressNotifications) {
+                if (notification.discordSuppressDown) {
                     discorddowndata.flags = SUPPRESS_NOTIFICATIONS_FLAG;
                 }
 
@@ -248,7 +251,7 @@ class Discord extends NotificationProvider {
                 if (notification.discordPrefixMessage) {
                     discordupdata.content = notification.discordPrefixMessage;
                 }
-                if (notification.discordSuppressNotifications) {
+                if (notification.discordSuppressUp) {
                     discordupdata.flags = SUPPRESS_NOTIFICATIONS_FLAG;
                 }
 
