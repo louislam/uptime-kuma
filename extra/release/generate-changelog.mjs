@@ -3,6 +3,7 @@
 // GitHub CLI (gh command) is required
 
 import * as childProcess from "child_process";
+import * as fs from "fs";
 
 const ignoreList = [
     "louislam",
@@ -188,7 +189,8 @@ export async function generateChangelog(previousVersion, categorizedMap) {
 
 /**
  * Generate Changelog using AI
- * The LLM API can be flaky, so it retries a few times before falling back to uncategorized.
+ * The LLM API can be flaky, so it tries a list of models in order, falling back to the next model
+ * on failure before falling back to uncategorized.
  * @param {string} previousVersion Previous Version Tag
  * @returns {Promise<string>} Changelog Content
  */
@@ -201,24 +203,26 @@ export async function generateChangelogAI(previousVersion) {
 
     console.log(llmPrompt);
 
-    const maxAttempts = 3;
-    const retryDelays = [15000, 45000];
+    // Try each model in order (see .github/opencode-models.json), falling back to the next one on failure.
+    const models = JSON.parse(
+        await fs.promises.readFile(new URL("../../.github/opencode-models.json", import.meta.url), "utf8")
+    );
+    const retryDelayMs = 15000;
 
-    for (let attempt = 1; attempt <= maxAttempts && !categorizedMap; attempt++) {
-        console.log(`Running opencode with the above prompt... (attempt ${attempt}/${maxAttempts})`);
+    for (const model of models) {
+        if (categorizedMap) {
+            break;
+        }
+        console.log(`Running opencode with the above prompt... (model: ${model})`);
 
         try {
-            const result = childProcess.spawnSync(
-                "opencode",
-                ["run", "-m", "opencode/big-pickle", "--format", "json", llmPrompt],
-                {
-                    encoding: "utf-8",
-                    timeout: 300000,
-                    shell: true,
-                    cwd: process.cwd(),
-                    env: process.env,
-                }
-            );
+            const result = childProcess.spawnSync("opencode", ["run", "-m", model, "--format", "json", llmPrompt], {
+                encoding: "utf-8",
+                timeout: 300000,
+                shell: true,
+                cwd: process.cwd(),
+                env: process.env,
+            });
 
             if (result.status === 0 && result.stdout) {
                 // Parse NDJSON output: find "type":"text" line
@@ -252,16 +256,17 @@ export async function generateChangelogAI(previousVersion) {
             console.warn("Failed to run opencode:", e.message);
         }
 
-        if (!categorizedMap && attempt < maxAttempts) {
-            const delayMs = retryDelays[attempt - 1];
-            console.warn(`Attempt ${attempt} failed. Retrying in ${delayMs / 1000}s...`);
-            await new Promise((resolve) => setTimeout(resolve, delayMs));
+        if (!categorizedMap) {
+            console.warn(`Model "${model}" failed. Trying next fallback in ${retryDelayMs / 1000}s...`);
+            await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
         }
     }
 
     if (!categorizedMap) {
         categorizedMap = {};
-        console.warn(`OpenCode unavailable after ${maxAttempts} attempts, using uncategorized fallback.`);
+        console.warn(
+            `OpenCode unavailable on all fallback models (${models.join(", ")}), using uncategorized fallback.`
+        );
     }
 
     return await generateChangelog(previousVersion, categorizedMap);
