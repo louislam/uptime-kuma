@@ -86,6 +86,7 @@
                                         <option value="json-query">HTTP(s) - {{ $t("Json Query") }}</option>
                                         <option value="kafka-producer">Kafka Producer</option>
                                         <option value="mqtt">MQTT</option>
+                                        <option value="nats">NATS</option>
                                         <option value="ntp">NTP</option>
                                         <option value="rabbitmq">RabbitMQ</option>
                                         <option v-if="!$root.info.isContainer" value="sip-options">
@@ -493,7 +494,8 @@
                                     monitor.type === 'snmp' ||
                                     monitor.type === 'sip-options' ||
                                     monitor.type === 'sftp' ||
-                                    monitor.type === 'ntp'
+                                    monitor.type === 'ntp' ||
+                                    monitor.type === 'nats'
                                 "
                                 class="my-3"
                             >
@@ -707,6 +709,7 @@
                                     monitor.type === 'sip-options' ||
                                     monitor.type === 'sftp' ||
                                     monitor.type === 'ntp' ||
+                                    monitor.type === 'nats' ||
                                     (monitor.type === 'globalping' &&
                                         monitor.subtype === 'ping' &&
                                         monitor.protocol === 'TCP')
@@ -820,6 +823,32 @@
                                     <option value="starttls">STARTTLS</option>
                                 </select>
                             </div>
+
+                            <!-- NATS Monitor Fields -->
+                            <template v-if="monitor.type === 'nats'">
+                                <div class="my-3">
+                                    <label for="nats_tls_mode" class="form-label">{{ $t("SSL/TLS") }}</label>
+                                    <select id="nats_tls_mode" v-model="monitor.natsTlsMode" class="form-select">
+                                        <option value="none">{{ $t("None") }}</option>
+                                        <option value="tls">TLS</option>
+                                        <option value="tls-first">TLS-First</option>
+                                    </select>
+                                    <div class="form-text">{{ $t("natsTlsModeHelpText") }}</div>
+                                </div>
+
+                                <div class="my-3 form-check">
+                                    <input
+                                        id="nats_require_jetstream"
+                                        v-model="monitor.natsRequireJetstream"
+                                        class="form-check-input"
+                                        type="checkbox"
+                                    />
+                                    <label class="form-check-label" for="nats_require_jetstream">
+                                        {{ $t("natsRequireJetstream") }}
+                                    </label>
+                                    <div class="form-text">{{ $t("natsRequireJetstreamHelpText") }}</div>
+                                </div>
+                            </template>
 
                             <!-- SFTP Monitor Fields -->
                             <template v-if="monitor.type === 'sftp'">
@@ -1772,6 +1801,7 @@
                                     monitor.type === 'json-query' ||
                                     (monitor.type === 'port' &&
                                         ['starttls', 'secure'].includes(monitor.smtpSecurity)) ||
+                                    (monitor.type === 'nats' && monitor.natsTlsMode !== 'none') ||
                                     (monitor.type === 'globalping' && monitor.subtype === 'http')
                                 "
                                 class="my-3 form-check"
@@ -1868,6 +1898,7 @@
                                     monitor.type === 'keyword' ||
                                     monitor.type === 'json-query' ||
                                     monitor.type === 'redis' ||
+                                    (monitor.type === 'nats' && monitor.natsTlsMode !== 'none') ||
                                     (monitor.type === 'globalping' && monitor.subtype === 'http')
                                 "
                                 class="my-3 form-check"
@@ -1880,7 +1911,11 @@
                                     value=""
                                 />
                                 <label class="form-check-label" for="ignore-tls">
-                                    {{ monitor.type === "redis" ? $t("ignoreTLSErrorGeneral") : $t("ignoreTLSError") }}
+                                    {{
+                                        monitor.type === "redis" || monitor.type === "nats"
+                                            ? $t("ignoreTLSErrorGeneral")
+                                            : $t("ignoreTLSError")
+                                    }}
                                 </label>
                             </div>
 
@@ -3414,6 +3449,8 @@ const monitorDefaults = {
     conditions: [],
     system_service_name: "",
     sshAuthMethod: "password",
+    natsTlsMode: "none",
+    natsRequireJetstream: false,
     ntpStratumThreshold: 5,
     ntpTimeOffsetThreshold: 1000,
     ntpRootDispersionThreshold: 500,
@@ -3883,7 +3920,8 @@ message HealthCheckResponse {
                 this.monitor.port === "53" ||
                 this.monitor.port === "1812" ||
                 this.monitor.port === "123" ||
-                this.monitor.port === "22"
+                this.monitor.port === "22" ||
+                this.monitor.port === "4222"
             ) {
                 if (this.monitor.type === "dns") {
                     this.monitor.port = "53";
@@ -3895,6 +3933,8 @@ message HealthCheckResponse {
                     this.monitor.port = "123";
                 } else if (this.monitor.type === "sftp") {
                     this.monitor.port = "22";
+                } else if (this.monitor.type === "nats") {
+                    this.monitor.port = "4222";
                 } else if (this.monitor.type === "globalping" && this.monitor.subtype === "ping") {
                     this.monitor.port = "80";
                 } else {
