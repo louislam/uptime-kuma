@@ -114,11 +114,7 @@ describe("NATS Monitor", () => {
         const { server, port } = await createFakeServer(`INFO ${JSON.stringify(info)}\r\n`);
         try {
             await assert.rejects(
-                new NatsMonitorType().check(
-                    createMonitor({ port, natsRequireJetstream: true }),
-                    createHeartbeat(),
-                    {}
-                ),
+                new NatsMonitorType().check(createMonitor({ port, natsRequireJetstream: true }), createHeartbeat(), {}),
                 /JetStream is not enabled/
             );
         } finally {
@@ -164,11 +160,7 @@ describe("NATS Monitor", () => {
         const { server, port } = await createFakeServer(`INFO ${JSON.stringify(SAMPLE_INFO)}\r\n`);
         try {
             await assert.rejects(
-                new NatsMonitorType().check(
-                    createMonitor({ port, natsTlsMode: "tls-first" }),
-                    createHeartbeat(),
-                    {}
-                ),
+                new NatsMonitorType().check(createMonitor({ port, natsTlsMode: "tls-first" }), createHeartbeat(), {}),
                 /TLS handshake/
             );
         } finally {
