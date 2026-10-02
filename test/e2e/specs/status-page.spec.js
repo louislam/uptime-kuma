@@ -172,6 +172,13 @@ test.describe("Status Page", () => {
 
         await screenshot(testInfo, page);
 
+        await page.waitForFunction(
+            (scriptUrl) => {
+                return document.head.innerHTML.includes(scriptUrl);
+            },
+            umamiAnalyticsScriptUrl,
+            { timeout: 5000 }
+        );
         expect(await page.locator("head").innerHTML()).toContain(umamiAnalyticsScriptUrl);
         expect(await page.locator("head").innerHTML()).toContain(umamiAnalyticsWebsiteId);
 
@@ -269,6 +276,14 @@ test.describe("Status Page", () => {
 
         await page.getByTestId("save-button").click();
         await expect(page.getByTestId("edit-sidebar")).toHaveCount(0);
+
+        // Fetch status page HTML and verify RSS autodiscovery link
+        const statusPageResponse = await page.request.get("/status/security-test");
+        expect(statusPageResponse.status()).toBe(200);
+        const statusPageHtml = await statusPageResponse.text();
+        expect(statusPageHtml).toContain(
+            '<link rel="alternate" type="application/rss+xml" title="Security Test RSS Feed" href="/status/security-test/rss">'
+        );
 
         // Fetch the RSS feed
         const rssResponse = await page.request.get("/status/security-test/rss");
