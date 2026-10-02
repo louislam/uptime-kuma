@@ -85,4 +85,51 @@ describe("StatusPage", () => {
             }
         });
     });
+
+    describe("renderHTML()", () => {
+        const MOCK_INDEX_HTML = "<!DOCTYPE html><html><head><title>Uptime Kuma</title></head><body></body></html>";
+
+        test("includes RSS feed autodiscovery link with fallback title", async () => {
+            const mockStatusPage = {
+                title: "Test Status Page",
+                slug: "test-slug",
+            };
+
+            mock.method(StatusPage, "getStatusPageData", async () => ({}));
+
+            try {
+                const html = await StatusPage.renderHTML(MOCK_INDEX_HTML, mockStatusPage);
+
+                assert.ok(
+                    html.includes(
+                        '<link rel="alternate" type="application/rss+xml" title="Test Status Page RSS Feed" href="/status/test-slug/rss">'
+                    )
+                );
+            } finally {
+                mock.restoreAll();
+            }
+        });
+
+        test("includes RSS feed autodiscovery link with custom rss_title", async () => {
+            const mockStatusPage = {
+                title: "Test Status Page",
+                rss_title: "Custom RSS Title",
+                slug: "test-slug",
+            };
+
+            mock.method(StatusPage, "getStatusPageData", async () => ({}));
+
+            try {
+                const html = await StatusPage.renderHTML(MOCK_INDEX_HTML, mockStatusPage);
+
+                assert.ok(
+                    html.includes(
+                        '<link rel="alternate" type="application/rss+xml" title="Custom RSS Title" href="/status/test-slug/rss">'
+                    )
+                );
+            } finally {
+                mock.restoreAll();
+            }
+        });
+    });
 });
