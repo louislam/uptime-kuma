@@ -208,6 +208,19 @@ class StatusPage extends BeanModel {
         // manifest.json
         $("link[rel=manifest]").attr("href", `/api/status-page/${statusPage.slug}/manifest.json`);
 
+        // RSS feed autodiscovery
+        let feedTitle = "Uptime Kuma RSS Feed";
+        if (statusPage.rss_title) {
+            feedTitle = statusPage.rss_title;
+        } else if (statusPage.title) {
+            feedTitle = `${statusPage.title} RSS Feed`;
+        }
+
+        const rssLink = $('<link rel="alternate" type="application/rss+xml" />')
+            .attr("title", feedTitle)
+            .attr("href", `/status/${statusPage.slug}/rss`);
+        head.append(rssLink);
+
         return $.root().html();
     }
 
