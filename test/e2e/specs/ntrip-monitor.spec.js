@@ -41,7 +41,7 @@ test.describe("NTRIP monitor form", () => {
 
         // The advertised message families have to be visible before the user
         // points this at a caster, not buried in documentation.
-        await expect(page.getByText(/MSM4 to MSM7/)).toBeVisible();
+        await expect(page.getByText(/MSM1 to MSM7/)).toBeVisible();
         await expect(page.getByText(/only metadata is reported as down/)).toBeVisible();
         await expect(page.getByText(/Scheduled maintenance disconnects the session/)).toBeVisible();
 
