@@ -202,28 +202,32 @@ class Maintenance extends BeanModel {
         try {
             const Monitor = require("./monitor");
             const Notification = require("../notification");
-            
+
             // Get all monitors attached to this maintenance
             const monitorIDList = await R.getCol(
                 `SELECT monitor_id FROM monitor_maintenance WHERE maintenance_id = ?`,
                 [this.id]
             );
-            
+
             for (const monitorID of monitorIDList) {
                 const monitorBean = await R.findOne("monitor", " id = ? ", [monitorID]);
-                if (!monitorBean) continue;
-                
+                if (!monitorBean) {
+                    continue;
+                }
+
                 const monitor = new Monitor(monitorBean);
                 const notificationList = await Monitor.getNotificationList(monitor);
-                if (!notificationList || notificationList.length === 0) continue;
-                
+                if (!notificationList || notificationList.length === 0) {
+                    continue;
+                }
+
                 let text = isStart ? "🔧 Maintenance Started" : "✅ Maintenance Ended (Back to normal)";
                 let description = this.description ? this.description : "No description provided.";
                 let msg = `[${monitor.name}] ${text}\nTitle: ${this.title}\nDescription: ${description}`;
-                
+
                 const timezone = await UptimeKumaServer.getInstance().getTimezone();
                 const now = dayjs();
-                
+
                 // Create a dummy heartbeat for the notification
                 const heartbeatJSON = {
                     monitorID: monitor.id,
@@ -234,10 +238,10 @@ class Maintenance extends BeanModel {
                     timezoneOffset: UptimeKumaServer.getInstance().getTimezoneOffset(),
                     localDateTime: now.tz(timezone).format(SQL_DATETIME_FORMAT),
                 };
-                
+
                 const monitorData = [{ id: monitor.id, active: monitor.active, name: monitor.name }];
                 const preloadData = await Monitor.preparePreloadData(monitorData);
-                
+
                 for (let notification of notificationList) {
                     try {
                         await Notification.send(
