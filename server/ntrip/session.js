@@ -103,7 +103,7 @@ class NtripSession {
 
     /**
      * Describe current session state. Performs no network or database work.
-     * @returns {object} Snapshot with state, healthy, message, lastProgressAt and correctionAgeMs
+     * @returns {object} Snapshot with state, healthy, starting, message, lastProgressAt and correctionAgeMs
      */
     snapshot() {
         // The stale deadline ends streaming as soon as observations stop, so
@@ -111,6 +111,9 @@ class NtripSession {
         return {
             state: this.state,
             healthy: this.state === "streaming",
+            // Only the first attempt counts. Every later attempt follows a
+            // failure, so it is an outage, not startup.
+            starting: this.attemptCounter === 1 && (this.state === "connecting" || this.state === "awaiting"),
             message: this.message,
             lastProgressAt: this.lastProgressAt,
             correctionAgeMs: this.#correctionAgeMs(),
