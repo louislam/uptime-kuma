@@ -1610,5 +1610,6 @@
     "egosmsPhoneNumberDescription": "Ontvangers nummer met landscode, zonder + of 00 (vb. 2567XXXXXXXX).",
     "Hash Key": "Hash-sleutel",
     "Client Key": "Cliënt sleutel",
-    "Channel": "Kanaal"
+    "Channel": "Kanaal",
+    "wayToGetMaxChatID": "Specificeer de chat-ID in MAX waarnaar berichten moeten worden verzonden."
 }
