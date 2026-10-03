@@ -5,7 +5,7 @@ const { MonitorType } = require("../../../server/monitor-types/monitor-type");
 const Monitor = require("../../../server/model/monitor");
 const { R } = require("redbean-node");
 const { UptimeKumaServer } = require("../../../server/uptime-kuma-server");
-const { UP } = require("../../../src/util");
+const { PENDING, UP } = require("../../../src/util");
 
 /**
  * Build a monitor-shaped object that normalizes to a valid NTRIP configuration.
@@ -154,13 +154,47 @@ test("a healthy snapshot reports UP with the health message and correction age a
     assert.equal(heartbeat.ping, 1250);
 });
 
-test("startup is not reported as success while the session is still connecting", async () => {
-    const { type } = adapter();
+test("startup reports PENDING instead of failing while the first attempt is in progress", async () => {
+    const { type, createSession } = adapter();
     const monitor = fakeMonitor();
     const heartbeat = {};
 
-    await assert.rejects(() => type.check(monitor, heartbeat, null), /Connecting to caster\./);
-    assert.notEqual(heartbeat.status, UP);
+    await assert.rejects(() => type.check(monitor, heartbeat, null));
+    createSession.sessions[0].snapshotValue = {
+        state: "awaiting",
+        healthy: false,
+        starting: true,
+        message: "Connected. Waiting for correction data.",
+        lastProgressAt: null,
+    };
+
+    await type.check(monitor, heartbeat, null);
+
+    assert.equal(heartbeat.status, PENDING);
+    assert.equal(heartbeat.msg, "Connected. Waiting for correction data.");
+    // Without this, Monitor rejects any non-UP status that was not thrown.
+    assert.equal(type.allowCustomStatus, true);
+});
+
+test("a reconnect after a failure fails the check rather than reporting startup", async () => {
+    const { type, createSession } = adapter();
+    const monitor = fakeMonitor();
+    const heartbeat = {};
+
+    await assert.rejects(() => type.check(monitor, heartbeat, null));
+    createSession.sessions[0].snapshotValue = {
+        state: "connecting",
+        healthy: false,
+        starting: false,
+        message: "Reconnecting. Last failure: The caster closed the stream.",
+        lastProgressAt: null,
+    };
+
+    await assert.rejects(
+        () => type.check(monitor, heartbeat, null),
+        /Reconnecting\. Last failure: The caster closed the stream\./
+    );
+    assert.notEqual(heartbeat.status, PENDING);
 });
 
 test("a stale stream fails the check with the health reason", async () => {
