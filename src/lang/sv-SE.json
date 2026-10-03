@@ -1703,5 +1703,13 @@
     "Pattern Code ID": "Mönsterkod-ID",
     "Amoot SMS pattern help": "Ange mönsterkod-ID:t från din Amoot SMS-panel. {0}",
     "Create an Amoot SMS pattern": "Skapa ett Amoot SMS-mönster",
-    "Use Own Line for Pattern": "Använd egen rad för mönster"
+    "Use Own Line for Pattern": "Använd egen rad för mönster",
+    "Indigo URL": "Indigo-URL",
+    "indigoUrlHelptext": "Din Indigo Reflector-adress (https://NAME.indigodomo.net) eller Indigo-webbservern i ditt nätverk (https://IP:8176).",
+    "indigoIgnoreTlsErrorHelptext": "Krävs för Indigo-webbservern i ditt nätverk, som använder ett självsignerat certifikat. Krävs inte för Reflector.",
+    "indigoApiKeyHelptext": "En API-nyckel från ditt Indigo-konto (under Authorizations) eller en lokal hemlighet för webbservern i ditt nätverk.",
+    "Variable ID": "Variabel-ID",
+    "indigoVariableIdHelptext": "Varningsmeddelandet skrivs till denna variabel.",
+    "Action Group ID": "Åtgärdsgrupps-ID",
+    "indigoActionGroupIdHelptext": "Utförs efter att variabeln uppdaterats. Ange en variabel, en åtgärdsgrupp eller båda. Kopiera ID:n från Indigo med högerklick → Copy ID."
 }
