@@ -195,6 +195,69 @@ class Maintenance extends BeanModel {
     }
 
     /**
+     * Send notification when maintenance starts or ends
+     * @param {boolean} isStart
+     */
+    async sendMaintenanceNotification(isStart) {
+        try {
+            const Monitor = require("./monitor");
+            const Notification = require("../notification");
+            
+            // Get all monitors attached to this maintenance
+            const monitorIDList = await R.getCol(
+                `SELECT monitor_id FROM monitor_maintenance WHERE maintenance_id = ?`,
+                [this.id]
+            );
+            
+            for (const monitorID of monitorIDList) {
+                const monitorBean = await R.findOne("monitor", " id = ? ", [monitorID]);
+                if (!monitorBean) continue;
+                
+                const monitor = new Monitor(monitorBean);
+                const notificationList = await Monitor.getNotificationList(monitor);
+                if (!notificationList || notificationList.length === 0) continue;
+                
+                let text = isStart ? "🔧 Maintenance Started" : "✅ Maintenance Ended (Back to normal)";
+                let description = this.description ? this.description : "No description provided.";
+                let msg = `[${monitor.name}] ${text}\nTitle: ${this.title}\nDescription: ${description}`;
+                
+                const timezone = await UptimeKumaServer.getInstance().getTimezone();
+                const now = dayjs();
+                
+                // Create a dummy heartbeat for the notification
+                const heartbeatJSON = {
+                    monitorID: monitor.id,
+                    status: isStart ? 3 : 1, // 3 = MAINTENANCE, 1 = UP
+                    time: now.utc().format(SQL_DATETIME_FORMAT),
+                    msg: `${this.title} - ${description}`,
+                    timezone: timezone,
+                    timezoneOffset: UptimeKumaServer.getInstance().getTimezoneOffset(),
+                    localDateTime: now.tz(timezone).format(SQL_DATETIME_FORMAT),
+                };
+                
+                const monitorData = [{ id: monitor.id, active: monitor.active, name: monitor.name }];
+                const preloadData = await Monitor.preparePreloadData(monitorData);
+                
+                for (let notification of notificationList) {
+                    try {
+                        await Notification.send(
+                            JSON.parse(notification.config),
+                            msg,
+                            monitor.toJSON(preloadData, false),
+                            heartbeatJSON
+                        );
+                    } catch (e) {
+                        log.error("maintenance", "Cannot send notification to " + notification.name);
+                        log.error("maintenance", e);
+                    }
+                }
+            }
+        } catch (error) {
+            log.error("maintenance", "Error sending maintenance notification: " + error.message);
+        }
+    }
+
+    /**
      * Throw error if cron is invalid
      * @param {string|Date} cron Pattern or date
      * @returns {void}
@@ -235,6 +298,12 @@ class Maintenance extends BeanModel {
                 log.info("maintenance", "Maintenance id: " + this.id + " is under maintenance now");
                 UptimeKumaServer.getInstance().sendMaintenanceListByUserID(this.user_id);
                 apicache.clear();
+                this.sendMaintenanceNotification(true).catch(console.error);
+
+                let duration = this.inferDuration(0);
+                setTimeout(() => {
+                    this.sendMaintenanceNotification(false).catch(console.error);
+                }, duration);
             });
         } else if (this.cron != null) {
             let current = dayjs();
@@ -252,11 +321,13 @@ class Maintenance extends BeanModel {
                     let duration = this.inferDuration(customDuration);
 
                     UptimeKumaServer.getInstance().sendMaintenanceListByUserID(this.user_id);
+                    this.sendMaintenanceNotification(true).catch(console.error);
 
                     this.beanMeta.durationTimeout = setTimeout(() => {
                         // End of maintenance for this timeslot
                         this.beanMeta.status = "scheduled";
                         UptimeKumaServer.getInstance().sendMaintenanceListByUserID(this.user_id);
+                        this.sendMaintenanceNotification(false).catch(console.error);
                     }, duration);
 
                     // Set last start date to current time
