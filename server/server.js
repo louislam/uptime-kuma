@@ -619,6 +619,19 @@ app.use(function (req, res, next) {
                 bean.ntp_stratum_threshold = monitor.ntpStratumThreshold;
                 bean.ntp_time_offset_threshold = monitor.ntpTimeOffsetThreshold;
                 bean.ntp_root_dispersion_threshold = monitor.ntpRootDispersionThreshold;
+                bean.ntrip_tls = monitor.ntripTls;
+                bean.ntrip_mountpoint = monitor.ntripMountpoint;
+                bean.ntrip_revision = monitor.ntripRevision;
+                bean.ntrip_username = monitor.ntripUsername;
+                bean.ntrip_password = monitor.ntripPassword;
+                bean.ntrip_handshake_timeout = monitor.ntripHandshakeTimeout;
+                bean.ntrip_initial_timeout = monitor.ntripInitialTimeout;
+                bean.ntrip_stale_timeout = monitor.ntripStaleTimeout;
+                bean.ntrip_gga_enabled = monitor.ntripGgaEnabled;
+                bean.ntrip_latitude = monitor.ntripLatitude;
+                bean.ntrip_longitude = monitor.ntripLongitude;
+                bean.ntrip_altitude_msl = monitor.ntripAltitudeMsl;
+                bean.ntrip_gga_interval = monitor.ntripGgaInterval;
 
                 // ping advanced options
                 bean.ping_numeric = monitor.ping_numeric;
