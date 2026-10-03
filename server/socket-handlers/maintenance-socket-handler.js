@@ -266,6 +266,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
             maintenance.active = false;
             await R.store(maintenance);
             maintenance.stop();
+            maintenance.sendMaintenanceNotification(false).catch(console.error);
 
             apicache.clear();
 
@@ -299,6 +300,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
             maintenance.active = true;
             await R.store(maintenance);
             await maintenance.run();
+            maintenance.sendMaintenanceNotification(true).catch(console.error);
 
             apicache.clear();
 
