@@ -1,5 +1,5 @@
 const { MonitorType } = require("./monitor-type");
-const { UP } = require("../../src/util");
+const { PENDING, UP } = require("../../src/util");
 const { normalizeNtripConfig } = require("../ntrip/config");
 const { NtripSession } = require("../ntrip/session");
 const { openNtripTransport } = require("../ntrip/transport");
@@ -20,6 +20,10 @@ const { openNtripTransport } = require("../ntrip/transport");
  */
 class NtripMonitorType extends MonitorType {
     name = "ntrip";
+
+    // check() reports PENDING without throwing while the first connection
+    // attempt is in flight.
+    allowCustomStatus = true;
 
     /**
      * @param {object} dependencies Injected collaborators, replaced in tests
@@ -68,10 +72,11 @@ class NtripMonitorType extends MonitorType {
     /**
      * Report what the session has observed since the previous heartbeat.
      *
-     * Starting a session is non-blocking, so the first few heartbeats after a
-     * monitor starts report pending or down while the handshake is in flight.
-     * That is deliberate: reporting UP during connection would invent a success
-     * that has not happened.
+     * Starting a session is non-blocking, so the first heartbeats after a
+     * monitor starts report PENDING while the first connection attempt is in
+     * flight. Reporting UP would invent a success that has not happened, and
+     * reporting DOWN would send a false alert on every restart. Once that
+     * attempt fails or times out, checks fail as usual.
      * @param {Monitor} monitor Monitor to check
      * @param {Heartbeat} heartbeat Monitor heartbeat to update
      * @param {UptimeKumaServer} server Uptime Kuma server
@@ -86,6 +91,12 @@ class NtripMonitorType extends MonitorType {
         }
 
         const snapshot = session.snapshot();
+
+        if (snapshot.starting) {
+            heartbeat.status = PENDING;
+            heartbeat.msg = snapshot.message;
+            return;
+        }
 
         if (!snapshot.healthy) {
             throw new Error(snapshot.message);
