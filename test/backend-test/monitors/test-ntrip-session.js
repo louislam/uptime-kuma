@@ -193,6 +193,37 @@ test("accepted connection with no observations expires independently of heartbea
     h.session.dispose();
 });
 
+test("only the first connection attempt reports starting", async () => {
+    const h = harness();
+    assert.equal(h.session.snapshot().starting, false);
+
+    h.session.start();
+    await h.advance(0);
+    assert.equal(h.session.snapshot().starting, true);
+    h.connections[0].callbacks.onAccepted();
+    assert.equal(h.session.snapshot().starting, true);
+
+    // A failed first attempt ends startup, and the reconnect that follows is
+    // an outage rather than a second startup.
+    h.connections[0].callbacks.onFailure(new Error("The caster closed the stream."));
+    assert.equal(h.session.snapshot().starting, false);
+    await h.advance(5000);
+    assert.equal(h.connections.length, 2);
+    assert.equal(h.session.snapshot().state, "connecting");
+    assert.equal(h.session.snapshot().starting, false);
+    h.session.dispose();
+});
+
+test("a caster that never answers ends startup at the handshake deadline", async () => {
+    const h = harness();
+    h.session.start();
+    await h.advance(14999);
+    assert.equal(h.session.snapshot().starting, true);
+    await h.advance(1);
+    assert.equal(h.session.snapshot().starting, false);
+    h.session.dispose();
+});
+
 test("maintenance disconnects a streaming transport and prevents reconnect", async () => {
     let eligible = true;
     const h = harness({ isEligible: async () => eligible });
@@ -387,6 +418,20 @@ test("a stream that stops sending observations goes stale, closes and reconnects
     assert.equal(h.fake.connections[0].closes, 1);
     assert.equal(h.session.snapshot().state, "backoff");
     assert.equal(h.session.snapshot().message, "Satellite observations stopped. None received for 30 s.");
+    h.session.dispose();
+});
+
+test("the first observation ends startup and a later stale stream does not restart it", async () => {
+    const h = streaming();
+    h.session.start();
+    await h.clock.advance(0);
+    h.fake.connections[0].callbacks.onAccepted();
+    h.fake.connections[0].callbacks.onData(gpsFrame(432000000));
+    assert.equal(h.session.snapshot().starting, false);
+
+    await h.clock.advance(30000);
+    assert.equal(h.session.snapshot().state, "backoff");
+    assert.equal(h.session.snapshot().starting, false);
     h.session.dispose();
 });
 
