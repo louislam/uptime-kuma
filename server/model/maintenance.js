@@ -61,22 +61,24 @@ class Maintenance extends BeanModel {
         } else {
             // Should be cron or recurring here
             if (this.beanMeta.job) {
+                const tz = obj.timezone;
+
                 let runningTimeslot = this.getRunningTimeslot();
 
                 if (runningTimeslot) {
-                    obj.timeslotList.push(runningTimeslot);
+                    obj.timeslotList.push({
+                        startDate: dayjs(runningTimeslot.startDate).tz(tz).format(SQL_DATETIME_FORMAT),
+                        endDate: dayjs(runningTimeslot.endDate).tz(tz).format(SQL_DATETIME_FORMAT),
+                    });
                 }
 
                 let nextRunDate = this.beanMeta.job.nextRun();
                 if (nextRunDate) {
-                    let startDateDayjs = dayjs(nextRunDate);
-
-                    let startDate = startDateDayjs.toISOString();
-                    let endDate = startDateDayjs.add(this.duration, "second").toISOString();
+                    let startDateDayjs = dayjs(nextRunDate).tz(tz);
 
                     obj.timeslotList.push({
-                        startDate,
-                        endDate,
+                        startDate: startDateDayjs.format(SQL_DATETIME_FORMAT),
+                        endDate: startDateDayjs.add(this.duration, "second").format(SQL_DATETIME_FORMAT),
                     });
                 }
             }
