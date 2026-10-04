@@ -8,6 +8,7 @@ import { getDevContainerServerHostname, isDevContainer } from "../util-frontend.
 const toast = useToast();
 
 let socket;
+let knownServerVersion;
 
 const noSocketIOPages = [
     /^\/status-page$/,  //  /status-page
@@ -776,10 +777,18 @@ export default {
         },
 
         // Reload the SPA if the server version is changed.
-        "info.version"(to, from) {
-            if (from && from !== to) {
+        "info.version"(to) {
+            // On (re)connect the server first sends info without a version. Ignore it.
+            // Compare with the last known version, as "from" is undefined after a reconnect.
+            if (!to) {
+                return;
+            }
+
+            if (knownServerVersion && knownServerVersion !== to) {
+                console.log(`Server version changed from ${knownServerVersion} to ${to}, reloading the page`);
                 window.location.reload();
             }
+            knownServerVersion = to;
         },
 
         remember() {
