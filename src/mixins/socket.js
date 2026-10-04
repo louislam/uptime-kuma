@@ -777,6 +777,11 @@ export default {
 
         // Reload the SPA if the server version is changed.
         "info.version"(to, from) {
+            // On (re)connect the server first sends info without a version, ignore it
+            if (!to) {
+                return;
+            }
+
             if (from && from !== to) {
                 window.location.reload();
             }
