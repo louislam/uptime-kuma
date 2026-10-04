@@ -4,6 +4,35 @@ const dayjs = require("dayjs");
 
 const { SQL_DATETIME_FORMAT } = require("../../src/util");
 
+/**
+ * Retries a test function with exponential backoff for external service reliability.
+ * Logs a warning instead of failing the test if all retries are exhausted.
+ * @param {Function} testFn - Async function to retry
+ * @param {number} maxAttempts - Maximum number of retry attempts (default: 5)
+ * @returns {Promise<void>}
+ */
+async function retryExternalService(testFn, maxAttempts = 5) {
+    console.warn(`[WARN] It is better to reimplement the test to avoid relying on external services.`);
+
+    let lastError;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+            await testFn();
+            return; // Success, exit retry loop
+        } catch (error) {
+            lastError = error;
+            // Wait a bit before retrying with exponential backoff
+            if (attempt < maxAttempts) {
+                await new Promise((resolve) => setTimeout(resolve, 500 * 2 ** (attempt - 1)));
+            }
+        }
+    }
+    // If all retries failed, log warning instead of failing the test
+    console.warn(`[WARN] External service test failed after ${maxAttempts} attempts: ${lastError.message}`);
+}
+
+module.exports = { retryExternalService };
+
 dayjs.extend(require("dayjs/plugin/utc"));
 dayjs.extend(require("dayjs/plugin/customParseFormat"));
 

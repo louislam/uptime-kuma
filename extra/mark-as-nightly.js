@@ -1,9 +1,6 @@
 const pkg = require("../package.json");
 const fs = require("fs");
-const util = require("../src/util");
 const dayjs = require("dayjs");
-
-util.polyfill();
 
 const oldVersion = pkg.version;
 const newVersion = oldVersion + "-nightly-" + dayjs().format("YYYYMMDDHHmmss");

@@ -19,5 +19,21 @@
     "DateTime": "DataHora",
     "Message": "Mensaxe",
     "languageName": "Galego",
-    "Down": "Abaixo"
+    "Down": "Abaixo",
+    "mariadbCaCertificateLabel": "Certificado CA",
+    "mariadbCaCertificateHelptext": "Pega o certificado da CA en formato PEM para usalo con certificados autofirmados. Deixa en branco se a túa base de datos usa un certificado asinado por unha CA pública.",
+    "setupDatabaseChooseDatabase": "Que base de datos te gustaría usar?",
+    "setupDatabaseEmbeddedMariaDB": "Non precisas configurar nada. Esta imaxe de Docker ten incorporado e configurado MariaDB para ti automáticamente. Uptime Kuma conectarase a esta base de datos a través dun socket Unix.",
+    "setupDatabaseMariaDB": "Conectarse a unha base de datos MariaDB externa. Debes configurar a información de conexión á base de datos.",
+    "setupDatabaseSQLite": "Un arquivo de base de datos sinxelo, recomendado para despregues a pequena escala. Antes da versión 2.0.0, Uptime Kuma usaba SQLite como base de datos por defecto.",
+    "settingUpDatabaseMSG": "Configurando a base de datos. Pode levar un tempo, sexa paciente.",
+    "dbName": "Nome da base de datos",
+    "enableSSL": "Habilitar SSL/TLS",
+    "New Update": "Nova actualización",
+    "Appearance": "Aparencia",
+    "Primary Base URL": "URL base principal",
+    "Language": "Idioma",
+    "mariadbUseSSLHelptext": "Habilita o uso de una conexión cifrada a túa base de datos. Requerido para a maioría das bases de datos na nube.",
+    "oracledbConnectionString": "Base de datos Oracle: {connectionString}",
+    "Theme": "Tema"
 }

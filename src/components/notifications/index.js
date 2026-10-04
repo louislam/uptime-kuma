@@ -4,7 +4,9 @@ import AliyunSMS from "./AliyunSms.vue";
 import Apprise from "./Apprise.vue";
 import Bale from "./Bale.vue";
 import Bark from "./Bark.vue";
+import BearSMS from "./BearSMS.vue";
 import Bitrix24 from "./Bitrix24.vue";
+import ClickUp from "./ClickUp.vue";
 import Notifery from "./Notifery.vue";
 import ClickSendSMS from "./ClickSendSMS.vue";
 import CallMeBot from "./CallMeBot.vue";
@@ -23,6 +25,7 @@ import Gotify from "./Gotify.vue";
 import GrafanaOncall from "./GrafanaOncall.vue";
 import GtxMessaging from "./GtxMessaging.vue";
 import HomeAssistant from "./HomeAssistant.vue";
+import Indigo from "./Indigo.vue";
 import HeiiOnCall from "./HeiiOnCall.vue";
 import Keep from "./Keep.vue";
 import Kook from "./Kook.vue";
@@ -32,17 +35,21 @@ import Matrix from "./Matrix.vue";
 import Mattermost from "./Mattermost.vue";
 import NextcloudTalk from "./NextcloudTalk.vue";
 import Nostr from "./Nostr.vue";
+import NotifyApp from "./NotifyApp.vue";
 import Ntfy from "./Ntfy.vue";
 import Octopush from "./Octopush.vue";
 import OneChat from "./OneChat.vue";
 import OneBot from "./OneBot.vue";
 import Onesender from "./Onesender.vue";
+import Ooredoo from "./Ooredoo.vue";
 import Opsgenie from "./Opsgenie.vue";
 import JiraServiceManagement from "./JiraServiceManagement.vue";
 import PagerDuty from "./PagerDuty.vue";
 import FlashDuty from "./FlashDuty.vue";
 import Flowtriq from "./Flowtriq.vue";
 import PagerTree from "./PagerTree.vue";
+import Pinglet from "./Pinglet.vue";
+import Plivo from "./Plivo.vue";
 import PromoSMS from "./PromoSMS.vue";
 import Pumble from "./Pumble.vue";
 import Pushbullet from "./Pushbullet.vue";
@@ -54,6 +61,8 @@ import RocketChat from "./RocketChat.vue";
 import ServerChan from "./ServerChan.vue";
 import SerwerSMS from "./SerwerSMS.vue";
 import Signal from "./Signal.vue";
+import Signalgrid from "./Signalgrid.vue";
+import SMSGateway from "./SMSGateway.vue";
 import SMSManager from "./SMSManager.vue";
 import SMSPartner from "./SMSPartner.vue";
 import Slack from "./Slack.vue";
@@ -79,12 +88,16 @@ import Whapi from "./Whapi.vue";
 import WAHA from "./WAHA.vue";
 import Whatsapp360messenger from "./360messenger.vue";
 import Evolution from "./Evolution.vue";
+import OpenWa from "./OpenWa.vue";
 import Cellsynt from "./Cellsynt.vue";
 import WPush from "./WPush.vue";
+import WxPusher from "./WxPusher.vue";
 import SIGNL4 from "./SIGNL4.vue";
 import SendGrid from "./SendGrid.vue";
+import TurboSMTP from "./TurboSMTP.vue";
 import Brevo from "./Brevo.vue";
 import YZJ from "./YZJ.vue";
+import AmootSMS from "./AmootSMS.vue";
 import SMSPlanet from "./SMSPlanet.vue";
 import SMSIR from "./SMSIR.vue";
 import Webpush from "./Webpush.vue";
@@ -93,6 +106,7 @@ import Resend from "./Resend.vue";
 import Max from "./Max.vue";
 import VK from "./VK.vue";
 import VKTeams from "./VKTeams.vue";
+import Milky from "./Milky.vue";
 
 /**
  * Manage all notification form.
@@ -105,9 +119,12 @@ const NotificationFormList = {
     apprise: Apprise,
     bale: Bale,
     Bark: Bark,
+    bearsms: BearSMS,
     Bitrix24: Bitrix24,
+    ClickUp: ClickUp,
     clicksendsms: ClickSendSMS,
     CallMeBot: CallMeBot,
+    amootsms: AmootSMS,
     smsc: SMSC,
     smsir: SMSIR,
     DingDing: DingDing,
@@ -123,6 +140,7 @@ const NotificationFormList = {
     gotify: Gotify,
     GrafanaOncall: GrafanaOncall,
     HomeAssistant: HomeAssistant,
+    Indigo: Indigo,
     HeiiOnCall: HeiiOnCall,
     Keep: Keep,
     Kook: Kook,
@@ -132,17 +150,21 @@ const NotificationFormList = {
     mattermost: Mattermost,
     nextcloudtalk: NextcloudTalk,
     nostr: Nostr,
+    notifyapp: NotifyApp,
     ntfy: Ntfy,
     octopush: Octopush,
     OneChat: OneChat,
     OneBot: OneBot,
     Onesender: Onesender,
+    Ooredoo: Ooredoo,
     Opsgenie: Opsgenie,
     JiraServiceManagement: JiraServiceManagement,
     PagerDuty: PagerDuty,
     FlashDuty: FlashDuty,
     Flowtriq: Flowtriq,
     PagerTree: PagerTree,
+    pinglet: Pinglet,
+    plivo: Plivo,
     promosms: PromoSMS,
     pumble: Pumble,
     pushbullet: Pushbullet,
@@ -154,7 +176,9 @@ const NotificationFormList = {
     "rocket.chat": RocketChat,
     serwersms: SerwerSMS,
     signal: Signal,
+    signalgrid: Signalgrid,
     SIGNL4: SIGNL4,
+    SMSGateway: SMSGateway,
     SMSManager: SMSManager,
     SMSPartner: SMSPartner,
     slack: Slack,
@@ -178,13 +202,16 @@ const NotificationFormList = {
     SevenIO: SevenIO,
     whapi: Whapi,
     evolution: Evolution,
+    openwa: OpenWa,
     notifery: Notifery,
     waha: WAHA,
     Whatsapp360messenger: Whatsapp360messenger,
     gtxmessaging: GtxMessaging,
     Cellsynt: Cellsynt,
     WPush: WPush,
+    WxPusher: WxPusher,
     SendGrid: SendGrid,
+    TurboSMTP: TurboSMTP,
     Brevo: Brevo,
     Resend: Resend,
     YZJ: YZJ,
@@ -194,6 +221,7 @@ const NotificationFormList = {
     max: Max,
     VK: VK,
     VKTeams: VKTeams,
+    Milky: Milky,
 };
 
 export default NotificationFormList;

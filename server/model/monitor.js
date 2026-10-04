@@ -1,5 +1,6 @@
 const dayjs = require("dayjs");
 const axios = require("axios");
+const { setTimeout, clearTimeout } = require("unlimited-timeout");
 const { Prometheus } = require("../prometheus");
 const {
     log,
@@ -8,7 +9,6 @@ const {
     PENDING,
     MAINTENANCE,
     flipStatus,
-    MAX_INTERVAL_SECOND,
     MIN_INTERVAL_SECOND,
     SQL_DATETIME_FORMAT,
     evaluateJsonQuery,
@@ -51,7 +51,6 @@ const version = require("../../package.json").version;
 const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { DockerHost } = require("../docker");
-const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const { UptimeCalculator } = require("../uptime-calculator");
 const { CookieJar } = require("tough-cookie");
@@ -117,7 +116,7 @@ class Monitor extends BeanModel {
         let screenshot = null;
 
         if (this.type === "real-browser") {
-            screenshot = "/screenshots/" + jwt.sign(this.id, UptimeKumaServer.getInstance().jwtSecret) + ".png";
+            screenshot = "/screenshots/" + this.id + ".png";
         }
 
         const path = preloadData.paths.get(this.id) || [];
@@ -194,14 +193,20 @@ class Monitor extends BeanModel {
             screenshot,
             cacheBust: this.getCacheBust(),
             remote_browser: this.remote_browser,
+            screenshot_delay: this.screenshot_delay,
             snmpOid: this.snmpOid,
             jsonPathOperator: this.jsonPathOperator,
             snmpVersion: this.snmpVersion,
             smtpSecurity: this.smtpSecurity,
             rabbitmqNodes: JSON.parse(this.rabbitmqNodes),
             conditions: JSON.parse(this.conditions),
+            ntpStratumThreshold: this.ntp_stratum_threshold,
+            ntpTimeOffsetThreshold: this.ntp_time_offset_threshold,
+            ntpRootDispersionThreshold: this.ntp_root_dispersion_threshold,
             ipFamily: this.ipFamily,
             expectedTlsAlert: this.expected_tls_alert,
+            sftpPath: this.sftpPath,
+            sshAuthMethod: this.sshAuthMethod || "password",
 
             // ping advanced options
             ping_numeric: this.isPingNumeric(),
@@ -247,6 +252,10 @@ class Monitor extends BeanModel {
                 kafkaProducerSaslOptions: JSON.parse(this.kafkaProducerSaslOptions),
                 rabbitmqUsername: this.rabbitmqUsername,
                 rabbitmqPassword: this.rabbitmqPassword,
+                sshUsername: this.sshUsername,
+                sshPassword: this.sshPassword,
+                sshPrivateKey: this.sshPrivateKey,
+                sshPassphrase: this.sshPassphrase,
             };
         }
 
@@ -1017,7 +1026,7 @@ class Monitor extends BeanModel {
                     ) {
                         log.warn(
                             "domain_expiry",
-                            `Domain expiry unsupported for '.${error.meta.publicSuffix}' because its RDAP endpoint is not listed in the IANA database.`
+                            `Domain expiry unsupported for '.${error.meta.publicSuffix}' because it lacks an RDAP endpoint in the IANA database. This isn’t an Uptime Kuma bug, a limitation of your registry. If an RDAP server exists, ask your registrar politely to submit it to IANA so expiry checks can work.`
                         );
                     }
                 }
@@ -1101,7 +1110,7 @@ class Monitor extends BeanModel {
 
         // Delay Push Type
         if (this.type === "push") {
-            setTimeout(() => {
+            this.heartbeatInterval = setTimeout(() => {
                 safeBeat();
             }, this.interval * 1000);
         } else {
@@ -1306,7 +1315,7 @@ class Monitor extends BeanModel {
      * @param {Server} io Socket server instance
      * @param {number} monitorID ID of monitor to send
      * @param {number} userID ID of user to send to
-     * @returns {void}
+     * @returns {Promise<void>}
      */
     static async sendStats(io, monitorID, userID) {
         const hasClients = getTotalClientInRoom(io, userID) > 0;
@@ -1614,21 +1623,15 @@ class Monitor extends BeanModel {
     }
 
     /**
-     * Make sure monitor interval is between bounds
+     * Validate monitor configuration
      * @returns {void}
-     * @throws Interval is outside of range
+     * @throws {Error} If validation fails
      */
     validate() {
-        if (this.interval > MAX_INTERVAL_SECOND) {
-            throw new Error(`Interval cannot be more than ${MAX_INTERVAL_SECOND} seconds`);
-        }
         if (this.interval < MIN_INTERVAL_SECOND) {
             throw new Error(`Interval cannot be less than ${MIN_INTERVAL_SECOND} seconds`);
         }
 
-        if (this.retryInterval > MAX_INTERVAL_SECOND) {
-            throw new Error(`Retry interval cannot be more than ${MAX_INTERVAL_SECOND} seconds`);
-        }
         if (this.retryInterval < MIN_INTERVAL_SECOND) {
             throw new Error(`Retry interval cannot be less than ${MIN_INTERVAL_SECOND} seconds`);
         }
@@ -1690,6 +1693,22 @@ class Monitor extends BeanModel {
             } catch (e) {
                 throw new Error(`Accepted status codes must be valid JSON: ${e.message}`);
             }
+        }
+
+        if (["system-service", "pm2"].includes(this.type)) {
+            this.system_service_name = (this.system_service_name || "").trim();
+
+            if (!this.system_service_name) {
+                throw new Error(this.type === "pm2" ? "PM2 process name is required." : "Service Name is required.");
+            }
+        }
+
+        if (this.type === "system-service" && !/^[a-zA-Z0-9._\-@]+$/.test(this.system_service_name)) {
+            throw new Error("Invalid service name. Please use the internal Service Name (no spaces).");
+        }
+
+        if (this.type === "pm2" && /[\u0000-\u001F\u007F]/.test(this.system_service_name)) {
+            throw new Error("Invalid PM2 process name.");
         }
 
         if (this.type === "ping") {

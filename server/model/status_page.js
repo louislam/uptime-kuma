@@ -292,16 +292,16 @@ class StatusPage extends BeanModel {
             }
         }
 
-        // keep only DOWN heartbeats in the RSS feed
-        heartbeats = heartbeats.filter((heartbeat) => heartbeat.status === DOWN);
-
         // calculate RSS feed description
         let status = StatusPage.overallStatus(heartbeats);
         let statusDescription = StatusPage.getStatusDescription(status);
 
+        // keep only DOWN heartbeats in the RSS feed
+        const downHeartbeats = heartbeats.filter((heartbeat) => heartbeat.status === DOWN);
+
         return {
             incidents,
-            heartbeats,
+            heartbeats: downHeartbeats,
             statusDescription,
         };
     }
