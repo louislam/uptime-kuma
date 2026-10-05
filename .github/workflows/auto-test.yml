@@ -47,6 +47,17 @@ jobs:
       # Print the npm version
       - run: npm --version
 
+      # Apprise is not pre-installed on the runners, so install it from upstream
+      # (via uv) to run the Apprise notification provider test instead of skipping it.
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - name: Install Apprise
+        run: uv tool install "apprise~=2.0.1"
+      - name: Add uv tools to PATH
+        if: runner.os != 'Windows'
+        run: echo "$(uv tool dir --bin)" >> "$GITHUB_PATH"
+      - name: Verify Apprise
+        run: apprise --version
+
       - run: npm clean-install --no-fund
       - run: npm run build
       - run: npm run test-backend

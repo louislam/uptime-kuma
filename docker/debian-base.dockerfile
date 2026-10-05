@@ -1,12 +1,3 @@
-# Download Apprise deb package
-FROM node:26-trixie-slim AS download-apprise
-WORKDIR /app
-COPY ./extra/download-apprise.mjs ./download-apprise.mjs
-RUN apt update && \
-    apt --yes --no-install-recommends install curl && \
-    npm install cheerio semver && \
-    node ./download-apprise.mjs
-
 # Base Image (Slim)
 # If the image changed, the second stage image should be changed too
 FROM node:26-trixie-slim AS base3-slim
@@ -34,15 +25,17 @@ RUN apt update && \
     rm -rf /var/lib/apt/lists/* && \
     apt --yes autoremove
 
-# apprise = for notifications (Install from the deb package, as the stable one is too old) (workaround for #4867)
-# python3-paho-mqtt (#4859)
-# TODO: no idea how to delete the deb file after installation as it becomes a layer already
-COPY --from=download-apprise /app/apprise.deb ./apprise.deb
+# apprise = for notifications (installed from upstream PyPI via uv, since Debian's stable package is too old) (workaround for #4867)
+# paho-mqtt is installed for the mqtt:// plugin (#4859)
+# APPRISE_VERSION is a PEP 440 specifier (uv/pip use PEP 440, not npm semver); ~=2.0.1 accepts >=2.0.1,<2.1.0
+ARG APPRISE_VERSION="~=2.0.1"
 RUN apt update && \
-    apt --yes --no-install-recommends install ./apprise.deb python3-paho-mqtt && \
+    apt --yes --no-install-recommends install python3 && \
     rm -rf /var/lib/apt/lists/* && \
-    rm -f apprise.deb && \
-    apt --yes autoremove
+    curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=/usr/local/bin UV_NO_MODIFY_PATH=1 sh && \
+    UV_TOOL_BIN_DIR=/usr/local/bin UV_TOOL_DIR=/opt/uv-tools uv tool install "apprise${APPRISE_VERSION}" --with paho-mqtt && \
+    apt --yes autoremove && \
+    apprise --version
 
 # Install cloudflared
 RUN curl https://pkg.cloudflare.com/cloudflare-main.gpg --output /usr/share/keyrings/cloudflare-main.gpg && \
