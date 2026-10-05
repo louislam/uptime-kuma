@@ -35,7 +35,7 @@ jobs:
         uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
         with:
           path: node_modules
-          key: node-modules-${{ runner.os }}-node${{ matrix.node }}-${{ hashFiles('**/package-lock.json') }}
+          key: node-modules-${{ runner.os }}-${{ runner.arch }}-node${{ matrix.node }}-${{ hashFiles('**/package-lock.json') }}
 
       - name: Use Node.js ${{ matrix.node }}
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
