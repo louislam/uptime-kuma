@@ -1,9 +1,13 @@
 const { describe, test } = require("node:test");
 const assert = require("node:assert");
+const { execFile } = require("node:child_process");
+const { promisify } = require("node:util");
 const express = require("express");
 const commandExists = require("command-exists");
 
 const Apprise = require("../../../server/notification-providers/apprise");
+
+const execFileAsync = promisify(execFile);
 
 // Apprise is an external CLI. It is bundled in the Docker image, but not
 // installed on every dev machine / CI runner, so skip when it is unavailable.
@@ -53,5 +57,16 @@ describe("Apprise notification provider", { skip }, () => {
             new Apprise().send({ appriseURL: "json://127.0.0.1:1/notify" }, "msg"),
             /exited with code/
         );
+    });
+
+    test("xmpp:// service is usable (slixmpp is bundled)", async () => {
+        // --dry-run only loads/validates the plugin, so no XMPP server is needed.
+        const { stdout } = await execFileAsync("apprise", [
+            "--dry-run",
+            "-b",
+            "test",
+            "xmpp://user:pass@example.com/recipient@example.com",
+        ]);
+        assert.match(stdout, /xmpp:\/\//);
     });
 });

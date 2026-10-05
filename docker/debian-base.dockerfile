@@ -27,13 +27,16 @@ RUN apt update && \
 
 # apprise = for notifications (installed from upstream PyPI via uv, since Debian's stable package is too old) (workaround for #4867)
 # paho-mqtt is installed for the mqtt:// plugin (#4859)
+# slixmpp is installed for the xmpp:// plugin (#7361)
 # APPRISE_VERSION is a PEP 440 specifier (uv/pip use PEP 440, not npm semver); ~=2.0.1 accepts >=2.0.1,<2.1.0
 ARG APPRISE_VERSION="~=2.0.1"
 RUN apt update && \
     apt --yes --no-install-recommends install python3 && \
     rm -rf /var/lib/apt/lists/* && \
     curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=/usr/local/bin UV_NO_MODIFY_PATH=1 sh && \
-    UV_TOOL_BIN_DIR=/usr/local/bin UV_TOOL_DIR=/opt/uv-tools uv tool install "apprise${APPRISE_VERSION}" --with paho-mqtt && \
+    UV_TOOL_BIN_DIR=/usr/local/bin UV_TOOL_DIR=/opt/uv-tools uv tool install "apprise${APPRISE_VERSION}" \
+        --with paho-mqtt \
+        --with "slixmpp>=1.16.0" && \
     apt --yes autoremove && \
     apprise --version
 
