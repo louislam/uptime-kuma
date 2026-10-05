@@ -32,7 +32,7 @@ jobs:
       # the base branch (the vector in the TanStack incident used pull_request_target).
       - name: Cache node_modules
         id: cache-node-modules
-        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: node_modules
           key: node-modules-${{ runner.os }}-${{ runner.arch }}-node${{ matrix.node }}-${{ hashFiles('**/package-lock.json') }}
