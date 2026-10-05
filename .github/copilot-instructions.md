@@ -96,6 +96,16 @@ npm run dev  # Frontend on port 3000, backend on port 3001
 └── extra/              Utility scripts
 ```
 
+### Backend Architecture
+
+- `server/model/` — RedBean models mapped to tables. `monitor.js` holds the monitor loop and handles the core types inline: `http`, `keyword`, `json-query`, `ping`, `push`, `docker`, `radius`, `kafka-producer`.
+- `server/monitor-types/` — one class per monitor type, registered in `server/uptime-kuma-server.js` (`monitorTypeList`).
+- `server/notification-providers/` — one file per provider (110+), registered in `server/notification.js`.
+- `server/socket-handlers/` — Socket.IO event handlers (most of the real-time API surface).
+- `server/routers/` — Express routers: `api-router.js` (push/REST API), `status-page-router.js`, `better-auth-router.ts`.
+- `server/modules/`, `server/util/`, `server/utils/knex/` — shared helpers.
+- `server/better-auth.ts` + `src/auth-client.ts` — authentication (Better Auth, v3).
+
 ### Key Configuration Files
 
 - **package.json**: Scripts, dependencies, Node.js version requirement
@@ -109,8 +119,11 @@ npm run dev  # Frontend on port 3000, backend on port 3001
 ### Code Style (strictly enforced by linters)
 
 - 4 spaces indentation, double quotes, Unix line endings (LF), semicolons required
+- Prettier enforces `printWidth: 120`; run `npm run fmt` to format (also run automatically in CI)
 - **Naming**: JavaScript/TypeScript (camelCase), SQLite (snake_case), CSS/SCSS (kebab-case)
-- JSDoc required for functions/methods
+- JSDoc is required on every function declaration and method (`jsdoc/require-jsdoc`); `*.ts` relaxes some JSDoc and `any` rules
+- Notable ESLint rules: `no-var`, `one-var: never`, `max-statements-per-line: 1`, `jsdoc/require-throws`
+- **Module system**: no `"type": "module"` in package.json — `*.js` is CommonJS (`require`), `*.mjs`/`*.mts` are ESM, and `*.ts` is executed via `tsx`
 
 ## CI/CD Workflows
 
@@ -143,19 +156,22 @@ npm run dev  # Frontend on port 3000, backend on port 3001
 ## Database
 
 - Primary: SQLite (also supports MariaDB/MySQL)
-- Migrations in `db/knex_migrations/` using Knex.js
+- Migrations in `db/knex_migrations/` using Knex.js; filenames are `YYYY-MM-DD-HHMM-description.js` (migration behavior is covered by `test/backend-test/test-migration.js`)
 - Filename format validated by CI: `node ./extra/check-knex-filenames.mjs`
 - v3 uses Better Auth for authentication
 
 ## Testing
 
-- **Backend**: Node.js test runner via tsx (`test/backend-test/**/*.{ts,js}`)
-- **E2E**: Playwright (requires `npx playwright install` first time)
-- Test data in `data/playwright-test`
+- **Backend**: Node.js test runner via tsx (`test/backend-test/**/*.{ts,js}`). Use `describe()`/`test()` from `node:test` and one test per scenario (see `test/backend-test/README.md`).
+- Database monitor tests use Testcontainers; `npm run test-e2e-local` sets `SKIP_TESTCONTAINER=1` to skip them.
+- **E2E**: Playwright specs in `test/e2e/specs/*.spec.js`; `setup-process.once.js` is a one-time setup project every spec depends on. Requires `npx playwright install`.
+- Test data lives in `data/playwright-test`; reports go to `private/playwright-report`.
 
 ## Adding New Features
 
 ### New Notification Provider
+
+There are 110+ existing providers in `server/notification-providers/`; copy an existing one as a template.
 
 Files to modify:
 
@@ -167,6 +183,8 @@ Files to modify:
 6. `src/lang/en.json` (add translation keys)
 
 ### New Monitor Type
+
+Core types (`http`, `keyword`, `json-query`, `ping`, `push`, `docker`, `radius`, `kafka-producer`) are handled inline in `server/model/monitor.js`. All other types are `MonitorType` subclasses in `server/monitor-types/` registered via `UptimeKumaServer.monitorTypeList` in `server/uptime-kuma-server.js`.
 
 Files to modify:
 
@@ -182,4 +200,5 @@ Files to modify:
 3. **Git Branches**: `master` (v3 development), `3.0.X` (v3 release), `2.5.X` (v2), `1.23.X` (v1)
 4. **Node Version**: >= 26.2.0 required
 5. **Socket.IO**: Most backend logic in `server/socket-handlers/`, not REST
-6. **Never commit**: `data/`, `dist/`, `tmp/`, `private/`, `node_modules/`
+6. **Docker**: `docker/` + `compose.yaml`; image tags use the `3` suffix (`base3`, `nightly3`, `pr-test3`)
+7. **Never commit**: `data/`, `dist/`, `tmp/`, `private/`, `node_modules/`
