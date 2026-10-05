@@ -250,6 +250,6 @@
         "ssh2@1.17.0": true,
         "vue-demi@0.12.5": true,
         "esbuild@0.28.2": true,
-        "@parcel/watcher@2.5.6": true
+        "@parcel/watcher@2.6.0": true
     }
 }
