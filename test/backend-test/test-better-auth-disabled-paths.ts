@@ -5,7 +5,7 @@ import { auth } from "../../server/better-auth";
 // @ts-ignore
 import TestDB from "../mock-testdb";
 
-const testDb = new TestDB();
+const testDb = new TestDB("./data/test-better-auth-disabled-paths");
 
 // Admin paths disabled in server/better-auth.ts, mapped to their real HTTP method.
 const disabledPaths = {
