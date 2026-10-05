@@ -1,4 +1,4 @@
-import { betterAuth, Session } from "better-auth";
+import { betterAuth } from "better-auth";
 // @ts-ignore
 import * as Database from "./database.js";
 import { genSecret, log } from "../src/util";
@@ -9,7 +9,7 @@ import { Socket } from "socket.io";
 import { haveIBeenPwned } from "better-auth/plugins";
 import { twoFactor } from "better-auth/plugins";
 import { apiKey } from "@better-auth/api-key";
-import { createAuthMiddleware, APIError } from "better-auth/api";
+import { createAuthMiddleware } from "better-auth/api";
 // @ts-ignore
 import * as oldAuth from "./auth.js";
 import { hasUser } from "./routers/better-auth-router";
@@ -68,6 +68,26 @@ function createAuthInstance() {
         secret: getAuthSecret(),
         // Should be handled in Express.js, check better-auth-router.ts
         trustedOrigins: ["*"],
+
+        // Since multiple users are not supported yet, disable these paths to prevent accidental usage
+        disabledPaths: [
+            "/admin/create-user",
+            "/admin/get-user",
+            "/admin/list-users",
+            "/admin/update-user",
+            "/admin/set-user-password",
+            "/admin/set-role",
+            "/admin/ban-user",
+            "/admin/unban-user",
+            "/admin/impersonate-user",
+            "/admin/stop-impersonating",
+            "/admin/remove-user",
+            "/admin/list-user-sessions",
+            "/admin/revoke-user-session",
+            "/admin/revoke-user-sessions",
+            "/admin/has-permission",
+        ],
+
         emailAndPassword: {
             revokeSessionsOnPasswordReset: true,
             enabled: true,

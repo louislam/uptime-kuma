@@ -1,7 +1,7 @@
 <template>
     <div v-if="loadedTheme" class="container mt-3">
         <!-- Sidebar for edit mode -->
-        <div v-if="enableEditMode" class="sidebar" data-testid="edit-sidebar">
+        <div v-if="enableEditMode" class="sidebar" data-testid="edit-sidebar" :data-status-page-id="config.id">
             <div class="sidebar-body">
                 <div class="my-3">
                     <label for="slug" class="form-label">{{ $t("Slug") }}</label>
