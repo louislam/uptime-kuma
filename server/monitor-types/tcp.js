@@ -273,7 +273,7 @@ class TCPMonitorType extends MonitorType {
             throw new Error(`TLS Connection failed: ${message}`);
         } finally {
             if (socket && !socket.destroyed) {
-                socket.end();
+                socket.destroy();
             }
         }
     }
