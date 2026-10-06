@@ -418,9 +418,10 @@ export default {
                 this.wrapWidth = this.$refs.wrap.clientWidth;
                 const newMaxBeat = Math.floor(this.wrapWidth / (this.beatWidth + this.beatHoverAreaPadding * 2));
 
-                // If maxBeat changed and we're in configured days mode, notify parent to reload data.
+                // If maxBeat changed, notify parent to reload data. Also in auto
+                // mode, so the width is already known when a range gets set.
                 // Debounced: dragging a window edge fires resize continuously
-                if (newMaxBeat !== this.maxBeat && this.normalizedHeartbeatBarDays > 0) {
+                if (newMaxBeat !== this.maxBeat) {
                     this.maxBeat = newMaxBeat;
 
                     clearTimeout(this.reloadTimeout);
@@ -434,8 +435,6 @@ export default {
                             parent.reloadHeartbeatData(this.maxBeat);
                         }
                     }, 250);
-                } else {
-                    this.maxBeat = newMaxBeat;
                 }
             }
         },

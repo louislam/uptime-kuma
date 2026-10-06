@@ -1224,20 +1224,21 @@ export default {
 
         /**
          * Reload heartbeat data with a specific maxBeats count
-         * Called by HeartbeatBar when the bar is resized in configured days mode
+         * Called by HeartbeatBar when the bar is resized
          * @param {number} maxBeats Maximum number of beats to request
          * @returns {void}
          */
         reloadHeartbeatData(maxBeats) {
-            if (this.editMode && this.config.heartbeatBarDays === 0) {
-                // Edit mode uses live websocket data, don't overwrite it
-                return;
-            }
             if (maxBeats === this.heartbeatMaxBeats) {
                 // Every bar on the page reports the same width, one request is enough
                 return;
             }
             this.heartbeatMaxBeats = maxBeats;
+
+            // Auto mode doesn't depend on the width, only remember it
+            if (this.normalizeHeartbeatBarDays(this.config.heartbeatBarDays) === 0) {
+                return;
+            }
             this.loadHeartbeatData(maxBeats);
         },
 
