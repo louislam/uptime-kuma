@@ -1704,4 +1704,10 @@
     "smsgatewayToHelptext": "Lista de números de telefone dos destinatários separados por vírgula, em formato internacional (por exemplo, +15551234567)",
     "Client Key": "Client Key",
     "Channel": "Canal"
+    "Traceroute": "Traceroute",
+    "Traceroute target": "Destino do traceroute",
+    "Max hops": "Máximo de saltos",
+    "Probes per hop": "Probes por salto",
+    "Timeout (ms)": "Timeout (ms)",
+    "Use IPv6": "Usar IPv6"
 }
