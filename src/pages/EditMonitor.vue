@@ -3444,6 +3444,10 @@ const monitorDefaults = {
     ntpStratumThreshold: 5,
     ntpTimeOffsetThreshold: 1000,
     ntpRootDispersionThreshold: 500,
+    tracerouteMaxHops: 30,
+    tracerouteProbes: 3,
+    tracerouteTimeout: 1000,
+    tracerouteIPv6: false,
 };
 
 export default {
