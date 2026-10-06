@@ -513,7 +513,7 @@
                     :show-tags="config.showTags"
                     :show-certificate-expiry="config.showCertificateExpiry"
                     :heartbeat-bar-days="config.heartbeatBarDays || 0"
-                    :aggregated-monitor-ids="aggregatedMonitorIds"
+                    :aggregated-heartbeat-list="aggregatedHeartbeatList"
                     :show-only-last-heartbeat="config.showOnlyLastHeartbeat"
                 />
             </div>
@@ -718,7 +718,7 @@ export default {
                 analyticsType: null,
             },
             heartbeatMaxBeats: null,
-            aggregatedMonitorIds: null,
+            aggregatedHeartbeatList: null,
             heartbeatRequestSeq: 0,
             selectedMonitor: null,
             incident: null,
@@ -941,11 +941,6 @@ export default {
                         if (!this.config.customCSS) {
                             this.config.customCSS = "body {\n" + "  \n" + "}\n";
                         }
-
-                        // The socket has just replaced the bars with raw beats
-                        if (this.editMode && this.config.heartbeatBarDays > 0) {
-                            this.loadHeartbeatData();
-                        }
                     } else {
                         this.$root.toastError(res.msg);
                     }
@@ -1034,8 +1029,17 @@ export default {
             this.slug = "default";
         }
 
-        Promise.all([this.getData(), this.editMode ? Promise.resolve() : this.loadHeartbeatData()])
-            .then(([configRes]) => {
+        Promise.all([
+            this.getData(),
+            // A failing heartbeat request must not keep the page from loading
+            this.editMode
+                ? null
+                : this.fetchHeartbeatData().catch((error) => {
+                      console.log(error);
+                      return null;
+                  }),
+        ])
+            .then(([configRes, heartbeatData]) => {
                 this.config = configRes.data.config;
 
                 if (!this.config.domainNameList) {
@@ -1051,6 +1055,11 @@ export default {
                 this.incident = configRes.data.incident;
                 this.maintenanceList = configRes.data.maintenanceList;
                 this.$root.publicGroupList = configRes.data.publicGroupList;
+
+                // Needs the config to tell whether these are buckets
+                if (heartbeatData) {
+                    this.applyHeartbeatData(heartbeatData);
+                }
 
                 this.loading = false;
 
@@ -1082,8 +1091,7 @@ export default {
     beforeUnmount() {
         clearInterval(feedInterval);
 
-        // Keep the status page overrides out of other views like the dashboard
-        this.$root.lastHeartbeatOverrideList = {};
+        // Keep the range uptime out of other views like the dashboard
         for (const key of Object.keys(this.$root.uptimeList)) {
             if (!String(key).includes("_")) {
                 delete this.$root.uptimeList[key];
@@ -1130,11 +1138,11 @@ export default {
         },
 
         /**
-         * Load heartbeat data from API
+         * Fetch heartbeat data from API
          * @param {number|null} maxBeats Maximum number of beats to request from server
-         * @returns {Promise} Promise that resolves when data is loaded
+         * @returns {Promise<object|null>} Response data, null if a newer request was sent in the meantime
          */
-        loadHeartbeatData(maxBeats = null) {
+        fetchHeartbeatData(maxBeats = null) {
             if (maxBeats === null) {
                 // Refreshes keep the beat count the bar last asked for
                 maxBeats = this.heartbeatMaxBeats;
@@ -1151,42 +1159,67 @@ export default {
                 .get("/api/status-page/heartbeat/" + this.slug, {
                     params,
                 })
-                .then((res) => {
-                    if (requestSeq !== this.heartbeatRequestSeq) {
-                        // A newer request was sent in the meantime, drop this response
-                        return;
+                .then((res) => (requestSeq === this.heartbeatRequestSeq ? res.data : null));
+        },
+
+        /**
+         * Apply heartbeat data from API to the page and update favicon
+         * @param {object} data Response of the heartbeat API
+         * @returns {void}
+         */
+        applyHeartbeatData(data) {
+            const { heartbeatList, uptimeList, lastHeartbeatList } = data;
+            const rangeConfigured = this.normalizeHeartbeatBarDays(this.config.heartbeatBarDays) > 0;
+
+            // Kept apart from $root.heartbeatList, the socket appends raw beats
+            // there and its last entry is read as the current status
+            this.aggregatedHeartbeatList = rangeConfigured ? heartbeatList : null;
+
+            // In edit mode the socket keeps $root.heartbeatList up to date
+            if (!this.editMode) {
+                if (rangeConfigured) {
+                    const latestBeats = {};
+                    for (const monitorID in heartbeatList) {
+                        latestBeats[monitorID] = lastHeartbeatList[monitorID] ? [lastHeartbeatList[monitorID]] : [];
                     }
-                    const { heartbeatList, uptimeList, lastHeartbeatList } = res.data;
+                    this.$root.heartbeatList = latestBeats;
+                } else {
+                    this.$root.heartbeatList = heartbeatList;
+                }
+            }
 
-                    // Merge, so monitors added in the editor but not saved yet
-                    // keep the beats the socket delivered for them
-                    Object.assign(this.$root.heartbeatList, heartbeatList);
-                    this.aggregatedMonitorIds = Object.keys(heartbeatList).map(Number);
-                    this.$root.uptimeList = uptimeList;
+            // Merge, the socket's uptime keys are still needed in edit mode
+            Object.assign(this.$root.uptimeList, uptimeList);
 
-                    // Aggregated bars cannot express the current status, the
-                    // server sends the real latest heartbeats separately then
-                    this.$root.lastHeartbeatOverrideList = lastHeartbeatList || {};
+            const heartbeatIds = Object.keys(heartbeatList);
+            const downMonitors = heartbeatIds.reduce((downMonitorsAmount, currentId) => {
+                const lastHeartbeat = rangeConfigured ? lastHeartbeatList[currentId] : heartbeatList[currentId].at(-1);
 
-                    const heartbeatIds = Object.keys(heartbeatList);
-                    const downMonitors = heartbeatIds.reduce((downMonitorsAmount, currentId) => {
-                        const monitorHeartbeats = heartbeatList[currentId];
-                        const lastHeartbeat =
-                            this.$root.lastHeartbeatOverrideList[currentId] || monitorHeartbeats.at(-1);
+                if (lastHeartbeat) {
+                    return lastHeartbeat.status === 0 ? downMonitorsAmount + 1 : downMonitorsAmount;
+                } else {
+                    return downMonitorsAmount;
+                }
+            }, 0);
 
-                        if (lastHeartbeat) {
-                            return lastHeartbeat.status === 0 ? downMonitorsAmount + 1 : downMonitorsAmount;
-                        } else {
-                            return downMonitorsAmount;
-                        }
-                    }, 0);
+            favicon.badge(downMonitors);
 
-                    favicon.badge(downMonitors);
+            this.loadedData = true;
+            this.lastUpdateTime = dayjs();
+            this.updateUpdateTimer();
+        },
 
-                    this.loadedData = true;
-                    this.lastUpdateTime = dayjs();
-                    this.updateUpdateTimer();
-                });
+        /**
+         * Load heartbeat data from API
+         * @param {number|null} maxBeats Maximum number of beats to request from server
+         * @returns {Promise} Promise that resolves when data is loaded
+         */
+        loadHeartbeatData(maxBeats = null) {
+            return this.fetchHeartbeatData(maxBeats).then((data) => {
+                if (data) {
+                    this.applyHeartbeatData(data);
+                }
+            });
         },
 
         /**
@@ -1251,9 +1284,6 @@ export default {
         edit() {
             if (this.authenticated) {
                 this.$root.initSocketIO(true);
-                // The websocket delivers raw heartbeats, their last entry is
-                // the current status again
-                this.$root.lastHeartbeatOverrideList = {};
                 this.enableEditMode = true;
                 this.clickedEditButton = true;
 

@@ -124,6 +124,7 @@
                                             <HeartbeatBar
                                                 size="mid"
                                                 :monitor-id="monitor.element.id"
+                                                :heartbeat-list="monitorAggregatedBeats(monitor.element)"
                                                 :heartbeat-bar-days="monitorHeartbeatBarDays(monitor.element)"
                                             />
                                             <div
@@ -185,9 +186,9 @@ export default {
         showOnlyLastHeartbeat: {
             type: Boolean,
         },
-        /** IDs of the monitors the status page has aggregated beats for, null until loaded */
-        aggregatedMonitorIds: {
-            type: Array,
+        /** Aggregated beats per monitor ID for a configured range, null otherwise */
+        aggregatedHeartbeatList: {
+            type: Object,
             default: null,
         },
     },
@@ -208,10 +209,22 @@ export default {
          * @returns {number|string} Days for the heartbeat bar
          */
         monitorHeartbeatBarDays(monitor) {
-            if (this.aggregatedMonitorIds && !this.aggregatedMonitorIds.includes(monitor.id)) {
+            if (this.aggregatedHeartbeatList && !(monitor.id in this.aggregatedHeartbeatList)) {
                 return 0;
             }
             return this.heartbeatBarDays;
+        },
+
+        /**
+         * Get the aggregated beats of a monitor for its heartbeat bar
+         * @param {object} monitor Monitor to get the beats of
+         * @returns {Array|null} Buckets, null to use the raw beats in $root.heartbeatList
+         */
+        monitorAggregatedBeats(monitor) {
+            if (Number(this.monitorHeartbeatBarDays(monitor)) > 0) {
+                return this.aggregatedHeartbeatList?.[monitor.id] ?? null;
+            }
+            return null;
         },
 
         /**
