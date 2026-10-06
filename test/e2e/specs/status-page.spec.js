@@ -245,33 +245,20 @@ test.describe("Status Page", () => {
         await page.getByTestId("slug-input").fill("heartbeat-range");
         await page.getByTestId("submit-button").click();
         await page.waitForURL("/status/heartbeat-range?edit");
+        await waitForConfigLoaded(page); // editing connects the socket, which reloads the config
 
         await page.getByTestId("add-group-button").click();
         await page.getByTestId("group-name").fill("Test Group");
         await page.getByTestId("monitor-select").click();
         await page.getByTestId("monitor-select").getByRole("option", { name: monitorName }).click();
 
-        /**
-         * Fill the heartbeat bar days input so the value survives the async
-         * config refresh that happens shortly after entering edit mode
-         * @param {string} value Days value to fill
-         * @returns {Promise<void>}
-         */
-        async function fillDays(value) {
-            await expect(async () => {
-                await page.getByTestId("heartbeat-bar-days-input").fill(value);
-                await page.waitForTimeout(400);
-                await expect(page.getByTestId("heartbeat-bar-days-input")).toHaveValue(value, { timeout: 100 });
-            }).toPass({ timeout: 15000 });
-        }
-
         // Configure a 35 day heartbeat range, the unsaved monitor keeps its beats
-        await fillDays("35");
+        await page.getByTestId("heartbeat-bar-days-input").fill("35");
         await expect(page.locator(".heartbeat-canvas")).not.toHaveAttribute("aria-label", /No data/, {
             timeout: 15000,
         });
         await expect(page.getByText("Showing recent heartbeats until saved")).toBeVisible();
-        await page.getByTestId("save-button").click();
+        await Promise.all([page.waitForEvent("load"), page.getByTestId("save-button").click()]);
         await expect(page.getByTestId("edit-sidebar")).toHaveCount(0);
 
         // The public page should show the configured range on the heartbeat bar
@@ -295,7 +282,7 @@ test.describe("Status Page", () => {
 
         // Edit mode previews the configured range with the same data as the public page
         const savedRangeRequest = waitForHeartbeatRequest("35");
-        await page.getByTestId("edit-button").click();
+        await openEditSidebar(page);
         await savedRangeRequest;
         await expect(page.getByText("35d")).toBeVisible();
 
@@ -311,15 +298,15 @@ test.describe("Status Page", () => {
 
         // Out of range values are clamped by the server, the preview follows the input
         const changedRangeRequest = waitForHeartbeatRequest("500");
-        await fillDays("500");
+        await page.getByTestId("heartbeat-bar-days-input").fill("500");
         await changedRangeRequest;
-        await page.getByTestId("save-button").click();
+        await Promise.all([page.waitForEvent("load"), page.getByTestId("save-button").click()]);
         await expect(page.getByTestId("edit-sidebar")).toHaveCount(0);
-        await page.getByTestId("edit-button").click();
-        await expect(page.getByTestId("heartbeat-bar-days-input")).toHaveValue("365", { timeout: 10000 });
+        await openEditSidebar(page);
+        await expect(page.getByTestId("heartbeat-bar-days-input")).toHaveValue("365");
 
         // 0 restores the default behaviour
-        await fillDays("0");
+        await page.getByTestId("heartbeat-bar-days-input").fill("0");
         await page.getByTestId("save-button").click();
         await expect(page.getByTestId("edit-sidebar")).toHaveCount(0);
         await expect(page.getByText("35d")).toHaveCount(0);
