@@ -57,6 +57,24 @@ test("getAggregatedBuckets - slow check interval caps the bucket count", async (
     assert.strictEqual(getAggregatedBuckets(c, 1, 100, 7200).length, 12);
 });
 
+test("getAggregatedBuckets - interval that is not a whole number of hours leaves no gaps", async (t) => {
+    const currentTime = dayjs.utc("2026-07-01 12:20:00");
+    const c = new UptimeCalculator();
+
+    // Every 90 minutes at :10 and :40, so every third hour has no data
+    for (let i = 26 * 60 + 40; i >= 0; i -= 90) {
+        UptimeCalculator.currentDate = currentTime.subtract(i, "minute");
+        await c.update(UP);
+    }
+    UptimeCalculator.currentDate = currentTime;
+
+    const buckets = getAggregatedBuckets(c, 1, 100, 5400);
+
+    for (const [i, bucket] of buckets.entries()) {
+        assert.ok(bucket.up > 0, `Bucket ${i} is empty`);
+    }
+});
+
 test("getAggregatedBuckets - buckets tile the requested range without gaps", async (t) => {
     const currentTime = dayjs.utc("2026-07-01 12:00:00");
     UptimeCalculator.currentDate = currentTime;
