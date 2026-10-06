@@ -359,7 +359,6 @@ export default {
         },
     },
     unmounted() {
-        window.removeEventListener("resize", this.resize);
         this.resizeObserver.disconnect();
         clearTimeout(this.reloadTimeout);
         // Clean up tooltip timeout
@@ -394,8 +393,6 @@ export default {
         if (!Number.isInteger(actualHoverAreaPadding)) {
             this.beatHoverAreaPadding = Math.round(actualHoverAreaPadding) / window.devicePixelRatio;
         }
-
-        window.addEventListener("resize", this.resize);
 
         // The container can change width without the window doing so, e.g.
         // when the status page editor opens its sidebar
