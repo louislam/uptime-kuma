@@ -874,6 +874,13 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.traceroute-output {
+    max-height: 400px;
+    overflow: auto;
+    white-space: pre-wrap;
+    font-size: 0.85rem;
+}
+
 @import "../assets/vars.scss";
 
 .form-check {
