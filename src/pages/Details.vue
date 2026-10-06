@@ -42,6 +42,10 @@
                 </a>
                 <span v-if="monitor.type === 'port'">TCP Port {{ monitor.hostname }}:{{ monitor.port }}</span>
                 <span v-if="monitor.type === 'ping'">Ping: {{ monitor.hostname }}</span>
+                <span v-if="monitor.type === 'traceroute'">
+                    Traceroute: {{ monitor.hostname }}
+                    <pre v-if="monitor.traceroute_last_result" class="traceroute-output mt-2">{{ monitor.traceroute_last_result }}</pre>
+                </span>
                 <span v-if="monitor.type === 'globalping'">
                     <a v-if="monitor.subtype === 'http'" :href="monitor.url" target="_blank" rel="noopener noreferrer">
                         {{ filterPassword(monitor.url) }}
