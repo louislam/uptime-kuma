@@ -205,6 +205,10 @@ class Monitor extends BeanModel {
             ntpRootDispersionThreshold: this.ntp_root_dispersion_threshold,
             ipFamily: this.ipFamily,
             expectedTlsAlert: this.expected_tls_alert,
+            tracerouteMaxHops: this.traceroute_max_hops,
+            tracerouteProbes: this.traceroute_probes,
+            tracerouteTimeout: this.traceroute_timeout,
+            tracerouteIPv6: Boolean(this.traceroute_ipv6),
             sftpPath: this.sftpPath,
             sshAuthMethod: this.sshAuthMethod || "password",
 
