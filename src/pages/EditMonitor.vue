@@ -41,6 +41,7 @@
                                         <option value="keyword">HTTP(s) - {{ $t("Keyword") }}</option>
                                         <option value="port">TCP Port</option>
                                         <option value="ping">Ping</option>
+                                        <option value="traceroute">Traceroute</option>
                                         <option value="dns">DNS</option>
                                         <option value="docker">
                                             {{ $t("Docker Container") }}
