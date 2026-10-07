@@ -1615,5 +1615,6 @@
     "maxMessenger": "MAX Messenger",
     "maxApiUrlDescription": "Basis-API-URL für MAX Messenger. Standard: https://platform-api.max.ru",
     "Client Key": "Client Key",
-    "wayToGetMaxToken": "Sie können einen MAX-Bot-Token und weitere Details von {0} erhalten."
+    "wayToGetMaxToken": "Sie können einen MAX-Bot-Token und weitere Details von {0} erhalten.",
+    "Indigo URL": "Indigo URL"
 }
