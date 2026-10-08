@@ -133,8 +133,18 @@ test("A v2.5.3 database still works after upgrading to v3 (#7944)", { timeout: 1
         await callOk(socket, "editMaintenance", maintenance);
 
         // The other resources can be updated and deleted by the logged-in user
-        await callOk(socket, "addProxy", { protocol: "http", host: "127.0.0.1", port: 8081, auth: false, active: true, default: false }, 1);
-        await callOk(socket, "addDockerHost", { dockerDaemon: "tcp://127.0.0.1:2375", dockerType: "socket", name: "Updated Docker" }, 1);
+        await callOk(
+            socket,
+            "addProxy",
+            { protocol: "http", host: "127.0.0.1", port: 8081, auth: false, active: true, default: false },
+            1
+        );
+        await callOk(
+            socket,
+            "addDockerHost",
+            { dockerDaemon: "tcp://127.0.0.1:2375", dockerType: "socket", name: "Updated Docker" },
+            1
+        );
         await callOk(socket, "addRemoteBrowser", { name: "Updated Browser", url: "http://127.0.0.1:9222" }, 1);
         await callOk(socket, "addNotification", { name: "Updated Notif", isDefault: false, active: true }, 1);
 

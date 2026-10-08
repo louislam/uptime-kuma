@@ -248,9 +248,7 @@ class RealBrowserMonitorType extends MonitorType {
      * @inheritdoc
      */
     async check(monitor, heartbeat, server) {
-        const browser = monitor.remote_browser
-            ? await getRemoteBrowser(monitor.remote_browser)
-            : await getBrowser();
+        const browser = monitor.remote_browser ? await getRemoteBrowser(monitor.remote_browser) : await getBrowser();
         const context = await browser.newContext();
         try {
             const page = await context.newPage();
