@@ -480,10 +480,6 @@ app.use(function (req, res, next) {
 
                 let bean = await R.findOne("monitor", " id = ? ", [monitor.id]);
 
-                if (bean.user_id !== socket.userID) {
-                    throw new Error("Permission denied.");
-                }
-
                 // Check if Parent is Descendant (would cause endless loop)
                 if (monitor.parent !== null) {
                     const childIDs = await Monitor.getAllChildrenIDs(monitor.id);
@@ -680,7 +676,7 @@ app.use(function (req, res, next) {
 
                 log.info("monitor", `Get Monitor: ${monitorID} User ID: ${socket.userID}`);
 
-                let monitor = await R.findOne("monitor", " id = ? AND user_id = ? ", [monitorID, socket.userID]);
+                let monitor = await R.findOne("monitor", " id = ? ", [monitorID]);
                 const monitorData = [{ id: monitor.id, active: monitor.active }];
                 const preloadData = await Monitor.preparePreloadData(monitorData);
                 callback({
@@ -803,7 +799,7 @@ app.use(function (req, res, next) {
                 const startTime = Date.now();
 
                 // Check if this is a group monitor
-                const monitor = await R.findOne("monitor", " id = ? AND user_id = ? ", [monitorID, socket.userID]);
+                const monitor = await R.findOne("monitor", " id = ? ", [monitorID]);
 
                 // Log with context about deletion type
                 if (monitor && monitor.type === "group") {
@@ -824,7 +820,7 @@ app.use(function (req, res, next) {
                         // Delete all child monitors recursively
                         if (children && children.length > 0) {
                             for (const child of children) {
-                                await Monitor.deleteMonitorRecursively(child.id, socket.userID);
+                                await Monitor.deleteMonitorRecursively(child.id);
                                 await server.sendDeleteMonitorFromList(socket, child.id);
                             }
                         }
@@ -842,7 +838,7 @@ app.use(function (req, res, next) {
                 }
 
                 // Delete the monitor itself
-                await Monitor.deleteMonitor(monitorID, socket.userID);
+                await Monitor.deleteMonitor(monitorID);
 
                 // Fix #2880
                 apicache.clear();
@@ -1218,7 +1214,7 @@ app.use(function (req, res, next) {
             try {
                 checkLogin(socket);
 
-                await Notification.delete(notificationID, socket.userID);
+                await Notification.delete(notificationID);
                 await sendNotificationList(socket);
 
                 callback({
@@ -1437,21 +1433,6 @@ async function updateMonitorNotification(monitorID, notificationIDList) {
 }
 
 /**
- * Check if a given user owns a specific monitor
- * @param {number} userID ID of user to check
- * @param {number} monitorID ID of monitor to check
- * @returns {Promise<void>}
- * @throws {Error} The specified user does not own the monitor
- */
-async function checkOwner(userID, monitorID) {
-    let row = await R.getRow("SELECT id FROM monitor WHERE id = ? AND user_id = ? ", [monitorID, userID]);
-
-    if (!row) {
-        throw new Error("You do not own this monitor.");
-    }
-}
-
-/**
  * Function called after user login
  * This function is used to send the heartbeat list of a monitor.
  * @param {Socket} socket Socket.io instance
@@ -1514,11 +1495,9 @@ async function initDatabase(testMode = false) {
  * @returns {Promise<void>}
  */
 async function startMonitor(userID, monitorID) {
-    await checkOwner(userID, monitorID);
-
     log.info("manage", `Resume Monitor: ${monitorID} User ID: ${userID}`);
 
-    await R.exec("UPDATE monitor SET active = 1 WHERE id = ? AND user_id = ? ", [monitorID, userID]);
+    await R.exec("UPDATE monitor SET active = 1 WHERE id = ? ", [monitorID]);
 
     let monitor = await R.findOne("monitor", " id = ? ", [monitorID]);
 
@@ -1547,11 +1526,9 @@ async function restartMonitor(userID, monitorID) {
  * @returns {Promise<void>}
  */
 async function pauseMonitor(userID, monitorID) {
-    await checkOwner(userID, monitorID);
-
     log.info("manage", `Pause Monitor: ${monitorID} User ID: ${userID}`);
 
-    await R.exec("UPDATE monitor SET active = 0 WHERE id = ? AND user_id = ? ", [monitorID, userID]);
+    await R.exec("UPDATE monitor SET active = 0 WHERE id = ? ", [monitorID]);
 
     if (monitorID in server.monitorList) {
         await server.monitorList[monitorID].stop();
