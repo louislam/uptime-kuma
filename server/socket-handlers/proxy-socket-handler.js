@@ -40,7 +40,7 @@ module.exports.proxySocketHandler = (socket) => {
         try {
             checkLogin(socket);
 
-            await Proxy.delete(proxyID, socket.userID);
+            await Proxy.delete(proxyID);
             await sendProxyList(socket);
             await Proxy.reloadProxy();
 
