@@ -248,3 +248,32 @@ jobs:
           RELEASE_IS_BETA: ${{ inputs.is_beta }}
           DRY_RUN: ${{ inputs.dry_run }}
         run: node extra/release/build-images.mjs
+
+  # 6. Bump the version in the "How to Update" wiki page, last.
+  #    The GitHub wiki is its own git repository (louislam/uptime-kuma.wiki.git).
+  #    Re-runnable: does nothing when the page is already on the target version
+  update-wiki:
+    needs: docker-images
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: node extra/release/install-deps.mjs
+
+      - name: Update wiki version
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          # The wiki is part of this repo, so the release PAT can push to it
+          WIKI_TOKEN: ${{ secrets.RELEASE_PAT }}
+        run: node extra/release/update-wiki.mjs
