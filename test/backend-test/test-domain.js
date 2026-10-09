@@ -1,6 +1,6 @@
 process.env.UPTIME_KUMA_HIDE_LOG = ["info_db", "info_server"].join(",");
 
-const { describe, test, mock, before, after } = require("node:test");
+const { describe, test, mock, before, after, afterEach } = require("node:test");
 const assert = require("node:assert");
 const DomainExpiry = require("../../server/model/domain_expiry");
 const mockWebhook = require("./notification-providers/mock-webhook");
@@ -172,6 +172,55 @@ describe("Domain Expiry", () => {
                 assert.strictEqual(supportInfo.domain, "example.com");
                 assert.strictEqual(supportInfo.tld, "com");
             });
+        });
+    });
+
+    describe("Expiry event action matching", () => {
+        const expiryDate = "2027-07-03T12:43:41Z";
+
+        /**
+         * Stub fetch so these tests do not depend on IANA or a live registry.
+         * @param {object[]} events RDAP events array to return for the domain query
+         * @returns {void}
+         */
+        function stubRdap(events) {
+            mock.method(global, "fetch", async (url) => {
+                const body = String(url).includes("data.iana.org")
+                    ? { services: [[["kg"], ["http://rdap.example.test/"]]] }
+                    : { events };
+                return new Response(JSON.stringify(body), { status: 200 });
+            });
+        }
+
+        afterEach(() => {
+            mock.restoreAll();
+        });
+
+        test("matches the RFC 9083 'expiration' event action", async () => {
+            stubRdap([{ eventAction: "expiration", eventDate: expiryDate }]);
+            const d = DomainExpiry.createByName("example.kg");
+            assert.deepEqual(await d.getExpiryDate(), new Date(expiryDate));
+        });
+
+        test("matches the non-standard 'Record expires' event action used by .kg", async () => {
+            stubRdap([
+                { eventAction: "registration", eventDate: "2025-07-03T12:43:41Z" },
+                { eventAction: "Record expires", eventDate: expiryDate },
+            ]);
+            const d = DomainExpiry.createByName("example.kg");
+            assert.deepEqual(await d.getExpiryDate(), new Date(expiryDate));
+        });
+
+        test("matches event actions case-insensitively", async () => {
+            stubRdap([{ eventAction: "RECORD EXPIRES", eventDate: expiryDate }]);
+            const d = DomainExpiry.createByName("example.kg");
+            assert.deepEqual(await d.getExpiryDate(), new Date(expiryDate));
+        });
+
+        test("returns null when no event carries an expiry date", async () => {
+            stubRdap([{ eventAction: "last changed", eventDate: expiryDate }]);
+            const d = DomainExpiry.createByName("example.kg");
+            assert.strictEqual(await d.getExpiryDate(), null);
         });
     });
 
