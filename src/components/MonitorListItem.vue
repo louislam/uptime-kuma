@@ -253,13 +253,16 @@ export default {
             this.dragOverCount = Math.max(0, this.dragOverCount - 1);
         },
 
+        /**
+         * Handles dropping a dragged monitor onto this monitor.
+         * If this monitor is a group, the dragged monitor becomes its child.
+         * If this monitor is NOT a group, the dragged monitor is un-parented
+         * (removed from whatever group it was in), fixing issue #7062.
+         * @param {DragEvent} event - The drop event triggered by the browser.
+         * @returns {Promise<void>} This method does not return anything.
+         */
         async onDrop(event) {
             this.dragOverCount = 0;
-
-            // Only groups accept drops
-            if (this.monitor.type !== "group") {
-                return;
-            }
 
             const draggedId = event.dataTransfer.getData("text/monitor-id");
             if (!draggedId) {
@@ -279,12 +282,16 @@ export default {
             // Save original parent so we can revert locally if server returns error
             const originalParent = draggedMonitor.parent;
 
+            // If dropped on a group, nest inside it. Otherwise, un-parent it
+            // so it moves to the top level (fixes #7062).
+            const newParent = this.monitor.type === "group" ? this.monitor.id : null;
+
             // Prepare a full monitor object (clone) and set new parent
             const monitorToSave = JSON.parse(JSON.stringify(draggedMonitor));
-            monitorToSave.parent = this.monitor.id;
+            monitorToSave.parent = newParent;
 
             // Optimistically update local state so UI updates immediately
-            this.$root.monitorList[draggedMonitorId].parent = this.monitor.id;
+            this.$root.monitorList[draggedMonitorId].parent = newParent;
 
             // Send updated monitor state via socket
             try {
