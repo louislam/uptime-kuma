@@ -74,7 +74,12 @@
                                                     v-if="showOnlyLastHeartbeat"
                                                     :status="statusOfLastHeartbeat(monitor.element.id)"
                                                 />
-                                                <Uptime v-else :monitor="monitor.element" type="24" :pill="true" />
+                                                <Uptime
+                                                    v-else
+                                                    :monitor="monitor.element"
+                                                    :type="monitorUptimeType(monitor.element)"
+                                                    :pill="true"
+                                                />
                                                 <a
                                                     v-if="showLink(monitor)"
                                                     :href="monitor.element.url"
@@ -116,7 +121,18 @@
                                             </div>
                                         </div>
                                         <div :key="$root.userHeartbeatBar" class="col-3 col-xl-6">
-                                            <HeartbeatBar size="mid" :monitor-id="monitor.element.id" />
+                                            <HeartbeatBar
+                                                size="mid"
+                                                :monitor-id="monitor.element.id"
+                                                :heartbeat-list="monitorAggregatedBeats(monitor.element)"
+                                                :heartbeat-bar-days="monitorHeartbeatBarDays(monitor.element)"
+                                            />
+                                            <div
+                                                v-if="showUnsavedRangeHint(monitor.element)"
+                                                class="form-text text-center"
+                                            >
+                                                {{ $t("Showing recent heartbeats until saved") }}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -161,9 +177,19 @@ export default {
         showCertificateExpiry: {
             type: Boolean,
         },
+        /** Heartbeat bar days */
+        heartbeatBarDays: {
+            type: [Number, String],
+            default: 0,
+        },
         /** Should only the last heartbeat be shown? */
         showOnlyLastHeartbeat: {
             type: Boolean,
+        },
+        /** Aggregated beats per monitor ID for a configured range, null otherwise */
+        aggregatedHeartbeatList: {
+            type: Object,
+            default: null,
         },
     },
     data() {
@@ -175,6 +201,57 @@ export default {
         },
     },
     methods: {
+        /**
+         * Get the heartbeat bar days of a monitor
+         * A monitor added in the editor but not saved yet only has the raw
+         * beats from the socket, its bar is shown like in auto mode
+         * @param {object} monitor Monitor to check
+         * @returns {number|string} Days for the heartbeat bar
+         */
+        monitorHeartbeatBarDays(monitor) {
+            if (this.aggregatedHeartbeatList && !(monitor.id in this.aggregatedHeartbeatList)) {
+                return 0;
+            }
+            return this.heartbeatBarDays;
+        },
+
+        /**
+         * Get the aggregated beats of a monitor for its heartbeat bar
+         * @param {object} monitor Monitor to get the beats of
+         * @returns {Array|null} Buckets, null to use the raw beats in $root.heartbeatList
+         */
+        monitorAggregatedBeats(monitor) {
+            if (Number(this.monitorHeartbeatBarDays(monitor)) > 0) {
+                return this.aggregatedHeartbeatList?.[monitor.id] ?? null;
+            }
+            return null;
+        },
+
+        /**
+         * Whether to tell the user the monitor's bar does not follow the
+         * configured range yet
+         * @param {object} monitor Monitor to check
+         * @returns {boolean} True when the hint should show
+         */
+        showUnsavedRangeHint(monitor) {
+            return this.editMode && Number(this.heartbeatBarDays) > 0 && this.monitorHeartbeatBarDays(monitor) === 0;
+        },
+
+        /**
+         * Get the uptime type based on the monitor's heartbeat bar days
+         * Returns the exact type for dynamic uptime calculation
+         * @param {object} monitor Monitor to check
+         * @returns {string} The uptime type
+         */
+        monitorUptimeType(monitor) {
+            const days = Number(this.monitorHeartbeatBarDays(monitor));
+            if (days === 0 || days === 1) {
+                return "24"; // 24 hours (for compatibility)
+            } else {
+                return `${days}d`; // Dynamic days format (e.g., "7d", "14d", "30d")
+            }
+        },
+
         /**
          * Toggle collapsed state for a group
          * @param {object} group Group to toggle
