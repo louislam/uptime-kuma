@@ -402,6 +402,7 @@
     "No Proxy": "No Proxy",
     "Authentication": "Authentication",
     "HTTP Basic Auth": "HTTP Basic Auth",
+    "HTTP Digest Auth": "HTTP Digest Auth",
     "Bearer Token": "Bearer Token",
     "New Status Page": "New Status Page",
     "Page Not Found": "Page Not Found",
