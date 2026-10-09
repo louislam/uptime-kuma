@@ -216,7 +216,7 @@
     "webhookCustomBodyDesc": "Definiera en anpassad HTTP Body till den request. Mall variabler {msg}, {heartbeat}, {monitor} accepteras.",
     "webhookAdditionalHeadersTitle": "Ytterligare headers",
     "webhookBodyPresetOption": "Förinställning - {0}",
-    "defaultNotificationName": "Min {notification} varna ({number})",
+    "defaultNotificationName": "Min {notification}-notis ({number})",
     "webhookBodyCustomOption": "Anpassad body",
     "Webhook URL": "Webbhook URL",
     "Application Token": "Applikationstoken",
@@ -1320,7 +1320,7 @@
     "You can divide numbers with commas or semicolons": "Du kan dividera tal med {komma} eller {semikolon}",
     "WeCom Mentioned Mobile List": "WeCom nämnd mobillista",
     "invalidHostnameOrIP": "Ogiltigt värdnamn eller IP-adress. Värdnamnet måste vara ett giltigt FQDN. Jokertecken får inte användas. Kan dock innehålla understreck eller avslutas med en punkt.",
-    "homeAssistantNotificationActionHelptext": "En lista över notisåtgärder finns i Home Assistant under \"Inställningar > Utvecklarverktyg > Åtgärder\". Sök efter \"notify\" för att hitta dina åtgärder. Ange endast delen efter \"notify\". T.ex. för åtgärden \"notify.mobile_app_xyz\" anger du \"mobile_app_xyz\". För inbyggda mobilaviseringar, leta efter \"Skicka en avisering via mobile_app_xyz\" (inte \"Skicka en avisering\").",
+    "homeAssistantNotificationActionHelptext": "En lista över notisåtgärder finns i Home Assistant under \"Inställningar > Verktyg > Åtgärder\". Sök efter \"notify\" för att hitta dina åtgärder. Ange endast delen efter \"notify\". T.ex. för åtgärden \"notify.mobile_app_xyz\" anger du \"mobile_app_xyz\". För inbyggda mobilaviseringar, leta efter \"Skicka en avisering via mobile_app_xyz\" (inte \"Skicka en avisering\").",
     "teamsEnableTags": "Inkludera taggar",
     "teamsEnableTagsDescription": "Om aktiverat kommer meddelandet att innehålla övervakartaggarna.",
     "Google Apps Script Code": "Google Apps Script-kod",
@@ -1703,5 +1703,13 @@
     "Pattern Code ID": "Mönsterkod-ID",
     "Amoot SMS pattern help": "Ange mönsterkod-ID:t från din Amoot SMS-panel. {0}",
     "Create an Amoot SMS pattern": "Skapa ett Amoot SMS-mönster",
-    "Use Own Line for Pattern": "Använd egen rad för mönster"
+    "Use Own Line for Pattern": "Använd egen rad för mönster",
+    "Indigo URL": "Indigo-URL",
+    "indigoUrlHelptext": "Din Indigo Reflector-adress (https://NAME.indigodomo.net) eller Indigo-webbservern i ditt nätverk (https://IP:8176).",
+    "indigoIgnoreTlsErrorHelptext": "Krävs för Indigo-webbservern i ditt nätverk, som använder ett självsignerat certifikat. Krävs inte för Reflector.",
+    "indigoApiKeyHelptext": "En API-nyckel från ditt Indigo-konto (under Authorizations) eller en lokal hemlighet för webbservern i ditt nätverk.",
+    "Variable ID": "Variabel-ID",
+    "indigoVariableIdHelptext": "Varningsmeddelandet skrivs till denna variabel.",
+    "Action Group ID": "Åtgärdsgrupps-ID",
+    "indigoActionGroupIdHelptext": "Utförs efter att variabeln uppdaterats. Ange en variabel, en åtgärdsgrupp eller båda. Kopiera ID:n från Indigo med högerklick → Copy ID."
 }
