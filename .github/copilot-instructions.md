@@ -120,6 +120,8 @@ npm run dev  # Frontend on port 3000, backend on port 3001
 
 - 4 spaces indentation, double quotes, Unix line endings (LF), semicolons required
 - Prettier enforces `printWidth: 120`; run `npm run fmt` to format (also run automatically in CI)
+- **Comments**: keep them short (one concise line explaining what/why); no multi-line essays or restating the code
+- **Commits**: one short sentence describing the change; no long body
 - **Naming**: JavaScript/TypeScript (camelCase), SQLite (snake_case), CSS/SCSS (kebab-case)
 - JSDoc is required on every function declaration and method (`jsdoc/require-jsdoc`); `*.ts` relaxes some JSDoc and `any` rules
 - Notable ESLint rules: `no-var`, `one-var: never`, `max-statements-per-line: 1`, `jsdoc/require-throws`
