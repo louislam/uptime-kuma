@@ -177,6 +177,15 @@ class Maintenance extends BeanModel {
             bean.end_date = null;
         }
 
+        if (bean.start_date && bean.end_date) {
+            const startDate = new Date(bean.start_date);
+            const endDate = new Date(bean.end_date);
+
+            if (endDate.getTime() < startDate.getTime()) {
+                throw new Error("End date must be after start date");
+            }
+        }
+
         if (bean.strategy === "cron") {
             bean.duration = obj.durationMinutes * 60;
             bean.cron = obj.cron;
