@@ -2,9 +2,8 @@ import vue from "@vitejs/plugin-vue";
 import { defineConfig } from "vite";
 import visualizer from "rollup-plugin-visualizer";
 import viteCompression from "vite-plugin-compression";
-
-const postCssScss = require("postcss-scss");
-const postcssRTLCSS = require("postcss-rtlcss");
+import postCssScss from "postcss-scss";
+import postcssRTLCSS from "postcss-rtlcss";
 
 const viteCompressionFilter = /\.(js|mjs|json|css|html|svg)$/i;
 
@@ -37,15 +36,26 @@ export default defineConfig({
             map: false,
             plugins: [postcssRTLCSS],
         },
+        preprocessorOptions: {
+            scss: {
+                loadPaths: [process.cwd()],
+                quietDeps: true,
+
+                // Most of them are coming from boostrap unfortunately
+                silenceDeprecations: [
+                    "import",
+                    "global-builtin",
+                    "if-function",
+                    "color-functions",
+                    "abs-percent",
+                    "function-units",
+                ],
+            },
+        },
     },
     build: {
         commonjsOptions: {
             include: [/.js$/],
-        },
-        rollupOptions: {
-            output: {
-                manualChunks(id, { getModuleInfo, getModuleIds }) {},
-            },
         },
     },
 });

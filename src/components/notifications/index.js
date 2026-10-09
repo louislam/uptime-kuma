@@ -25,6 +25,7 @@ import Gotify from "./Gotify.vue";
 import GrafanaOncall from "./GrafanaOncall.vue";
 import GtxMessaging from "./GtxMessaging.vue";
 import HomeAssistant from "./HomeAssistant.vue";
+import Indigo from "./Indigo.vue";
 import HeiiOnCall from "./HeiiOnCall.vue";
 import Keep from "./Keep.vue";
 import Kook from "./Kook.vue";
@@ -139,6 +140,7 @@ const NotificationFormList = {
     gotify: Gotify,
     GrafanaOncall: GrafanaOncall,
     HomeAssistant: HomeAssistant,
+    Indigo: Indigo,
     HeiiOnCall: HeiiOnCall,
     Keep: Keep,
     Kook: Kook,

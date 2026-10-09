@@ -36,7 +36,7 @@ module.exports.remoteBrowserSocketHandler = (socket) => {
         try {
             checkLogin(socket);
 
-            await RemoteBrowser.delete(dockerHostID, socket.userID);
+            await RemoteBrowser.delete(dockerHostID);
             await sendRemoteBrowserList(socket);
 
             callback({

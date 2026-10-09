@@ -1,6 +1,28 @@
 import { expect, test } from "@playwright/test";
 import { login, restoreSqliteSnapshot, screenshot } from "../util-test";
 
+/**
+ * Wait until the status page has finished loading its config after the socket logs in.
+ * Clicking "Edit" connects the socket; the page then asynchronously fetches the private
+ * config, which can overwrite edits made too early. The private config is the only one
+ * that carries the status page `id`, so wait until that attribute is populated.
+ * @param {import("@playwright/test").Page} page Page
+ * @returns {Promise<void>}
+ */
+async function waitForConfigLoaded(page) {
+    await expect(page.getByTestId("edit-sidebar")).toHaveAttribute("data-status-page-id", /^\d+$/);
+}
+
+/**
+ * Open the status page edit sidebar and wait until its config has finished loading.
+ * @param {import("@playwright/test").Page} page Page
+ * @returns {Promise<void>}
+ */
+async function openEditSidebar(page) {
+    await page.getByTestId("edit-button").click();
+    await waitForConfigLoaded(page);
+}
+
 test.describe("Status Page", () => {
     test.beforeEach(async ({ page }) => {
         await restoreSqliteSnapshot(page);
@@ -73,6 +95,7 @@ test.describe("Status Page", () => {
         await page.getByTestId("slug-input").fill("example");
         await page.getByTestId("submit-button").click();
         await page.waitForURL("/status/example?edit"); // wait for the page to be created
+        await waitForConfigLoaded(page); // editing connects the socket, which reloads the config
 
         // Fill in some details
         await page.getByTestId("description-input").fill(descriptionText);
@@ -113,7 +136,9 @@ test.describe("Status Page", () => {
 
         // Save the changes
         await screenshot(testInfo, page);
-        await page.getByTestId("save-button").click();
+        // Saving reloads the whole page (location.href), so wait for that navigation
+        // before asserting on the SSR'd <head>.
+        await Promise.all([page.waitForEvent("load"), page.getByTestId("save-button").click()]);
         await expect(page.getByTestId("edit-sidebar")).toHaveCount(0);
 
         // Ensure changes are visible
@@ -135,13 +160,7 @@ test.describe("Status Page", () => {
         await expect(page.locator("body")).toHaveClass(theme);
 
         // Add Google Analytics ID to head and verify
-        await page.waitForFunction(
-            () => {
-                return document.head.innerHTML.includes("https://www.googletagmanager.com/gtag/js?id=");
-            },
-            { timeout: 5000 }
-        );
-        expect(await page.locator("head").innerHTML()).toContain(googleAnalyticsId);
+        await expect.poll(() => page.locator("head").innerHTML()).toContain(googleAnalyticsId);
 
         const backgroundColor = await page.evaluate(() => window.getComputedStyle(document.body).backgroundColor);
         expect(backgroundColor).toEqual("rgb(0, 128, 128)");
@@ -150,7 +169,7 @@ test.describe("Status Page", () => {
         expect(await page.locator("head").innerHTML()).toContain(googleAnalyticsId);
 
         // Flip the "Show Tags" and "Show Powered By" switches:
-        await page.getByTestId("edit-button").click();
+        await openEditSidebar(page);
         await expect(page.getByTestId("edit-sidebar")).toHaveCount(1);
         await page.getByTestId("show-tags-checkbox").setChecked(true);
         await page.getByTestId("show-powered-by-checkbox").setChecked(true);
@@ -161,7 +180,9 @@ test.describe("Status Page", () => {
         await page.getByTestId("analytics-type-select").selectOption("umami");
         await page.getByTestId("analytics-script-url-input").fill(umamiAnalyticsScriptUrl);
         await page.getByTestId("analytics-id-input").fill(umamiAnalyticsWebsiteId);
-        await page.getByTestId("save-button").click();
+        // Saving reloads the whole page (location.href), so wait for that navigation
+        // before asserting on the SSR'd <head>.
+        await Promise.all([page.waitForEvent("load"), page.getByTestId("save-button").click()]);
 
         await expect(page.getByTestId("edit-sidebar")).toHaveCount(0);
         await expect(page.getByTestId("powered-by")).toContainText("Powered by");
@@ -172,41 +193,31 @@ test.describe("Status Page", () => {
 
         await screenshot(testInfo, page);
 
-        expect(await page.locator("head").innerHTML()).toContain(umamiAnalyticsScriptUrl);
+        await expect.poll(() => page.locator("head").innerHTML()).toContain(umamiAnalyticsScriptUrl);
         expect(await page.locator("head").innerHTML()).toContain(umamiAnalyticsWebsiteId);
 
-        await page.getByTestId("edit-button").click();
+        await openEditSidebar(page);
         // Fill in plausible analytics after editing
         await page.getByTestId("analytics-type-select").selectOption("plausible");
         await page.getByTestId("analytics-script-url-input").fill(plausibleAnalyticsScriptUrl);
         await page.getByTestId("analytics-id-input").fill(plausibleAnalyticsDomainsUrls);
-        await page.getByTestId("save-button").click();
+        // Saving reloads the whole page (location.href), so wait for that navigation
+        // before asserting on the SSR'd <head>.
+        await Promise.all([page.waitForEvent("load"), page.getByTestId("save-button").click()]);
         await screenshot(testInfo, page);
-        await page.waitForFunction(
-            (scriptUrl) => {
-                return document.head.innerHTML.includes(scriptUrl);
-            },
-            plausibleAnalyticsScriptUrl,
-            { timeout: 5000 }
-        );
-        expect(await page.locator("head").innerHTML()).toContain(plausibleAnalyticsScriptUrl);
+        await expect.poll(() => page.locator("head").innerHTML()).toContain(plausibleAnalyticsScriptUrl);
         expect(await page.locator("head").innerHTML()).toContain(plausibleAnalyticsDomainsUrls);
 
-        await page.getByTestId("edit-button").click();
+        await openEditSidebar(page);
         // Fill in matomo analytics after editing
         await page.getByTestId("analytics-type-select").selectOption("matomo");
         await page.getByTestId("analytics-script-url-input").fill(matomoUrl);
         await page.getByTestId("analytics-id-input").fill(matomoSiteId);
-        await page.getByTestId("save-button").click();
+        // Saving reloads the whole page (location.href), so wait for that navigation
+        // before asserting on the SSR'd <head>.
+        await Promise.all([page.waitForEvent("load"), page.getByTestId("save-button").click()]);
         await screenshot(testInfo, page);
-        await page.waitForFunction(
-            (url) => {
-                return document.head.innerHTML.includes(url);
-            },
-            matomoUrl,
-            { timeout: 5000 }
-        );
-        expect(await page.locator("head").innerHTML()).toContain(matomoUrl);
+        await expect.poll(() => page.locator("head").innerHTML()).toContain(matomoUrl);
         expect(await page.locator("head").innerHTML()).toContain(matomoSiteId);
     });
 
@@ -254,6 +265,7 @@ test.describe("Status Page", () => {
         await page.getByTestId("slug-input").fill("security-test");
         await page.getByTestId("submit-button").click();
         await page.waitForURL("/status/security-test?edit");
+        await waitForConfigLoaded(page); // editing connects the socket, which reloads the config
 
         // Add a group and all monitors
         await page.getByTestId("add-group-button").click();
@@ -302,7 +314,7 @@ test.describe("Status Page", () => {
 
         // Test custom RSS title functionality
         const customRssTitle = "Custom RSS Feed Title";
-        await page.getByTestId("edit-button").click();
+        await openEditSidebar(page);
         await expect(page.getByTestId("edit-sidebar")).toHaveCount(1);
         await page.getByTestId("rss-title-input").fill(customRssTitle);
         await page.getByTestId("save-button").click();
