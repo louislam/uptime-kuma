@@ -67,6 +67,7 @@ const SMSPartner = require("./notification-providers/smspartner");
 const SMSEagle = require("./notification-providers/smseagle");
 const SMSGateway = require("./notification-providers/sms-gateway");
 const SMTP = require("./notification-providers/smtp");
+const MicrosoftGraph = require("./notification-providers/microsoft-graph");
 const Squadcast = require("./notification-providers/squadcast");
 const Stackfield = require("./notification-providers/stackfield");
 const Teams = require("./notification-providers/teams");
@@ -195,6 +196,7 @@ class Notification {
             new SMSEagle(),
             new SMSGateway(),
             new SMTP(),
+            new MicrosoftGraph(),
             new Squadcast(),
             new Stackfield(),
             new Teams(),
