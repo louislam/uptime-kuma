@@ -1,4 +1,4 @@
-import { betterAuth, Session } from "better-auth";
+import { betterAuth } from "better-auth";
 // @ts-ignore
 import * as Database from "./database.js";
 import { genSecret, log } from "../src/util";
@@ -9,15 +9,32 @@ import { Socket } from "socket.io";
 import { haveIBeenPwned } from "better-auth/plugins";
 import { twoFactor } from "better-auth/plugins";
 import { apiKey } from "@better-auth/api-key";
-import { createAuthMiddleware, APIError } from "better-auth/api";
+import { createAuthMiddleware } from "better-auth/api";
 // @ts-ignore
 import * as oldAuth from "./auth.js";
 import { hasUser } from "./routers/better-auth-router";
 import { symmetricEncrypt } from "better-auth/crypto";
+// @ts-ignore
+import config from "./config.js";
 
 export type BetterAuthUser = ReturnType<typeof createAuthInstance>["$Infer"]["Session"]["user"];
 
 let authInstance: ReturnType<typeof createAuthInstance>;
+
+/**
+ * Whether the HIBP password check is enabled (`UPTIME_KUMA_DISABLE_LEAK_PWD_CHECK` / `--disable-leak-pwd-check`).
+ * @returns True to run the check
+ */
+function isHaveIBeenPwnedEnabled() {
+    const disableHibp = process.env.UPTIME_KUMA_DISABLE_LEAK_PWD_CHECK;
+    const disabledByEnv = !!disableHibp && disableHibp !== "false" && disableHibp !== "0";
+    return !disabledByEnv && !config.args["disable-leak-pwd-check"];
+}
+
+// Shared haveIBeenPwned plugin options; `enabled` is turned off during legacy user migration (#7946).
+const haveIBeenPwnedOptions = {
+    enabled: true,
+};
 
 /**
  * Get the singleton instance of better-auth
@@ -56,6 +73,12 @@ function createAuthInstance() {
         );
     }
 
+    // Apply the UPTIME_KUMA_DISABLE_LEAK_PWD_CHECK / --disable-leak-pwd-check setting
+    haveIBeenPwnedOptions.enabled = isHaveIBeenPwnedEnabled();
+    if (!haveIBeenPwnedOptions.enabled) {
+        log.warn("auth", "haveIBeenPwned password check is disabled (UPTIME_KUMA_DISABLE_LEAK_PWD_CHECK).");
+    }
+
     const authDatabase = Database.createAuthDatabase(Database.dbConfig);
 
     return betterAuth({
@@ -68,6 +91,26 @@ function createAuthInstance() {
         secret: getAuthSecret(),
         // Should be handled in Express.js, check better-auth-router.ts
         trustedOrigins: ["*"],
+
+        // Since multiple users are not supported yet, disable these paths to prevent accidental usage
+        disabledPaths: [
+            "/admin/create-user",
+            "/admin/get-user",
+            "/admin/list-users",
+            "/admin/update-user",
+            "/admin/set-user-password",
+            "/admin/set-role",
+            "/admin/ban-user",
+            "/admin/unban-user",
+            "/admin/impersonate-user",
+            "/admin/stop-impersonating",
+            "/admin/remove-user",
+            "/admin/list-user-sessions",
+            "/admin/revoke-user-session",
+            "/admin/revoke-user-sessions",
+            "/admin/has-permission",
+        ],
+
         emailAndPassword: {
             revokeSessionsOnPasswordReset: true,
             enabled: true,
@@ -88,7 +131,7 @@ function createAuthInstance() {
             admin(),
 
             // Check if the password has been pwned in data breaches
-            haveIBeenPwned(),
+            haveIBeenPwned(haveIBeenPwnedOptions),
 
             twoFactor({
                 schema: {
@@ -279,6 +322,8 @@ export async function doubleCheckPassword(cookie: string, currentPassword: strin
 export async function migrateUser(username: string, password: string) {
     const legacyUser = await oldAuth.login(username, password);
     if (legacyUser) {
+        // Skip the HIBP check: the legacy user's existing password must not be rejected (#7946)
+        haveIBeenPwnedOptions.enabled = false;
         try {
             // Create BetterAuth user with the same username and password
             const newUser = await auth().api.createUser({
@@ -318,6 +363,8 @@ export async function migrateUser(username: string, password: string) {
             log.info("auth", `Migrated legacy user: ${username}`);
         } catch (e) {
             log.error("auth", `Failed to migrate legacy user ${username}:`, e);
+        } finally {
+            haveIBeenPwnedOptions.enabled = isHaveIBeenPwnedEnabled();
         }
     } else {
         log.info("auth", `No legacy user found for username: ${username}, do not migrate.`);

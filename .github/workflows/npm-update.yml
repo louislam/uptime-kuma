@@ -44,12 +44,12 @@ jobs:
           npm -v
           rm -f package-lock.json
           npm install --package-lock-only
-          npm approve-scripts --all
+          npm install-scripts approve --all
 
       - name: Check if there are changes
         id: check_changes
         run: |
-          if git diff --quiet package-lock.json; then
+          if git diff --quiet package.json package-lock.json; then
             echo "has_changes=false" >> $GITHUB_OUTPUT
           else
             echo "has_changes=true" >> $GITHUB_OUTPUT
@@ -64,7 +64,7 @@ jobs:
       - name: Commit changes
         if: steps.check_changes.outputs.has_changes == 'true'
         run: |
-          git add package-lock.json
+          git add package.json package-lock.json
           git commit -m "chore: Update dependencies"
 
       - name: Force push to ${{ matrix.update_branch }} branch

@@ -1,6 +1,16 @@
 import { defineConfig, devices } from "@playwright/test";
+import { loadEnvFile } from "node:process";
+
+// Load environment variables from `.env` (same as server.js), so local-only options
+// such as HEADLESS_E2E_TESTS can be set there.
+try {
+    loadEnvFile();
+} catch (_) {}
 
 const port = 3001;
+
+// CI is always headless. Locally, `HEADLESS_E2E_TESTS=1` (in `.env` or the environment) forces it too.
+const headless = !!process.env.CI || process.env.HEADLESS_E2E_TESTS === "1";
 export const url = `http://localhost:${port}`;
 
 export default defineConfig({
@@ -35,7 +45,7 @@ export default defineConfig({
         // Base URL to use in actions like `await page.goto('/')`.
         baseURL: url,
 
-        headless: !!process.env.CI,
+        headless,
 
         // Collect trace when retrying the failed test.
         trace: "on-first-retry",
