@@ -8,6 +8,10 @@ Warning: Only maintainers of Uptime Kuma can use these instructions. Other contr
 - Do not show "Pull Request Overview"
 - You do not have to reply if there are no issues
 
+## Keep These Instructions in Sync
+
+- If a PR/commit changes anything documented here (commands, paths, architecture, test files, workflows), update the related content in this file in the same PR/commit, so it does not drift.
+
 ## Repository Overview
 
 **Uptime Kuma** is a self-hosted monitoring tool for HTTP(s), TCP, DNS, Docker, etc. Built with Vue 3 (frontend) and Node.js/Express (backend), using Socket.IO for real-time communication.
