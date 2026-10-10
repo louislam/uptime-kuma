@@ -1637,5 +1637,16 @@
     "Pattern Code ID": "Pattern Code ID",
     "Amoot SMS pattern help": "Enter the Pattern Code ID from your Amoot SMS panel. {0}",
     "Create an Amoot SMS pattern": "Create an Amoot SMS pattern",
-    "Use Own Line for Pattern": "Use Own Line for Pattern"
+    "Use Own Line for Pattern": "Use Own Line for Pattern",
+    "Microsoft Graph Email": "Email (Microsoft Graph)",
+    "Tenant ID": "Tenant ID",
+    "msGraphTenantIdDescription": "Either the Tenant ID or any domain within the tenant (e.g. contoso.onmicrosoft.com).",
+    "msGraphMailbox": "Sender Mailbox",
+    "msGraphMailboxDescription": "User principal name or e-mail address of the mailbox used to send mail.",
+    "msGraphSetupDescription": "You must create an {appRegistration} with {mailSend} application permission and {consent} it in your tenant. You can limit scope of {mailSend} via {rbac}.",
+    "msGraphAppRegistration": "application registration",
+    "msGraphConsent": "consent",
+    "msGraphRbac": "RBAC in Exchange Online",
+    "msGraphClientSecretDescription": "Learn how to {clientSecret} for your application registration.",
+    "msGraphClientSecretLink": "create a client secret"
 }
