@@ -418,7 +418,7 @@ export function buildAllImages(repoNames, version, isBeta) {
         // Build slim image (rootless)
         buildImage(
             repoNames,
-            [`${majorVersion}-slim-rootless`, ver(version, "slim-rootless")],
+            [`next-slim-rootless`, `${majorVersion}-slim-rootless`, ver(version, "slim-rootless")],
             "rootless",
             `BASE_IMAGE=louislam/uptime-kuma:base${majorVersion}-slim`
         );
