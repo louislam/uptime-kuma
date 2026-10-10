@@ -51,7 +51,6 @@ const version = require("../../package.json").version;
 const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { DockerHost } = require("../docker");
-const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const { UptimeCalculator } = require("../uptime-calculator");
 const { CookieJar } = require("tough-cookie");
@@ -117,7 +116,7 @@ class Monitor extends BeanModel {
         let screenshot = null;
 
         if (this.type === "real-browser") {
-            screenshot = "/screenshots/" + jwt.sign(this.id, UptimeKumaServer.getInstance().jwtSecret) + ".png";
+            screenshot = "/screenshots/" + this.id + ".png";
         }
 
         const path = preloadData.paths.get(this.id) || [];
@@ -1319,7 +1318,7 @@ class Monitor extends BeanModel {
      * @param {Server} io Socket server instance
      * @param {number} monitorID ID of monitor to send
      * @param {number} userID ID of user to send to
-     * @returns {void}
+     * @returns {Promise<void>}
      */
     static async sendStats(io, monitorID, userID) {
         const hasClients = getTotalClientInRoom(io, userID) > 0;
@@ -1999,10 +1998,9 @@ class Monitor extends BeanModel {
     /**
      * Delete a monitor from the system
      * @param {number} monitorID ID of the monitor to delete
-     * @param {number} userID ID of the user who owns the monitor
      * @returns {Promise<void>}
      */
-    static async deleteMonitor(monitorID, userID) {
+    static async deleteMonitor(monitorID) {
         const server = UptimeKumaServer.getInstance();
 
         // Stop the monitor if it's running
@@ -2012,31 +2010,30 @@ class Monitor extends BeanModel {
         }
 
         // Delete from database
-        await R.exec("DELETE FROM monitor WHERE id = ? AND user_id = ? ", [monitorID, userID]);
+        await R.exec("DELETE FROM monitor WHERE id = ? ", [monitorID]);
     }
 
     /**
      * Recursively delete a monitor and all its descendants
      * @param {number} monitorID ID of the monitor to delete
-     * @param {number} userID ID of the user who owns the monitor
      * @returns {Promise<void>}
      */
-    static async deleteMonitorRecursively(monitorID, userID) {
+    static async deleteMonitorRecursively(monitorID) {
         // Check if this monitor is a group
-        const monitor = await R.findOne("monitor", " id = ? AND user_id = ? ", [monitorID, userID]);
+        const monitor = await R.findOne("monitor", " id = ? ", [monitorID]);
 
         if (monitor && monitor.type === "group") {
             // Get all children and delete them recursively
             const children = await Monitor.getChildren(monitorID);
             if (children && children.length > 0) {
                 for (const child of children) {
-                    await Monitor.deleteMonitorRecursively(child.id, userID);
+                    await Monitor.deleteMonitorRecursively(child.id);
                 }
             }
         }
 
         // Delete the monitor itself
-        await Monitor.deleteMonitor(monitorID, userID);
+        await Monitor.deleteMonitor(monitorID);
     }
 
     /**

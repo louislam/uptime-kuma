@@ -318,6 +318,7 @@ export default {
             // Home Automation - Smart home and IoT platforms
             let homeAutomation = {
                 HomeAssistant: "Home Assistant",
+                Indigo: "Indigo",
             };
 
             // Other Integrations
