@@ -199,6 +199,9 @@ class Monitor extends BeanModel {
             snmpVersion: this.snmpVersion,
             smtpSecurity: this.smtpSecurity,
             rabbitmqNodes: JSON.parse(this.rabbitmqNodes),
+            elasticsearchNodes: JSON.parse(this.elasticsearchNodes),
+            elasticsearchStatus: this.elasticsearchStatus,
+            elasticsearchMinimumNodes: this.elasticsearchMinimumNodes,
             conditions: JSON.parse(this.conditions),
             ntpStratumThreshold: this.ntp_stratum_threshold,
             ntpTimeOffsetThreshold: this.ntp_time_offset_threshold,
@@ -1668,6 +1671,14 @@ class Monitor extends BeanModel {
                 JSON.parse(this.rabbitmqNodes);
             } catch (e) {
                 throw new Error(`RabbitMQ Nodes must be valid JSON: ${e.message}`);
+            }
+        }
+
+        if (this.elasticsearchNodes) {
+            try {
+                JSON.parse(this.elasticsearchNodes);
+            } catch (e) {
+                throw new Error(`Elasticsearch Nodes must be valid JSON: ${e.message}`);
             }
         }
 
