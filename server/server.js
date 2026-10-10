@@ -749,8 +749,12 @@ app.use(function (req, res, next) {
         socket.on("resumeMonitor", async (monitorID, callback) => {
             try {
                 checkLogin(socket);
-                await startMonitor(socket.userID, monitorID);
-                await server.sendUpdateMonitorIntoList(socket, monitorID);
+                // Resuming a group also resumes all monitors inside it
+                const affectedIDs = [monitorID, ...(await Monitor.getAllChildrenIDs(monitorID))];
+                for (const id of affectedIDs) {
+                    await startMonitor(socket.userID, id);
+                    await server.sendUpdateMonitorIntoList(socket, id);
+                }
 
                 callback({
                     ok: true,
@@ -768,8 +772,10 @@ app.use(function (req, res, next) {
         socket.on("pauseMonitor", async (monitorID, callback) => {
             try {
                 checkLogin(socket);
-                await pauseMonitor(socket.userID, monitorID);
-                await server.sendUpdateMonitorIntoList(socket, monitorID);
+                const affectedIDs = await pauseMonitor(socket.userID, monitorID);
+                for (const id of affectedIDs) {
+                    await server.sendUpdateMonitorIntoList(socket, id);
+                }
 
                 callback({
                     ok: true,
@@ -1518,20 +1524,26 @@ async function restartMonitor(userID, monitorID) {
 }
 
 /**
- * Pause a given monitor
+ * Pause a given monitor. If the monitor is a group, all monitors inside it are paused as well.
  * @param {number} userID ID of user who owns monitor
- * @param {number} monitorID ID of monitor to start
- * @returns {Promise<void>}
+ * @param {number} monitorID ID of monitor to pause
+ * @returns {Promise<number[]>} IDs of all monitors that were paused
  */
 async function pauseMonitor(userID, monitorID) {
     log.info("manage", `Pause Monitor: ${monitorID} User ID: ${userID}`);
 
-    await R.exec("UPDATE monitor SET active = 0 WHERE id = ? ", [monitorID]);
+    const affectedIDs = [monitorID, ...(await Monitor.getAllChildrenIDs(monitorID))];
 
-    if (monitorID in server.monitorList) {
-        await server.monitorList[monitorID].stop();
-        server.monitorList[monitorID].active = 0;
+    for (const id of affectedIDs) {
+        await R.exec("UPDATE monitor SET active = 0 WHERE id = ? ", [id]);
+
+        if (id in server.monitorList) {
+            await server.monitorList[id].stop();
+            server.monitorList[id].active = 0;
+        }
     }
+
+    return affectedIDs;
 }
 
 /**
