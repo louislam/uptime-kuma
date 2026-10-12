@@ -1373,12 +1373,20 @@ export default {
         },
 
         /**
-         * Get the relative time difference of a date from now
+         * Get the relative time difference of a date from now, in the current UI language
          * @param {any} date Date to get time difference
          * @returns {string} Time difference
          */
         dateFromNow(date) {
-            return dayjs.utc(date).fromNow();
+            const minutes = dayjs().diff(dayjs.utc(date), "minutes");
+            if (minutes < 1) {
+                return this.$t("now");
+            } else if (minutes < 60) {
+                return this.$t("time ago", [this.$t("minutes", minutes)]);
+            } else if (minutes < 60 * 24) {
+                return this.$t("time ago", [this.$t("hours", Math.floor(minutes / 60))]);
+            }
+            return this.$t("time ago", [this.$t("days", Math.floor(minutes / 60 / 24))]);
         },
 
         /**
