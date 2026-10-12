@@ -4342,7 +4342,11 @@ message HealthCheckResponse {
                     if (["http", "keyword", "json-query"].includes(this.monitor.type)) {
                         const rawURL = this.monitor.url.trim();
                         const authority = rawURL.slice(url.protocol.length + 2).split(/[/?#]/, 1)[0];
-                        if (!rawURL.toLowerCase().startsWith(`${url.protocol}//`) || !authority.trim() || authority.includes("\\")) {
+                        if (
+                            !rawURL.toLowerCase().startsWith(`${url.protocol}//`) ||
+                            !authority.trim() ||
+                            authority.includes("\\")
+                        ) {
                             throw new Error("Invalid URL");
                         }
                     }

@@ -21,7 +21,14 @@ test.describe("Monitor Form", () => {
         await restoreSqliteSnapshot(page);
     });
 
-    const invalidURLs = ["http:///", "http:///example.com", "https:///example.com", "http://\\example.com", "https://", "not-a-url"];
+    const invalidURLs = [
+        "http:///",
+        "http:///example.com",
+        "https:///example.com",
+        "http://\\example.com",
+        "https://",
+        "not-a-url",
+    ];
     const validURLs = [
         "https://example.com",
         "http://localhost:3000",
@@ -39,7 +46,9 @@ test.describe("Monitor Form", () => {
     for (const editing of [false, true]) {
         for (const url of [...invalidURLs, ...validURLs]) {
             const valid = validURLs.includes(url);
-            test(`HTTP URL ${editing ? "editing" : "creation"} ${valid ? "accepts" : "rejects"} ${url}`, async ({ page }) => {
+            test(`HTTP URL ${editing ? "editing" : "creation"} ${valid ? "accepts" : "rejects"} ${url}`, async ({
+                page,
+            }) => {
                 await page.goto("./add");
                 await login(page);
                 await selectMonitorType(page, "http");
