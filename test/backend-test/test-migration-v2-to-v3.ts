@@ -7,6 +7,8 @@ import zlib from "node:zlib";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { io } from "socket.io-client";
+import BetterSqlite3 from "better-sqlite3";
+import bcrypt from "bcryptjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -14,7 +16,9 @@ const fixturePath = path.join(__dirname, "../fixtures/v2-kuma.db.gz");
 const dataDir = path.join(__dirname, "../../data/test-migration-v2-upgrade");
 
 const username = "admin";
-const password = "Kuma-V2-Test-Password";
+
+// A password that Have I Been Pwned reports as breached, to cover the migration path from #7946.
+const password = "Admin123!x";
 
 /**
  * Get a free TCP port from the OS.
@@ -76,7 +80,7 @@ async function callOk(socket, event, ...args) {
     return result;
 }
 
-test("A v2.5.3 database still works after upgrading to v3 (#7944)", { timeout: 180000 }, async () => {
+test("A v2.5.3 database still works after upgrading to v3 (#7944, #7946)", { timeout: 180000 }, async () => {
     assert.ok(fs.existsSync(fixturePath), `v2 fixture not found: ${fixturePath}`);
 
     // Start from a real 2.5.3 database (see extra/prepare-v2-test-db.mjs) and let the server
@@ -84,6 +88,11 @@ test("A v2.5.3 database still works after upgrading to v3 (#7944)", { timeout: 1
     fs.rmSync(dataDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 });
     fs.mkdirSync(dataDir, { recursive: true });
     fs.writeFileSync(path.join(dataDir, "kuma.db"), zlib.gunzipSync(fs.readFileSync(fixturePath)));
+
+    // Seed the admin with a breached password, so migrating it must skip the leak check (#7946).
+    const seedDb = new BetterSqlite3(path.join(dataDir, "kuma.db"));
+    seedDb.prepare("UPDATE user SET password = ? WHERE username = ?").run(await bcrypt.hash(password, 10), username);
+    seedDb.close();
 
     let child;
     let socket;
