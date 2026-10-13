@@ -39,7 +39,8 @@ class Heartbeat extends BeanModel {
             important: this._important,
             duration: this._duration,
             retries: this._retries,
-            response: this._response,
+            response: Heartbeat.decodeResponseValueSync(this._response),
+            responseHeaders: Heartbeat.decodeResponseHeaders(this._responseHeaders),
         };
     }
 
@@ -59,7 +60,25 @@ class Heartbeat extends BeanModel {
             duration: this._duration,
             retries: this._retries,
             response: opts?.decodeResponse ? await Heartbeat.decodeResponseValue(this._response) : undefined,
+            responseHeaders: opts?.decodeResponse ? Heartbeat.decodeResponseHeaders(this._responseHeaders) : undefined,
         };
+    }
+
+    /**
+     * Decode compressed response payload stored in database (sync).
+     * @param {string|null} response Encoded response payload.
+     * @returns {string|null} Decoded response payload.
+     */
+    static decodeResponseValueSync(response) {
+        if (!response) {
+            return response;
+        }
+
+        try {
+            return zlib.brotliDecompressSync(Buffer.from(response, "base64")).toString("utf8");
+        } catch (error) {
+            return response;
+        }
     }
 
     /**
@@ -77,6 +96,22 @@ class Heartbeat extends BeanModel {
             return (await brotliDecompress(Buffer.from(response, "base64"))).toString("utf8");
         } catch (error) {
             return response;
+        }
+    }
+
+    /**
+     * Decode base64-encoded response headers stored in database.
+     * @param {string|null} headers Encoded headers payload.
+     * @returns {object|null} Decoded headers object, or null if absent/invalid.
+     */
+    static decodeResponseHeaders(headers) {
+        if (!headers) {
+            return null;
+        }
+        try {
+            return JSON.parse(Buffer.from(headers, "base64").toString("utf8"));
+        } catch (error) {
+            return null;
         }
     }
 }
