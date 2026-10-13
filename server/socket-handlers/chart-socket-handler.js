@@ -1,5 +1,6 @@
 const { checkLogin } = require("../util-server");
 const { UptimeCalculator } = require("../uptime-calculator");
+const { getChartDataArrayForPeriod } = require("../util-chart-period");
 const { log } = require("../../src/util");
 
 module.exports.chartSocketHandler = (socket) => {
@@ -14,15 +15,7 @@ module.exports.chartSocketHandler = (socket) => {
             }
 
             let uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);
-
-            let data;
-            if (period <= 24) {
-                data = uptimeCalculator.getDataArray(period * 60, "minute");
-            } else if (period <= 720) {
-                data = uptimeCalculator.getDataArray(period, "hour");
-            } else {
-                data = uptimeCalculator.getDataArray(period / 24, "day");
-            }
+            let data = getChartDataArrayForPeriod(uptimeCalculator, period);
 
             callback({
                 ok: true,
