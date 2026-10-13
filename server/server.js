@@ -3,7 +3,7 @@
  * node "server/server.js"
  * DO NOT require("./server") in other modules, it likely creates circular dependency!
  */
-import { getRandomInt, isDev, log, sleep } from "../src/util";
+import { getRandomInt, isDevEnv, log, sleep } from "../src/util";
 import { auth, doubleCheckPassword, getDisableAuthSession, getSession } from "./better-auth";
 import { createBetterAuthRouter, needSetup } from "./routers/better-auth-router";
 import { betterAuthSocketHandler } from "./socket-handlers/better-auth-socket-handler";
@@ -77,7 +77,7 @@ if (process.env.UPTIME_KUMA_WS_ORIGIN_CHECK === "bypass") {
     log.warn("server", "WebSocket Origin Check: " + process.env.UPTIME_KUMA_WS_ORIGIN_CHECK);
 }
 
-if (isDev || process.env.UPTIME_KUMA_DEBUG_INSPECTOR === "1") {
+if (isDevEnv() || process.env.UPTIME_KUMA_DEBUG_INSPECTOR === "1") {
     const inspector = require("inspector");
     let inspectorHost = "127.0.0.1";
 
@@ -274,7 +274,7 @@ app.use(function (req, res, next) {
         });
     });
 
-    if (isDev) {
+    if (isDevEnv()) {
         app.options("/*", async (request, response) => {
             allowDevOrigin(request, response);
             response.end();
