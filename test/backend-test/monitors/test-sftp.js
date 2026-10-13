@@ -20,7 +20,7 @@ const { STATUS_CODE } = sshUtils.sftp;
 
 /**
  * ssh2's ed25519 keygen strips leading zero bytes from the public key, corrupting
- * about 1 in 256 keys. Regenerate until the key parses.
+ * about 1 in 256 keys (mscdex/ssh2#1513). Regenerate until the key parses.
  * @returns {object} A parsable ed25519 key pair
  */
 function generateEd25519KeyPair() {
