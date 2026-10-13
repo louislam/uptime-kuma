@@ -92,7 +92,9 @@
                                             <div class="extra-info">
                                                 <div
                                                     v-if="
-                                                        showCertificateExpiry && monitor.element.certExpiryDaysRemaining
+                                                        showCertificateExpiry &&
+                                                        monitor.element.certExpiryDaysRemaining !== '' &&
+                                                        monitor.element.certExpiryDaysRemaining !== undefined
                                                     "
                                                 >
                                                     <Tag
@@ -275,7 +277,10 @@ export default {
          * @returns {string} Certificate expiry message
          */
         formattedCertExpiryMessage(monitor) {
-            if (monitor?.element?.validCert && monitor?.element?.certExpiryDaysRemaining) {
+            if (
+                monitor?.element?.certExpiryDaysRemaining !== "" &&
+                monitor?.element?.certExpiryDaysRemaining !== undefined
+            ) {
                 return this.$t("days", monitor.element.certExpiryDaysRemaining);
             } else if (monitor?.element?.validCert === false) {
                 return this.$t("noOrBadCertificate");
