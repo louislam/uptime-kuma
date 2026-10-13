@@ -117,6 +117,8 @@ function createAuthInstance() {
             disableSignUp: true,
         },
         rateLimit: {
+            enabled: true,
+
             // Seconds
             window: 60,
 
