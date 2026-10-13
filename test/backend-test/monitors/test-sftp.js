@@ -17,8 +17,22 @@ const { STATUS_CODE } = sshUtils.sftp;
 // ---------------------------------------------------------------------------
 // Host / client key material — generated once for the entire test suite
 // ---------------------------------------------------------------------------
-const HOST_KEY = sshUtils.generateKeyPairSync("ed25519").private;
-const clientKeyPair = sshUtils.generateKeyPairSync("ed25519");
+
+/**
+ * ssh2's ed25519 keygen strips leading zero bytes from the public key, corrupting
+ * about 1 in 256 keys (mscdex/ssh2#1513). Regenerate until the key parses.
+ * @returns {object} A parsable ed25519 key pair
+ */
+function generateEd25519KeyPair() {
+    let keyPair;
+    do {
+        keyPair = sshUtils.generateKeyPairSync("ed25519");
+    } while (sshUtils.parseKey(keyPair.private) instanceof Error);
+    return keyPair;
+}
+
+const HOST_KEY = generateEd25519KeyPair().private;
+const clientKeyPair = generateEd25519KeyPair();
 /** PEM-encoded private key string to pass as monitor.sshPrivateKey */
 const CLIENT_PRIVATE_KEY = clientKeyPair.private.toString("utf8");
 const parsedClientPubKey = sshUtils.parseKey(clientKeyPair.public);
