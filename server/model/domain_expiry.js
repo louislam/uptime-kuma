@@ -8,6 +8,15 @@ const TranslatableError = require("../translatable-error");
 const dayjs = require("dayjs");
 const { Settings } = require("../settings");
 
+/**
+ * RDAP event actions that carry the domain expiry date.
+ * RFC 9083 defines "expiration", but some registries use their own wording,
+ * e.g. the .kg registry (rdap.cctld.kg) returns "Record expires".
+ * Compared case-insensitively.
+ * @type {string[]}
+ */
+const expiryEventActions = ["expiration", "record expires"];
+
 let cacheRdapDnsData = null;
 let nextChecking = 0;
 let running = false;
@@ -132,7 +141,7 @@ async function getRdapDomainExpiryDate(domain) {
         return null;
     }
     for (const event of rdapInfos["events"]) {
-        if (event["eventAction"] === "expiration") {
+        if (expiryEventActions.includes(String(event["eventAction"]).toLowerCase())) {
             return new Date(event["eventDate"]);
         }
     }
