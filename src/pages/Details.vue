@@ -764,6 +764,10 @@ export default {
                 return this.$t(translationPrefix + "Response");
             }
 
+            if (this.monitor.type === "ntrip") {
+                return this.$t(translationPrefix + "Correction Age");
+            }
+
             return this.$t(translationPrefix + "Ping");
         },
 
