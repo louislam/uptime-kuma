@@ -2331,6 +2331,9 @@
                                         <option value="basic">
                                             {{ $t("HTTP Basic Auth") }}
                                         </option>
+                                        <option value="proxy-basic">
+                                            {{ $t("HTTP Basic Auth (Proxy-Authorization)") }}
+                                        </option>
                                         <option value="bearer">
                                             {{ $t("Bearer Token") }}
                                         </option>
@@ -2341,7 +2344,7 @@
                                     </select>
                                 </div>
 
-                                <template v-if="monitor.authMethod === 'basic'">
+                                <template v-if="monitor.authMethod === 'basic' || monitor.authMethod === 'proxy-basic'">
                                     <div class="my-3">
                                         <label for="ws-basicauth-user" class="form-label">{{ $t("Username") }}</label>
                                         <input
@@ -2719,6 +2722,9 @@
                                         </option>
                                         <option value="basic">
                                             {{ $t("HTTP Basic Auth") }}
+                                        </option>
+                                        <option value="proxy-basic">
+                                            {{ $t("HTTP Basic Auth (Proxy-Authorization)") }}
                                         </option>
                                         <option value="bearer">
                                             {{ $t("Bearer Token") }}
