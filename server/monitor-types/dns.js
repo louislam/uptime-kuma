@@ -177,7 +177,15 @@ class DnsMonitorType extends MonitorType {
         if (rrtype === "PTR") {
             return await resolver.reverse(hostname);
         }
-        return await resolver.resolve(hostname, rrtype);
+        const records = await resolver.resolve(hostname, rrtype);
+        // Node resolves with an empty array (instead of throwing ENODATA) when the
+        // hostname exists but has no records of the requested type, e.g. a host with
+        // only a CNAME queried for AAAA. See https://github.com/nodejs/node/issues/21795
+        // Surface this as an error so the monitor reports a meaningful failure.
+        if (Array.isArray(records) && records.length === 0) {
+            throw new Error(`No ${rrtype} records found for ${hostname}`);
+        }
+        return records;
     }
 }
 
