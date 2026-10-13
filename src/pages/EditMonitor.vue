@@ -4338,6 +4338,19 @@ message HealthCheckResponse {
                         url = new URL(this.monitor.url);
                     }
 
+                    // WHATWG URL can repair an empty authority; the HTTP client uses the original URL.
+                    if (["http", "keyword", "json-query"].includes(this.monitor.type)) {
+                        const rawURL = this.monitor.url.trim();
+                        const authority = rawURL.slice(url.protocol.length + 2).split(/[/?#]/, 1)[0];
+                        if (
+                            !rawURL.toLowerCase().startsWith(`${url.protocol}//`) ||
+                            !authority.trim() ||
+                            authority.includes("\\")
+                        ) {
+                            throw new Error("Invalid URL");
+                        }
+                    }
+
                     if (allowedProtocols && !allowedProtocols.includes(url.protocol)) {
                         console.log(url);
                         toast.error(this.$t("invalidURL"));
