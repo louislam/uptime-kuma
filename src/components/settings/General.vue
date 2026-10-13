@@ -176,13 +176,11 @@
                 <label class="form-label" for="ip2locationApiKey">
                     {{ $t("ip2locationApiKey") }}
                 </label>
-                <HiddenInput
-                    id="ip2locationApiKey"
-                    v-model="settings.ip2locationApiKey"
-                    autocomplete="new-password"
-                />
+                <HiddenInput id="ip2locationApiKey" v-model="settings.ip2locationApiKey" autocomplete="new-password" />
                 <i18n-t keypath="ip2locationApiKeyDescription" tag="div" class="form-text">
-                    <a href="https://www.ip2location.io/?utm_source=uptimekuma" target="_blank">https://www.ip2location.io</a>
+                    <a href="https://www.ip2location.io/?utm_source=uptimekuma" target="_blank">
+                        https://www.ip2location.io
+                    </a>
                 </i18n-t>
             </div>
 
