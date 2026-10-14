@@ -85,6 +85,16 @@ export function currentLocale() {
             if (regionalLocale in messages) {
                 return regionalLocale;
             }
+
+            // Fallback for languages where region differs from language code (e.g. "cs" -> "cs-CZ", "da" -> "da-DK")
+            if (locale === "zh" && "zh-CN" in messages) {
+                return "zh-CN";
+            }
+            const prefix = `${locale.toLowerCase()}-`;
+            const prefixMatch = Object.keys(messages).find((key) => key.toLowerCase().startsWith(prefix));
+            if (prefixMatch) {
+                return prefixMatch;
+            }
         } else {
             // Some locales are further specified such as "en-US".
             // If we only have a generic locale for this, we can use it too
