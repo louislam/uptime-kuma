@@ -868,6 +868,7 @@
     "WeCom Mentioned Mobile List": "WeCom Mentioned Mobile List",
     "WeCom Mentioned Mobile List Description": "Enter phone numbers to mention. Separate multiple numbers with commas. Use {'@'}all to mention everyone.",
     "Setup Proxy": "Set Up Proxy",
+    "Proxy Name": "Proxy Name",
     "Proxy Protocol": "Proxy Protocol",
     "Proxy Server": "Proxy Server",
     "Proxy server has authentication": "Proxy server has authentication",
