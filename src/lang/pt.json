@@ -237,5 +237,13 @@
     "days": "{n} dia | {n} dias",
     "versionIs": "Versão: {version}",
     "oracledbConnectionString": "Banco de dados Oracle: {connectionString}",
-    "enableSSL": "Ativar SSL/TLS"
+    "enableSSL": "Ativar SSL/TLS",
+    "mariadbUseSSLHelptext": "Habilite para utilizar uma conexao criptografada com a sua base de dados. Requerida pela maioria das bases de dados na nuvem.",
+    "mariadbCaCertificateLabel": "Certificado da CA",
+    "mariadbCaCertificateHelptext": "Cole o certificado da CA no formato PEM para usar certificados auto assinados. Deixe me branco se a sua base de dados usar um certificado assinado por uma CA publica.",
+    "Connection Timeout": "Tempo limite de conexao",
+    "Only retry if status code check fails": "Tentar novamente somente se a checagem de codigo falhar",
+    "Ignore Sec-WebSocket-Accept header": "Ignorar {0} cabecalho",
+    "wsCodeDescription": "Para mais informacoes sobre o codigo de status, por favor consulte {rfc6455}",
+    "Subprotocol(s)": "Subprotocolo(s)"
 }
