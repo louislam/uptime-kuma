@@ -14,11 +14,6 @@ import * as utc from "dayjs/plugin/utc";
 import jsonata from "jsonata";
 
 /**
- * @deprecated Use isDevEnv, because NODE_ENV could be set after this
- */
-export const isDev = process.env.NODE_ENV === "development";
-
-/**
  * Check if NODE_ENV is development
  * @returns yes or no
  */
@@ -261,7 +256,7 @@ class Logger {
      * @param msg Message to write
      */
     log(module: string, level: LogLevel, ...msg: unknown[]) {
-        if (level === "debug" && !isDev) {
+        if (level === "debug" && !isDevEnv()) {
             return;
         }
 
@@ -344,7 +339,7 @@ class Logger {
                 console.info(timePart, modulePart, levelPart, ...msg);
                 break;
             case "debug":
-                if (isDev) {
+                if (isDevEnv()) {
                     console.debug(timePart, modulePart, levelPart, ...msg);
                 }
                 break;
@@ -430,7 +425,7 @@ export class TimeLogger {
      * @returns {void}
      */
     print(name: string): void {
-        if (isDev && process.env.TIMELOGGER === "1") {
+        if (isDevEnv() && process.env.TIMELOGGER === "1") {
             console.log(name + ": " + (dayjs().valueOf() - this.startTime) + "ms");
         }
     }

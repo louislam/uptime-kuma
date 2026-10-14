@@ -138,7 +138,11 @@ jobs:
           node-version: 24
 
       - name: Install opencode
-        run: curl -fsSL https://opencode.ai/install | bash
+        run: curl -fsSL https://opencode.ai/v2/install | bash
+
+      - uses: $/.github/actions/setup-atlascloud
+        with:
+          api-key: ${{ secrets.ATLASCLOUD_API_KEY }}
 
       - name: Install dependencies
         run: node extra/release/install-deps.mjs
@@ -152,7 +156,7 @@ jobs:
           DRY_RUN: ${{ inputs.dry_run }}
           MERGE_SHA: ${{ needs.merge-pr.outputs.merge_sha }}
           GH_TOKEN: ${{ secrets.RELEASE_PAT }}
-          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
+          ATLASCLOUD_API_KEY: ${{ secrets.ATLASCLOUD_API_KEY }}
         run: node extra/release/create-draft-release.mjs
 
   # 4. Build the frontend dist ONCE, upload it to the draft release and share
@@ -231,10 +235,10 @@ jobs:
           path: ./dist
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@1f40c72289eff860ee54a304f1438e3cff362e0a # v4.3.0
+        uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
 
       - name: Login to Docker Hub
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0

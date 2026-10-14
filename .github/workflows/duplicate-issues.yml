@@ -27,11 +27,15 @@ jobs:
           persist-credentials: false
 
       - name: Install opencode
-        run: curl -fsSL https://opencode.ai/install | bash
+        run: curl -fsSL https://opencode.ai/v2/install | bash
+
+      - uses: $/.github/actions/setup-atlascloud
+        with:
+          api-key: ${{ secrets.ATLASCLOUD_API_KEY }}
 
       - name: Check for duplicate issues
         env:
-          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
+          ATLASCLOUD_API_KEY: ${{ secrets.ATLASCLOUD_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENCODE_PERMISSION: |
             {
@@ -42,7 +46,10 @@ jobs:
               "webfetch": "deny"
             }
         run: |
-          opencode run -m opencode/big-pickle "An issue has been submitted (or a duplicate check was requested on it):
+          mapfile -t models < <(jq -r '.[]' .github/opencode-models.json)
+
+          PROMPT=$(cat <<'PROMPT_EOF'
+          An issue has been submitted (or a duplicate check was requested on it):
 
           Issue number: ${{ github.event.issue.number }}
 
@@ -68,4 +75,18 @@ jobs:
 
           Feel free to ignore if none of these address your specific case.'
 
-          If no clear duplicates or related issues are found, do not comment."
+          If no clear duplicates or related issues are found, do not comment.
+          PROMPT_EOF
+          )
+
+          for model in "${models[@]}"; do
+            echo "Trying model: $model"
+            if opencode run -m "$model" "$PROMPT"; then
+              echo "Completed with model: $model"
+              exit 0
+            fi
+            echo "::warning::Model $model failed, trying the next fallback model."
+          done
+
+          echo "::error::All fallback models failed."
+          exit 1

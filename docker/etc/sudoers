@@ -26,6 +26,5 @@ root    ALL=(ALL:ALL) ALL
 
 #includedir /etc/sudoers.d
 
-# Allow `node` to control service (mainly for nscd)
-node ALL=(root) NOPASSWD: /usr/sbin/nscdservice
-node ALL=(root) NOPASSWD: /usr/sbin/service
+# Allow `node` to start/stop the nscd (DNS cache) service only
+node ALL=(root) NOPASSWD: /usr/sbin/service nscd start, /usr/sbin/service nscd stop

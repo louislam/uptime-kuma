@@ -28,13 +28,14 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with: { persist-credentials: false }
 
-      #    Tempoary disable until we understand TanStack npm supply-chain compromise
-      #      - name: Cache/Restore node_modules
-      #        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
-      #        id: node-modules-cache
-      #        with:
-      #          path: node_modules
-      #          key: node-modules-${{ runner.os }}-node${{ matrix.node }}-${{ hashFiles('**/package-lock.json') }}
+      # The cache is scoped to the pull request's merge ref, so it cannot poison
+      # the base branch (the vector in the TanStack incident used pull_request_target).
+      - name: Cache node_modules
+        id: cache-node-modules
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: node_modules
+          key: node-modules-${{ runner.os }}-${{ runner.arch }}-node${{ matrix.node }}-${{ hashFiles('**/package-lock.json') }}
 
       - name: Use Node.js ${{ matrix.node }}
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -47,7 +48,19 @@ jobs:
       # Print the npm version
       - run: npm --version
 
-      - run: npm clean-install --no-fund
+      # Apprise is not pre-installed on the runners, so install it from upstream
+      # (via uv) to run the Apprise notification provider test instead of skipping it.
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - name: Install Apprise
+        run: uv tool install "apprise~=2.0.1" --with paho-mqtt --with "slixmpp>=1.16.0"
+      - name: Add uv tools to PATH
+        if: runner.os != 'Windows'
+        run: echo "$(uv tool dir --bin)" >> "$GITHUB_PATH"
+      - name: Verify Apprise
+        run: apprise --version
+
+      - if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        run: npm clean-install --no-fund
       - run: npm run build
       - run: npm run test-backend
         env:
