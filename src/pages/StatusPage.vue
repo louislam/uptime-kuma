@@ -598,6 +598,8 @@
         <component is="style" v-if="config.customCSS" type="text/css">
             {{ config.customCSS }}
         </component>
+
+        <CookieConsent v-if="config.analyticsType === 'google' && !enableEditMode" />
     </div>
 </template>
 
@@ -635,6 +637,7 @@ import {
 } from "../util.ts";
 import Tag from "../components/Tag.vue";
 import VueMultiselect from "vue-multiselect";
+import CookieConsent from "../components/CookieConsent.vue";
 
 const toast = useToast();
 dayjs.extend(duration);
@@ -662,6 +665,7 @@ export default {
         IncidentHistory,
         IncidentManageModal,
         IncidentEditForm,
+        CookieConsent,
     },
 
     // Leave Page for vue route change
