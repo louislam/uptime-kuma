@@ -1637,5 +1637,8 @@
     "Pattern Code ID": "Pattern Code ID",
     "Amoot SMS pattern help": "Enter the Pattern Code ID from your Amoot SMS panel. {0}",
     "Create an Amoot SMS pattern": "Create an Amoot SMS pattern",
-    "Use Own Line for Pattern": "Use Own Line for Pattern"
+    "Use Own Line for Pattern": "Use Own Line for Pattern",
+    "Cookie Consent Message": "This page uses cookies for analytics. Do you allow them?",
+    "Accept": "Accept",
+    "Decline": "Decline"
 }
