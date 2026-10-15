@@ -10,6 +10,59 @@
     </div>
 </template>
 
+<script>
+const STORAGE_KEY = "analyticsConsent";
+
+export default {
+    data() {
+        return { visible: false };
+    },
+    mounted() {
+        try {
+            let consent = localStorage.getItem(STORAGE_KEY);
+            if (consent === "granted") {
+                this.applyConsent(true);
+                this.visible = false;
+            } else if (consent === "denied") {
+                this.applyConsent(false);
+                this.visible = false;
+            } else {
+                this.visible = true;
+            }
+        } catch (e) {
+            console.error("Failed to read consent choice", e);
+            this.visible = true;
+        }
+    },
+    methods: {
+        /**
+         *  Apply the user's choice and store it in localStorage.
+         * @param {boolean} granted - Whether the user granted consent or not.
+         */
+        choose(granted) {
+            try {
+                localStorage.setItem(STORAGE_KEY, granted ? "granted" : "denied");
+            } catch (e) {
+                console.error("Failed to store consent choice", e);
+            }
+            this.applyConsent(granted);
+            this.visible = false;
+        },
+        /**
+         *  Apply the user's choice to Google Analytics.
+         * @param {boolean} granted - Whether the user granted consent or not.
+         */
+        applyConsent(granted) {
+            if (window.gtag) {
+                window.gtag("consent", "update", {
+                    analytics_storage: granted ? "granted" : "denied",
+                });
+            }
+        },
+    },
+};
+</script>
+
 <style lang="scss" scoped>
 @import "../assets/vars.scss";
 
@@ -39,60 +92,3 @@
     }
 }
 </style>
-
-<script>
-const STORAGE_KEY = "analyticsConsent";
-
-export default {
-    data() {
-        return { visible: false };
-    },
-    mounted() {
-        try {
-            let consent = localStorage.getItem(STORAGE_KEY);
-            if (consent === "granted") {
-                this.applyConsent(true);
-                this.visible = false;
-            } else if (consent === "denied") {
-                this.applyConsent(false);
-                this.visible = false;
-            } else {
-                this.visible = true;
-            }
-        } catch (e) {
-            console.error("Failed to read consent choice", e);
-            this.visible = true;
-        }
-    },
-    methods: {
-        /**
-         *  Apply the user's choice and store it in localStorage.
-         * 
-         * @param {boolean} granted - Whether the user granted consent or not.
-         * 
-         */
-        choose(granted) {
-            try {
-                localStorage.setItem(STORAGE_KEY, granted ? "granted" : "denied");
-            } catch (e) {
-                console.error("Failed to store consent choice", e);
-            }
-            this.applyConsent(granted);
-            this.visible = false;
-        },
-        /**
-         *  Apply the user's choice to Google Analytics.
-         * 
-         * @param {boolean} granted - Whether the user granted consent or not.
-         * 
-         */
-        applyConsent(granted) {
-            if (window.gtag) {
-                window.gtag("consent", "update", {
-                    analytics_storage: granted ? "granted" : "denied",
-                });
-            }
-        },
-    },
-};
-</script>
