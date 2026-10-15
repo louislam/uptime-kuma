@@ -65,6 +65,12 @@ export default {
         }
     },
     methods: {
+        /**
+         *  Apply the user's choice and store it in localStorage.
+         * 
+         * @param {boolean} granted - Whether the user granted consent or not.
+         * 
+         */
         choose(granted) {
             try {
                 localStorage.setItem(STORAGE_KEY, granted ? "granted" : "denied");
@@ -74,6 +80,12 @@ export default {
             this.applyConsent(granted);
             this.visible = false;
         },
+        /**
+         *  Apply the user's choice to Google Analytics.
+         * 
+         * @param {boolean} granted - Whether the user granted consent or not.
+         * 
+         */
         applyConsent(granted) {
             if (window.gtag) {
                 window.gtag("consent", "update", {
