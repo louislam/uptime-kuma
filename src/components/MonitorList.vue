@@ -132,7 +132,7 @@
 import Confirm from "../components/Confirm.vue";
 import MonitorListItem from "../components/MonitorListItem.vue";
 import MonitorListFilter from "./MonitorListFilter.vue";
-import { getMonitorRelativeURL, PAUSED} from "../util.ts";
+import { getMonitorRelativeURL } from "../util.ts";
 
 export default {
     components: {
@@ -552,7 +552,7 @@ export default {
             let statusMatch = true;
             if (this.filterState.status != null && this.filterState.status.length > 0) {
                 if (!monitor.active) {
-                    monitor.status = PAUSED;
+                    monitor.status = null;
                 } else {
                     monitor.status = this.$root.lastHeartbeatList[monitor.id]?.status;
                 }
