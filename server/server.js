@@ -352,6 +352,10 @@ app.use(function (req, res, next) {
     const apiRouter = require("./routers/api-router");
     app.use(apiRouter);
 
+    // Maintenance API Router
+    const maintenanceRouter = require("./routers/maintenance-router");
+    app.use(maintenanceRouter);
+
     // Status Page Router
     const statusPageRouter = require("./routers/status-page-router");
     app.use(statusPageRouter);
