@@ -557,7 +557,7 @@ export default {
                     monitor.status = this.$root.lastHeartbeatList[monitor.id]?.status;
                 }
                 statusMatch = this.filterState.status.includes(monitor.status);
-}
+            }
 
             // filter by active
             let activeMatch = true;
