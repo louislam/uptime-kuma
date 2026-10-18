@@ -77,7 +77,8 @@ describe("Maintenance timeslot dates", () => {
             const nextTimeslot = json.timeslotList[json.timeslotList.length - 1];
             assert.strictEqual(dayjs.tz(nextTimeslot.startDate, timezone).valueOf(), dayjs(nextRun).valueOf());
             assert.strictEqual(
-                dayjs.tz(nextTimeslot.endDate, timezone).valueOf() - dayjs.tz(nextTimeslot.startDate, timezone).valueOf(),
+                dayjs.tz(nextTimeslot.endDate, timezone).valueOf() -
+                    dayjs.tz(nextTimeslot.startDate, timezone).valueOf(),
                 3600 * 1000
             );
         }
