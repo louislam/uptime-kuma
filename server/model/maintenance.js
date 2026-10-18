@@ -55,8 +55,8 @@ class Maintenance extends BeanModel {
             // Do nothing, no timeslots
         } else if (this.strategy === "single") {
             obj.timeslotList.push({
-                startDate: this.start_date,
-                endDate: this.end_date,
+                startDate: this.formatTimeslot(this.start_date, obj.timezone),
+                endDate: this.formatTimeslot(this.end_date, obj.timezone),
             });
         } else {
             // Should be cron or recurring here
@@ -64,19 +64,19 @@ class Maintenance extends BeanModel {
                 let runningTimeslot = this.getRunningTimeslot();
 
                 if (runningTimeslot) {
-                    obj.timeslotList.push(runningTimeslot);
+                    obj.timeslotList.push({
+                        startDate: this.formatTimeslot(runningTimeslot.startDate, obj.timezone),
+                        endDate: this.formatTimeslot(runningTimeslot.endDate, obj.timezone),
+                    });
                 }
 
                 let nextRunDate = this.beanMeta.job.nextRun();
                 if (nextRunDate) {
                     let startDateDayjs = dayjs(nextRunDate);
 
-                    let startDate = startDateDayjs.toISOString();
-                    let endDate = startDateDayjs.add(this.duration, "second").toISOString();
-
                     obj.timeslotList.push({
-                        startDate,
-                        endDate,
+                        startDate: this.formatTimeslot(startDateDayjs, obj.timezone),
+                        endDate: this.formatTimeslot(startDateDayjs.add(this.duration, "second"), obj.timezone),
                     });
                 }
             }
@@ -100,6 +100,20 @@ class Maintenance extends BeanModel {
      */
     async toJSON(timezone = null) {
         return this.toPublicJSON(timezone);
+    }
+
+    /**
+     * Format a date of a timeslot as a wall clock time in the timezone of the maintenance
+     * @param {string|Date|dayjs.Dayjs} date Date of the timeslot
+     * @param {string} timezone Timezone of the maintenance
+     * @returns {string|null} Formatted date time, or null if there is no date
+     */
+    formatTimeslot(date, timezone) {
+        if (!date) {
+            return null;
+        }
+
+        return dayjs.tz(date, timezone).format(SQL_DATETIME_FORMAT);
     }
 
     /**
