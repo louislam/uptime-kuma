@@ -1604,11 +1604,10 @@ class Monitor extends BeanModel {
      * @returns {Promise<object|null>} Previous non-maintenance heartbeat
      */
     static async getPreviousNonMaintenanceHeartbeat(monitorID) {
-        return await R.findOne(
-            "heartbeat",
-            " monitor_id = ? AND status != ? ORDER BY id DESC",
-            [monitorID, MAINTENANCE]
-        );
+        return await R.findOne("heartbeat", " monitor_id = ? AND status != ? ORDER BY id DESC", [
+            monitorID,
+            MAINTENANCE,
+        ]);
     }
 
     /**
@@ -1624,8 +1623,7 @@ class Monitor extends BeanModel {
             return previousHeartbeat?.status;
         }
 
-        const previousNonMaintenanceHeartbeat =
-            await Monitor.getPreviousNonMaintenanceHeartbeat(monitorID);
+        const previousNonMaintenanceHeartbeat = await Monitor.getPreviousNonMaintenanceHeartbeat(monitorID);
         return previousNonMaintenanceHeartbeat?.status ?? previousHeartbeat.status;
     }
 
