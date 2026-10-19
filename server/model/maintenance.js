@@ -65,8 +65,8 @@ class Maintenance extends BeanModel {
 
                 if (runningTimeslot) {
                     obj.timeslotList.push({
-                        startDate: this.formatTimeslot(runningTimeslot.startDate, obj.timezone),
-                        endDate: this.formatTimeslot(runningTimeslot.endDate, obj.timezone),
+                        startDate: this.formatTimeslot(dayjs(runningTimeslot.startDate), obj.timezone),
+                        endDate: this.formatTimeslot(dayjs(runningTimeslot.endDate), obj.timezone),
                     });
                 }
 

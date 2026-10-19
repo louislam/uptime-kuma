@@ -84,6 +84,34 @@ describe("Maintenance timeslot dates", () => {
         }
     });
 
+    test("running window is a wall clock time in the timezone of the maintenance", async () => {
+        for (const timezone of ["UTC", "America/Chicago", "Asia/Shanghai"]) {
+            const maintenance = await createMaintenance({
+                strategy: "cron",
+                cron: CRON,
+                timezone,
+            });
+
+            const startedAt = dayjs().subtract(10, "minute").millisecond(0);
+            maintenance.beanMeta.job = {
+                nextRun: (after) => (after ? startedAt.toDate() : startedAt.add(7, "day").toDate()),
+            };
+
+            const json = await maintenance.toPublicJSON();
+            const runningTimeslot = json.timeslotList[0];
+
+            assert.strictEqual(
+                dayjs.tz(runningTimeslot.startDate, timezone).valueOf(),
+                startedAt.valueOf(),
+                `${timezone}: running start date is not the instant of the window`
+            );
+            assert.strictEqual(
+                dayjs.tz(runningTimeslot.endDate, timezone).valueOf() - startedAt.valueOf(),
+                3600 * 1000
+            );
+        }
+    });
+
     test("single window keeps the configured wall clock time", async () => {
         const maintenance = await createMaintenance({
             strategy: "single",
