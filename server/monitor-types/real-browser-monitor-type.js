@@ -5,7 +5,6 @@ const { Settings } = require("../settings");
 const childProcess = require("child_process");
 const path = require("path");
 const Database = require("../database");
-const jwt = require("jsonwebtoken");
 const config = require("../config");
 const { RemoteBrowser } = require("../remote-browser");
 const { commandExists } = require("../util-server");
@@ -95,11 +94,10 @@ async function getBrowser() {
 /**
  * Get the current instance of the browser. If there isn't one, create it
  * @param {integer} remoteBrowserID Path to executable
- * @param {integer} userId User ID
  * @returns {Promise<Browser>} The browser
  */
-async function getRemoteBrowser(remoteBrowserID, userId) {
-    let remoteBrowser = await RemoteBrowser.get(remoteBrowserID, userId);
+async function getRemoteBrowser(remoteBrowserID) {
+    let remoteBrowser = await RemoteBrowser.get(remoteBrowserID);
     log.debug("chromium", `Using remote browser: ${remoteBrowser.name} (${remoteBrowser.id})`);
     browser = await chromium.connect(remoteBrowser.url);
     return browser;
@@ -250,46 +248,46 @@ class RealBrowserMonitorType extends MonitorType {
      * @inheritdoc
      */
     async check(monitor, heartbeat, server) {
-        const browser = monitor.remote_browser
-            ? await getRemoteBrowser(monitor.remote_browser, monitor.user_id)
-            : await getBrowser();
+        const browser = monitor.remote_browser ? await getRemoteBrowser(monitor.remote_browser) : await getBrowser();
         const context = await browser.newContext();
-        const page = await context.newPage();
+        try {
+            const page = await context.newPage();
 
-        // Prevent Local File Inclusion
-        // Accept only http:// and https://
-        // https://github.com/louislam/uptime-kuma/security/advisories/GHSA-2qgm-m29m-cj2h
-        let url = new URL(monitor.url);
-        if (url.protocol !== "http:" && url.protocol !== "https:") {
-            throw new Error("Invalid url protocol, only http and https are allowed.");
-        }
+            // Prevent Local File Inclusion
+            // Accept only http:// and https://
+            // https://github.com/louislam/uptime-kuma/security/advisories/GHSA-2qgm-m29m-cj2h
+            let url = new URL(monitor.url);
+            if (url.protocol !== "http:" && url.protocol !== "https:") {
+                throw new Error("Invalid url protocol, only http and https are allowed.");
+            }
 
-        const res = await page.goto(monitor.url, {
-            waitUntil: "networkidle",
-            timeout: monitor.interval * 1000 * 0.8,
-        });
+            const res = await page.goto(monitor.url, {
+                waitUntil: "networkidle",
+                timeout: monitor.interval * 1000 * 0.8,
+            });
 
-        // Wait for additional time before taking screenshot if configured
-        if (monitor.screenshot_delay > 0) {
-            await page.waitForTimeout(monitor.screenshot_delay);
-        }
+            // Wait for additional time before taking screenshot if configured
+            if (monitor.screenshot_delay > 0) {
+                await page.waitForTimeout(monitor.screenshot_delay);
+            }
 
-        let filename = jwt.sign(monitor.id, server.jwtSecret) + ".png";
+            let filename = monitor.id + ".png";
 
-        await page.screenshot({
-            path: path.join(Database.screenshotDir, filename),
-        });
+            await page.screenshot({
+                path: path.join(Database.screenshotDir, filename),
+            });
 
-        await context.close();
+            if (res.status() >= 200 && res.status() < 400) {
+                heartbeat.status = UP;
+                heartbeat.msg = res.status();
 
-        if (res.status() >= 200 && res.status() < 400) {
-            heartbeat.status = UP;
-            heartbeat.msg = res.status();
-
-            const timing = res.request().timing();
-            heartbeat.ping = timing.responseEnd;
-        } else {
-            throw new Error(res.status() + "");
+                const timing = res.request().timing();
+                heartbeat.ping = timing.responseEnd;
+            } else {
+                throw new Error(res.status() + "");
+            }
+        } finally {
+            await context.close();
         }
     }
 }

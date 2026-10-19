@@ -369,6 +369,8 @@ function ApiCache() {
         let requestEtag = request.headers["if-none-match"];
 
         if (requestEtag && cachedEtag === requestEtag) {
+            delete headers["content-length"];
+            delete headers["content-type"];
             response.writeHead(304, headers);
             return response.end();
         }

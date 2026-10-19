@@ -26,6 +26,7 @@ const Gorush = require("./notification-providers/gorush");
 const Gotify = require("./notification-providers/gotify");
 const GrafanaOncall = require("./notification-providers/grafana-oncall");
 const HomeAssistant = require("./notification-providers/home-assistant");
+const Indigo = require("./notification-providers/indigo");
 const HeiiOnCall = require("./notification-providers/heii-oncall");
 const Keep = require("./notification-providers/keep");
 const Kook = require("./notification-providers/kook");
@@ -35,6 +36,7 @@ const Matrix = require("./notification-providers/matrix");
 const Mattermost = require("./notification-providers/mattermost");
 const NextcloudTalk = require("./notification-providers/nextcloudtalk");
 const Nostr = require("./notification-providers/nostr");
+const NotifyApp = require("./notification-providers/notifyapp");
 const Ntfy = require("./notification-providers/ntfy");
 const Octopush = require("./notification-providers/octopush");
 const OneChat = require("./notification-providers/onechat");
@@ -58,6 +60,7 @@ const Pushy = require("./notification-providers/pushy");
 const RocketChat = require("./notification-providers/rocket-chat");
 const SerwerSMS = require("./notification-providers/serwersms");
 const Signal = require("./notification-providers/signal");
+const Signalgrid = require("./notification-providers/signalgrid");
 const SIGNL4 = require("./notification-providers/signl4");
 const Slack = require("./notification-providers/slack");
 const SMSPartner = require("./notification-providers/smspartner");
@@ -95,6 +98,7 @@ const TurboSMTP = require("./notification-providers/turbosmtp");
 const Brevo = require("./notification-providers/brevo");
 const Resend = require("./notification-providers/resend");
 const YZJ = require("./notification-providers/yzj");
+const AmootSMS = require("./notification-providers/amootsms");
 const SMSPlanet = require("./notification-providers/sms-planet");
 const SpugPush = require("./notification-providers/spugpush");
 const SMSIR = require("./notification-providers/smsir");
@@ -147,6 +151,7 @@ class Notification {
             new Gotify(),
             new GrafanaOncall(),
             new HomeAssistant(),
+            new Indigo(),
             new HeiiOnCall(),
             new Keep(),
             new Kook(),
@@ -156,6 +161,7 @@ class Notification {
             new Mattermost(),
             new NextcloudTalk(),
             new Nostr(),
+            new NotifyApp(),
             new Ntfy(),
             new Octopush(),
             new OneChat(),
@@ -181,6 +187,7 @@ class Notification {
             new ServerChan(),
             new SerwerSMS(),
             new Signal(),
+            new Signalgrid(),
             new SIGNL4(),
             new SMSManager(),
             new SMSPartner(),
@@ -214,6 +221,7 @@ class Notification {
             new Brevo(),
             new Resend(),
             new YZJ(),
+            new AmootSMS(),
             new SMSPlanet(),
             new SpugPush(),
             new Notifery(),
@@ -268,7 +276,7 @@ class Notification {
         let bean;
 
         if (notificationID) {
-            bean = await R.findOne("notification", " id = ? AND user_id = ? ", [notificationID, userID]);
+            bean = await R.findOne("notification", " id = ? ", [notificationID]);
 
             if (!bean) {
                 throw new Error("notification not found");
@@ -288,7 +296,7 @@ class Notification {
         await R.store(bean);
 
         if (applyExisting) {
-            await applyNotificationEveryMonitor(bean.id, userID);
+            await applyNotificationEveryMonitor(bean.id);
         }
 
         return bean;
@@ -297,11 +305,10 @@ class Notification {
     /**
      * Delete a notification
      * @param {number} notificationID ID of notification to delete
-     * @param {number} userID ID of user who created notification
      * @returns {Promise<void>}
      */
-    static async delete(notificationID, userID) {
-        let bean = await R.findOne("notification", " id = ? AND user_id = ? ", [notificationID, userID]);
+    static async delete(notificationID) {
+        let bean = await R.findOne("notification", " id = ? ", [notificationID]);
 
         if (!bean) {
             throw new Error("notification not found");
@@ -322,11 +329,10 @@ class Notification {
 /**
  * Apply the notification to every monitor
  * @param {number} notificationID ID of notification to apply
- * @param {number} userID ID of user who created notification
  * @returns {Promise<void>}
  */
-async function applyNotificationEveryMonitor(notificationID, userID) {
-    let monitors = await R.getAll("SELECT id FROM monitor WHERE user_id = ?", [userID]);
+async function applyNotificationEveryMonitor(notificationID) {
+    let monitors = await R.getAll("SELECT id FROM monitor");
 
     for (let i = 0; i < monitors.length; i++) {
         let checkNotification = await R.findOne("monitor_notification", " monitor_id = ? AND notification_id = ? ", [
