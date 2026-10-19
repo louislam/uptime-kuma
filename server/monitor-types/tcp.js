@@ -127,23 +127,26 @@ class TCPMonitorType extends MonitorType {
             const resp = await tcping(monitor.hostname, monitor.port);
             heartbeat.ping = resp;
             heartbeat.msg = `${resp} ms`;
-            heartbeat.status = UP;
         } catch {
             throw new Error("Connection failed");
         }
 
         let socket_;
 
-        // Handle TLS certificate checking for secure/starttls connections
-        if (["secure", "starttls"].includes(monitor.smtpSecurity) && monitor.isEnabledExpiryNotification()) {
-            const reuseSocket = monitor.smtpSecurity === "starttls" ? await this.performStartTls(monitor) : {};
-            socket_ = reuseSocket.socket;
-            await this.checkTlsCertificate(monitor, reuseSocket);
+        try {
+            // Handle TLS certificate checking for secure/starttls connections
+            if (["secure", "starttls"].includes(monitor.smtpSecurity) && monitor.isEnabledExpiryNotification()) {
+                const reuseSocket = monitor.smtpSecurity === "starttls" ? await this.performStartTls(monitor) : {};
+                socket_ = reuseSocket.socket;
+                await this.checkTlsCertificate(monitor, reuseSocket);
+            }
+        } finally {
+            if (socket_ && !socket_.destroyed) {
+                socket_.end();
+            }
         }
 
-        if (socket_ && !socket_.destroyed) {
-            socket_.end();
-        }
+        heartbeat.status = UP;
     }
 
     /**
@@ -159,7 +162,7 @@ class TCPMonitorType extends MonitorType {
 
             const onTimeout = () => {
                 log.debug(this.name, `[${monitor.name}] Pre-TLS connection timed out`);
-                doReject("Connection timed out");
+                doReject(new Error("Connection timed out"));
             };
 
             const onBannerTimeout = () => {
@@ -214,7 +217,7 @@ class TCPMonitorType extends MonitorType {
                     case response_.includes("<stream:stream") || response_.includes("</stream:stream>"):
                         break;
                     default:
-                        doReject(`Unexpected response: ${response}`);
+                        doReject(new Error(`Unexpected response: ${response}`));
                 }
             });
             socket_.on("error", (error) => {

@@ -1,7 +1,7 @@
 const { describe, test } = require("node:test");
 const assert = require("node:assert");
 const { TCPMonitorType } = require("../../../server/monitor-types/tcp");
-const { UP, PENDING } = require("../../../src/util");
+const { UP, PENDING, DOWN } = require("../../../src/util");
 const net = require("net");
 const tls = require("node:tls");
 const { retryExternalService } = require("../test-util");
@@ -90,6 +90,117 @@ describe("TCP Monitor", () => {
         };
 
         await assert.rejects(tcpMonitor.check(monitor, heartbeat, {}), new Error("Connection failed"));
+    });
+
+    /**
+     * Creates a plain TCP server that answers with a non-TLS payload, so that the
+     * TCP connect succeeds while the SSL/STARTTLS stage afterwards fails.
+     * @param {string} response Payload sent to every client
+     * @returns {Promise<{server: net.Server, port: number}>} The server and its port
+     */
+    async function createNonTlsServer(response) {
+        const server = net.createServer((socket) => {
+            socket.on("error", () => {});
+            socket.write(response);
+        });
+
+        await new Promise((resolve) => server.listen(0, resolve));
+
+        return {
+            server,
+            port: server.address().port,
+        };
+    }
+
+    test("check() does not report UP when the TLS handshake fails (SSL)", async () => {
+        // The TCP port is reachable, but the peer does not speak TLS.
+        const { server, port } = await createNonTlsServer("this is not a TLS server\n");
+
+        try {
+            const tcpMonitor = new TCPMonitorType();
+
+            const monitor = {
+                hostname: "localhost",
+                port: port,
+                smtpSecurity: "secure",
+                isEnabledExpiryNotification: () => true,
+                handleTlsInfo: async (tlsInfo) => tlsInfo,
+            };
+
+            // Monitor.start() resets the status to DOWN before every check
+            const heartbeat = {
+                msg: "",
+                status: DOWN,
+            };
+
+            await assert.rejects(tcpMonitor.check(monitor, heartbeat, {}), /TLS Connection failed/);
+
+            // Reporting UP here would make the monitor show as UP even though the check
+            // failed, and it would keep the retry counter from ever being reset, so the
+            // next (real) failure would skip PENDING and notify immediately.
+            assert.strictEqual(heartbeat.status, DOWN);
+        } finally {
+            server.close();
+        }
+    });
+
+    test("check() does not report UP when the STARTTLS dialog fails", async () => {
+        // The TCP port is reachable, but the peer answers with something that is not a
+        // STARTTLS dialog.
+        const { server, port } = await createNonTlsServer("unexpected banner\n");
+
+        try {
+            const tcpMonitor = new TCPMonitorType();
+
+            const monitor = {
+                hostname: "localhost",
+                port: port,
+                smtpSecurity: "starttls",
+                isEnabledExpiryNotification: () => true,
+                handleTlsInfo: async (tlsInfo) => tlsInfo,
+            };
+
+            const heartbeat = {
+                msg: "",
+                status: DOWN,
+            };
+
+            await assert.rejects(tcpMonitor.check(monitor, heartbeat, {}), /Unexpected response/);
+
+            assert.strictEqual(heartbeat.status, DOWN);
+        } finally {
+            server.close();
+        }
+    });
+
+    test("check() rejects with an Error when the STARTTLS dialog fails", async () => {
+        // The beat logs error.message, so a string rejection would be logged as "undefined"
+        const { server, port } = await createNonTlsServer("unexpected banner\n");
+
+        try {
+            const tcpMonitor = new TCPMonitorType();
+
+            const monitor = {
+                hostname: "localhost",
+                port: port,
+                smtpSecurity: "starttls",
+                isEnabledExpiryNotification: () => true,
+                handleTlsInfo: async (tlsInfo) => tlsInfo,
+            };
+
+            const heartbeat = {
+                msg: "",
+                status: DOWN,
+            };
+
+            await assert.rejects(tcpMonitor.check(monitor, heartbeat, {}), (error) => {
+                assert.ok(error instanceof Error, `expected an Error, received ${typeof error}`);
+                assert.match(error.message, /Unexpected response/);
+                return true;
+            });
+        } finally {
+            server.close();
+        }
     });
 
     test("check() rejects when TLS certificate is expired or invalid", async () => {
