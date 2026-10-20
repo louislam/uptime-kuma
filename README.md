@@ -126,7 +126,7 @@ I will assign requests/issues to the next milestone.
 
 ## ❤️ Sponsors
 
-Thank you so much for supporting this project! 
+Thank you so much for supporting this project!
 
 ### Special Sponsors
 
