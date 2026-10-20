@@ -147,6 +147,7 @@ class Monitor extends BeanModel {
             timeout: this.timeout,
             interval: this.interval,
             retryInterval: this.retryInterval,
+            downInterval: this.downInterval,
             retryOnlyOnStatusCodeFailure: Boolean(this.retry_only_on_status_code_failure),
             resendInterval: this.resendInterval,
             keyword: this.keyword,
@@ -1048,9 +1049,14 @@ class Monitor extends BeanModel {
             } else if (bean.status === MAINTENANCE) {
                 log.warn("monitor", `Monitor #${this.id} '${this.name}': Under Maintenance | Type: ${this.type}`);
             } else {
+                const useDownInterval = bean.status === DOWN && this.downInterval != null;
+                if (useDownInterval) {
+                    beatInterval = this.downInterval;
+                }
+
                 log.warn(
                     "monitor",
-                    `Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Interval: ${beatInterval} seconds | Type: ${this.type} | Down Count: ${bean.downCount} | Resend Interval: ${this.resendInterval}`
+                    `Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Interval: ${beatInterval} seconds${useDownInterval ? " (DOWN)" : ""} | Type: ${this.type} | Down Count: ${bean.downCount} | Resend Interval: ${this.resendInterval}`
                 );
             }
 
@@ -1634,6 +1640,10 @@ class Monitor extends BeanModel {
 
         if (this.retryInterval < MIN_INTERVAL_SECOND) {
             throw new Error(`Retry interval cannot be less than ${MIN_INTERVAL_SECOND} seconds`);
+        }
+
+        if (this.downInterval != null && this.downInterval < MIN_INTERVAL_SECOND) {
+            throw new Error(`Down interval cannot be less than ${MIN_INTERVAL_SECOND} seconds`);
         }
 
         if (this.response_max_length !== undefined) {
