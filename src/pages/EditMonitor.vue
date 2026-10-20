@@ -4422,11 +4422,9 @@ message HealthCheckResponse {
             // do this if the interval value has changed since last save.
             if (
                 this.lowIntervalConfirmation.editedValue &&
-                (
-                    this.monitor.interval < 20 ||
+                (this.monitor.interval < 20 ||
                     this.monitor.retryInterval < 20 ||
-                    (this.monitor.downInterval != null && this.monitor.downInterval < 20)
-                ) &&
+                    (this.monitor.downInterval != null && this.monitor.downInterval < 20)) &&
                 !this.lowIntervalConfirmation.confirmed
             ) {
                 // The dialog will then re-call submit
