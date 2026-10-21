@@ -1,6 +1,70 @@
 import dayjs from "dayjs";
 
 /**
+ * Display formats previously expressed as dayjs tokens.
+ * `$d` from vue-i18n applies the active locale to these Intl options.
+ * @type {Record<string, Intl.DateTimeFormatOptions>}
+ */
+const intlDateTimeFormats = {
+    "YYYY-MM-DD HH:mm:ss": {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hourCycle: "h23",
+    },
+    "YYYY-MM-DD HH:mm": {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hourCycle: "h23",
+    },
+    "YYYY-MM-DD": {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+    },
+    "HH:mm:ss": {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hourCycle: "h23",
+    },
+    "HH:mm": {
+        hour: "2-digit",
+        minute: "2-digit",
+        hourCycle: "h23",
+    },
+};
+
+/**
+ * App locales that are not valid Intl locale tags.
+ * @param {string} locale vue-i18n locale
+ * @returns {string} Locale accepted by Intl.DateTimeFormat
+ */
+function intlLocale(locale) {
+    const aliases = {
+        bar: "de-DE",
+        yue: "zh-HK",
+        "sr-latn": "sr-Latn",
+        ge: "ka",
+    };
+    const candidate = aliases[locale] || locale || "en";
+    try {
+        if (Intl.DateTimeFormat.supportedLocalesOf(candidate).length > 0) {
+            return candidate;
+        }
+    } catch {
+        // Invalid BCP 47 tag.
+    }
+    return "en";
+}
+
+/**
  * DateTime Mixin
  * Handled timezone and format
  */
@@ -33,7 +97,7 @@ export default {
         },
 
         /**
-         * Return a given value in the format YYYY-MM-DD HH:mm:ss
+         * Return a given value as a localized date and time
          * @param {any} value Value to format as date time
          * @returns {string} Formatted string
          */
@@ -47,7 +111,7 @@ export default {
          * @returns {string} The formatted date and time string.
          */
         unixToDateTime(value) {
-            return dayjs.unix(value).tz(this.timezone).format("YYYY-MM-DD HH:mm:ss");
+            return this.datetime(dayjs.unix(value));
         },
 
         /**
@@ -80,7 +144,7 @@ export default {
 
             if (
                 inputDate.getFullYear() === now.getUTCFullYear() &&
-                inputDate.getMonth() === now.getUTCMonth() &&
+                inputDate.getMonth() ===now.getUTCMonth() &&
                 inputDate.getDay() === now.getUTCDay()
             ) {
                 return this.datetimeFormat(value, "HH:mm");
@@ -90,7 +154,7 @@ export default {
         },
 
         /**
-         * Return a given value in the format YYYY-MM-DD
+         * Return a given value as a localized date
          * @param {any} value  Value to format as date
          * @returns {string} Formatted string
          */
@@ -99,8 +163,8 @@ export default {
         },
 
         /**
-         * Return a given value in the format HH:mm or if second is set
-         * to true, HH:mm:ss
+         * Return a given value as a localized time. Seconds are included
+         * unless `second` is false.
          * @param {any} value Value to format
          * @param {boolean} second Should seconds be included?
          * @returns {string} Formatted string
@@ -123,7 +187,20 @@ export default {
          */
         datetimeFormat(value, format) {
             if (value !== undefined && value !== "") {
-                return dayjs.utc(value).tz(this.timezone).format(format);
+                const options = intlDateTimeFormats[format];
+                // Values such as datetime-local inputs must stay machine-readable.
+                if (!options) {
+                    return dayjs.utc(value).tz(this.timezone).format(format);
+                }
+                const date = dayjs.utc(value).toDate();
+                if (Number.isNaN(date.getTime())) {
+                    return "";
+                }
+                return this.$d(date, {
+                    ...options,
+                    timeZone: this.timezone,
+                    locale: intlLocale(this.$i18n.locale),
+                });
             }
             return "";
         },
