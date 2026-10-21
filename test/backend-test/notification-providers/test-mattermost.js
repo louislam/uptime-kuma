@@ -1,4 +1,3 @@
-
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const axios = require("axios");
@@ -6,7 +5,7 @@ const Mattermost = require("../../../server/notification-providers/mattermost");
 const { UP, DOWN } = require("../../../src/util");
 
 test("Mattermost test notifications include the configured channel and icons", async (t) => {
- // This will intercept the webhook request so there is no message that is sent
+    // This will intercept the webhook request so there is no message that is sent
     const post = t.mock.method(axios, "post", async () => ({ status: 200 }));
 
     const provider = new Mattermost();
@@ -46,12 +45,7 @@ test("Mattermost certificate warnings include configured settings", async (t) =>
         mattermosticonurl: "https://example.invalid/icon.png",
     };
 
-    const result = await provider.send(
-        notification,
-        "Certificate expires in 3 days",
-        { name: "Example Site" },
-        null
-    );
+    const result = await provider.send(notification, "Certificate expires in 3 days", { name: "Example Site" }, null);
 
     assert.equal(result, "Sent Successfully.");
     assert.equal(post.mock.callCount(), 1);
@@ -86,7 +80,7 @@ const scenarios = [
 
 for (const scenario of scenarios) {
     test(`Mattermost ${scenario.name} notifications preserve configured settings`, async (t) => {
-        const post = t.mock.method(axios, "post", async () => ({ status: 200}));
+        const post = t.mock.method(axios, "post", async () => ({ status: 200 }));
 
         const provider = new Mattermost();
 
@@ -112,12 +106,7 @@ for (const scenario of scenarios) {
             localDateTime: "2026-10-21 15:00:00",
         };
 
-        const result = await provider.send(
-            notification,
-            "Monitor status changed",
-            monitorJSON,
-            heartbeatJSON
-        );
+        const result = await provider.send(notification, "Monitor status changed", monitorJSON, heartbeatJSON);
 
         assert.equal(result, "Sent Successfully.");
         assert.equal(post.mock.callCount(), 1);
@@ -133,10 +122,7 @@ for (const scenario of scenarios) {
         const attachment = payload.attachments[0];
 
         assert.equal(attachment.color, scenario.expectedColor);
-        assert.equal(
-            attachment.title,
-            `Example Site service went ${scenario.expectedText}`
-        );
+        assert.equal(attachment.title, `Example Site service went ${scenario.expectedText}`);
         assert.equal(attachment.fields[0].title, scenario.expectedField);
     });
 }

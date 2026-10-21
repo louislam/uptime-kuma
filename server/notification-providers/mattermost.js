@@ -28,7 +28,7 @@ class Mattermost extends NotificationProvider {
             if (mattermostIconEmoji && typeof mattermostIconEmoji === "string") {
                 const emojiArray = mattermostIconEmoji.split(" ");
 
-                if(emojiArray.length >= 2) {
+                if (emojiArray.length >= 2) {
                     mattermostIconEmojiOnline = emojiArray[0];
                     mattermostIconEmojiOffline = emojiArray[1];
                 }
@@ -46,11 +46,7 @@ class Mattermost extends NotificationProvider {
                     icon_url: mattermostIconUrl,
                 };
 
-                await axios.post(
-                    notification.mattermostWebhookUrl,
-                    mattermostData,
-                    config
-                );
+                await axios.post(notification.mattermostWebhookUrl, mattermostData, config);
 
                 return okMsg;
             }
