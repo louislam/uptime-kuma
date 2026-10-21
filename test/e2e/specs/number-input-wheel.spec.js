@@ -7,6 +7,9 @@ test.describe("Number input mouse wheel behaviour (#1796)", () => {
     });
 
     test("scrolling over a focused number input does not change its value", async ({ page }) => {
+        // Chromium only steps focused number inputs on wheel when a non-passive wheel listener is present on the page/extension
+        await page.addInitScript(() => document.addEventListener("wheel", () => {}, { passive: false }));
+
         await page.goto("./add");
         await login(page);
 
