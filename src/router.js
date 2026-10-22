@@ -24,6 +24,7 @@ import SetupDatabase from "./pages/SetupDatabase.vue";
 import Appearance from "./components/settings/Appearance.vue";
 import General from "./components/settings/General.vue";
 const Notifications = () => import("./components/settings/Notifications.vue");
+const ImportExport = () => import("./components/settings/ImportExport.vue");
 import ReverseProxy from "./components/settings/ReverseProxy.vue";
 import Tags from "./components/settings/Tags.vue";
 import MonitorHistory from "./components/settings/MonitorHistory.vue";
@@ -98,6 +99,10 @@ const routes = [
                             {
                                 path: "notifications",
                                 component: Notifications,
+                            },
+                            {
+                                path: "import-export",
+                                component: ImportExport,
                             },
                             {
                                 path: "reverse-proxy",
