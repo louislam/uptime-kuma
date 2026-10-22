@@ -21,7 +21,7 @@
             type="text"
             minlength="3"
             maxlength="255"
-            pattern="^\+?\d+(,\s*+?\d+)*$"
+            pattern="^[\d+,]+$"
             class="form-control"
             required
         />
