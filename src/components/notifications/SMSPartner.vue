@@ -20,6 +20,7 @@
             v-model="$parent.notification.smspartnerPhoneNumber"
             type="text"
             minlength="3"
+	    <!-- Allows ~16 phone numbers, changed maxlength from 20 to 255 -->
             maxlength="255"
             pattern="^[\d+,]+$"
             class="form-control"
