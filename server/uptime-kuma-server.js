@@ -145,6 +145,8 @@ class UptimeKumaServer {
         this.io = new Server(this.httpServer, {
             cors,
             cookie: true,
+            // Configuration imports can be several megabytes
+            maxHttpBufferSize: 10 * 1024 * 1024,
             allowRequest: async (req, callback) => {
                 let transport;
                 // It should be always true, but just in case, because this property is not documented

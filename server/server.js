@@ -193,6 +193,7 @@ const { resetChrome } = require("./monitor-types/real-browser-monitor-type");
 const { EmbeddedMariaDB } = require("./embedded-mariadb");
 const { SetupDatabase } = require("./setup-database");
 const { chartSocketHandler } = require("./socket-handlers/chart-socket-handler");
+const { configSocketHandler } = require("./socket-handlers/config-socket-handler");
 
 app.use(express.json());
 
@@ -389,7 +390,7 @@ app.use(function (req, res, next) {
         if (session) {
             socket.userID = session.user.id;
             socket.session = session;
-            socket.emit("session", session.user.username);
+            socket.emit("session", session.user.username, session.user.role);
             log.debug("auth", `Session active:`, session.session.ipAddress, session.user.username);
         }
 
@@ -1370,6 +1371,7 @@ app.use(function (req, res, next) {
         remoteBrowserSocketHandler(socket);
         generalSocketHandler(socket, server);
         chartSocketHandler(socket);
+        configSocketHandler(socket);
 
         log.debug("server", "added all socket handlers");
 

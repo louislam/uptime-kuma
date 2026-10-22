@@ -33,7 +33,7 @@
                     </a>
                 </div>
                 <div class="settings-content col-lg-9 col-md-7">
-                    <div v-if="currentPage" class="settings-content-header">
+                    <div v-if="currentPage && subMenus[currentPage]" class="settings-content-header">
                         {{ subMenus[currentPage].title }}
                     </div>
                     <div class="mx-3">
@@ -80,6 +80,8 @@ export default {
         },
 
         subMenus() {
+            const isAdmin = !this.$root.role || this.$root.role === "admin";
+
             return {
                 general: {
                     title: this.$t("General"),
@@ -90,6 +92,13 @@ export default {
                 notifications: {
                     title: this.$t("Notifications"),
                 },
+                ...(isAdmin
+                    ? {
+                          "import-export": {
+                              title: this.$t("Import & Export"),
+                          },
+                      }
+                    : {}),
                 "reverse-proxy": {
                     title: this.$t("Reverse Proxy"),
                 },
