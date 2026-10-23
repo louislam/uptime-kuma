@@ -161,7 +161,9 @@ jobs:
           aws-region: us-east-1
 
       - name: Kubeconfig
-        run: aws eks update-kubeconfig --no-cli-pager --name "$CLUSTER"
+        run: |
+          set -eu
+          aws eks update-kubeconfig --no-cli-pager --name "$CLUSTER"
           kubectl -n "$NAMESPACE" get deploy "$RELEASE" -o name
 
       - name: Instala helm, o plugin s3 e garante o kubectl
