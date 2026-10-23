@@ -4,7 +4,7 @@ const fs = require("fs");
 const http = require("http");
 const { Server } = require("socket.io");
 const { R } = require("redbean-node");
-const { log, isDev, devOriginList } = require("../src/util");
+const { log, isDevEnv, devOriginList } = require("../src/util");
 const Database = require("./database");
 const util = require("util");
 const { Settings } = require("./settings");
@@ -134,7 +134,7 @@ class UptimeKumaServer {
 
         // Allow all CORS origins (polling) in development
         let cors = undefined;
-        if (isDev) {
+        if (isDevEnv()) {
             cors = {
                 origin: devOriginList,
                 credentials: true,
