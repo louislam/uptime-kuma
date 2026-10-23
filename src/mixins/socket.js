@@ -423,19 +423,6 @@ export default {
         },
 
         /**
-         * Delete specified legacy API key
-         * @param {int} keyID ID of key to delete
-         * @param {socketCB} callback Callback for socket response
-         * @returns {void}
-         */
-        deleteLegacyAPIKey(keyID, callback) {
-            if (!callback) {
-                callback = () => {};
-            }
-            socket.emit("deleteLegacyAPIKey", keyID, callback);
-        },
-
-        /**
          * Add a monitor
          * @param {object} monitor Object representing monitor to add
          * @param {socketCB} callback Callback for socket response

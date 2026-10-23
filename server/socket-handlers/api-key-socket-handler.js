@@ -2,7 +2,11 @@ const { log } = require("../../src/util");
 const { R } = require("redbean-node");
 const dayjs = require("dayjs");
 const apicache = require("../modules/apicache");
+const { Settings } = require("../settings");
 const { auth, createHeaders, checkLogin } = require("../better-auth");
+
+// Legacy API keys stay in the old `api_key` table, they are listed with this ID prefix
+const LEGACY_KEY_ID_PREFIX = "legacy-";
 
 /**
  * Handlers for API keys
@@ -36,6 +40,11 @@ module.exports.apiKeySocketHandler = (socket) => {
             log.debug("apikeys", "Added API Key");
             log.debug("apikeys", key);
 
+            // Enable API auth if the user creates a key, otherwise only basic
+            // auth will be used for API.
+            await Settings.set("apiKeysEnabled", true);
+            apicache.clear();
+
             callback({
                 ok: true,
                 msg: "successAdded",
@@ -55,18 +64,24 @@ module.exports.apiKeySocketHandler = (socket) => {
         try {
             checkLogin(socket);
 
-            const baKeys = await auth().api.listApiKeys({
+            const result = await auth().api.listApiKeys({
                 query: {},
                 headers: socket.headers,
             });
 
+            // Legacy API keys, kept in the old table until they are used once
             const legacyBeans = await R.find("api_key");
-            const legacyAPIKeyList = legacyBeans.map((bean) => bean.toPublicJSON());
+            const legacyKeys = legacyBeans.map((bean) => ({
+                id: LEGACY_KEY_ID_PREFIX + bean.id,
+                name: bean.name,
+                enabled: !!bean.active,
+                expiresAt: bean.expires,
+                createdAt: bean.created_date,
+            }));
 
             callback({
                 ok: true,
-                apiKeyList: baKeys.apiKeys,
-                legacyAPIKeyList: legacyAPIKeyList,
+                apiKeyList: [...result.apiKeys, ...legacyKeys],
             });
         } catch (e) {
             log.error("apikeys", e);
@@ -81,44 +96,24 @@ module.exports.apiKeySocketHandler = (socket) => {
         try {
             checkLogin(socket);
 
-            await auth().api.deleteApiKey({
-                body: {
-                    keyId: keyID,
-                },
-                headers: createHeaders(socket.request.headers.cookie),
-            });
-
-            callback({
-                ok: true,
-                msg: "successDeleted",
-                msgi18n: true,
-            });
-        } catch (e) {
-            callback({
-                ok: false,
-                msg: e.message,
-            });
-        }
-    });
-
-    socket.on("deleteLegacyAPIKey", async (keyID, callback) => {
-        try {
-            checkLogin(socket);
-
-            log.debug("apikeys", `Deleted Legacy API Key: ${keyID} User ID: ${socket.userID}`);
-
-            await R.exec("DELETE FROM api_key WHERE id = ? AND user_id = ? ", [keyID, socket.userID]);
+            if (typeof keyID === "string" && keyID.startsWith(LEGACY_KEY_ID_PREFIX)) {
+                log.debug("apikeys", `Deleted Legacy API Key: ${keyID} User ID: ${socket.userID}`);
+                await R.exec("DELETE FROM api_key WHERE id = ?", [keyID.substring(LEGACY_KEY_ID_PREFIX.length)]);
+            } else {
+                await auth().api.deleteApiKey({
+                    body: {
+                        keyId: keyID,
+                    },
+                    headers: createHeaders(socket.request.headers.cookie),
+                });
+            }
 
             apicache.clear();
 
-            const legacyBeans = await R.find("api_key");
-            const legacyKeys = legacyBeans.map((bean) => bean.toPublicJSON());
-
             callback({
                 ok: true,
                 msg: "successDeleted",
                 msgi18n: true,
-                legacyKeys: legacyKeys,
             });
         } catch (e) {
             callback({

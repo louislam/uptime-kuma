@@ -11,7 +11,7 @@
                 </button>
             </div>
 
-            <div v-if="apiKeyList.length === 0 && legacyKeyList.length === 0">
+            <div v-if="apiKeyList.length === 0">
                 <span class="d-flex align-items-center justify-content-center my-3">
                     {{ $t("No API Keys") }}
                 </span>
@@ -31,45 +31,12 @@
                                 {{ $t("Expires") }}:
                                 {{ item.expiresAt || $t("Never") }}
                             </div>
-                            <div v-if="item.start" class="start">
-                                {{ $t("startsWith", { start: item.start }) }}
-                            </div>
                         </div>
                     </div>
 
                     <div class="buttons">
                         <div class="btn-group" role="group">
                             <button class="btn btn-danger" @click="deleteDialog(item.id)">
-                                <font-awesome-icon icon="trash" />
-                                {{ $t("Delete") }}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div v-if="legacyKeyList.length > 0">
-                <h4>{{ $t("Legacy API Keys") }}</h4>
-
-                <div v-for="(item, index) in legacyKeyList" :key="index" class="item" :class="item.status">
-                    <div class="left-part">
-                        <div class="circle"></div>
-                        <div class="info">
-                            <div class="title">{{ item.name }}</div>
-                            <div class="status">
-                                {{ $t("apiKey-" + item.status) }}
-                            </div>
-                            <div class="date">{{ $t("createdAt", { date: item.createdDate }) }}</div>
-                            <div class="date">
-                                {{ $t("Expires") }}:
-                                {{ item.expires || $t("Never") }}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="buttons">
-                        <div class="btn-group" role="group">
-                            <button class="btn btn-danger" @click="legacyDeleteDialog(item.id)">
                                 <font-awesome-icon icon="trash" />
                                 {{ $t("Delete") }}
                             </button>
@@ -86,16 +53,6 @@
         </div>
 
         <Confirm ref="confirmDelete" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="deleteKey">
-            {{ $t("deleteAPIKeyMsg") }}
-        </Confirm>
-
-        <Confirm
-            ref="confirmLegacyDelete"
-            btn-style="btn-danger"
-            :yes-text="$t('Yes')"
-            :no-text="$t('No')"
-            @yes="legacyDeleteKey"
-        >
             {{ $t("deleteAPIKeyMsg") }}
         </Confirm>
 
@@ -117,7 +74,6 @@ export default {
             apiKeyList: [],
             legacyKeyList: [],
             selectedKeyID: null,
-            selectedLegacyKeyID: null,
         };
     },
     computed: {
@@ -135,7 +91,6 @@ export default {
             this.$root.getAPIKeyList((res) => {
                 if (res.ok) {
                     this.apiKeyList = res.apiKeyList;
-                    this.legacyKeyList = res.legacyAPIKeyList;
                 }
             });
         },
@@ -174,29 +129,6 @@ export default {
                 }
             });
         },
-
-        /**
-         * Show dialog to confirm deletion of legacy key
-         * @param {number} keyID ID of key to delete
-         * @returns {void}
-         */
-        legacyDeleteDialog(keyID) {
-            this.selectedLegacyKeyID = keyID;
-            this.$refs.confirmLegacyDelete.show();
-        },
-
-        /**
-         * Delete a legacy key
-         * @returns {void}
-         */
-        legacyDeleteKey() {
-            this.$root.deleteLegacyAPIKey(this.selectedLegacyKeyID, (res) => {
-                if (res.ok) {
-                    this.legacyKeyList = res.legacyKeys;
-                }
-                this.$root.toastRes(res);
-            });
-        },
     },
 };
 </script>
@@ -209,18 +141,6 @@ export default {
         flex-direction: column;
         align-items: flex-start;
         margin-bottom: 20px;
-    }
-}
-
-.section-title {
-    margin-top: 24px;
-    margin-bottom: 12px;
-    font-size: 18px;
-    font-weight: 600;
-    color: $dark-font-color;
-
-    .dark & {
-        color: $dark-font-color2;
     }
 }
 
@@ -313,17 +233,6 @@ export default {
     .dark & {
         color: white;
         background-color: rgba(255, 255, 255, 0.1);
-    }
-}
-
-.start {
-    margin-top: 5px;
-    display: block;
-    font-size: 13px;
-    color: $dark-font-color;
-
-    .dark & {
-        color: $dark-font-color2;
     }
 }
 
