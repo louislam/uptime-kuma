@@ -112,7 +112,10 @@ test("API Keys", async (t) => {
 
         assert.strictEqual(await R.knex("api_key").where({ name: "legacy key" }).first().then(Boolean), true);
         assert.strictEqual(
-            await R.knex("better_auth_apikey").count("id as count").first().then((r) => Number(r.count)),
+            await R.knex("better_auth_apikey")
+                .count("id as count")
+                .first()
+                .then((r) => Number(r.count)),
             0
         );
     });
