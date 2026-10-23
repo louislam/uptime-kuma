@@ -335,6 +335,12 @@ export default {
     }
 }
 
+// The counts are links now, so the global `.dark a` colour would win over
+// $primary and turn the Up count white in dark mode
+.dark .num {
+    color: $primary;
+}
+
 .shadow-box {
     padding: 20px;
 }
