@@ -155,6 +155,19 @@ test("A v2.5.3 database still works after upgrading to v3 (#7944, #7946)", { tim
         await callOk(socket, "deleteAPIKey", "legacy-1");
         assert.strictEqual(await metricsStatus("uk1_test-api-key"), 401);
 
+        // A key created after the upgrade is a Better Auth key, same lifecycle
+        const addedKey = await callOk(socket, "addAPIKey", { name: "v3 key", expires: null });
+        assert.strictEqual(await metricsStatus(addedKey.key), 200);
+
+        const listWithNewKey = (await callOk(socket, "getAPIKeyList")).apiKeyList;
+        assert.ok(
+            listWithNewKey.some((key) => key.id === addedKey.keyID && key.name === "v3 key"),
+            `new API key not listed: ${JSON.stringify(listWithNewKey)}`
+        );
+
+        await callOk(socket, "deleteAPIKey", addedKey.keyID);
+        assert.strictEqual(await metricsStatus(addedKey.key), 401);
+
         // Maintenance
         const maintenance = (await callOk(socket, "getMaintenance", 1)).maintenance;
         maintenance.title = "Renamed Maintenance";
