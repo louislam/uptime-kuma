@@ -709,6 +709,8 @@
     "rrtypeDescription": "Select the RR type you want to monitor",
     "pauseMonitorMsg": "Are you sure want to pause?",
     "enableDefaultNotificationDescription": "This notification will be enabled by default for new monitors. You can still disable the notification separately for each monitor.",
+    "Retry on connection errors": "Retry on connection errors",
+    "retryNotificationDescription": "Retries the notification up to 3 times (after 15 and 25 seconds) when the endpoint cannot be reached (EHOSTUNREACH, ECONNREFUSED, ...). HTTP errors are not retried. Off by default.",
     "Clear All Events": "Clear All Events",
     "clearAllEventsMsg": "Are you sure you want to delete all events for all monitors? This permanently removes associated message data and cannot be undone.",
     "Events cleared successfully": "Events cleared successfully.",

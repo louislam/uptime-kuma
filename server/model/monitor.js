@@ -45,6 +45,7 @@ const {
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification");
+const { sendNotificationWithRetry } = require("../notification-retry");
 const { Proxy } = require("../proxy");
 const { demoMode } = require("../config");
 const version = require("../../package.json").version;
@@ -1509,12 +1510,22 @@ class Monitor extends BeanModel {
 
             for (let notification of notificationList) {
                 try {
-                    await Notification.send(
-                        JSON.parse(notification.config),
-                        msg,
-                        monitor.toJSON(preloadData, false),
-                        heartbeatJSON
-                    );
+                    const config = JSON.parse(notification.config);
+                    const sendFn = () =>
+                        Notification.send(config, msg, monitor.toJSON(preloadData, false), heartbeatJSON);
+
+                    if (config.retryTransportErrors === true) {
+                        await sendNotificationWithRetry(sendFn, {
+                            onRetry: ({ attempt, error, delayMs }) => {
+                                log.warn(
+                                    "monitor",
+                                    `[${monitor.name}] Notification to ${notification.name} failed on attempt ${attempt} (${error.message}), retrying in ${delayMs} ms`
+                                );
+                            },
+                        });
+                    } else {
+                        await sendFn();
+                    }
                 } catch (e) {
                     log.error("monitor", "Cannot send notification to " + notification.name);
                     log.error("monitor", e);
