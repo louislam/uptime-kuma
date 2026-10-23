@@ -321,7 +321,8 @@ export default {
             }
 
             .btn-group {
-                margin: 1em 1em 0 1em;
+                flex-wrap: wrap;
+                margin: 1em 0 0;
                 width: 100%;
             }
         }
