@@ -11,8 +11,8 @@
 #
 # Secrets exigidos no repo/org:
 #   DOCKER_USERNAME, DOCKER_PASSWORD          (publicar a imagem)
-#   AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY  (falar com o EKS)
-#   AWS_DEFAULT_REGION
+# AWS: sem secret. O job de deploy assume a role ci-deploy-uptime-kuma por OIDC
+# (permissions: id-token: write).
 name: build-and-push
 
 on:
@@ -135,6 +135,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      id-token: write
     env:
       CLUSTER: winkernetes
       NAMESPACE: monitor-infra
@@ -150,30 +151,17 @@ jobs:
       # metadata" e o conserto vira anotar recurso de producao na mao.
       HELM_VERSION: v3.18.4
     steps:
-      - name: Confere os secrets da AWS
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        run: |
-          missing=""
-          [ -z "$AWS_ACCESS_KEY_ID" ] && missing="$missing AWS_ACCESS_KEY_ID"
-          [ -z "$AWS_SECRET_ACCESS_KEY" ] && missing="$missing AWS_SECRET_ACCESS_KEY"
-          if [ -n "$missing" ]; then
-            echo "::error::Secret(s) ausente(s):$missing — a imagem FOI publicada, mas o deploy nao roda."
-            exit 1
-          fi
+      # Credencial temporaria via OIDC (ADR-0014 do repo infrastructure): sem chave
+      # AWS guardada no GitHub. A role so aceita este repo na branch master.
+      - name: Credenciais AWS (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::203462224675:role/ci-deploy-uptime-kuma
+          role-session-name: gh-uptime-kuma-${{ github.run_id }}
+          aws-region: us-east-1
 
-      - name: Credenciais AWS e kubeconfig
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-        run: |
-          set -eu
-          aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID"
-          aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY"
-          aws configure set default.region "${AWS_DEFAULT_REGION:-us-east-1}"
-          aws eks update-kubeconfig --no-cli-pager --name "$CLUSTER"
+      - name: Kubeconfig
+        run: aws eks update-kubeconfig --no-cli-pager --name "$CLUSTER"
           kubectl -n "$NAMESPACE" get deploy "$RELEASE" -o name
 
       - name: Instala helm, o plugin s3 e garante o kubectl
