@@ -354,9 +354,12 @@ export default {
 
             // The dropdown now owns the filter: drop the Quick Stats query so a
             // reload doesn't bring back a stale filter, and so clicking the same
-            // Quick Stats count again changes the URL and re-applies it
+            // Quick Stats count again changes the URL and re-applies it.
+            // Only on the dashboard: elsewhere (e.g. /list) the list is inside the
+            // router-view, keyed by fullPath, so changing the URL would remount it
+            // and throw away the filter that was just picked
             const { status, active, ...query } = this.$route.query;
-            if (status != null || active != null) {
+            if (this.$route.name === "DashboardHome" && (status != null || active != null)) {
                 this.$router.replace({ query });
             }
         },
@@ -372,15 +375,21 @@ export default {
             }
 
             const toArray = (value) => (Array.isArray(value) ? value : [value]);
+            // Only accept values the dropdown itself can produce; anything else
+            // (e.g. ?status= or ?active=yes) is ignored rather than guessed at
+            const statusList = toArray(status ?? [])
+                .filter((s) => ["0", "1", "2", "3"].includes(s))
+                .map(Number);
+            const activeList = toArray(active ?? [])
+                .filter((a) => a === "true" || a === "false")
+                .map((a) => a === "true");
+            if (statusList.length === 0 && activeList.length === 0) {
+                return;
+            }
 
             this.filterState = {
-                status:
-                    status == null
-                        ? null
-                        : toArray(status)
-                              .map(Number)
-                              .filter((s) => !isNaN(s)),
-                active: active == null ? null : toArray(active).map((a) => a === "true"),
+                status: statusList.length > 0 ? statusList : null,
+                active: activeList.length > 0 ? activeList : null,
                 tags: null,
             };
         },
