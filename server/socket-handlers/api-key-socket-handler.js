@@ -5,9 +5,6 @@ const apicache = require("../modules/apicache");
 const { Settings } = require("../settings");
 const { auth, createHeaders, checkLogin } = require("../better-auth");
 
-// Legacy API keys stay in the old `api_key` table, they are listed with this ID prefix
-const LEGACY_KEY_ID_PREFIX = "legacy-";
-
 /**
  * Handlers for API keys
  * @param {Socket} socket Socket.io instance
@@ -69,10 +66,10 @@ module.exports.apiKeySocketHandler = (socket) => {
                 headers: socket.headers,
             });
 
-            // Legacy API keys, kept in the old table until they are used once
+            // Legacy API keys stay in the old table, prefix their ID so it cannot clash with a Better Auth ID
             const legacyBeans = await R.find("api_key");
             const legacyKeys = legacyBeans.map((bean) => ({
-                id: LEGACY_KEY_ID_PREFIX + bean.id,
+                id: "legacy-" + bean.id,
                 name: bean.name,
                 enabled: !!bean.active,
                 expiresAt: bean.expires,
@@ -96,9 +93,9 @@ module.exports.apiKeySocketHandler = (socket) => {
         try {
             checkLogin(socket);
 
-            if (typeof keyID === "string" && keyID.startsWith(LEGACY_KEY_ID_PREFIX)) {
+            if (typeof keyID === "string" && keyID.startsWith("legacy-")) {
                 log.debug("apikeys", `Deleted Legacy API Key: ${keyID} User ID: ${socket.userID}`);
-                await R.exec("DELETE FROM api_key WHERE id = ?", [keyID.substring(LEGACY_KEY_ID_PREFIX.length)]);
+                await R.exec("DELETE FROM api_key WHERE id = ?", [keyID.substring("legacy-".length)]);
             } else {
                 await auth().api.deleteApiKey({
                     body: {
