@@ -304,6 +304,11 @@ export default {
                 this.selectedMonitors = {};
             }
         },
+        // MonitorList stays mounted next to the router-view, so a Quick Stats
+        // link only changes the query; mounted() alone would miss it
+        "$route.query"() {
+            this.applyFilterFromQuery();
+        },
     },
     mounted() {
         window.addEventListener("scroll", this.onScroll);
@@ -346,6 +351,14 @@ export default {
          */
         updateFilter(newFilter) {
             this.filterState = newFilter;
+
+            // The dropdown now owns the filter: drop the Quick Stats query so a
+            // reload doesn't bring back a stale filter, and so clicking the same
+            // Quick Stats count again changes the URL and re-applies it
+            const { status, active, ...query } = this.$route.query;
+            if (status != null || active != null) {
+                this.$router.replace({ query });
+            }
         },
         /**
          * Apply the filter requested through the URL, so linking to a filtered
@@ -358,10 +371,15 @@ export default {
                 return;
             }
 
-            const toArray = (value) => (Array.isArray(value) ? value : [ value ]);
+            const toArray = (value) => (Array.isArray(value) ? value : [value]);
 
             this.filterState = {
-                status: status == null ? null : toArray(status).map(Number).filter((s) => !isNaN(s)),
+                status:
+                    status == null
+                        ? null
+                        : toArray(status)
+                              .map(Number)
+                              .filter((s) => !isNaN(s)),
                 active: active == null ? null : toArray(active).map((a) => a === "true"),
                 tags: null,
             };

@@ -9,27 +9,38 @@
                 <div class="row">
                     <div class="col">
                         <h3>{{ $t("Up") }}</h3>
-                        <router-link class="num" :class="$root.stats.up === 0 && 'text-secondary'" :to="{ query: { status: '1' } }">
+                        <router-link
+                            class="num"
+                            :class="$root.stats.up === 0 && 'text-secondary'"
+                            :to="{ query: { status: '1', active: 'true' } }"
+                        >
                             {{ $root.stats.up }}
                         </router-link>
                     </div>
                     <div class="col">
                         <h3>{{ $t("Down") }}</h3>
-                        <router-link class="num" :class="$root.stats.down > 0 ? 'text-danger' : 'text-secondary'" :to="{ query: { status: '0' } }">
+                        <router-link
+                            class="num"
+                            :class="$root.stats.down > 0 ? 'text-danger' : 'text-secondary'"
+                            :to="{ query: { status: '0', active: 'true' } }"
+                        >
                             {{ $root.stats.down }}
                         </router-link>
                     </div>
                     <div class="col">
                         <h3>{{ $t("Maintenance") }}</h3>
-                        <router-link class="num" :class="$root.stats.maintenance > 0 ? 'text-maintenance' : 'text-secondary'" :to="{ query: { status: '3' } }">
+                        <router-link
+                            class="num"
+                            :class="$root.stats.maintenance > 0 ? 'text-maintenance' : 'text-secondary'"
+                            :to="{ query: { status: '3', active: 'true' } }"
+                        >
                             {{ $root.stats.maintenance }}
                         </router-link>
                     </div>
                     <div class="col">
                         <h3>{{ $t("Unknown") }}</h3>
-                        <router-link class="num text-secondary" :to="{ query: { status: '2' } }">
-                            {{ $root.stats.unknown }}
-                        </router-link>
+                        <!-- not linked: no Status filter selects monitors without a heartbeat -->
+                        <span class="num text-secondary">{{ $root.stats.unknown }}</span>
                     </div>
                     <div class="col">
                         <h3>{{ $t("pauseDashboardHome") }}</h3>
