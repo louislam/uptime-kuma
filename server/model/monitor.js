@@ -61,8 +61,24 @@ const zlib = require("node:zlib");
 const { promisify } = require("node:util");
 const brotliCompress = promisify(zlib.brotliCompress);
 const DomainExpiry = require("./domain_expiry");
+const { normalizeNtripConfig } = require("../ntrip/config");
 
 const rootCertificates = rootCertificatesFingerprints();
+
+/**
+ * Read a nullable decimal column as a number.
+ *
+ * SQLite returns decimals as numbers while MariaDB returns them as strings, so
+ * coordinates are coerced before they reach the API.
+ * @param {*} value Stored column value
+ * @returns {number|null} Number, or null when the column is unset
+ */
+function decimalColumnToNumber(value) {
+    if (value === null || value === undefined || value === "") {
+        return null;
+    }
+    return Number(value);
+}
 
 /**
  * status:
@@ -208,6 +224,16 @@ class Monitor extends BeanModel {
             sftpPath: this.sftpPath,
             sshAuthMethod: this.sshAuthMethod || "password",
 
+            // ntrip options; credentials and coordinates are sensitive, see below
+            ntripTls: Boolean(this.ntrip_tls),
+            ntripMountpoint: this.ntrip_mountpoint,
+            ntripRevision: this.ntrip_revision,
+            ntripHandshakeTimeout: this.ntrip_handshake_timeout,
+            ntripInitialTimeout: this.ntrip_initial_timeout,
+            ntripStaleTimeout: this.ntrip_stale_timeout,
+            ntripGgaEnabled: Boolean(this.ntrip_gga_enabled),
+            ntripGgaInterval: this.ntrip_gga_interval,
+
             // ping advanced options
             ping_numeric: this.isPingNumeric(),
             ping_count: this.ping_count,
@@ -256,6 +282,14 @@ class Monitor extends BeanModel {
                 sshPassword: this.sshPassword,
                 sshPrivateKey: this.sshPrivateKey,
                 sshPassphrase: this.sshPassphrase,
+                ntripUsername: this.ntrip_username,
+                ntripPassword: this.ntrip_password,
+
+                // The GGA position is the physical location of a rover or base
+                // station, so it stays on the authenticated path with credentials.
+                ntripLatitude: decimalColumnToNumber(this.ntrip_latitude),
+                ntripLongitude: decimalColumnToNumber(this.ntrip_longitude),
+                ntripAltitudeMsl: decimalColumnToNumber(this.ntrip_altitude_msl),
             };
         }
 
@@ -475,6 +509,11 @@ class Monitor extends BeanModel {
                 if (await Monitor.isUnderMaintenance(this.id)) {
                     bean.msg = "Monitor under maintenance";
                     bean.status = MAINTENANCE;
+
+                    // Maintenance suspends the monitor, it does not pause it, so
+                    // heartbeat scheduling and `active` are left alone. Types
+                    // holding a persistent connection still have to let go of it.
+                    await this.disposeMonitorType();
                 } else if (this.type === "http" || this.type === "keyword" || this.type === "json-query") {
                     // Do not do any queries/high loading things before the "bean.ping"
                     let startTime = dayjs().valueOf();
@@ -1217,7 +1256,33 @@ class Monitor extends BeanModel {
         clearTimeout(this.heartbeatInterval);
         this.isStop = true;
 
+        // After the stop flag is set, so cleanup sees the final state.
+        await this.disposeMonitorType();
+
         this.prometheus?.remove();
+    }
+
+    /**
+     * Ask this monitor's type to release anything it holds for this monitor.
+     *
+     * Pause, edit, delete and shutdown all route through stop(), so this is the
+     * single cleanup path for persistent monitor types. Cleanup failures are
+     * logged rather than thrown: one broken monitor must not abort shutdown for
+     * every other monitor.
+     * @returns {Promise<void>}
+     */
+    async disposeMonitorType() {
+        const monitorType = UptimeKumaServer.monitorTypeList[this.type];
+
+        if (!monitorType || typeof monitorType.dispose !== "function") {
+            return;
+        }
+
+        try {
+            await monitorType.dispose(this, UptimeKumaServer.getInstance());
+        } catch (e) {
+            log.error("monitor", `Monitor #${this.id} '${this.name}': Cleanup failed: ${e.message}`);
+        }
     }
 
     /**
@@ -1709,6 +1774,12 @@ class Monitor extends BeanModel {
 
         if (this.type === "pm2" && /[\u0000-\u001F\u007F]/.test(this.system_service_name)) {
             throw new Error("Invalid PM2 process name.");
+        }
+
+        if (this.type === "ntrip") {
+            // Throws a message that is safe to show in the UI and in heartbeats:
+            // it never contains the password.
+            normalizeNtripConfig(this);
         }
 
         if (this.type === "ping") {

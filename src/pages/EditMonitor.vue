@@ -87,6 +87,7 @@
                                         <option value="kafka-producer">Kafka Producer</option>
                                         <option value="mqtt">MQTT</option>
                                         <option value="ntp">NTP</option>
+                                        <option value="ntrip">NTRIP</option>
                                         <option value="rabbitmq">RabbitMQ</option>
                                         <option v-if="!$root.info.isContainer" value="sip-options">
                                             SIP Options Ping
@@ -478,7 +479,7 @@
                             </template>
 
                             <!-- Hostname -->
-                            <!-- TCP Port / Ping / DNS / Steam / MQTT / Radius / Tailscale Ping / SNMP / SMTP / SIP Options / NTP only -->
+                            <!-- TCP Port / Ping / DNS / Steam / MQTT / Radius / Tailscale Ping / SNMP / SMTP / SIP Options / NTP / NTRIP only -->
                             <div
                                 v-if="
                                     monitor.type === 'port' ||
@@ -493,7 +494,8 @@
                                     monitor.type === 'snmp' ||
                                     monitor.type === 'sip-options' ||
                                     monitor.type === 'sftp' ||
-                                    monitor.type === 'ntp'
+                                    monitor.type === 'ntp' ||
+                                    monitor.type === 'ntrip'
                                 "
                                 class="my-3"
                             >
@@ -694,7 +696,7 @@
                             </template>
 
                             <!-- Port -->
-                            <!-- For TCP Port / Steam / MQTT / Radius Type / SNMP / SIP Options / NTP -->
+                            <!-- For TCP Port / Steam / MQTT / Radius Type / SNMP / SIP Options / NTP / NTRIP -->
                             <div
                                 v-if="
                                     monitor.type === 'port' ||
@@ -707,6 +709,7 @@
                                     monitor.type === 'sip-options' ||
                                     monitor.type === 'sftp' ||
                                     monitor.type === 'ntp' ||
+                                    monitor.type === 'ntrip' ||
                                     (monitor.type === 'globalping' &&
                                         monitor.subtype === 'ping' &&
                                         monitor.protocol === 'TCP')
@@ -996,6 +999,244 @@
                                     <div class="form-text">
                                         {{ $t("ntpDispersionThresholdHelp") }}
                                     </div>
+                                </div>
+                            </template>
+
+                            <!-- NTRIP Configuration -->
+                            <template v-if="monitor.type === 'ntrip'">
+                                <div class="my-3">
+                                    <label for="ntrip-mountpoint" class="form-label">
+                                        {{ $t("ntripMountpoint") }}
+                                    </label>
+                                    <input
+                                        id="ntrip-mountpoint"
+                                        v-model="monitor.ntripMountpoint"
+                                        type="text"
+                                        class="form-control"
+                                        required
+                                        data-testid="ntrip-mountpoint-input"
+                                    />
+                                    <div class="form-text">
+                                        {{ $t("ntripMountpointHelp") }}
+                                    </div>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="ntrip-username" class="form-label">
+                                        {{ $t("ntripUsername") }}
+                                    </label>
+                                    <input
+                                        id="ntrip-username"
+                                        v-model="monitor.ntripUsername"
+                                        type="text"
+                                        class="form-control"
+                                        autocomplete="off"
+                                        data-testid="ntrip-username-input"
+                                    />
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="ntrip-password" class="form-label">
+                                        {{ $t("ntripPassword") }}
+                                    </label>
+                                    <HiddenInput
+                                        id="ntrip-password"
+                                        v-model="monitor.ntripPassword"
+                                        autocomplete="new-password"
+                                        data-testid="ntrip-password-input"
+                                    ></HiddenInput>
+                                    <div class="form-text">
+                                        {{ $t("ntripCredentialsHelp") }}
+                                    </div>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="ntrip-revision" class="form-label">
+                                        {{ $t("ntripRevision") }}
+                                    </label>
+                                    <select
+                                        id="ntrip-revision"
+                                        v-model="monitor.ntripRevision"
+                                        class="form-select"
+                                        data-testid="ntrip-revision-select"
+                                    >
+                                        <option value="2">NTRIP 2.0</option>
+                                        <option value="1">NTRIP 1.0</option>
+                                    </select>
+                                    <div class="form-text">
+                                        {{ $t("ntripRevisionHelp") }}
+                                    </div>
+                                </div>
+
+                                <div class="my-3 form-check">
+                                    <input
+                                        id="ntrip-tls"
+                                        v-model="monitor.ntripTls"
+                                        class="form-check-input"
+                                        type="checkbox"
+                                        data-testid="ntrip-tls-checkbox"
+                                    />
+                                    <label class="form-check-label" for="ntrip-tls">
+                                        {{ $t("ntripTls") }}
+                                    </label>
+                                    <div class="form-text">
+                                        {{ $t("ntripTlsHelp") }}
+                                    </div>
+                                </div>
+
+                                <h4 class="mt-4">{{ $t("ntripDeadlinesTitle") }}</h4>
+                                <div class="form-text mb-3">
+                                    {{ $t("ntripDeadlinesHelp") }}
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="ntrip-stale-timeout" class="form-label">
+                                        {{ $t("ntripStaleTimeout") }}
+                                    </label>
+                                    <input
+                                        id="ntrip-stale-timeout"
+                                        v-model.number="monitor.ntripStaleTimeout"
+                                        type="number"
+                                        class="form-control"
+                                        min="1"
+                                        step="1"
+                                        required
+                                        data-testid="ntrip-stale-timeout-input"
+                                    />
+                                    <div class="form-text">
+                                        {{ $t("ntripStaleTimeoutHelp") }}
+                                    </div>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="ntrip-handshake-timeout" class="form-label">
+                                        {{ $t("ntripHandshakeTimeout") }}
+                                    </label>
+                                    <input
+                                        id="ntrip-handshake-timeout"
+                                        v-model.number="monitor.ntripHandshakeTimeout"
+                                        type="number"
+                                        class="form-control"
+                                        min="1"
+                                        step="1"
+                                        required
+                                        data-testid="ntrip-handshake-timeout-input"
+                                    />
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="ntrip-initial-timeout" class="form-label">
+                                        {{ $t("ntripInitialTimeout") }}
+                                    </label>
+                                    <input
+                                        id="ntrip-initial-timeout"
+                                        v-model.number="monitor.ntripInitialTimeout"
+                                        type="number"
+                                        class="form-control"
+                                        min="1"
+                                        step="1"
+                                        required
+                                        data-testid="ntrip-initial-timeout-input"
+                                    />
+                                    <div class="form-text">
+                                        {{ $t("ntripInitialTimeoutHelp") }}
+                                    </div>
+                                </div>
+
+                                <h4 class="mt-4">{{ $t("ntripGgaTitle") }}</h4>
+
+                                <div class="my-3 form-check">
+                                    <input
+                                        id="ntrip-gga-enabled"
+                                        v-model="monitor.ntripGgaEnabled"
+                                        class="form-check-input"
+                                        type="checkbox"
+                                        data-testid="ntrip-gga-checkbox"
+                                    />
+                                    <label class="form-check-label" for="ntrip-gga-enabled">
+                                        {{ $t("ntripGgaEnabled") }}
+                                    </label>
+                                    <div class="form-text">
+                                        {{ $t("ntripGgaEnabledHelp") }}
+                                    </div>
+                                </div>
+
+                                <template v-if="monitor.ntripGgaEnabled">
+                                    <div class="my-3">
+                                        <label for="ntrip-latitude" class="form-label">
+                                            {{ $t("ntripLatitude") }}
+                                        </label>
+                                        <input
+                                            id="ntrip-latitude"
+                                            v-model.number="monitor.ntripLatitude"
+                                            type="number"
+                                            class="form-control"
+                                            min="-90"
+                                            max="90"
+                                            step="any"
+                                            required
+                                            data-testid="ntrip-latitude-input"
+                                        />
+                                    </div>
+
+                                    <div class="my-3">
+                                        <label for="ntrip-longitude" class="form-label">
+                                            {{ $t("ntripLongitude") }}
+                                        </label>
+                                        <input
+                                            id="ntrip-longitude"
+                                            v-model.number="monitor.ntripLongitude"
+                                            type="number"
+                                            class="form-control"
+                                            min="-180"
+                                            max="180"
+                                            step="any"
+                                            required
+                                            data-testid="ntrip-longitude-input"
+                                        />
+                                    </div>
+
+                                    <div class="my-3">
+                                        <label for="ntrip-altitude-msl" class="form-label">
+                                            {{ $t("ntripAltitudeMsl") }}
+                                        </label>
+                                        <input
+                                            id="ntrip-altitude-msl"
+                                            v-model.number="monitor.ntripAltitudeMsl"
+                                            type="number"
+                                            class="form-control"
+                                            min="-11000"
+                                            max="100000"
+                                            step="any"
+                                            required
+                                            data-testid="ntrip-altitude-input"
+                                        />
+                                    </div>
+
+                                    <div class="my-3">
+                                        <label for="ntrip-gga-interval" class="form-label">
+                                            {{ $t("ntripGgaInterval") }}
+                                        </label>
+                                        <input
+                                            id="ntrip-gga-interval"
+                                            v-model.number="monitor.ntripGgaInterval"
+                                            type="number"
+                                            class="form-control"
+                                            min="1"
+                                            step="1"
+                                            required
+                                            data-testid="ntrip-gga-interval-input"
+                                        />
+                                    </div>
+                                </template>
+
+                                <h4 class="mt-4">{{ $t("ntripHealthTitle") }}</h4>
+                                <div class="form-text">
+                                    <p>{{ $t("ntripHealthSupported") }}</p>
+                                    <p>{{ $t("ntripHealthMetadata") }}</p>
+                                    <p>{{ $t("ntripHealthMaintenance") }}</p>
+                                    <p>{{ $t("ntripHealthFreshness") }}</p>
+                                    <p class="mb-0">{{ $t("ntripHealthCorrectionAge") }}</p>
                                 </div>
                             </template>
 
@@ -3417,6 +3658,19 @@ const monitorDefaults = {
     ntpStratumThreshold: 5,
     ntpTimeOffsetThreshold: 1000,
     ntpRootDispersionThreshold: 500,
+    ntripMountpoint: "",
+    ntripRevision: "2",
+    ntripTls: false,
+    ntripUsername: "",
+    ntripPassword: "",
+    ntripHandshakeTimeout: 15,
+    ntripInitialTimeout: 30,
+    ntripStaleTimeout: 30,
+    ntripGgaEnabled: false,
+    ntripGgaInterval: 10,
+    ntripLatitude: null,
+    ntripLongitude: null,
+    ntripAltitudeMsl: null,
 };
 
 export default {
@@ -3883,7 +4137,8 @@ message HealthCheckResponse {
                 this.monitor.port === "53" ||
                 this.monitor.port === "1812" ||
                 this.monitor.port === "123" ||
-                this.monitor.port === "22"
+                this.monitor.port === "22" ||
+                this.monitor.port === "2101"
             ) {
                 if (this.monitor.type === "dns") {
                     this.monitor.port = "53";
@@ -3895,6 +4150,8 @@ message HealthCheckResponse {
                     this.monitor.port = "123";
                 } else if (this.monitor.type === "sftp") {
                     this.monitor.port = "22";
+                } else if (this.monitor.type === "ntrip") {
+                    this.monitor.port = "2101";
                 } else if (this.monitor.type === "globalping" && this.monitor.subtype === "ping") {
                     this.monitor.port = "80";
                 } else {

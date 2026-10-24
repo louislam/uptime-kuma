@@ -33,6 +33,19 @@ class MonitorType {
     async check(monitor, heartbeat, server) {
         throw new Error("You need to override check()");
     }
+
+    /**
+     * Release any resource this type holds for the given monitor.
+     *
+     * Called when the monitor stops (pause, edit, delete, shutdown) and when it
+     * enters effective maintenance. Types that connect only for the duration of
+     * a check hold nothing and inherit this no-op; types that keep a persistent
+     * connection must close sockets and cancel timers here.
+     * @param {Monitor} monitor Monitor being released
+     * @param {UptimeKumaServer} server Uptime Kuma server
+     * @returns {Promise<void>}
+     */
+    async dispose(monitor, server) {}
 }
 
 module.exports = {
