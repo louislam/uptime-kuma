@@ -14,6 +14,7 @@ const path = require("path");
 const axios = require("axios");
 const { isSSL, sslKey, sslCert, sslKeyPassphrase } = require("./config");
 const { getSession, getDisableAuthSession } = require("./better-auth");
+const { toCompactMonitor } = require("./compact-monitor");
 // DO NOT IMPORT HERE IF THE MODULES USED `UptimeKumaServer.getInstance()`, put at the bottom of this file instead.
 
 /**
@@ -308,26 +309,7 @@ class UptimeKumaServer {
 
         const result = {};
         monitorList.forEach((monitor) => {
-            if (compact) {
-                // Build only what the dashboard uses: toJSON() fills ~60 fields per monitor
-                // and costs over a second for thousands of monitors at login
-                const path = preloadData.paths.get(monitor.id) || [];
-                result[monitor.id] = {
-                    id: monitor.id,
-                    name: monitor.name,
-                    type: monitor.type,
-                    active: preloadData.activeStatus.get(monitor.id),
-                    parent: monitor.parent,
-                    childrenIDs: preloadData.childrenIDs.get(monitor.id) || [],
-                    tags: preloadData.tags.get(monitor.id) || [],
-                    path,
-                    pathName: path.join(" / "),
-                    interval: monitor.interval,
-                    weight: monitor.weight,
-                };
-            } else {
-                result[monitor.id] = monitor.toJSON(preloadData);
-            }
+            result[monitor.id] = compact ? toCompactMonitor(monitor, preloadData) : monitor.toJSON(preloadData);
         });
         return result;
     }

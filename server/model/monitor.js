@@ -29,7 +29,6 @@ const {
 } = require("../../src/util");
 const {
     ping,
-    checkCertificate,
     checkStatusCode,
     getTotalClientInRoom,
     httpNtlm,
@@ -38,14 +37,12 @@ const {
     getOidcTokenClientCredentials,
     rootCertificatesFingerprints,
     axiosAbortSignal,
-    checkCertificateHostname,
     encodeBase64,
     checkCertExpiryNotifications,
 } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification");
-const { Proxy } = require("../proxy");
 const { demoMode } = require("../config");
 const version = require("../../package.json").version;
 const apicache = require("../modules/apicache");
@@ -54,11 +51,10 @@ const { DockerHost } = require("../docker");
 const crypto = require("crypto");
 const { UptimeCalculator } = require("../uptime-calculator");
 const { MonitorStats } = require("../monitor-stats");
-const { CookieJar } = require("tough-cookie");
-const { HttpsCookieAgent } = require("http-cookie-agent/http");
-
-// Keep-alive agents per monitor instance. A WeakMap avoids redbean's magic property setters
-const monitorAgents = new WeakMap();
+const { attachKeylogListener, getMonitorAgents } = require("../monitor-agents");
+const { readTlsInfo } = require("../monitor-tls");
+const { emitHeartbeat } = require("../heartbeat-emit");
+const { updatePrometheusStats } = require("../prometheus-monitor");
 
 // Last time certificate/domain info was sent to a client, per monitor
 const lastInfoSent = new Map();
@@ -602,37 +598,13 @@ class Monitor extends BeanModel {
 
                     // Reuse keep-alive agents per monitor: creating a new agent and socket for
                     // every check exhausts local ports and buffers with thousands of monitors
-                    let agents = monitorAgents.get(this);
-                    if (!agents) {
-                        let httpAgent = null;
-                        let httpsAgent = null;
+                    const agents = await getMonitorAgents(this, {
+                        httpAgentOptions,
+                        httpsAgentOptions,
+                    });
 
-                        if (this.proxy_id) {
-                            const proxy = await R.load("proxy", this.proxy_id);
-
-                            if (proxy && proxy.active) {
-                                ({ httpAgent, httpsAgent } = Proxy.createAgents(proxy, {
-                                    httpsAgentOptions: httpsAgentOptions,
-                                    httpAgentOptions: httpAgentOptions,
-                                }));
-                                options.proxy = false;
-                            }
-                        }
-
-                        if (!httpAgent) {
-                            httpAgent = new http.Agent({ ...httpAgentOptions, keepAlive: true });
-                        }
-
-                        if (!httpsAgent) {
-                            httpsAgent = new HttpsCookieAgent({
-                                ...httpsAgentOptions,
-                                keepAlive: true,
-                                cookies: { jar: new CookieJar() },
-                            });
-                        }
-
-                        agents = { httpAgent, httpsAgent };
-                        monitorAgents.set(this, agents);
+                    if (agents.proxied) {
+                        options.proxy = false;
                     }
 
                     options.httpAgent = agents.httpAgent;
@@ -651,26 +623,12 @@ class Monitor extends BeanModel {
                     }
 
                     let tlsInfo = {};
-                    // Store tlsInfo when secureConnect event is emitted
-                    // The keylog event listener is a workaround to access the tlsSocket.
-                    // The agent is reused, so drop the previous listener: one per beat would
-                    // pile up on agents that never see a TLS handshake (plain http monitors)
-                    if (agents.keylogHandler) {
-                        options.httpsAgent.removeListener("keylog", agents.keylogHandler);
-                    }
-                    agents.keylogHandler = async (line, tlsSocket) => {
-                        tlsSocket.once("secureConnect", async () => {
-                            tlsInfo = checkCertificate(tlsSocket);
-                            tlsInfo.valid = tlsSocket.authorized || false;
-                            tlsInfo.hostnameMatchMonitorUrl = checkCertificateHostname(
-                                tlsInfo.certInfo.raw,
-                                this.getUrl()?.hostname
-                            );
-
-                            await this.handleTlsInfo(tlsInfo);
-                        });
-                    };
-                    options.httpsAgent.once("keylog", agents.keylogHandler);
+                    // Store tlsInfo when secureConnect event is emitted. The agent is reused,
+                    // so this replaces the listener of the previous beat instead of stacking
+                    attachKeylogListener(agents, options.httpsAgent, async (tlsSocket) => {
+                        tlsInfo = readTlsInfo(tlsSocket, this.getUrl()?.hostname);
+                        await this.handleTlsInfo(tlsInfo);
+                    });
 
                     log.debug("monitor", `[${this.name}] Axios Options: ${JSON.stringify(options)}`);
                     log.debug("monitor", `[${this.name}] Axios Request`);
@@ -692,13 +650,7 @@ class Monitor extends BeanModel {
                         const tlsSocket = res.request.res.socket;
 
                         if (tlsSocket) {
-                            tlsInfo = checkCertificate(tlsSocket);
-                            tlsInfo.valid = tlsSocket.authorized || false;
-                            tlsInfo.hostnameMatchMonitorUrl = checkCertificateHostname(
-                                tlsInfo.certInfo.raw,
-                                this.getUrl()?.hostname
-                            );
-
+                            tlsInfo = readTlsInfo(tlsSocket, this.getUrl()?.hostname);
                             await this.handleTlsInfo(tlsInfo);
                         }
                     }
@@ -1086,9 +1038,7 @@ class Monitor extends BeanModel {
 
             // Send to frontend
             log.debug("monitor", `[${this.name}] Send to socket`);
-            if (getTotalClientInRoom(io, this.user_id) > 0) {
-                io.to(this.user_id).emit("heartbeat", bean.toJSON());
-            }
+            emitHeartbeat(io, this.user_id, bean.toJSON());
             Monitor.sendStats(io, this.id, this.user_id);
 
             // Store to database
@@ -1097,20 +1047,8 @@ class Monitor extends BeanModel {
 
             log.debug("monitor", `[${this.name}] prometheus.update`);
             if (this.prometheus) {
-                // Use the grouped SQL stats cache instead of loading the full stat history
-                // into memory on every monitor's first beat
-                const stats = MonitorStats.get(this.id);
-                this.prometheus.update(
-                    bean,
-                    tlsInfo,
-                    stats
-                        ? {
-                              data24h: { uptime: stats.uptime24, avgPing: stats.avgPing ?? 0 },
-                              data30d: { uptime: stats.uptime720, avgPing: stats.avgPing ?? 0 },
-                              data1y: { uptime: stats.uptime1y, avgPing: stats.avgPing ?? 0 },
-                          }
-                        : null
-                );
+                // Serve the gauges from the grouped stats cache, never from full history
+                updatePrometheusStats(this.prometheus, this.id, bean, tlsInfo);
             }
 
             previousBeat = bean;

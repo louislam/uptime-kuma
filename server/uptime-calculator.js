@@ -219,6 +219,10 @@ class UptimeCalculator {
      * @throws {Error} Invalid status
      */
     async update(status, ping = 0, date) {
+        // A beat without an explicit date happens now, so its current buckets must be
+        // continued from the database. Check this before defaulting `date`.
+        const isLiveBeat = !date;
+
         if (!date) {
             date = this.getCurrentDate();
         }
@@ -235,7 +239,7 @@ class UptimeCalculator {
 
         // Continue the current buckets from their stored values instead of starting at zero,
         // otherwise a restart would overwrite the minute/hour/day counts with only new beats
-        if (!this.migrationMode && !date) {
+        if (!this.migrationMode && isLiveBeat && !this.currentBucketsLoaded && !this.historyLoaded) {
             await this.ensureCurrentBuckets(divisionKey, hourlyKey, dailyKey);
         }
 

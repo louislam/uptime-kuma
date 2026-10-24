@@ -39,6 +39,7 @@
 </template>
 
 <script>
+import { claimHeartbeatHistory, releaseHeartbeatHistory } from "../heartbeat-history";
 import dayjs from "dayjs";
 import { DOWN, UP, PENDING, MAINTENANCE } from "../util.ts";
 import Tooltip from "./Tooltip.vue";
@@ -382,15 +383,17 @@ export default {
 
             const beats = this.$root.heartbeatList[this.monitorId];
             const requested = this.$root.heartbeatHistoryRequested;
-            if ((beats && beats.length > 1) || requested.has(this.monitorId)) {
+            if (beats && beats.length > 1) {
+                return;
+            }
+            if (!claimHeartbeatHistory(requested, this.monitorId)) {
                 return;
             }
 
-            requested.add(this.monitorId);
             const socket = this.$root.getSocket();
             if (!socket) {
                 // The socket is not initialized yet when a deep link mounts before the root
-                requested.delete(this.monitorId);
+                releaseHeartbeatHistory(requested, this.monitorId);
                 setTimeout(() => this.requestHistory(), 250);
                 return;
             }
@@ -401,7 +404,7 @@ export default {
                         this.$root.heartbeatList[this.monitorId] = res.data;
                     }
                 } else {
-                    requested.delete(this.monitorId);
+                    releaseHeartbeatHistory(requested, this.monitorId);
                 }
             });
         },

@@ -11,6 +11,7 @@
                         <input
                             v-model="searchText"
                             class="form-control search-input"
+                            data-testid="monitor-search"
                             :placeholder="$t('Search...')"
                             :aria-label="$t('Search monitored sites')"
                             autocomplete="off"
@@ -23,6 +24,7 @@
                         v-if="!selectMode"
                         v-model="selectMode"
                         class="form-check-input"
+                        data-testid="select-mode-toggle"
                         type="checkbox"
                         :aria-label="$t('selectAllMonitorsAria')"
                         @change="selectAll = selectMode"
@@ -31,6 +33,7 @@
                         v-else
                         v-model="selectAll"
                         class="form-check-input"
+                        data-testid="select-all-toggle"
                         type="checkbox"
                         :aria-label="selectAll ? $t('deselectAllMonitorsAria') : $t('selectAllMonitorsAria')"
                     />
@@ -55,6 +58,7 @@
                         <button
                             class="btn btn-outline-normal dropdown-toggle"
                             type="button"
+                            data-testid="bulk-actions"
                             data-bs-toggle="dropdown"
                             :aria-label="$t('Actions')"
                             :disabled="bulkActionInProgress"
@@ -64,13 +68,18 @@
                         </button>
                         <ul class="dropdown-menu">
                             <li>
-                                <a class="dropdown-item" href="#" @click.prevent="pauseDialog">
+                                <a class="dropdown-item" href="#" data-testid="bulk-pause" @click.prevent="pauseDialog">
                                     <font-awesome-icon icon="pause" class="me-2" />
                                     {{ $t("Pause") }}
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="#" @click.prevent="resumeSelected">
+                                <a
+                                    class="dropdown-item"
+                                    href="#"
+                                    data-testid="bulk-resume"
+                                    @click.prevent="resumeSelected"
+                                >
                                     <font-awesome-icon icon="play" class="me-2" />
                                     {{ $t("Resume") }}
                                 </a>
@@ -78,6 +87,7 @@
                             <li>
                                 <a
                                     class="dropdown-item text-danger"
+                                    data-testid="bulk-delete"
                                     href="#"
                                     @click.prevent="$refs.confirmDelete.show()"
                                 >
@@ -141,6 +151,7 @@ import Confirm from "../components/Confirm.vue";
 import MonitorListItem from "../components/MonitorListItem.vue";
 import MonitorListFilter from "./MonitorListFilter.vue";
 import { getMonitorRelativeURL } from "../util.ts";
+import { computeListWindow, computeRowMetrics } from "../monitor-list-window";
 
 export default {
     components: {
@@ -198,16 +209,8 @@ export default {
          * @returns {{heights: number[], offsets: number[], total: number}} Layout data
          */
         rowMetrics() {
-            const heights = [];
-            const offsets = [];
-            let total = 0;
-            for (const monitor of this.sortedMonitorList) {
-                offsets.push(total);
-                const height = this.rowHeights[monitor.id] ?? 58;
-                heights.push(height);
-                total += height;
-            }
-            return { heights, offsets, total };
+            const ids = this.sortedMonitorList.map((monitor) => monitor.id);
+            return computeRowMetrics(ids, this.rowHeights);
         },
 
         /**
@@ -218,35 +221,13 @@ export default {
         renderedRows() {
             const list = this.sortedMonitorList;
             const { heights, offsets, total } = this.rowMetrics;
+            const window = computeListWindow(offsets, heights, total, this.scrollTop, this.viewportHeight);
 
-            if (list.length === 0) {
-                return { items: [], top: 0, bottom: 0 };
-            }
-
-            const viewport = this.viewportHeight || 800;
-            const startY = Math.max(0, this.scrollTop - 300);
-            const endY = this.scrollTop + viewport + 300;
-
-            let start = 0;
-            while (start < list.length - 1 && offsets[start] + heights[start] < startY) {
-                start++;
-            }
-
-            let end = start;
-            while (end < list.length && offsets[end] < endY) {
-                end++;
-            }
-
-            const items = [];
-            for (let i = start; i < end; i++) {
-                items.push(list[i]);
-            }
-
-            const top = offsets[start];
-            const last = end - 1;
-            const bottom = total - (offsets[last] + heights[last]);
-
-            return { items, top, bottom };
+            return {
+                items: list.slice(window.start, window.end),
+                top: window.top,
+                bottom: window.bottom,
+            };
         },
 
         /**

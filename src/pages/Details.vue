@@ -691,6 +691,9 @@ export default {
          */
         resumeMonitor() {
             this.$root.getSocket().emit("resumeMonitor", this.monitor.id, (res) => {
+                if (res.ok) {
+                    this.setFetchedMonitorActive(true);
+                }
                 this.$root.toastRes(res);
             });
         },
@@ -701,8 +704,23 @@ export default {
          */
         pauseMonitor() {
             this.$root.getSocket().emit("pauseMonitor", this.monitor.id, (res) => {
+                if (res.ok) {
+                    this.setFetchedMonitorActive(false);
+                }
                 this.$root.toastRes(res);
             });
+        },
+
+        /**
+         * Keep the fetched (full) monitor in sync with an active-state change.
+         * The dashboard list is a summary, so this page keeps its own copy.
+         * @param {boolean} active New active state
+         * @returns {void}
+         */
+        setFetchedMonitorActive(active) {
+            if (this.fetchedMonitor) {
+                this.fetchedMonitor.active = active;
+            }
         },
 
         /**

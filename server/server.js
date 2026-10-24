@@ -140,6 +140,9 @@ const Database = require("./database");
 
 log.debug("server", "Importing Background Jobs");
 const { initBackgroundJobs, stopBackgroundJobs } = require("./jobs");
+const { DeferredListsSender } = require("./login-lists");
+const { chunk, firstBeatDelayMs } = require("./start-monitors");
+const { startStatsRefresh } = require("./stats-refresh");
 const { apiAuth } = require("./auth");
 const { Prometheus } = require("./prometheus");
 const { UptimeCalculator } = require("./uptime-calculator");
@@ -1422,13 +1425,11 @@ app.use(function (req, res, next) {
         // Without this, every beat would load years of stat rows per monitor.
         const statMonitorIDs = Object.keys(server.monitorList);
         if (statMonitorIDs.length > 0) {
-            const refreshStats = () => {
-                MonitorStats.refresh(statMonitorIDs).catch((e) =>
-                    log.error("monitor", "Failed to refresh monitor stats: " + e.message)
-                );
-            };
-            setTimeout(refreshStats, 5_000).unref?.();
-            setInterval(refreshStats, 15 * 60 * 1000).unref?.();
+            startStatsRefresh({
+                monitorIDs: statMonitorIDs,
+                refresh: (ids) => MonitorStats.refresh(ids),
+                onError: (e) => log.error("monitor", "Failed to refresh monitor stats: " + e.message),
+            });
         }
 
         // Put this here. Start background jobs after the db and server is ready to prevent clear up during db migration.
@@ -1495,14 +1496,7 @@ async function afterLogin(socket, user) {
     // The heartbeat and stats lists are another ~1.2 MB with thousands of monitors.
     // Send them only after the client has painted the monitor list, so the dashboard
     // becomes usable immediately instead of waiting for all three payloads.
-    let listsSent = false;
-    let listsFallback = null;
     const sendDeferredLists = async () => {
-        if (listsSent) {
-            return;
-        }
-        listsSent = true;
-        clearTimeout(listsFallback);
         let t = Date.now();
         // One event with every monitor's recent heartbeats, instead of one query + event per monitor
         await sendHeartbeatLists(socket, monitorIDs);
@@ -1518,13 +1512,12 @@ async function afterLogin(socket, user) {
         MonitorStats.maybeRefresh(io, socket.userID, monitorIDs);
         log.debug("perf", `[login] stats ${Date.now() - t}ms`);
     };
-    socket.once("dashboardRendered", () => {
-        sendDeferredLists().catch((e) => log.error("monitor", "Failed to send dashboard lists: " + e.message));
+    const deferredLists = new DeferredListsSender({
+        send: sendDeferredLists,
+        onError: (e) => log.error("monitor", "Failed to send dashboard lists: " + e.message),
     });
-    // Fallback for clients that never signal (older frontends)
-    listsFallback = setTimeout(() => {
-        sendDeferredLists().catch((e) => log.error("monitor", "Failed to send dashboard lists: " + e.message));
-    }, 5000);
+    socket.once("dashboardRendered", deferredLists.onRendered);
+    socket.once("disconnect", () => deferredLists.dispose());
 
     // Set server timezone from client browser if not set
     // It should be run once only
@@ -1610,13 +1603,11 @@ async function startMonitors() {
 
     // Start every monitor in small concurrent batches, but spread their first check
     // over the interval, so 5000 monitors do not all check at the same second
-    const batchSize = 50;
-    for (let i = 0; i < list.length; i += batchSize) {
-        const batch = list.slice(i, i + batchSize);
+    for (const batch of chunk(list, 50)) {
         await Promise.allSettled(
             batch.map(async (monitor) => {
                 try {
-                    await monitor.start(io, getRandomInt(0, Math.max(1, monitor.interval) * 1000));
+                    await monitor.start(io, firstBeatDelayMs(monitor.interval));
                 } catch (e) {
                     log.error("monitor", e);
                 }

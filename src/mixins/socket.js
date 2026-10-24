@@ -7,6 +7,8 @@ import mitt from "mitt";
 
 import { DOWN, MAINTENANCE, PENDING, UP } from "../util.ts";
 import { getToastSuccessTimeout, getToastErrorTimeout } from "../util-frontend.js";
+import { BeatVersionThrottle } from "../beat-version-throttle";
+import { applyBeat, beatStatusEntry } from "../beat-state";
 import { logout as betterAuthLogout } from "../auth-client";
 const toast = useToast();
 
@@ -49,7 +51,11 @@ export default {
             // an O(monitors) recount; the counters refresh at most once per second
             lastBeatRaw: markRaw({}),
             heartbeatVersion: 0,
-            heartbeatVersionTimer: null,
+            heartbeatVersionThrottle: markRaw(
+                new BeatVersionThrottle(() => {
+                    this.heartbeatVersion++;
+                }, 1000)
+            ),
             heartbeatHistoryRequested: new Set(),
             monitorListLoaded: false,
             dashboardLoadProgress: 0,
@@ -91,15 +97,8 @@ export default {
          * @returns {void}
          */
         updateLastBeat(monitorID, beat) {
-            this.lastHeartbeatList[monitorID] = beat;
-            this.statusList[monitorID] = this.statusEntryFor(beat);
-            this.lastBeatRaw[monitorID] = beat;
-            if (!this.heartbeatVersionTimer) {
-                this.heartbeatVersionTimer = setTimeout(() => {
-                    this.heartbeatVersion++;
-                    this.heartbeatVersionTimer = null;
-                }, 1000);
-            }
+            applyBeat(this, monitorID, beat, this.statusEntryFor(beat));
+            this.heartbeatVersionThrottle.schedule();
         },
 
         /**
@@ -108,21 +107,7 @@ export default {
          * @returns {{text: string, color: string}} Status entry
          */
         statusEntryFor(beat) {
-            if (!beat) {
-                return { text: this.$t("Unknown"), color: "secondary" };
-            }
-            switch (beat.status) {
-                case UP:
-                    return { text: this.$t("Up"), color: "primary" };
-                case DOWN:
-                    return { text: this.$t("Down"), color: "danger" };
-                case PENDING:
-                    return { text: this.$t("Pending"), color: "warning" };
-                case MAINTENANCE:
-                    return { text: this.$t("statusMaintenance"), color: "maintenance" };
-                default:
-                    return { text: this.$t("Unknown"), color: "secondary" };
-            }
+            return beatStatusEntry(this.$t.bind(this), beat);
         },
 
         /**
@@ -640,6 +625,7 @@ export default {
             this.statusList = {};
             this.lastBeatRaw = markRaw({});
             this.heartbeatVersion = 0;
+            this.heartbeatVersionThrottle.cancel();
             this.heartbeatHistoryRequested = new Set();
             this.monitorListLoaded = false;
             this.$root.dashboardLoadProgress = 0;
