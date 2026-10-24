@@ -49,11 +49,7 @@
                             </div>
                         </div>
                     </div>
-                    <div
-                        v-if="$root.userHeartbeatBar == 'normal'"
-                        :key="$root.userHeartbeatBar"
-                        class="col-3 col-xl-6"
-                    >
+                    <div v-if="$root.userHeartbeatBar == 'normal'" :key="$root.userHeartbeatBar" class="col-3 col-xl-6">
                         <HeartbeatBar ref="heartbeatBar" size="small" :monitor-id="monitor.id" />
                     </div>
                 </div>
