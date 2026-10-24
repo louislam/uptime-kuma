@@ -53,8 +53,16 @@ const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { DockerHost } = require("../docker");
 const crypto = require("crypto");
 const { UptimeCalculator } = require("../uptime-calculator");
+const { MonitorStats } = require("../monitor-stats");
 const { CookieJar } = require("tough-cookie");
 const { HttpsCookieAgent } = require("http-cookie-agent/http");
+
+// Keep-alive agents per monitor instance. A WeakMap avoids redbean's magic property setters
+const monitorAgents = new WeakMap();
+
+// Last time certificate/domain info was sent to a client, per monitor
+const lastInfoSent = new Map();
+const INFO_REFRESH_INTERVAL_MS = 60 * 1000;
 const https = require("https");
 const http = require("http");
 const zlib = require("node:zlib");
@@ -414,9 +422,10 @@ class Monitor extends BeanModel {
     /**
      * Start monitor
      * @param {Server} io Socket server instance
+     * @param {number} firstBeatDelayMs Delay the first check (used to spread startup)
      * @returns {Promise<void>}
      */
-    async start(io) {
+    async start(io, firstBeatDelayMs = 0) {
         let previousBeat = null;
         let retries = 0;
 
@@ -591,33 +600,43 @@ class Monitor extends BeanModel {
                         };
                     }
 
-                    if (this.proxy_id) {
-                        const proxy = await R.load("proxy", this.proxy_id);
+                    // Reuse keep-alive agents per monitor: creating a new agent and socket for
+                    // every check exhausts local ports and buffers with thousands of monitors
+                    let agents = monitorAgents.get(this);
+                    if (!agents) {
+                        let httpAgent = null;
+                        let httpsAgent = null;
 
-                        if (proxy && proxy.active) {
-                            const { httpAgent, httpsAgent } = Proxy.createAgents(proxy, {
-                                httpsAgentOptions: httpsAgentOptions,
-                                httpAgentOptions: httpAgentOptions,
-                            });
+                        if (this.proxy_id) {
+                            const proxy = await R.load("proxy", this.proxy_id);
 
-                            options.proxy = false;
-                            options.httpAgent = httpAgent;
-                            options.httpsAgent = httpsAgent;
+                            if (proxy && proxy.active) {
+                                ({ httpAgent, httpsAgent } = Proxy.createAgents(proxy, {
+                                    httpsAgentOptions: httpsAgentOptions,
+                                    httpAgentOptions: httpAgentOptions,
+                                }));
+                                options.proxy = false;
+                            }
                         }
+
+                        if (!httpAgent) {
+                            httpAgent = new http.Agent({ ...httpAgentOptions, keepAlive: true });
+                        }
+
+                        if (!httpsAgent) {
+                            httpsAgent = new HttpsCookieAgent({
+                                ...httpsAgentOptions,
+                                keepAlive: true,
+                                cookies: { jar: new CookieJar() },
+                            });
+                        }
+
+                        agents = { httpAgent, httpsAgent };
+                        monitorAgents.set(this, agents);
                     }
 
-                    if (!options.httpAgent) {
-                        options.httpAgent = new http.Agent(httpAgentOptions);
-                    }
-
-                    if (!options.httpsAgent) {
-                        let jar = new CookieJar();
-                        let httpsCookieAgentOptions = {
-                            ...httpsAgentOptions,
-                            cookies: { jar },
-                        };
-                        options.httpsAgent = new HttpsCookieAgent(httpsCookieAgentOptions);
-                    }
+                    options.httpAgent = agents.httpAgent;
+                    options.httpsAgent = agents.httpsAgent;
 
                     if (this.auth_method === "mtls") {
                         if (this.tlsCert !== null && this.tlsCert !== "") {
@@ -633,8 +652,13 @@ class Monitor extends BeanModel {
 
                     let tlsInfo = {};
                     // Store tlsInfo when secureConnect event is emitted
-                    // The keylog event listener is a workaround to access the tlsSocket
-                    options.httpsAgent.once("keylog", async (line, tlsSocket) => {
+                    // The keylog event listener is a workaround to access the tlsSocket.
+                    // The agent is reused, so drop the previous listener: one per beat would
+                    // pile up on agents that never see a TLS handshake (plain http monitors)
+                    if (agents.keylogHandler) {
+                        options.httpsAgent.removeListener("keylog", agents.keylogHandler);
+                    }
+                    agents.keylogHandler = async (line, tlsSocket) => {
                         tlsSocket.once("secureConnect", async () => {
                             tlsInfo = checkCertificate(tlsSocket);
                             tlsInfo.valid = tlsSocket.authorized || false;
@@ -645,7 +669,8 @@ class Monitor extends BeanModel {
 
                             await this.handleTlsInfo(tlsInfo);
                         });
-                    });
+                    };
+                    options.httpsAgent.once("keylog", agents.keylogHandler);
 
                     log.debug("monitor", `[${this.name}] Axios Options: ${JSON.stringify(options)}`);
                     log.debug("monitor", `[${this.name}] Axios Request`);
@@ -1061,7 +1086,9 @@ class Monitor extends BeanModel {
 
             // Send to frontend
             log.debug("monitor", `[${this.name}] Send to socket`);
-            io.to(this.user_id).emit("heartbeat", bean.toJSON());
+            if (getTotalClientInRoom(io, this.user_id) > 0) {
+                io.to(this.user_id).emit("heartbeat", bean.toJSON());
+            }
             Monitor.sendStats(io, this.id, this.user_id);
 
             // Store to database
@@ -1069,10 +1096,22 @@ class Monitor extends BeanModel {
             await R.store(bean);
 
             log.debug("monitor", `[${this.name}] prometheus.update`);
-            const data24h = uptimeCalculator.get24Hour();
-            const data30d = uptimeCalculator.get30Day();
-            const data1y = uptimeCalculator.get1Year();
-            this.prometheus?.update(bean, tlsInfo, { data24h, data30d, data1y });
+            if (this.prometheus) {
+                // Use the grouped SQL stats cache instead of loading the full stat history
+                // into memory on every monitor's first beat
+                const stats = MonitorStats.get(this.id);
+                this.prometheus.update(
+                    bean,
+                    tlsInfo,
+                    stats
+                        ? {
+                              data24h: { uptime: stats.uptime24, avgPing: stats.avgPing ?? 0 },
+                              data30d: { uptime: stats.uptime720, avgPing: stats.avgPing ?? 0 },
+                              data1y: { uptime: stats.uptime1y, avgPing: stats.avgPing ?? 0 },
+                          }
+                        : null
+                );
+            }
 
             previousBeat = bean;
 
@@ -1113,6 +1152,10 @@ class Monitor extends BeanModel {
             this.heartbeatInterval = setTimeout(() => {
                 safeBeat();
             }, this.interval * 1000);
+        } else if (firstBeatDelayMs > 0) {
+            // Spread the first check over the interval instead of checking every
+            // monitor at the same moment when the server starts
+            this.heartbeatInterval = setTimeout(safeBeat, firstBeatDelayMs);
         } else {
             safeBeat();
         }
@@ -1319,29 +1362,30 @@ class Monitor extends BeanModel {
      */
     static async sendStats(io, monitorID, userID) {
         const hasClients = getTotalClientInRoom(io, userID) > 0;
-        let uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);
 
         if (hasClients) {
-            // Send 24 hour average ping
-            let data24h = await uptimeCalculator.get24Hour();
-            io.to(userID).emit("avgPing", monitorID, data24h.avgPing ? Number(data24h.avgPing.toFixed(2)) : null);
+            // Serve the dashboard numbers from the grouped SQL cache; never initialize a full
+            // UptimeCalculator (thousands of stat rows) just to answer a heartbeat
+            const cached = MonitorStats.get(monitorID);
+            if (cached) {
+                io.to(userID).emit("stats", { [monitorID]: cached });
+            }
 
-            // Send 24 hour uptime
-            io.to(userID).emit("uptime", monitorID, 24, data24h.uptime);
+            const server = UptimeKumaServer.getInstance();
+            MonitorStats.maybeRefresh(io, userID, Object.keys(server.monitorList));
 
-            // Send 30 day uptime
-            let data30d = await uptimeCalculator.get30Day();
-            io.to(userID).emit("uptime", monitorID, 720, data30d.uptime);
+            // Cert and domain info are slow (DB + DNS). At one beat per monitor per minute
+            // and thousands of monitors they must not run on every beat while a client is open
+            const now = Date.now();
+            if (now - (lastInfoSent.get(monitorID) || 0) >= INFO_REFRESH_INTERVAL_MS) {
+                lastInfoSent.set(monitorID, now);
 
-            // Send 1-year uptime
-            let data1y = await uptimeCalculator.get1Year();
-            io.to(userID).emit("uptime", monitorID, "1y", data1y.uptime);
+                // Send Cert Info
+                await Monitor.sendCertInfo(io, monitorID, userID);
 
-            // Send Cert Info
-            await Monitor.sendCertInfo(io, monitorID, userID);
-
-            // Send domain info
-            await Monitor.sendDomainInfo(io, monitorID, userID);
+                // Send domain info
+                await Monitor.sendDomainInfo(io, monitorID, userID);
+            }
         } else {
             log.debug("monitor", "No clients in the room, no need to send stats");
         }
@@ -1833,19 +1877,104 @@ class Monitor extends BeanModel {
 
         if (monitorData.length > 0) {
             const monitorIDs = monitorData.map((monitor) => monitor.id);
-            const notifications = await Monitor.getMonitorNotification(monitorIDs);
-            const tags = await Monitor.getMonitorTag(monitorIDs);
-            const maintenanceStatuses = await Promise.all(
-                monitorData.map((monitor) => Monitor.isUnderMaintenance(monitor.id))
-            );
-            const childrenIDs = await Promise.all(monitorData.map((monitor) => Monitor.getAllChildrenIDs(monitor.id)));
-            const activeStatuses = await Promise.all(
-                monitorData.map((monitor) => Monitor.isActive(monitor.id, monitor.active))
-            );
-            const forceInactiveStatuses = await Promise.all(
-                monitorData.map((monitor) => Monitor.isParentActive(monitor.id))
-            );
-            const paths = await Promise.all(monitorData.map((monitor) => Monitor.getAllPath(monitor.id, monitor.name)));
+            const [notifications, tags, allMonitors, maintenanceRows] = await Promise.all([
+                Monitor.getMonitorNotification(monitorIDs),
+                Monitor.getMonitorTag(monitorIDs),
+                R.getAll("SELECT id, name, parent, active FROM monitor"),
+                R.getAll("SELECT monitor_id, maintenance_id FROM monitor_maintenance"),
+            ]);
+
+            const byId = new Map();
+            const childrenById = new Map();
+            for (const row of allMonitors) {
+                byId.set(row.id, row);
+                const key = row.parent ?? null;
+                if (!childrenById.has(key)) {
+                    childrenById.set(key, []);
+                }
+                childrenById.get(key).push(row);
+            }
+
+            // All hierarchy work below is memoized in memory, so 5000 monitors cost
+            // a fixed number of queries instead of ~6 queries per monitor
+            const parentActiveCache = new Map();
+            const isParentActive = (id) => {
+                if (parentActiveCache.has(id)) {
+                    return parentActiveCache.get(id);
+                }
+                const node = byId.get(id);
+                const parent = node?.parent ? byId.get(node.parent) : null;
+                const result = !parent ? true : parent.active === 1 && isParentActive(parent.id);
+                parentActiveCache.set(id, result);
+                return result;
+            };
+
+            const childrenCache = new Map();
+            const allChildrenIDs = (id) => {
+                if (childrenCache.has(id)) {
+                    return childrenCache.get(id);
+                }
+                const result = [];
+                for (const child of childrenById.get(id) ?? []) {
+                    result.push(child.id);
+                    result.push(...allChildrenIDs(child.id));
+                }
+                childrenCache.set(id, result);
+                return result;
+            };
+
+            const pathCache = new Map();
+            const pathOf = (id) => {
+                if (pathCache.has(id)) {
+                    return pathCache.get(id);
+                }
+                const node = byId.get(id);
+                if (!node) {
+                    return [];
+                }
+                const parent = node.parent ? byId.get(node.parent) : null;
+                const result = parent ? [...pathOf(parent.id), node.name] : [node.name];
+                pathCache.set(id, result);
+                return result;
+            };
+
+            const maintenanceActive = new Map();
+            const server = UptimeKumaServer.getInstance();
+            for (const row of maintenanceRows) {
+                if (!maintenanceActive.has(row.maintenance_id)) {
+                    const maintenance = server.getMaintenance(row.maintenance_id);
+                    maintenanceActive.set(
+                        row.maintenance_id,
+                        maintenance ? await maintenance.isUnderMaintenance() : false
+                    );
+                }
+            }
+
+            const maintenanceByMonitor = new Map();
+            for (const row of maintenanceRows) {
+                if (!maintenanceByMonitor.has(row.monitor_id)) {
+                    maintenanceByMonitor.set(row.monitor_id, []);
+                }
+                maintenanceByMonitor.get(row.monitor_id).push(row.maintenance_id);
+            }
+
+            const maintenanceCache = new Map();
+            const isUnderMaintenance = (id) => {
+                if (maintenanceCache.has(id)) {
+                    return maintenanceCache.get(id);
+                }
+                let result = (maintenanceByMonitor.get(id) ?? []).some((maintenanceID) =>
+                    maintenanceActive.get(maintenanceID)
+                );
+                if (!result) {
+                    const node = byId.get(id);
+                    if (node?.parent) {
+                        result = isUnderMaintenance(node.parent);
+                    }
+                }
+                maintenanceCache.set(id, result);
+                return result;
+            };
 
             notifications.forEach((row) => {
                 if (!notificationsMap.has(row.monitor_id)) {
@@ -1867,24 +1996,13 @@ class Monitor extends BeanModel {
                 });
             });
 
-            monitorData.forEach((monitor, index) => {
-                maintenanceStatusMap.set(monitor.id, maintenanceStatuses[index]);
-            });
-
-            monitorData.forEach((monitor, index) => {
-                childrenIDsMap.set(monitor.id, childrenIDs[index]);
-            });
-
-            monitorData.forEach((monitor, index) => {
-                activeStatusMap.set(monitor.id, activeStatuses[index]);
-            });
-
-            monitorData.forEach((monitor, index) => {
-                forceInactiveMap.set(monitor.id, !forceInactiveStatuses[index]);
-            });
-
-            monitorData.forEach((monitor, index) => {
-                pathsMap.set(monitor.id, paths[index]);
+            monitorData.forEach((monitor) => {
+                const parentActive = isParentActive(monitor.id);
+                maintenanceStatusMap.set(monitor.id, isUnderMaintenance(monitor.id));
+                childrenIDsMap.set(monitor.id, allChildrenIDs(monitor.id));
+                activeStatusMap.set(monitor.id, monitor.active === 1 && parentActive);
+                forceInactiveMap.set(monitor.id, !parentActive);
+                pathsMap.set(monitor.id, pathOf(monitor.id));
             });
         }
 

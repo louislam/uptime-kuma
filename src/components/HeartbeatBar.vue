@@ -366,8 +366,45 @@ export default {
         this.$nextTick(() => {
             this.drawCanvas();
         });
+
+        this.requestHistory();
     },
     methods: {
+        /**
+         * Fetch the 100-beat history for this row on demand.
+         * The login only sends the latest beat, so off-screen monitors cost nothing.
+         * @returns {void}
+         */
+        requestHistory() {
+            if (this.heartbeatList !== null) {
+                return;
+            }
+
+            const beats = this.$root.heartbeatList[this.monitorId];
+            const requested = this.$root.heartbeatHistoryRequested;
+            if ((beats && beats.length > 1) || requested.has(this.monitorId)) {
+                return;
+            }
+
+            requested.add(this.monitorId);
+            const socket = this.$root.getSocket();
+            if (!socket) {
+                // The socket is not initialized yet when a deep link mounts before the root
+                requested.delete(this.monitorId);
+                setTimeout(() => this.requestHistory(), 250);
+                return;
+            }
+            socket.emit("getHeartbeatHistory", this.monitorId, (res) => {
+                if (res?.ok) {
+                    const current = this.$root.heartbeatList[this.monitorId] ?? [];
+                    if (current.length <= 1) {
+                        this.$root.heartbeatList[this.monitorId] = res.data;
+                    }
+                } else {
+                    requested.delete(this.monitorId);
+                }
+            });
+        },
         /**
          * Resize the heartbeat bar
          * @returns {void}
