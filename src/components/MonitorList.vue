@@ -304,9 +304,15 @@ export default {
                 this.selectedMonitors = {};
             }
         },
+        // MonitorList stays mounted next to the router-view, so a Quick Stats
+        // link only changes the query; mounted() alone would miss it
+        "$route.query"() {
+            this.applyFilterFromQuery();
+        },
     },
     mounted() {
         window.addEventListener("scroll", this.onScroll);
+        this.applyFilterFromQuery();
     },
     beforeUnmount() {
         window.removeEventListener("scroll", this.onScroll);
@@ -345,6 +351,47 @@ export default {
          */
         updateFilter(newFilter) {
             this.filterState = newFilter;
+
+            // The dropdown now owns the filter: drop the Quick Stats query so a
+            // reload doesn't bring back a stale filter, and so clicking the same
+            // Quick Stats count again changes the URL and re-applies it.
+            // Only on the dashboard: elsewhere (e.g. /list) the list is inside the
+            // router-view, keyed by fullPath, so changing the URL would remount it
+            // and throw away the filter that was just picked
+            const { status, active, ...query } = this.$route.query;
+            if (this.$route.name === "DashboardHome" && (status != null || active != null)) {
+                this.$router.replace({ query });
+            }
+        },
+        /**
+         * Apply the filter requested through the URL, so linking to a filtered
+         * list (e.g. from Quick Stats) survives a reload and can be shared
+         * @returns {void}
+         */
+        applyFilterFromQuery() {
+            const { status, active } = this.$route.query;
+            if (status == null && active == null) {
+                return;
+            }
+
+            const toArray = (value) => (Array.isArray(value) ? value : [value]);
+            // Only accept values the dropdown itself can produce; anything else
+            // (e.g. ?status= or ?active=yes) is ignored rather than guessed at
+            const statusList = toArray(status ?? [])
+                .filter((s) => ["0", "1", "2", "3"].includes(s))
+                .map(Number);
+            const activeList = toArray(active ?? [])
+                .filter((a) => a === "true" || a === "false")
+                .map((a) => a === "true");
+            if (statusList.length === 0 && activeList.length === 0) {
+                return;
+            }
+
+            this.filterState = {
+                status: statusList.length > 0 ? statusList : null,
+                active: activeList.length > 0 ? activeList : null,
+                tags: null,
+            };
         },
         /**
          * Toggle collapse state for all group monitors
