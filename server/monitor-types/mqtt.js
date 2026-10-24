@@ -6,13 +6,17 @@ const { ConditionVariable } = require("../monitor-conditions/variables");
 const { defaultStringOperators, defaultNumberOperators } = require("../monitor-conditions/operators");
 const { ConditionExpressionGroup } = require("../monitor-conditions/expression");
 const { evaluateExpressionGroup } = require("../monitor-conditions/evaluator");
+
 const MAX_BUFFERED_MESSAGES = 1000;
+const MQTT_KEEPALIVE_SECONDS = 30;
 
 class MqttMonitorType extends MonitorType {
     name = "mqtt";
 
     supportsConditions = true;
 
+    // List of persistent clients for monitors with "stay connected" mode enabled.
+    // Key: monitor id, Value: { client, messageQueue, waiters, connected, ready }
     persistentClients = new Map();
 
     conditionVariables = [
@@ -29,11 +33,11 @@ class MqttMonitorType extends MonitorType {
             monitor.mqttCheckType = "keyword";
         }
 
-        // TODO Check here
-        // Check if conditions are defined
         const conditions = monitor.conditions ? ConditionExpressionGroup.fromMonitor(monitor) : null;
         const hasConditions = conditions && conditions.children && conditions.children.length > 0;
 
+        // If "stay connected" mode is enabled, use the persistent connection check
+        // We don't need to connect
         if (monitor.mqttStayConnected) {
             await this.checkPersistent(monitor, heartbeat, hasConditions, conditions);
             return;
@@ -61,12 +65,7 @@ class MqttMonitorType extends MonitorType {
     /**
      * Check using a persistent broker connection ("stay connected" mode).
      * The connection is kept alive between checks and the timeout is reset
-     * every time a message is received. A message that does not match the
-     * check criteria does not fail the check; the monitor keeps waiting
-     * until a matching message arrives or no message is received within
-     * the monitor interval. If the client is disconnected from the broker,
-     * an error is thrown and the client is discarded so the next check
-     * reconnects.
+     * every time a message is received.
      * @param {object} monitor Monitor object
      * @param {object} heartbeat Heartbeat object
      * @param {boolean} hasConditions Whether conditions are defined
@@ -74,46 +73,44 @@ class MqttMonitorType extends MonitorType {
      * @returns {Promise<void>}
      */
     async checkPersistent(monitor, heartbeat, hasConditions, conditions) {
-        if (!hasConditions && monitor.mqttCheckType !== "keyword" && monitor.mqttCheckType !== "json-query") {
-            throw new Error("Unknown MQTT Check Type");
-        }
-
-        const entry = await this.ensurePersistentClient(monitor);
+        // Setup the persistent client and subscribe to the topic if not already done
+        await this.ensurePersistentClient(monitor);
 
         while (true) {
-            let message;
+            let messageList = null;
             try {
-                message = await this.waitForMessage(monitor, entry);
+                messageList = await this.waitForMessage(monitor);
             } catch (error) {
-                // Disconnected from the broker or connection error:
-                // drop the client so the next check reconnects
                 this.closePersistentClient(monitor.id);
                 throw error;
             }
 
-            if (message === null) {
-                // No message received within the interval, but the connection
-                // is kept alive so no message is lost before the next check
+            if (messageList === null) {
                 throw new Error("Timeout, Message not received");
             }
 
-            const [messageTopic, receivedMessage] = message;
-            try {
-                if (hasConditions) {
-                    await this.checkConditions(monitor, heartbeat, messageTopic, receivedMessage, conditions);
-                } else if (monitor.mqttCheckType === "json-query") {
-                    await this.checkJsonQuery(monitor, heartbeat, receivedMessage);
-                } else {
-                    this.checkKeyword(monitor, heartbeat, messageTopic, receivedMessage);
+            for (const [messageTopic, receivedMessage] of messageList) {
+                try {
+                    if (hasConditions) {
+                        await this.checkConditions(monitor, heartbeat, messageTopic, receivedMessage, conditions);
+                    } else if (monitor.mqttCheckType === "json-query") {
+                        await this.checkJsonQuery(monitor, heartbeat, receivedMessage);
+                    } else {
+                        this.checkKeyword(monitor, heartbeat, messageTopic, receivedMessage);
+                    }
+                    return;
+                } catch (e) {
+                    // The message does not match the check criteria: keep waiting,
+                    // the timeout has been reset by the received message
+                    log.debug(this.name, `MQTT message did not match the check criteria: ${e.message}`);
                 }
-                return;
-            } catch (e) {
-                // The message does not match the check criteria: keep waiting,
-                // the timeout has been reset by the received message
-                log.debug(this.name, `MQTT message did not match the check criteria: ${e.message}`);
             }
         }
     }
+
+    //////////////////////////////////////////////
+    /// CONDITIONS CHECKING METHODS
+    //////////////////////////////////////////////
 
     /**
      * Check using keyword matching
@@ -289,6 +286,108 @@ class MqttMonitorType extends MonitorType {
     }
 
     /**
+     * Connect and subscribe once for a monitor with "stay connected" enabled.
+     * MQTT.js sends protocol keepalive while the connection is idle.
+     * @param {object} monitor Monitor object
+     * @returns {Promise<void>}
+     */
+    async ensurePersistentClient(monitor) {
+        let entry = this.persistentClients.get(monitor.id);
+
+        if (entry) {
+            if (entry.connected) {
+                // The client is already connected, continue
+                return;
+            } else {
+                // The client is disconnected, close it and create a new one
+                this.closePersistentClient(monitor.id);
+            }
+        }
+
+        const client = mqtt.connect(this.buildMqttUrl(monitor), {
+            username: monitor.mqttUsername,
+            password: monitor.mqttPassword,
+            clientId: "uptime-kuma_" + Math.random().toString(16).substr(2, 8),
+            keepalive: MQTT_KEEPALIVE_SECONDS,
+        });
+
+        entry = {
+            client,
+            messageQueue: [],
+            waiters: [],
+            connected: false,
+            ready: null,
+        };
+
+        // Store the entry in the map before setting up event listeners
+        this.persistentClients.set(monitor.id, entry);
+
+        // Set up event listeners for the MQTT client
+        entry.ready = new Promise((resolve, reject) => {
+            client.on("connect", () => {
+                client.subscribe(monitor.mqttTopic, (error) => {
+                    if (error) {
+                        reject(error);
+                        return;
+                    }
+
+                    entry.connected = true;
+                    resolve();
+                });
+            });
+
+            client.on("disconnect", () => {
+                entry.connected = false;
+                const error = new Error("Connection to MQTT broker lost");
+                for (const waiter of [...entry.waiters]) {
+                    waiter.reject(error);
+                }
+                reject(error);
+            });
+
+            client.on("message", (messageTopic, message) => {
+                const receivedMessage = [messageTopic, message.toString("utf8")];
+                const waiter = entry.waiters[0];
+
+                if (waiter) {
+                    waiter.resolve(receivedMessage);
+                } else {
+                    if (entry.messageQueue.length >= MAX_BUFFERED_MESSAGES) {
+                        entry.messageQueue.shift();
+                    }
+                    entry.messageQueue.push(receivedMessage);
+                }
+            });
+
+            client.on("close", () => {
+                entry.connected = false;
+                const error = new Error("Connection to MQTT broker lost");
+                for (const waiter of [...entry.waiters]) {
+                    waiter.reject(error);
+                }
+                reject(error);
+            });
+
+            client.on("error", (error) => {
+                for (const waiter of [...entry.waiters]) {
+                    waiter.reject(error);
+                }
+                entry.connected = client.connected;
+                if (!entry.connected) {
+                    reject(error);
+                }
+            });
+        });
+
+        try {
+            await entry.ready;
+        } catch (error) {
+            this.closePersistentClient(monitor.id);
+            throw error;
+        }
+    }
+
+    /**
      * Close and forget the persistent client of a monitor, if any
      * @param {number} monitorId Monitor id
      * @returns {void}
@@ -308,128 +407,28 @@ class MqttMonitorType extends MonitorType {
     }
 
     /**
-     * Get the persistent client of a monitor, creating and connecting it if
-     * needed. The client is discarded and recreated when the topic changed or
-     * the connection was dropped since the last check.
-     * @param {object} monitor Monitor object
-     * @returns {Promise<object>} Persistent client entry
-     */
-    async ensurePersistentClient(monitor) {
-        let entry = this.persistentClients.get(monitor.id);
-
-        if (entry && (entry.topic !== monitor.mqttTopic || !entry.client.connected)) {
-            this.closePersistentClient(monitor.id);
-            entry = null;
-        }
-
-        if (entry) {
-            return entry;
-        }
-
-        const mqttUrl = this.buildMqttUrl(monitor);
-        log.debug(this.name, `MQTT connecting to ${mqttUrl} (persistent)`);
-
-        const client = mqtt.connect(mqttUrl, {
-            username: monitor.mqttUsername,
-            password: monitor.mqttPassword,
-            clientId: "uptime-kuma_" + Math.random().toString(16).substr(2, 8),
-        });
-
-        entry = { client, topic: monitor.mqttTopic, messageQueue: [], waiters: [] };
-        this.persistentClients.set(monitor.id, entry);
-
-        // Called whenever the connection to the broker is lost: the client is
-        // removed from the map so that the next check reconnects, its
-        // reconnection attempts are stopped and pending waiters are notified
-        // through the "close" event
-        client.on("close", () => {
-            if (this.persistentClients.get(monitor.id)?.client === client) {
-                this.persistentClients.delete(monitor.id);
-                client.end(true);
-            }
-        });
-
-        client.on("error", (error) => {
-            log.debug(this.name, `MQTT error (persistent): ${error.message}`);
-        });
-
-        // Buffer every message received on the subscribed topic, even when no
-        // check is waiting, so that no packet is lost between two checks
-        client.on("message", (messageTopic, message) => {
-            const received = [messageTopic, message.toString("utf8")];
-            log.debug(this.name, `MQTT message received on topic ${messageTopic}`);
-            const waiter = entry.waiters.shift();
-            if (waiter) {
-                waiter.resolve(received);
-            } else {
-                if (entry.messageQueue.length >= MAX_BUFFERED_MESSAGES) {
-                    entry.messageQueue.shift();
-                }
-                entry.messageQueue.push(received);
-            }
-        });
-
-        await new Promise((resolve, reject) => {
-            const timeoutID = setTimeout(
-                () => {
-                    cleanup();
-                    this.closePersistentClient(monitor.id);
-                    reject(new Error("Timeout, Message not received"));
-                },
-                monitor.interval * 1000 * 0.8
-            );
-
-            const onConnect = () => {
-                log.debug(this.name, "MQTT connected (persistent)");
-                client.subscribe(monitor.mqttTopic, (error) => {
-                    if (error) {
-                        log.debug(this.name, "MQTT subscribe failed");
-                        cleanup();
-                        this.closePersistentClient(monitor.id);
-                        reject(new Error("Cannot subscribe topic"));
-                        return;
-                    }
-                    log.debug(this.name, "MQTT subscribed to topic (persistent)");
-                    cleanup();
-                    resolve();
-                });
-            };
-
-            const onError = (error) => {
-                cleanup();
-                this.closePersistentClient(monitor.id);
-                reject(error);
-            };
-
-            const cleanup = () => {
-                clearTimeout(timeoutID);
-                client.removeListener("connect", onConnect);
-                client.removeListener("error", onError);
-            };
-
-            client.on("connect", onConnect);
-            client.on("error", onError);
-        });
-
-        return entry;
-    }
-
-    /**
      * Wait for the next message on a persistent client. Messages received
      * while no check was waiting are buffered and consumed first. The timeout
      * is reset every time a message is received, so the check only fails when
      * no message arrives within `interval` seconds of silence. If the client
      * is disconnected from the broker, an error is thrown.
      * @param {object} monitor Monitor object
-     * @param {object} entry Persistent client entry
-     * @returns {Promise<[string, string]|null>} Received [topic, message],
+     * @returns {Promise<[string, string][]|null>} Received [topic, message],
      * or null on timeout (the connection is kept alive)
      */
-    waitForMessage(monitor, entry) {
+    waitForMessage(monitor) {
+        const entry = this.persistentClients.get(monitor.id);
+
+        if (!entry) {
+            return Promise.reject(new Error("Persistent MQTT client not found"));
+        }
+
         return new Promise((resolve, reject) => {
             // Consume a message buffered while no check was waiting
             if (entry.messageQueue.length > 0) {
-                resolve(entry.messageQueue.shift());
+                resolve(entry.messageQueue);
+                // Clear the message queue to avoid memory growth if messages are received faster than checks
+                entry.messageQueue = [];
                 return;
             }
 
@@ -448,8 +447,6 @@ class MqttMonitorType extends MonitorType {
 
             const cleanup = () => {
                 clearTimeout(timeoutID);
-                entry.client.removeListener("close", onClose);
-                entry.client.removeListener("error", onError);
                 const index = entry.waiters.indexOf(waiter);
                 if (index !== -1) {
                     entry.waiters.splice(index, 1);
@@ -461,19 +458,8 @@ class MqttMonitorType extends MonitorType {
                 resolve(null);
             };
 
-            const onClose = () => {
-                waiter.reject(new Error("Connection to MQTT broker lost"));
-            };
-
-            const onError = (error) => {
-                waiter.reject(error);
-            };
-
             const timeoutID = setTimeout(onTimeout, timeoutDuration);
-
             entry.waiters.push(waiter);
-            entry.client.on("close", onClose);
-            entry.client.on("error", onError);
         });
     }
 }
