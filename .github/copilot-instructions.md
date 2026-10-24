@@ -171,6 +171,7 @@ npm run dev  # Frontend on port 3000, backend on port 3001
 ## Testing
 
 - **Backend**: Node.js test runner via tsx (`test/backend-test/**/*.{ts,js}`). Use `describe()`/`test()` from `node:test` and one test per scenario (see `test/backend-test/README.md`). `npm run test-backend` also prints a coverage summary via `--experimental-test-coverage`.
+- **TDD**: write the failing test first (red), watch it fail, implement the change, then confirm green before committing.
 - **Coverage**: `npm run coverage` runs the backend suite and writes an HTML report to `private/coverage/backend/index.html` (e2e coverage is not collected).
 - Database monitor tests use Testcontainers; `npm run test-e2e-local` sets `SKIP_TESTCONTAINER=1` to skip them.
 - **E2E**: Playwright specs in `test/e2e/specs/*.spec.js`; `setup-process.once.js` is a one-time setup project every spec depends on. Requires `npx playwright install`.
