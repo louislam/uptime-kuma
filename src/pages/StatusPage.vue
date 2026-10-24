@@ -56,6 +56,25 @@
                 </div>
 
                 <div class="my-3">
+                    <label for="heartbeat-bar-days" class="form-label">{{ $t("Heartbeat Bar Days") }}</label>
+                    <input
+                        id="heartbeat-bar-days"
+                        v-model.number="config.heartbeatBarDays"
+                        type="number"
+                        class="form-control"
+                        min="0"
+                        max="365"
+                        data-testid="heartbeat-bar-days-input"
+                    />
+                    <div v-if="config.heartbeatBarDays === 0" class="form-text">
+                        {{ $t("Status page will show last beats", [100]) }}
+                    </div>
+                    <div v-else class="form-text">
+                        {{ $t("Status page shows heartbeat history days", [config.heartbeatBarDays]) }}
+                    </div>
+                </div>
+
+                <div class="my-3">
                     <label for="switch-theme" class="form-label">{{ $t("Theme") }}</label>
                     <select id="switch-theme" v-model="config.theme" class="form-select" data-testid="theme-select">
                         <option value="auto">{{ $t("Auto") }}</option>
@@ -493,6 +512,8 @@
                     :edit-mode="enableEditMode"
                     :show-tags="config.showTags"
                     :show-certificate-expiry="config.showCertificateExpiry"
+                    :heartbeat-bar-days="config.heartbeatBarDays || 0"
+                    :aggregated-heartbeat-list="aggregatedHeartbeatList"
                     :show-only-last-heartbeat="config.showOnlyLastHeartbeat"
                 />
             </div>
@@ -693,8 +714,12 @@ export default {
             enableEditIncidentMode: false,
             authenticated: false,
             config: {
+                heartbeatBarDays: 0,
                 analyticsType: null,
             },
+            heartbeatMaxBeats: null,
+            aggregatedHeartbeatList: null,
+            heartbeatRequestSeq: 0,
             selectedMonitor: null,
             incident: null,
             previousIncident: null,
@@ -911,6 +936,7 @@ export default {
                 this.$root.getSocket().emit("getStatusPage", this.slug, (res) => {
                     if (res.ok) {
                         this.config = res.config;
+                        this.config.heartbeatBarDays = this.normalizeHeartbeatBarDays(this.config.heartbeatBarDays);
 
                         if (!this.config.customCSS) {
                             this.config.customCSS = "body {\n" + "  \n" + "}\n";
@@ -948,6 +974,13 @@ export default {
 
         "config.title"(title) {
             document.title = title;
+        },
+
+        "config.heartbeatBarDays"() {
+            // Preview the range while editing, 0 reloads the raw beats again
+            if (this.editMode) {
+                this.loadHeartbeatData();
+            }
         },
 
         "$root.monitorList"() {
@@ -996,37 +1029,40 @@ export default {
             this.slug = "default";
         }
 
-        this.getData()
-            .then((res) => {
-                this.config = res.data.config;
+        Promise.all([
+            this.getData(),
+            // A failing heartbeat request must not keep the page from loading
+            this.editMode
+                ? null
+                : this.fetchHeartbeatData().catch((error) => {
+                      console.log(error);
+                      return null;
+                  }),
+        ])
+            .then(([configRes, heartbeatData]) => {
+                this.config = configRes.data.config;
 
                 if (!this.config.domainNameList) {
                     this.config.domainNameList = [];
                 }
 
+                this.config.heartbeatBarDays = this.normalizeHeartbeatBarDays(this.config.heartbeatBarDays);
+
                 if (this.config.icon) {
                     this.imgDataUrl = this.config.icon;
                 }
 
-                this.maintenanceList = res.data.maintenanceList;
-                this.$root.publicGroupList = res.data.publicGroupList;
+                this.incident = configRes.data.incident;
+                this.maintenanceList = configRes.data.maintenanceList;
+                this.$root.publicGroupList = configRes.data.publicGroupList;
+
+                // Needs the config to tell whether these are buckets
+                if (heartbeatData) {
+                    this.applyHeartbeatData(heartbeatData);
+                }
 
                 this.loading = false;
 
-                feedInterval = setInterval(
-                    () => {
-                        this.updateHeartbeatList();
-                    },
-                    Math.max(5, this.config.autoRefreshInterval) * 1000
-                );
-
-                this.incident = res.data.incident;
-                this.maintenanceList = res.data.maintenanceList;
-                this.$root.publicGroupList = res.data.publicGroupList;
-
-                this.loading = false;
-
-                // Configure auto-refresh loop
                 feedInterval = setInterval(
                     () => {
                         this.updateHeartbeatList();
@@ -1043,7 +1079,6 @@ export default {
                 console.log(error);
             });
 
-        this.updateHeartbeatList();
         this.loadIncidentHistory();
 
         // Go to edit page if ?edit present
@@ -1051,6 +1086,16 @@ export default {
         if (this.$route.query.edit || this.$route.query.edit === null) {
             await this._authPromise;
             this.edit();
+        }
+    },
+    beforeUnmount() {
+        clearInterval(feedInterval);
+
+        // Keep the range uptime out of other views like the dashboard
+        for (const key of Object.keys(this.$root.uptimeList)) {
+            if (!String(key).includes("_")) {
+                delete this.$root.uptimeList[key];
+            }
         }
     },
     methods: {
@@ -1081,36 +1126,130 @@ export default {
         },
 
         /**
+         * Coerce a stored heartbeatBarDays value to a valid number
+         * @param {number|string|null|undefined} value Raw config value
+         * @returns {number} Days as a number, 0 if unset or invalid
+         */
+        normalizeHeartbeatBarDays(value) {
+            if (value === undefined || value === null || value === "") {
+                return 0;
+            }
+            return parseInt(value, 10) || 0;
+        },
+
+        /**
+         * Fetch heartbeat data from API
+         * @param {number|null} maxBeats Maximum number of beats to request from server
+         * @returns {Promise<object|null>} Response data, null if a newer request was sent in the meantime
+         */
+        fetchHeartbeatData(maxBeats = null) {
+            if (maxBeats === null) {
+                // Refreshes keep the beat count the bar last asked for
+                maxBeats = this.heartbeatMaxBeats;
+            }
+
+            const params = { maxBeats };
+            if (this.editMode) {
+                // Unsaved range, the server would use the stored one otherwise
+                params.days = this.config.heartbeatBarDays;
+            }
+
+            const requestSeq = ++this.heartbeatRequestSeq;
+            return axios
+                .get("/api/status-page/heartbeat/" + this.slug, {
+                    params,
+                })
+                .then((res) => (requestSeq === this.heartbeatRequestSeq ? res.data : null));
+        },
+
+        /**
+         * Apply heartbeat data from API to the page and update favicon
+         * @param {object} data Response of the heartbeat API
+         * @returns {void}
+         */
+        applyHeartbeatData(data) {
+            const { heartbeatList, uptimeList, lastHeartbeatList } = data;
+            const rangeConfigured = this.normalizeHeartbeatBarDays(this.config.heartbeatBarDays) > 0;
+
+            // Kept apart from $root.heartbeatList, the socket appends raw beats
+            // there and its last entry is read as the current status
+            this.aggregatedHeartbeatList = rangeConfigured ? heartbeatList : null;
+
+            // In edit mode the socket keeps $root.heartbeatList up to date
+            if (!this.editMode) {
+                if (rangeConfigured) {
+                    const latestBeats = {};
+                    for (const monitorID in heartbeatList) {
+                        latestBeats[monitorID] = lastHeartbeatList[monitorID] ? [lastHeartbeatList[monitorID]] : [];
+                    }
+                    this.$root.heartbeatList = latestBeats;
+                } else {
+                    this.$root.heartbeatList = heartbeatList;
+                }
+            }
+
+            // Merge, the socket's uptime keys are still needed in edit mode
+            Object.assign(this.$root.uptimeList, uptimeList);
+
+            const heartbeatIds = Object.keys(heartbeatList);
+            const downMonitors = heartbeatIds.reduce((downMonitorsAmount, currentId) => {
+                const lastHeartbeat = rangeConfigured ? lastHeartbeatList[currentId] : heartbeatList[currentId].at(-1);
+
+                if (lastHeartbeat) {
+                    return lastHeartbeat.status === 0 ? downMonitorsAmount + 1 : downMonitorsAmount;
+                } else {
+                    return downMonitorsAmount;
+                }
+            }, 0);
+
+            favicon.badge(downMonitors);
+
+            this.loadedData = true;
+            this.lastUpdateTime = dayjs();
+            this.updateUpdateTimer();
+        },
+
+        /**
+         * Load heartbeat data from API
+         * @param {number|null} maxBeats Maximum number of beats to request from server
+         * @returns {Promise} Promise that resolves when data is loaded
+         */
+        loadHeartbeatData(maxBeats = null) {
+            return this.fetchHeartbeatData(maxBeats).then((data) => {
+                if (data) {
+                    this.applyHeartbeatData(data);
+                }
+            });
+        },
+
+        /**
+         * Reload heartbeat data with a specific maxBeats count
+         * Called by HeartbeatBar when the bar is resized
+         * @param {number} maxBeats Maximum number of beats to request
+         * @returns {void}
+         */
+        reloadHeartbeatData(maxBeats) {
+            if (maxBeats === this.heartbeatMaxBeats) {
+                // Every bar on the page reports the same width, one request is enough
+                return;
+            }
+            this.heartbeatMaxBeats = maxBeats;
+
+            // Auto mode doesn't depend on the width, only remember it
+            if (this.normalizeHeartbeatBarDays(this.config.heartbeatBarDays) === 0) {
+                return;
+            }
+            this.loadHeartbeatData(maxBeats);
+        },
+
+        /**
          * Update the heartbeat list and update favicon if necessary
          * @returns {void}
          */
         updateHeartbeatList() {
             // If editMode, it will use the data from websocket.
-            if (!this.editMode) {
-                axios.get("/api/status-page/heartbeat/" + this.slug).then((res) => {
-                    const { heartbeatList, uptimeList } = res.data;
-
-                    this.$root.heartbeatList = heartbeatList;
-                    this.$root.uptimeList = uptimeList;
-
-                    const heartbeatIds = Object.keys(heartbeatList);
-                    const downMonitors = heartbeatIds.reduce((downMonitorsAmount, currentId) => {
-                        const monitorHeartbeats = heartbeatList[currentId];
-                        const lastHeartbeat = monitorHeartbeats.at(-1);
-
-                        if (lastHeartbeat) {
-                            return lastHeartbeat.status === 0 ? downMonitorsAmount + 1 : downMonitorsAmount;
-                        } else {
-                            return downMonitorsAmount;
-                        }
-                    }, 0);
-
-                    favicon.badge(downMonitors);
-
-                    this.loadedData = true;
-                    this.lastUpdateTime = dayjs();
-                    this.updateUpdateTimer();
-                });
+            if (!this.editMode || this.config.heartbeatBarDays > 0) {
+                this.loadHeartbeatData();
             }
         },
 
