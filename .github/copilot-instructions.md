@@ -53,6 +53,7 @@ Warning: Only maintainers of Uptime Kuma can use these instructions. Other contr
    ```bash
    npm run test-backend  # Backend unit tests (node:test, run through tsx)
    npm test              # Backend + Playwright E2E
+   npm run coverage      # Backend suite + HTML report at private/coverage/backend/index.html
    ```
 
 ### Development Workflow
@@ -127,6 +128,7 @@ npm run dev  # Frontend on port 3000, backend on port 3001
 - **Comments**: keep them short (one concise line explaining what/why); no multi-line essays or restating the code
 - **Commits**: one short sentence describing the change; no long body
 - **Naming**: JavaScript/TypeScript (camelCase), SQLite (snake_case), CSS/SCSS (kebab-case)
+- **New code**: new files and modules are TypeScript (`*.ts`) with Zod validation for external/DB input; leave existing JavaScript files in JS unless that file is being converted for a reason
 - JSDoc is required on every function declaration and method (`jsdoc/require-jsdoc`); `*.ts` relaxes some JSDoc and `any` rules
 - Notable ESLint rules: `no-var`, `one-var: never`, `max-statements-per-line: 1`, `jsdoc/require-throws`
 - **Module system**: no `"type": "module"` in package.json — `*.js` is CommonJS (`require`), `*.mjs`/`*.mts` are ESM, and `*.ts` is executed via `tsx`
@@ -168,9 +170,12 @@ npm run dev  # Frontend on port 3000, backend on port 3001
 
 ## Testing
 
-- **Backend**: Node.js test runner via tsx (`test/backend-test/**/*.{ts,js}`). Use `describe()`/`test()` from `node:test` and one test per scenario (see `test/backend-test/README.md`).
+- **Backend**: Node.js test runner via tsx (`test/backend-test/**/*.{ts,js}`). Use `describe()`/`test()` from `node:test` and one test per scenario (see `test/backend-test/README.md`). `npm run test-backend` also prints a coverage summary via `--experimental-test-coverage`.
+- **TDD**: write the failing test first (red), watch it fail, implement the change, then confirm green before committing.
+- **Coverage**: `npm run coverage` runs the backend suite and writes an HTML report to `private/coverage/backend/index.html` (e2e coverage is not collected).
 - Database monitor tests use Testcontainers; `npm run test-e2e-local` sets `SKIP_TESTCONTAINER=1` to skip them.
 - **E2E**: Playwright specs in `test/e2e/specs/*.spec.js`; `setup-process.once.js` is a one-time setup project every spec depends on. Requires `npx playwright install`.
+- **E2E error guard**: specs import `test`/`expect` from `test/e2e/fixtures.js`, which fails a test when the page throws an uncaught error or logs an unexpected console error (failed network loads are ignored).
 - Test data lives in `data/playwright-test`; reports go to `private/playwright-report`.
 
 ## Adding New Features

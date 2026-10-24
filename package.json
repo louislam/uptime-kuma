@@ -27,7 +27,7 @@
         "build": "vite build",
         "test": "node --run test-backend && node --run test-e2e",
         "test-with-build": "node --run build && npm test",
-        "test-backend": "cross-env TEST_BACKEND=1 node --import=tsx --test --test-reporter=spec \"test/backend-test/**/*.{ts,js}\"",
+        "test-backend": "cross-env TEST_BACKEND=1 node --import=tsx --test --experimental-test-coverage --test-coverage-exclude=\"test/**\" --test-reporter=spec \"test/{backend-test,frontend-test}/**/*.{ts,js}\"",
         "test-e2e": "playwright test",
         "test-e2e-local": "cross-env SKIP_TESTCONTAINER=1 npm run build && npm run test-e2e",
         "test-e2e-ui": "playwright test --ui --ui-port=51063",
@@ -64,7 +64,10 @@
         "reset-migrate-aggregate-table-state": "node extra/reset-migrate-aggregate-table-state.js",
         "generate-changelog": "node ./extra/release/generate-changelog.mjs",
         "create-release": "node ./extra/release/create-release.mjs",
-        "audit": "npm audit --omit=dev"
+        "audit": "npm audit --omit=dev",
+        "coverage:backend": "cross-env TEST_BACKEND=1 NODE_V8_COVERAGE=private/coverage/raw/backend node --import=tsx --test --test-reporter=spec \"test/{backend-test,frontend-test}/**/*.{ts,js}\"",
+        "coverage:report": "node extra/coverage-report.mjs",
+        "coverage": "npm run coverage:backend && npm run coverage:report"
     },
     "dependencies": {
         "@better-auth/api-key": "1.6.11",
@@ -103,6 +106,7 @@
         "iconv-lite": "~0.6.3",
         "is-url": "~1.2.4",
         "isomorphic-ws": "~5.0.0",
+        "js-md4": "~0.3.2",
         "jsesc": "~3.0.2",
         "jsonata": "~2.2.2",
         "kafkajs": "~2.2.4",
@@ -191,6 +195,7 @@
         "eslint-plugin-vue": "~8.7.1",
         "eslint-plugin-vue-scoped-css": "~2.7.2",
         "favico.js": "~0.3.10",
+        "monocart-coverage-reports": "^2.13.2",
         "node-ssh": "~13.1.0",
         "postcss-html": "~1.8.1",
         "postcss-rtlcss": "~5.7.1",

@@ -265,6 +265,7 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
             badgeValues.color = badgeConstants.naColor;
         } else {
             const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(requestedMonitorId);
+            await uptimeCalculator.ensureHistoryLoaded();
             const uptime = overrideValue ?? uptimeCalculator.getDataByDuration(requestedDuration).uptime;
 
             // limit the displayed uptime percentage to four (two, when displayed as percent) decimal digits
@@ -331,6 +332,7 @@ router.get("/api/badge/:id/ping/:duration?", cache("5 minutes"), async (request,
             badgeValues.color = badgeConstants.naColor;
         } else {
             const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(requestedMonitorId);
+            await uptimeCalculator.ensureHistoryLoaded();
             const avgPing = uptimeCalculator.getDataByDuration(requestedDuration).avgPing;
             const avgPingValue = parseInt(overrideValue ?? avgPing);
 
@@ -386,6 +388,7 @@ router.get("/api/badge/:id/avg-response/:duration?", cache("5 minutes"), async (
 
         if (publicMonitor) {
             const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(requestedMonitorId);
+            await uptimeCalculator.ensureHistoryLoaded();
             avgPing = uptimeCalculator.getDataByDuration(`${requestedDuration}h`).avgPing;
         }
 
