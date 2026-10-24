@@ -17,9 +17,9 @@
 
                 <div v-if="!tokenRequired" class="mt-3">
                     <HiddenInput
-                        id="floatingPassword"
                         v-model="password"
-                        :placeholder="$t('Password')"
+                        input-id="floatingPassword"
+                        :label="$t('Password')"
                         autocomplete="current-password"
                         :required="true"
                     />
@@ -57,7 +57,7 @@
                         </label>
                     </div>
                 </div>
-                <button class="w-100 btn btn-primary" type="submit" :disabled="processing">
+                <button class="login-button w-100 btn btn-primary" type="submit" :disabled="processing">
                     {{ $t("Login") }}
                 </button>
 
@@ -150,6 +150,11 @@ export default {
     > .form-control {
         padding-left: 1.3rem;
     }
+}
+
+// Same height as the floating label inputs
+.login-button {
+    height: calc(3.5rem + 2px);
 }
 
 .form {

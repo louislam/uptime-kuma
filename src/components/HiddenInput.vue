@@ -1,6 +1,22 @@
 <template>
-    <div class="input-group mb-3">
+    <div class="input-group mb-3" :class="{ floating: label }">
+        <div v-if="label" class="form-floating">
+            <input
+                :id="inputId"
+                ref="input"
+                v-model="model"
+                :type="visibility"
+                class="form-control"
+                :placeholder="label"
+                :maxlength="maxlength"
+                :autocomplete="autocomplete"
+                :required="required"
+                :readonly="readonly"
+            />
+            <label :for="inputId">{{ label }}</label>
+        </div>
         <input
+            v-else
             ref="input"
             v-model="model"
             :type="visibility"
@@ -33,6 +49,16 @@ export default {
         placeholder: {
             type: String,
             default: "",
+        },
+        /** Label shown inside the input (floating label style). Replaces the placeholder when set */
+        label: {
+            type: String,
+            default: "",
+        },
+        /** The id of the input element, used to link the floating label */
+        inputId: {
+            type: String,
+            default: undefined,
         },
         /** Maximum length of the input */
         maxlength: {
@@ -89,3 +115,29 @@ export default {
     },
 };
 </script>
+
+<style lang="scss" scoped>
+// Bootstrap 5.1 has no support for .form-floating inside .input-group
+.floating {
+    > .form-floating {
+        flex: 1 1 auto;
+        width: 1%;
+        min-width: 0;
+
+        > label,
+        > .form-control {
+            padding-left: 1.3rem;
+        }
+
+        > .form-control {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+    }
+
+    > .btn {
+        display: flex;
+        align-items: center;
+    }
+}
+</style>
