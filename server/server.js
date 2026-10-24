@@ -436,6 +436,11 @@ app.use(function (req, res, next) {
                 }
 
                 bean.import(monitor);
+
+                if (monitor.downInterval === undefined) {
+                    bean.downInterval = null;
+                }
+
                 // Map camelCase frontend property to snake_case database column
                 if (monitor.retryOnlyOnStatusCodeFailure !== undefined) {
                     bean.retry_only_on_status_code_failure = monitor.retryOnlyOnStatusCodeFailure;
@@ -525,6 +530,11 @@ app.use(function (req, res, next) {
                 bean.tlsKey = monitor.tlsKey;
                 bean.interval = monitor.interval;
                 bean.retryInterval = monitor.retryInterval;
+
+                if (monitor.downInterval !== undefined) {
+                    bean.downInterval = monitor.downInterval;
+                }
+
                 bean.resendInterval = monitor.resendInterval;
                 bean.hostname = monitor.hostname;
                 bean.game = monitor.game;

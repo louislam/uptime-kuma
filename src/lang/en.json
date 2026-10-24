@@ -91,6 +91,8 @@
     "timeoutAfter": "Timeout after {0} seconds",
     "Retries": "Retries",
     "Heartbeat Retry Interval": "Heartbeat Retry Interval",
+    "enableDownInterval": "Use a custom heartbeat interval when DOWN",
+    "downInterval": "DOWN Interval",
     "Resend Notification if Down X times consecutively": "Resend Notification if Down X times consecutively",
     "Advanced": "Advanced",
     "checkEverySecond": "Check every {0} seconds",
