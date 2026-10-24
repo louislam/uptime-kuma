@@ -455,6 +455,7 @@ class StatusPage extends BeanModel {
             analyticsType: this.analytics_type,
             showCertificateExpiry: !!this.show_certificate_expiry,
             showOnlyLastHeartbeat: !!this.show_only_last_heartbeat,
+            showPingChart: !!this.show_ping_chart,
             rssTitle: this.rss_title,
         };
     }
@@ -482,6 +483,7 @@ class StatusPage extends BeanModel {
             analyticsType: this.analytics_type,
             showCertificateExpiry: !!this.show_certificate_expiry,
             showOnlyLastHeartbeat: !!this.show_only_last_heartbeat,
+            showPingChart: !!this.show_ping_chart,
             rssTitle: this.rss_title,
         };
     }

@@ -44,6 +44,7 @@ import {
 } from "chart.js";
 import "chartjs-adapter-dayjs-4";
 import { Line } from "vue-chartjs";
+import axios from "axios";
 import { UP, DOWN, PENDING, MAINTENANCE } from "../util.ts";
 
 Chart.register(
@@ -66,6 +67,14 @@ export default {
         monitorId: {
             type: Number,
             required: true,
+        },
+        /**
+         * When set, aggregated periods are loaded from the public status-page chart API
+         * instead of the authenticated socket event.
+         */
+        statusPageSlug: {
+            type: String,
+            default: null,
         },
     },
     data() {
@@ -221,6 +230,13 @@ export default {
                 return this.getChartDatapointsFromStats();
             }
         },
+        /**
+         * Keep status-page period preference separate from the dashboard chart.
+         * @returns {string} localStorage / sessionStorage key
+         */
+        chartPeriodStorageKey() {
+            return this.statusPageSlug ? "status-page-chart-period" : "chart-period";
+        },
     },
     watch: {
         // Update chart data when the selected chart period changes
@@ -233,7 +249,7 @@ export default {
             // eslint-disable-next-line eqeqeq
             if (newPeriod == "0") {
                 this.heartbeatList = null;
-                this.$root.storage()["chart-period"] = newPeriod;
+                this.$root.storage()[this.chartPeriodStorageKey] = newPeriod;
             } else {
                 this.loading = true;
 
@@ -245,19 +261,21 @@ export default {
                     period = 24;
                 }
 
-                this.$root.getMonitorChartData(this.monitorId, period, (res) => {
+                const applyChartData = (res) => {
                     if (!res.ok) {
                         this.$root.toastError(res.msg);
                     } else {
                         this.chartRawData = res.data;
-                        this.$root.storage()["chart-period"] = newPeriod;
+                        this.$root.storage()[this.chartPeriodStorageKey] = newPeriod;
                     }
                     this.loading = false;
-                });
+                };
+
+                this.fetchChartData(period, applyChartData);
 
                 this.chartDataFetchInterval = setInterval(
                     () => {
-                        this.$root.getMonitorChartData(this.monitorId, period, (res) => {
+                        this.fetchChartData(period, (res) => {
                             if (res.ok) {
                                 this.chartRawData = res.data;
                             }
@@ -270,7 +288,7 @@ export default {
     },
     created() {
         // Load chart period from storage if saved
-        let period = this.$root.storage()["chart-period"];
+        let period = this.$root.storage()[this.chartPeriodStorageKey];
         if (period != null) {
             // Has this ever been not a string?
             if (typeof period !== "string") {
@@ -287,6 +305,36 @@ export default {
         }
     },
     methods: {
+        /**
+         * Load aggregated chart data via the public status-page API or the authenticated socket.
+         * @param {number} period Period in hours
+         * @param {Function} callback Callback receiving `{ ok, data?, msg? }`
+         * @returns {void}
+         */
+        fetchChartData(period, callback) {
+            if (this.statusPageSlug) {
+                axios
+                    .get(
+                        `/api/status-page/${encodeURIComponent(this.statusPageSlug)}/monitor/${this.monitorId}/chart`,
+                        {
+                            params: { hours: period },
+                        }
+                    )
+                    .then((res) => {
+                        callback(res.data);
+                    })
+                    .catch((error) => {
+                        callback({
+                            ok: false,
+                            msg: error.response?.data?.msg || error.message,
+                        });
+                    });
+                return;
+            }
+
+            this.$root.getMonitorChartData(this.monitorId, period, callback);
+        },
+
         // Get color of bar chart for this datapoint
         getBarColorForDatapoint(datapoint) {
             if (datapoint.maintenance != null) {
@@ -541,51 +589,77 @@ export default {
             }
 
             return {
-                datasets: [
-                    {
-                        // minimum ping chart
-                        data: minPingData,
-                        fill: "origin",
-                        tension: 0.2,
-                        borderColor: "#126331",
-                        backgroundColor: "#2F9C5914",
-                        yAxisID: "y",
-                        label: this.$t("minPing"),
-                    },
-                    {
-                        // average ping chart
-                        data: avgPingData,
-                        fill: "origin",
-                        tension: 0.2,
-                        borderColor: "#5CDD8B",
-                        backgroundColor: "#5CDD8B06",
-                        yAxisID: "y",
-                        label: this.$t("avgPing"),
-                    },
-                    {
-                        // maximum ping chart
-                        data: maxPingData,
-                        fill: "origin",
-                        tension: 0.2,
-                        borderColor: "#21b55a",
-                        backgroundColor: "#1E7A4214",
-                        yAxisID: "y",
-                        label: this.$t("maxPing"),
-                    },
-                    {
-                        // Bar Chart
-                        type: "bar",
-                        data: downData,
-                        borderColor: "#00000000",
-                        backgroundColor: colorData,
-                        yAxisID: "y1",
-                        barThickness: "flex",
-                        barPercentage: 1,
-                        categoryPercentage: 1,
-                        inflateAmount: 0.05,
-                        label: "status",
-                    },
-                ],
+                datasets: this.statusPageSlug
+                    ? [
+                          {
+                              // average ping chart only on public status pages (no min/max fancy lines)
+                              data: avgPingData,
+                              fill: "origin",
+                              tension: 0.2,
+                              borderColor: "#5CDD8B",
+                              backgroundColor: "#5CDD8B06",
+                              yAxisID: "y",
+                              label: this.$t("avgPing"),
+                          },
+                          {
+                              // Bar Chart
+                              type: "bar",
+                              data: downData,
+                              borderColor: "#00000000",
+                              backgroundColor: colorData,
+                              yAxisID: "y1",
+                              barThickness: "flex",
+                              barPercentage: 1,
+                              categoryPercentage: 1,
+                              inflateAmount: 0.05,
+                              label: "status",
+                          },
+                      ]
+                    : [
+                          {
+                              // minimum ping chart
+                              data: minPingData,
+                              fill: "origin",
+                              tension: 0.2,
+                              borderColor: "#126331",
+                              backgroundColor: "#2F9C5914",
+                              yAxisID: "y",
+                              label: this.$t("minPing"),
+                          },
+                          {
+                              // average ping chart
+                              data: avgPingData,
+                              fill: "origin",
+                              tension: 0.2,
+                              borderColor: "#5CDD8B",
+                              backgroundColor: "#5CDD8B06",
+                              yAxisID: "y",
+                              label: this.$t("avgPing"),
+                          },
+                          {
+                              // maximum ping chart
+                              data: maxPingData,
+                              fill: "origin",
+                              tension: 0.2,
+                              borderColor: "#21b55a",
+                              backgroundColor: "#1E7A4214",
+                              yAxisID: "y",
+                              label: this.$t("maxPing"),
+                          },
+                          {
+                              // Bar Chart
+                              type: "bar",
+                              data: downData,
+                              borderColor: "#00000000",
+                              backgroundColor: colorData,
+                              yAxisID: "y1",
+                              barThickness: "flex",
+                              barPercentage: 1,
+                              categoryPercentage: 1,
+                              inflateAmount: 0.05,
+                              label: "status",
+                          },
+                      ],
             };
         },
     },

@@ -47,19 +47,24 @@
                         >
                             <template #item="monitor">
                                 <div class="item" data-testid="monitor">
-                                    <div class="row">
+                                    <div
+                                        class="row"
+                                        :class="{ 'collapse-toggle': showPingChart && !editMode }"
+                                        @click="showPingChart && !editMode && toggleMonitor(monitor.element.id)"
+                                    >
                                         <div class="col-9 col-xl-6 small-padding">
                                             <div class="info">
                                                 <font-awesome-icon
                                                     v-if="editMode"
                                                     icon="arrows-alt-v"
                                                     class="action drag me-3"
+                                                    @click.stop
                                                 />
                                                 <font-awesome-icon
                                                     v-if="editMode"
                                                     icon="times"
                                                     class="action remove me-3"
-                                                    @click="removeMonitor(group.index, monitor.index)"
+                                                    @click.stop="removeMonitor(group.index, monitor.index)"
                                                 />
 
                                                 <font-awesome-icon
@@ -68,8 +73,27 @@
                                                     class="action me-3 ms-0"
                                                     :class="{ 'link-active': true, 'btn-link': true }"
                                                     data-testid="monitor-settings"
-                                                    @click="$refs.monitorSettingDialog.show(group, monitor)"
+                                                    @click.stop="$refs.monitorSettingDialog.show(group, monitor)"
                                                 />
+                                                <button
+                                                    v-if="showPingChart"
+                                                    type="button"
+                                                    class="collapse-toggle p-0 bg-transparent border-0"
+                                                    :aria-expanded="isMonitorExpanded(monitor.element.id)"
+                                                    :aria-label="
+                                                        isMonitorExpanded(monitor.element.id)
+                                                            ? $t('collapseMonitorChart', [monitor.element.name])
+                                                            : $t('expandMonitorChart', [monitor.element.name])
+                                                    "
+                                                    data-testid="monitor-collapse-toggle"
+                                                    @click.stop="toggleMonitor(monitor.element.id)"
+                                                >
+                                                    <font-awesome-icon
+                                                        icon="chevron-down"
+                                                        class="chevron me-2"
+                                                        :class="{ collapsed: !isMonitorExpanded(monitor.element.id) }"
+                                                    />
+                                                </button>
                                                 <Status
                                                     v-if="showOnlyLastHeartbeat"
                                                     :status="statusOfLastHeartbeat(monitor.element.id)"
@@ -82,6 +106,7 @@
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     data-testid="monitor-name"
+                                                    @click.stop
                                                 >
                                                     {{ monitor.element.name }}
                                                 </a>
@@ -119,6 +144,43 @@
                                             <HeartbeatBar size="mid" :monitor-id="monitor.element.id" />
                                         </div>
                                     </div>
+
+                                    <!-- Ping chart, only mounted while the monitor is expanded -->
+                                    <transition name="slide-fade-up">
+                                        <div
+                                            v-if="showPingChart && isMonitorExpanded(monitor.element.id)"
+                                            class="monitor-stats"
+                                            data-testid="monitor-stats"
+                                        >
+                                            <div class="row stats text-center">
+                                                <div class="col-6 col-md">
+                                                    <h5>{{ $t("Ping") }}</h5>
+                                                    <p>({{ $t("Current") }})</p>
+                                                    <span class="num">
+                                                        {{ pingMessage(lastPing(monitor.element.id)) }}
+                                                    </span>
+                                                </div>
+                                                <div class="col-6 col-md">
+                                                    <h5>{{ $t("Avg. Ping") }}</h5>
+                                                    <p>({{ $t("recent") }})</p>
+                                                    <span class="num">
+                                                        {{ pingMessage(avgPing(monitor.element.id)) }}
+                                                    </span>
+                                                </div>
+                                                <div class="col-6 col-md">
+                                                    <h5>{{ $t("Uptime") }}</h5>
+                                                    <p>({{ $t("hours", 24) }})</p>
+                                                    <span class="num">
+                                                        <Uptime :monitor="monitor.element" type="24" />
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <PingChart
+                                                :monitor-id="monitor.element.id"
+                                                :status-page-slug="statusPageSlug"
+                                            />
+                                        </div>
+                                    </transition>
                                 </div>
                             </template>
                         </Draggable>
@@ -131,12 +193,16 @@
 </template>
 
 <script>
+import { defineAsyncComponent } from "vue";
 import MonitorSettingDialog from "./MonitorSettingDialog.vue";
 import Draggable from "vuedraggable";
 import HeartbeatBar from "./HeartbeatBar.vue";
 import Uptime from "./Uptime.vue";
 import Tag from "./Tag.vue";
 import Status from "./Status.vue";
+import { UP } from "../util.ts";
+
+const PingChart = defineAsyncComponent(() => import("./PingChart.vue"));
 
 export default {
     components: {
@@ -146,6 +212,7 @@ export default {
         Uptime,
         Tag,
         Status,
+        PingChart,
     },
     props: {
         /** Are we in edit mode? */
@@ -165,9 +232,21 @@ export default {
         showOnlyLastHeartbeat: {
             type: Boolean,
         },
+        /** Should the monitors be expandable to show their ping chart? */
+        showPingChart: {
+            type: Boolean,
+        },
+        /** Slug of the status page, used for the public chart API */
+        statusPageSlug: {
+            type: String,
+            default: null,
+        },
     },
     data() {
-        return {};
+        return {
+            /** Ids of the monitors whose ping chart is expanded */
+            expandedMonitors: [],
+        };
     },
     computed: {
         showGroupDrag() {
@@ -296,6 +375,71 @@ export default {
         },
 
         /**
+         * Toggle the ping chart of a monitor
+         * @param {number} monitorId Id of the monitor to toggle
+         * @returns {void}
+         */
+        toggleMonitor(monitorId) {
+            const index = this.expandedMonitors.indexOf(monitorId);
+
+            if (index >= 0) {
+                this.expandedMonitors.splice(index, 1);
+            } else {
+                this.expandedMonitors.push(monitorId);
+            }
+        },
+
+        /**
+         * Check if the ping chart of a monitor is expanded
+         * @param {number} monitorId Id of the monitor to check
+         * @returns {boolean} Whether the monitor is expanded
+         */
+        isMonitorExpanded(monitorId) {
+            return this.expandedMonitors.includes(monitorId);
+        },
+
+        /**
+         * Ping of the last heartbeat of a monitor
+         * @param {number} monitorId Id of the monitor to get the ping for
+         * @returns {number|null} Ping in ms, null if it is unknown
+         */
+        lastPing(monitorId) {
+            let heartbeats = this.$root.heartbeatList[monitorId] ?? [];
+            let ping = heartbeats[heartbeats.length - 1]?.ping;
+            return typeof ping === "number" ? ping : null;
+        },
+
+        /**
+         * Average ping of the recent public heartbeats of a monitor.
+         * The status page only receives the latest heartbeats (not a full 24h series).
+         * @param {number} monitorId Id of the monitor to get the average for
+         * @returns {number|null} Average ping in ms, null if there is no data
+         */
+        avgPing(monitorId) {
+            let pings = (this.$root.heartbeatList[monitorId] ?? [])
+                .filter((beat) => beat.status === UP && typeof beat.ping === "number")
+                .map((beat) => beat.ping);
+
+            if (pings.length === 0) {
+                return null;
+            }
+
+            return Math.round(pings.reduce((total, ping) => total + ping, 0) / pings.length);
+        },
+
+        /**
+         * Format a ping for display
+         * @param {number|null} ping Ping in ms
+         * @returns {string} Formatted ping
+         */
+        pingMessage(ping) {
+            if (ping === null) {
+                return this.$t("notAvailableShort");
+            }
+            return `${ping} ms`;
+        },
+
+        /**
          * Returns certificate expiry color based on days remaining
          * @param {object} monitor Monitor to show expiry for
          * @returns {string} Color for certificate expiry
@@ -388,6 +532,46 @@ export default {
 .collapse-toggle {
     cursor: pointer;
     padding: 2px;
+}
+
+button.collapse-toggle {
+    line-height: 1;
+}
+
+.monitor-stats {
+    border-top: 1px solid rgba(0, 0, 0, 0.125);
+    margin-top: 10px;
+    padding-top: 5px;
+
+    .dark & {
+        border-top: 1px solid $dark-border-color;
+    }
+
+    .stats {
+        [class^="col"] {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            margin: 10px 0;
+        }
+
+        h5 {
+            font-size: 1rem;
+            margin-bottom: 0;
+        }
+
+        p {
+            font-size: 13px;
+            color: $secondary-text;
+            margin-bottom: 0;
+        }
+
+        .num {
+            font-size: 20px;
+            font-weight: bold;
+            color: $primary;
+        }
+    }
 }
 
 .chevron {

@@ -114,6 +114,20 @@
                     </label>
                 </div>
 
+                <!-- Show ping chart -->
+                <div class="my-3 form-check form-switch">
+                    <input
+                        id="show-ping-chart"
+                        v-model="config.showPingChart"
+                        class="form-check-input"
+                        type="checkbox"
+                        data-testid="show-ping-chart-checkbox"
+                    />
+                    <label class="form-check-label" for="show-ping-chart">
+                        {{ $t("showPingChart") }}
+                    </label>
+                </div>
+
                 <!-- Domain Name List -->
                 <div class="my-3">
                     <label class="form-label">
@@ -494,6 +508,8 @@
                     :show-tags="config.showTags"
                     :show-certificate-expiry="config.showCertificateExpiry"
                     :show-only-last-heartbeat="config.showOnlyLastHeartbeat"
+                    :show-ping-chart="config.showPingChart"
+                    :status-page-slug="slug"
                 />
             </div>
 
