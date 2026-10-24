@@ -90,6 +90,8 @@ class MqttMonitorType extends MonitorType {
             }
 
             for (const [messageTopic, receivedMessage] of messageList) {
+                // Here I take the choice to check IF one of the messages received matches the criteria,
+                // instead of checking all of them and failing if one doesn't match.
                 try {
                     if (hasConditions) {
                         await this.checkConditions(monitor, heartbeat, messageTopic, receivedMessage, conditions);
@@ -350,7 +352,7 @@ class MqttMonitorType extends MonitorType {
                 const waiter = entry.waiters[0];
 
                 if (waiter) {
-                    waiter.resolve(receivedMessage);
+                    waiter.resolve([receivedMessage]);
                 } else {
                     if (entry.messageQueue.length >= MAX_BUFFERED_MESSAGES) {
                         entry.messageQueue.shift();
@@ -413,8 +415,7 @@ class MqttMonitorType extends MonitorType {
      * no message arrives within `interval` seconds of silence. If the client
      * is disconnected from the broker, an error is thrown.
      * @param {object} monitor Monitor object
-     * @returns {Promise<[string, string][]|null>} Received [topic, message],
-     * or null on timeout (the connection is kept alive)
+     * @returns {Promise<[string, string][]|null>} Received message pairs, or null on timeout
      */
     waitForMessage(monitor) {
         const entry = this.persistentClients.get(monitor.id);
