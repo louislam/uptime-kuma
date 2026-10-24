@@ -31,4 +31,36 @@ describe("NotificationProvider.throwGeneralAxiosError()", () => {
             message: /^Request failed - caused by: .+/,
         });
     });
+
+    test("preserves error.code on the thrown object without changing the message", () => {
+        let err = new Error("connect ECONNREFUSED 127.0.0.1:443");
+        err.code = "ECONNREFUSED";
+
+        let expectedMessage = `${err.message} (code=${err.code})`;
+
+        try {
+            provider.throwGeneralAxiosError(err);
+            assert.fail("throwGeneralAxiosError should have thrown");
+        } catch (thrown) {
+            assert.strictEqual(thrown.message, expectedMessage);
+            assert.strictEqual(thrown.code, "ECONNREFUSED");
+            assert.strictEqual(thrown.httpStatus, undefined);
+        }
+    });
+
+    test("preserves error.response.status as httpStatus on the thrown object without changing the message", () => {
+        let err = new Error("Request failed with status code 500");
+        err.response = { status: 500, statusText: "Internal Server Error" };
+
+        let expectedMessage = `${err.message} (HTTP 500 Internal Server Error)`;
+
+        try {
+            provider.throwGeneralAxiosError(err);
+            assert.fail("throwGeneralAxiosError should have thrown");
+        } catch (thrown) {
+            assert.strictEqual(thrown.message, expectedMessage);
+            assert.strictEqual(thrown.httpStatus, 500);
+            assert.strictEqual(thrown.code, undefined);
+        }
+    });
 });
