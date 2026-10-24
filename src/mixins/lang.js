@@ -28,8 +28,14 @@ export default {
          * @returns {Promise<void>}
          */
         async changeLang(lang) {
-            let message = (await langModules["../lang/" + lang + ".json"]()).default;
-            this.$i18n.setLocaleMessage(lang, message);
+            // Weblate names some files with an underscore (e.g. en_GB.json) while the locale key is a hyphenated tag ("en-GB")
+            const loader = langModules[`../lang/${lang}.json`] ?? langModules[`../lang/${lang.replace("-", "_")}.json`];
+            if (loader) {
+                this.$i18n.setLocaleMessage(lang, (await loader()).default);
+            } else {
+                console.warn(`No translation file for "${lang}", falling back to "en"`);
+                lang = "en";
+            }
             this.$i18n.locale = lang;
             localStorage.locale = lang;
             setPageLocale();
