@@ -124,6 +124,7 @@ async function sendProxyList(socket) {
 async function sendInfo(socket, hideVersion = false) {
     const info = {
         primaryBaseURL: await setting("primaryBaseURL"),
+        ip2locationEnabled: Boolean(await setting("ip2locationEnabled")),
         serverTimezone: await server.getTimezone(),
         serverTimezoneOffset: server.getTimezoneOffset(),
     };

@@ -117,6 +117,8 @@ const app = server.app;
 
 log.debug("server", "Importing Monitor");
 const Monitor = require("./model/monitor");
+const User = require("./model/user");
+const { applyGeoLocation } = require("./ip2location");
 
 log.debug("server", "Importing Settings");
 const {
@@ -444,6 +446,8 @@ app.use(function (req, res, next) {
 
                 bean.validate();
 
+                await applyGeoLocation(bean);
+
                 await R.store(bean);
 
                 await updateMonitorNotification(bean.id, notificationIDList);
@@ -622,6 +626,8 @@ app.use(function (req, res, next) {
                 bean.ping_per_request_timeout = monitor.ping_per_request_timeout;
 
                 bean.validate();
+
+                await applyGeoLocation(bean);
 
                 await R.store(bean);
 
