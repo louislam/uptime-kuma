@@ -1181,6 +1181,8 @@
     "mqttWebsocketPathExplanation": "Chemin WebSocket pour MQTT sur les connexions WebSocket (par exemple, /mqtt)",
     "mqttWebsocketPathInvalid": "Veuillez utiliser un format de chemin WebSocket valide",
     "mqttHostnameTip": "Veuillez utiliser ce format {hostnameFormat}",
+    "mqttStayConnected": "Rester connecté au broker",
+    "mqttStayConnectedExplanation": "Garde la connexion au broker MQTT ouverte entre les vérifications, afin de ne perdre aucun message entre deux vérifications. Le délai d'expiration est réinitialisé à chaque message reçu.",
     "Template plain text instead of using cards": "Modèle en texte brut au lieu d'utiliser des cartes",
     "issueWithGoogleChatOnAndroidHelptext": "Cela permet également de contourner les bugs en amont comme {issuetackerURL}",
     "clearAllEventsMsg": "Êtes-vous sûr de vouloir supprimer tous les événements pour toutes les sondes ? Cette action supprime définitivement les données de messages associées et ne peut être annulée.",
