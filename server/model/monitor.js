@@ -207,6 +207,8 @@ class Monitor extends BeanModel {
             expectedTlsAlert: this.expected_tls_alert,
             sftpPath: this.sftpPath,
             sshAuthMethod: this.sshAuthMethod || "password",
+            natsTlsMode: this.natsTlsMode || "none",
+            natsRequireJetstream: Boolean(this.natsRequireJetstream),
 
             // ping advanced options
             ping_numeric: this.isPingNumeric(),
