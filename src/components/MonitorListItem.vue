@@ -49,11 +49,7 @@
                             </div>
                         </div>
                     </div>
-                    <div
-                        v-show="$root.userHeartbeatBar == 'normal'"
-                        :key="$root.userHeartbeatBar"
-                        class="col-3 col-xl-6"
-                    >
+                    <div v-if="$root.userHeartbeatBar == 'normal'" :key="$root.userHeartbeatBar" class="col-3 col-xl-6">
                         <HeartbeatBar ref="heartbeatBar" size="small" :monitor-id="monitor.id" />
                     </div>
                 </div>
@@ -72,6 +68,7 @@
                     v-for="(item, index) in sortedChildMonitorList"
                     :key="index"
                     :monitor="item"
+                    :children-by-parent="childrenByParent"
                     :isSelectMode="isSelectMode"
                     :isSelected="isSelected"
                     :select="select"
@@ -99,6 +96,11 @@ export default {
         Tag,
     },
     props: {
+        /** Parent id -> children index, shared by the whole list */
+        childrenByParent: {
+            type: Map,
+            default: () => new Map(),
+        },
         /** Monitor this represents */
         monitor: {
             type: Object,
@@ -148,10 +150,7 @@ export default {
     },
     computed: {
         sortedChildMonitorList() {
-            let result = Object.values(this.$root.monitorList);
-
-            // Get children
-            result = result.filter((childMonitor) => childMonitor.parent === this.monitor.id);
+            let result = this.childrenByParent.get(this.monitor.id) ?? [];
 
             // Run filter on children
             result = result.filter(this.filterFunc);
