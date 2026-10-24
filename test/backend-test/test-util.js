@@ -2,7 +2,7 @@ const { describe, test } = require("node:test");
 const assert = require("node:assert");
 const dayjs = require("dayjs");
 
-const { SQL_DATETIME_FORMAT } = require("../../src/util");
+const { SQL_DATETIME_FORMAT, evaluateJsonQuery } = require("../../src/util");
 
 /**
  * Retries a test function with exponential backoff for external service reliability.
@@ -50,5 +50,12 @@ describe("Server Utilities", () => {
         // Verify it can be parsed back
         const parsedDate = dayjs.utc(sqlFormat, SQL_DATETIME_FORMAT);
         assert.strictEqual(parsedDate.unix(), current.unix());
+    });
+
+    test("evaluateJsonQuery() propagates invalid $toMillis() input", async () => {
+        await assert.rejects(
+            evaluateJsonQuery("{}", '$toMillis("junk")', "==", "0"),
+            /Error evaluating JSON query/
+        );
     });
 });
