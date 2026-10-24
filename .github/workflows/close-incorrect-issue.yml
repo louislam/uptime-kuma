@@ -26,6 +26,8 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - run: npm ci
       - name: Close incorrect issue
-        run: node extra/close-incorrect-issue.mjs ${{ secrets.GITHUB_TOKEN }} ${{ github.event.issue.number }} "$ISSUE_USER_LOGIN"
+        run: node extra/close-incorrect-issue.mjs
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
           ISSUE_USER_LOGIN: ${{ github.event.issue.user.login }}

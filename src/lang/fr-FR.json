@@ -840,7 +840,7 @@
     "styleElapsedTimeShowWithLine": "Afficher (avec ligne)",
     "styleElapsedTime": "Temps écoulé sous la barre d'état",
     "enableNSCD": "Activer NSCD (Name Service Cache Daemon) pour mettre en cache toutes les demandes DNS",
-    "setupDatabaseChooseDatabase": "Quelle base de données souhaitez-vous utiliser ?",
+    "setupDatabaseChooseDatabase": "Quelle base de données souhaitez-vous utiliser ?",
     "setupDatabaseEmbeddedMariaDB": "Vous n’avez rien besoin de configurer. Cette image Docker inclut et configure automatiquement MariaDB pour vous. Uptime Kuma se connectera à cette base de données via un socket Unix.",
     "setupDatabaseSQLite": "Un fichier de base de données simple, recommandé pour les déploiements à petite échelle. Avant la v2.0.0, Uptime Kuma utilisait SQLite comme base de données par défaut.",
     "setupDatabaseMariaDB": "Connectez-vous à une base de données MariaDB externe. Vous devez définir les informations de connexion à la base de données.",
