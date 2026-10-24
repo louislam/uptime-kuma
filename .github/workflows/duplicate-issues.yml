@@ -29,6 +29,21 @@ jobs:
       - name: Install opencode
         run: curl -fsSL https://opencode.ai/v2/install | bash
 
+      - uses: $/.github/actions/setup-atlascloud
+        with:
+          api-key: ${{ secrets.ATLASCLOUD_API_KEY }}
+
+      # Deny rules must be in the config file: OPENCODE_PERMISSION is not enforced by `opencode run`.
+      # external_directory keeps the provider key in ~/.config out of reach of the untrusted issue text.
+      - name: Restrict agent permissions
+        run: |
+          jq '. + {permission: {
+                bash: { "*": "deny" },
+                webfetch: "deny",
+                external_directory: { "*": "deny" }
+              }}' ~/.config/opencode/opencode.json > /tmp/opencode.json
+          mv /tmp/opencode.json ~/.config/opencode/opencode.json
+
       # Pre-fetch the issue data here, so the model step below needs no token.
       - name: Collect issue context
         env:
@@ -45,13 +60,6 @@ jobs:
 
       # The issue body is untrusted: no shell, no network, no secrets in this step.
       - name: Check for duplicate issues
-        env:
-          OPENCODE_PERMISSION: |
-            {
-              "bash": { "*": "deny" },
-              "webfetch": "deny",
-              "external_directory": "deny"
-            }
         run: |
           mapfile -t models < <(jq -r '.[]' .github/opencode-models.json)
 
