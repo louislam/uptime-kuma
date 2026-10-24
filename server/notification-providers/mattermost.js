@@ -14,34 +14,43 @@ class Mattermost extends NotificationProvider {
         try {
             let config = this.getAxiosConfigWithProxy({});
             const mattermostUserName = notification.mattermostusername || "Uptime Kuma";
-            // If heartbeatJSON is null, assume non monitoring notification (Certificate warning) or testing.
-            if (heartbeatJSON == null) {
-                let mattermostTestData = {
-                    username: mattermostUserName,
-                    text: msg,
-                };
-                await axios.post(notification.mattermostWebhookUrl, mattermostTestData, config);
-                return okMsg;
-            }
-
             let mattermostChannel;
 
             if (typeof notification.mattermostchannel === "string") {
                 mattermostChannel = notification.mattermostchannel.toLowerCase();
             }
 
+            // Grab the configured mattermost icons
             const mattermostIconEmoji = notification.mattermosticonemo;
             let mattermostIconEmojiOnline = "";
             let mattermostIconEmojiOffline = "";
 
             if (mattermostIconEmoji && typeof mattermostIconEmoji === "string") {
                 const emojiArray = mattermostIconEmoji.split(" ");
+
                 if (emojiArray.length >= 2) {
                     mattermostIconEmojiOnline = emojiArray[0];
                     mattermostIconEmojiOffline = emojiArray[1];
                 }
             }
+
             const mattermostIconUrl = notification.mattermosticonurl;
+
+            // Here is the Possible Issue fix for 1023:
+            if (heartbeatJSON == null) {
+                const mattermostData = {
+                    username: mattermostUserName,
+                    text: msg,
+                    channel: mattermostChannel,
+                    icon_emoji: mattermostIconEmojiOnline || mattermostIconEmoji,
+                    icon_url: mattermostIconUrl,
+                };
+
+                await axios.post(notification.mattermostWebhookUrl, mattermostData, config);
+
+                return okMsg;
+            }
+
             let iconEmoji = mattermostIconEmoji;
             let statusField = {
                 short: false,
