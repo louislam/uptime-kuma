@@ -1,6 +1,37 @@
 const PrometheusClient = require("prom-client");
 const { log } = require("../src/util");
 const { R } = require("redbean-node");
+const prometheusAPIMetrics = require("./modules/prometheus-api-metrics");
+
+let apiMetricsMiddleware = null;
+
+/**
+ * Register the metrics and start sampling, called when the setting is turned on.
+ * @returns {void}
+ */
+function startPrometheusMetrics() {
+    if (!apiMetricsMiddleware) {
+        apiMetricsMiddleware = prometheusAPIMetrics.create();
+    }
+    prometheusAPIMetrics.start();
+}
+
+/**
+ * Build the /metrics middleware on first use and start its sampling.
+ * @returns {import("express").RequestHandler} The middleware
+ */
+function getPrometheusAPIMiddleware() {
+    startPrometheusMetrics();
+    return apiMetricsMiddleware;
+}
+
+/**
+ * Stop sampling, so a disabled /metrics costs no CPU.
+ * @returns {void}
+ */
+function stopPrometheusMetrics() {
+    prometheusAPIMetrics.stop();
+}
 
 let monitorCertDaysRemaining = null;
 let monitorCertIsValid = null;
@@ -280,4 +311,7 @@ class Prometheus {
 
 module.exports = {
     Prometheus,
+    startPrometheusMetrics,
+    getPrometheusAPIMiddleware,
+    stopPrometheusMetrics,
 };
