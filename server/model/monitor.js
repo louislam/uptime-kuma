@@ -1356,7 +1356,7 @@ class Monitor extends BeanModel {
         try {
             const supportInfo = await DomainExpiry.checkSupport(monitor);
             const domain = await DomainExpiry.findByDomainNameOrCreate(supportInfo.domain);
-            if (domain?.expiry) {
+            if (domain?.expiry && !isNaN(new Date(domain.expiry).getTime())) {
                 io.to(userID).emit("domainInfo", monitorID, domain.daysRemaining, new Date(domain.expiry));
             }
         } catch (e) {}
