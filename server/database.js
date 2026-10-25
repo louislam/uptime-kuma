@@ -555,7 +555,7 @@ class Database {
      */
     static createAuthDatabase(dbConfig) {
         let database;
-        if (dbConfig.type.includes("mariadb")) {
+        if (dbConfig.type === "mariadb") {
             database = mysql.createPool({
                 host: dbConfig.hostname,
                 port: Number(dbConfig.port),

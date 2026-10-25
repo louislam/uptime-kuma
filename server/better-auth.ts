@@ -1,7 +1,7 @@
 import { betterAuth } from "better-auth";
 // @ts-ignore
 import * as Database from "./database.js";
-import { genSecret, log } from "../src/util";
+import { genSecret, isDevEnv, log } from "../src/util";
 import { R } from "redbean-node";
 import { username } from "better-auth/plugins";
 import { admin } from "better-auth/plugins";
@@ -117,6 +117,9 @@ function createAuthInstance() {
             disableSignUp: true,
         },
         rateLimit: {
+            // Disabled in development (e.g. E2E tests) to avoid throttling rapid logins
+            enabled: !isDevEnv(),
+
             // Seconds
             window: 60,
 
@@ -312,6 +315,21 @@ export async function doubleCheckPassword(cookie: string, currentPassword: strin
     if (!status) {
         throw new Error("Incorrect current password");
     }
+}
+
+/**
+ * Verify an API key with Better Auth
+ * @param key Clear API key
+ * @returns True if the key is valid
+ */
+export async function verifyApiKey(key: string): Promise<boolean> {
+    const result = await auth().api.verifyApiKey({
+        body: {
+            key,
+        },
+    });
+
+    return result.valid;
 }
 
 /**

@@ -149,6 +149,7 @@ export default {
                     this.clearKey = res.key;
                     this.keymodal.show();
                     this.clearForm();
+                    this.$emit("keyAdded");
                 } else {
                     this.$root.toastError(res.msg);
                 }

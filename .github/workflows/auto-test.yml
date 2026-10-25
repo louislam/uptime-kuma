@@ -97,7 +97,7 @@ jobs:
     permissions:
       contents: read
     env:
-      PLAYWRIGHT_VERSION: ~1.61.1
+      PLAYWRIGHT_VERSION: ~1.64.1
     steps:
       - run: git config --global core.autocrlf false # Mainly for Windows
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
