@@ -1,4 +1,3 @@
-
 const { describe, it, beforeEach, afterEach, mock } = require("node:test");
 const assert = require("node:assert/strict");
 const axios = require("axios");
@@ -54,7 +53,10 @@ describe("DockerHost.testDockerHost", () => {
             ],
         }));
 
-        const result = await DockerHost.testDockerHost({ dockerType: "tcp", dockerDaemon: "tcp://docker.example.com:2375" });
+        const result = await DockerHost.testDockerHost({
+            dockerType: "tcp",
+            dockerDaemon: "tcp://docker.example.com:2375",
+        });
 
         assert.equal(result, 2);
 
@@ -62,10 +64,7 @@ describe("DockerHost.testDockerHost", () => {
         assert.equal(options.baseURL, "http://docker.example.com:2375");
         assert.ok(options.httpsAgent);
 
-        assert.equal(
-            agentOptionsMock.mock.calls[0].arguments[1],
-            "http://docker.example.com:2375"
-        );
+        assert.equal(agentOptionsMock.mock.calls[0].arguments[1], "http://docker.example.com:2375");
     });
 
     it("should reject an invalid Docker response", async () => {
@@ -81,9 +80,7 @@ describe("DockerHost.testDockerHost", () => {
 
     it("should reject response without ImageID", async () => {
         requestMock.mock.mockImplementation(async () => ({
-            data: [
-                { Id: "container-1" },
-            ],
+            data: [{ Id: "container-1" }],
         }));
 
         await assert.rejects(
