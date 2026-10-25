@@ -4,6 +4,7 @@ import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
 const { MonitorStats } = require("../../server/monitor-stats");
+import { socketRoom } from "../../server/heartbeat-emit";
 
 /** The class keeps private statics, which are plain properties at runtime */
 const stats = MonitorStats;
@@ -38,6 +39,11 @@ function fakeIo() {
     const events = [];
     return {
         events,
+        sockets: {
+            adapter: {
+                rooms: new Map([[socketRoom, { size: 1 }]]),
+            },
+        },
         to(room) {
             return {
                 emit(event, payload) {
@@ -136,7 +142,7 @@ describe("MonitorStats.maybeRefresh()", () => {
         };
         stats.lastRefresh = Date.now();
 
-        MonitorStats.maybeRefresh(fakeIo(), "user", [1]);
+        MonitorStats.maybeRefresh(fakeIo(), [1]);
 
         assert.strictEqual(calls, 0);
     });
@@ -145,14 +151,14 @@ describe("MonitorStats.maybeRefresh()", () => {
         stats.compute = async () => ({ 1: { avgPing: 2, uptime24: 1, uptime720: 1, uptime1y: 1 } });
         const io = fakeIo();
 
-        MonitorStats.maybeRefresh(io, "user", [1]);
+        MonitorStats.maybeRefresh(io, [1]);
         await new Promise((resolve) => setImmediate(resolve));
-        MonitorStats.maybeRefresh(io, "user", [1]);
+        MonitorStats.maybeRefresh(io, [1]);
         await new Promise((resolve) => setImmediate(resolve));
 
         assert.strictEqual(io.events.length, 1);
         assert.strictEqual(io.events[0].event, "stats");
-        assert.strictEqual(io.events[0].room, "user");
+        assert.strictEqual(io.events[0].room, socketRoom);
     });
 
     test("allows another attempt after a failed scan", async () => {
@@ -160,7 +166,7 @@ describe("MonitorStats.maybeRefresh()", () => {
             throw new Error("scan failed");
         };
 
-        MonitorStats.maybeRefresh(fakeIo(), "user", [1]);
+        MonitorStats.maybeRefresh(fakeIo(), [1]);
         await new Promise((resolve) => setImmediate(resolve));
 
         assert.strictEqual(stats.lastRefresh, 0);
