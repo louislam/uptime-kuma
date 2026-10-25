@@ -148,8 +148,26 @@ test("A v2.5.3 database still works after upgrading to v3 (#7944, #7946)", { tim
             apiKeyList.some((key) => key.id === "legacy-1"),
             `legacy API key not listed: ${JSON.stringify(apiKeyList)}`
         );
+
+        // /metrics is disabled by default since v3
+        assert.strictEqual(await metricsStatus("uk1_test-api-key"), 404);
+
+        await callOk(socket, "setSettings", { prometheusApiEnabled: true }, null);
+
         assert.strictEqual(await metricsStatus("uk1_test-api-key"), 200);
         assert.strictEqual(await metricsStatus("uk1_wrong-key"), 401);
+        // API keys are enabled on this database, so username/password is not accepted either
+        const passwordAuth = "Basic " + Buffer.from(`${username}:${password}`).toString("base64");
+        assert.strictEqual(
+            (await fetch(`${baseUrl}/metrics`, { headers: { authorization: passwordAuth } })).status,
+            401
+        );
+
+        // Turning it off again hides the endpoint, even with a valid key
+        await callOk(socket, "setSettings", { prometheusApiEnabled: false }, null);
+        assert.strictEqual(await metricsStatus("uk1_test-api-key"), 404);
+        await callOk(socket, "setSettings", { prometheusApiEnabled: true }, null);
+        assert.strictEqual(await metricsStatus("uk1_test-api-key"), 200);
 
         // Revoking it through the API key list stops it from working
         await callOk(socket, "deleteAPIKey", "legacy-1");

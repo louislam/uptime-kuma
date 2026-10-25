@@ -168,6 +168,10 @@ export default {
                     this.settings.nscd = true;
                 }
 
+                if (this.settings.prometheusApiEnabled === undefined) {
+                    this.settings.prometheusApiEnabled = false;
+                }
+
                 if (this.settings.keepDataPeriodDays === undefined) {
                     this.settings.keepDataPeriodDays = 180;
                 }

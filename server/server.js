@@ -107,8 +107,6 @@ log.debug("server", "Importing redbean-node");
 const { R } = require("redbean-node");
 log.debug("server", "Importing http-graceful-shutdown");
 const gracefulShutdown = require("http-graceful-shutdown");
-log.debug("server", "Importing prometheus-api-metrics");
-const prometheusAPIMetrics = require("prometheus-api-metrics");
 
 const { UptimeKumaServer } = require("./uptime-kuma-server");
 const server = UptimeKumaServer.getInstance();
@@ -144,7 +142,12 @@ const { DeferredListsSender } = require("./login-lists");
 const { chunk, firstBeatDelayMs } = require("./start-monitors");
 const { startStatsRefresh } = require("./stats-refresh");
 const { apiAuth } = require("./auth");
-const { Prometheus } = require("./prometheus");
+const {
+    Prometheus,
+    startPrometheusMetrics,
+    getPrometheusAPIMiddleware,
+    stopPrometheusMetrics,
+} = require("./prometheus");
 const { UptimeCalculator } = require("./uptime-calculator");
 const { MonitorStats } = require("./monitor-stats");
 
@@ -335,9 +338,23 @@ app.use(function (req, res, next) {
 
     // Basic Auth Router here
 
-    // Prometheus API metrics  /metrics
-    // With Basic Auth using the first user's username/password
-    app.get("/metrics", apiAuth, prometheusAPIMetrics());
+    // Prometheus API  /metrics  (Basic Auth, only when enabled in the settings)
+    app.get(
+        "/metrics",
+        async (req, res, next) => {
+            try {
+                if ((await setting("prometheusApiEnabled")) !== true) {
+                    res.sendStatus(404);
+                    return;
+                }
+                next();
+            } catch (e) {
+                next(e);
+            }
+        },
+        apiAuth,
+        (req, res, next) => getPrometheusAPIMiddleware()(req, res, next)
+    );
 
     app.use(
         "/",
@@ -1167,9 +1184,19 @@ app.use(function (req, res, next) {
 
                 const previousChromeExecutable = await Settings.get("chromeExecutable");
                 const previousNSCDStatus = await Settings.get("nscd");
+                const previousPrometheusApiEnabled = await Settings.get("prometheusApiEnabled");
 
                 await setSettings("general", data);
                 server.entryPage = data.entryPage;
+
+                // Start or stop the Prometheus sampling when the API is toggled
+                if (previousPrometheusApiEnabled !== data.prometheusApiEnabled) {
+                    if (data.prometheusApiEnabled) {
+                        startPrometheusMetrics();
+                    } else {
+                        stopPrometheusMetrics();
+                    }
+                }
 
                 // Also need to apply timezone globally
                 if (data.serverTimezone) {
