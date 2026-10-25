@@ -62,6 +62,10 @@ export default {
          * @returns {void}
          */
         markDashboardLoading() {
+            // Logged-out sessions show the login page; the bar has nothing to wait for
+            if (this.$root.loginRequired) {
+                return;
+            }
             const current = this.$root.dashboardLoadProgress || 0;
             const next = this.progressController.routeProgress(this.$route.path, current);
             if (next !== this.$root.dashboardLoadProgress) {
