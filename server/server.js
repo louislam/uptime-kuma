@@ -628,7 +628,6 @@ app.use(function (req, res, next) {
                 bean.conditions = JSON.stringify(monitor.conditions);
                 bean.manual_status = monitor.manual_status;
                 bean.system_service_name = monitor.system_service_name;
-                bean.expected_tls_alert = monitor.expectedTlsAlert;
                 bean.sshUsername = monitor.sshUsername;
                 bean.sshPassword = monitor.sshPassword;
                 bean.sftpPath = monitor.sftpPath;

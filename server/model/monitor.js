@@ -208,7 +208,6 @@ class Monitor extends BeanModel {
             ntpTimeOffsetThreshold: this.ntp_time_offset_threshold,
             ntpRootDispersionThreshold: this.ntp_root_dispersion_threshold,
             ipFamily: this.ipFamily,
-            expectedTlsAlert: this.expected_tls_alert,
             sftpPath: this.sftpPath,
             sshAuthMethod: this.sshAuthMethod || "password",
 
