@@ -53,7 +53,7 @@ const { UptimeCalculator } = require("../uptime-calculator");
 const { MonitorStats } = require("../monitor-stats");
 const { attachKeylogListener, getMonitorAgents } = require("../monitor-agents");
 const { readTlsInfo } = require("../monitor-tls");
-const { emitHeartbeat } = require("../heartbeat-emit");
+const { emitHeartbeat, socketRoom } = require("../heartbeat-emit");
 const { updatePrometheusStats } = require("../prometheus-monitor");
 
 // Last time certificate/domain info was sent to a client, per monitor
@@ -963,7 +963,7 @@ class Monitor extends BeanModel {
                 log.debug("monitor", `[${this.name}] apicache clear`);
                 apicache.clear();
 
-                await UptimeKumaServer.getInstance().sendMaintenanceListByUserID(this.user_id);
+                await UptimeKumaServer.getInstance().sendMaintenanceListToDashboard();
             } else {
                 bean.important = false;
 
@@ -1037,8 +1037,8 @@ class Monitor extends BeanModel {
 
             // Send to frontend
             log.debug("monitor", `[${this.name}] Send to socket`);
-            emitHeartbeat(io, this.user_id, bean.toJSON());
-            Monitor.sendStats(io, this.id, this.user_id);
+            emitHeartbeat(io, bean.toJSON());
+            Monitor.sendStats(io, this.id);
 
             // Store to database
             log.debug("monitor", `[${this.name}] Store`);
@@ -1291,25 +1291,24 @@ class Monitor extends BeanModel {
     }
 
     /**
-     * Send statistics to clients
+     * Send statistics to the dashboard
      * @param {Server} io Socket server instance
      * @param {number} monitorID ID of monitor to send
-     * @param {number} userID ID of user to send to
      * @returns {Promise<void>}
      */
-    static async sendStats(io, monitorID, userID) {
-        const hasClients = getTotalClientInRoom(io, userID) > 0;
+    static async sendStats(io, monitorID) {
+        const hasClients = getTotalClientInRoom(io, socketRoom) > 0;
 
         if (hasClients) {
             // Serve the dashboard numbers from the grouped SQL cache; never initialize a full
             // UptimeCalculator (thousands of stat rows) just to answer a heartbeat
             const cached = MonitorStats.get(monitorID);
             if (cached) {
-                io.to(userID).emit("stats", { [monitorID]: cached });
+                io.to(socketRoom).emit("stats", { [monitorID]: cached });
             }
 
             const server = UptimeKumaServer.getInstance();
-            MonitorStats.maybeRefresh(io, userID, Object.keys(server.monitorList));
+            MonitorStats.maybeRefresh(io, Object.keys(server.monitorList));
 
             // Cert and domain info are slow (DB + DNS). At one beat per monitor per minute
             // and thousands of monitors they must not run on every beat while a client is open
@@ -1318,10 +1317,10 @@ class Monitor extends BeanModel {
                 lastInfoSent.set(monitorID, now);
 
                 // Send Cert Info
-                await Monitor.sendCertInfo(io, monitorID, userID);
+                await Monitor.sendCertInfo(io, monitorID);
 
                 // Send domain info
-                await Monitor.sendDomainInfo(io, monitorID, userID);
+                await Monitor.sendDomainInfo(io, monitorID);
             }
         } else {
             log.debug("monitor", "No clients in the room, no need to send stats");
@@ -1329,16 +1328,15 @@ class Monitor extends BeanModel {
     }
 
     /**
-     * Send certificate information to client
+     * Send certificate information to the dashboard
      * @param {Server} io Socket server instance
      * @param {number} monitorID ID of monitor to send
-     * @param {number} userID ID of user to send to
      * @returns {void}
      */
-    static async sendCertInfo(io, monitorID, userID) {
+    static async sendCertInfo(io, monitorID) {
         let tlsInfo = await R.findOne("monitor_tls_info", "monitor_id = ?", [monitorID]);
         if (tlsInfo != null) {
-            io.to(userID).emit("certInfo", monitorID, tlsInfo.info_json);
+            io.to(socketRoom).emit("certInfo", monitorID, tlsInfo.info_json);
         }
     }
 
@@ -1346,17 +1344,16 @@ class Monitor extends BeanModel {
      * Send domain name information to client
      * @param {Server} io Socket server instance
      * @param {number} monitorID ID of monitor to send
-     * @param {number} userID ID of user to send to
      * @returns {void}
      */
-    static async sendDomainInfo(io, monitorID, userID) {
+    static async sendDomainInfo(io, monitorID) {
         const monitor = await R.findOne("monitor", "id = ?", [monitorID]);
 
         try {
             const supportInfo = await DomainExpiry.checkSupport(monitor);
             const domain = await DomainExpiry.findByDomainNameOrCreate(supportInfo.domain);
             if (domain?.expiry) {
-                io.to(userID).emit("domainInfo", monitorID, domain.daysRemaining, new Date(domain.expiry));
+                io.to(socketRoom).emit("domainInfo", monitorID, domain.daysRemaining, new Date(domain.expiry));
             }
         } catch (e) {}
     }

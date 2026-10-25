@@ -1,6 +1,7 @@
 import { R } from "redbean-node";
 import dayjs from "dayjs";
 import { z } from "zod";
+import { socketRoom } from "./heartbeat-emit";
 
 const MINUTE = 60;
 const DAY = 86400;
@@ -225,16 +226,15 @@ export class MonitorStats {
     /**
      * Refresh all monitor stats when the cache is stale (fire and forget)
      * @param io Socket server
-     * @param userID User room
      * @param monitorIDs All monitor ids
      */
-    static maybeRefresh(io: RoomEmitter, userID: string, monitorIDs: Array<number | string>): void {
+    static maybeRefresh(io: RoomEmitter, monitorIDs: Array<number | string>): void {
         if (Date.now() - MonitorStats.lastRefresh < REFRESH_INTERVAL_MS) {
             return;
         }
         MonitorStats.lastRefresh = Date.now();
         MonitorStats.refresh(monitorIDs)
-            .then((stats) => io.to(userID).emit("stats", stats))
+            .then((stats) => io.to(socketRoom).emit("stats", stats))
             .catch(() => {
                 MonitorStats.lastRefresh = 0;
             });

@@ -150,6 +150,7 @@ const {
 } = require("./prometheus");
 const { UptimeCalculator } = require("./uptime-calculator");
 const { MonitorStats } = require("./monitor-stats");
+const { socketRoom } = require("./heartbeat-emit");
 
 const hostname = config.hostname;
 
@@ -1498,6 +1499,7 @@ async function updateMonitorNotification(monitorID, notificationIDList) {
 async function afterLogin(socket, user) {
     socket.userID = user.id;
     socket.join(user.id);
+    socket.join(socketRoom);
 
     let tPerf = Date.now();
     let monitorList = await server.sendMonitorList(socket);
@@ -1535,7 +1537,7 @@ async function afterLogin(socket, user) {
             stats = await MonitorStats.refresh(monitorIDs);
         }
         io.to(socket.userID).emit("stats", stats);
-        MonitorStats.maybeRefresh(io, socket.userID, monitorIDs);
+        MonitorStats.maybeRefresh(io, monitorIDs);
         log.debug("perf", `[login] stats ${Date.now() - t}ms`);
     };
     const deferredLists = new DeferredListsSender({
