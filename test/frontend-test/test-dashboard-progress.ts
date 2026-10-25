@@ -93,9 +93,15 @@ describe("DashboardProgress", () => {
         const progress = new DashboardProgress();
 
         assert.strictEqual(progress.routeProgress("/dashboard", 0), ROUTE_PROGRESS);
-        assert.strictEqual(progress.routeProgress("/dashboard/1", 0), ROUTE_PROGRESS);
         assert.strictEqual(progress.routeProgress("/dashboard", ROUTE_PROGRESS), ROUTE_PROGRESS);
         assert.strictEqual(progress.routeProgress("/settings", 0), 0);
+    });
+
+    test("does not start the bar when opening a monitor detail page", () => {
+        const progress = new DashboardProgress();
+
+        assert.strictEqual(progress.routeProgress("/dashboard/61", 0), 0);
+        assert.strictEqual(progress.routeProgress("/dashboard/61/edit", 0), 0);
     });
 
     test("notifies the app on every change", (t) => {

@@ -49,7 +49,7 @@ export class DashboardProgress {
      * @returns Progress after the route change
      */
     routeProgress(path: string, current: number): number {
-        if (path.startsWith("/dashboard") && !current) {
+        if (path === "/dashboard" && !current) {
             return ROUTE_PROGRESS;
         }
         return current;
