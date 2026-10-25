@@ -40,13 +40,14 @@ export async function createBetterAuthRouter() {
                 throw new Error("Setup is already in progress. Please wait.");
             }
 
+            processingSetup = true;
+
             try {
                 if (!(await needSetup())) {
                     throw new Error(
                         "Uptime Kuma has been initialized. If you want to run setup again, please delete the database."
                     );
                 }
-                processingSetup = true;
 
                 const username = req.body.username;
                 const password = req.body.password;
@@ -117,9 +118,6 @@ export async function needSetup() {
     }
 
     if (expired) {
-        return false;
-    }
-    if (processingSetup) {
         return false;
     }
 
