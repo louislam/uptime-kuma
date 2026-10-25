@@ -736,11 +736,14 @@ app.use(function (req, res, next) {
         socket.on("getHeartbeatHistory", async (monitorID, callback) => {
             try {
                 checkLogin(socket);
+                const data = await getHeartbeatHistory(monitorID);
+                log.debug("monitor", `History request #${monitorID} rows=${data.length}`);
                 callback({
                     ok: true,
-                    data: await getHeartbeatHistory(monitorID),
+                    data,
                 });
             } catch (e) {
+                log.warn("monitor", `History request #${monitorID} failed: ${e.message}`);
                 callback({
                     ok: false,
                     msg: e.message,
