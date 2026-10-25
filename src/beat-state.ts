@@ -53,3 +53,22 @@ export function applyBeat(state: BeatState, monitorID: number, beat: unknown, en
     state.statusList[monitorID] = entry;
     state.lastBeatRaw[monitorID] = beat;
 }
+
+/**
+ * Store the latest-beat payload without shrinking a history that loaded first.
+ * @param heartbeatList Heartbeats per monitor
+ * @param monitorID Monitor id
+ * @param beats Latest beats from the server
+ * @returns void
+ */
+export function applyLatestBeats(
+    heartbeatList: Record<number | string, unknown[]>,
+    monitorID: number | string,
+    beats: unknown[]
+): void {
+    const current = heartbeatList[monitorID];
+    if (current && current.length > beats.length) {
+        return;
+    }
+    heartbeatList[monitorID] = beats;
+}

@@ -1,6 +1,6 @@
 import { describe, test } from "node:test";
 import assert from "node:assert";
-import { applyBeat, beatStatusEntry } from "../../src/beat-state";
+import { applyBeat, applyLatestBeats, beatStatusEntry } from "../../src/beat-state";
 import { DOWN, MAINTENANCE, PENDING, UP } from "../../src/util";
 
 /**
@@ -35,6 +35,46 @@ describe("beatStatusEntry()", () => {
             text: "Unknown",
             color: "secondary",
         });
+    });
+});
+
+describe("applyLatestBeats()", () => {
+    test("stores the latest beat when no history is loaded yet", () => {
+        const heartbeatList: Record<number, unknown[]> = {};
+        const latest = [{ status: UP }];
+
+        applyLatestBeats(heartbeatList, 1, latest);
+
+        assert.strictEqual(heartbeatList[1], latest);
+    });
+
+    test("keeps the loaded 100-beat history when the late list is shorter", () => {
+        const history = Array.from({ length: 100 }, (_, i) => ({ status: UP, id: i }));
+        const heartbeatList: Record<number, unknown[]> = { 1: history };
+        const latest = [{ status: DOWN, id: 200 }];
+
+        applyLatestBeats(heartbeatList, 1, latest);
+
+        assert.strictEqual(heartbeatList[1], history);
+    });
+
+    test("replaces a stale list of the same length", () => {
+        const heartbeatList: Record<number, unknown[]> = { 1: [{ status: UP, id: 1 }] };
+        const latest = [{ status: DOWN, id: 2 }];
+
+        applyLatestBeats(heartbeatList, 1, latest);
+
+        assert.strictEqual(heartbeatList[1], latest);
+    });
+
+    test("leaves the other monitors untouched", () => {
+        const history = Array.from({ length: 100 }, (_, i) => ({ status: UP, id: i }));
+        const heartbeatList: Record<number, unknown[]> = { 1: history, 2: [{ status: UP, id: 9 }] };
+        const latest = [{ status: DOWN, id: 200 }];
+
+        applyLatestBeats(heartbeatList, 1, latest);
+
+        assert.strictEqual(heartbeatList[2].length, 1);
     });
 });
 
