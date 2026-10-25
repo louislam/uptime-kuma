@@ -88,7 +88,7 @@ class DockerHost {
             let res = await axios.request(options);
 
             if (Array.isArray(res.data)) {
-                if (res.data.length > 1) {
+                if (res.data.length > 0) {
                     if ("ImageID" in res.data[0]) {
                         return res.data.length;
                     } else {
