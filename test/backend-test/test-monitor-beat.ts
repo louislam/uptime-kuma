@@ -9,6 +9,7 @@ const Monitor = require("../../server/model/monitor");
 const { R } = require("redbean-node");
 const { UptimeCalculator } = require("../../server/uptime-calculator");
 const { Prometheus } = require("../../server/prometheus");
+import { socketRoom } from "../../server/heartbeat-emit";
 
 // Self-signed certificate for 127.0.0.1, tests only
 const TEST_CERT = `-----BEGIN CERTIFICATE-----
@@ -161,14 +162,14 @@ async function localTlsServer() {
 }
 
 /**
- * IO with one client in the user room
+ * IO with one client in the dashboard room
  * @returns {object} IO with captured events
  */
 function fakeIo() {
     const events = [];
     return {
         events,
-        sockets: { adapter: { rooms: new Map([["user1", new Set(["socket"])]]) } },
+        sockets: { adapter: { rooms: new Map([[socketRoom, new Set(["socket"])]]) } },
         to(room) {
             return {
                 emit(event, ...args) {
