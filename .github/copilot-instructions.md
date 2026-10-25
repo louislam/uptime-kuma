@@ -153,6 +153,28 @@ npm run dev  # Frontend on port 3000, backend on port 3001
 
 **Merging**: Never merge without the user's confirmation.
 
+## Release & Post-release Checks
+
+Releases are cut with the **Release** workflow (`.github/workflows/release.yml`), not `npm run release-final` (that local orchestrator needs a running Docker and is the older path).
+
+- Dispatch it from `master`, not `2.5.X`: master's workflow checks out `2.5.X` and sets `RELEASE_BASE_BRANCH=2.5.X`.
+- `2.5.X`'s copy has a 6th `update-wiki` job; master's copy does not, so a run dispatched from master never bumps the wiki.
+- Inputs: `version`, `previous_version` (previous tag), `is_beta`, `dry_run`.
+
+After it succeeds, check in this order:
+
+1. **Release**: `gh release view <version> --json isDraft,publishedAt,assets` is not a draft, has `dist.tar.gz`, and `git/ref/tags/<version>` points at the squash merge commit on `2.5.X`.
+2. **Changelog**: generated from PRs only. Base-image work (Node.js version, CA store) is not a PR, so add it by hand with `gh release edit <version> --notes-file notes.md` before publishing.
+3. **Docker Hub**: `<version>`, `<version>-slim`, `<version>-rootless`, `<version>-slim-rootless`, plus the aliases `2`, `2-slim`, `2-rootless`, `next`, `next-slim`, `next-rootless` all point at the new build.
+4. **Node.js inside the images**: `docker run --rm --entrypoint node louislam/uptime-kuma:<version> -p process.versions.node` matches the base image (`louislam/uptime-kuma:base2`) on amd64, arm64 and arm/v7.
+5. **App version**: `package.json` on `2.5.X` is `<version>`; the server sends it over Socket.IO as `info.version` (`server/client.js`) and as `User-Agent: Uptime-Kuma/<version>` (`server/uptime-kuma-server.js`). There is no `/api/version` route.
+6. **Wiki**: `🆙-How-to-Update.md` must contain `git checkout <version> --force`. If the `update-wiki` job did not run, run `RELEASE_VERSION=<version> GITHUB_TOKEN=<token> node extra/release/update-wiki.mjs`.
+7. **Demo server**: `npm run deploy-demo-server`; <https://uptime.kuma.pet> should report `<version>`.
+8. **Healthcheck**: if `extra/healthcheck.go` changed, rebuild `louislam/uptime-kuma:builder-go` (`npm run build-docker-builder-go`) before releasing.
+9. **`master`'s install pin**: the release's "Update to `<version>`" commit bumps `version` and the `setup` script on `2.5.X` only, so `master`'s `package.json` still has `"setup": "git checkout <previous version> ..."`. Bump that one line to `<version>` on `master`, otherwise `npm run setup` on master keeps installing the old release.
+
+CONTRIBUTING's manual list still applies: clean Docker install on amd64/arm64/armv7 and a clean Node.js install.
+
 ## Common Issues
 
 1. **npm install vs npm ci**: Always use `npm ci` for reproducible builds
