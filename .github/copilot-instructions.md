@@ -137,6 +137,7 @@ After it succeeds, check in this order:
 6. **Wiki**: `🆙-How-to-Update.md` must contain `git checkout <version> --force`. If the `update-wiki` job did not run, run `RELEASE_VERSION=<version> GITHUB_TOKEN=<token> node extra/release/update-wiki.mjs`.
 7. **Demo server**: `npm run deploy-demo-server`; <https://uptime.kuma.pet> should report `<version>`.
 8. **Healthcheck**: if `extra/healthcheck.go` changed, rebuild `louislam/uptime-kuma:builder-go` (`npm run build-docker-builder-go`) before releasing.
+9. **`master`'s install pin**: the release's "Update to `<version>`" commit bumps `version` and the `setup` script on `2.5.X` only, so `master`'s `package.json` still has `"setup": "git checkout <previous version> ..."`. Bump that one line to `<version>` on `master`, otherwise `npm run setup` on master keeps installing the old release.
 
 CONTRIBUTING's manual list still applies: clean Docker install on amd64/arm64/armv7 and a clean Node.js install.
 
