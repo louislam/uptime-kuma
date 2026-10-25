@@ -147,6 +147,12 @@ npm run dev  # Frontend on port 3000, backend on port 3001
 
 **PR Requirements**: All linters pass, tests pass, code follows style guidelines
 
+**After Opening a PR**: Watch CI to completion and report failures.
+
+**Committing and Pushing**: Never commit or push without the user's confirmation.
+
+**Merging**: Never merge without the user's confirmation.
+
 ## Common Issues
 
 1. **npm install vs npm ci**: Always use `npm ci` for reproducible builds
