@@ -6,6 +6,7 @@ on:
   pull_request:
     branches:
       - master
+      - 2.5.X
       - 1.23.X
   workflow_dispatch:
 permissions: {}

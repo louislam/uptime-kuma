@@ -15,14 +15,17 @@
                     <label for="floatingInput">{{ $t("Username") }}</label>
                 </div>
 
-                <div v-if="!tokenRequired" class="mt-3">
-                    <HiddenInput
+                <div v-if="!tokenRequired" class="form-floating mt-3">
+                    <input
                         id="floatingPassword"
                         v-model="password"
-                        :placeholder="$t('Password')"
+                        type="password"
+                        class="form-control"
+                        placeholder="Password"
                         autocomplete="current-password"
-                        :required="true"
+                        required
                     />
+                    <label for="floatingPassword">{{ $t("Password") }}</label>
                 </div>
 
                 <div v-if="tokenRequired">
@@ -70,12 +73,7 @@
 </template>
 
 <script>
-import HiddenInput from "./HiddenInput.vue";
-
 export default {
-    components: {
-        HiddenInput,
-    },
     data() {
         return {
             processing: false,
