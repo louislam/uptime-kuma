@@ -56,16 +56,10 @@ describe("Apprise notification provider", { skip }, () => {
     test("send() does not let a URL be executed as an apprise flag", async () => {
         const dir = await fs.mkdtemp(path.join(os.tmpdir(), "apprise-argue-"));
         const marker = path.join(dir, "pwned.txt");
-        await fs.writeFile(
-            path.join(dir, "pwn.py"),
-            `open(${JSON.stringify(marker)}, "w").write("executed")`
-        );
+        await fs.writeFile(path.join(dir, "pwn.py"), `open(${JSON.stringify(marker)}, "w").write("executed")`);
 
         try {
-            await assert.rejects(
-                new Apprise().send({ appriseURL: `--plugin-path=${dir}` }, "msg"),
-                /exited with code/
-            );
+            await assert.rejects(new Apprise().send({ appriseURL: `--plugin-path=${dir}` }, "msg"), /exited with code/);
             await assert.rejects(fs.access(marker), "the injected Python must not run");
         } finally {
             await fs.rm(dir, { recursive: true, force: true });

@@ -20,20 +20,9 @@ const Apprise = require("../../../server/notification-providers/apprise");
 
 describe("Apprise notification provider arguments", () => {
     test("send() puts the URL after -- so it cannot be parsed as a CLI flag", async () => {
-        await new Apprise().send(
-            { appriseURL: "--plugin-path=/tmp/evil", title: "The Title" },
-            "the body"
-        );
+        await new Apprise().send({ appriseURL: "--plugin-path=/tmp/evil", title: "The Title" }, "the body");
 
-        assert.deepStrictEqual(lastArgs, [
-            "-vv",
-            "-b",
-            "the body",
-            "-t",
-            "The Title",
-            "--",
-            "--plugin-path=/tmp/evil",
-        ]);
+        assert.deepStrictEqual(lastArgs, ["-vv", "-b", "the body", "-t", "The Title", "--", "--plugin-path=/tmp/evil"]);
     });
 
     test("send() keeps the URL as the only positional argument", async () => {
