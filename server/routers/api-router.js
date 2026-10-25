@@ -13,6 +13,7 @@ const dayjs = require("dayjs");
 const { UP, MAINTENANCE, DOWN, PENDING, flipStatus, log, badgeConstants } = require("../../src/util");
 const StatusPage = require("../model/status_page");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
+const { emitHeartbeat } = require("../heartbeat-emit");
 const { makeBadge } = require("badge-maker");
 const { Prometheus } = require("../prometheus");
 const { UptimeCalculator } = require("../uptime-calculator");
@@ -134,9 +135,9 @@ router.all("/api/push/:pushToken", async (request, response) => {
 
         await R.store(bean);
 
-        io.to(monitor.user_id).emit("heartbeat", bean.toJSON());
+        emitHeartbeat(io, bean.toJSON());
 
-        Monitor.sendStats(io, monitor.id, monitor.user_id);
+        Monitor.sendStats(io, monitor.id);
 
         try {
             new Prometheus(monitor, await monitor.getTags()).update(bean, undefined);

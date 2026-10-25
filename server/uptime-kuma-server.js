@@ -320,26 +320,24 @@ class UptimeKumaServer {
      * @returns {Promise<object>} Maintenance list
      */
     async sendMaintenanceList(socket) {
-        return await this.sendMaintenanceListByUserID(socket.userID);
+        return await this.sendMaintenanceListToDashboard();
     }
 
     /**
-     * Send list of maintenances to user
-     * @param {number} userID User to send list to
+     * Send the maintenance list to the dashboard
      * @returns {Promise<object>} Maintenance list
      */
-    async sendMaintenanceListByUserID(userID) {
-        let list = await this.getMaintenanceJSONList(userID);
-        this.io.to(userID).emit("maintenanceList", list);
+    async sendMaintenanceListToDashboard() {
+        let list = await this.getMaintenanceJSONList();
+        this.io.to(socketRoom).emit("maintenanceList", list);
         return list;
     }
 
     /**
-     * Get a list of maintenances for the given user.
-     * @param {string} userID - The ID of the user to get maintenances for.
+     * Get a list of maintenances
      * @returns {Promise<object>} A promise that resolves to an object with maintenance IDs as keys and maintenances objects as values.
      */
-    async getMaintenanceJSONList(userID) {
+    async getMaintenanceJSONList() {
         let result = {};
         for (let maintenanceID in this.maintenanceList) {
             result[maintenanceID] = await this.maintenanceList[maintenanceID].toJSON();
@@ -627,3 +625,4 @@ const { SFTPMonitorType } = require("./monitor-types/sftp");
 const { OracleDbMonitorType } = require("./monitor-types/oracledb");
 const { NTPMonitorType } = require("./monitor-types/ntp");
 const Monitor = require("./model/monitor");
+const { socketRoom } = require("./heartbeat-emit");

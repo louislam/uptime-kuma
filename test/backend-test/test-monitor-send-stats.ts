@@ -5,6 +5,7 @@ import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
 const Monitor = require("../../server/model/monitor");
 const { MonitorStats } = require("../../server/monitor-stats");
+import { socketRoom } from "../../server/heartbeat-emit";
 
 const originals = {
     get: MonitorStats.get,
@@ -23,7 +24,7 @@ afterEach(() => {
 });
 
 /**
- * Socket.io-like object with an optional client in the user room
+ * Socket.io-like object with an optional client in the dashboard room
  * @param {boolean} hasClient Whether the room has a socket
  * @returns {object} IO with recorded events
  */
@@ -33,7 +34,7 @@ function fakeIo(hasClient) {
         events,
         sockets: {
             adapter: {
-                rooms: new Map(hasClient ? [["user1", new Set(["socket"])]] : []),
+                rooms: new Map(hasClient ? [[socketRoom, new Set(["socket"])]] : []),
             },
         },
         to(room) {
@@ -71,7 +72,7 @@ describe("Monitor.sendStats()", () => {
             refreshed++;
         };
 
-        await Monitor.sendStats(io, 1, "user1");
+        await Monitor.sendStats(io, 1);
 
         assert.strictEqual(io.events.length, 0);
         assert.deepStrictEqual(calls, { cert: 0, domain: 0 });
@@ -89,7 +90,7 @@ describe("Monitor.sendStats()", () => {
         };
         Date.now = () => 1000000;
 
-        await Monitor.sendStats(io, 101, "user1");
+        await Monitor.sendStats(io, 101);
 
         const statsEvents = io.events.filter((event) => event.event === "stats");
         assert.strictEqual(statsEvents.length, 1);
@@ -98,7 +99,7 @@ describe("Monitor.sendStats()", () => {
         assert.deepStrictEqual(calls, { cert: 1, domain: 1 });
 
         // A second beat within the same minute only emits the stats
-        await Monitor.sendStats(io, 101, "user1");
+        await Monitor.sendStats(io, 101);
 
         assert.strictEqual(io.events.filter((event) => event.event === "stats").length, 2);
         assert.deepStrictEqual(calls, { cert: 1, domain: 1 });
@@ -111,9 +112,9 @@ describe("Monitor.sendStats()", () => {
         MonitorStats.maybeRefresh = () => {};
         Date.now = () => 2000000;
 
-        await Monitor.sendStats(io, 202, "user1");
+        await Monitor.sendStats(io, 202);
         Date.now = () => 2000000 + 60 * 1000;
-        await Monitor.sendStats(io, 202, "user1");
+        await Monitor.sendStats(io, 202);
 
         assert.deepStrictEqual(calls, { cert: 2, domain: 2 });
     });
@@ -125,7 +126,7 @@ describe("Monitor.sendStats()", () => {
         MonitorStats.maybeRefresh = () => {};
         Date.now = () => 3000000;
 
-        await Monitor.sendStats(io, 303, "user1");
+        await Monitor.sendStats(io, 303);
 
         assert.strictEqual(io.events.filter((event) => event.event === "stats").length, 0);
     });

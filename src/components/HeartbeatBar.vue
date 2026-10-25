@@ -39,7 +39,7 @@
 </template>
 
 <script>
-import { claimHeartbeatHistory, releaseHeartbeatHistory } from "../heartbeat-history";
+import { claimHeartbeatHistory, releaseHeartbeatHistory, shouldRequestHistory } from "../heartbeat-history";
 import dayjs from "dayjs";
 import { DOWN, UP, PENDING, MAINTENANCE } from "../util.ts";
 import Tooltip from "./Tooltip.vue";
@@ -296,7 +296,12 @@ export default {
     },
     watch: {
         beatList: {
-            handler() {
+            handler(newVal) {
+                // A reconnect clears the list and the login sends one beat; fetch the history again
+                if (shouldRequestHistory(newVal)) {
+                    this.requestHistory();
+                }
+
                 // Only handle the slide animation, drawCanvas is triggered by shortBeatList watcher
                 this.move = true;
 

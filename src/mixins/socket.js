@@ -8,7 +8,7 @@ import mitt from "mitt";
 import { DOWN, MAINTENANCE, PENDING, UP } from "../util.ts";
 import { getToastSuccessTimeout, getToastErrorTimeout } from "../util-frontend.js";
 import { BeatVersionThrottle } from "../beat-version-throttle";
-import { applyBeat, beatStatusEntry } from "../beat-state";
+import { applyBeat, applyLatestBeats, beatStatusEntry } from "../beat-state";
 import { logout as betterAuthLogout } from "../auth-client";
 const toast = useToast();
 
@@ -295,8 +295,8 @@ export default {
 
             socket.on("heartbeatLists", (data) => {
                 for (const monitorID in data) {
-                    this.heartbeatList[monitorID] = data[monitorID];
                     const beats = data[monitorID];
+                    applyLatestBeats(this.heartbeatList, monitorID, beats);
                     if (beats.length > 0) {
                         this.updateLastBeat(monitorID, beats[beats.length - 1]);
                     }

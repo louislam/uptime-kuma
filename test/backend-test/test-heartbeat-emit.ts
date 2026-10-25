@@ -1,54 +1,49 @@
 import { describe, test } from "node:test";
 import assert from "node:assert";
-import { emitHeartbeat } from "../../server/heartbeat-emit";
+import { emitHeartbeat, socketRoom } from "../../server/heartbeat-emit";
 
 /**
- * Socket.io-like object with an optional client in the room
- * @param {boolean} hasClient Whether the room has a socket
- * @returns {object} IO with recorded events
+ * Socket.IO stand-in that records emissions per room
+ * @param {string[]} occupied Rooms with at least one client
+ * @returns {{io: object, calls: unknown[][]}} Fake io and recorded calls
  */
-function fakeIo(hasClient) {
-    const events = [];
-    return {
-        events,
+function fakeIo(occupied: string[]) {
+    const calls: unknown[][] = [];
+    const io = {
         sockets: {
             adapter: {
-                rooms: new Map(hasClient ? [["user1", new Set(["socket"])]] : []),
+                rooms: new Map(occupied.map((room) => [room, { size: 1 }])),
             },
         },
-        to(room) {
+        to(room: string) {
             return {
-                emit(event, payload) {
-                    events.push({ room, event, payload });
+                emit: (...args: unknown[]) => {
+                    calls.push([room, ...args]);
                 },
             };
         },
     };
+    return { io, calls };
 }
 
+describe("socketRoom", () => {
+    test("is the single dashboard room", () => {
+        assert.strictEqual(socketRoom, "dashboard");
+    });
+});
+
 describe("emitHeartbeat()", () => {
-    test("emits the heartbeat when a client is connected", () => {
-        const io = fakeIo(true);
-        const payload = { id: 1, status: 1 };
+    test("sends to the dashboard room", () => {
+        const { io, calls } = fakeIo([socketRoom]);
 
-        const emitted = emitHeartbeat(io, "user1", payload);
-
-        assert.strictEqual(emitted, true);
-        assert.deepStrictEqual(io.events, [{ room: "user1", event: "heartbeat", payload }]);
+        assert.strictEqual(emitHeartbeat(io, { monitorID: 61 }), true);
+        assert.deepStrictEqual(calls, [[socketRoom, "heartbeat", { monitorID: 61 }]]);
     });
 
-    test("skips the emit when nobody is in the room", () => {
-        const io = fakeIo(false);
+    test("skips the emit when the dashboard is closed", () => {
+        const { io, calls } = fakeIo([]);
 
-        const emitted = emitHeartbeat(io, "user1", { id: 1 });
-
-        assert.strictEqual(emitted, false);
-        assert.deepStrictEqual(io.events, []);
-    });
-
-    test("skips the emit when the socket server has no adapter", () => {
-        const io = { to: () => ({ emit: () => {} }) };
-
-        assert.strictEqual(emitHeartbeat(io, "user1", {}), false);
+        assert.strictEqual(emitHeartbeat(io, { monitorID: 61 }), false);
+        assert.deepStrictEqual(calls, []);
     });
 });

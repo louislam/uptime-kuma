@@ -1,6 +1,6 @@
 import { describe, test } from "node:test";
 import assert from "node:assert";
-import { claimHeartbeatHistory, releaseHeartbeatHistory } from "../../src/heartbeat-history";
+import { claimHeartbeatHistory, releaseHeartbeatHistory, shouldRequestHistory } from "../../src/heartbeat-history";
 
 describe("heartbeat history requests", () => {
     test("claims a monitor once", () => {
@@ -33,5 +33,18 @@ describe("heartbeat history requests", () => {
         releaseHeartbeatHistory(requested, 9);
 
         assert.strictEqual(requested.size, 0);
+    });
+});
+
+describe("shouldRequestHistory()", () => {
+    test("requests when only the login beat is present", () => {
+        assert.strictEqual(shouldRequestHistory([{ id: 1 }]), true);
+    });
+
+    test("does not request when the list is empty, missing or already loaded", () => {
+        assert.strictEqual(shouldRequestHistory(undefined), false);
+        assert.strictEqual(shouldRequestHistory(null), false);
+        assert.strictEqual(shouldRequestHistory([]), false);
+        assert.strictEqual(shouldRequestHistory([{ id: 1 }, { id: 2 }]), false);
     });
 });
