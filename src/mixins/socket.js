@@ -39,6 +39,7 @@ export default {
             remember: localStorage.remember !== "0",
             allowLoginDialog: false, // Allowed to show login dialog, but "loggedIn" have to be true too. This exists because prevent the login dialog show 0.1s in first before the socket server auth-ed.
             loggedIn: false,
+            loginRequired: false,
             monitorList: {},
             monitorTypeList: {},
             maintenanceList: {},
@@ -168,6 +169,7 @@ export default {
 
             socket.on("session", (username) => {
                 this.loggedIn = true;
+                this.$root.loginRequired = false;
                 this.username = username;
                 if (!this.$root.dashboardLoadProgress) {
                     this.$root.dashboardLoadProgress = 8;
@@ -176,6 +178,7 @@ export default {
 
             socket.on("loginRequired", () => {
                 this.allowLoginDialog = true;
+                this.$root.loginRequired = true;
                 this.$root.dashboardLoadProgress = 0;
             });
 
