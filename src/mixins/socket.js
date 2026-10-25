@@ -1,3 +1,4 @@
+import { markRaw } from "vue";
 import { io } from "socket.io-client";
 import { useToast } from "vue-toastification";
 import Favico from "favico.js";
@@ -6,6 +7,8 @@ import mitt from "mitt";
 
 import { DOWN, MAINTENANCE, PENDING, UP } from "../util.ts";
 import { getToastSuccessTimeout, getToastErrorTimeout } from "../util-frontend.js";
+import { BeatVersionThrottle } from "../beat-version-throttle";
+import { applyBeat, beatStatusEntry } from "../beat-state";
 import { logout as betterAuthLogout } from "../auth-client";
 const toast = useToast();
 
@@ -40,6 +43,22 @@ export default {
             monitorTypeList: {},
             maintenanceList: {},
             heartbeatList: {},
+            // Kept in sync incrementally by the heartbeat handlers. As computed values they
+            // were rebuilt over all monitors on every beat (thousands of monitors = hot loop)
+            lastHeartbeatList: {},
+            statusList: {},
+            // Non-reactive copy used by the dashboard counters, so a beat does not force
+            // an O(monitors) recount; the counters refresh at most once per second
+            lastBeatRaw: markRaw({}),
+            heartbeatVersion: 0,
+            heartbeatVersionThrottle: markRaw(
+                new BeatVersionThrottle(() => {
+                    this.heartbeatVersion++;
+                }, 1000)
+            ),
+            heartbeatHistoryRequested: new Set(),
+            monitorListLoaded: false,
+            dashboardLoadProgress: 0,
             avgPingList: {},
             uptimeList: {},
             tlsInfoList: {},
@@ -71,6 +90,27 @@ export default {
 
     methods: {
         /**
+         * Store the newest beat of a monitor and its display status.
+         * Called per beat: must stay O(1), thousands of monitors beat every minute.
+         * @param {number} monitorID Monitor id
+         * @param {object} beat Heartbeat
+         * @returns {void}
+         */
+        updateLastBeat(monitorID, beat) {
+            applyBeat(this, monitorID, beat, this.statusEntryFor(beat));
+            this.heartbeatVersionThrottle.schedule();
+        },
+
+        /**
+         * Map a heartbeat status to its display text and color
+         * @param {object} beat Heartbeat
+         * @returns {{text: string, color: string}} Status entry
+         */
+        statusEntryFor(beat) {
+            return beatStatusEntry(this.$t.bind(this), beat);
+        },
+
+        /**
          * Initialize connection to socket server
          * @param {boolean} bypass Should the check for if we
          * are on a status page be bypassed?
@@ -101,8 +141,9 @@ export default {
             let protocol = location.protocol + "//";
 
             let url;
-            const env = process.env.NODE_ENV || "production";
-            if (env === "development" || localStorage.dev === "dev") {
+            // The Vite dev frontend runs on :3000 and the backend on :3001. Anywhere else,
+            // connect to the origin that served this page (do not rely on build-time NODE_ENV)
+            if (location.port === "3000" || localStorage.dev === "dev") {
                 url = protocol + location.hostname + ":3001";
             } else {
                 // Connect to the current url
@@ -111,10 +152,14 @@ export default {
 
             socket = io(url, {
                 withCredentials: true,
+                // Prefer WebSocket so the large login payload is compressed by perMessageDeflate
+                // and is not sent over a single slow polling response
+                transports: ["websocket", "polling"],
             });
 
             socket.on("info", (info) => {
-                this.info = info;
+                // Sent without `runtime` before login (hideVersion), so keep a safe default
+                this.info = { runtime: { platform: "" }, ...info };
             });
 
             socket.on("setup", () => {
@@ -124,15 +169,33 @@ export default {
             socket.on("session", (username) => {
                 this.loggedIn = true;
                 this.username = username;
+                if (!this.$root.dashboardLoadProgress) {
+                    this.$root.dashboardLoadProgress = 8;
+                }
             });
 
             socket.on("loginRequired", () => {
                 this.allowLoginDialog = true;
+                this.$root.dashboardLoadProgress = 0;
             });
 
             socket.on("monitorList", (data) => {
                 this.assignMonitorUrlParser(data);
                 this.monitorList = data;
+                this.monitorListLoaded = true;
+
+                // Tell the server the list is painted, so it sends the heavier heartbeat and
+                // stats payloads only now (not before the first render). The loading bar is
+                // done at the same point: the list is what the user is waiting for.
+                this.$nextTick(() => {
+                    requestAnimationFrame(() => {
+                        this.$root.dashboardLoadProgress = 100;
+                        if (socket && !socket.dashboardRendered) {
+                            socket.dashboardRendered = true;
+                            socket.emit("dashboardRendered");
+                        }
+                    });
+                });
             });
 
             socket.on("updateMonitorIntoList", (data) => {
@@ -189,6 +252,7 @@ export default {
                 }
 
                 this.heartbeatList[data.monitorID].push(data);
+                this.updateLastBeat(data.monitorID, data);
 
                 if (this.heartbeatList[data.monitorID].length >= 150) {
                     this.heartbeatList[data.monitorID].shift();
@@ -221,10 +285,32 @@ export default {
                 } else {
                     this.heartbeatList[monitorID] = data.concat(this.heartbeatList[monitorID]);
                 }
+                if (data.length > 0) {
+                    this.updateLastBeat(monitorID, data[data.length - 1]);
+                }
+            });
+
+            socket.on("heartbeatLists", (data) => {
+                for (const monitorID in data) {
+                    this.heartbeatList[monitorID] = data[monitorID];
+                    const beats = data[monitorID];
+                    if (beats.length > 0) {
+                        this.updateLastBeat(monitorID, beats[beats.length - 1]);
+                    }
+                }
             });
 
             socket.on("avgPing", (monitorID, data) => {
                 this.avgPingList[monitorID] = data;
+            });
+
+            socket.on("stats", (data) => {
+                for (const [monitorID, stats] of Object.entries(data)) {
+                    this.avgPingList[monitorID] = stats.avgPing;
+                    this.uptimeList[`${monitorID}_24`] = stats.uptime24;
+                    this.uptimeList[`${monitorID}_720`] = stats.uptime720;
+                    this.uptimeList[`${monitorID}_1y`] = stats.uptime1y;
+                }
             });
 
             socket.on("uptime", (monitorID, type, data) => {
@@ -254,6 +340,7 @@ export default {
                 disconnectTimeout = setTimeout(() => {
                     this.connectionErrorMsg = `${this.$t("Lost connection to the socket server.")} ${this.$t("Reconnecting...")}`;
                     this.socket.connected = false;
+                    this.$root.dashboardLoadProgress = 0;
                 }, 2000);
             });
 
@@ -265,6 +352,8 @@ export default {
                 this.socket.connectCount++;
                 this.socket.connected = true;
                 this.showReverseProxyGuide = false;
+                // A new connection gets its own monitor list; allow the next one to signal paint
+                socket.dashboardRendered = false;
 
                 // Reset Heartbeat list if it is re-connect
                 if (this.socket.connectCount >= 2) {
@@ -532,6 +621,14 @@ export default {
         clearData() {
             console.log("reset heartbeat list");
             this.heartbeatList = {};
+            this.lastHeartbeatList = {};
+            this.statusList = {};
+            this.lastBeatRaw = markRaw({});
+            this.heartbeatVersion = 0;
+            this.heartbeatVersionThrottle.cancel();
+            this.heartbeatHistoryRequested = new Set();
+            this.monitorListLoaded = false;
+            this.$root.dashboardLoadProgress = 0;
         },
 
         /**
@@ -607,58 +704,6 @@ export default {
             }
         },
 
-        lastHeartbeatList() {
-            let result = {};
-
-            for (let monitorID in this.heartbeatList) {
-                let index = this.heartbeatList[monitorID].length - 1;
-                result[monitorID] = this.heartbeatList[monitorID][index];
-            }
-
-            return result;
-        },
-
-        statusList() {
-            let result = {};
-
-            let unknown = {
-                text: this.$t("Unknown"),
-                color: "secondary",
-            };
-
-            for (let monitorID in this.lastHeartbeatList) {
-                let lastHeartBeat = this.lastHeartbeatList[monitorID];
-
-                if (!lastHeartBeat) {
-                    result[monitorID] = unknown;
-                } else if (lastHeartBeat.status === UP) {
-                    result[monitorID] = {
-                        text: this.$t("Up"),
-                        color: "primary",
-                    };
-                } else if (lastHeartBeat.status === DOWN) {
-                    result[monitorID] = {
-                        text: this.$t("Down"),
-                        color: "danger",
-                    };
-                } else if (lastHeartBeat.status === PENDING) {
-                    result[monitorID] = {
-                        text: this.$t("Pending"),
-                        color: "warning",
-                    };
-                } else if (lastHeartBeat.status === MAINTENANCE) {
-                    result[monitorID] = {
-                        text: this.$t("statusMaintenance"),
-                        color: "maintenance",
-                    };
-                } else {
-                    result[monitorID] = unknown;
-                }
-            }
-
-            return result;
-        },
-
         stats() {
             let result = {
                 active: 0,
@@ -670,8 +715,11 @@ export default {
                 pause: 0,
             };
 
+            // Recompute at most once per second, not on every heartbeat
+            this.heartbeatVersion;
+            const raw = this.lastBeatRaw;
             for (let monitorID in this.$root.monitorList) {
-                let beat = this.$root.lastHeartbeatList[monitorID];
+                let beat = raw[monitorID];
                 let monitor = this.$root.monitorList[monitorID];
 
                 if (monitor && !monitor.active) {

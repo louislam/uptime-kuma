@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../fixtures";
 import { restoreSqliteSnapshot } from "../util-test";
 
 const serverUrl = require("../../../playwright.config.js").url;
