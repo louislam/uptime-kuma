@@ -92,6 +92,8 @@ test("A v2.5.3 database still works after upgrading to v3 (#7944, #7946)", { tim
     // Seed the admin with a breached password, so migrating it must skip the leak check (#7946).
     const seedDb = new BetterSqlite3(path.join(dataDir, "kuma.db"));
     seedDb.prepare("UPDATE user SET password = ? WHERE username = ?").run(await bcrypt.hash(password, 10), username);
+    // The v2 database has an API key, but no setting enabling API key auth yet
+    seedDb.prepare("INSERT INTO setting (`key`, `value`, `type`) VALUES ('apiKeysEnabled', 'true', 'general')").run();
     seedDb.close();
 
     let child;
@@ -136,6 +138,54 @@ test("A v2.5.3 database still works after upgrading to v3 (#7944, #7946)", { tim
         await callOk(socket, "pauseMonitor", 1);
         await callOk(socket, "resumeMonitor", 1);
 
+        // The v2 API key (uk1_test-api-key, see extra/prepare-v2-test-db.mjs) must keep working
+        const basicAuth = (key) => "Basic " + Buffer.from(`:${key}`).toString("base64");
+        const metricsStatus = async (key) =>
+            (await fetch(`${baseUrl}/metrics`, { headers: { authorization: basicAuth(key) } })).status;
+
+        const apiKeyList = (await callOk(socket, "getAPIKeyList")).apiKeyList;
+        assert.ok(
+            apiKeyList.some((key) => key.id === "legacy-1"),
+            `legacy API key not listed: ${JSON.stringify(apiKeyList)}`
+        );
+
+        // /metrics is disabled by default since v3
+        assert.strictEqual(await metricsStatus("uk1_test-api-key"), 404);
+
+        await callOk(socket, "setSettings", { prometheusApiEnabled: true }, null);
+
+        assert.strictEqual(await metricsStatus("uk1_test-api-key"), 200);
+        assert.strictEqual(await metricsStatus("uk1_wrong-key"), 401);
+        // API keys are enabled on this database, so username/password is not accepted either
+        const passwordAuth = "Basic " + Buffer.from(`${username}:${password}`).toString("base64");
+        assert.strictEqual(
+            (await fetch(`${baseUrl}/metrics`, { headers: { authorization: passwordAuth } })).status,
+            401
+        );
+
+        // Turning it off again hides the endpoint, even with a valid key
+        await callOk(socket, "setSettings", { prometheusApiEnabled: false }, null);
+        assert.strictEqual(await metricsStatus("uk1_test-api-key"), 404);
+        await callOk(socket, "setSettings", { prometheusApiEnabled: true }, null);
+        assert.strictEqual(await metricsStatus("uk1_test-api-key"), 200);
+
+        // Revoking it through the API key list stops it from working
+        await callOk(socket, "deleteAPIKey", "legacy-1");
+        assert.strictEqual(await metricsStatus("uk1_test-api-key"), 401);
+
+        // A key created after the upgrade is a Better Auth key, same lifecycle
+        const addedKey = await callOk(socket, "addAPIKey", { name: "v3 key", expires: null });
+        assert.strictEqual(await metricsStatus(addedKey.key), 200);
+
+        const listWithNewKey = (await callOk(socket, "getAPIKeyList")).apiKeyList;
+        assert.ok(
+            listWithNewKey.some((key) => key.id === addedKey.keyID && key.name === "v3 key"),
+            `new API key not listed: ${JSON.stringify(listWithNewKey)}`
+        );
+
+        await callOk(socket, "deleteAPIKey", addedKey.keyID);
+        assert.strictEqual(await metricsStatus(addedKey.key), 401);
+
         // Maintenance
         const maintenance = (await callOk(socket, "getMaintenance", 1)).maintenance;
         maintenance.title = "Renamed Maintenance";
@@ -161,7 +211,6 @@ test("A v2.5.3 database still works after upgrading to v3 (#7944, #7946)", { tim
         await callOk(socket, "deleteDockerHost", 1);
         await callOk(socket, "deleteRemoteBrowser", 1);
         await callOk(socket, "deleteNotification", 1);
-        await callOk(socket, "deleteAPIKey", 1);
         await callOk(socket, "deleteMaintenance", 1);
         await callOk(socket, "deleteMonitor", 1);
     } finally {
