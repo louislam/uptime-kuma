@@ -32,6 +32,7 @@ jobs:
         with:
           ref: ${{ matrix.branch }}
           token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: true
 
       - name: Setup Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -39,7 +40,7 @@ jobs:
           node-version: 20
 
       - name: Generate lockfile from scratch
-        run: |
+        run: | # zizmor: ignore[adhoc-packages]
           npm install npm -g
           npm -v
           rm -f package-lock.json
