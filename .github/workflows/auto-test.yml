@@ -15,6 +15,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     permissions:
       contents: read
+      packages: read
 
     strategy:
       fail-fast: false
@@ -70,6 +71,16 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # The SFTP testcontainer is pulled from GHCR; anonymous pulls share the runner IP's rate limit.
+      - name: Login to GitHub Container Registry
+        if: github.repository == 'louislam/uptime-kuma' && runner.os == 'Linux' && runner.arch == 'X64'
+        continue-on-error: true
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
 
       - run: npm run test-backend
         env:
@@ -129,8 +140,34 @@ jobs:
       - if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: npm clean-install --no-fund
 
+      - name: Point apt at a cacheable archive dir
+        run: |
+          mkdir -p "$HOME/.apt-archives/partial"
+          chmod 777 "$HOME/.apt-archives/partial"
+          sudo tee /etc/apt/apt.conf.d/99-playwright-cache >/dev/null <<EOF
+          Dir::Cache::archives "$HOME/.apt-archives";
+          APT::Keep-Downloaded-Packages "true";
+          EOF
+
+      - name: Compute weekly apt cache key
+        id: apt-week
+        run: echo "week=$(date -u +%G-%V)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache apt packages
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.apt-archives
+          key: apt-playwright-${{ runner.os }}-${{ env.PLAYWRIGHT_VERSION }}-${{ steps.apt-week.outputs.week }}
+          restore-keys: |
+            apt-playwright-${{ runner.os }}-${{ env.PLAYWRIGHT_VERSION }}-
+
       - name: Install Playwright ${{ env.PLAYWRIGHT_VERSION }}
-        run: npx playwright@${{ env.PLAYWRIGHT_VERSION }} install --with-deps
+        run: npx playwright@${{ env.PLAYWRIGHT_VERSION }} install --with-deps chromium
+
+      # apt runs as root, leaving root-owned lock/partial that the cache's tar cannot read.
+      - name: Hand the apt archives back to the cache
+        if: always()
+        run: sudo chown -R "$USER" "$HOME/.apt-archives"
 
       - run: npm run build
       - run: npm run test-e2e
