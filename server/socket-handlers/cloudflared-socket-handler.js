@@ -9,6 +9,7 @@ const prefix = "cloudflared_";
 const cloudflared = new CloudflaredTunnel();
 // Cleared by a deliberate stop, so only an unexpected exit restarts cloudflared
 let restartOnExit = false;
+let restartTimer = null;
 
 /**
  * Change running state
@@ -22,7 +23,8 @@ cloudflared.change = (running, message) => {
     // cloudflared exits at once if it starts before DNS is ready, e.g. at boot (#5346)
     if (!running && restartOnExit && cloudflared.token) {
         log.warn("cloudflared", "cloudflared exited unexpectedly, restarting in 60 seconds");
-        setTimeout(() => restartOnExit && !cloudflared.running && cloudflared.start(), 60 * 1000);
+        clearTimeout(restartTimer);
+        restartTimer = setTimeout(() => restartOnExit && !cloudflared.running && cloudflared.start(), 60 * 1000);
     }
 };
 
@@ -86,6 +88,7 @@ module.exports.cloudflaredSocketHandler = (socket) => {
                 await doubleCheckPassword(socket.request.headers.cookie, currentPassword);
             }
             restartOnExit = false;
+            clearTimeout(restartTimer);
             cloudflared.stop();
         } catch (error) {
             callback({
@@ -134,6 +137,7 @@ module.exports.autoStart = async (token) => {
 module.exports.stop = async () => {
     log.info("cloudflared", "Stop cloudflared");
     restartOnExit = false;
+    clearTimeout(restartTimer);
     if (cloudflared) {
         cloudflared.stop();
     }
