@@ -23,7 +23,7 @@ async function testMqtt(
     publishTopic = "test",
     conditions = null
 ) {
-    const hiveMQContainer = await new HiveMQContainer().start();
+    const hiveMQContainer = await new HiveMQContainer("hivemq/hivemq-ce:2023.5").start();
     const connectionString = hiveMQContainer.getConnectionString();
     const mqttMonitorType = new MqttMonitorType();
     const monitor = {
