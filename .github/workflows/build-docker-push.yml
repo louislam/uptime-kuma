@@ -42,7 +42,7 @@ jobs:
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
 
       - name: Install cross-env
-        run: npm install -g cross-env
+        run: npm install -g cross-env@7.0.3 # zizmor: ignore[adhoc-packages]
 
       - name: Build and push Docker image
         working-directory: extra/uptime-kuma-push
