@@ -37,6 +37,26 @@ const crypto = require("crypto");
 const isWindows = process.platform === /^win/.test(process.platform);
 
 /**
+ * Choose the proxy agent the monitor request already uses for this URL.
+ * A direct monitor connection returns undefined so the token request is unchanged.
+ * @param {string} url Absolute URL of the request
+ * @param {{ proxied?: boolean, httpAgent?: import("http").Agent, httpsAgent?: import("https").Agent }} agents Agents built for the monitor request
+ * @returns {import("http").Agent|undefined} The monitor's proxy agent, or undefined when not proxied
+ */
+function selectMonitorProxyAgent(url, agents) {
+    if (!agents || agents.proxied !== true) {
+        return undefined;
+    }
+
+    if (new URL(url).protocol === "http:") {
+        return agents.httpAgent;
+    }
+    return agents.httpsAgent;
+}
+
+exports.selectMonitorProxyAgent = selectMonitorProxyAgent;
+
+/**
  * Gets an Access Token from an oidc/oauth2 provider
  * @param {string} tokenEndpoint The token URI from the auth service provider
  * @param {string} clientId The oidc/oauth application client id
@@ -44,6 +64,7 @@ const isWindows = process.platform === /^win/.test(process.platform);
  * @param {string} scope The scope(s) for which the token should be issued for
  * @param {string} audience The audience for which the token should be issued for
  * @param {string} authMethod The method used to send the credentials. Default client_secret_basic
+ * @param {import("http").Agent} agent Proxy agent shared with the monitor request. Omit for a direct connection.
  * @returns {Promise<oidc.TokenSet>} TokenSet promise if the token request was successful
  */
 exports.getOidcTokenClientCredentials = async (
@@ -52,7 +73,8 @@ exports.getOidcTokenClientCredentials = async (
     clientSecret,
     scope,
     audience,
-    authMethod = "client_secret_basic"
+    authMethod = "client_secret_basic",
+    agent
 ) => {
     const oauthProvider = new oidc.Issuer({ token_endpoint: tokenEndpoint });
     let client = new oauthProvider.Client({
@@ -61,8 +83,12 @@ exports.getOidcTokenClientCredentials = async (
         token_endpoint_auth_method: authMethod,
     });
 
-    // Increase default timeout and clock tolerance
-    client[oidc.custom.http_options] = () => ({ timeout: 10000 });
+    // Increase default timeout and clock tolerance. The agent is the same object
+    // the monitor request uses, so a configured proxy applies to the token fetch.
+    client[oidc.custom.http_options] = () => ({
+        timeout: 10000,
+        ...(agent ? { agent } : {}),
+    });
     client[oidc.custom.clock_tolerance] = 5;
 
     let grantParams = { grant_type: "client_credentials" };
