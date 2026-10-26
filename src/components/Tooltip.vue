@@ -105,6 +105,13 @@ export default {
             if (!this.content || this.content === 0) {
                 return "";
             }
+            // Aggregated status page beats cover a time range
+            if (this.content.startTime) {
+                const sameDay = this.$root.date(this.content.startTime) === this.$root.date(this.content.time);
+                const start = this.$root.datetimeFormat(this.content.startTime, "YYYY-MM-DD HH:mm");
+                const end = this.$root.datetimeFormat(this.content.time, sameDay ? "HH:mm" : "YYYY-MM-DD HH:mm");
+                return `${start} - ${end}`;
+            }
             return this.$root.datetime(this.content.time);
         },
     },

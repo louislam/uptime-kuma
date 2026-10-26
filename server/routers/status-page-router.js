@@ -123,6 +123,7 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
             } else {
                 // For configured day ranges, use aggregated data from UptimeCalculator
                 const buckets = getAggregatedBuckets(uptimeCalculator, heartbeatBarDays, maxBeats, monitor.interval);
+                const now = dayjs().unix();
                 heartbeats = buckets.map((bucket) => {
                     // If bucket has no data, return 0 (empty beat) to match original behavior
                     if (bucket.up === 0 && bucket.down === 0 && bucket.maintenance === 0) {
@@ -131,7 +132,9 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
 
                     return {
                         status: bucket.down > 0 ? DOWN : bucket.maintenance > 0 ? MAINTENANCE : UP,
-                        time: dayjs.unix(bucket.end).toISOString(),
+                        startTime: dayjs.unix(bucket.start).toISOString(),
+                        // The newest bucket reaches into the future
+                        time: dayjs.unix(Math.min(bucket.end, now)).toISOString(),
                         msg: "",
                         ping: null,
                     };

@@ -39,14 +39,14 @@ test("getAggregatedBuckets - bucket count at tier boundaries", async (t) => {
     // 1 day on the hourly tier can never have more than 24 buckets
     assert.strictEqual(getAggregatedBuckets(c, 1, 100, 60).length, 24);
 
-    // 30 days is still hourly (720 stored hours), so maxBeats is the limit
-    assert.strictEqual(getAggregatedBuckets(c, 30, 100, 60).length, 100);
+    // 30 days is still hourly (720 stored hours), 8 hours per bucket keeps it under maxBeats
+    assert.strictEqual(getAggregatedBuckets(c, 30, 100, 60).length, 90);
 
     // 31 days switches to the daily tier: one bucket per stored day
     assert.strictEqual(getAggregatedBuckets(c, 31, 100, 60).length, 31);
 
-    // 365 days daily leaves several days per bucket, maxBeats is the limit
-    assert.strictEqual(getAggregatedBuckets(c, 365, 100, 60).length, 100);
+    // 365 days daily leaves 4 days per bucket to stay under maxBeats
+    assert.strictEqual(getAggregatedBuckets(c, 365, 100, 60).length, 92);
 });
 
 test("getAggregatedBuckets - slow check interval caps the bucket count", async (t) => {
@@ -70,7 +70,8 @@ test("getAggregatedBuckets - interval that is not a whole number of hours leaves
 
     const buckets = getAggregatedBuckets(c, 1, 100, 5400);
 
-    for (const [i, bucket] of buckets.entries()) {
+    // The newest bucket only started at 12:00 and has no check until 12:40
+    for (const [i, bucket] of buckets.slice(0, -1).entries()) {
         assert.ok(bucket.up > 0, `Bucket ${i} is empty`);
     }
 });
@@ -81,13 +82,54 @@ test("getAggregatedBuckets - buckets tile the requested range without gaps", asy
     const c = new UptimeCalculator();
 
     const buckets = getAggregatedBuckets(c, 7, 100, 60);
+    const newest = buckets[buckets.length - 1];
 
-    assert.strictEqual(buckets[0].start, currentTime.unix() - 7 * 86400);
-    assert.strictEqual(buckets[buckets.length - 1].end, currentTime.unix());
+    assert.ok(newest.start <= currentTime.unix() && currentTime.unix() < newest.end, "Newest bucket should hold now");
+    assert.ok(newest.end - buckets[0].start >= 7 * 86400, "Buckets should span the whole range");
 
     for (let i = 0; i < buckets.length - 1; i++) {
         assert.strictEqual(buckets[i].end, buckets[i + 1].start, `Gap between bucket ${i} and ${i + 1}`);
     }
+});
+
+test("getAggregatedBuckets - an outage is counted in the bucket that covers it", async (t) => {
+    const base = dayjs.utc("2026-07-01 00:00:00");
+    const c = new UptimeCalculator();
+
+    // Checked every minute until 12:07, down from 08:52 to 09:20
+    for (let i = 0; i <= 12 * 60 + 7; i++) {
+        UptimeCalculator.currentDate = base.add(i, "minute");
+        await c.update(i >= 8 * 60 + 52 && i <= 9 * 60 + 20 ? DOWN : UP);
+    }
+
+    const outageStart = base.add(8 * 60 + 52, "minute").unix();
+    const outageEnd = base.add(9 * 60 + 21, "minute").unix();
+
+    for (const days of [3, 7]) {
+        const downBuckets = getAggregatedBuckets(c, days, 100, 60).filter((b) => b.down > 0);
+
+        assert.ok(downBuckets.length > 0);
+        for (const bucket of downBuckets) {
+            assert.ok(
+                bucket.start < outageEnd && bucket.end > outageStart,
+                `${days} days: bucket ${dayjs.unix(bucket.start).utc().format("HH:mm")}-${dayjs.unix(bucket.end).utc().format("HH:mm")} does not overlap the outage`
+            );
+        }
+    }
+});
+
+test("getAggregatedBuckets - bucket edges do not move between requests", async (t) => {
+    const c = new UptimeCalculator();
+
+    UptimeCalculator.currentDate = dayjs.utc("2026-07-01 12:07:00");
+    const first = getAggregatedBuckets(c, 7, 100, 60);
+    UptimeCalculator.currentDate = dayjs.utc("2026-07-01 12:08:00");
+    const second = getAggregatedBuckets(c, 7, 100, 60);
+
+    assert.deepStrictEqual(
+        second.map((b) => b.start),
+        first.map((b) => b.start)
+    );
 });
 
 test("getAggregatedBuckets - a period without data stays empty, the rest does not", async (t) => {
@@ -152,13 +194,13 @@ test("getAggregatedBuckets - monitor without data yields only empty buckets", as
     }
 });
 
-test("getAggregatedBuckets - beat on the exact range end is not dropped", async (t) => {
-    // Exactly on an hour boundary, so the current hourly key equals the range end
+test("getAggregatedBuckets - beat on a bucket edge is not dropped", async (t) => {
+    // Exactly on an hour boundary, so the current hourly key starts the newest bucket
     const currentTime = dayjs.utc("2026-07-01 12:00:00");
     UptimeCalculator.currentDate = currentTime;
     const c = new UptimeCalculator();
 
-    await c.update(1); // key 12:00:00 == end of the requested range
+    await c.update(1); // key 12:00:00
     UptimeCalculator.currentDate = currentTime.subtract(90, "minute");
     await c.update(1);
     UptimeCalculator.currentDate = currentTime;
