@@ -62,6 +62,15 @@ jobs:
       - if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: npm clean-install --no-fund
       - run: npm run build
+
+      - name: Login to Docker Hub
+        if: github.repository == 'louislam/uptime-kuma' && runner.os == 'Linux' && runner.arch == 'X64'
+        continue-on-error: true
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - run: npm run test-backend
         env:
           HEADLESS_TEST: 1
