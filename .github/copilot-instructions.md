@@ -11,6 +11,7 @@ Warning: Only maintainers of Uptime Kuma can use these instructions. Other contr
 ## Keep These Instructions in Sync
 
 - If a PR/commit changes anything documented here (commands, paths, architecture, test files, workflows), update the related content in this file in the same PR/commit, so it does not drift.
+- User-facing docs live in the separate [uptime-kuma-wiki](https://github.com/louislam/uptime-kuma-wiki) repo: if a change affects documented behavior (env vars, CLI, config, setup), update the wiki as well.
 
 ## Repository Overview
 

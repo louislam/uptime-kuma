@@ -6,6 +6,7 @@
 import { getRandomInt, isDevEnv, log, sleep } from "../src/util";
 import { auth, createHeaders, doubleCheckPassword, getDisableAuthSession, getSession } from "./better-auth";
 import { createBetterAuthRouter, needSetup } from "./routers/better-auth-router";
+import { initAdminFromEnv } from "./initial-admin";
 import { betterAuthSocketHandler } from "./socket-handlers/better-auth-socket-handler";
 import { loadEnvFile } from "node:process";
 import * as fs from "node:fs";
@@ -235,6 +236,14 @@ app.use(function (req, res, next) {
 
     // Init Better Auth
     auth();
+
+    // Create the initial admin user from env, only when the database has no user yet
+    try {
+        await initAdminFromEnv();
+    } catch (e) {
+        log.error("auth", "Failed to create the initial admin user: " + e.message);
+        process.exit(1);
+    }
 
     // Database should be ready now
     await server.initAfterDatabaseReady();

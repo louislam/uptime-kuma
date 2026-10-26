@@ -52,33 +52,9 @@ export async function createBetterAuthRouter() {
                 const username = req.body.username;
                 const password = req.body.password;
 
-                let user;
-                try {
-                    user = await auth().api.createUser({
-                        body: {
-                            name: username,
-                            email: `${username}@noreply.uptime-kuma.internal`,
-                            password,
-                            role: "admin",
-                            data: {
-                                username,
-                            },
-                        },
-                    });
-                } catch (createError) {
-                    // HIBP rejected after admin user creation, we need to clean up the partially created user
-                    // very stupid.... https://github.com/better-auth/better-auth/issues/11706
-                    try {
-                        if (username) {
-                            await R.knex("better_auth_user").where({ username }).del();
-                        }
-                    } catch (cleanupError) {}
-                    throw createError;
-                }
-
+                const user = await createFirstAdmin(username, password);
                 log.debug("auth", "First user created:", user);
 
-                _hasUser = true;
                 res.json({ ok: true });
             } finally {
                 processingSetup = false;
@@ -93,7 +69,8 @@ export async function createBetterAuthRouter() {
 }
 
 /**
- *
+ * Whether Better Auth has a user.
+ * @returns {Promise<boolean>} Whether a Better Auth user exists
  */
 export async function hasUser() {
     if (_hasUser) {
@@ -101,6 +78,62 @@ export async function hasUser() {
     }
     const { count } = await R.knex("better_auth_user").count("id as count").first();
     return Number(count) !== 0;
+}
+
+/**
+ * Create the first admin user.
+ * @param {string} username Admin username
+ * @param {string} password Admin password
+ * @returns {Promise<object>} The created user
+ * @throws {Error} If Uptime Kuma already has a user, or Better Auth rejects the user
+ */
+export async function createFirstAdmin(username: string, password: string) {
+    if (await hasAnyUser()) {
+        throw new Error(
+            "Uptime Kuma has been initialized. If you want to run setup again, please delete the database."
+        );
+    }
+
+    let user;
+    try {
+        user = await auth().api.createUser({
+            body: {
+                name: username,
+                email: `${username}@noreply.uptime-kuma.internal`,
+                password,
+                role: "admin",
+                data: {
+                    username,
+                },
+            },
+        });
+    } catch (createError) {
+        // HIBP rejected after admin user creation, we need to clean up the partially created user
+        // very stupid.... https://github.com/better-auth/better-auth/issues/11706
+        try {
+            if (username) {
+                await R.knex("better_auth_user").where({ username }).del();
+            }
+        } catch (cleanupError) {}
+        throw createError;
+    }
+
+    _hasUser = true;
+    return user;
+}
+
+/**
+ * Whether Uptime Kuma has any user, including a user from the old `user` table.
+ * @returns {Promise<boolean>} Whether a user exists
+ */
+export async function hasAnyUser() {
+    if (await hasUser()) {
+        return true;
+    }
+
+    // The user may be in the old user table, check that as well
+    const oldUserCountRow = await R.knex("user").count("id as count").first();
+    return Number(oldUserCountRow.count) !== 0;
 }
 
 /**
@@ -121,12 +154,5 @@ export async function needSetup() {
         return false;
     }
 
-    if (await hasUser()) {
-        return false;
-    }
-
-    // The user may be in the old user table, check that as well
-    const oldUserCountRow = await R.knex("user").count("id as count").first();
-    const hasOldUser = Number(oldUserCountRow.count) !== 0;
-    return !hasOldUser;
+    return !(await hasAnyUser());
 }
