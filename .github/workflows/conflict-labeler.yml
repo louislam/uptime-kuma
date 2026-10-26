@@ -14,6 +14,8 @@ on: # zizmor: ignore[dangerous-triggers]
       - master
     types: [synchronize]
 
+permissions: {}
+
 jobs:
   label:
     name: Labeling

@@ -39,6 +39,7 @@
 </template>
 
 <script>
+import { claimHeartbeatHistory, releaseHeartbeatHistory, shouldRequestHistory } from "../heartbeat-history";
 import dayjs from "dayjs";
 import { DOWN, UP, PENDING, MAINTENANCE } from "../util.ts";
 import Tooltip from "./Tooltip.vue";
@@ -295,7 +296,12 @@ export default {
     },
     watch: {
         beatList: {
-            handler() {
+            handler(newVal) {
+                // A reconnect clears the list and the login sends one beat; fetch the history again
+                if (shouldRequestHistory(newVal)) {
+                    this.requestHistory();
+                }
+
                 // Only handle the slide animation, drawCanvas is triggered by shortBeatList watcher
                 this.move = true;
 
@@ -366,8 +372,47 @@ export default {
         this.$nextTick(() => {
             this.drawCanvas();
         });
+
+        this.requestHistory();
     },
     methods: {
+        /**
+         * Fetch the 100-beat history for this row on demand.
+         * The login only sends the latest beat, so off-screen monitors cost nothing.
+         * @returns {void}
+         */
+        requestHistory() {
+            if (this.heartbeatList !== null) {
+                return;
+            }
+
+            const beats = this.$root.heartbeatList[this.monitorId];
+            const requested = this.$root.heartbeatHistoryRequested;
+            if (beats && beats.length > 1) {
+                return;
+            }
+            if (!claimHeartbeatHistory(requested, this.monitorId)) {
+                return;
+            }
+
+            const socket = this.$root.getSocket();
+            if (!socket) {
+                // The socket is not initialized yet when a deep link mounts before the root
+                releaseHeartbeatHistory(requested, this.monitorId);
+                setTimeout(() => this.requestHistory(), 250);
+                return;
+            }
+            socket.emit("getHeartbeatHistory", this.monitorId, (res) => {
+                if (res?.ok) {
+                    const current = this.$root.heartbeatList[this.monitorId] ?? [];
+                    if (current.length <= 1) {
+                        this.$root.heartbeatList[this.monitorId] = res.data;
+                    }
+                } else {
+                    releaseHeartbeatHistory(requested, this.monitorId);
+                }
+            });
+        },
         /**
          * Resize the heartbeat bar
          * @returns {void}

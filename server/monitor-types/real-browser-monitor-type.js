@@ -262,7 +262,7 @@ class RealBrowserMonitorType extends MonitorType {
             }
 
             const res = await page.goto(monitor.url, {
-                waitUntil: "networkidle",
+                waitUntil: "domcontentloaded",
                 timeout: monitor.interval * 1000 * 0.8,
             });
 
