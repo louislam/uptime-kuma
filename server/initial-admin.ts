@@ -1,5 +1,5 @@
 import { log } from "../src/util";
-import { createFirstAdmin, hasAnyUser } from "./routers/better-auth-router";
+import { createFirstAdmin, hasUser } from "./routers/better-auth-router";
 
 /**
  * Create the initial admin user from environment variables.
@@ -16,7 +16,7 @@ export async function initAdminFromEnv() {
     }
 
     // Ignore the variables once a user exists, even if their config is now invalid
-    if (await hasAnyUser()) {
+    if (await hasUser(true)) {
         log.info("auth", "Uptime Kuma is already initialized, ignoring UK_INITIAL_ADMIN_* environment variables.");
         return false;
     }

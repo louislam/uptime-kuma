@@ -3,7 +3,7 @@ import assert from "node:assert";
 import fs from "node:fs";
 import { auth, checkPassword } from "../../server/better-auth";
 import { initAdminFromEnv } from "../../server/initial-admin";
-import { createFirstAdmin } from "../../server/routers/better-auth-router";
+import { createFirstAdmin, hasUser } from "../../server/routers/better-auth-router";
 import { R } from "redbean-node";
 
 // @ts-ignore
@@ -44,6 +44,10 @@ test("does not create an admin when a legacy user exists", async (t) => {
     await testDb.create();
     await auth(true);
     await R.knex("user").insert({ username: "legacy", password: "legacy" });
+
+    // The sign-in hook must not see the legacy user, otherwise it never migrates it
+    assert.strictEqual(await hasUser(), false);
+    assert.strictEqual(await hasUser(true), true);
 
     setEnv(username, password);
     assert.strictEqual(await initAdminFromEnv(), false);
