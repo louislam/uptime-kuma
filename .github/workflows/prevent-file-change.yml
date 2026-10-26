@@ -1,6 +1,6 @@
 name: prevent-file-change
 
-on:
+on: # zizmor: ignore[dangerous-triggers] the action only supports pull_request_target; no PR code is checked out or run
   pull_request_target:
 permissions: {}
 
