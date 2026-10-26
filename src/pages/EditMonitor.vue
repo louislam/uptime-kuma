@@ -171,6 +171,22 @@
                                 />
                             </div>
 
+                            <!-- Status Page Display Name -->
+                            <div class="my-3">
+                                <label for="statusPageName" class="form-label">
+                                    {{ $t("Status Page Display Name") }}
+                                </label>
+                                <input
+                                    id="statusPageName"
+                                    v-model="monitor.statusPageName"
+                                    type="text"
+                                    class="form-control"
+                                    data-testid="status-page-name-input"
+                                    :placeholder="$t('Status Page Display Name Placeholder')"
+                                />
+                                <div class="form-text">{{ $t("Status Page Display Name Description") }}</div>
+                            </div>
+
                             <!-- Manual Status switcher -->
                             <div v-if="monitor.type === 'manual'" class="mb-3">
                                 <div class="btn-group w-100 mb-3">
