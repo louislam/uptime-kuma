@@ -131,8 +131,8 @@ jobs:
 
       - name: Point apt at a cacheable archive dir
         run: |
-          sudo mkdir -p "$HOME/.apt-archives"
-          sudo chmod 777 "$HOME/.apt-archives"
+          mkdir -p "$HOME/.apt-archives/partial"
+          chmod 777 "$HOME/.apt-archives/partial"
           sudo tee /etc/apt/apt.conf.d/99-playwright-cache >/dev/null <<EOF
           Dir::Cache::archives "$HOME/.apt-archives";
           APT::Keep-Downloaded-Packages "true";
@@ -152,6 +152,11 @@ jobs:
 
       - name: Install Playwright ${{ env.PLAYWRIGHT_VERSION }}
         run: npx playwright@${{ env.PLAYWRIGHT_VERSION }} install --with-deps chromium
+
+      # apt runs as root, leaving root-owned lock/partial that the cache's tar cannot read.
+      - name: Hand the apt archives back to the cache
+        if: always()
+        run: sudo chown -R "$USER" "$HOME/.apt-archives"
 
       - run: npm run build
       - run: npm run test-e2e
