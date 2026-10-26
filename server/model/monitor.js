@@ -28,7 +28,6 @@ const {
     RESPONSE_BODY_LENGTH_MAX,
 } = require("../../src/util");
 const {
-    ping,
     checkStatusCode,
     getTotalClientInRoom,
     httpNtlm,
@@ -706,18 +705,6 @@ class Monitor extends BeanModel {
                             );
                         }
                     }
-                } else if (this.type === "ping") {
-                    bean.ping = await ping(
-                        this.hostname,
-                        this.ping_count,
-                        "",
-                        this.ping_numeric,
-                        this.packetSize,
-                        this.timeout,
-                        this.ping_per_request_timeout
-                    );
-                    bean.msg = "";
-                    bean.status = UP;
                 } else if (this.type === "push") {
                     // Type: Push
                     log.debug(
