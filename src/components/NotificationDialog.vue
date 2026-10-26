@@ -291,6 +291,7 @@ export default {
             // Email - Email services
             let email = {
                 Brevo: "Brevo",
+                MicrosoftGraph: this.$t("Microsoft Graph Email"),
                 Resend: "Resend",
                 SendGrid: "SendGrid",
                 smtp: this.$t("smtp"),

@@ -64,6 +64,61 @@ async function sendHeartbeatList(socket, monitorID, toUser = false, overwrite = 
 }
 
 /**
+ * Send the latest heartbeat of many monitors in one event.
+ * The full 100-beat history is fetched lazily per visible row, so the login
+ * payload does not grow with the number of monitors.
+ * @param {Socket} socket Socket.io instance
+ * @param {Array<number|string>} monitorIDs Monitor ids
+ * @returns {Promise<void>}
+ */
+async function sendHeartbeatLists(socket, monitorIDs) {
+    const result = {};
+    const chunkSize = 500;
+
+    for (let i = 0; i < monitorIDs.length; i += chunkSize) {
+        const chunk = monitorIDs.slice(i, i + chunkSize);
+        const placeholders = chunk.map(() => "?").join(",");
+        const rows = await R.getAll(
+            `
+            SELECT h.id, h.monitor_id, h.status, h.msg, h.time, h.ping, h.important, h.duration, h.down_count, h.retries
+            FROM heartbeat h
+            JOIN (
+                SELECT monitor_id, MAX(id) AS max_id
+                FROM heartbeat
+                WHERE monitor_id IN (${placeholders})
+                GROUP BY monitor_id
+            ) latest ON h.id = latest.max_id
+        `,
+            chunk
+        );
+        for (const row of rows) {
+            result[row.monitor_id] = [row];
+        }
+    }
+
+    socket.emit("heartbeatLists", result);
+}
+
+/**
+ * Recent heartbeat history for one monitor, requested by a visible row
+ * @param {number} monitorID Monitor id
+ * @returns {Promise<Array<object>>} Oldest-to-newest heartbeats
+ */
+async function getHeartbeatHistory(monitorID) {
+    const list = await R.getAll(
+        `
+        SELECT id, monitor_id, status, msg, time, ping, important, duration, down_count, retries
+        FROM heartbeat
+        WHERE monitor_id = ?
+        ORDER BY time DESC
+        LIMIT 100
+    `,
+        [monitorID]
+    );
+    return list.reverse();
+}
+
+/**
  * Important Heart beat list (aka event list)
  * @param {Socket} socket Socket.io instance
  * @param {number} monitorID ID of monitor to send heartbeat history
@@ -111,27 +166,6 @@ async function sendProxyList(socket) {
     );
 
     timeLogger.print("Send Proxy List");
-
-    return list;
-}
-
-/**
- * Emit API key list to client
- * @param {Socket} socket Socket.io socket instance
- * @returns {Promise<void>}
- */
-async function sendAPIKeyList(socket) {
-    const timeLogger = new TimeLogger();
-
-    let result = [];
-    const list = await R.find("api_key");
-
-    for (let bean of list) {
-        result.push(bean.toPublicJSON());
-    }
-
-    io.to(socket.userID).emit("apiKeyList", result);
-    timeLogger.print("Sent API Key List");
 
     return list;
 }
@@ -239,8 +273,10 @@ module.exports = {
     sendNotificationList,
     sendImportantHeartbeatList,
     sendHeartbeatList,
+    sendHeartbeatLists,
+    getHeartbeatHistory,
     sendProxyList,
-    sendAPIKeyList,
+
     sendInfo,
     sendDockerHostList,
     sendRemoteBrowserList,

@@ -15,6 +15,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     permissions:
       contents: read
+      packages: read
 
     strategy:
       fail-fast: false
@@ -62,6 +63,25 @@ jobs:
       - if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: npm clean-install --no-fund
       - run: npm run build
+
+      - name: Login to Docker Hub
+        if: github.repository == 'louislam/uptime-kuma' && runner.os == 'Linux' && runner.arch == 'X64'
+        continue-on-error: true
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # The SFTP testcontainer is pulled from GHCR; anonymous pulls share the runner IP's rate limit.
+      - name: Login to GitHub Container Registry
+        if: github.repository == 'louislam/uptime-kuma' && runner.os == 'Linux' && runner.arch == 'X64'
+        continue-on-error: true
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
       - run: npm run test-backend
         env:
           HEADLESS_TEST: 1
@@ -97,28 +117,57 @@ jobs:
     permissions:
       contents: read
     env:
-      PLAYWRIGHT_VERSION: ~1.61.1
+      PLAYWRIGHT_VERSION: ~1.64.1
     steps:
       - run: git config --global core.autocrlf false # Mainly for Windows
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with: { persist-credentials: false }
 
-      #    Tempoary disable until we understand TanStack npm supply-chain compromise
-      #      - name: Cache/Restore node_modules
-      #        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
-      #        id: node-modules-cache
-      #        with:
-      #          path: node_modules
-      #          key: node-modules-${{ runner.os }}-node${{ matrix.node }}-${{ hashFiles('**/package-lock.json') }}
+      # The cache is scoped to the pull request's merge ref, so it cannot poison
+      # the base branch (the vector in the TanStack incident used pull_request_target).
+      # Kept apart from the auto-test key, as the runner image differs.
+      - name: Cache node_modules
+        id: cache-node-modules
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: node_modules
+          key: node-modules-e2e-${{ runner.os }}-${{ runner.arch }}-node26-${{ hashFiles('**/package-lock.json') }}
 
       - name: Setup Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 26
-      - run: npm clean-install --no-fund
+      - if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        run: npm clean-install --no-fund
+
+      - name: Point apt at a cacheable archive dir
+        run: |
+          mkdir -p "$HOME/.apt-archives/partial"
+          chmod 777 "$HOME/.apt-archives/partial"
+          sudo tee /etc/apt/apt.conf.d/99-playwright-cache >/dev/null <<EOF
+          Dir::Cache::archives "$HOME/.apt-archives";
+          APT::Keep-Downloaded-Packages "true";
+          EOF
+
+      - name: Compute weekly apt cache key
+        id: apt-week
+        run: echo "week=$(date -u +%G-%V)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache apt packages
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.apt-archives
+          key: apt-playwright-${{ runner.os }}-${{ env.PLAYWRIGHT_VERSION }}-${{ steps.apt-week.outputs.week }}
+          restore-keys: |
+            apt-playwright-${{ runner.os }}-${{ env.PLAYWRIGHT_VERSION }}-
 
       - name: Install Playwright ${{ env.PLAYWRIGHT_VERSION }}
-        run: npx playwright@${{ env.PLAYWRIGHT_VERSION }} install --with-deps
+        run: npx playwright@${{ env.PLAYWRIGHT_VERSION }} install --with-deps chromium
+
+      # apt runs as root, leaving root-owned lock/partial that the cache's tar cannot read.
+      - name: Hand the apt archives back to the cache
+        if: always()
+        run: sudo chown -R "$USER" "$HOME/.apt-archives"
 
       - run: npm run build
       - run: npm run test-e2e
