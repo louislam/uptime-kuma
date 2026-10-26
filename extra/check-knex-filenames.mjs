@@ -25,8 +25,8 @@ for (const file of files) {
 
     const parts = file.split("-");
 
-    // Should be at least 5 parts
-    if (parts.length < 5) {
+    // Require YYYY-MM-DD-HHmm- before the description
+    if (!/^\d{4}-\d{2}-\d{2}-\d{4}-/.test(file)) {
         console.error(`Invalid format: ${file}`);
         process.exit(1);
     }
