@@ -318,6 +318,21 @@ export async function doubleCheckPassword(cookie: string, currentPassword: strin
 }
 
 /**
+ * Verify an API key with Better Auth
+ * @param key Clear API key
+ * @returns True if the key is valid
+ */
+export async function verifyApiKey(key: string): Promise<boolean> {
+    const result = await auth().api.verifyApiKey({
+        body: {
+            key,
+        },
+    });
+
+    return result.valid;
+}
+
+/**
  * Migrate a legacy user from the old `user` table to better-auth tables.
  * @param username Legacy username
  * @param password Plain-text password from the login form

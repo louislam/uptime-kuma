@@ -1444,7 +1444,7 @@
     "ntfyCall": "Glao Gutháin",
     "ntfyCallHelptext": "Cuir glaoch gutháin nuair a chuirtear foláireamh ar siúl. Socraigh go 'tá' chun d'uimhir fhíoraithe tosaigh a úsáid, nó cuir isteach uimhir guthán shonrach (e.g. +12223334444). Éilíonn sé ntfy Pro agus uimhir ghuthán fhíoraithe.",
     "enableSSL": "Cumasaigh SSL/TLS",
-    "mariadbUseSSLHelptext": "Cumasaigh úsáid nasc criptithe le do bhunachar sonraí. Riachtanach don chuid is mó de na bunachair sonraí scamall.",
+    "mariadbUseSSLHelptext": "Ní féidir nasc criptithe a úsáid le do bhunachar sonraí. Tá sé seo riachtanach don chuid is mó de bhunachair shonraí néil",
     "mariadbCaCertificateLabel": "Teastas CA",
     "mariadbCaCertificateHelptext": "Greamaigh an Teastas CA i bhformáid PEM le húsáid le teastais féinshínithe. Fág bán é má úsáideann do bhunachar sonraí teastas atá sínithe ag CA poiblí.",
     "days": "{n} lá | {n} lá",
@@ -1705,5 +1705,13 @@
     "Pattern Code ID": "Aitheantas Cód Patrúin",
     "Amoot SMS pattern help": "Cuir isteach an Cód Patrún ID ó do phainéal SMS Amoot. {0}",
     "Create an Amoot SMS pattern": "Cruthaigh patrún SMS Amoot",
-    "Use Own Line for Pattern": "Úsáid do Líne Féin le haghaidh Patrúin"
+    "Use Own Line for Pattern": "Úsáid do Líne Féin le haghaidh Patrúin",
+    "Indigo URL": "URL Indigo",
+    "indigoUrlHelptext": "Do sheoladh Indigo Reflector (https://NAME.indigodomo.net) nó an Freastalaí Gréasáin Indigo ar do líonra (https://IP:8176).",
+    "indigoIgnoreTlsErrorHelptext": "Tá gá leis seo don Freastalaí Gréasáin Indigo ar do líonra, a úsáideann teastas féinsínithe. Ní gá é don Reflector.",
+    "indigoApiKeyHelptext": "Eochair API ó do Chuntas Indigo (Údaruithe), nó rún áitiúil don Fhreastalaí Gréasáin ar do líonra.",
+    "Variable ID": "Aitheantas Athróige",
+    "indigoVariableIdHelptext": "Scríobhtar an teachtaireacht foláirimh chuig an athróg seo.",
+    "Action Group ID": "Aitheantas an Ghrúpa Gníomhaíochta",
+    "indigoActionGroupIdHelptext": "Déantar é a fhorghníomhú tar éis an athróg a nuashonrú. Socraigh athróg, grúpa gníomhartha, nó an dá rud. Cóipeáil aitheantais (IDs) ó Indigo trí chliceáil ar dheis → Cóipeáil Aitheantas."
 }

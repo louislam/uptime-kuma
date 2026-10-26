@@ -14,6 +14,7 @@ module.exports.chartSocketHandler = (socket) => {
             }
 
             let uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);
+            await uptimeCalculator.ensureHistoryLoaded();
 
             let data;
             if (period <= 24) {

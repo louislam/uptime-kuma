@@ -50,9 +50,41 @@ class UptimeCalculator {
     lastHourlyUptimeData = null;
     lastDailyUptimeData = null;
 
-    lastDailyStatBean = null;
-    lastHourlyStatBean = null;
-    lastMinutelyStatBean = null;
+    /**
+     * Whether the current minute/hour/day buckets were seeded from the database
+     * @type {boolean}
+     */
+    currentBucketsLoaded = false;
+
+    /**
+     * Last hourly bucket in which old stat rows were pruned
+     * @type {number|null}
+     */
+    lastPruneHour = null;
+
+    /**
+     * Last minute in which the hourly stat row was written
+     * @type {number|null}
+     */
+    lastHourlyStore = null;
+
+    /**
+     * Last minute in which the daily stat row was written
+     * @type {number|null}
+     */
+    lastDailyStore = null;
+
+    /**
+     * Whether the DB history has been loaded
+     * @type {boolean}
+     */
+    historyLoaded = false;
+
+    /**
+     * In-flight history load
+     * @type {Promise<void>|null}
+     */
+    historyLoadingPromise = null;
 
     /**
      * For migration purposes.
@@ -116,90 +148,67 @@ class UptimeCalculator {
     }
 
     /**
-     * Initialize the uptime calculator for a monitor
+     * Initialize the uptime calculator for a monitor.
+     * History is loaded on demand (see ensureHistoryLoaded), so a beat never
+     * pays for 1000+ stat rows.
      * @param {number} monitorID the id of the monitor
      * @returns {Promise<void>}
      */
     async init(monitorID) {
         this.monitorID = monitorID;
+    }
+
+    /**
+     * Load the recent stat history if it has not been loaded yet
+     * @returns {Promise<void>}
+     */
+    async ensureHistoryLoaded() {
+        if (this.historyLoaded) {
+            return;
+        }
+        if (!this.historyLoadingPromise) {
+            this.historyLoadingPromise = this.loadHistory();
+        }
+        await this.historyLoadingPromise;
+    }
+
+    /**
+     * Load 24h minutely, 30d hourly and 365d daily stat rows from the database.
+     * Uses plain rows instead of redbean beans: one query per table, no per-row
+     * bean construction, which dominated chart latency for a single monitor.
+     * @returns {Promise<void>}
+     */
+    async loadHistory() {
+        let monitorID = this.monitorID;
 
         let now = this.getCurrentDate();
 
-        // Load minutely data from database (recent 24 hours only)
-        let minutelyStatBeans = await R.find("stat_minutely", " monitor_id = ? AND timestamp > ? ORDER BY timestamp", [
-            monitorID,
-            this.getMinutelyKey(now.subtract(24, "hour")),
-        ]);
-
-        for (let bean of minutelyStatBeans) {
-            let data = {
-                up: bean.up,
-                down: bean.down,
-                avgPing: bean.ping,
-                minPing: bean.pingMin,
-                maxPing: bean.pingMax,
-            };
-
-            if (bean.extras != null) {
-                data = {
-                    ...data,
-                    ...JSON.parse(bean.extras),
+        const load = async (table, since, list) => {
+            const rows = await R.getAll(
+                `SELECT timestamp, up, down, ping, ping_min, ping_max, extras
+                 FROM ${table} WHERE monitor_id = ? AND timestamp > ? ORDER BY timestamp`,
+                [monitorID, since]
+            );
+            for (const row of rows) {
+                let data = {
+                    up: row.up,
+                    down: row.down,
+                    avgPing: row.ping,
+                    minPing: row.ping_min,
+                    maxPing: row.ping_max,
                 };
+                if (row.extras != null) {
+                    data = { ...data, ...JSON.parse(row.extras) };
+                }
+                this.addHistoryEntry(list, row.timestamp, data);
             }
+        };
 
-            let key = bean.timestamp;
-            this.minutelyUptimeDataList.push(key, data);
-        }
+        await load("stat_minutely", this.getMinutelyKey(now.subtract(24, "hour")), this.minutelyUptimeDataList);
+        await load("stat_hourly", this.getHourlyKey(now.subtract(30, "day")), this.hourlyUptimeDataList);
+        await load("stat_daily", this.getDailyKey(now.subtract(365, "day")), this.dailyUptimeDataList);
 
-        // Load hourly data from database (recent 30 days only)
-        let hourlyStatBeans = await R.find("stat_hourly", " monitor_id = ? AND timestamp > ? ORDER BY timestamp", [
-            monitorID,
-            this.getHourlyKey(now.subtract(30, "day")),
-        ]);
-
-        for (let bean of hourlyStatBeans) {
-            let data = {
-                up: bean.up,
-                down: bean.down,
-                avgPing: bean.ping,
-                minPing: bean.pingMin,
-                maxPing: bean.pingMax,
-            };
-
-            if (bean.extras != null) {
-                data = {
-                    ...data,
-                    ...JSON.parse(bean.extras),
-                };
-            }
-
-            this.hourlyUptimeDataList.push(bean.timestamp, data);
-        }
-
-        // Load daily data from database (recent 365 days only)
-        let dailyStatBeans = await R.find("stat_daily", " monitor_id = ? AND timestamp > ? ORDER BY timestamp", [
-            monitorID,
-            this.getDailyKey(now.subtract(365, "day")),
-        ]);
-
-        for (let bean of dailyStatBeans) {
-            let data = {
-                up: bean.up,
-                down: bean.down,
-                avgPing: bean.ping,
-                minPing: bean.pingMin,
-                maxPing: bean.pingMax,
-            };
-
-            if (bean.extras != null) {
-                data = {
-                    ...data,
-                    ...JSON.parse(bean.extras),
-                };
-            }
-
-            this.dailyUptimeDataList.push(bean.timestamp, data);
-        }
+        this.historyLoaded = true;
     }
 
     /**
@@ -210,6 +219,10 @@ class UptimeCalculator {
      * @throws {Error} Invalid status
      */
     async update(status, ping = 0, date) {
+        // A beat without an explicit date happens now, so its current buckets must be
+        // continued from the database. Check this before defaulting `date`.
+        const isLiveBeat = !date;
+
         if (!date) {
             date = this.getCurrentDate();
         }
@@ -223,6 +236,12 @@ class UptimeCalculator {
         let divisionKey = this.getMinutelyKey(date);
         let hourlyKey = this.getHourlyKey(date);
         let dailyKey = this.getDailyKey(date);
+
+        // Continue the current buckets from their stored values instead of starting at zero,
+        // otherwise a restart would overwrite the minute/hour/day counts with only new beats
+        if (!this.migrationMode && isLiveBeat && !this.currentBucketsLoaded && !this.historyLoaded) {
+            await this.ensureCurrentBuckets(divisionKey, hourlyKey, dailyKey);
+        }
 
         let minutelyData = this.minutelyUptimeDataList[divisionKey];
         let hourlyData = this.hourlyUptimeDataList[hourlyKey];
@@ -299,65 +318,32 @@ class UptimeCalculator {
             return date;
         }
 
-        let dailyStatBean = await this.getDailyStatBean(dailyKey);
-        dailyStatBean.up = dailyData.up;
-        dailyStatBean.down = dailyData.down;
-        dailyStatBean.ping = dailyData.avgPing;
-        dailyStatBean.pingMin = dailyData.minPing;
-        dailyStatBean.pingMax = dailyData.maxPing;
-        {
-            // eslint-disable-next-line no-unused-vars
-            const { up, down, avgPing, minPing, maxPing, timestamp, ...extras } = dailyData;
-            if (Object.keys(extras).length > 0) {
-                dailyStatBean.extras = JSON.stringify(extras);
-            }
-        }
-        await R.store(dailyStatBean);
-
+        // Store the aggregates. Minutely is written every beat, hourly/daily at most
+        // once per minute: their values only need to be durable, not per-check.
         let currentDate = this.getCurrentDate();
+        const currentMinute = this.getMinutelyKey(currentDate, false);
 
-        // For migration mode, we don't need to store old hourly and minutely data, but we need 30-day's hourly data
-        // Run anyway for non-migration mode
-        if (!this.migrationMode || date.isAfter(currentDate.subtract(this.statHourlyKeepDay, "day"))) {
-            let hourlyStatBean = await this.getHourlyStatBean(hourlyKey);
-            hourlyStatBean.up = hourlyData.up;
-            hourlyStatBean.down = hourlyData.down;
-            hourlyStatBean.ping = hourlyData.avgPing;
-            hourlyStatBean.pingMin = hourlyData.minPing;
-            hourlyStatBean.pingMax = hourlyData.maxPing;
-            {
-                // eslint-disable-next-line no-unused-vars
-                const { up, down, avgPing, minPing, maxPing, timestamp, ...extras } = hourlyData;
-                if (Object.keys(extras).length > 0) {
-                    hourlyStatBean.extras = JSON.stringify(extras);
-                }
-            }
-            await R.store(hourlyStatBean);
+        if (this.lastDailyStore !== currentMinute) {
+            this.lastDailyStore = currentMinute;
+            await this.upsertStat("stat_daily", dailyKey, dailyData);
         }
 
-        // For migration mode, we don't need to store old hourly and minutely data, but we need 24-hour's minutely data
-        // Run anyway for non-migration mode
-        if (!this.migrationMode || date.isAfter(currentDate.subtract(this.statMinutelyKeepHour, "hour"))) {
-            let minutelyStatBean = await this.getMinutelyStatBean(divisionKey);
-            minutelyStatBean.up = minutelyData.up;
-            minutelyStatBean.down = minutelyData.down;
-            minutelyStatBean.ping = minutelyData.avgPing;
-            minutelyStatBean.pingMin = minutelyData.minPing;
-            minutelyStatBean.pingMax = minutelyData.maxPing;
-            {
-                // eslint-disable-next-line no-unused-vars
-                const { up, down, avgPing, minPing, maxPing, timestamp, ...extras } = minutelyData;
-                if (Object.keys(extras).length > 0) {
-                    minutelyStatBean.extras = JSON.stringify(extras);
-                }
+        if (this.lastHourlyStore !== currentMinute) {
+            this.lastHourlyStore = currentMinute;
+            if (!this.migrationMode || date.isAfter(currentDate.subtract(this.statHourlyKeepDay, "day"))) {
+                await this.upsertStat("stat_hourly", hourlyKey, hourlyData);
             }
-            await R.store(minutelyStatBean);
+        }
+
+        if (!this.migrationMode || date.isAfter(currentDate.subtract(this.statMinutelyKeepHour, "hour"))) {
+            await this.upsertStat("stat_minutely", divisionKey, minutelyData);
         }
 
         // No need to remove old data in migration mode
-        if (!this.migrationMode) {
-            // Remove the old data
-            // TODO: Improvement: Convert it to a job?
+        // Prune at most once per hour per monitor; retention is measured in hours/days,
+        // so doing it on every beat only adds write transactions at scale
+        if (!this.migrationMode && this.lastPruneHour !== hourlyKey) {
+            this.lastPruneHour = hourlyKey;
             log.debug("uptime_calc", "Remove old data");
             await R.exec("DELETE FROM stat_minutely WHERE monitor_id = ? AND timestamp < ?", [
                 this.monitorID,
@@ -374,69 +360,91 @@ class UptimeCalculator {
     }
 
     /**
-     * Get the daily stat bean
-     * @param {number} timestamp milliseconds
-     * @returns {Promise<import("redbean-node").Bean>} stat_daily bean
+     * Add a history entry without duplicating a bucket that already exists
+     * @param {object} list Bucket list
+     * @param {number} key Bucket timestamp
+     * @param {object} data Bucket data
+     * @returns {void}
      */
-    async getDailyStatBean(timestamp) {
-        if (this.lastDailyStatBean && this.lastDailyStatBean.timestamp === timestamp) {
-            return this.lastDailyStatBean;
+    addHistoryEntry(list, key, data) {
+        if (key in list) {
+            Object.assign(list[key], data);
+        } else {
+            list.push(key, data);
         }
-
-        let bean = await R.findOne("stat_daily", " monitor_id = ? AND timestamp = ?", [this.monitorID, timestamp]);
-
-        if (!bean) {
-            bean = R.dispense("stat_daily");
-            bean.monitor_id = this.monitorID;
-            bean.timestamp = timestamp;
-        }
-
-        this.lastDailyStatBean = bean;
-        return this.lastDailyStatBean;
     }
 
     /**
-     * Get the hourly stat bean
-     * @param {number} timestamp milliseconds
-     * @returns {Promise<import("redbean-node").Bean>} stat_hourly bean
+     * Load only the three buckets that are currently being written, so a restart
+     * continues their counts. Full history is loaded on demand for charts only.
+     * @param {number} minutelyKey Current minute bucket
+     * @param {number} hourlyKey Current hour bucket
+     * @param {number} dailyKey Current day bucket
+     * @returns {Promise<void>}
      */
-    async getHourlyStatBean(timestamp) {
-        if (this.lastHourlyStatBean && this.lastHourlyStatBean.timestamp === timestamp) {
-            return this.lastHourlyStatBean;
+    async ensureCurrentBuckets(minutelyKey, hourlyKey, dailyKey) {
+        if (this.currentBucketsLoaded || this.historyLoaded) {
+            return;
         }
+        this.currentBucketsLoaded = true;
 
-        let bean = await R.findOne("stat_hourly", " monitor_id = ? AND timestamp = ?", [this.monitorID, timestamp]);
+        const [minutely, hourly, daily] = await Promise.all([
+            R.findOne("stat_minutely", " monitor_id = ? AND timestamp = ? ", [this.monitorID, minutelyKey]),
+            R.findOne("stat_hourly", " monitor_id = ? AND timestamp = ? ", [this.monitorID, hourlyKey]),
+            R.findOne("stat_daily", " monitor_id = ? AND timestamp = ? ", [this.monitorID, dailyKey]),
+        ]);
 
-        if (!bean) {
-            bean = R.dispense("stat_hourly");
-            bean.monitor_id = this.monitorID;
-            bean.timestamp = timestamp;
-        }
-
-        this.lastHourlyStatBean = bean;
-        return this.lastHourlyStatBean;
+        this.applyStatBean(this.minutelyUptimeDataList, minutelyKey, minutely);
+        this.applyStatBean(this.hourlyUptimeDataList, hourlyKey, hourly);
+        this.applyStatBean(this.dailyUptimeDataList, dailyKey, daily);
     }
 
     /**
-     * Get the minutely stat bean
-     * @param {number} timestamp milliseconds
-     * @returns {Promise<import("redbean-node").Bean>} stat_minutely bean
+     * Copy a stored stat row into an in-memory bucket
+     * @param {object} list Bucket list
+     * @param {number} key Bucket timestamp
+     * @param {import("redbean-node").Bean | null} bean Stored stat row
+     * @returns {void}
      */
-    async getMinutelyStatBean(timestamp) {
-        if (this.lastMinutelyStatBean && this.lastMinutelyStatBean.timestamp === timestamp) {
-            return this.lastMinutelyStatBean;
+    applyStatBean(list, key, bean) {
+        const data = list[key];
+        if (!bean || !data) {
+            return;
         }
+        Object.assign(data, {
+            up: bean.up,
+            down: bean.down,
+            avgPing: bean.ping,
+            minPing: bean.pingMin,
+            maxPing: bean.pingMax,
+            ...(bean.extras != null ? JSON.parse(bean.extras) : {}),
+        });
+    }
 
-        let bean = await R.findOne("stat_minutely", " monitor_id = ? AND timestamp = ?", [this.monitorID, timestamp]);
-
-        if (!bean) {
-            bean = R.dispense("stat_minutely");
-            bean.monitor_id = this.monitorID;
-            bean.timestamp = timestamp;
+    /**
+     * Insert or update one stat row without going through redbean beans
+     * @param {string} table stat table name
+     * @param {number} timestamp Bucket timestamp
+     * @param {object} data Aggregated uptime data
+     * @returns {Promise<void>}
+     */
+    async upsertStat(table, timestamp, data) {
+        const { up, down, avgPing, minPing, maxPing, ...extras } = data;
+        const row = {
+            monitor_id: this.monitorID,
+            timestamp,
+            up,
+            down,
+            ping: avgPing,
+            ping_min: minPing,
+            ping_max: maxPing,
+        };
+        const mergeColumns = ["up", "down", "ping", "ping_min", "ping_max"];
+        if (Object.keys(extras).length > 0) {
+            row.extras = JSON.stringify(extras);
+            mergeColumns.push("extras");
         }
-
-        this.lastMinutelyStatBean = bean;
-        return this.lastMinutelyStatBean;
+        await R.knex(table).insert(row).onConflict(["monitor_id", "timestamp"]).merge(mergeColumns);
     }
 
     /**
