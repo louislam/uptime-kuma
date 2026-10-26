@@ -129,8 +129,29 @@ jobs:
       - if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: npm clean-install --no-fund
 
+      - name: Point apt at a cacheable archive dir
+        run: |
+          sudo mkdir -p "$HOME/.apt-archives"
+          sudo chmod 777 "$HOME/.apt-archives"
+          sudo tee /etc/apt/apt.conf.d/99-playwright-cache >/dev/null <<EOF
+          Dir::Cache::archives "$HOME/.apt-archives";
+          APT::Keep-Downloaded-Packages "true";
+          EOF
+
+      - name: Compute weekly apt cache key
+        id: apt-week
+        run: echo "week=$(date -u +%G-%V)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache apt packages
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.apt-archives
+          key: apt-playwright-${{ runner.os }}-${{ env.PLAYWRIGHT_VERSION }}-${{ steps.apt-week.outputs.week }}
+          restore-keys: |
+            apt-playwright-${{ runner.os }}-${{ env.PLAYWRIGHT_VERSION }}-
+
       - name: Install Playwright ${{ env.PLAYWRIGHT_VERSION }}
-        run: npx playwright@${{ env.PLAYWRIGHT_VERSION }} install --with-deps
+        run: npx playwright@${{ env.PLAYWRIGHT_VERSION }} install --with-deps chromium
 
       - run: npm run build
       - run: npm run test-e2e
