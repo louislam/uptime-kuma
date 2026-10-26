@@ -1525,5 +1525,13 @@
     "Connection Timeout": "Przekroczenie limitu czasu połączenia",
     "Peer ID": "Id Peer'a",
     "vkApiVersionDescription": "Wersja VK API używana przez żądanie. Zostaw domyślne chyba że potrzebujesz innej wersji VK API przez kompatybilność.",
-    "vkDontParseLinksDescription": "Jeżeli włączone, VK nie będzie generował podglądu/fragmentów linku."
+    "vkDontParseLinksDescription": "Jeżeli włączone, VK nie będzie generował podglądu/fragmentów linku.",
+    "Client Key": "Klucz klienta",
+    "Channel": "Kanał",
+    "maxMessenger": "Komunikator MAX",
+    "Variable ID": "ID zmiennej",
+    "indigoVariableIdHelptext": "Ta wiadomość jest przypisana do tej zmiennej.",
+    "Action Group ID": "ID Grupy akcji",
+    "indigoActionGroupIdHelptext": "Zostanie wykonane po zaktualizowaniu zmiennej. Ustaw zmienną, grupę akcji lub oba. Skopiuj ID z Indigo klikając prawym przyciskiem myszy → Kopiuj ID.",
+    "Go to Extensions → Apps Script": "Idź do Rozszerzenia → Skrypty aplikacji"
 }
