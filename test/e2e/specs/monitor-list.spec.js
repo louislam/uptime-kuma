@@ -101,6 +101,23 @@ test.describe("Monitor list", () => {
         await expect(list).not.toContainText("Push Up");
     });
 
+    test("status filter excludes a paused monitor that went down", async ({ page }) => {
+        await addMonitor(page, { name: "Paused Down", type: "push" }, true);
+        const pushUrl = await page.locator('a[href*="/api/push/"]').first().getAttribute("href");
+        await page.request.get(pushUrl.replace("status=up", "status=down"));
+
+        // Pause it, so the stats count it as paused instead of down
+        await page.getByRole("button", { name: "Pause" }).click();
+        await confirmDialog(page);
+
+        const list = await openDashboard(page);
+        await page.getByTestId("filter-status").click();
+        await expect(page.getByTestId("filter-status-down")).toContainText("0");
+
+        await page.getByTestId("filter-status-down").click();
+        await expect(list).not.toContainText("Paused Down");
+    });
+
     test("filters monitors by paused state and resumes them in bulk", async ({ page }) => {
         await addMonitor(page, { name: "Alpha Monitor" }, true);
         await addMonitor(page, { name: "Beta Monitor" });
