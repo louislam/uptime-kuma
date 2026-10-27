@@ -64,6 +64,7 @@ const zlib = require("node:zlib");
 const { promisify } = require("node:util");
 const brotliCompress = promisify(zlib.brotliCompress);
 const DomainExpiry = require("./domain_expiry");
+const { monitorConfigSchema } = require("../types");
 
 const rootCertificates = rootCertificatesFingerprints();
 
@@ -187,7 +188,6 @@ class Monitor extends BeanModel {
             httpBodyEncoding: this.httpBodyEncoding,
             jsonPath: this.jsonPath,
             expectedValue: this.expectedValue,
-            system_service_name: this.system_service_name,
             kafkaProducerTopic: this.kafkaProducerTopic,
             kafkaProducerBrokers: JSON.parse(this.kafkaProducerBrokers),
             kafkaProducerSsl: this.getKafkaProducerSsl(),
@@ -219,6 +219,9 @@ class Monitor extends BeanModel {
             saveResponse: this.getSaveResponse(),
             saveErrorResponse: this.getSaveErrorResponse(),
             responseMaxLength: this.response_max_length ?? RESPONSE_BODY_LENGTH_DEFAULT,
+
+            // Extensible per monitor type settings
+            config: this.getConfig(),
         };
 
         if (includeSensitiveData) {
@@ -411,6 +414,59 @@ class Monitor extends BeanModel {
      */
     getSaveErrorResponse() {
         return Boolean(this.save_error_response);
+    }
+
+    /**
+     * Get the full config
+     * @returns {object} Parsed config, empty object if null or invalid
+     */
+    getConfig() {
+        if (typeof this.config === "object" && this.config !== null) {
+            return this.config;
+        }
+
+        if (!this.config) {
+            return {};
+        }
+
+        try {
+            return JSON.parse(this.config);
+        } catch (e) {
+            log.warn("monitor", `Invalid config JSON for monitor ${this.id}, ignored: ${e.message}`);
+            return {};
+        }
+    }
+
+    /**
+     * Set the full config object
+     * @param {object} config The config object to store
+     * @returns {void}
+     */
+    setConfig(config) {
+        this.config = JSON.stringify(config);
+    }
+
+    /**
+     * Get one config value
+     * @param {string} key The config key to retrieve
+     * @param {*} defaultValue Default value if the key does not exist
+     * @returns {*} The config value or defaultValue
+     */
+    getConfigValue(key, defaultValue = undefined) {
+        const config = this.getConfig();
+        return key in config ? config[key] : defaultValue;
+    }
+
+    /**
+     * Set one config value
+     * @param {string} key The config key to set
+     * @param {*} value The value to store
+     * @returns {void}
+     */
+    setConfigValue(key, value) {
+        const config = this.getConfig();
+        config[key] = value;
+        this.setConfig(config);
     }
 
     /**
@@ -1266,6 +1322,28 @@ class Monitor extends BeanModel {
     }
 
     /**
+     * Write the client writable config keys, one key at a time
+     * @param {object} raw Config payload from the client
+     * @returns {void}
+     * @throws {Error} If a known key has the wrong type
+     */
+    applyClientConfig(raw) {
+        if (!raw) {
+            return;
+        }
+
+        const result = monitorConfigSchema.safeParse(raw);
+
+        if (!result.success) {
+            throw new Error(result.error.issues.map((issue) => `${issue.path.join(".")}: ${issue.message}`).join("; "));
+        }
+
+        for (const [key, value] of Object.entries(result.data)) {
+            this.setConfigValue(key, value);
+        }
+    }
+
+    /**
      * Checks if the monitor is active based on itself and its parents
      * @param {number} monitorID ID of monitor to send
      * @param {boolean} active is active
@@ -1661,19 +1739,20 @@ class Monitor extends BeanModel {
         }
 
         if (["system-service", "pm2"].includes(this.type)) {
-            this.system_service_name = (this.system_service_name || "").trim();
+            const serviceName = (this.getConfigValue("systemServiceName") || "").trim();
+            this.setConfigValue("systemServiceName", serviceName);
 
-            if (!this.system_service_name) {
+            if (!serviceName) {
                 throw new Error(this.type === "pm2" ? "PM2 process name is required." : "Service Name is required.");
             }
-        }
 
-        if (this.type === "system-service" && !/^[a-zA-Z0-9._\-@]+$/.test(this.system_service_name)) {
-            throw new Error("Invalid service name. Please use the internal Service Name (no spaces).");
-        }
+            if (this.type === "system-service" && !/^[a-zA-Z0-9._\-@]+$/.test(serviceName)) {
+                throw new Error("Invalid service name. Please use the internal Service Name (no spaces).");
+            }
 
-        if (this.type === "pm2" && /[\u0000-\u001F\u007F]/.test(this.system_service_name)) {
-            throw new Error("Invalid PM2 process name.");
+            if (this.type === "pm2" && /[\u0000-\u001F\u007F]/.test(serviceName)) {
+                throw new Error("Invalid PM2 process name.");
+            }
         }
 
         if (this.type === "ping") {

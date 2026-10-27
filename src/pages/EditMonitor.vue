@@ -1344,7 +1344,7 @@
                                     </label>
                                     <input
                                         id="system-service-name"
-                                        v-model="monitor.system_service_name"
+                                        v-model="monitor.config.systemServiceName"
                                         type="text"
                                         class="form-control"
                                         required
@@ -1355,29 +1355,29 @@
                                         <template v-if="$root.info.runtime.platform === 'linux'">
                                             {{
                                                 $t("systemServiceDescriptionLinux", {
-                                                    service_name: monitor.system_service_name || "nginx",
+                                                    service_name: monitor.config.systemServiceName || "nginx",
                                                 })
                                             }}
                                         </template>
                                         <template v-else-if="$root.info.runtime.platform === 'win32'">
                                             {{
                                                 $t("systemServiceDescriptionWindows", {
-                                                    service_name: monitor.system_service_name || "Dnscache",
+                                                    service_name: monitor.config.systemServiceName || "Dnscache",
                                                 })
                                             }}
                                         </template>
                                         <template v-else>
                                             {{
                                                 $t("systemServiceDescription", {
-                                                    service_name: monitor.system_service_name || "nginx",
+                                                    service_name: monitor.config.systemServiceName || "nginx",
                                                 })
                                             }}
                                         </template>
 
                                         <template
                                             v-if="
-                                                !monitor.system_service_name ||
-                                                /^[a-zA-Z0-9_\-\.\@\ ]+$/.test(monitor.system_service_name)
+                                                !monitor.config.systemServiceName ||
+                                                /^[a-zA-Z0-9_\-\.\@\ ]+$/.test(monitor.config.systemServiceName)
                                             "
                                         >
                                             <div v-if="$root.info.runtime.platform === 'linux'" class="mt-2">
@@ -1386,7 +1386,7 @@
                                                         <template #command>
                                                             <code>
                                                                 systemctl is-active
-                                                                {{ monitor.system_service_name || "nginx" }}
+                                                                {{ monitor.config.systemServiceName || "nginx" }}
                                                             </code>
                                                         </template>
                                                     </i18n-t>
@@ -1402,7 +1402,7 @@
                                                             <code>
                                                                 (Get-Service -Name '{{
                                                                     (
-                                                                        monitor.system_service_name || "Dnscache"
+                                                                        monitor.config.systemServiceName || "Dnscache"
                                                                     ).replaceAll("'", "''")
                                                                 }}').Status
                                                             </code>
@@ -1436,7 +1436,7 @@
                                     <select
                                         v-if="pm2ProcessOptions.length > 0"
                                         id="pm2-process-name"
-                                        v-model="monitor.system_service_name"
+                                        v-model="monitor.config.systemServiceName"
                                         class="form-select mt-2"
                                         required
                                     >
@@ -1453,7 +1453,7 @@
                                     <input
                                         v-else
                                         id="pm2-process-name"
-                                        v-model="monitor.system_service_name"
+                                        v-model="monitor.config.systemServiceName"
                                         type="text"
                                         class="form-control mt-2"
                                         placeholder="api"
@@ -1466,7 +1466,7 @@
                                     <div class="form-text">
                                         {{
                                             $t("pm2Description", {
-                                                service_name: monitor.system_service_name || "api",
+                                                service_name: monitor.config.systemServiceName || "api",
                                             })
                                         }}
                                         <div class="mt-2">
@@ -3360,11 +3360,11 @@ const monitorDefaults = {
     rabbitmqUsername: "",
     rabbitmqPassword: "",
     conditions: [],
-    system_service_name: "",
     sshAuthMethod: "password",
     ntpStratumThreshold: 5,
     ntpTimeOffsetThreshold: 1000,
     ntpRootDispersionThreshold: 500,
+    config: {},
 };
 
 export default {
@@ -3438,8 +3438,8 @@ export default {
             if (this.monitor.hostname) {
                 return this.monitor.hostname;
             }
-            if (this.monitor.system_service_name) {
-                return this.monitor.system_service_name;
+            if (this.monitor.config?.systemServiceName) {
+                return this.monitor.config.systemServiceName;
             }
             if (this.monitor.url) {
                 if (this.monitor.url !== "http://" && this.monitor.url !== "https://") {
@@ -4042,12 +4042,13 @@ message HealthCheckResponse {
 
                 const selectedProcess = this.pm2ProcessOptions.find(
                     (item) =>
-                        item.id === this.monitor.system_service_name || item.name === this.monitor.system_service_name
+                        item.id === this.monitor.config.systemServiceName ||
+                        item.name === this.monitor.config.systemServiceName
                 );
 
                 // Convert a legacy numeric id to the stable process name without replacing a missing saved target.
                 if (selectedProcess) {
-                    this.monitor.system_service_name = selectedProcess.name;
+                    this.monitor.config.systemServiceName = selectedProcess.name;
                 }
             });
         },
@@ -4369,8 +4370,8 @@ message HealthCheckResponse {
                 this.monitor.url = this.monitor.url.trim();
             }
 
-            if (["system-service", "pm2"].includes(this.monitor.type) && this.monitor.system_service_name) {
-                this.monitor.system_service_name = this.monitor.system_service_name.trim();
+            if (["system-service", "pm2"].includes(this.monitor.type) && this.monitor.config.systemServiceName) {
+                this.monitor.config.systemServiceName = this.monitor.config.systemServiceName.trim();
             }
 
             if (this.monitor.databaseConnectionString) {
