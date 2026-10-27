@@ -131,7 +131,7 @@ class MqttMonitorType extends MonitorType {
      * Connect to MQTT Broker, subscribe to topic and receive message as String
      * @param {string} hostname Hostname / address of machine to test
      * @param {string} topic MQTT topic
-     * @param {object} options MQTT options. Contains port, username,
+     * @param {object} options MQTT options. Contains port, username, clientId,
      * password, websocketPath and interval (interval defaults to 20)
      * @returns {Promise<string>} Received MQTT message
      */
