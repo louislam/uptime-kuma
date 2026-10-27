@@ -31,6 +31,7 @@ async function testMqtt(
         hostname: connectionString.split(":", 2).join(":"),
         mqttTopic: monitorTopic,
         port: connectionString.split(":")[2],
+        mqttClientId: null,
         mqttUsername: null,
         mqttPassword: null,
         mqttWebsocketPath: null, // for WebSocket connections

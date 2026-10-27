@@ -588,6 +588,7 @@ app.use(function (req, res, next) {
                 bean.docker_container = monitor.docker_container;
                 bean.docker_host = monitor.docker_host;
                 bean.proxyId = Number.isInteger(monitor.proxyId) ? monitor.proxyId : null;
+                bean.mqttClientId = monitor.mqttClientId;
                 bean.mqttUsername = monitor.mqttUsername;
                 bean.mqttPassword = monitor.mqttPassword;
                 bean.mqttTopic = monitor.mqttTopic;

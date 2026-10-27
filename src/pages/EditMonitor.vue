@@ -1118,6 +1118,16 @@
                             <!-- For MQTT Type -->
                             <template v-if="monitor.type === 'mqtt'">
                                 <div class="my-3">
+                                    <label for="mqttClientId" class="form-label">MQTT {{ $t("Client ID") }}</label>
+                                    <input
+                                        id="mqttClientId"
+                                        v-model="monitor.mqttClientId"
+                                        type="text"
+                                        class="form-control"
+                                    />
+                                </div>
+
+                                <div class="my-3">
                                     <label for="mqttUsername" class="form-label">MQTT {{ $t("Username") }}</label>
                                     <input
                                         id="mqttUsername"
@@ -3336,6 +3346,7 @@ const monitorDefaults = {
     basic_auth_user: "",
     basic_auth_pass: "",
     bearer_token: "",
+    mqttClientId: "",
     mqttUsername: "",
     mqttPassword: "",
     mqttTopic: "",

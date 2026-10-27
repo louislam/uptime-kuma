@@ -24,6 +24,7 @@ class MqttMonitorType extends MonitorType {
     async check(monitor, heartbeat, server) {
         const [messageTopic, receivedMessage] = await this.mqttAsync(monitor.hostname, monitor.mqttTopic, {
             port: monitor.port,
+            clientId: monitor.mqttClientId,
             username: monitor.mqttUsername,
             password: monitor.mqttPassword,
             interval: monitor.interval,
@@ -136,7 +137,7 @@ class MqttMonitorType extends MonitorType {
      */
     mqttAsync(hostname, topic, options = {}) {
         return new Promise((resolve, reject) => {
-            const { port, username, password, websocketPath, interval = 20 } = options;
+            const { port, username, password, websocketPath, interval = 20, clientId } = options;
 
             // Adds MQTT protocol to the hostname if not already present
             if (!/^(?:http|mqtt|ws)s?:\/\//.test(hostname)) {
@@ -167,7 +168,7 @@ class MqttMonitorType extends MonitorType {
             let client = mqtt.connect(mqttUrl, {
                 username,
                 password,
-                clientId: "uptime-kuma_" + Math.random().toString(16).substr(2, 8),
+                clientId: clientId || "uptime-kuma_" + Math.random().toString(16).substr(2, 8),
             });
 
             client.on("connect", () => {

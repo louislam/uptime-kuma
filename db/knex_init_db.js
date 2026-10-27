@@ -97,6 +97,7 @@ async function createTables() {
         table.boolean("expiry_notification").defaultTo(true);
         table.text("mqtt_topic");
         table.string("mqtt_success_message", 255);
+        table.string("mqtt_client_id", 255);
         table.string("mqtt_username", 255);
         table.string("mqtt_password", 255);
         table.string("database_connection_string", 2000);
