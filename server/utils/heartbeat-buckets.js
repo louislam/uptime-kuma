@@ -12,7 +12,8 @@
  * Buckets hold whole tier periods and their edges sit on multiples of the
  * bucket width, so every stored period falls into exactly one bucket and the
  * edges stay put between requests. The width fits evenly into an hour or a
- * day, so the edges land on round clock times. The newest bucket holds the current time.
+ * day, so the edges land on round clock times. The newest bucket holds the
+ * current time once it has a check, until then the bar ends one bucket earlier.
  * @param {object} uptimeCalculator UptimeCalculator instance of the monitor
  * @param {number} days Number of days to cover, counting back from now (1-365)
  * @param {number} maxBeats Upper limit for the number of buckets
@@ -59,13 +60,14 @@ function getAggregatedBuckets(uptimeCalculator, days, maxBeats = 100, interval =
 
     const now = uptimeCalculator.getCurrentDate().unix();
     const end = (Math.floor(now / bucketSeconds) + 1) * bucketSeconds;
-    const start = end - bucketCount * bucketSeconds;
+    // One extra bucket at the old end, used while the newest one has no check yet
+    const start = end - (bucketCount + 1) * bucketSeconds;
 
     const periods = Math.floor((now - start) / tierSeconds) + 1;
     const dataPoints = uptimeCalculator.getDataArray(Math.min(periods, tier.kept), tier.type);
 
     const buckets = [];
-    for (let i = 0; i < bucketCount; i++) {
+    for (let i = 0; i <= bucketCount; i++) {
         buckets.push({
             start: start + i * bucketSeconds,
             end: start + (i + 1) * bucketSeconds,
@@ -82,6 +84,15 @@ function getAggregatedBuckets(uptimeCalculator, days, maxBeats = 100, interval =
             bucket.down += point.down || 0;
             bucket.maintenance += point.maintenance || 0;
         }
+    }
+
+    // Like a new beat in auto mode, the newest bucket only shows up once a
+    // check landed in it. Until then the bar ends one bucket earlier
+    const newest = buckets[buckets.length - 1];
+    if (newest.up + newest.down + newest.maintenance === 0) {
+        buckets.pop();
+    } else {
+        buckets.shift();
     }
 
     return buckets;

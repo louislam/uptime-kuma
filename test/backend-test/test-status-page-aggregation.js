@@ -103,8 +103,7 @@ test("getAggregatedBuckets - interval that is not a whole number of hours leaves
 
     const buckets = getAggregatedBuckets(c, 1, 100, 5400);
 
-    // The newest bucket only started at 12:00 and has no check until 12:40
-    for (const [i, bucket] of buckets.slice(0, -1).entries()) {
+    for (const [i, bucket] of buckets.entries()) {
         assert.ok(bucket.up > 0, `Bucket ${i} is empty`);
     }
 });
@@ -113,6 +112,7 @@ test("getAggregatedBuckets - buckets tile the requested range without gaps", asy
     const currentTime = dayjs.utc("2026-07-01 12:00:00");
     UptimeCalculator.currentDate = currentTime;
     const c = createCalculator();
+    await c.update(UP);
 
     const buckets = getAggregatedBuckets(c, 7, 100, 60);
     const newest = buckets[buckets.length - 1];
@@ -149,6 +149,25 @@ test("getAggregatedBuckets - an outage is counted in the bucket that covers it",
             );
         }
     }
+});
+
+test("getAggregatedBuckets - the newest bucket only shows up after its first check", async (t) => {
+    const c = createCalculator();
+    UptimeCalculator.currentDate = dayjs.utc("2026-07-01 11:59:00");
+    await c.update(UP);
+
+    // 12:00 starts a bucket without a check yet, the bar still ends at 12:00
+    UptimeCalculator.currentDate = dayjs.utc("2026-07-01 12:00:30");
+    const before = getAggregatedBuckets(c, 2, 100, 60);
+    assert.strictEqual(before.length, 48);
+    assert.strictEqual(before[before.length - 1].end, dayjs.utc("2026-07-01 12:00:00").unix());
+
+    // Its first check adds it, and the oldest bucket drops off
+    await c.update(UP);
+    const after = getAggregatedBuckets(c, 2, 100, 60);
+    assert.strictEqual(after.length, 48);
+    assert.strictEqual(after[after.length - 1].start, dayjs.utc("2026-07-01 12:00:00").unix());
+    assert.strictEqual(after[0].start, before[1].start);
 });
 
 test("getAggregatedBuckets - bucket edges do not move between requests", async (t) => {
