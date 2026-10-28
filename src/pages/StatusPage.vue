@@ -791,14 +791,22 @@ export default {
         },
 
         overallStatus() {
-            if (Object.keys(this.$root.publicLastHeartbeatList).length === 0) {
+            const monitorIDs = Object.keys(this.$root.publicMonitorList).filter(
+                (id) => !this.$root.publicMonitorList[id].informational
+            );
+            if (monitorIDs.length === 0) {
+                return Object.keys(this.$root.publicMonitorList).length > 0 ? STATUS_PAGE_ALL_UP : -1;
+            }
+
+            const heartbeatIDs = monitorIDs.filter((id) => this.$root.publicLastHeartbeatList[id]);
+            if (heartbeatIDs.length === 0) {
                 return -1;
             }
 
             let status = STATUS_PAGE_ALL_UP;
             let hasUp = false;
 
-            for (let id in this.$root.publicLastHeartbeatList) {
+            for (let id of heartbeatIDs) {
                 let beat = this.$root.publicLastHeartbeatList[id];
 
                 if (beat.status === MAINTENANCE) {

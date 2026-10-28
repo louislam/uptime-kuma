@@ -2,6 +2,8 @@ const { describe, test, mock } = require("node:test");
 const assert = require("node:assert");
 const StatusPage = require("../../server/model/status_page");
 const {
+    DOWN,
+    UP,
     STATUS_PAGE_ALL_UP,
     STATUS_PAGE_ALL_DOWN,
     STATUS_PAGE_PARTIAL_DOWN,
@@ -9,6 +11,21 @@ const {
 } = require("../../src/util");
 
 describe("StatusPage", () => {
+    describe("overallStatus()", () => {
+        test("ignores offline informational monitors", () => {
+            const status = StatusPage.overallStatus([{ status: DOWN, informational: true }]);
+            assert.strictEqual(status, STATUS_PAGE_ALL_UP);
+        });
+
+        test("still reports outages from non-informational monitors", () => {
+            const status = StatusPage.overallStatus([
+                { status: UP, informational: true },
+                { status: DOWN, informational: false },
+            ]);
+            assert.strictEqual(status, STATUS_PAGE_ALL_DOWN);
+        });
+    });
+
     describe("getStatusDescription()", () => {
         test("returns 'No Services' when status is -1", () => {
             const description = StatusPage.getStatusDescription(-1);
