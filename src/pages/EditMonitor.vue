@@ -812,15 +812,6 @@
                                 </div>
                             </div>
 
-                            <div v-if="monitor.type === 'port'" class="my-3">
-                                <label for="port_security" class="form-label">{{ $t("SSL/TLS") }}</label>
-                                <select id="port_security" v-model="monitor.smtpSecurity" class="form-select">
-                                    <option value="nostarttls">{{ $t("None") }}</option>
-                                    <option value="secure">SSL</option>
-                                    <option value="starttls">STARTTLS</option>
-                                </select>
-                            </div>
-
                             <!-- SFTP Monitor Fields -->
                             <template v-if="monitor.type === 'sftp'">
                                 <div class="my-3">
@@ -898,47 +889,6 @@
                                         placeholder="/path/to/check (optional)"
                                     />
                                     <div class="form-text">{{ $t("sftpPathHelpText") }}</div>
-                                </div>
-                            </template>
-
-                            <!-- Expected TLS Alert (for TCP monitor mTLS verification) -->
-                            <template v-if="monitor.type === 'port'">
-                                <div class="my-3">
-                                    <label for="expected_tls_alert" class="form-label">
-                                        {{ $t("Expected TLS Alert") }}
-                                    </label>
-                                    <select
-                                        id="expected_tls_alert"
-                                        v-model="monitor.expectedTlsAlert"
-                                        class="form-select"
-                                    >
-                                        <option value="none">{{ $t("None (Successful Connection)") }}</option>
-                                        <!-- TLS alert names are from RFC 8446 spec and should NOT be translated -->
-                                        <optgroup :label="$t('TLS Alerts')">
-                                            <option value="certificate_required">certificate_required (116)</option>
-                                            <option value="bad_certificate">bad_certificate (42)</option>
-                                            <option value="certificate_unknown">certificate_unknown (46)</option>
-                                            <option value="unknown_ca">unknown_ca (48)</option>
-                                            <option value="access_denied">access_denied (49)</option>
-                                            <option value="handshake_failure">handshake_failure (40)</option>
-                                            <option value="certificate_expired">certificate_expired (45)</option>
-                                            <option value="certificate_revoked">certificate_revoked (44)</option>
-                                        </optgroup>
-                                    </select>
-                                    <i18n-t tag="div" class="form-text" keypath="expectedTlsAlertDescription">
-                                        <template #code>
-                                            <code>certificate_required</code>
-                                        </template>
-                                        <template #link>
-                                            <a
-                                                href="https://www.rfc-editor.org/rfc/rfc8446#section-6.2"
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                            >
-                                                {{ $t("TLS Alert Spec") }}
-                                            </a>
-                                        </template>
-                                    </i18n-t>
                                 </div>
                             </template>
 
@@ -1394,7 +1344,7 @@
                                     </label>
                                     <input
                                         id="system-service-name"
-                                        v-model="monitor.system_service_name"
+                                        v-model="monitor.config.systemServiceName"
                                         type="text"
                                         class="form-control"
                                         required
@@ -1405,29 +1355,29 @@
                                         <template v-if="$root.info.runtime.platform === 'linux'">
                                             {{
                                                 $t("systemServiceDescriptionLinux", {
-                                                    service_name: monitor.system_service_name || "nginx",
+                                                    service_name: monitor.config.systemServiceName || "nginx",
                                                 })
                                             }}
                                         </template>
                                         <template v-else-if="$root.info.runtime.platform === 'win32'">
                                             {{
                                                 $t("systemServiceDescriptionWindows", {
-                                                    service_name: monitor.system_service_name || "Dnscache",
+                                                    service_name: monitor.config.systemServiceName || "Dnscache",
                                                 })
                                             }}
                                         </template>
                                         <template v-else>
                                             {{
                                                 $t("systemServiceDescription", {
-                                                    service_name: monitor.system_service_name || "nginx",
+                                                    service_name: monitor.config.systemServiceName || "nginx",
                                                 })
                                             }}
                                         </template>
 
                                         <template
                                             v-if="
-                                                !monitor.system_service_name ||
-                                                /^[a-zA-Z0-9_\-\.\@\ ]+$/.test(monitor.system_service_name)
+                                                !monitor.config.systemServiceName ||
+                                                /^[a-zA-Z0-9_\-\.\@\ ]+$/.test(monitor.config.systemServiceName)
                                             "
                                         >
                                             <div v-if="$root.info.runtime.platform === 'linux'" class="mt-2">
@@ -1436,7 +1386,7 @@
                                                         <template #command>
                                                             <code>
                                                                 systemctl is-active
-                                                                {{ monitor.system_service_name || "nginx" }}
+                                                                {{ monitor.config.systemServiceName || "nginx" }}
                                                             </code>
                                                         </template>
                                                     </i18n-t>
@@ -1452,7 +1402,7 @@
                                                             <code>
                                                                 (Get-Service -Name '{{
                                                                     (
-                                                                        monitor.system_service_name || "Dnscache"
+                                                                        monitor.config.systemServiceName || "Dnscache"
                                                                     ).replaceAll("'", "''")
                                                                 }}').Status
                                                             </code>
@@ -1486,7 +1436,7 @@
                                     <select
                                         v-if="pm2ProcessOptions.length > 0"
                                         id="pm2-process-name"
-                                        v-model="monitor.system_service_name"
+                                        v-model="monitor.config.systemServiceName"
                                         class="form-select mt-2"
                                         required
                                     >
@@ -1503,7 +1453,7 @@
                                     <input
                                         v-else
                                         id="pm2-process-name"
-                                        v-model="monitor.system_service_name"
+                                        v-model="monitor.config.systemServiceName"
                                         type="text"
                                         class="form-control mt-2"
                                         placeholder="api"
@@ -1516,7 +1466,7 @@
                                     <div class="form-text">
                                         {{
                                             $t("pm2Description", {
-                                                service_name: monitor.system_service_name || "api",
+                                                service_name: monitor.config.systemServiceName || "api",
                                             })
                                         }}
                                         <div class="mt-2">
@@ -1770,8 +1720,6 @@
                                     monitor.type === 'http' ||
                                     monitor.type === 'keyword' ||
                                     monitor.type === 'json-query' ||
-                                    (monitor.type === 'port' &&
-                                        ['starttls', 'secure'].includes(monitor.smtpSecurity)) ||
                                     (monitor.type === 'globalping' && monitor.subtype === 'http')
                                 "
                                 class="my-3 form-check"
@@ -3412,11 +3360,11 @@ const monitorDefaults = {
     rabbitmqUsername: "",
     rabbitmqPassword: "",
     conditions: [],
-    system_service_name: "",
     sshAuthMethod: "password",
     ntpStratumThreshold: 5,
     ntpTimeOffsetThreshold: 1000,
     ntpRootDispersionThreshold: 500,
+    config: {},
 };
 
 export default {
@@ -3490,8 +3438,8 @@ export default {
             if (this.monitor.hostname) {
                 return this.monitor.hostname;
             }
-            if (this.monitor.system_service_name) {
-                return this.monitor.system_service_name;
+            if (this.monitor.config?.systemServiceName) {
+                return this.monitor.config.systemServiceName;
             }
             if (this.monitor.url) {
                 if (this.monitor.url !== "http://" && this.monitor.url !== "https://") {
@@ -4094,12 +4042,13 @@ message HealthCheckResponse {
 
                 const selectedProcess = this.pm2ProcessOptions.find(
                     (item) =>
-                        item.id === this.monitor.system_service_name || item.name === this.monitor.system_service_name
+                        item.id === this.monitor.config.systemServiceName ||
+                        item.name === this.monitor.config.systemServiceName
                 );
 
                 // Convert a legacy numeric id to the stable process name without replacing a missing saved target.
                 if (selectedProcess) {
-                    this.monitor.system_service_name = selectedProcess.name;
+                    this.monitor.config.systemServiceName = selectedProcess.name;
                 }
             });
         },
@@ -4421,8 +4370,8 @@ message HealthCheckResponse {
                 this.monitor.url = this.monitor.url.trim();
             }
 
-            if (["system-service", "pm2"].includes(this.monitor.type) && this.monitor.system_service_name) {
-                this.monitor.system_service_name = this.monitor.system_service_name.trim();
+            if (["system-service", "pm2"].includes(this.monitor.type) && this.monitor.config.systemServiceName) {
+                this.monitor.config.systemServiceName = this.monitor.config.systemServiceName.trim();
             }
 
             if (this.monitor.databaseConnectionString) {

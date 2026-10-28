@@ -13,6 +13,7 @@ const dayjs = require("dayjs");
 const { UP, MAINTENANCE, DOWN, PENDING, flipStatus, log, badgeConstants } = require("../../src/util");
 const StatusPage = require("../model/status_page");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
+const { emitHeartbeat } = require("../heartbeat-emit");
 const { makeBadge } = require("badge-maker");
 const { Prometheus } = require("../prometheus");
 const { UptimeCalculator } = require("../uptime-calculator");
@@ -134,9 +135,9 @@ router.all("/api/push/:pushToken", async (request, response) => {
 
         await R.store(bean);
 
-        io.to(monitor.user_id).emit("heartbeat", bean.toJSON());
+        emitHeartbeat(io, bean.toJSON());
 
-        Monitor.sendStats(io, monitor.id, monitor.user_id);
+        Monitor.sendStats(io, monitor.id);
 
         try {
             new Prometheus(monitor, await monitor.getTags()).update(bean, undefined);
@@ -265,6 +266,7 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
             badgeValues.color = badgeConstants.naColor;
         } else {
             const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(requestedMonitorId);
+            await uptimeCalculator.ensureHistoryLoaded();
             const uptime = overrideValue ?? uptimeCalculator.getDataByDuration(requestedDuration).uptime;
 
             // limit the displayed uptime percentage to four (two, when displayed as percent) decimal digits
@@ -331,6 +333,7 @@ router.get("/api/badge/:id/ping/:duration?", cache("5 minutes"), async (request,
             badgeValues.color = badgeConstants.naColor;
         } else {
             const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(requestedMonitorId);
+            await uptimeCalculator.ensureHistoryLoaded();
             const avgPing = uptimeCalculator.getDataByDuration(requestedDuration).avgPing;
             const avgPingValue = parseInt(overrideValue ?? avgPing);
 
@@ -386,6 +389,7 @@ router.get("/api/badge/:id/avg-response/:duration?", cache("5 minutes"), async (
 
         if (publicMonitor) {
             const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(requestedMonitorId);
+            await uptimeCalculator.ensureHistoryLoaded();
             avgPing = uptimeCalculator.getDataByDuration(`${requestedDuration}h`).avgPing;
         }
 
