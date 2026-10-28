@@ -148,7 +148,7 @@
             <div class="shadow-box">
                 <div class="row">
                     <div class="col-md-8">
-                        <HeartbeatBar :monitor-id="monitor.id" />
+                        <HeartbeatBar :monitor-id="monitor.id" :informational="monitor.informational" />
                         <span class="word">
                             {{ $t("checkEverySecond", [monitor.interval]) }} ({{
                                 secondsToHumanReadableFormat(monitor.interval)
@@ -208,7 +208,7 @@
             <div class="shadow-box big-padding text-center stats">
                 <div class="row">
                     <div
-                        v-if="monitor.type !== 'group'"
+                        v-if="monitor.type !== 'group' && !monitor.informational"
                         class="col-12 col-sm col row d-flex align-items-center d-sm-block"
                     >
                         <h4 class="col-4 col-sm-12">{{ pingTitle() }}</h4>
@@ -231,7 +231,10 @@
                     </div>
 
                     <!-- Uptime (24-hour) -->
-                    <div class="col-12 col-sm col row d-flex align-items-center d-sm-block">
+                    <div
+                        v-if="!monitor.informational"
+                        class="col-12 col-sm col row d-flex align-items-center d-sm-block"
+                    >
                         <h4 class="col-4 col-sm-12">{{ $t("Uptime") }}</h4>
                         <p class="col-4 col-sm-12 mb-0 mb-sm-2">({{ $t("hours", 24) }})</p>
                         <span class="col-4 col-sm-12 num">
@@ -240,7 +243,10 @@
                     </div>
 
                     <!-- Uptime (30-day) -->
-                    <div class="col-12 col-sm col row d-flex align-items-center d-sm-block">
+                    <div
+                        v-if="!monitor.informational"
+                        class="col-12 col-sm col row d-flex align-items-center d-sm-block"
+                    >
                         <h4 class="col-4 col-sm-12">{{ $t("Uptime") }}</h4>
                         <p class="col-4 col-sm-12 mb-0 mb-sm-2">({{ $t("days", 30) }})</p>
                         <span class="col-4 col-sm-12 num">
@@ -249,7 +255,10 @@
                     </div>
 
                     <!-- Uptime (1-year) -->
-                    <div class="col-12 col-sm col row d-flex align-items-center d-sm-block">
+                    <div
+                        v-if="!monitor.informational"
+                        class="col-12 col-sm col row d-flex align-items-center d-sm-block"
+                    >
                         <h4 class="col-4 col-sm-12">{{ $t("Uptime") }}</h4>
                         <p class="col-4 col-sm-12 mb-0 mb-sm-2">({{ $t("years", 1) }})</p>
                         <span class="col-4 col-sm-12 num">
@@ -305,7 +314,7 @@
             <div v-if="showPingChartBox" class="shadow-box big-padding text-center ping-chart-wrapper">
                 <div class="row">
                     <div class="col">
-                        <PingChart :monitor-id="monitor.id" />
+                        <PingChart :monitor-id="monitor.id" :informational="monitor.informational" />
                     </div>
                 </div>
             </div>
@@ -358,7 +367,7 @@
                     </thead>
                     <tbody>
                         <tr v-for="(beat, index) in displayedRecords" :key="index" style="padding: 10px">
-                            <td><Status :status="beat.status" /></td>
+                            <td><Status :status="beat.status" :informational="monitor.informational" /></td>
                             <td :class="{ 'border-0': !beat.msg }">
                                 <Datetime :value="beat.time" />
                             </td>
@@ -450,7 +459,7 @@ import Pagination from "v-pagination-3";
 const PingChart = defineAsyncComponent(() => import("../components/PingChart.vue"));
 import Tag from "../components/Tag.vue";
 import CertificateInfo from "../components/CertificateInfo.vue";
-import { getMonitorRelativeURL } from "../util.ts";
+import { DOWN, UP, getMonitorRelativeURL } from "../util.ts";
 import { URL } from "whatwg-url";
 import DOMPurify from "dompurify";
 import { marked } from "marked";
@@ -560,6 +569,25 @@ export default {
         },
 
         status() {
+            if (this.monitor.informational) {
+                if (this.lastHeartBeat.status === UP) {
+                    return {
+                        color: "info",
+                        text: this.$t("Up"),
+                    };
+                }
+                if (this.lastHeartBeat.status === DOWN) {
+                    return {
+                        color: "secondary",
+                        text: this.$t("Offline"),
+                    };
+                }
+                return {
+                    color: "secondary",
+                    text: this.$t("Unknown"),
+                };
+            }
+
             if (this.$root.statusList[this.monitor.id]) {
                 return this.$root.statusList[this.monitor.id];
             }

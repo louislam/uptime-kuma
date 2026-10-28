@@ -27,6 +27,10 @@ describe("monitorConfigSchema", () => {
             systemServiceName: "nginx",
         });
     });
+
+    test("accepts the informational flag", () => {
+        assert.deepStrictEqual(monitorConfigSchema.parse({ informational: true }), { informational: true });
+    });
 });
 
 describe("Monitor.getConfig()", () => {
@@ -62,6 +66,27 @@ describe("Monitor.setConfigValue()", () => {
         monitor.setConfigValue("b", 2);
 
         assert.deepStrictEqual(monitor.getConfig(), { a: 1, b: 2 });
+    });
+});
+
+describe("Monitor informational mode", () => {
+    test("reads and writes informational mode through monitor config", () => {
+        const monitor = createMonitor({ systemServiceName: "nginx" });
+
+        monitor.setInformational(true);
+
+        assert.strictEqual(monitor.isInformational(), true);
+        assert.deepStrictEqual(monitor.getConfig(), { systemServiceName: "nginx", informational: true });
+    });
+
+    test("the top-level toggle overrides stale informational config", () => {
+        const monitor = createMonitor({ informational: true });
+
+        monitor.applyClientConfig({ informational: true });
+        monitor.setInformational(false);
+
+        assert.strictEqual(monitor.isInformational(), false);
+        assert.deepStrictEqual(monitor.getConfig(), { informational: false });
     });
 });
 
