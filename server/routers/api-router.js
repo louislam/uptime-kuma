@@ -12,18 +12,348 @@ const Monitor = require("../model/monitor");
 const dayjs = require("dayjs");
 const { UP, MAINTENANCE, DOWN, PENDING, flipStatus, log, badgeConstants } = require("../../src/util");
 const StatusPage = require("../model/status_page");
-const { UptimeKumaServer } = require("../uptime-kuma-server");
+const { UptimeKumaServer, getInfo } = require("../uptime-kuma-server");
 const { emitHeartbeat } = require("../heartbeat-emit");
 const { makeBadge } = require("badge-maker");
 const { Prometheus } = require("../prometheus");
 const { UptimeCalculator } = require("../uptime-calculator");
 const { Settings } = require("../settings");
+const { requireApiKey, readApiKey } = require("../auth");
+const { getSessionFromHeaders } = require("../better-auth");
+const { z } = require("zod");
+const { createDocument } = require("zod-openapi");
+const { apiReference } = require("@scalar/express-api-reference");
+const checkVersion = require("../check-version");
+
+const apiPaths = {};
+
+/**
+ * Every route declaring `resolve`, filled below as the routes register and read by the MCP router
+ * @type {Array<{method: string, path: string, operation: object}>}
+ */
+const apiOperations = [];
+
+/**
+ * Create the Express handler of a route that only declares `resolve`
+ * @param {object} operation OpenAPI operation with a `resolve` function
+ * @returns {Function} Express handler answering `{ ok: true, ...body }`
+ */
+function createRouteHandler(operation) {
+    return async (request, response) => {
+        try {
+            const body = await operation.resolve(request);
+            response.json({
+                ok: true,
+                ...body,
+            });
+        } catch (e) {
+            log.error("api", `Failed to run ${operation.operationId}: ` + e.message);
+            response.status(500).json({
+                ok: false,
+                msg: operation.errorMessage || "Internal server error",
+            });
+        }
+    };
+}
+
+/**
+ * Create an Express router that also records the OpenAPI operation of each route.
+ * The operation is passed as a plain object among the route handlers, e.g.
+ * `router.get("/path", middleware, { summary, responses }, handler)`.
+ * @returns {express.Router} Router that keeps `router.get(path, ...)` working as usual
+ */
+function createApiRouter() {
+    const apiRouter = express.Router();
+
+    for (const method of ["get", "post", "put", "delete", "patch"]) {
+        const register = apiRouter[method].bind(apiRouter);
+
+        apiRouter[method] = (path, ...handlers) => {
+            const operation = handlers.find(
+                (handler) => typeof handler === "object" && handler !== null && !Array.isArray(handler)
+            );
+            const middleware = handlers.filter((handler) => handler !== operation);
+
+            if (operation) {
+                // `resolve` and `errorMessage` describe the route, they are not part of the OpenAPI document
+                const documented = { ...operation };
+                delete documented.resolve;
+                delete documented.errorMessage;
+
+                apiPaths[path] = {
+                    ...(apiPaths[path] || {}),
+                    [method]: {
+                        security: [{ bearerAuth: [] }],
+                        ...documented,
+                        responses: {
+                            ...errorResponses,
+                            ...operation.responses,
+                        },
+                    },
+                };
+
+                if (typeof operation.resolve === "function") {
+                    if (!operation.operationId) {
+                        throw new Error(`The route ${method.toUpperCase()} ${path} needs an operationId for MCP`);
+                    }
+                    apiOperations.push({ method, path, operation });
+                    middleware.push(createRouteHandler(operation));
+                }
+            }
+
+            return register(path, ...middleware);
+        };
+    }
+
+    return apiRouter;
+}
 
 let router = express.Router();
+let openAPIRouter = createApiRouter();
 
 let cache = apicache.middleware;
 const server = UptimeKumaServer.getInstance();
 let io = server.io;
+
+/*
+ * OpenAPI helpers: the operation is written next to its route, the paths are collected from there
+ */
+const errorSchema = z
+    .object({
+        ok: z.literal(false),
+        msg: z.string(),
+    })
+    .meta({ id: "Error" });
+
+const errorResponse = (description) => ({
+    description,
+    content: {
+        "application/json": {
+            schema: errorSchema,
+        },
+    },
+});
+
+/**
+ * Success response shaped `{ ok: true, ...shape }`, shared by every API route
+ * @param {string} description Response description
+ * @param {object} shape Additional properties of the body
+ * @returns {object} OpenAPI response object
+ */
+const okResponse = (description, shape) => ({
+    description,
+    content: {
+        "application/json": {
+            schema: z.object({
+                ok: z.literal(true),
+                ...shape,
+            }),
+        },
+    },
+});
+
+/**
+ * Error responses every API route can return, routes only declare their own add-ons
+ */
+const errorResponses = {
+    401: errorResponse("Missing or invalid API key"),
+    403: errorResponse("The API is disabled"),
+    429: errorResponse("Rate limit exceeded"),
+};
+
+const infoSchema = z
+    .object({
+        primaryBaseURL: z.string().nullable(),
+        serverTimezone: z.string(),
+        serverTimezoneOffset: z.string(),
+        version: z.string(),
+        latestVersion: z.string().nullable(),
+        isContainer: z.boolean(),
+        dbType: z.string(),
+        runtime: z.object({
+            platform: z.string(),
+            arch: z.string(),
+        }),
+    })
+    .meta({ id: "Info" });
+
+const tagSchema = z
+    .object({
+        tag_id: z.number(),
+        monitor_id: z.number(),
+        value: z.string().nullable(),
+        name: z.string(),
+        color: z.string(),
+    })
+    .meta({ id: "Tag" });
+
+const monitorSchema = z
+    .object({
+        id: z.number(),
+        name: z.string(),
+        type: z.string(),
+        active: z.boolean(),
+        parent: z.number().nullable(),
+        childrenIDs: z.array(z.number()),
+        tags: z.array(tagSchema),
+        path: z.array(z.string()),
+        pathName: z.string(),
+        interval: z.number(),
+        weight: z.number().nullable(),
+    })
+    .meta({ id: "Monitor" });
+
+/*
+ * Server Information
+ */
+openAPIRouter.get("/api/info", requireApiKey, {
+    operationId: "get_info",
+    summary: "Get the server information",
+    description: "The same payload the dashboard receives from the `info` socket event.",
+    errorMessage: "Failed to get the server information",
+    resolve: async () => ({
+        info: await getInfo(),
+    }),
+    responses: {
+        200: okResponse("Server information", {
+            info: infoSchema,
+        }),
+    },
+});
+
+/*
+ * Monitors
+ */
+openAPIRouter.get("/api/monitors", requireApiKey, {
+    operationId: "get_monitors",
+    summary: "Get all monitors",
+    description: "The compact monitor list the dashboard receives after logging in, without secrets.",
+    errorMessage: "Failed to get the monitors",
+    resolve: async () => ({
+        monitors: Object.values(await server.getMonitorJSONList(null, true)),
+    }),
+    responses: {
+        200: okResponse("Monitor list", {
+            monitors: z.array(monitorSchema),
+        }),
+    },
+});
+
+let openApiDocument;
+
+/**
+ * Build the OpenAPI document once, after every route has registered its operation
+ * @returns {object} OpenAPI document
+ */
+function getOpenApiDocument() {
+    if (!openApiDocument) {
+        openApiDocument = createDocument({
+            openapi: "3.1.0",
+            info: {
+                title: "Uptime Kuma API",
+                version: checkVersion.version,
+                description: "Alpha. Requires an API key and the `API and MCP` setting to be enabled.",
+            },
+            components: {
+                securitySchemes: {
+                    bearerAuth: {
+                        type: "http",
+                        scheme: "bearer",
+                    },
+                },
+            },
+            paths: apiPaths,
+        });
+    }
+
+    return openApiDocument;
+}
+
+/**
+ * Whether the request carries a dashboard session or a valid API key
+ * @param {express.Request} request Express request
+ * @returns {Promise<boolean>} True when the caller may read the API documentation
+ */
+async function hasApiAccess(request) {
+    // A dashboard session (cookie) can open the docs in a browser
+    if (await getSessionFromHeaders(request.headers.cookie)) {
+        return true;
+    }
+
+    const apiKey = readApiKey(request.headers.authorization);
+
+    return !!(apiKey && (await getSessionFromHeaders(undefined, apiKey)));
+}
+
+/**
+ * Send a plain text message for the docs page
+ * @param {express.Response} response Express response
+ * @param {number} status HTTP status
+ * @param {string} message Message shown to the user
+ * @returns {void}
+ */
+function sendTextMessage(response, status, message) {
+    response.status(status).type("text/plain").send(message);
+}
+
+/**
+ * Require an enabled API and either an API key or a dashboard session for the JSON document
+ * @param {express.Request} request Express request
+ * @param {express.Response} response Express response
+ * @param {express.NextFunction} next Next handler in chain
+ * @returns {Promise<void>}
+ */
+async function requireApiAccess(request, response, next) {
+    if (!(await Settings.get("apiEnabled"))) {
+        response.status(403).json({
+            ok: false,
+            msg: "The API is disabled",
+        });
+        return;
+    }
+
+    if (await hasApiAccess(request)) {
+        next();
+        return;
+    }
+
+    log.warn("api-auth", "Failed API auth attempt: documentation requires a session or an API key");
+    response.status(401).json({
+        ok: false,
+        msg: "Missing or invalid API key",
+    });
+}
+
+/**
+ * Require the same access for the docs page, but explain it in plain text
+ * @param {express.Request} request Express request
+ * @param {express.Response} response Express response
+ * @param {express.NextFunction} next Next handler in chain
+ * @returns {Promise<void>}
+ */
+async function requireDocsAccess(request, response, next) {
+    if (!(await Settings.get("apiEnabled"))) {
+        sendTextMessage(
+            response,
+            403,
+            'The API is disabled. Enable "API and MCP" in Settings -> General to use the API and this documentation.'
+        );
+        return;
+    }
+
+    if (await hasApiAccess(request)) {
+        next();
+        return;
+    }
+
+    sendTextMessage(response, 401, "Log in to Uptime Kuma to view the API documentation.");
+}
+
+openAPIRouter.get("/api/openapi.json", requireApiAccess, (request, response) => {
+    response.json(getOpenApiDocument());
+});
+
+openAPIRouter.get("/api/docs", requireDocsAccess, apiReference({ url: "/api/openapi.json" }));
 
 router.get("/api/entry-page", async (request, response) => {
     allowDevAllOrigin(response);
@@ -646,4 +976,12 @@ async function isMonitorPublic(monitorID) {
     return !!publicMonitor;
 }
 
-module.exports = router;
+// Existing routes stay on a plain router, the documented API routes live on openAPIRouter
+const parentRouter = express.Router();
+parentRouter.use(router);
+parentRouter.use(openAPIRouter);
+
+// Read by the MCP router, which bridges every `resolve` route to a tool
+parentRouter.apiOperations = apiOperations;
+
+module.exports = parentRouter;

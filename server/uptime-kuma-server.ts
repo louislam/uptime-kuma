@@ -1,71 +1,69 @@
-const express = require("express");
-const https = require("https");
-const fs = require("fs");
-const http = require("http");
-const { Server } = require("socket.io");
-const { R } = require("redbean-node");
-const { log, isDevEnv, devOriginList } = require("../src/util");
-const Database = require("./database");
-const util = require("util");
-const { Settings } = require("./settings");
-const dayjs = require("dayjs");
-const childProcessAsync = require("promisify-child-process");
-const path = require("path");
-const axios = require("axios");
-const { isSSL, sslKey, sslCert, sslKeyPassphrase } = require("./config");
-const { getSession, getDisableAuthSession } = require("./better-auth");
-const { toCompactMonitor } = require("./compact-monitor");
-// DO NOT IMPORT HERE IF THE MODULES USED `UptimeKumaServer.getInstance()`, put at the bottom of this file instead.
+import express from "express";
+import https from "node:https";
+import fs from "node:fs";
+import http from "node:http";
+import { Server } from "socket.io";
+import { R } from "redbean-node";
+import { log, isDevEnv, devOriginList } from "../src/util";
+import Database from "./database";
+import checkVersion from "./check-version";
+import util from "node:util";
+import { Settings } from "./settings";
+import dayjs from "dayjs";
+import childProcessAsync from "promisify-child-process";
+import path from "node:path";
+import axios from "axios";
+import packageJson from "../package.json";
+import { isSSL, sslKey, sslCert, sslKeyPassphrase } from "./config";
+import { getSession, getDisableAuthSession } from "./better-auth";
+import { toCompactMonitor } from "./compact-monitor";
+import type { MonitorType } from "./monitor-types/monitor-type";
+import type Maintenance from "./model/maintenance";
 
 /**
- * `module.exports` (alias: `server`) should be inside this class, in order to avoid circular dependency issue.
- * @type {UptimeKumaServer}
+ * The Uptime Kuma server: express app, socket.io server, monitors and maintenances.
  */
-class UptimeKumaServer {
+export class UptimeKumaServer {
     /**
      * Current server instance
-     * @type {UptimeKumaServer}
      */
-    static instance = null;
+    static instance: UptimeKumaServer | null = null;
 
     /**
      * Main monitor list
-     * @type {{}}
      */
-    monitorList = {};
+    monitorList: Record<number, Monitor> = {};
 
     /**
      * Main maintenance list
-     * @type {{}}
      */
-    maintenanceList = {};
+    maintenanceList: Record<number, Maintenance> = {};
 
     entryPage = "dashboard";
-    app = undefined;
-    httpServer = undefined;
-    io = undefined;
+    app!: express.Express;
+    httpServer!: http.Server | https.Server;
+    io!: Server;
 
     /**
      * Cache Index HTML
-     * @type {string}
      */
     indexHTML = "";
 
     /**
-     * @type {{}}
+     * Registered monitor types
      */
-    static monitorTypeList = {};
+    static monitorTypeList: Record<string, MonitorType> = {};
 
     /**
      * Get the current instance of the server if it exists, otherwise
      * create a new instance.
      * @returns {UptimeKumaServer} Server instance
      */
-    static getInstance() {
+    static getInstance(): UptimeKumaServer {
         if (UptimeKumaServer.instance == null) {
             UptimeKumaServer.instance = new UptimeKumaServer();
         }
-        return UptimeKumaServer.instance;
+        return UptimeKumaServer.instance!;
     }
 
     /**
@@ -572,7 +570,7 @@ class UptimeKumaServer {
      * @returns {string} User-Agent
      */
     getUserAgent() {
-        return "Uptime-Kuma/" + require("../package.json").version;
+        return "Uptime-Kuma/" + packageJson.version;
     }
 
     /**
@@ -594,11 +592,36 @@ class UptimeKumaServer {
     }
 }
 
-module.exports = {
-    UptimeKumaServer,
-};
+/**
+ * Collects the server information, shared by the `info` socket event and the API
+ * @param hideVersion Should the version information be hidden?
+ * @returns Server information
+ */
+export async function getInfo(hideVersion = false) {
+    const server = UptimeKumaServer.getInstance();
+
+    const info = {
+        primaryBaseURL: await Settings.get("primaryBaseURL"),
+        serverTimezone: await server.getTimezone(),
+        serverTimezoneOffset: server.getTimezoneOffset(),
+    };
+
+    if (!hideVersion) {
+        info.version = checkVersion.version;
+        info.latestVersion = checkVersion.latestVersion;
+        info.isContainer = process.env.UPTIME_KUMA_IS_CONTAINER === "1";
+        info.dbType = Database.dbConfig.type;
+        info.runtime = {
+            platform: process.platform, // linux or win32
+            arch: process.arch, // x86 or arm
+        };
+    }
+
+    return info;
+}
 
 // Must be at the end to avoid circular dependencies
+/* eslint-disable @typescript-eslint/no-require-imports */
 const { RealBrowserMonitorType } = require("./monitor-types/real-browser-monitor-type");
 const { PingMonitorType } = require("./monitor-types/ping");
 const { TailscalePing } = require("./monitor-types/tailscale-ping");
