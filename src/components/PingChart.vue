@@ -67,6 +67,11 @@ export default {
             type: Number,
             required: true,
         },
+        /** Whether to display offline periods as neutral bars */
+        informational: {
+            type: Boolean,
+            default: false,
+        },
     },
     data() {
         return {
@@ -289,6 +294,10 @@ export default {
     methods: {
         // Get color of bar chart for this datapoint
         getBarColorForDatapoint(datapoint) {
+            if (this.informational && datapoint.down > 0) {
+                return "rgba(108, 117, 125, 0.41)";
+            }
+
             if (datapoint.maintenance != null) {
                 // Target is in maintenance
                 return "rgba(23,71,245,0.41)";
@@ -402,6 +411,9 @@ export default {
                         break;
                     case PENDING:
                         colorData.push("rgba(245, 182, 23, 0.41)");
+                        break;
+                    case DOWN:
+                        colorData.push(this.informational ? "rgba(108, 117, 125, 0.41)" : "rgba(220, 53, 69, 0.41)");
                         break;
                     default:
                         colorData.push("rgba(220, 53, 69, 0.41)");

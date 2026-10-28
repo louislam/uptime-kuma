@@ -77,6 +77,23 @@ const rootCertificates = rootCertificatesFingerprints();
  */
 class Monitor extends BeanModel {
     /**
+     * Whether this monitor reports status without affecting overall uptime.
+     * @returns {boolean} Informational mode enabled?
+     */
+    isInformational() {
+        return Boolean(this.getConfigValue("informational", false));
+    }
+
+    /**
+     * Set informational mode in monitor config.
+     * @param {boolean} value Whether informational mode is enabled
+     * @returns {void}
+     */
+    setInformational(value) {
+        this.setConfigValue("informational", Boolean(value));
+    }
+
+    /**
      * Return an object that ready to parse to JSON for public Only show
      * necessary data to public
      * @param {boolean} showTags Include tags in JSON
@@ -90,6 +107,7 @@ class Monitor extends BeanModel {
             name: this.name,
             sendUrl: this.sendUrl,
             type: this.type,
+            informational: this.isInformational(),
         };
 
         if (this.sendUrl) {
@@ -151,6 +169,7 @@ class Monitor extends BeanModel {
             timeout: this.timeout,
             interval: this.interval,
             retryInterval: this.retryInterval,
+            informational: this.isInformational(),
             retryOnlyOnStatusCodeFailure: Boolean(this.retry_only_on_status_code_failure),
             resendInterval: this.resendInterval,
             keyword: this.keyword,
@@ -519,8 +538,9 @@ class Monitor extends BeanModel {
             bean.time = R.isoDateTimeMillis(dayjs.utc());
             bean.status = DOWN;
             bean.downCount = previousBeat?.downCount || 0;
+            const isInformational = this.isInformational();
 
-            if (this.isUpsideDown()) {
+            if (this.isUpsideDown() && !isInformational) {
                 bean.status = flipStatus(bean.status);
             }
 
@@ -926,7 +946,7 @@ class Monitor extends BeanModel {
                     throw new Error("Unknown Monitor Type");
                 }
 
-                if (this.isUpsideDown()) {
+                if (this.isUpsideDown() && !isInformational) {
                     bean.status = flipStatus(bean.status);
 
                     if (bean.status === DOWN) {
@@ -936,19 +956,24 @@ class Monitor extends BeanModel {
 
                 retries = 0;
             } catch (error) {
-                if (error?.name === "CanceledError") {
+                if (isInformational) {
+                    bean.status = DOWN;
+                    bean.msg = "Offline";
+                } else if (error?.name === "CanceledError") {
                     bean.msg = `timeout by AbortSignal (${this.timeout}s)`;
                 } else {
                     bean.msg = error.message;
                 }
 
-                if (this.getSaveErrorResponse() && error?.response?.data !== undefined) {
+                if (!isInformational && this.getSaveErrorResponse() && error?.response?.data !== undefined) {
                     await this.saveResponseData(bean, error.response.data);
                 }
 
                 // If UP come in here, it must be upside down mode
                 // Just reset the retries
-                if (this.isUpsideDown() && bean.status === UP) {
+                if (isInformational) {
+                    retries = 0;
+                } else if (this.isUpsideDown() && bean.status === UP) {
                     retries = 0;
                 } else if (this.type === "json-query" && this.retry_only_on_status_code_failure) {
                     // For json-query monitors with retry_only_on_status_code_failure enabled,
@@ -982,11 +1007,15 @@ class Monitor extends BeanModel {
             bean.retries = retries;
 
             log.debug("monitor", `[${this.name}] Check isImportant`);
-            let isImportant = Monitor.isImportantBeat(isFirstBeat, previousBeat?.status, bean.status);
+            let hasStatusChanged = Monitor.isImportantBeat(isFirstBeat, previousBeat?.status, bean.status);
+            let isImportant = hasStatusChanged && !isInformational;
 
             // Mark as important if status changed, ignore pending pings,
             // Don't notify if disrupted changes to up
-            if (isImportant) {
+            if (isInformational) {
+                bean.important = false;
+                bean.downCount = 0;
+            } else if (isImportant) {
                 bean.important = true;
 
                 if (Monitor.isImportantForNotification(isFirstBeat, previousBeat?.status, bean.status)) {
@@ -1024,6 +1053,10 @@ class Monitor extends BeanModel {
                         bean.downCount = 0;
                     }
                 }
+            }
+
+            if (isInformational && hasStatusChanged) {
+                apicache.clear();
             }
 
             if (bean.status !== MAINTENANCE && Boolean(this.domainExpiryNotification)) {
@@ -1066,6 +1099,8 @@ class Monitor extends BeanModel {
                 );
             } else if (bean.status === MAINTENANCE) {
                 log.warn("monitor", `Monitor #${this.id} '${this.name}': Under Maintenance | Type: ${this.type}`);
+            } else if (isInformational) {
+                log.debug("monitor", `Monitor #${this.id} '${this.name}': Offline | Type: ${this.type}`);
             } else {
                 log.warn(
                     "monitor",
@@ -1075,7 +1110,12 @@ class Monitor extends BeanModel {
 
             // Calculate uptime
             let uptimeCalculator = await UptimeCalculator.getUptimeCalculator(this.id);
-            let endTimeDayjs = await uptimeCalculator.update(bean.status, parseFloat(bean.ping));
+            let endTimeDayjs;
+            if (isInformational) {
+                endTimeDayjs = dayjs.utc(bean.time);
+            } else {
+                endTimeDayjs = await uptimeCalculator.update(bean.status, parseFloat(bean.ping));
+            }
             bean.end_time = R.isoDateTimeMillis(endTimeDayjs);
 
             // Send to frontend
@@ -1088,7 +1128,7 @@ class Monitor extends BeanModel {
             await R.store(bean);
 
             log.debug("monitor", `[${this.name}] prometheus.update`);
-            if (this.prometheus) {
+            if (!isInformational && this.prometheus) {
                 // Serve the gauges from the grouped stats cache, never from full history
                 updatePrometheusStats(this.prometheus, this.id, bean, tlsInfo);
             }

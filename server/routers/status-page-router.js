@@ -72,17 +72,21 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
         slug = slug.toLowerCase();
         let statusPageID = await StatusPage.slugToID(slug);
 
-        let monitorIDList = await R.getCol(
+        let monitorList = await R.getAll(
             `
-            SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
-            WHERE monitor_group.group_id = \`group\`.id
-            AND public = 1
+            SELECT monitor.*
+            FROM monitor_group
+            JOIN \`group\` ON monitor_group.group_id = \`group\`.id
+            JOIN monitor ON monitor.id = monitor_group.monitor_id
+            WHERE \`group\`.public = 1
             AND \`group\`.status_page_id = ?
         `,
             [statusPageID]
         );
+        monitorList = R.convertToBeans("monitor", monitorList);
 
-        for (let monitorID of monitorIDList) {
+        for (let monitor of monitorList) {
+            let monitorID = monitor.id;
             let list = await R.getAll(
                 `
                     SELECT * FROM heartbeat
@@ -96,9 +100,11 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
             list = R.convertToBeans("heartbeat", list);
             heartbeatList[monitorID] = list.reverse().map((row) => row.toPublicJSON());
 
-            const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);
-            await uptimeCalculator.ensureHistoryLoaded();
-            uptimeList[`${monitorID}_24`] = uptimeCalculator.get24Hour().uptime;
+            if (!monitor.isInformational()) {
+                const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);
+                await uptimeCalculator.ensureHistoryLoaded();
+                uptimeList[`${monitorID}_24`] = uptimeCalculator.get24Hour().uptime;
+            }
         }
 
         response.json({

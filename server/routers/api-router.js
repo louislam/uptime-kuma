@@ -394,6 +394,7 @@ router.all("/api/push/:pushToken", async (request, response) => {
         }
 
         const previousHeartbeat = await Monitor.getPreviousHeartbeat(monitor.id);
+        const isInformational = monitor.isInformational();
 
         let isFirstBeat = true;
 
@@ -417,24 +418,43 @@ router.all("/api/push/:pushToken", async (request, response) => {
                 statusFromParam,
                 previousHeartbeat,
                 monitor.maxretries,
-                monitor.isUpsideDown(),
+                monitor.isUpsideDown() && !isInformational,
                 bean,
                 isExplicitDown
             );
         }
 
+        if (isInformational && bean.status !== MAINTENANCE) {
+            bean.status = statusFromParam;
+            bean.retries = 0;
+            if (bean.status === DOWN) {
+                bean.msg = "Offline";
+            }
+        }
+
         // Calculate uptime
         let uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitor.id);
-        let endTimeDayjs = await uptimeCalculator.update(bean.status, parseFloat(bean.ping));
+        let endTimeDayjs;
+        if (isInformational) {
+            endTimeDayjs = dayjs.utc(bean.time);
+        } else {
+            endTimeDayjs = await uptimeCalculator.update(bean.status, parseFloat(bean.ping));
+        }
         bean.end_time = R.isoDateTimeMillis(endTimeDayjs);
 
         log.debug("router", `/api/push/ called at ${dayjs().format("YYYY-MM-DD HH:mm:ss.SSS")}`);
         log.debug("router", "PreviousStatus: " + previousHeartbeat?.status);
         log.debug("router", "Current Status: " + bean.status);
 
-        bean.important = Monitor.isImportantBeat(isFirstBeat, previousHeartbeat?.status, bean.status);
+        const hasStatusChanged = Monitor.isImportantBeat(isFirstBeat, previousHeartbeat?.status, bean.status);
+        bean.important = hasStatusChanged && !isInformational;
 
-        if (Monitor.isImportantForNotification(isFirstBeat, previousHeartbeat?.status, bean.status)) {
+        if (isInformational) {
+            bean.downCount = 0;
+            if (hasStatusChanged) {
+                apicache.clear();
+            }
+        } else if (Monitor.isImportantForNotification(isFirstBeat, previousHeartbeat?.status, bean.status)) {
             // Reset down count
             bean.downCount = 0;
 
@@ -463,10 +483,16 @@ router.all("/api/push/:pushToken", async (request, response) => {
 
         Monitor.sendStats(io, monitor.id);
 
-        try {
-            new Prometheus(monitor, await monitor.getTags()).update(bean, undefined);
-        } catch (e) {
-            log.error("prometheus", "Please submit an issue to our GitHub repo. Prometheus update error: ", e.message);
+        if (!isInformational) {
+            try {
+                new Prometheus(monitor, await monitor.getTags()).update(bean, undefined);
+            } catch (e) {
+                log.error(
+                    "prometheus",
+                    "Please submit an issue to our GitHub repo. Prometheus update error: ",
+                    e.message
+                );
+            }
         }
 
         response.json({
@@ -512,6 +538,8 @@ router.get("/api/badge/:id/status", cache("5 minutes"), async (request, response
             badgeValues.message = "N/A";
             badgeValues.color = badgeConstants.naColor;
         } else {
+            const monitor = await R.findOne("monitor", "id = ?", [requestedMonitorId]);
+            const isInformational = monitor.isInformational();
             const heartbeat = await Monitor.getPreviousHeartbeat(requestedMonitorId);
             const state = overrideValue !== undefined ? overrideValue : heartbeat.status;
 
@@ -520,26 +548,37 @@ router.get("/api/badge/:id/status", cache("5 minutes"), async (request, response
             } else {
                 badgeValues.label = label;
             }
-            switch (state) {
-                case DOWN:
-                    badgeValues.color = downColor;
-                    badgeValues.message = downLabel;
-                    break;
-                case UP:
-                    badgeValues.color = upColor;
-                    badgeValues.message = upLabel;
-                    break;
-                case PENDING:
-                    badgeValues.color = pendingColor;
-                    badgeValues.message = pendingLabel;
-                    break;
-                case MAINTENANCE:
-                    badgeValues.color = maintenanceColor;
-                    badgeValues.message = maintenanceLabel;
-                    break;
-                default:
-                    badgeValues.color = badgeConstants.naColor;
-                    badgeValues.message = "N/A";
+            if (isInformational && (state === DOWN || state === UP)) {
+                const isOnline = state === UP;
+                if (isOnline) {
+                    badgeValues.color = request.query.upColor === undefined ? "#0dcaf0" : upColor;
+                    badgeValues.message = request.query.upLabel === undefined ? "Online" : upLabel;
+                } else {
+                    badgeValues.color = request.query.downColor === undefined ? "#6c757d" : downColor;
+                    badgeValues.message = request.query.downLabel === undefined ? "Offline" : downLabel;
+                }
+            } else {
+                switch (state) {
+                    case DOWN:
+                        badgeValues.color = downColor;
+                        badgeValues.message = downLabel;
+                        break;
+                    case UP:
+                        badgeValues.color = upColor;
+                        badgeValues.message = upLabel;
+                        break;
+                    case PENDING:
+                        badgeValues.color = pendingColor;
+                        badgeValues.message = pendingLabel;
+                        break;
+                    case MAINTENANCE:
+                        badgeValues.color = maintenanceColor;
+                        badgeValues.message = maintenanceLabel;
+                        break;
+                    default:
+                        badgeValues.color = badgeConstants.naColor;
+                        badgeValues.message = "N/A";
+                }
             }
         }
 
@@ -589,23 +628,31 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
             badgeValues.message = "N/A";
             badgeValues.color = badgeConstants.naColor;
         } else {
-            const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(requestedMonitorId);
-            await uptimeCalculator.ensureHistoryLoaded();
-            const uptime = overrideValue ?? uptimeCalculator.getDataByDuration(requestedDuration).uptime;
-
-            // limit the displayed uptime percentage to four (two, when displayed as percent) decimal digits
-            const cleanUptime = (uptime * 100).toPrecision(4);
-
-            // use a given, custom color or calculate one based on the uptime value
-            badgeValues.color = color ?? percentageToColor(uptime);
-            // use a given, custom labelColor or use the default badge label color (defined by badge-maker)
-            badgeValues.labelColor = labelColor ?? "";
-            // build a label string. If a custom label is given, override the default one (requestedDuration)
+            const monitor = await R.findOne("monitor", "id = ?", [requestedMonitorId]);
+            const isInformational = monitor?.isInformational();
             badgeValues.label = filterAndJoin([
                 labelPrefix,
                 label ?? `Uptime (${requestedDuration.slice(0, -1)}${labelSuffix})`,
             ]);
-            badgeValues.message = filterAndJoin([prefix, cleanUptime, suffix]);
+            badgeValues.labelColor = labelColor ?? "";
+            if (isInformational && overrideValue === undefined) {
+                badgeValues.color = badgeConstants.naColor;
+                badgeValues.message = "N/A";
+            } else {
+                let uptime = overrideValue;
+                if (uptime === undefined) {
+                    const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(requestedMonitorId);
+                    await uptimeCalculator.ensureHistoryLoaded();
+                    uptime = uptimeCalculator.getDataByDuration(requestedDuration).uptime;
+                }
+
+                // limit the displayed uptime percentage to four (two, when displayed as percent) decimal digits
+                const cleanUptime = (uptime * 100).toPrecision(4);
+
+                // use a given, custom color or calculate one based on the uptime value
+                badgeValues.color = color ?? percentageToColor(uptime);
+                badgeValues.message = filterAndJoin([prefix, cleanUptime, suffix]);
+            }
         }
 
         // build the SVG based on given values

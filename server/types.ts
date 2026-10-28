@@ -4,6 +4,7 @@ import { z } from "zod";
  * Config keys a client may write; anything else is dropped.
  */
 export const monitorConfigSchema = z.object({
+    informational: z.boolean().optional(),
     systemServiceName: z.string().max(255).optional(),
 });
 

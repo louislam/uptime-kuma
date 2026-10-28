@@ -1713,6 +1713,21 @@
                                 />
                             </div>
 
+                            <div class="my-3 form-check">
+                                <input
+                                    id="informational"
+                                    v-model="monitor.informational"
+                                    class="form-check-input"
+                                    type="checkbox"
+                                />
+                                <label class="form-check-label" for="informational">
+                                    {{ $t("Informational Monitor") }}
+                                </label>
+                                <div class="form-text">
+                                    {{ $t("informationalMonitorDescription") }}
+                                </div>
+                            </div>
+
                             <h2 v-if="monitor.type !== 'push'" class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 
                             <div
@@ -3317,6 +3332,7 @@ const monitorDefaults = {
     retryInterval: 60,
     resendInterval: 0,
     maxretries: 0,
+    informational: false,
     retryOnlyOnStatusCodeFailure: false,
     notificationIDList: {},
     ignoreTls: false,
