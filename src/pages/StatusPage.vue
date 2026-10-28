@@ -1186,6 +1186,15 @@ export default {
                 } else {
                     this.$root.heartbeatList = heartbeatList;
                 }
+
+                // Status pages have no socket to fill the latest beats, which the
+                // overall status and the uptime pills read
+                for (const monitorID in this.$root.heartbeatList) {
+                    const beat = this.$root.heartbeatList[monitorID].at(-1);
+                    if (beat) {
+                        this.$root.updateLastBeat(monitorID, beat);
+                    }
+                }
             }
 
             // Merge, the socket's uptime keys are still needed in edit mode
