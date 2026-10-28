@@ -24,7 +24,10 @@ class Mattermost extends NotificationProvider {
                 let mattermostTestData = {
                     username: mattermostUserName,
                     text: msg,
-                    channel: typeof notification.mattermostchannel === "string" ? notification.mattermostchannel.toLowerCase() : notification.mattermostchannel,
+                    channel:
+                        typeof notification.mattermostchannel === "string"
+                            ? notification.mattermostchannel.toLowerCase()
+                            : notification.mattermostchannel,
                     icon_url: notification.mattermosticonurl,
                     icon_emoji: mattermostTestIconEmoji,
                 };
