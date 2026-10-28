@@ -126,11 +126,21 @@ I will assign requests/issues to the next milestone.
 
 ## ❤️ Sponsors
 
+Thank you so much for supporting this project!
+
+### Special Sponsors
+
+[<img src="https://avatars.githubusercontent.com/u/249862100?s=200&v=4">](https://www.atlascloud.ai)
+
+Atlas Cloud (https://www.atlascloud.ai) is sponsoring this project USD 400 per month for using their AI models.
+
 [![Powered by Atlas Cloud](https://www.atlascloud.ai/oss-program/powered-by-atlas-cloud.svg)](https://www.atlascloud.ai/?ref=UZCYBN)
 
-Thank you so much! (GitHub Sponsors will be updated manually. OpenCollective sponsors will be updated automatically, the list will be cached by GitHub though. It may need some time to be updated)
+### Open Collective and GitHub Sponsors
 
-<img src="https://uptime.kuma.pet/sponsors?v=6" alt="Uptime Kuma Sponsors" />
+(The list will be cached by GitHub, it may take up 24 hours to be updated)
+
+<img src="https://raw.githubusercontent.com/louislam/uptime-kuma-website/refs/heads/master/sponsors.svg?version=2" alt="Uptime Kuma Sponsors" />
 
 ## 🖼 More Screenshots
 

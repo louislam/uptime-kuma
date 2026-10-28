@@ -1,70 +1,69 @@
-const express = require("express");
-const https = require("https");
-const fs = require("fs");
-const http = require("http");
-const { Server } = require("socket.io");
-const { R } = require("redbean-node");
-const { log, isDevEnv, devOriginList } = require("../src/util");
-const Database = require("./database");
-const util = require("util");
-const { Settings } = require("./settings");
-const dayjs = require("dayjs");
-const childProcessAsync = require("promisify-child-process");
-const path = require("path");
-const axios = require("axios");
-const { isSSL, sslKey, sslCert, sslKeyPassphrase } = require("./config");
-const { getSession, getDisableAuthSession } = require("./better-auth");
-// DO NOT IMPORT HERE IF THE MODULES USED `UptimeKumaServer.getInstance()`, put at the bottom of this file instead.
+import express from "express";
+import https from "node:https";
+import fs from "node:fs";
+import http from "node:http";
+import { Server } from "socket.io";
+import { R } from "redbean-node";
+import { log, isDevEnv, devOriginList } from "../src/util";
+import Database from "./database";
+import checkVersion from "./check-version";
+import util from "node:util";
+import { Settings } from "./settings";
+import dayjs from "dayjs";
+import childProcessAsync from "promisify-child-process";
+import path from "node:path";
+import axios from "axios";
+import packageJson from "../package.json";
+import { isSSL, sslKey, sslCert, sslKeyPassphrase } from "./config";
+import { getSession, getDisableAuthSession } from "./better-auth";
+import { toCompactMonitor } from "./compact-monitor";
+import type { MonitorType } from "./monitor-types/monitor-type";
+import type Maintenance from "./model/maintenance";
 
 /**
- * `module.exports` (alias: `server`) should be inside this class, in order to avoid circular dependency issue.
- * @type {UptimeKumaServer}
+ * The Uptime Kuma server: express app, socket.io server, monitors and maintenances.
  */
-class UptimeKumaServer {
+export class UptimeKumaServer {
     /**
      * Current server instance
-     * @type {UptimeKumaServer}
      */
-    static instance = null;
+    static instance: UptimeKumaServer | null = null;
 
     /**
      * Main monitor list
-     * @type {{}}
      */
-    monitorList = {};
+    monitorList: Record<number, Monitor> = {};
 
     /**
      * Main maintenance list
-     * @type {{}}
      */
-    maintenanceList = {};
+    maintenanceList: Record<number, Maintenance> = {};
 
     entryPage = "dashboard";
-    app = undefined;
-    httpServer = undefined;
-    io = undefined;
+    app!: express.Express;
+    httpServer!: http.Server | https.Server;
+    io!: Server;
 
     /**
      * Cache Index HTML
-     * @type {string}
      */
     indexHTML = "";
 
     /**
-     * @type {{}}
+     * Registered monitor types
      */
-    static monitorTypeList = {};
+    static monitorTypeList: Record<string, MonitorType> = {};
 
     /**
      * Get the current instance of the server if it exists, otherwise
      * create a new instance.
      * @returns {UptimeKumaServer} Server instance
      */
-    static getInstance() {
+    static getInstance(): UptimeKumaServer {
         if (UptimeKumaServer.instance == null) {
             UptimeKumaServer.instance = new UptimeKumaServer();
         }
-        return UptimeKumaServer.instance;
+        return UptimeKumaServer.instance!;
     }
 
     /**
@@ -106,6 +105,7 @@ class UptimeKumaServer {
 
         // Set Monitor Types
         UptimeKumaServer.monitorTypeList["real-browser"] = new RealBrowserMonitorType();
+        UptimeKumaServer.monitorTypeList["ping"] = new PingMonitorType();
         UptimeKumaServer.monitorTypeList["tailscale-ping"] = new TailscalePing();
         UptimeKumaServer.monitorTypeList["websocket-upgrade"] = new WebSocketMonitorType();
         UptimeKumaServer.monitorTypeList["dns"] = new DnsMonitorType();
@@ -145,6 +145,14 @@ class UptimeKumaServer {
         this.io = new Server(this.httpServer, {
             cors,
             cookie: true,
+            perMessageDeflate: {
+                threshold: 1024,
+            },
+            // Compress polling responses too. The login burst is several MB of JSON;
+            // without this it is sent uncompressed while the client is still on polling.
+            httpCompression: {
+                threshold: 1024,
+            },
             allowRequest: async (req, callback) => {
                 let transport;
                 // It should be always true, but just in case, because this property is not documented
@@ -235,7 +243,7 @@ class UptimeKumaServer {
      * @returns {Promise<object>} List of monitors
      */
     async sendMonitorList(socket) {
-        let list = await this.getMonitorJSONList();
+        let list = await this.getMonitorJSONList(null, true);
         this.io.to(socket.userID).emit("monitorList", list);
         return list;
     }
@@ -266,11 +274,12 @@ class UptimeKumaServer {
     /**
      * Get a list of monitors, optionally filtered to a single monitor.
      * @param {number} monitorID - The ID of monitor for.
+     * @param {boolean} compact - Send only the fields the dashboard needs
      * @returns {Promise<object>} A promise that resolves to an object with monitor IDs as keys and monitor objects as values.
      *
      * Generated by Trelent
      */
-    async getMonitorJSONList(monitorID = null) {
+    async getMonitorJSONList(monitorID = null, compact = false) {
         let queryKeys = [];
         let queryParams = [];
 
@@ -298,7 +307,9 @@ class UptimeKumaServer {
         const preloadData = await Monitor.preparePreloadData(monitorData);
 
         const result = {};
-        monitorList.forEach((monitor) => (result[monitor.id] = monitor.toJSON(preloadData)));
+        monitorList.forEach((monitor) => {
+            result[monitor.id] = compact ? toCompactMonitor(monitor, preloadData) : monitor.toJSON(preloadData);
+        });
         return result;
     }
 
@@ -308,26 +319,24 @@ class UptimeKumaServer {
      * @returns {Promise<object>} Maintenance list
      */
     async sendMaintenanceList(socket) {
-        return await this.sendMaintenanceListByUserID(socket.userID);
+        return await this.sendMaintenanceListToDashboard();
     }
 
     /**
-     * Send list of maintenances to user
-     * @param {number} userID User to send list to
+     * Send the maintenance list to the dashboard
      * @returns {Promise<object>} Maintenance list
      */
-    async sendMaintenanceListByUserID(userID) {
-        let list = await this.getMaintenanceJSONList(userID);
-        this.io.to(userID).emit("maintenanceList", list);
+    async sendMaintenanceListToDashboard() {
+        let list = await this.getMaintenanceJSONList();
+        this.io.to(socketRoom).emit("maintenanceList", list);
         return list;
     }
 
     /**
-     * Get a list of maintenances for the given user.
-     * @param {string} userID - The ID of the user to get maintenances for.
+     * Get a list of maintenances
      * @returns {Promise<object>} A promise that resolves to an object with maintenance IDs as keys and maintenances objects as values.
      */
-    async getMaintenanceJSONList(userID) {
+    async getMaintenanceJSONList() {
         let result = {};
         for (let maintenanceID in this.maintenanceList) {
             result[maintenanceID] = await this.maintenanceList[maintenanceID].toJSON();
@@ -561,7 +570,7 @@ class UptimeKumaServer {
      * @returns {string} User-Agent
      */
     getUserAgent() {
-        return "Uptime-Kuma/" + require("../package.json").version;
+        return "Uptime-Kuma/" + packageJson.version;
     }
 
     /**
@@ -583,12 +592,38 @@ class UptimeKumaServer {
     }
 }
 
-module.exports = {
-    UptimeKumaServer,
-};
+/**
+ * Collects the server information, shared by the `info` socket event and the API
+ * @param hideVersion Should the version information be hidden?
+ * @returns Server information
+ */
+export async function getInfo(hideVersion = false) {
+    const server = UptimeKumaServer.getInstance();
+
+    const info = {
+        primaryBaseURL: await Settings.get("primaryBaseURL"),
+        serverTimezone: await server.getTimezone(),
+        serverTimezoneOffset: server.getTimezoneOffset(),
+    };
+
+    if (!hideVersion) {
+        info.version = checkVersion.version;
+        info.latestVersion = checkVersion.latestVersion;
+        info.isContainer = process.env.UPTIME_KUMA_IS_CONTAINER === "1";
+        info.dbType = Database.dbConfig.type;
+        info.runtime = {
+            platform: process.platform, // linux or win32
+            arch: process.arch, // x86 or arm
+        };
+    }
+
+    return info;
+}
 
 // Must be at the end to avoid circular dependencies
+/* eslint-disable @typescript-eslint/no-require-imports */
 const { RealBrowserMonitorType } = require("./monitor-types/real-browser-monitor-type");
+const { PingMonitorType } = require("./monitor-types/ping");
 const { TailscalePing } = require("./monitor-types/tailscale-ping");
 const { WebSocketMonitorType } = require("./monitor-types/websocket-upgrade");
 const { DnsMonitorType } = require("./monitor-types/dns");
@@ -615,3 +650,4 @@ const { SFTPMonitorType } = require("./monitor-types/sftp");
 const { OracleDbMonitorType } = require("./monitor-types/oracledb");
 const { NTPMonitorType } = require("./monitor-types/ntp");
 const Monitor = require("./model/monitor");
+const { socketRoom } = require("./heartbeat-emit");

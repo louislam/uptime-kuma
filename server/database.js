@@ -168,7 +168,7 @@ class Database {
             fs.mkdirSync(Database.screenshotDir, { recursive: true });
         }
 
-        Database.dockerTLSDir = path.join(Database.dataDir, "docker-tls/");
+        Database.dockerTLSDir = process.env.DOCKER_TLS_DIR_PATH || path.join(Database.dataDir, "docker-tls/");
         if (!fs.existsSync(Database.dockerTLSDir)) {
             fs.mkdirSync(Database.dockerTLSDir, { recursive: true });
         }
@@ -555,7 +555,7 @@ class Database {
      */
     static createAuthDatabase(dbConfig) {
         let database;
-        if (dbConfig.type.includes("mariadb")) {
+        if (dbConfig.type === "mariadb") {
             database = mysql.createPool({
                 host: dbConfig.hostname,
                 port: Number(dbConfig.port),

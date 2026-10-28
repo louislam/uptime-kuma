@@ -1,8 +1,8 @@
 const { describe, test } = require("node:test");
 const assert = require("node:assert");
-const { pingAsync } = require("../../server/util-server");
+const { pingAsync } = require("../../server/monitor-types/ping");
 
-describe("Server Utilities: pingAsync", () => {
+describe("Monitor Type: ping", () => {
     test("should convert IDN domains to Punycode before pinging", async () => {
         const idnDomain = "münchen.de";
         const punycodeDomain = "xn--mnchen-3ya.de";

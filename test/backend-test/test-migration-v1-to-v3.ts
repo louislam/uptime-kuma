@@ -162,7 +162,7 @@ test("A v1.23.17 database still works after upgrading to v3 (#7944, #7946)", { t
         await callOk(socket, "deleteDockerHost", 1);
         await callOk(socket, "deleteRemoteBrowser", 1);
         await callOk(socket, "deleteNotification", 1);
-        await callOk(socket, "deleteAPIKey", 1);
+        await callOk(socket, "deleteAPIKey", "legacy-1");
         await callOk(socket, "deleteMaintenance", 1);
         await callOk(socket, "deleteMonitor", 1);
     } finally {

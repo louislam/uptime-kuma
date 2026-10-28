@@ -233,7 +233,7 @@ class Maintenance extends BeanModel {
         } else if (this.strategy === "single") {
             this.beanMeta.job = new Cron(this.start_date, { timezone: await this.getTimezone() }, () => {
                 log.info("maintenance", "Maintenance id: " + this.id + " is under maintenance now");
-                UptimeKumaServer.getInstance().sendMaintenanceListByUserID(this.user_id);
+                UptimeKumaServer.getInstance().sendMaintenanceListToDashboard();
                 apicache.clear();
             });
         } else if (this.cron != null) {
@@ -251,12 +251,12 @@ class Maintenance extends BeanModel {
 
                     let duration = this.inferDuration(customDuration);
 
-                    UptimeKumaServer.getInstance().sendMaintenanceListByUserID(this.user_id);
+                    UptimeKumaServer.getInstance().sendMaintenanceListToDashboard();
 
                     this.beanMeta.durationTimeout = setTimeout(() => {
                         // End of maintenance for this timeslot
                         this.beanMeta.status = "scheduled";
-                        UptimeKumaServer.getInstance().sendMaintenanceListByUserID(this.user_id);
+                        UptimeKumaServer.getInstance().sendMaintenanceListToDashboard();
                     }, duration);
 
                     // Set last start date to current time

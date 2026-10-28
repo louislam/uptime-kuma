@@ -209,6 +209,28 @@ export async function generateChangelogAI(previousVersion) {
     );
     const retryDelayMs = 15000;
 
+    // Minimal env: the prompt contains untrusted PR titles.
+    const llmEnv = Object.fromEntries(
+        [
+            "PATH",
+            "HOME",
+            "LANG",
+            "LC_ALL",
+            "TMPDIR",
+            "XDG_CONFIG_HOME",
+            "XDG_DATA_HOME",
+            "XDG_CACHE_HOME",
+            "XDG_STATE_HOME",
+        ]
+            .filter((name) => process.env[name] !== undefined)
+            .map((name) => [name, process.env[name]])
+    );
+    // No shell or network for the model.
+    llmEnv.OPENCODE_PERMISSION = JSON.stringify({
+        bash: { "*": "deny" },
+        webfetch: "deny",
+    });
+
     for (const model of models) {
         if (categorizedMap) {
             break;
@@ -219,9 +241,10 @@ export async function generateChangelogAI(previousVersion) {
             const result = childProcess.spawnSync("opencode", ["run", "-m", model, "--format", "json", llmPrompt], {
                 encoding: "utf-8",
                 timeout: 300000,
-                shell: true,
+                // No shell: PR titles are untrusted input.
+                shell: false,
                 cwd: process.cwd(),
-                env: process.env,
+                env: llmEnv,
             });
 
             if (result.status === 0 && result.stdout) {
