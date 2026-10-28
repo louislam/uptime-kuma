@@ -11,7 +11,7 @@ import { twoFactor } from "better-auth/plugins";
 import { apiKey } from "@better-auth/api-key";
 import { createAuthMiddleware } from "better-auth/api";
 // @ts-ignore
-import * as oldAuth from "./auth.js";
+import * as oldAuth from "./auth";
 import { hasUser } from "./routers/better-auth-router";
 import { symmetricEncrypt } from "better-auth/crypto";
 // @ts-ignore
@@ -145,6 +145,12 @@ function createAuthInstance() {
             }),
 
             apiKey({
+                // Allow the socket and HTTP API to authenticate with an API key
+                enableSessionForAPIKeys: true,
+                // Better Auth defaults to 10 requests per key per 24h; Uptime Kuma limits in requireApiKey instead
+                rateLimit: {
+                    enabled: false,
+                },
                 schema: {
                     apikey: {
                         modelName: "better_auth_apikey",
@@ -228,6 +234,41 @@ export function getSession(cookie: string) {
         headers: createHeaders(cookie),
     };
     return authInstance.api.getSession(context);
+}
+
+/**
+ * Get session from incoming request headers, either a cookie or an API key
+ * @param cookie Cookie string of the request
+ * @param apiKey API key of the request
+ * @returns Session Object, or null when the request is not authenticated
+ */
+export async function getSessionFromHeaders(cookie?: string, apiKey?: string | string[]) {
+    // Prefer the browser session, an API key never overrides a valid cookie
+    if (cookie) {
+        const cookieSession = await authInstance.api.getSession({
+            headers: createHeaders(cookie),
+        });
+
+        if (cookieSession) {
+            return cookieSession;
+        }
+    }
+
+    if (typeof apiKey !== "string" || !apiKey) {
+        return null;
+    }
+
+    try {
+        const sessionHeaders = new Headers();
+        sessionHeaders.set("x-api-key", apiKey);
+
+        return await authInstance.api.getSession({
+            headers: sessionHeaders,
+        });
+    } catch (e) {
+        // Better Auth throws for an invalid API key
+        return null;
+    }
 }
 
 /**

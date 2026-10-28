@@ -4,8 +4,10 @@
  * DO NOT require("./server") in other modules, it likely creates circular dependency!
  */
 import { getRandomInt, isDevEnv, log, sleep } from "../src/util";
-import { auth, createHeaders, doubleCheckPassword, getDisableAuthSession, getSession } from "./better-auth";
+import { auth, createHeaders, doubleCheckPassword, getDisableAuthSession, getSessionFromHeaders } from "./better-auth";
 import { createBetterAuthRouter, needSetup } from "./routers/better-auth-router";
+import { readApiKey } from "./auth";
+import { initAdminFromEnv } from "./initial-admin";
 import { betterAuthSocketHandler } from "./socket-handlers/better-auth-socket-handler";
 import { loadEnvFile } from "node:process";
 import * as fs from "node:fs";
@@ -236,6 +238,14 @@ app.use(function (req, res, next) {
     // Init Better Auth
     auth();
 
+    // Create the initial admin user from env, only when the database has no user yet
+    try {
+        await initAdminFromEnv();
+    } catch (e) {
+        log.error("auth", "Failed to create the initial admin user: " + e.message);
+        process.exit(1);
+    }
+
     // Database should be ready now
     await server.initAfterDatabaseReady();
     server.entryPage = await Settings.get("entryPage");
@@ -375,6 +385,10 @@ app.use(function (req, res, next) {
     const apiRouter = require("./routers/api-router");
     app.use(apiRouter);
 
+    // MCP Router, a TypeScript module, so `require` hands back its namespace
+    const mcpRouter = require("./routers/mcp-router").default;
+    app.use(mcpRouter);
+
     // Status Page Router
     const statusPageRouter = require("./routers/status-page-router");
     app.use(statusPageRouter);
@@ -404,7 +418,14 @@ app.use(function (req, res, next) {
         let session;
 
         if (!(await Settings.get("disableAuth"))) {
-            session = await getSession(socket.request.headers.cookie);
+            let apiKey;
+
+            // API keys only work as a socket login when the API & MCP is enabled
+            if (await Settings.get("apiEnabled")) {
+                apiKey = readApiKey(socket.request.headers.authorization);
+            }
+
+            session = await getSessionFromHeaders(socket.request.headers.cookie, apiKey);
         } else {
             session = await getDisableAuthSession();
         }
@@ -444,6 +465,10 @@ app.use(function (req, res, next) {
 
                 monitor.rabbitmqNodes = JSON.stringify(monitor.rabbitmqNodes);
 
+                // Config is never imported as a whole, only its known keys are copied
+                const clientConfig = monitor.config;
+                delete monitor.config;
+
                 /*
                  * List of frontend-only properties that should not be saved to the database.
                  * Should clean up before saving to the database.
@@ -460,6 +485,7 @@ app.use(function (req, res, next) {
                 }
 
                 bean.import(monitor);
+                bean.applyClientConfig(clientConfig);
                 // Map camelCase frontend property to snake_case database column
                 if (monitor.retryOnlyOnStatusCodeFailure !== undefined) {
                     bean.retry_only_on_status_code_failure = monitor.retryOnlyOnStatusCodeFailure;
@@ -629,7 +655,10 @@ app.use(function (req, res, next) {
                 bean.rabbitmqPassword = monitor.rabbitmqPassword;
                 bean.conditions = JSON.stringify(monitor.conditions);
                 bean.manual_status = monitor.manual_status;
-                bean.system_service_name = monitor.system_service_name;
+
+                // Known config keys only, so a payload never replaces the whole config
+                bean.applyClientConfig(monitor.config);
+
                 bean.sshUsername = monitor.sshUsername;
                 bean.sshPassword = monitor.sshPassword;
                 bean.sftpPath = monitor.sftpPath;

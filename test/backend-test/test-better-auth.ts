@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import fs from "node:fs";
-import { auth, checkPassword } from "../../server/better-auth";
+import { auth, checkPassword, getSessionFromHeaders } from "../../server/better-auth";
 import { verifyAPIKey } from "../../server/auth";
 import { R } from "redbean-node";
 import passwordHash from "../../server/password-hash";
@@ -148,5 +148,23 @@ test("API Keys", async (t) => {
         await R.knex("api_key").where({ id }).del();
 
         assert.strictEqual(await verifyAPIKey(key), false);
+    });
+
+    await t.test("[API Key] a better-auth key resolves a session for the API", async () => {
+        const created = await auth().api.createApiKey({
+            body: {
+                name: "http session key",
+                userId: userID,
+            },
+        });
+
+        const session = await getSessionFromHeaders(undefined, created.key);
+
+        assert.ok(session);
+        assert.strictEqual(session.user.id, userID);
+    });
+
+    await t.test("[API Key] an invalid key gets no session", async () => {
+        assert.strictEqual(await getSessionFromHeaders(undefined, "uk1_invalid"), null);
     });
 });
