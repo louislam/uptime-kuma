@@ -36,8 +36,11 @@ test("getAggregatedBuckets - bucket count at tier boundaries", async (t) => {
     UptimeCalculator.currentDate = dayjs.utc("2026-07-01 12:00:00");
     const c = new UptimeCalculator();
 
-    // 1 day on the hourly tier can never have more than 24 buckets
-    assert.strictEqual(getAggregatedBuckets(c, 1, 100, 60).length, 24);
+    // 1 day uses the per-minute tier, 15 minutes per bucket keeps it under maxBeats
+    assert.strictEqual(getAggregatedBuckets(c, 1, 100, 60).length, 96);
+
+    // 2 days on the hourly tier can never have more than 48 buckets
+    assert.strictEqual(getAggregatedBuckets(c, 2, 100, 60).length, 48);
 
     // 30 days is still hourly (720 stored hours), 8 hours per bucket keeps it under maxBeats
     assert.strictEqual(getAggregatedBuckets(c, 30, 100, 60).length, 90);
@@ -47,6 +50,26 @@ test("getAggregatedBuckets - bucket count at tier boundaries", async (t) => {
 
     // 365 days daily leaves 4 days per bucket to stay under maxBeats
     assert.strictEqual(getAggregatedBuckets(c, 365, 100, 60).length, 92);
+});
+
+test("getAggregatedBuckets - buckets start at round clock times", async (t) => {
+    UptimeCalculator.currentDate = dayjs.utc("2026-07-01 12:00:00");
+    const c = new UptimeCalculator();
+
+    // 24 minutes would fit 60 beats, half an hour fits evenly into an hour
+    const wide = getAggregatedBuckets(c, 1, 60, 60);
+    assert.strictEqual(wide.length, 48);
+    assert.strictEqual(wide[0].end - wide[0].start, 30 * 60);
+
+    // 44 minutes would fit 33 beats, a full hour is used instead
+    const narrow = getAggregatedBuckets(c, 1, 33, 60);
+    assert.strictEqual(narrow.length, 24);
+    assert.strictEqual(narrow[0].end - narrow[0].start, 3600);
+
+    // 22 hours would fit 33 beats, whole days are used instead
+    const month = getAggregatedBuckets(c, 30, 33, 60);
+    assert.strictEqual(month.length, 30);
+    assert.strictEqual(month[0].end - month[0].start, 86400);
 });
 
 test("getAggregatedBuckets - slow check interval caps the bucket count", async (t) => {
@@ -105,7 +128,7 @@ test("getAggregatedBuckets - an outage is counted in the bucket that covers it",
     const outageStart = base.add(8 * 60 + 52, "minute").unix();
     const outageEnd = base.add(9 * 60 + 21, "minute").unix();
 
-    for (const days of [3, 7]) {
+    for (const days of [1, 3, 7]) {
         const downBuckets = getAggregatedBuckets(c, days, 100, 60).filter((b) => b.down > 0);
 
         assert.ok(downBuckets.length > 0);
@@ -195,7 +218,7 @@ test("getAggregatedBuckets - monitor without data yields only empty buckets", as
 });
 
 test("getAggregatedBuckets - beat on a bucket edge is not dropped", async (t) => {
-    // Exactly on an hour boundary, so the current hourly key starts the newest bucket
+    // Exactly on a bucket boundary, so the current key starts the newest bucket
     const currentTime = dayjs.utc("2026-07-01 12:00:00");
     UptimeCalculator.currentDate = currentTime;
     const c = new UptimeCalculator();
@@ -220,7 +243,7 @@ test("getAggregatedBuckets - maintenance is aggregated on the hourly tier", asyn
     await c.update(MAINTENANCE);
     UptimeCalculator.currentDate = currentTime;
 
-    const buckets = getAggregatedBuckets(c, 1, 100, 60);
+    const buckets = getAggregatedBuckets(c, 2, 100, 60);
     const maintenance = buckets.filter((b) => b.maintenance > 0);
 
     assert.strictEqual(maintenance.length, 1);
