@@ -61,6 +61,7 @@ RUN curl -fsSL https://letsencrypt.org/certs/gen-y/root-ye.pem -o /usr/local/sha
 
 # Full Base Image
 # MariaDB, Chromium and fonts
+# Chromium runs headless, so the GPU stack is unused: ~57 MB smaller compressed.
 # Make sure to reuse the slim image here. Uncomment the above line if you want to build it from scratch.
 FROM louislam/uptime-kuma:base3-slim AS base3
 ENV UPTIME_KUMA_ENABLE_EMBEDDED_MARIADB=1
@@ -68,4 +69,10 @@ RUN apt update && \
     apt --yes --no-install-recommends install chromium fonts-indic fonts-noto fonts-noto-cjk mariadb-server && \
     rm -rf /var/lib/apt/lists/* && \
     apt --yes autoremove && \
+    # Unused by headless Chromium (~190 MB on disk)
+    rm -rf /usr/lib/x86_64-linux-gnu/libLLVM* \
+           /usr/lib/x86_64-linux-gnu/libgallium* \
+           /usr/lib/x86_64-linux-gnu/libz3* && \
+    # Unused: embedded MariaDB uses /app/data/mariadb
+    rm -rf /var/lib/mysql/* && \
     chown -R node:node /var/lib/mysql

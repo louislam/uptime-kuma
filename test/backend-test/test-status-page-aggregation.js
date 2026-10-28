@@ -8,10 +8,20 @@ const { getAggregatedBuckets } = require("../../server/utils/heartbeat-buckets")
 
 dayjs.extend(utc);
 
+/**
+ * Create a calculator whose bucket loading is stubbed, so update() does not query the database
+ * @returns {UptimeCalculator} Calculator instance
+ */
+function createCalculator() {
+    const calculator = new UptimeCalculator();
+    calculator.currentBucketsLoaded = true;
+    return calculator;
+}
+
 test("getAggregatedBuckets - caps bucket count at tier resolution (no grey gaps from upsampling)", async (t) => {
     const currentTime = dayjs.utc("2026-07-01 12:00:00");
     UptimeCalculator.currentDate = currentTime;
-    const c = new UptimeCalculator();
+    const c = createCalculator();
 
     // Populate 40 days of daily data, one beat per day
     for (let i = 0; i < 40; i++) {
@@ -34,7 +44,7 @@ test("getAggregatedBuckets - caps bucket count at tier resolution (no grey gaps 
 
 test("getAggregatedBuckets - bucket count at tier boundaries", async (t) => {
     UptimeCalculator.currentDate = dayjs.utc("2026-07-01 12:00:00");
-    const c = new UptimeCalculator();
+    const c = createCalculator();
 
     // 1 day uses the per-minute tier, 15 minutes per bucket keeps it under maxBeats
     assert.strictEqual(getAggregatedBuckets(c, 1, 100, 60).length, 96);
@@ -54,7 +64,7 @@ test("getAggregatedBuckets - bucket count at tier boundaries", async (t) => {
 
 test("getAggregatedBuckets - buckets start at round clock times", async (t) => {
     UptimeCalculator.currentDate = dayjs.utc("2026-07-01 12:00:00");
-    const c = new UptimeCalculator();
+    const c = createCalculator();
 
     // 24 minutes would fit 60 beats, half an hour fits evenly into an hour
     const wide = getAggregatedBuckets(c, 1, 60, 60);
@@ -74,7 +84,7 @@ test("getAggregatedBuckets - buckets start at round clock times", async (t) => {
 
 test("getAggregatedBuckets - slow check interval caps the bucket count", async (t) => {
     UptimeCalculator.currentDate = dayjs.utc("2026-07-01 12:00:00");
-    const c = new UptimeCalculator();
+    const c = createCalculator();
 
     // A monitor checked every 2 hours can only fill 12 buckets in a day
     assert.strictEqual(getAggregatedBuckets(c, 1, 100, 7200).length, 12);
@@ -82,7 +92,7 @@ test("getAggregatedBuckets - slow check interval caps the bucket count", async (
 
 test("getAggregatedBuckets - interval that is not a whole number of hours leaves no gaps", async (t) => {
     const currentTime = dayjs.utc("2026-07-01 12:20:00");
-    const c = new UptimeCalculator();
+    const c = createCalculator();
 
     // Every 90 minutes at :10 and :40, so every third hour has no data
     for (let i = 26 * 60 + 40; i >= 0; i -= 90) {
@@ -102,7 +112,7 @@ test("getAggregatedBuckets - interval that is not a whole number of hours leaves
 test("getAggregatedBuckets - buckets tile the requested range without gaps", async (t) => {
     const currentTime = dayjs.utc("2026-07-01 12:00:00");
     UptimeCalculator.currentDate = currentTime;
-    const c = new UptimeCalculator();
+    const c = createCalculator();
 
     const buckets = getAggregatedBuckets(c, 7, 100, 60);
     const newest = buckets[buckets.length - 1];
@@ -117,7 +127,7 @@ test("getAggregatedBuckets - buckets tile the requested range without gaps", asy
 
 test("getAggregatedBuckets - an outage is counted in the bucket that covers it", async (t) => {
     const base = dayjs.utc("2026-07-01 00:00:00");
-    const c = new UptimeCalculator();
+    const c = createCalculator();
 
     // Checked every minute until 12:07, down from 08:52 to 09:20
     for (let i = 0; i <= 12 * 60 + 7; i++) {
@@ -142,7 +152,7 @@ test("getAggregatedBuckets - an outage is counted in the bucket that covers it",
 });
 
 test("getAggregatedBuckets - bucket edges do not move between requests", async (t) => {
-    const c = new UptimeCalculator();
+    const c = createCalculator();
 
     UptimeCalculator.currentDate = dayjs.utc("2026-07-01 12:07:00");
     const first = getAggregatedBuckets(c, 7, 100, 60);
@@ -158,7 +168,7 @@ test("getAggregatedBuckets - bucket edges do not move between requests", async (
 test("getAggregatedBuckets - a period without data stays empty, the rest does not", async (t) => {
     const currentTime = dayjs.utc("2026-07-01 12:00:00");
     UptimeCalculator.currentDate = currentTime;
-    const c = new UptimeCalculator();
+    const c = createCalculator();
 
     // Populate 10 days of hourly data, leaving a gap between 6 and 4 days ago
     for (let i = 0; i < 240; i++) {
@@ -186,7 +196,7 @@ test("getAggregatedBuckets - a period without data stays empty, the rest does no
 test("getAggregatedBuckets - partial downtime keeps both up and down counts", async (t) => {
     const currentTime = dayjs.utc("2026-07-01 12:00:00");
     UptimeCalculator.currentDate = currentTime;
-    const c = new UptimeCalculator();
+    const c = createCalculator();
 
     for (let i = 0; i < 35; i++) {
         UptimeCalculator.currentDate = currentTime.subtract(i, "day").hour(10);
@@ -207,7 +217,7 @@ test("getAggregatedBuckets - partial downtime keeps both up and down counts", as
 
 test("getAggregatedBuckets - monitor without data yields only empty buckets", async (t) => {
     UptimeCalculator.currentDate = dayjs.utc("2026-07-01 12:00:00");
-    const c = new UptimeCalculator();
+    const c = createCalculator();
 
     const buckets = getAggregatedBuckets(c, 35, 100, 60);
 
@@ -221,7 +231,7 @@ test("getAggregatedBuckets - beat on a bucket edge is not dropped", async (t) =>
     // Exactly on a bucket boundary, so the current key starts the newest bucket
     const currentTime = dayjs.utc("2026-07-01 12:00:00");
     UptimeCalculator.currentDate = currentTime;
-    const c = new UptimeCalculator();
+    const c = createCalculator();
 
     await c.update(1); // key 12:00:00
     UptimeCalculator.currentDate = currentTime.subtract(90, "minute");
@@ -237,7 +247,7 @@ test("getAggregatedBuckets - beat on a bucket edge is not dropped", async (t) =>
 test("getAggregatedBuckets - maintenance is aggregated on the hourly tier", async (t) => {
     const currentTime = dayjs.utc("2026-07-01 12:00:00");
     UptimeCalculator.currentDate = currentTime;
-    const c = new UptimeCalculator();
+    const c = createCalculator();
 
     UptimeCalculator.currentDate = currentTime.subtract(3, "hour");
     await c.update(MAINTENANCE);

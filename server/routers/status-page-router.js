@@ -102,6 +102,7 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
         const monitorPromises = monitorList.map(async (monitor) => {
             const monitorID = monitor.monitor_id;
             const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);
+            await uptimeCalculator.ensureHistoryLoaded();
 
             let heartbeats;
             let lastHeartbeat = null;

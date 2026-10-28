@@ -17,8 +17,22 @@ const { STATUS_CODE } = sshUtils.sftp;
 // ---------------------------------------------------------------------------
 // Host / client key material — generated once for the entire test suite
 // ---------------------------------------------------------------------------
-const HOST_KEY = sshUtils.generateKeyPairSync("ed25519").private;
-const clientKeyPair = sshUtils.generateKeyPairSync("ed25519");
+
+/**
+ * ssh2's ed25519 keygen strips leading zero bytes from the public key, corrupting
+ * about 1 in 256 keys (mscdex/ssh2#1513). Regenerate until the key parses.
+ * @returns {object} A parsable ed25519 key pair
+ */
+function generateEd25519KeyPair() {
+    let keyPair;
+    do {
+        keyPair = sshUtils.generateKeyPairSync("ed25519");
+    } while (sshUtils.parseKey(keyPair.private) instanceof Error);
+    return keyPair;
+}
+
+const HOST_KEY = generateEd25519KeyPair().private;
+const clientKeyPair = generateEd25519KeyPair();
 /** PEM-encoded private key string to pass as monitor.sshPrivateKey */
 const CLIENT_PRIVATE_KEY = clientKeyPair.private.toString("utf8");
 const parsedClientPubKey = sshUtils.parseKey(clientKeyPair.public);
@@ -32,7 +46,7 @@ const EXISTING_PATH = "/existing/path";
 // ---------------------------------------------------------------------------
 
 /** Pinned so the suite cannot break when a new image is published upstream. */
-const SSH_IMAGE = "lscr.io/linuxserver/openssh-server:10.3_p1-r0-ls233";
+const SSH_IMAGE = "ghcr.io/linuxserver/openssh-server:10.3_p1-r0-ls233";
 /** Port sshd listens on inside the linuxserver image (not 22). */
 const SSH_CONTAINER_PORT = 2222;
 /** Home directory of the ssh user in the image; used for the path-exists check. */
@@ -303,7 +317,9 @@ describe("SFTP Monitor", () => {
 describe(
     "SFTP Monitor (real OpenSSH server)",
     {
-        skip: !!process.env.CI && (process.platform !== "linux" || process.arch !== "x64"),
+        skip:
+            (!!process.env.CI && (process.platform !== "linux" || process.arch !== "x64")) ||
+            process.env.SKIP_TESTCONTAINER,
     },
     () => {
         let monitor;
