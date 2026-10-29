@@ -208,10 +208,7 @@ describe("DOWN heartbeat interval scheduling", () => {
             await monitor.start(io, 0);
 
             const deadline = Date.now() + 5000;
-            while (
-                typeof monitor.heartbeatInterval?.id?._idleTimeout !== "number" &&
-                Date.now() < deadline
-            ) {
+            while (typeof monitor.heartbeatInterval?.id?._idleTimeout !== "number" && Date.now() < deadline) {
                 await new Promise((resolve) => setTimeout(resolve, 10));
             }
 
@@ -258,10 +255,7 @@ describe("DOWN heartbeat interval scheduling", () => {
             await monitor.start(io, 0);
 
             const deadline = Date.now() + 5000;
-            while (
-                typeof monitor.heartbeatInterval?.id?._idleTimeout !== "number" &&
-                Date.now() < deadline
-            ) {
+            while (typeof monitor.heartbeatInterval?.id?._idleTimeout !== "number" && Date.now() < deadline) {
                 await new Promise((resolve) => setTimeout(resolve, 10));
             }
 
@@ -310,10 +304,7 @@ describe("DOWN heartbeat interval scheduling", () => {
             await monitor.start(io, 0);
 
             const deadline = Date.now() + 5000;
-            while (
-                typeof monitor.heartbeatInterval?.id?._idleTimeout !== "number" &&
-                Date.now() < deadline
-            ) {
+            while (typeof monitor.heartbeatInterval?.id?._idleTimeout !== "number" && Date.now() < deadline) {
                 await new Promise((resolve) => setTimeout(resolve, 10));
             }
 
