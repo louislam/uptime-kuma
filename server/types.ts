@@ -5,6 +5,7 @@ import { z } from "zod";
  */
 export const monitorConfigSchema = z.object({
     systemServiceName: z.string().max(255).optional(),
+    downInterval: z.number().int().min(20).nullable().optional(),
 });
 
 export type MonitorConfig = z.infer<typeof monitorConfigSchema>;

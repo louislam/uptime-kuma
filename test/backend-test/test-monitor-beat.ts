@@ -180,6 +180,234 @@ function fakeIo() {
     };
 }
 
+describe("DOWN heartbeat interval scheduling", () => {
+    test("schedules the custom DOWN interval", async () => {
+        const monitor = fakeMonitor("http://127.0.0.1:1/");
+        monitor.setConfigValue("downInterval", 30);
+        const io = fakeIo();
+
+        R.findOne = async () => null;
+        R.dispense = () => ({
+            monitor_id: monitor.id,
+            toJSON() {
+                return { monitor_id: this.monitor_id, status: this.status };
+            },
+        });
+        R.store = async () => {};
+        R.isoDateTimeMillis = () => new Date().toISOString().replace("T", " ").replace("Z", "");
+        UptimeCalculator.getUptimeCalculator = async () => ({
+            update: async () => ({ unix: () => 1704067200 }),
+        });
+        Monitor.sendNotification = async () => {};
+        Monitor.isUnderMaintenance = async () => false;
+        Monitor.sendStats = async () => {};
+        Prometheus.prototype.update = () => {};
+        Prometheus.prototype.remove = () => {};
+
+        try {
+            await monitor.start(io, 0);
+
+            const deadline = Date.now() + 5000;
+            while (
+                typeof monitor.heartbeatInterval?.id?._idleTimeout !== "number" &&
+                Date.now() < deadline
+            ) {
+                await new Promise((resolve) => setTimeout(resolve, 10));
+            }
+
+            assert.strictEqual(
+                typeof monitor.heartbeatInterval?.id?._idleTimeout,
+                "number",
+                "next heartbeat timer scheduled"
+            );
+
+            const heartbeat = io.events.find((event) => event.event === "heartbeat");
+            assert.ok(heartbeat, "heartbeat emitted");
+            assert.strictEqual(heartbeat.args[0].status, 0, "monitor is DOWN");
+
+            const delay = monitor.heartbeatInterval.id._idleTimeout;
+            assert.ok(delay > 28000 && delay <= 30000, `expected ~30s, got ${delay}ms`);
+        } finally {
+            await monitor.stop();
+        }
+    });
+
+    test("preserves the normal interval for legacy monitors", async () => {
+        const monitor = fakeMonitor("http://127.0.0.1:1/");
+        const io = fakeIo();
+
+        R.findOne = async () => null;
+        R.dispense = () => ({
+            monitor_id: monitor.id,
+            toJSON() {
+                return { monitor_id: this.monitor_id, status: this.status };
+            },
+        });
+        R.store = async () => {};
+        R.isoDateTimeMillis = () => new Date().toISOString().replace("T", " ").replace("Z", "");
+        UptimeCalculator.getUptimeCalculator = async () => ({
+            update: async () => ({ unix: () => 1704067200 }),
+        });
+        Monitor.sendNotification = async () => {};
+        Monitor.isUnderMaintenance = async () => false;
+        Monitor.sendStats = async () => {};
+        Prometheus.prototype.update = () => {};
+        Prometheus.prototype.remove = () => {};
+
+        try {
+            await monitor.start(io, 0);
+
+            const deadline = Date.now() + 5000;
+            while (
+                typeof monitor.heartbeatInterval?.id?._idleTimeout !== "number" &&
+                Date.now() < deadline
+            ) {
+                await new Promise((resolve) => setTimeout(resolve, 10));
+            }
+
+            assert.strictEqual(
+                typeof monitor.heartbeatInterval?.id?._idleTimeout,
+                "number",
+                "next heartbeat timer scheduled"
+            );
+
+            const heartbeat = io.events.find((event) => event.event === "heartbeat");
+            assert.ok(heartbeat, "heartbeat emitted");
+            assert.strictEqual(heartbeat.args[0].status, 0, "monitor is DOWN");
+
+            const delay = monitor.heartbeatInterval.id._idleTimeout;
+            assert.ok(delay > 58000 && delay <= 60000, `expected ~60s, got ${delay}ms`);
+        } finally {
+            await monitor.stop();
+        }
+    });
+
+    test("uses the normal interval when UP", async () => {
+        const server = await localServer();
+        const monitor = fakeMonitor(server.url);
+        monitor.setConfigValue("downInterval", 30);
+        const io = fakeIo();
+
+        R.findOne = async () => null;
+        R.dispense = () => ({
+            monitor_id: monitor.id,
+            toJSON() {
+                return { monitor_id: this.monitor_id, status: this.status };
+            },
+        });
+        R.store = async () => {};
+        R.isoDateTimeMillis = () => new Date().toISOString().replace("T", " ").replace("Z", "");
+        UptimeCalculator.getUptimeCalculator = async () => ({
+            update: async () => ({ unix: () => 1704067200 }),
+        });
+        Monitor.sendNotification = async () => {};
+        Monitor.isUnderMaintenance = async () => false;
+        Monitor.sendStats = async () => {};
+        Prometheus.prototype.update = () => {};
+        Prometheus.prototype.remove = () => {};
+
+        try {
+            await monitor.start(io, 0);
+
+            const deadline = Date.now() + 5000;
+            while (
+                typeof monitor.heartbeatInterval?.id?._idleTimeout !== "number" &&
+                Date.now() < deadline
+            ) {
+                await new Promise((resolve) => setTimeout(resolve, 10));
+            }
+
+            assert.strictEqual(
+                typeof monitor.heartbeatInterval?.id?._idleTimeout,
+                "number",
+                "next heartbeat timer scheduled"
+            );
+
+            const heartbeat = io.events.find((event) => event.event === "heartbeat");
+            assert.ok(heartbeat, "heartbeat emitted");
+            assert.strictEqual(heartbeat.args[0].status, 1, "monitor is UP");
+
+            const delay = monitor.heartbeatInterval.id._idleTimeout;
+            assert.ok(delay > 58000 && delay <= 60000, `expected ~60s, got ${delay}ms`);
+        } finally {
+            await monitor.stop();
+            await server.close();
+        }
+    });
+});
+
+describe("DOWN to UP interval recovery", () => {
+    test("restores the normal interval after recovery", async () => {
+        let statusCode = 503;
+        const server = http.createServer((req, res) => {
+            res.writeHead(statusCode);
+            res.end(statusCode === 200 ? "OK" : "Unavailable");
+        });
+        await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+
+        const monitor = fakeMonitor(`http://127.0.0.1:${server.address().port}/`);
+        monitor.setConfigValue("downInterval", 30);
+        const io = fakeIo();
+
+        R.findOne = async () => null;
+        R.dispense = () => ({
+            monitor_id: monitor.id,
+            toJSON() {
+                return { monitor_id: this.monitor_id, status: this.status };
+            },
+        });
+        R.store = async () => {};
+        R.isoDateTimeMillis = () => new Date().toISOString().replace("T", " ").replace("Z", "");
+        UptimeCalculator.getUptimeCalculator = async () => ({
+            update: async () => ({ unix: () => 1704067200 }),
+        });
+        Monitor.sendNotification = async () => {};
+        Monitor.isUnderMaintenance = async () => false;
+        Monitor.sendStats = async () => {};
+        Prometheus.prototype.update = () => {};
+        Prometheus.prototype.remove = () => {};
+
+        async function waitForTimer(previousTimer) {
+            const deadline = Date.now() + 5000;
+            while (
+                (monitor.heartbeatInterval === previousTimer ||
+                    typeof monitor.heartbeatInterval?.id?._idleTimeout !== "number") &&
+                Date.now() < deadline
+            ) {
+                await new Promise((resolve) => setTimeout(resolve, 10));
+            }
+            assert.notStrictEqual(monitor.heartbeatInterval, previousTimer);
+            return monitor.heartbeatInterval.id._idleTimeout;
+        }
+
+        try {
+            await monitor.start(io, 0);
+
+            const downDelay = await waitForTimer(undefined);
+            assert.strictEqual(io.events.filter((e) => e.event === "heartbeat").at(-1).args[0].status, 0);
+            assert.ok(downDelay > 28000 && downDelay <= 30000, `DOWN delay: ${downDelay}ms`);
+
+            const previousTimer = monitor.heartbeatInterval;
+            statusCode = 200;
+            const nativeTimer = previousTimer.id;
+            const fireRecoveryBeat = nativeTimer._onTimeout;
+
+            // Prevent the original native timer from firing later.
+            globalThis.clearTimeout(nativeTimer);
+
+            // Run the wrapper callback while the timer is still active.
+            fireRecoveryBeat();
+
+            const upDelay = await waitForTimer(previousTimer);
+            assert.strictEqual(io.events.filter((e) => e.event === "heartbeat").at(-1).args[0].status, 1);
+            assert.ok(upDelay > 58000 && upDelay <= 60000, `UP delay: ${upDelay}ms`);
+        } finally {
+            await monitor.stop();
+            await new Promise((resolve) => server.close(resolve));
+        }
+    });
+});
+
 describe("Monitor beat over HTTP", () => {
     test("collects the certificate info from the TLS keylog event", async () => {
         const server = await localTlsServer();
