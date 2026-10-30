@@ -1,6 +1,6 @@
 const express = require("express");
 const http = require("node:http");
-const { printServerUrls } = require("../util-server");
+const { printServerUrls } = require("../util");
 
 /**
  * SimpleMigrationServer

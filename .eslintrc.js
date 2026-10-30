@@ -119,5 +119,12 @@ module.exports = {
                 eqeqeq: "off",
             },
         },
+        // Backend: no `any`
+        {
+            files: ["server/**/*.ts"],
+            rules: {
+                "@typescript-eslint/no-explicit-any": "error",
+            },
+        },
     ],
 };

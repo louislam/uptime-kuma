@@ -5,8 +5,7 @@ import { R } from "redbean-node";
 import { log } from "../../src/util";
 
 // @ts-ignore
-import { allowDevOrigin } from "../util-server.js";
-import { generalErrorResponse } from "../util2";
+import { allowDevOrigin, generalErrorResponse } from "../util";
 
 let processingSetup = false;
 let _hasUser = false;

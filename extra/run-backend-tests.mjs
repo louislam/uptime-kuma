@@ -8,7 +8,7 @@ const PATTERNS = [
     "test/frontend-test/**/*.js",
 ];
 const CONTAINER_MARKER = "testcontainers";
-const NODE_ARGS = ["--import=tsx", "--test"];
+const NODE_ARGS = ["--import=tsx", "--import=./test/setup.ts", "--test"];
 const extraArgs = process.argv.slice(2);
 
 const files = PATTERNS.flatMap((pattern) => globSync(pattern, { exclude: ["**/node_modules/**"] })).sort();

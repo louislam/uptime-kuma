@@ -2,7 +2,7 @@ const { describe, test } = require("node:test");
 
 const assert = require("node:assert");
 
-const { checkCertificateHostname } = require("../../server/util-server");
+const { checkCertificateHostname } = require("../../server/util");
 
 const testCert = `
 -----BEGIN CERTIFICATE-----
