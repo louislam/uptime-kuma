@@ -33,7 +33,6 @@ async function retryExternalService(testFn, maxAttempts = 5) {
 
 module.exports = { retryExternalService };
 
-
 describe("Server Utilities", () => {
     test("SQL_DATETIME_FORMAT constant matches MariaDB/MySQL format", () => {
         assert.strictEqual(SQL_DATETIME_FORMAT, "YYYY-MM-DD HH:mm:ss");

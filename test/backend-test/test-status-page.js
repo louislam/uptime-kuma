@@ -8,7 +8,6 @@ const {
     STATUS_PAGE_MAINTENANCE,
 } = require("../../src/util");
 
-
 describe("StatusPage", () => {
     describe("getStatusDescription()", () => {
         test("returns 'No Services' when status is -1", () => {

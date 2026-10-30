@@ -1,11 +1,5 @@
 let express = require("express");
-const {
-    allowDevAllOrigin,
-    allowAllOrigin,
-    percentageToColor,
-    filterAndJoin,
-    sendHttpError,
-} = require("../util");
+const { allowDevAllOrigin, allowAllOrigin, percentageToColor, filterAndJoin, sendHttpError } = require("../util");
 const { R } = require("redbean-node");
 const apicache = require("../modules/apicache");
 const Monitor = require("../model/monitor");
