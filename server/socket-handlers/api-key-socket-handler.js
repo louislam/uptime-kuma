@@ -1,7 +1,10 @@
 const { log } = require("../../src/util");
 const { R } = require("redbean-node");
 const dayjs = require("dayjs");
-const apicache = require("../modules/apicache");
+const { nanoid } = require("nanoid");
+const passwordHash = require("../password-hash");
+const apicache = require("../utils/response-cache");
+const APIKey = require("../model/api_key");
 const { Settings } = require("../settings");
 const { auth, createHeaders, checkLogin } = require("../better-auth");
 
