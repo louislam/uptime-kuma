@@ -34,6 +34,7 @@ const {
     radius,
     kafkaProducerAsync,
     getOidcTokenClientCredentials,
+    selectMonitorProxyAgent,
     rootCertificatesFingerprints,
     axiosAbortSignal,
     encodeBase64,
@@ -554,26 +555,6 @@ class Monitor extends BeanModel {
                         };
                     }
 
-                    // OIDC: Basic client credential flow.
-                    // Additional grants might be implemented in the future
-                    let oauth2AuthHeader = {};
-                    if (this.auth_method === "oauth2-cc") {
-                        try {
-                            if (
-                                this.oauthAccessToken === undefined ||
-                                new Date(this.oauthAccessToken.expires_at * 1000) <= new Date()
-                            ) {
-                                this.oauthAccessToken = await this.makeOidcTokenClientCredentialsRequest();
-                            }
-                            oauth2AuthHeader = {
-                                Authorization:
-                                    this.oauthAccessToken.token_type + " " + this.oauthAccessToken.access_token,
-                            };
-                        } catch (e) {
-                            throw new Error("The oauth config is invalid. " + e.message);
-                        }
-                    }
-
                     let agentFamily = undefined;
                     if (this.ipFamily === "ipv4") {
                         agentFamily = 4;
@@ -628,7 +609,6 @@ class Monitor extends BeanModel {
                             ...(contentType ? { "Content-Type": contentType } : {}),
                             ...basicAuthHeader,
                             ...bearerAuthHeader,
-                            ...oauth2AuthHeader,
                             ...(this.headers ? JSON.parse(this.headers) : {}),
                         },
                         maxRedirects: this.maxredirects,
@@ -663,6 +643,32 @@ class Monitor extends BeanModel {
 
                     options.httpAgent = agents.httpAgent;
                     options.httpsAgent = agents.httpsAgent;
+
+                    // OIDC: Basic client credential flow.
+                    // Additional grants might be implemented in the future.
+                    // The token request uses the monitor's proxy agent so it leaves
+                    // through the same proxy as the check itself.
+                    if (this.auth_method === "oauth2-cc") {
+                        try {
+                            if (
+                                this.oauthAccessToken === undefined ||
+                                new Date(this.oauthAccessToken.expires_at * 1000) <= new Date()
+                            ) {
+                                this.oauthAccessToken = await this.makeOidcTokenClientCredentialsRequest(
+                                    selectMonitorProxyAgent(this.oauth_token_url, agents)
+                                );
+                            }
+                            const customHeaders = this.headers ? JSON.parse(this.headers) : {};
+                            options.headers = {
+                                ...options.headers,
+                                Authorization:
+                                    this.oauthAccessToken.token_type + " " + this.oauthAccessToken.access_token,
+                                ...customHeaders,
+                            };
+                        } catch (e) {
+                            throw new Error("The oauth config is invalid. " + e.message);
+                        }
+                    }
 
                     if (this.auth_method === "mtls") {
                         if (this.tlsCert !== null && this.tlsCert !== "") {
@@ -1201,7 +1207,13 @@ class Monitor extends BeanModel {
              * the recent api request failed for authentication purposes
              */
             if (this.auth_method === "oauth2-cc" && error.response.status === 401 && !finalCall) {
-                this.oauthAccessToken = await this.makeOidcTokenClientCredentialsRequest();
+                this.oauthAccessToken = await this.makeOidcTokenClientCredentialsRequest(
+                    selectMonitorProxyAgent(this.oauth_token_url, {
+                        proxied: options.proxy === false,
+                        httpAgent: options.httpAgent,
+                        httpsAgent: options.httpsAgent,
+                    })
+                );
                 let oauth2AuthHeader = {
                     Authorization: this.oauthAccessToken.token_type + " " + this.oauthAccessToken.access_token,
                 };
@@ -2161,9 +2173,10 @@ class Monitor extends BeanModel {
 
     /**
      * Obtains a new Oidc Token
+     * @param {import("http").Agent} agent Proxy agent shared with the monitor request
      * @returns {Promise<object>} OAuthProvider client
      */
-    async makeOidcTokenClientCredentialsRequest() {
+    async makeOidcTokenClientCredentialsRequest(agent) {
         log.debug("monitor", `[${this.name}] The oauth access-token undefined or expired. Requesting a new token`);
         const oAuthAccessToken = await getOidcTokenClientCredentials(
             this.oauth_token_url,
@@ -2171,7 +2184,8 @@ class Monitor extends BeanModel {
             this.oauth_client_secret,
             this.oauth_scopes,
             this.oauth_audience,
-            this.oauth_auth_method
+            this.oauth_auth_method,
+            agent
         );
         if (this.oauthAccessToken?.expires_at) {
             log.debug(
