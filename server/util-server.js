@@ -2,8 +2,6 @@ import { checkLogin as betterAuthCheckLogin } from "./better-auth";
 
 const { R } = require("redbean-node");
 const { log, badgeConstants } = require("../src/util");
-const iconv = require("iconv-lite");
-const chardet = require("chardet");
 const chroma = require("chroma-js");
 const { NtlmClient } = require("./modules/axios-ntlm/lib/ntlmClient.js");
 const { Settings } = require("./settings");
@@ -541,17 +539,6 @@ exports.allowOrigin = (req, res) => {
  */
 exports.checkLogin = (socket) => {
     betterAuthCheckLogin(socket);
-};
-
-/**
- * Convert unknown string to UTF8
- * @param {Uint8Array} body Buffer
- * @returns {string} UTF8 string
- */
-exports.convertToUTF8 = (body) => {
-    const guessEncoding = chardet.detect(body);
-    const str = iconv.decode(body, guessEncoding);
-    return str.toString();
 };
 
 /**
