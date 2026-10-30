@@ -4,7 +4,7 @@ const { R } = require("redbean-node");
 const dayjs = require("dayjs");
 const Cron = require("croner");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
-const apicache = require("../modules/apicache");
+const apicache = require("../utils/response-cache");
 
 class Maintenance extends BeanModel {
     /**
