@@ -2668,6 +2668,9 @@
                                         <option value="basic">
                                             {{ $t("HTTP Basic Auth") }}
                                         </option>
+                                        <option value="digest">
+                                            {{ $t("HTTP Digest Auth") }}
+                                        </option>
                                         <option value="bearer">
                                             {{ $t("Bearer Token") }}
                                         </option>
