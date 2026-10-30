@@ -3,12 +3,9 @@
  */
 const { TimeLogger } = require("../src/util");
 const { R } = require("redbean-node");
-const { UptimeKumaServer } = require("./uptime-kuma-server");
+const { UptimeKumaServer, getInfo } = require("./uptime-kuma-server");
 const server = UptimeKumaServer.getInstance();
 const io = server.io;
-const { setting } = require("./util-server");
-const checkVersion = require("./check-version");
-const Database = require("./database");
 
 /**
  * Send list of notification providers to client
@@ -177,23 +174,7 @@ async function sendProxyList(socket) {
  * @returns {Promise<void>}
  */
 async function sendInfo(socket, hideVersion = false) {
-    const info = {
-        primaryBaseURL: await setting("primaryBaseURL"),
-        serverTimezone: await server.getTimezone(),
-        serverTimezoneOffset: server.getTimezoneOffset(),
-    };
-    if (!hideVersion) {
-        info.version = checkVersion.version;
-        info.latestVersion = checkVersion.latestVersion;
-        info.isContainer = process.env.UPTIME_KUMA_IS_CONTAINER === "1";
-        info.dbType = Database.dbConfig.type;
-        info.runtime = {
-            platform: process.platform, // linux or win32
-            arch: process.arch, // x86 or arm
-        };
-    }
-
-    socket.emit("info", info);
+    socket.emit("info", await getInfo(hideVersion));
 }
 
 /**
@@ -277,6 +258,7 @@ module.exports = {
     getHeartbeatHistory,
     sendProxyList,
 
+    getInfo,
     sendInfo,
     sendDockerHostList,
     sendRemoteBrowserList,

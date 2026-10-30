@@ -78,7 +78,7 @@ npm run dev  # Frontend on port 3000, backend on port 3001
 │   ├── modules/        Shared backend modules
 │   ├── util/           Backend utilities
 │   ├── server.js       Server entry point (executed via tsx)
-│   ├── uptime-kuma-server.js  Main server logic
+│   ├── uptime-kuma-server.ts  Main server logic
 │   └── better-auth.ts  Authentication (Better Auth)
 ├── src/                Frontend source code (Vue 3 SPA)
 │   ├── components/     Vue components
@@ -105,10 +105,10 @@ npm run dev  # Frontend on port 3000, backend on port 3001
 ### Backend Architecture
 
 - `server/model/` — RedBean models mapped to tables. `monitor.js` holds the monitor loop and handles the core types inline: `http`, `keyword`, `json-query`, `push`, `docker`, `radius`, `kafka-producer`.
-- `server/monitor-types/` — one class per monitor type, registered in `server/uptime-kuma-server.js` (`monitorTypeList`).
+- `server/monitor-types/` — one class per monitor type, registered in `server/uptime-kuma-server.ts` (`monitorTypeList`).
 - `server/notification-providers/` — one file per provider (110+), registered in `server/notification.js`.
 - `server/socket-handlers/` — Socket.IO event handlers (most of the real-time API surface).
-- `server/routers/` — Express routers: `api-router.js` (push/REST API), `status-page-router.js`, `better-auth-router.ts`.
+- `server/routers/` — Express routers: `api-router.js` (push/REST API, API-key auth), `mcp-router.ts` (`/mcp`, MCP tools bridged from the documented routes), `status-page-router.js`, `better-auth-router.ts`.
 - `server/modules/`, `server/util/`, `server/utils/knex/` — shared helpers.
 - `server/better-auth.ts` + `src/auth-client.ts` — authentication (Better Auth, v3).
 
@@ -168,7 +168,7 @@ After it succeeds, check in this order:
 2. **Changelog**: generated from PRs only. Base-image work (Node.js version, CA store) is not a PR, so add it by hand with `gh release edit <version> --notes-file notes.md` before publishing.
 3. **Docker Hub**: `<version>`, `<version>-slim`, `<version>-rootless`, `<version>-slim-rootless`, plus the aliases `2`, `2-slim`, `2-rootless`, `next`, `next-slim`, `next-rootless` all point at the new build.
 4. **Node.js inside the images**: `docker run --rm --entrypoint node louislam/uptime-kuma:<version> -p process.versions.node` matches the base image (`louislam/uptime-kuma:base2`) on amd64, arm64 and arm/v7.
-5. **App version**: `package.json` on `2.5.X` is `<version>`; the server sends it over Socket.IO as `info.version` (`server/client.js`) and as `User-Agent: Uptime-Kuma/<version>` (`server/uptime-kuma-server.js`). There is no `/api/version` route.
+5. **App version**: `package.json` on `2.5.X` is `<version>`; the server sends it over Socket.IO as `info.version` (`server/client.js`) and as `User-Agent: Uptime-Kuma/<version>` (`server/uptime-kuma-server.ts`). There is no `/api/version` route.
 6. **Wiki**: `🆙-How-to-Update.md` must contain `git checkout <version> --force`. If the `update-wiki` job did not run, run `RELEASE_VERSION=<version> GITHUB_TOKEN=<token> node extra/release/update-wiki.mjs`.
 7. **Demo server**: `npm run deploy-demo-server`; <https://uptime.kuma.pet> should report `<version>`.
 8. **Healthcheck**: if `extra/healthcheck.go` changed, rebuild `louislam/uptime-kuma:builder-go` (`npm run build-docker-builder-go`) before releasing.
@@ -224,12 +224,12 @@ Files to modify:
 
 ### New Monitor Type
 
-Core types (`http`, `keyword`, `json-query`, `ping`, `push`, `docker`, `radius`, `kafka-producer`) are handled inline in `server/model/monitor.js`. All other types are `MonitorType` subclasses in `server/monitor-types/` registered via `UptimeKumaServer.monitorTypeList` in `server/uptime-kuma-server.js`.
+Core types (`http`, `keyword`, `json-query`, `ping`, `push`, `docker`, `radius`, `kafka-producer`) are handled inline in `server/model/monitor.js`. All other types are `MonitorType` subclasses in `server/monitor-types/` registered via `UptimeKumaServer.monitorTypeList` in `server/uptime-kuma-server.ts`.
 
 Files to modify:
 
 1. `server/monitor-types/MONITORING_TYPE.js` (backend logic)
-2. `server/uptime-kuma-server.js` (register monitor type)
+2. `server/uptime-kuma-server.ts` (register monitor type)
 3. `src/pages/EditMonitor.vue` (frontend UI)
 4. `src/lang/en.json` (add translation keys)
 
@@ -239,6 +239,6 @@ Files to modify:
 2. **Dependencies**: Run `npm run audit` (`npm audit --omit=dev`) instead of relying on a fixed vulnerability list
 3. **Git Branches**: `master` (v3 development), `3.0.X` (v3 release), `2.5.X` (v2), `1.23.X` (v1)
 4. **Node Version**: >= 26.2.0 required
-5. **Socket.IO**: Most backend logic in `server/socket-handlers/`, not REST
+5. **Socket.IO**: Most backend logic in `server/socket-handlers/`, not REST. When an action only pushes data one way (no ack, e.g. `info`), serve it from an Express router and call the shared function; add a socket handler only when the API needs a request/response round-trip.
 6. **Docker**: `docker/` + `compose.yaml`; image tags use the `3` suffix (`base3`, `nightly3`, `pr-test3`)
 7. **Never commit**: `data/`, `dist/`, `tmp/`, `private/`, `node_modules/`

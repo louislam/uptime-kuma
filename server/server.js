@@ -4,8 +4,9 @@
  * DO NOT require("./server") in other modules, it likely creates circular dependency!
  */
 import { getRandomInt, isDevEnv, log, sleep } from "../src/util";
-import { auth, createHeaders, doubleCheckPassword, getDisableAuthSession, getSession } from "./better-auth";
+import { auth, createHeaders, doubleCheckPassword, getDisableAuthSession, getSessionFromHeaders } from "./better-auth";
 import { createBetterAuthRouter, needSetup } from "./routers/better-auth-router";
+import { readApiKey } from "./auth";
 import { initAdminFromEnv } from "./initial-admin";
 import { betterAuthSocketHandler } from "./socket-handlers/better-auth-socket-handler";
 import { loadEnvFile } from "node:process";
@@ -384,6 +385,10 @@ app.use(function (req, res, next) {
     const apiRouter = require("./routers/api-router");
     app.use(apiRouter);
 
+    // MCP Router, a TypeScript module, so `require` hands back its namespace
+    const mcpRouter = require("./routers/mcp-router").default;
+    app.use(mcpRouter);
+
     // Status Page Router
     const statusPageRouter = require("./routers/status-page-router");
     app.use(statusPageRouter);
@@ -413,7 +418,14 @@ app.use(function (req, res, next) {
         let session;
 
         if (!(await Settings.get("disableAuth"))) {
-            session = await getSession(socket.request.headers.cookie);
+            let apiKey;
+
+            // API keys only work as a socket login when the API & MCP is enabled
+            if (await Settings.get("apiEnabled")) {
+                apiKey = readApiKey(socket.request.headers.authorization);
+            }
+
+            session = await getSessionFromHeaders(socket.request.headers.cookie, apiKey);
         } else {
             session = await getDisableAuthSession();
         }
