@@ -6,7 +6,7 @@ import dayjs from "dayjs";
 import mitt from "mitt";
 
 import { DOWN, MAINTENANCE, PENDING, UP } from "../util.ts";
-import { getToastSuccessTimeout, getToastErrorTimeout } from "../util-frontend.js";
+import { getToastSuccessTimeout, getToastErrorTimeout } from "../util-frontend";
 import { BeatVersionThrottle } from "../beat-version-throttle";
 import { applyBeat, applyLatestBeats, beatStatusEntry } from "../beat-state";
 import { logout as betterAuthLogout } from "../auth-client";

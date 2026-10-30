@@ -9,7 +9,7 @@ const { Feed } = require("feed");
 const config = require("../config");
 const dayjs = require("dayjs");
 
-const { setting } = require("../util-server");
+const { setting } = require("../util");
 const {
     STATUS_PAGE_ALL_DOWN,
     STATUS_PAGE_ALL_UP,

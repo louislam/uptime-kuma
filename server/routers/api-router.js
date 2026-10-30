@@ -5,7 +5,7 @@ const {
     percentageToColor,
     filterAndJoin,
     sendHttpError,
-} = require("../util-server");
+} = require("../util");
 const { R } = require("redbean-node");
 const apicache = require("../modules/apicache");
 const Monitor = require("../model/monitor");

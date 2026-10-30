@@ -38,7 +38,7 @@ const {
     axiosAbortSignal,
     encodeBase64,
     checkCertExpiryNotifications,
-} = require("../util-server");
+} = require("../util");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification");

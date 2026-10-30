@@ -1,4 +1,4 @@
-const { checkLogin } = require("../util-server");
+const { checkLogin } = require("../util");
 const { log } = require("../../src/util");
 const { R } = require("redbean-node");
 const apicache = require("../modules/apicache");

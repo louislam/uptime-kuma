@@ -8,10 +8,9 @@ const TestDB = require("../mock-testdb");
 const { R } = require("redbean-node");
 const { Notification } = require("../../server/notification");
 const { Settings } = require("../../server/settings");
-const { setSetting } = require("../../server/util-server");
+const { setSetting } = require("../../server/util");
 const dayjs = require("dayjs");
 const { retryExternalService } = require("./test-util");
-dayjs.extend(require("dayjs/plugin/utc"));
 
 const testDb = new TestDB("./data/test-domain");
 
