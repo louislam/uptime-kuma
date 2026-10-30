@@ -1732,5 +1732,21 @@
     "Variable ID": "ID variabile",
     "indigoVariableIdHelptext": "Il messaggio di avviso viene scritto in questa variabile.",
     "Action Group ID": "ID gruppo di azioni",
-    "indigoActionGroupIdHelptext": "Viene eseguito dopo l'aggiornamento della variabile. Imposta una variabile, un gruppo di azioni o entrambi. Copia gli ID da Indigo usando il tasto destro del mouse → Copia ID."
+    "indigoActionGroupIdHelptext": "Viene eseguito dopo l'aggiornamento della variabile. Imposta una variabile, un gruppo di azioni o entrambi. Copia gli ID da Indigo usando il tasto destro del mouse → Copia ID.",
+    "browserlessSupportedVersion": "Versione Browserless supportata: {version}",
+    "Prometheus API": "API di Prometheus",
+    "prometheusApiDescription": "Esporre l'endpoint /metrics per Prometheus. È richiesta una chiave API; la funzionalità è disabilitata per impostazione predefinita, poiché i sistemi di raccolta delle metriche comportano un leggero consumo di CPU e memoria.",
+    "apiDescription": "Esporre gli endpoint /api e il server MCP. È richiesta una chiave API; la funzionalità è disabilitata per impostazione predefinita, poiché l'API si trova ancora in fase alpha e potrebbe subire modifiche senza preavviso.",
+    "apiDocumentation": "Documentazione API",
+    "Microsoft Graph Email": "Posta elettronica (Microsoft Graph)",
+    "Tenant ID": "ID tenant",
+    "msGraphTenantIdDescription": "L'ID tenant oppure un qualsiasi dominio all'interno del tenant (ad esempio, contoso.onmicrosoft.com).",
+    "msGraphMailbox": "Casella di posta del mittente",
+    "msGraphMailboxDescription": "Nome dell'entità utente (UPN) o indirizzo email della cassetta postale utilizzata per inviare posta.",
+    "msGraphSetupDescription": "È necessario creare una {appRegistration} con l'autorizzazione applicativa {mail.Send} e fornire il relativo {consent} nel proprio tenant. È possibile limitare l'ambito di {mail.Send} tramite {rbac}.",
+    "msGraphAppRegistration": "registrazione dell'applicazione",
+    "msGraphConsent": "consenso",
+    "msGraphRbac": "RBAC in Exchange Online",
+    "msGraphClientSecretDescription": "Scopri come gestire il {clientSecret} per la registrazione della tua applicazione.",
+    "msGraphClientSecretLink": "crea un segreto client"
 }
