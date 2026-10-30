@@ -447,7 +447,7 @@ class Monitor extends BeanModel {
             let tlsInfo = undefined;
 
             if (!previousBeat || this.type === "push") {
-                previousBeat = await R.findOne("heartbeat", " monitor_id = ? ORDER BY time DESC", [this.id]);
+                previousBeat = await R.findOne("heartbeat", " monitor_id = ? ORDER BY id DESC", [this.id]);
                 if (previousBeat) {
                     retries = previousBeat.retries;
                 }
