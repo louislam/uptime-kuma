@@ -3,6 +3,7 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
 import { ZodError } from "zod";
+import { checkLogin as betterAuthCheckLogin } from "./better-auth";
 import type { Request, Response } from "express";
 import type { SASLOptions } from "kafkajs";
 import type { TokenSet } from "openid-client";
@@ -549,7 +550,6 @@ export function allowOrigin(req: Request, res: Response): void {
  * @throws The user is not logged in
  */
 export function checkLogin(socket: Socket): void {
-    const { checkLogin: betterAuthCheckLogin } = require("./better-auth");
     betterAuthCheckLogin(socket);
 }
 
