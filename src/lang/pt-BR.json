@@ -1726,5 +1726,8 @@
     "Variable ID": "ID da variável",
     "indigoVariableIdHelptext": "A mensagem de alerta é gravada nesta variável.",
     "Action Group ID": "ID do Grupo de Ação",
-    "indigoActionGroupIdHelptext": "Executado após a atualização da variável. Defina uma variável, um grupo de ações ou ambos. Copie os IDs do Indigo usando o botão direito do mouse → Copiar ID."
+    "indigoActionGroupIdHelptext": "Executado após a atualização da variável. Defina uma variável, um grupo de ações ou ambos. Copie os IDs do Indigo usando o botão direito do mouse → Copiar ID.",
+    "Prometheus API": "API do Prometheus",
+    "prometheusApiDescription": "Exponha o endpoint `/metrics` para o Prometheus. Ele requer uma chave de API e vem desativado por padrão, uma vez que a coleta de métricas consome uma pequena quantidade de CPU e memória.",
+    "browserlessSupportedVersion": "Versão do Browserless compatível: {version}"
 }
