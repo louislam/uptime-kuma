@@ -499,7 +499,7 @@ export function getTotalClientInRoom(io: Server, roomName: string): number {
  */
 export function allowDevAllOrigin(res: object): void {
     if (process.env.NODE_ENV === "development") {
-        exports.allowAllOrigin(res);
+        allowAllOrigin(res);
     }
 }
 
@@ -523,7 +523,7 @@ export function allowAllOrigin(res: object): void {
  */
 export function allowDevOrigin(req: Request, res: Response): void {
     if (process.env.NODE_ENV === "development") {
-        exports.allowOrigin(req, res);
+        allowOrigin(req, res);
     }
 }
 
