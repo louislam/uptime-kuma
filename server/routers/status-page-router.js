@@ -1,5 +1,5 @@
 let express = require("express");
-const apicache = require("../modules/apicache");
+const apicache = require("../utils/response-cache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const StatusPage = require("../model/status_page");
 const { allowDevAllOrigin, sendHttpError } = require("../util-server");
