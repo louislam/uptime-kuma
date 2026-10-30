@@ -632,7 +632,7 @@
     "Authorization Identity": "Identitet autorizacije",
     "weekdayShortThu": "Čet",
     "setupDatabaseChooseDatabase": "Koju bazu podataka želite koristiti?",
-    "setupDatabaseEmbeddedMariaDB": "Ne morate ništa dodatno postavljati. Ovaj Docker image ima ugrađenu i konfiguriranu MariaDB bazu podataka za Vas. Uptime Kuma će se spojiti na ovu bazu preko UNIX socketa.",
+    "setupDatabaseEmbeddedMariaDB": "Ne morate ništa dodatno postavljati. Ovaj Docker image ima ugrađenu i konfiguriranu MariaDB bazu podataka. Uptime Kuma će se spojiti na ovu bazu preko UNIX socketa.",
     "setupDatabaseMariaDB": "Spojite vanjsku MariaDB bazu podataka. Morate unijeti informacije o konekciji prema bazi.",
     "setupDatabaseSQLite": "Jednostavna datoteka s bazom podataka, preporuča se samo za manje implementacije. Prije inačice v2.0.0, Uptime Kuma je koristila SQLite kao zadanu bazu podataka.",
     "dbName": "Naziv baze podataka",
