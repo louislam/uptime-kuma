@@ -106,7 +106,7 @@ class MqttMonitorType extends MonitorType {
                 const expression = jsonata(monitor.jsonPath);
                 jsonValue = await expression.evaluate(parsedMessage);
             } catch (e) {
-                // JSON parsing failed, jsonValue remains null
+                throw new Error(`Error evaluating JSON query: ${e.message}. Response from server was: ${receivedMessage}`);
             }
         }
 
