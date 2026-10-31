@@ -43,6 +43,7 @@ class Proxy {
         }
 
         bean.user_id = userID;
+        bean.name = proxy.name;
         bean.protocol = proxy.protocol;
         bean.host = proxy.host;
         bean.port = proxy.port;
