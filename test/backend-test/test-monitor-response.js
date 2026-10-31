@@ -34,3 +34,40 @@ describe("Monitor response saving", () => {
         assert.strictEqual(await Heartbeat.decodeResponseValue(bean.response), JSON.stringify({ ok: true }));
     });
 });
+
+describe("Monitor OAuth2 authorization header", () => {
+    test("getOAuth2AuthorizationHeader() defaults to Bearer when token_type is missing", () => {
+        const monitor = Object.create(Monitor.prototype);
+        monitor.id = 1;
+        monitor.name = "test monitor";
+        monitor.oauthAccessToken = {
+            access_token: "example-token",
+        };
+
+        assert.strictEqual(monitor.getOAuth2AuthorizationHeader(), "Bearer example-token");
+    });
+
+    test("getOAuth2AuthorizationHeader() defaults to Bearer when token_type is undefined", () => {
+        const monitor = Object.create(Monitor.prototype);
+        monitor.id = 1;
+        monitor.name = "test monitor";
+        monitor.oauthAccessToken = {
+            token_type: undefined,
+            access_token: "example-token",
+        };
+
+        assert.strictEqual(monitor.getOAuth2AuthorizationHeader(), "Bearer example-token");
+    });
+
+    test("getOAuth2AuthorizationHeader() uses the provided token_type when present", () => {
+        const monitor = Object.create(Monitor.prototype);
+        monitor.id = 1;
+        monitor.name = "test monitor";
+        monitor.oauthAccessToken = {
+            token_type: "MAC",
+            access_token: "example-token",
+        };
+
+        assert.strictEqual(monitor.getOAuth2AuthorizationHeader(), "MAC example-token");
+    });
+});
