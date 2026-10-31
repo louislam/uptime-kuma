@@ -88,6 +88,7 @@ class Monitor extends BeanModel {
         let obj = {
             id: this.id,
             name: this.name,
+            statusPageName: this.status_page_name || null,
             sendUrl: this.sendUrl,
             type: this.type,
         };
@@ -206,6 +207,7 @@ class Monitor extends BeanModel {
             ntpStratumThreshold: this.ntp_stratum_threshold,
             ntpTimeOffsetThreshold: this.ntp_time_offset_threshold,
             ntpRootDispersionThreshold: this.ntp_root_dispersion_threshold,
+            statusPageName: this.status_page_name,
             ipFamily: this.ipFamily,
             sftpPath: this.sftpPath,
             sshAuthMethod: this.sshAuthMethod || "password",

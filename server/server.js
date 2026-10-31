@@ -487,6 +487,9 @@ app.use(function (req, res, next) {
                 if (monitor.retryOnlyOnStatusCodeFailure !== undefined) {
                     bean.retry_only_on_status_code_failure = monitor.retryOnlyOnStatusCodeFailure;
                 }
+                if (monitor.statusPageName !== undefined) {
+                    bean.status_page_name = monitor.statusPageName;
+                }
                 bean.user_id = socket.userID;
 
                 bean.validate();
@@ -546,6 +549,7 @@ app.use(function (req, res, next) {
                 }
 
                 bean.name = monitor.name;
+                bean.status_page_name = monitor.statusPageName;
                 bean.description = monitor.description;
                 bean.parent = monitor.parent;
                 bean.type = monitor.type;

@@ -17,6 +17,7 @@ export interface CompactMonitor {
     pathName: string;
     interval: number;
     weight: number | null;
+    statusPageName: string | null;
 }
 
 /**
@@ -34,6 +35,7 @@ export function toCompactMonitor(
         parent?: number | null;
         interval: number;
         weight?: number | null;
+        status_page_name?: string | null;
     },
     preloadData: CompactPreloadData
 ): CompactMonitor {
@@ -51,5 +53,6 @@ export function toCompactMonitor(
         pathName: path.join(" / "),
         interval: monitor.interval,
         weight: monitor.weight ?? null,
+        statusPageName: monitor.status_page_name || null,
     };
 }

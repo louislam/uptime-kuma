@@ -72,6 +72,7 @@ describe("getMonitorJSONList()", () => {
             pathName: "Group",
             interval: 60,
             weight: 2000,
+            statusPageName: null,
         });
     });
 
