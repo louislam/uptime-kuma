@@ -46,7 +46,11 @@ class SteamMonitorType extends MonitorType {
             throw new Error("Steam API Key not found");
         }
 
-        const filter = await this.buildServerFilter(monitor.hostname, monitor.port);
+        const filter = await this.buildServerFilter(
+            monitor.hostname,
+            monitor.port,
+            monitor.getConfigValue("steamAppId")
+        );
 
         let res = await this.steamApiClient.get(steamApiUrl, {
             timeout: monitor.timeout * 1000,
@@ -95,11 +99,13 @@ class SteamMonitorType extends MonitorType {
      * Builds the Steam API server filter.
      * @param {string} hostname Steam server hostname or IP address.
      * @param {number} port Steam server port.
+     * @param {?number} appId Optional Steam App ID, needed for mods and games not on the Steam Store.
      * @returns {Promise<string>} Steam API addr filter.
      */
-    async buildServerFilter(hostname, port) {
+    async buildServerFilter(hostname, port, appId = null) {
         const resolvedHostname = await this.resolveSteamHostname(hostname);
-        return `addr\\${resolvedHostname}:${port}`;
+        const filter = `addr\\${resolvedHostname}:${port}`;
+        return appId ? `${filter}\\appid\\${appId}` : filter;
     }
 
     /**

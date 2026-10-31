@@ -27,6 +27,18 @@ describe("monitorConfigSchema", () => {
             systemServiceName: "nginx",
         });
     });
+
+    test("accepts a Steam App ID and stores a cleared one as null", () => {
+        assert.deepStrictEqual(monitorConfigSchema.parse({ steamAppId: 3545060 }), { steamAppId: 3545060 });
+        assert.deepStrictEqual(monitorConfigSchema.parse({ steamAppId: "" }), { steamAppId: null });
+        assert.deepStrictEqual(monitorConfigSchema.parse({}), {});
+    });
+
+    test("rejects a Steam App ID that is not a positive integer", () => {
+        for (const steamAppId of ["440\\gametype\\x", 0, 1.5, 4294967296]) {
+            assert.strictEqual(monitorConfigSchema.safeParse({ steamAppId }).success, false);
+        }
+    });
 });
 
 describe("Monitor.getConfig()", () => {
