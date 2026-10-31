@@ -1067,9 +1067,16 @@ class Monitor extends BeanModel {
             } else if (bean.status === MAINTENANCE) {
                 log.warn("monitor", `Monitor #${this.id} '${this.name}': Under Maintenance | Type: ${this.type}`);
             } else {
+                const downInterval = this.getConfigValue("downInterval", null);
+                const useDownInterval = bean.status === DOWN && downInterval != null;
+
+                if (useDownInterval) {
+                    beatInterval = downInterval;
+                }
+
                 log.warn(
                     "monitor",
-                    `Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Interval: ${beatInterval} seconds | Type: ${this.type} | Down Count: ${bean.downCount} | Resend Interval: ${this.resendInterval}`
+                    `Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Interval: ${beatInterval} seconds${useDownInterval ? " (DOWN)" : ""} | Type: ${this.type} | Down Count: ${bean.downCount} | Resend Interval: ${this.resendInterval}`
                 );
             }
 
