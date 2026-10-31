@@ -285,11 +285,17 @@ class DomainExpiry extends BeanModel {
         } else if (bean) {
             expiryDate = await bean.getExpiryDate();
 
-            if (dayjs.utc(expiryDate).isAfter(dayjs.utc(bean.expiry))) {
-                bean.lastExpiryNotificationSent = null;
+            if (expiryDate && !isNaN(new Date(expiryDate).getTime())) {
+                if (dayjs.utc(expiryDate).isAfter(dayjs.utc(bean.expiry))) {
+                    bean.lastExpiryNotificationSent = null;
+                }
+                bean.expiry = R.isoDateTimeMillis(expiryDate);
+            } else {
+                // If the RDAP endpoint returns no info, explicitly handle it cleanly
+                log.debug("domain_expiry", `RDAP endpoint for ${domainName} provided no valid expiry info.`);
+                bean.expiry = null;
             }
 
-            bean.expiry = R.isoDateTimeMillis(expiryDate);
             bean.lastCheck = R.isoDateTimeMillis(dayjs.utc());
             await R.store(bean);
         }
@@ -315,10 +321,7 @@ class DomainExpiry extends BeanModel {
         }
         // sanity check if expiry date is valid before calculating days remaining. Should not happen and likely indicates a bug in the code.
         if (!domain.expiry || isNaN(new Date(domain.expiry).getTime())) {
-            log.warn(
-                "domain_expiry",
-                `No valid expiry date passed to sendNotifications for ${domainName} (expiry: ${domain.expiry}), skipping notification`
-            );
+            log.debug("domain_expiry", `Expiry date not set or unsupported for ${domainName}, skipping notifications.`);
             return;
         }
 
