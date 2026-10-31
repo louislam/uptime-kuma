@@ -7,6 +7,9 @@ const io = UptimeKumaServer.getInstance().io;
 
 const prefix = "cloudflared_";
 const cloudflared = new CloudflaredTunnel();
+// Cleared by a deliberate stop, so only an unexpected exit restarts cloudflared
+let restartOnExit = false;
+let restartTimer = null;
 
 /**
  * Change running state
@@ -17,6 +20,12 @@ const cloudflared = new CloudflaredTunnel();
 cloudflared.change = (running, message) => {
     io.to("cloudflared").emit(prefix + "running", running);
     io.to("cloudflared").emit(prefix + "message", message);
+    // cloudflared exits at once if it starts before DNS is ready, e.g. at boot (#5346)
+    if (!running && restartOnExit && cloudflared.token) {
+        log.warn("cloudflared", "cloudflared exited unexpectedly, restarting in 60 seconds");
+        clearTimeout(restartTimer);
+        restartTimer = setTimeout(() => restartOnExit && !cloudflared.running && cloudflared.start(), 60 * 1000);
+    }
 };
 
 /**
@@ -64,6 +73,7 @@ module.exports.cloudflaredSocketHandler = (socket) => {
             } else {
                 cloudflared.token = null;
             }
+            restartOnExit = true;
             cloudflared.start();
         } catch (error) {
             log.error("cloudflared", "Error in start handler: " + error.message);
@@ -77,6 +87,8 @@ module.exports.cloudflaredSocketHandler = (socket) => {
             if (!disabledAuth) {
                 await doubleCheckPassword(socket.request.headers.cookie, currentPassword);
             }
+            restartOnExit = false;
+            clearTimeout(restartTimer);
             cloudflared.stop();
         } catch (error) {
             callback({
@@ -113,6 +125,7 @@ module.exports.autoStart = async (token) => {
     if (token) {
         log.info("cloudflare", "Start cloudflared");
         cloudflared.token = token;
+        restartOnExit = true;
         cloudflared.start();
     }
 };
@@ -123,6 +136,8 @@ module.exports.autoStart = async (token) => {
  */
 module.exports.stop = async () => {
     log.info("cloudflared", "Stop cloudflared");
+    restartOnExit = false;
+    clearTimeout(restartTimer);
     if (cloudflared) {
         cloudflared.stop();
     }
