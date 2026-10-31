@@ -14,7 +14,7 @@
                         {{ statusText }}
                     </div>
                     <div class="tooltip-time">{{ timeText }}</div>
-                    <div v-if="content?.msg" class="tooltip-message">{{ content.msg }}</div>
+                    <div v-if="content?.msg && !informational" class="tooltip-message">{{ content.msg }}</div>
                 </slot>
             </div>
             <div class="tooltip-arrow" :class="{ 'arrow-above': position === 'above' }"></div>
@@ -54,6 +54,11 @@ export default {
             default: "below",
             validator: (value) => ["above", "below"].includes(value),
         },
+        /** Whether to show neutral online/offline status */
+        informational: {
+            type: Boolean,
+            default: false,
+        },
     },
     computed: {
         tooltipStyle() {
@@ -65,6 +70,16 @@ export default {
 
         statusText() {
             if (!this.content || this.content === 0) {
+                return this.$t("Unknown");
+            }
+
+            if (this.informational) {
+                if (this.content.status === UP) {
+                    return this.$t("Up");
+                }
+                if (this.content.status === DOWN) {
+                    return this.$t("Offline");
+                }
                 return this.$t("Unknown");
             }
 
@@ -85,6 +100,10 @@ export default {
         statusClass() {
             if (!this.content || this.content === 0) {
                 return "status-empty";
+            }
+
+            if (this.informational) {
+                return this.content.status === UP ? "status-info-up" : "status-offline";
             }
 
             switch (this.content.status) {
@@ -163,6 +182,14 @@ export default {
 
             &.status-maintenance {
                 color: $maintenance;
+            }
+
+            &.status-offline {
+                color: #9ca3af;
+            }
+
+            &.status-info-up {
+                color: #0dcaf0;
             }
 
             &.status-empty {

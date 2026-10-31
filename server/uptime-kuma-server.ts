@@ -308,7 +308,20 @@ export class UptimeKumaServer {
 
         const result = {};
         monitorList.forEach((monitor) => {
-            result[monitor.id] = compact ? toCompactMonitor(monitor, preloadData) : monitor.toJSON(preloadData);
+            result[monitor.id] = compact
+                ? toCompactMonitor(
+                      {
+                          id: monitor.id,
+                          name: monitor.name,
+                          type: monitor.type,
+                          informational: monitor.getConfigValue("informational", false),
+                          parent: monitor.parent,
+                          interval: monitor.interval,
+                          weight: monitor.weight,
+                      },
+                      preloadData
+                  )
+                : monitor.toJSON(preloadData);
         });
         return result;
     }

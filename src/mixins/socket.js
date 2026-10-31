@@ -98,16 +98,36 @@ export default {
          * @returns {void}
          */
         updateLastBeat(monitorID, beat) {
-            applyBeat(this, monitorID, beat, this.statusEntryFor(beat));
+            applyBeat(this, monitorID, beat, this.statusEntryFor(beat, monitorID));
             this.heartbeatVersionThrottle.schedule();
         },
 
         /**
          * Map a heartbeat status to its display text and color
          * @param {object} beat Heartbeat
+         * @param {number} monitorID Monitor id
          * @returns {{text: string, color: string}} Status entry
          */
-        statusEntryFor(beat) {
+        statusEntryFor(beat, monitorID) {
+            if (this.monitorList[monitorID]?.informational) {
+                if (beat.status === UP) {
+                    return {
+                        text: this.$t("Up"),
+                        color: "info",
+                    };
+                }
+                if (beat.status === DOWN) {
+                    return {
+                        text: this.$t("Offline"),
+                        color: "secondary",
+                    };
+                }
+                return {
+                    text: this.$t("Unknown"),
+                    color: "secondary",
+                };
+            }
+
             return beatStatusEntry(this.$t.bind(this), beat);
         },
 
@@ -727,6 +747,8 @@ export default {
 
                 if (monitor && !monitor.active) {
                     result.pause++;
+                } else if (monitor?.informational) {
+                    continue;
                 } else if (beat) {
                     result.active++;
                     if (beat.status === UP) {

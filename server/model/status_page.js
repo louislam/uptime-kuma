@@ -216,14 +216,15 @@ class StatusPage extends BeanModel {
      * @returns {number} status_page constant from util.ts
      */
     static overallStatus(heartbeats) {
-        if (heartbeats.length === 0) {
-            return -1;
+        const relevantHeartbeats = heartbeats.filter((heartbeat) => !heartbeat.informational);
+        if (relevantHeartbeats.length === 0) {
+            return heartbeats.length > 0 ? STATUS_PAGE_ALL_UP : -1;
         }
 
         let status = STATUS_PAGE_ALL_UP;
         let hasUp = false;
 
-        for (let beat of heartbeats) {
+        for (let beat of relevantHeartbeats) {
             if (beat.status === MAINTENANCE) {
                 return STATUS_PAGE_MAINTENANCE;
             } else if (beat.status === UP) {
@@ -297,7 +298,7 @@ class StatusPage extends BeanModel {
         let statusDescription = StatusPage.getStatusDescription(status);
 
         // keep only DOWN heartbeats in the RSS feed
-        const downHeartbeats = heartbeats.filter((heartbeat) => heartbeat.status === DOWN);
+        const downHeartbeats = heartbeats.filter((heartbeat) => !heartbeat.informational && heartbeat.status === DOWN);
 
         return {
             incidents,

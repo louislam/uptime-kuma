@@ -34,6 +34,7 @@
             :x="tooltipX"
             :y="tooltipY"
             :position="tooltipPosition"
+            :informational="informational"
         />
     </div>
 </template>
@@ -68,6 +69,11 @@ export default {
         heartbeatBarDays: {
             type: Number,
             default: 0,
+        },
+        /** Whether to use neutral online/offline colors */
+        informational: {
+            type: Boolean,
+            default: false,
         },
     },
     data() {
@@ -291,6 +297,10 @@ export default {
             const upCount = validBeats.filter((b) => Number(b.status) === UP).length;
             const downCount = validBeats.filter((b) => Number(b.status) === DOWN).length;
 
+            if (this.informational) {
+                return `Heartbeat history: ${validBeats.length} checks, ${upCount} up, ${validBeats.length - upCount} offline`;
+            }
+
             return `Heartbeat history: ${validBeats.length} checks, ${upCount} up, ${downCount} down`;
         },
     },
@@ -314,6 +324,12 @@ export default {
 
         shortBeatList() {
             // Triggers on beatList, maxBeat, or move changes
+            this.$nextTick(() => {
+                this.drawCanvas();
+            });
+        },
+
+        informational() {
             this.$nextTick(() => {
                 this.drawCanvas();
             });
@@ -468,6 +484,13 @@ export default {
 
             const status = Number(beat.status);
 
+            if (this.informational) {
+                return {
+                    up: status === UP,
+                    offline: status === DOWN,
+                };
+            }
+
             return {
                 down: status === DOWN,
                 pending: status === PENDING,
@@ -610,6 +633,7 @@ export default {
                 pending: rootStyles.getPropertyValue("--bs-warning") || "#ffc107",
                 maintenance: rootStyles.getPropertyValue("--maintenance") || "#1d4ed8",
                 up: rootStyles.getPropertyValue("--bs-primary") || "#5cdd8b",
+                offline: rootStyles.getPropertyValue("--bs-secondary") || "#6c757d",
             };
 
             // Draw each beat
@@ -688,6 +712,10 @@ export default {
             }
 
             const status = Number(beat.status);
+
+            if (this.informational) {
+                return status === UP ? colors.up : colors.offline;
+            }
 
             if (status === DOWN) {
                 return colors.down;

@@ -3,6 +3,8 @@
 </template>
 
 <script>
+import { DOWN, UP } from "../util.ts";
+
 export default {
     props: {
         /** Current status of monitor */
@@ -10,10 +12,19 @@ export default {
             type: Number,
             default: 0,
         },
+        /** Whether to show online/offline status without severity colors */
+        informational: {
+            type: Boolean,
+            default: false,
+        },
     },
 
     computed: {
         color() {
+            if (this.informational) {
+                return this.status === UP ? "info" : "secondary";
+            }
+
             if (this.status === 0) {
                 return "danger";
             }
@@ -34,6 +45,16 @@ export default {
         },
 
         text() {
+            if (this.informational) {
+                if (this.status === UP) {
+                    return this.$t("Up");
+                }
+                if (this.status === DOWN) {
+                    return this.$t("Offline");
+                }
+                return this.$t("Unknown");
+            }
+
             if (this.status === 0) {
                 return this.$t("Down");
             }
