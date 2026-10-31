@@ -1,4 +1,4 @@
-const { checkLogin, setSetting, setting } = require("../util-server");
+const { checkLogin, setSetting, setting } = require("../util");
 const { CloudflaredTunnel } = require("node-cloudflared-tunnel");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { log } = require("../../src/util");

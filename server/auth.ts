@@ -1,6 +1,7 @@
 import expressBasicAuth from "express-basic-auth";
 import dayjs from "dayjs";
 import { R } from "redbean-node";
+import type { Bean } from "redbean-node";
 import type express from "express";
 import { log } from "../src/util";
 import { loginRateLimiter, apiRateLimiter } from "./rate-limiter";
@@ -28,7 +29,7 @@ export async function login(username: string, password: string) {
         return null;
     }
 
-    const user: any = await R.findOne("user", "TRIM(username) = ? AND active = 1 ", [username.trim()]);
+    const user: Bean | null = await R.findOne("user", "TRIM(username) = ? AND active = 1 ", [username.trim()]);
 
     if (user && passwordHash.verify(password, user.password)) {
         // Upgrade the hash to bcrypt
@@ -77,7 +78,7 @@ async function verifyLegacyAPIKey(key: string) {
         return false;
     }
 
-    const hash: any = await R.findOne("api_key", " id=? ", [index]);
+    const hash: Bean | null = await R.findOne("api_key", " id=? ", [index]);
 
     if (hash === null) {
         return false;

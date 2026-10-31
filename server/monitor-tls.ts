@@ -1,4 +1,4 @@
-import { checkCertificate, checkCertificateHostname } from "./util-server";
+import { checkCertificate, checkCertificateHostname } from "./util";
 
 /** Minimal TLS socket shape needed for the certificate info */
 export interface TlsSocketLike {

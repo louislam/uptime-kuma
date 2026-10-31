@@ -2,10 +2,8 @@ const { describe, test } = require("node:test");
 const assert = require("node:assert");
 const { UptimeCalculator } = require("../../server/uptime-calculator");
 const dayjs = require("dayjs");
+
 const { UP, DOWN, PENDING, MAINTENANCE } = require("../../src/util");
-dayjs.extend(require("dayjs/plugin/utc"));
-dayjs.extend(require("../../server/modules/dayjs/plugin/timezone"));
-dayjs.extend(require("dayjs/plugin/customParseFormat"));
 
 /**
  * Create a calculator whose bucket loading is stubbed, so update() does not query the database

@@ -1,4 +1,4 @@
-const { setSetting, setting } = require("./util-server");
+const { setSetting, setting } = require("./util");
 const axios = require("axios");
 const compareVersions = require("compare-versions");
 const { log } = require("../src/util");

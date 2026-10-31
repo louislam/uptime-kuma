@@ -1,9 +1,18 @@
+import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
+import { ZodError } from "zod";
 import { checkLogin as betterAuthCheckLogin } from "./better-auth";
+import type { Request, Response } from "express";
+import type { SASLOptions } from "kafkajs";
+import type { TokenSet } from "openid-client";
+import type { Bean } from "redbean-node";
+import type { Server, Socket } from "socket.io";
+import type { TLSSocket } from "tls";
 
 const { R } = require("redbean-node");
 const { log, badgeConstants } = require("../src/util");
-const iconv = require("iconv-lite");
-const chardet = require("chardet");
 const chroma = require("chroma-js");
 const { NtlmClient } = require("./modules/axios-ntlm/lib/ntlmClient.js");
 const { Settings } = require("./settings");
@@ -18,32 +27,28 @@ const {
         rfc2865: { file, attributes },
     },
 } = require("node-radius-utils");
-const dayjs = require("dayjs");
-dayjs.extend(require("dayjs/plugin/utc"));
 
-// SASLOptions used in JSDoc
-// eslint-disable-next-line no-unused-vars
-const { Kafka, SASLOptions } = require("kafkajs");
+const { Kafka } = require("kafkajs");
 const crypto = require("crypto");
 
 /**
  * Gets an Access Token from an oidc/oauth2 provider
- * @param {string} tokenEndpoint The token URI from the auth service provider
- * @param {string} clientId The oidc/oauth application client id
- * @param {string} clientSecret The oidc/oauth application client secret
- * @param {string} scope The scope(s) for which the token should be issued for
- * @param {string} audience The audience for which the token should be issued for
- * @param {string} authMethod The method used to send the credentials. Default client_secret_basic
- * @returns {Promise<oidc.TokenSet>} TokenSet promise if the token request was successful
+ * @param tokenEndpoint The token URI from the auth service provider
+ * @param clientId The oidc/oauth application client id
+ * @param clientSecret The oidc/oauth application client secret
+ * @param scope The scope(s) for which the token should be issued for
+ * @param audience The audience for which the token should be issued for
+ * @param authMethod The method used to send the credentials. Default client_secret_basic
+ * @returns TokenSet promise if the token request was successful
  */
-exports.getOidcTokenClientCredentials = async (
-    tokenEndpoint,
-    clientId,
-    clientSecret,
-    scope,
-    audience,
-    authMethod = "client_secret_basic"
-) => {
+export async function getOidcTokenClientCredentials(
+    tokenEndpoint: string,
+    clientId: string,
+    clientSecret: string,
+    scope: string,
+    audience: string,
+    authMethod: string = "client_secret_basic"
+): Promise<TokenSet> {
     const oauthProvider = new oidc.Issuer({ token_endpoint: tokenEndpoint });
     let client = new oauthProvider.Client({
         client_id: clientId,
@@ -64,23 +69,29 @@ exports.getOidcTokenClientCredentials = async (
         grantParams.audience = audience;
     }
     return await client.grant(grantParams);
-};
+}
 
 /**
  * Monitor Kafka using Producer
- * @param {string[]} brokers List of kafka brokers to connect, host and
+ * @param brokers List of kafka brokers to connect, host and
  * port joined by ':'
- * @param {string} topic Topic name to produce into
- * @param {string} message Message to produce
- * @param {object} options Kafka client options. Contains ssl, clientId,
+ * @param topic Topic name to produce into
+ * @param message Message to produce
+ * @param options Kafka client options. Contains ssl, clientId,
  * allowAutoTopicCreation and interval (interval defaults to 20,
  * allowAutoTopicCreation defaults to false, clientId defaults to
  * "Uptime-Kuma" and ssl defaults to false)
- * @param {SASLOptions} saslOptions Options for kafka client
+ * @param saslOptions Options for kafka client
  * Authentication (SASL) (defaults to {})
- * @returns {Promise<string>} Status message
+ * @returns Status message
  */
-exports.kafkaProducerAsync = function (brokers, topic, message, options = {}, saslOptions = {}) {
+export function kafkaProducerAsync(
+    brokers: string[],
+    topic: string,
+    message: string,
+    options: object = {},
+    saslOptions: SASLOptions = {}
+): Promise<string> {
     return new Promise((resolve, reject) => {
         const {
             interval = 20,
@@ -170,15 +181,15 @@ exports.kafkaProducerAsync = function (brokers, topic, message, options = {}, sa
             }
         });
     });
-};
+}
 
 /**
  * Use NTLM Auth for a http request.
- * @param {object} options The http request options
- * @param {object} ntlmOptions The auth options
- * @returns {Promise<(string[] | object[] | object)>} NTLM response
+ * @param options The http request options
+ * @param ntlmOptions The auth options
+ * @returns NTLM response
  */
-exports.httpNtlm = function (options, ntlmOptions) {
+export function httpNtlm(options: object, ntlmOptions: object): Promise<string[] | object[] | object> {
     return new Promise((resolve, reject) => {
         let client = NtlmClient(ntlmOptions);
 
@@ -190,30 +201,30 @@ exports.httpNtlm = function (options, ntlmOptions) {
                 reject(err);
             });
     });
-};
+}
 
 /**
  * Query radius server
- * @param {string} hostname Hostname of radius server
- * @param {string} username Username to use
- * @param {string} password Password to use
- * @param {string} calledStationId ID of called station
- * @param {string} callingStationId ID of calling station
- * @param {string} secret Secret to use
- * @param {number} port Port to contact radius server on
- * @param {number} timeout Timeout for connection to use
- * @returns {Promise<any>} Response from server
+ * @param hostname Hostname of radius server
+ * @param username Username to use
+ * @param password Password to use
+ * @param calledStationId ID of called station
+ * @param callingStationId ID of calling station
+ * @param secret Secret to use
+ * @param port Port to contact radius server on
+ * @param timeout Timeout for connection to use
+ * @returns Response from server
  */
-exports.radius = function (
-    hostname,
-    username,
-    password,
-    calledStationId,
-    callingStationId,
-    secret,
-    port = 1812,
-    timeout = 2500
-) {
+export function radius(
+    hostname: string,
+    username: string,
+    password: string,
+    calledStationId: string,
+    callingStationId: string,
+    secret: string,
+    port: number = 1812,
+    timeout: number = 2500
+): Promise<{ code: string }> {
     const client = new RadiusClient({
         host: hostname,
         hostPort: port,
@@ -249,47 +260,47 @@ exports.radius = function (
                 throw enhancedError;
             }
         });
-};
+}
 
 /**
  * Retrieve value of setting based on key
- * @param {string} key Key of setting to retrieve
- * @returns {Promise<any>} Value
+ * @param key Key of setting to retrieve
+ * @returns Value
  * @deprecated Use await Settings.get(key)
  */
-exports.setting = async function (key) {
+export async function setting(key: string): Promise<Bean | null> {
     return await Settings.get(key);
-};
+}
 
 /**
  * Sets the specified setting to specified value
- * @param {string} key Key of setting to set
- * @param {any} value Value to set to
- * @param {?string} type Type of setting
- * @returns {Promise<void>}
+ * @param key Key of setting to set
+ * @param value Value to set to
+ * @param type Type of setting
+ * @returns
  */
-exports.setSetting = async function (key, value, type = null) {
+export async function setSetting(key: string, value: unknown, type: string | null = null): Promise<void> {
     await Settings.set(key, value, type);
-};
+}
 
 /**
  * Get settings based on type
- * @param {string} type The type of setting
- * @returns {Promise<Bean>} Settings of requested type
+ * @param type The type of setting
+ * @returns Settings of requested type
  */
-exports.getSettings = async function (type) {
+export async function getSettings(type: string): Promise<Record<string, unknown>> {
     return await Settings.getSettings(type);
-};
+}
 
 /**
  * Set settings based on type
- * @param {string} type Type of settings to set
- * @param {object} data Values of settings
- * @returns {Promise<void>}
+ * @param type Type of settings to set
+ * @param data Values of settings
+ * @returns
  */
-exports.setSettings = async function (type, data) {
+export async function setSettings(type: string, data: object): Promise<void> {
     await Settings.setSettings(type, data);
-};
+}
 
 // ssl-checker by @dyaa
 //https://github.com/dyaa/ssl-checker/blob/master/src/index.ts
@@ -304,18 +315,17 @@ const getDaysBetween = (validFrom, validTo) => Math.round(Math.abs(+validFrom - 
 
 /**
  * Get days remaining from a time range
- * @param {Date} validFrom Start date
- * @param {Date} validTo End date
- * @returns {number} Number of days remaining
+ * @param validFrom Start date
+ * @param validTo End date
+ * @returns Number of days remaining
  */
-const getDaysRemaining = (validFrom, validTo) => {
+export function getDaysRemaining(validFrom: Date, validTo: Date): number {
     const daysRemaining = getDaysBetween(validFrom, validTo);
     if (new Date(validTo).getTime() < new Date().getTime()) {
         return -daysRemaining;
     }
     return daysRemaining;
-};
-module.exports.getDaysRemaining = getDaysRemaining;
+}
 
 /**
  * Fix certificate info for display
@@ -368,10 +378,10 @@ const parseCertificateInfo = function (info) {
 
 /**
  * Check if certificate is valid
- * @param {tls.TLSSocket} socket TLSSocket, which may or may not be connected
- * @returns {null | {valid: boolean, certInfo: object}} Object containing certificate information
+ * @param socket TLSSocket, which may or may not be connected
+ * @returns} Object containing certificate information
  */
-exports.checkCertificate = function (socket) {
+export function checkCertificate(socket: TLSSocket): null | { valid: boolean; certInfo: object } {
     let certInfoStartTime = dayjs().valueOf();
 
     // Return null if there is no socket
@@ -393,16 +403,16 @@ exports.checkCertificate = function (socket) {
         valid: valid,
         certInfo: parsedInfo,
     };
-};
+}
 
 /**
  * Checks if the certificate is valid for the provided hostname.
  * Defaults to true if feature `X509Certificate` is not available, or input is not valid.
- * @param {Buffer} certBuffer - The certificate buffer.
- * @param {string} hostname - The hostname to compare against.
- * @returns {boolean} True if the certificate is valid for the provided hostname, false otherwise.
+ * @param certBuffer - The certificate buffer.
+ * @param hostname - The hostname to compare against.
+ * @returns True if the certificate is valid for the provided hostname, false otherwise.
  */
-exports.checkCertificateHostname = function (certBuffer, hostname) {
+export function checkCertificateHostname(certBuffer: Buffer, hostname: string): boolean {
     let X509Certificate;
     try {
         X509Certificate = require("node:crypto").X509Certificate;
@@ -417,15 +427,15 @@ exports.checkCertificateHostname = function (certBuffer, hostname) {
 
     let certObject = new X509Certificate(certBuffer);
     return certObject.checkHost(hostname) !== undefined;
-};
+}
 
 /**
  * Check if the provided status code is within the accepted ranges
- * @param {number} status The status code to check
- * @param {string[]} acceptedCodes An array of accepted status codes
- * @returns {boolean} True if status code within range, false otherwise
+ * @param status The status code to check
+ * @param acceptedCodes An array of accepted status codes
+ * @returns True if status code within range, false otherwise
  */
-exports.checkStatusCode = function (status, acceptedCodes) {
+export function checkStatusCode(status: number, acceptedCodes: string[]): boolean {
     if (acceptedCodes == null || acceptedCodes.length === 0) {
         return false;
     }
@@ -452,15 +462,15 @@ exports.checkStatusCode = function (status, acceptedCodes) {
     }
 
     return false;
-};
+}
 
 /**
  * Get total number of clients in room
- * @param {Server} io Socket server instance
- * @param {string} roomName Name of room to check
- * @returns {number} Total clients in room
+ * @param io Socket server instance
+ * @param roomName Name of room to check
+ * @returns Total clients in room
  */
-exports.getTotalClientInRoom = (io, roomName) => {
+export function getTotalClientInRoom(io: Server, roomName: string): number {
     const sockets = io.sockets;
 
     if (!sockets) {
@@ -480,115 +490,151 @@ exports.getTotalClientInRoom = (io, roomName) => {
     } else {
         return 0;
     }
-};
+}
 
 /**
  * @deprecated Use allowDevOrigin
  * Allow CORS all origins if development
- * @param {object} res Response object from axios
- * @returns {void}
+ * @param res Response object from axios
+ * @returns
  */
-exports.allowDevAllOrigin = (res) => {
+export function allowDevAllOrigin(res: object): void {
     if (process.env.NODE_ENV === "development") {
-        exports.allowAllOrigin(res);
+        allowAllOrigin(res);
     }
-};
+}
 
 /**
  * @deprecated Use allowOrigin
  * Allow CORS all origins
- * @param {object} res Response object from axios
- * @returns {void}
+ * @param res Response object from axios
+ * @returns
  */
-exports.allowAllOrigin = (res) => {
+export function allowAllOrigin(res: object): void {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE, OPTIONS");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-};
+}
 
 /**
  * Allow CORS all origins if development
- * @param {Request} req Express request object
- * @param {Response} res Express response object
- * @returns {void}
+ * @param req Express request object
+ * @param res Express response object
+ * @returns
  */
-exports.allowDevOrigin = (req, res) => {
+export function allowDevOrigin(req: Request, res: Response): void {
     if (process.env.NODE_ENV === "development") {
-        exports.allowOrigin(req, res);
+        allowOrigin(req, res);
     }
-};
+}
 
 /**
  * Allow CORS all origins
  * Since Allow-Credentials is set to true, the Access-Control-Allow-Origin cannot be *, so we will set it to the request origin.
- * @param {Request} req Express request object
- * @param {Response} res Response object
- * @returns {void}
+ * @param req Express request object
+ * @param res Response object
+ * @returns
  */
-exports.allowOrigin = (req, res) => {
+export function allowOrigin(req: Request, res: Response): void {
     res.header("Access-Control-Allow-Origin", req.get("origin"));
     res.header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE, OPTIONS");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     res.header("Access-Control-Allow-Credentials", "true");
-};
+}
+
+const secureCookieRegex = /;\s*secure\b/i;
+
+/**
+ * Whether this request's cookies should be marked Secure (from browser and proxy hints)
+ * @param req Express request object
+ * @returns true if cookies should be Secure
+ */
+export function shouldSecureCookies(req: Request): boolean {
+    if (req.secure) {
+        return true;
+    }
+
+    const origin = req.get("origin");
+    if (origin) {
+        return origin.startsWith("https://");
+    }
+
+    const referer = req.get("referer");
+    if (referer) {
+        return referer.startsWith("https://");
+    }
+
+    const forwardedProto = req.get("x-forwarded-proto");
+    if (forwardedProto) {
+        return forwardedProto.split(",")[0].trim() === "https";
+    }
+
+    return false;
+}
+
+/**
+ * Add the Secure attribute to every cookie of this response (Better Auth only knows its static baseURL)
+ * @param res Express response object
+ */
+export function secureResponseCookies(res: Response): void {
+    const setHeader = res.setHeader.bind(res);
+
+    res.setHeader = (name: string, value: number | string | readonly string[]): Response => {
+        if (name.toLowerCase() === "set-cookie") {
+            const cookies = Array.isArray(value) ? value : [value];
+            value = cookies.map((cookie) => (secureCookieRegex.test(cookie) ? cookie : `${cookie}; Secure`));
+        }
+
+        return setHeader(name, value) as Response;
+    };
+}
 
 /**
  * @deprecated Use better-auth's checkLogin
  * Check if a user is logged in
- * @param {Socket} socket Socket instance
- * @returns {void}
+ * @param socket Socket instance
+ * @returns
  * @throws The user is not logged in
  */
-exports.checkLogin = (socket) => {
+export function checkLogin(socket: Socket): void {
     betterAuthCheckLogin(socket);
-};
-
-/**
- * Convert unknown string to UTF8
- * @param {Uint8Array} body Buffer
- * @returns {string} UTF8 string
- */
-exports.convertToUTF8 = (body) => {
-    const guessEncoding = chardet.detect(body);
-    const str = iconv.decode(body, guessEncoding);
-    return str.toString();
-};
+}
 
 /**
  * Returns a color code in hex format based on a given percentage:
  * 0% => hue = 10 => red
  * 100% => hue = 90 => green
- * @param {number} percentage float, 0 to 1
- * @param {number} maxHue Maximum hue - int
- * @param {number} minHue Minimum hue - int
- * @returns {string} Color in hex
+ * @param percentage float, 0 to 1
+ * @param maxHue Maximum hue - int
+ * @param minHue Minimum hue - int
+ * @returns Color in hex
  */
-exports.percentageToColor = (percentage, maxHue = 90, minHue = 10) => {
+export function percentageToColor(percentage: number, maxHue: number = 90, minHue: number = 10): string {
     const hue = percentage * (maxHue - minHue) + minHue;
     try {
         return chroma(`hsl(${hue}, 90%, 40%)`).hex();
     } catch (err) {
         return badgeConstants.naColor;
     }
-};
+}
 
 /**
  * Joins and array of string to one string after filtering out empty values
- * @param {string[]} parts Strings to join
- * @param {string} connector Separator for joined strings
- * @returns {string} Joined strings
+ * @param parts Strings to join
+ * @param connector Separator for joined strings
+ * @returns Joined strings
  */
-exports.filterAndJoin = (parts, connector = "") => {
+export function filterAndJoin(parts: string[], connector: string = ""): string {
     return parts.filter((part) => !!part && part !== "").join(connector);
-};
+}
 
 /**
  * Send an Error response
- * @param {object} res Express response object
- * @param {string} msg Message to send
- * @returns {void}
+ * @param res Express response object
+ * @param msg Message to send
+ * @returns
  */
-module.exports.sendHttpError = (res, msg = "") => {
+export function sendHttpError(res: object, msg: string = ""): void {
     if (msg.includes("SQLITE_BUSY") || msg.includes("SQLITE_LOCKED")) {
         res.status(503).json({
             status: "fail",
@@ -605,16 +651,16 @@ module.exports.sendHttpError = (res, msg = "") => {
             msg: msg,
         });
     }
-};
+}
 
 /**
  * Convert timezone of time object
- * @param {object} obj Time object to update
- * @param {string} timezone New timezone to set
- * @param {boolean} timeObjectToUTC Convert time object to UTC
- * @returns {object} Time object with updated timezone
+ * @param obj Time object to update
+ * @param timezone New timezone to set
+ * @param timeObjectToUTC Convert time object to UTC
+ * @returns Time object with updated timezone
  */
-function timeObjectConvertTimezone(obj, timezone, timeObjectToUTC = true) {
+function timeObjectConvertTimezone(obj: object, timezone: string, timeObjectToUTC: boolean = true): object {
     let offsetString;
 
     if (timezone) {
@@ -654,29 +700,29 @@ function timeObjectConvertTimezone(obj, timezone, timeObjectToUTC = true) {
 
 /**
  * Convert time object to UTC
- * @param {object} obj Object to convert
- * @param {string} timezone Timezone of time object
- * @returns {object} Updated time object
+ * @param obj Object to convert
+ * @param timezone Timezone of time object
+ * @returns Updated time object
  */
-module.exports.timeObjectToUTC = (obj, timezone = undefined) => {
+export function timeObjectToUTC(obj: object, timezone: string = undefined): object {
     return timeObjectConvertTimezone(obj, timezone, true);
-};
+}
 
 /**
  * Convert time object to local time
- * @param {object} obj Object to convert
- * @param {string} timezone Timezone to convert to
- * @returns {object} Updated object
+ * @param obj Object to convert
+ * @param timezone Timezone to convert to
+ * @returns Updated object
  */
-module.exports.timeObjectToLocal = (obj, timezone = undefined) => {
+export function timeObjectToLocal(obj: object, timezone: string = undefined): object {
     return timeObjectConvertTimezone(obj, timezone, false);
-};
+}
 
 /**
  * Returns an array of SHA256 fingerprints for all known root certificates.
- * @returns {Set} A set of SHA256 fingerprints.
+ * @returns A set of SHA256 fingerprints.
  */
-module.exports.rootCertificatesFingerprints = () => {
+export function rootCertificatesFingerprints(): Set<unknown> {
     let fingerprints = tls.rootCertificates.map((cert) => {
         let certLines = cert.split("\n");
         certLines.shift();
@@ -701,48 +747,44 @@ module.exports.rootCertificatesFingerprints = () => {
     ); // ISRG X2 cross-signed with ISRG X1
 
     return new Set(fingerprints);
-};
+}
 
-module.exports.SHAKE256_LENGTH = 16;
+export const SHAKE256_LENGTH = 16;
 
 /**
- * @param {string} data The data to be hashed
- * @param {number} len Output length of the hash
- * @returns {string} The hashed data in hex format
+ * @param data The data to be hashed
+ * @param len Output length of the hash
+ * @returns The hashed data in hex format
  */
-module.exports.shake256 = (data, len) => {
+export function shake256(data: string, len: number): string {
     if (!data) {
         return "";
     }
     return crypto.createHash("shake256", { outputLength: len }).update(data).digest("hex");
-};
+}
 
 /**
  * Non await sleep
  * Source: https://stackoverflow.com/questions/59099454/is-there-a-way-to-call-sleep-without-await-keyword
- * @param {number} n Milliseconds to wait
- * @returns {void}
+ * @param n Milliseconds to wait
+ * @returns
  */
-module.exports.wait = (n) => {
+export function wait(n: number): void {
     Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, n);
-};
+}
 
 // For unit test, export functions
-if (process.env.TEST_BACKEND) {
-    module.exports.__test = {
-        parseCertificateInfo,
-    };
-    module.exports.__getPrivateFunction = (functionName) => {
-        return module.exports.__test[functionName];
-    };
+export const __test = process.env.TEST_BACKEND ? { parseCertificateInfo } : undefined;
+export function __getPrivateFunction(functionName) {
+    return __test?.[functionName];
 }
 
 /**
  * Generates an abort signal with the specified timeout.
- * @param {number} timeoutMs - The timeout in milliseconds.
- * @returns {AbortSignal | null} - The generated abort signal, or null if not supported.
+ * @param timeoutMs - The timeout in milliseconds.
+ * @returns - The generated abort signal, or null if not supported.
  */
-module.exports.axiosAbortSignal = (timeoutMs) => {
+export function axiosAbortSignal(timeoutMs: number): AbortSignal | null {
     try {
         // Just in case, as 0 timeout here will cause the request to be aborted immediately
         if (!timeoutMs || timeoutMs <= 0) {
@@ -761,41 +803,39 @@ module.exports.axiosAbortSignal = (timeoutMs) => {
             return null;
         }
     }
-};
+}
 
 /**
  * Async version of fs.existsSync
- * @param {PathLike} path File path
- * @returns {Promise<boolean>} True if file exists, false otherwise
+ * @param path File path
+ * @returns True if file exists, false otherwise
  */
-function fsExists(path) {
+export function fsExists(path: string | Buffer): Promise<boolean> {
     return new Promise(function (resolve, reject) {
         exists(path, function (exists) {
             resolve(exists);
         });
     });
 }
-module.exports.fsExists = fsExists;
 
 /**
  * Encode user and password to Base64 encoding
  * for HTTP "basic" auth, as per RFC-7617
- * @param {string|null} user - The username (defaults to empty string if null/undefined)
- * @param {string|null} pass - The password (defaults to empty string if null/undefined)
- * @returns {string} Encoded Base64 string
+ * @param user - The username (defaults to empty string if null/undefined)
+ * @param pass - The password (defaults to empty string if null/undefined)
+ * @returns Encoded Base64 string
  */
-function encodeBase64(user, pass) {
+export function encodeBase64(user: string | null, pass: string | null): string {
     return Buffer.from(`${user || ""}:${pass || ""}`).toString("base64");
 }
-module.exports.encodeBase64 = encodeBase64;
 
 /**
  * checks certificate chain for expiring certificates
- * @param {object} monitor - The monitor object
- * @param {object} tlsInfoObject Information about certificate
- * @returns {Promise<void>}
+ * @param monitor - The monitor object
+ * @param tlsInfoObject Information about certificate
+ * @returns
  */
-async function checkCertExpiryNotifications(monitor, tlsInfoObject) {
+export async function checkCertExpiryNotifications(monitor: object, tlsInfoObject: object): Promise<void> {
     if (!tlsInfoObject || !tlsInfoObject.certInfo || !tlsInfoObject.certInfo.daysRemaining) {
         return;
     }
@@ -850,15 +890,14 @@ async function checkCertExpiryNotifications(monitor, tlsInfoObject) {
         }
     }
 }
-module.exports.checkCertExpiryNotifications = checkCertExpiryNotifications;
 
 /**
  * By default, command-exists will throw a null error if the command does not exist, which is ugly. The function makes it better.
  * Read more: https://github.com/mathisonian/command-exists/issues/22
- * @param {string} command Command to check
- * @returns {Promise<boolean>} True if command exists, false otherwise
+ * @param command Command to check
+ * @returns True if command exists, false otherwise
  */
-async function commandExists(command) {
+export async function commandExists(command: string): Promise<boolean> {
     try {
         await require("command-exists")(command);
         return true;
@@ -866,19 +905,18 @@ async function commandExists(command) {
         return false;
     }
 }
-module.exports.commandExists = commandExists;
 
 /**
  * Log the server's listening URLs, similar to Vite's dev server output.
  * When no hostname is specified (bound to all interfaces), it prints
  * localhost plus every non-internal network address.
- * @param {string} tag Log tag (e.g. "server", "setup-database")
- * @param {number} port Port number
- * @param {string} hostname Bound hostname, if any
- * @param {boolean} isHTTPS Whether the server is using HTTPS
- * @returns {void}
+ * @param tag Log tag (e.g. "server", "setup-database")
+ * @param port Port number
+ * @param hostname Bound hostname, if any
+ * @param isHTTPS Whether the server is using HTTPS
+ * @returns
  */
-module.exports.printServerUrls = (tag, port, hostname, isHTTPS = false) => {
+export function printServerUrls(tag: string, port: number, hostname: string, isHTTPS: boolean = false): void {
     try {
         // If hostname is specified, just print that one.
         if (hostname) {
@@ -922,19 +960,58 @@ module.exports.printServerUrls = (tag, port, hostname, isHTTPS = false) => {
     } catch (e) {
         log.error(tag, "Error printing server URLs: " + e.message);
     }
-};
+}
 
 /**
  * Construct a URL a bit more safely
- * @param {boolean} isHTTPS Whether the URL should use HTTPS protocol
- * @param {string} hostname The hostname to use in the URL
- * @param {number} port The port
- * @returns {string} The constructed URL as a string
+ * @param isHTTPS Whether the URL should use HTTPS protocol
+ * @param hostname The hostname to use in the URL
+ * @param port The port
+ * @returns The constructed URL as a string
  */
-function createURL(isHTTPS, hostname, port = 80) {
+function createURL(isHTTPS: boolean, hostname: string, port: number = 80): string {
     const url = new URL((isHTTPS ? "https" : "http") + `://` + hostname);
     url.port = String(port);
 
     // Prefer origin if available, it doesn't contain the trailing slash
     return url.origin || url.toString();
+}
+
+/**
+ * Extend dayjs with the plugins the backend uses
+ * @returns The shared dayjs instance
+ */
+export function initDayjs(): object {
+    dayjs.extend(utc);
+    dayjs.extend(timezone);
+    dayjs.extend(customParseFormat);
+    return dayjs;
+}
+
+/**
+ * @param res Express response
+ * @param e Any error
+ * @returns
+ */
+export function generalErrorResponse(res: Response, e: unknown): void {
+    if (e instanceof ZodError) {
+        let message = "";
+        for (const issue of e.issues) {
+            message += `${issue.path.join(".")}: ${issue.message}\n`;
+        }
+        res.status(400).json({
+            ok: false,
+            msg: message,
+        });
+    } else if (e instanceof Error) {
+        res.status(400).json({
+            ok: false,
+            msg: e.message,
+        });
+    } else {
+        res.status(400).json({
+            ok: false,
+            msg: "Unknown error",
+        });
+    }
 }

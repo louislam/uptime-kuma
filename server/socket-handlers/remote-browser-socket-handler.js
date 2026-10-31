@@ -1,5 +1,5 @@
 const { sendRemoteBrowserList } = require("../client");
-const { checkLogin } = require("../util-server");
+const { checkLogin } = require("../util");
 const { RemoteBrowser } = require("../remote-browser");
 
 const { log } = require("../../src/util");

@@ -4,9 +4,6 @@ import { createRequire } from "node:module";
 import dayjs from "dayjs";
 
 const require = createRequire(import.meta.url);
-dayjs.extend(require("dayjs/plugin/utc"));
-dayjs.extend(require("dayjs/plugin/customParseFormat"));
-dayjs.extend(require("../../server/modules/dayjs/plugin/timezone"));
 
 const Maintenance = require("../../server/model/maintenance");
 
