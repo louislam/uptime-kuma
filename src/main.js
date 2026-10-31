@@ -20,6 +20,19 @@ import { initDayjs, loadToastSettings } from "./util-frontend";
 
 initDayjs();
 
+// Prevent the mouse wheel from accidentally changing the value of a focused
+// number input (e.g. port or heartbeat fields) while scrolling a form (#1796)
+document.addEventListener(
+    "wheel",
+    (event) => {
+        const target = event.target;
+        if (target instanceof HTMLInputElement && target.type === "number" && document.activeElement === target) {
+            event.preventDefault();
+        }
+    },
+    { passive: false }
+);
+
 const app = createApp({
     mixins: [socket, theme, mobile, datetime, publicMixin, lang],
     data() {
