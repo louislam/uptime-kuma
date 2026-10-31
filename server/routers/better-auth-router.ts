@@ -5,7 +5,7 @@ import { R } from "redbean-node";
 import { log } from "../../src/util";
 
 // @ts-ignore
-import { allowDevOrigin, generalErrorResponse } from "../util";
+import { allowDevOrigin, generalErrorResponse, shouldSecureCookies, secureResponseCookies } from "../util";
 
 let processingSetup = false;
 let _hasUser = false;
@@ -22,6 +22,11 @@ export async function createBetterAuthRouter() {
     const betterAuthRouter = express.Router();
     betterAuthRouter.all("/api/auth/*", async (req, res) => {
         allowDevOrigin(req, res);
+
+        if (shouldSecureCookies(req)) {
+            secureResponseCookies(res);
+        }
+
         return toNodeHandler(auth())(req, res);
     });
 

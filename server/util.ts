@@ -542,6 +542,53 @@ export function allowOrigin(req: Request, res: Response): void {
     res.header("Access-Control-Allow-Credentials", "true");
 }
 
+const secureCookieRegex = /;\s*secure\b/i;
+
+/**
+ * Whether this request's cookies should be marked Secure (from browser and proxy hints)
+ * @param req Express request object
+ * @returns true if cookies should be Secure
+ */
+export function shouldSecureCookies(req: Request): boolean {
+    if (req.secure) {
+        return true;
+    }
+
+    const origin = req.get("origin");
+    if (origin) {
+        return origin.startsWith("https://");
+    }
+
+    const referer = req.get("referer");
+    if (referer) {
+        return referer.startsWith("https://");
+    }
+
+    const forwardedProto = req.get("x-forwarded-proto");
+    if (forwardedProto) {
+        return forwardedProto.split(",")[0].trim() === "https";
+    }
+
+    return false;
+}
+
+/**
+ * Add the Secure attribute to every cookie of this response (Better Auth only knows its static baseURL)
+ * @param res Express response object
+ */
+export function secureResponseCookies(res: Response): void {
+    const setHeader = res.setHeader.bind(res);
+
+    res.setHeader = (name: string, value: number | string | readonly string[]): Response => {
+        if (name.toLowerCase() === "set-cookie") {
+            const cookies = Array.isArray(value) ? value : [value];
+            value = cookies.map((cookie) => (secureCookieRegex.test(cookie) ? cookie : `${cookie}; Secure`));
+        }
+
+        return setHeader(name, value) as Response;
+    };
+}
+
 /**
  * @deprecated Use better-auth's checkLogin
  * Check if a user is logged in
