@@ -1755,6 +1755,10 @@ class Monitor extends BeanModel {
             }
         }
 
+        if (this.type === "steam" && !this.getConfigValue("steamAppId")) {
+            throw new Error("Steam App ID is required.");
+        }
+
         if (this.type === "ping") {
             // ping parameters validation
             if (this.packetSize && (this.packetSize < PING_PACKET_SIZE_MIN || this.packetSize > PING_PACKET_SIZE_MAX)) {

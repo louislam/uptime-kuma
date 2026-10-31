@@ -1647,5 +1647,6 @@
     "msGraphConsent": "consent",
     "msGraphRbac": "RBAC in Exchange Online",
     "msGraphClientSecretDescription": "Learn how to {clientSecret} for your application registration.",
-    "msGraphClientSecretLink": "create a client secret"
+    "msGraphClientSecretLink": "create a client secret",
+    "steamAppId": "Steam App ID"
 }

@@ -5,6 +5,10 @@ import { z } from "zod";
  */
 export const monitorConfigSchema = z.object({
     systemServiceName: z.string().max(255).optional(),
+    // A cleared number input sends "", which is stored as null
+    steamAppId: z
+        .preprocess((value) => (value === "" ? null : value), z.number().int().min(1).max(4294967295).nullable())
+        .optional(),
 });
 
 export type MonitorConfig = z.infer<typeof monitorConfigSchema>;
