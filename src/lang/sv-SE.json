@@ -1711,5 +1711,19 @@
     "Variable ID": "Variabel-ID",
     "indigoVariableIdHelptext": "Varningsmeddelandet skrivs till denna variabel.",
     "Action Group ID": "Åtgärdsgrupps-ID",
-    "indigoActionGroupIdHelptext": "Utförs efter att variabeln uppdaterats. Ange en variabel, en åtgärdsgrupp eller båda. Kopiera ID:n från Indigo med högerklick → Copy ID."
+    "indigoActionGroupIdHelptext": "Utförs efter att variabeln uppdaterats. Ange en variabel, en åtgärdsgrupp eller båda. Kopiera ID:n från Indigo med högerklick → Copy ID.",
+    "Prometheus API": "Prometheus-API",
+    "prometheusApiDescription": "Exponera slutpunkten /metrics för Prometheus. Den kräver en API-nyckel och är inaktiverad som standard, eftersom insamlingen av mätvärden förbrukar en liten mängd CPU och minne.",
+    "browserlessSupportedVersion": "Version utan webbläsare som stöds: {version}",
+    "Microsoft Graph Email": "E-post (Microsoft Graph)",
+    "Tenant ID": "Tenant-ID",
+    "msGraphTenantIdDescription": "Antingen Tenant-ID eller vilken domän som helst inom klientorganisationen (t.ex. contoso.onmicrosoft.com).",
+    "msGraphMailbox": "Avsändarens brevlåda",
+    "msGraphMailboxDescription": "Användarens huvudsakliga namn eller e-postadress för den brevlåda som används för att skicka e-post.",
+    "msGraphSetupDescription": "Du måste skapa en {appRegistration} med appbehörigheten {mailSend} och ge {consent} till den i din klientorganisation. Du kan begränsa omfattningen för {mailSend} via {rbac}.",
+    "msGraphAppRegistration": "registrering av ansökan",
+    "msGraphConsent": "medgivande",
+    "msGraphRbac": "RBAC i Exchange Online",
+    "msGraphClientSecretDescription": "Lär dig hur du hanterar {clientSecret} för din applikationsregistrering.",
+    "msGraphClientSecretLink": "skapa en klienthemlighet"
 }

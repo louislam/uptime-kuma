@@ -1717,5 +1717,21 @@
     "Variable ID": "ID premennej",
     "indigoVariableIdHelptext": "Do tejto premennej sa zapíše varovná správa.",
     "Action Group ID": "ID skupiny akcií",
-    "indigoActionGroupIdHelptext": "Vykoná sa po aktualizácii premennej. Nastavte premennú, skupinu akcií alebo oboje. ID skopírujte z Indigo kliknutím pravým tlačidlom myši → Kopírovať ID."
+    "indigoActionGroupIdHelptext": "Vykoná sa po aktualizácii premennej. Nastavte premennú, skupinu akcií alebo oboje. ID skopírujte z Indigo kliknutím pravým tlačidlom myši → Kopírovať ID.",
+    "Prometheus API": "Prometheus API",
+    "prometheusApiDescription": "Sprístupniť koncový bod /metrics pre Prometheus. Vyžaduje sa k tomu kľúč API a táto funkcia je štandardne deaktivovaná, pretože zber metrík spotrebúva malé množstvo výpočtového výkonu a pamäte.",
+    "browserlessSupportedVersion": "Podporovaná verzia bez prehliadača: {version}",
+    "Microsoft Graph Email": "Email (Microsoft Graph)",
+    "Tenant ID": "Tenant ID",
+    "apiDescription": "Zverejniť koncové body /api a server MCP. Vyžaduje sa kľúč API, pričom táto funkcia je štandardne deaktivovaná, pretože rozhranie API je stále vo fáze alfa a môže sa zmeniť bez predchádzajúceho upozornenia.",
+    "apiDocumentation": "Dokumentácia k API",
+    "msGraphClientSecretDescription": "Zistite, ako {clientSecret} pre registráciu vašej aplikácie.",
+    "msGraphClientSecretLink": "vytvoriť tajný kľúč klienta",
+    "msGraphTenantIdDescription": "Buď Tenant ID alebo ľubovoľná doména v rámci Tenant (napr. contoso.onmicrosoft.com).",
+    "msGraphMailboxDescription": "Hlavné meno používateľa alebo e-mailová adresa poštovej schránky, ktorá sa používa na odosielanie e-mailov.",
+    "msGraphSetupDescription": "Musíte vytvoriť {appRegistration} s oprávnením aplikácie {mailSend} a udeliť k nemu {consent} vo vašom \"tenant\". Rozsah oprávnenia {mailSend} môžete obmedziť prostredníctvom {rbac}.",
+    "msGraphAppRegistration": "registrácia aplikácie",
+    "msGraphConsent": "súhlas",
+    "msGraphRbac": "RBAC v Exchange Online",
+    "msGraphMailbox": "Sender Mailbox"
 }
