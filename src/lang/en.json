@@ -1648,6 +1648,5 @@
     "msGraphRbac": "RBAC in Exchange Online",
     "msGraphClientSecretDescription": "Learn how to {clientSecret} for your application registration.",
     "msGraphClientSecretLink": "create a client secret",
-    "steamAppId": "Steam App ID",
-    "steamAppIdDescription": "Optional. Needed for mods and games that are not on the Steam Store, which Steam only lists when the App ID is given."
+    "steamAppId": "Steam App ID"
 }

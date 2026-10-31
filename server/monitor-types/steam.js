@@ -99,7 +99,7 @@ class SteamMonitorType extends MonitorType {
      * Builds the Steam API server filter.
      * @param {string} hostname Steam server hostname or IP address.
      * @param {number} port Steam server port.
-     * @param {?number} appId Optional Steam App ID, needed for mods and games not on the Steam Store.
+     * @param {?number} appId Steam App ID, missing on monitors saved before it was required.
      * @returns {Promise<string>} Steam API addr filter.
      */
     async buildServerFilter(hostname, port, appId = null) {

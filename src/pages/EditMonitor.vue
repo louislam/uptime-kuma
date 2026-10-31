@@ -734,13 +734,11 @@
                                     v-model="monitor.config.steamAppId"
                                     type="number"
                                     class="form-control"
+                                    required
                                     min="1"
                                     max="4294967295"
                                     step="1"
                                 />
-                                <div class="form-text">
-                                    {{ $t("steamAppIdDescription") }}
-                                </div>
                             </div>
 
                             <!-- Gamedig Token -->

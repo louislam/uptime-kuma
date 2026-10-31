@@ -150,6 +150,28 @@ describe("Monitor", () => {
 
             assert.throws(() => monitor.validate(), /Kafka Producer Brokers must be valid JSON/);
         });
+
+        test("rejects a steam monitor without an App ID", () => {
+            const monitor = monitorWith({
+                type: "steam",
+                interval: MIN_INTERVAL_SECOND,
+                retryInterval: MIN_INTERVAL_SECOND,
+                config: JSON.stringify({ steamAppId: null }),
+            });
+
+            assert.throws(() => monitor.validate(), /Steam App ID is required/);
+        });
+
+        test("accepts a steam monitor with an App ID", () => {
+            const monitor = monitorWith({
+                type: "steam",
+                interval: MIN_INTERVAL_SECOND,
+                retryInterval: MIN_INTERVAL_SECOND,
+                config: JSON.stringify({ steamAppId: 3545060 }),
+            });
+
+            assert.doesNotThrow(() => monitor.validate());
+        });
     });
 
     describe("isImportantBeat()", () => {
