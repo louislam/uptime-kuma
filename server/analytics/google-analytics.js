@@ -19,7 +19,7 @@ function getGoogleAnalyticsScript(tagId) {
 
     return `
         <script async src="https://www.googletagmanager.com/gtag/js?id=${escapedTagIdHTMLAttribute}"></script>
-        <script>window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date());gtag('config', '${escapedTagIdJS}'); </script>
+        <script>window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('consent', 'default', { analytics_storage: 'denied' }); gtag('config', '${escapedTagIdJS}'); </script>
     `;
 }
 
