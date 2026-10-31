@@ -209,6 +209,8 @@ const { resetChrome } = require("./monitor-types/real-browser-monitor-type");
 const { EmbeddedMariaDB } = require("./embedded-mariadb");
 const { SetupDatabase } = require("./setup-database");
 const { chartSocketHandler } = require("./socket-handlers/chart-socket-handler");
+const { deployBoardSocketHandler } = require("./socket-handlers/deploy-board-socket-handler");
+const { deployBoard } = require("./deploy-board");
 
 app.use(express.json());
 
@@ -1740,6 +1742,7 @@ let needSetup = false;
         remoteBrowserSocketHandler(socket);
         generalSocketHandler(socket, server);
         chartSocketHandler(socket);
+        deployBoardSocketHandler(socket);
 
         log.debug("server", "added all socket handlers");
 
@@ -1772,6 +1775,7 @@ let needSetup = false;
         printServerUrls("server", port, hostname, config.isSSL);
 
         await startMonitors();
+        deployBoard.start(io);
 
         // Put this here. Start background jobs after the db and server is ready to prevent clear up during db migration.
         await initBackgroundJobs();

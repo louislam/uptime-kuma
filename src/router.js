@@ -14,6 +14,7 @@ import StatusPage from "./pages/StatusPage.vue";
 // Lazy on purpose: the panel embeds its own webfont, and an eager import would push ~250 KB
 // of base64 into the CSS bundle that every other page of the application downloads.
 const StatusPageTv = () => import("./pages/StatusPageTv.vue");
+const DeployBoard = () => import("./pages/DeployBoard.vue");
 import Entry from "./pages/Entry.vue";
 import ManageStatusPage from "./pages/ManageStatusPage.vue";
 import AddStatusPage from "./pages/AddStatusPage.vue";
@@ -191,6 +192,10 @@ const routes = [
     {
         path: "/status/:slug",
         component: StatusPage,
+    },
+    {
+        path: "/deploys/:slug",
+        component: DeployBoard,
     },
     {
         path: "/:pathMatch(.*)*",
