@@ -1180,6 +1180,21 @@
                                     </select>
                                 </div>
 
+                                <div class="my-3 form-check">
+                                    <input
+                                        id="mqttStayConnected"
+                                        v-model="monitor.mqttStayConnected"
+                                        type="checkbox"
+                                        class="form-check-input"
+                                    />
+                                    <label for="mqttStayConnected" class="form-check-label">
+                                        {{ $t("mqttStayConnected") }}
+                                    </label>
+                                    <div class="form-text">
+                                        {{ $t("mqttStayConnectedExplanation") }}
+                                    </div>
+                                </div>
+
                                 <div v-if="monitor.mqttCheckType === 'keyword'" class="my-3">
                                     <label for="mqttSuccessKeyword" class="form-label">
                                         MQTT {{ $t("successKeyword") }}
@@ -3342,6 +3357,7 @@ const monitorDefaults = {
     mqttWebsocketPath: "",
     mqttSuccessMessage: "",
     mqttCheckType: "keyword",
+    mqttStayConnected: false,
     authMethod: null,
     oauth_auth_method: "client_secret_basic",
     httpBodyEncoding: "json",
