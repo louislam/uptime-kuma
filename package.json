@@ -71,7 +71,7 @@
         "coverage": "npm run coverage:backend && npm run coverage:report"
     },
     "dependencies": {
-        "@better-auth/api-key": "1.6.11",
+        "@better-auth/api-key": "~1.7.12",
         "@grpc/grpc-js": "~1.13.6",
         "@inquirer/core": "~11.2.1",
         "@inquirer/prompts": "~8.5.2",
@@ -83,7 +83,7 @@
         "axios": "~0.34.0",
         "badge-maker": "~3.3.1",
         "bcryptjs": "~2.4.3",
-        "better-auth": "~1.6.11",
+        "better-auth": "~1.7.12",
         "better-sqlite3": "~12.11.1",
         "chardet": "~1.4.0",
         "cheerio": "~1.0.0",
@@ -225,7 +225,7 @@
         "vue": "~3.5.39",
         "vue-chartjs": "~5.2.0",
         "vue-contenteditable": "~3.0.4",
-        "vue-i18n": "~11.2.8",
+        "vue-i18n": "~11.4.16",
         "vue-image-crop-upload": "~3.0.3",
         "vue-multiselect": "~3.0.0",
         "vue-prism-editor": "~2.0.0-alpha.2",
