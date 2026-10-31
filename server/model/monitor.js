@@ -989,7 +989,12 @@ class Monitor extends BeanModel {
             if (isImportant) {
                 bean.important = true;
 
-                if (Monitor.isImportantForNotification(isFirstBeat, previousBeat?.status, bean.status)) {
+                const previousStatusForNotification = await Monitor.getPreviousStatusForNotification(
+                    this.id,
+                    previousBeat
+                );
+
+                if (Monitor.isImportantForNotification(isFirstBeat, previousStatusForNotification, bean.status)) {
                     log.debug("monitor", `[${this.name}] sendNotification`);
                     await Monitor.sendNotification(isFirstBeat, this, bean);
                 } else {
@@ -1634,6 +1639,35 @@ class Monitor extends BeanModel {
      */
     static async getPreviousHeartbeat(monitorID) {
         return await R.findOne("heartbeat", " id = (select MAX(id) from heartbeat where monitor_id = ?)", [monitorID]);
+    }
+
+    /**
+     * Get the previous non-maintenance heartbeat for a monitor.
+     * @param {number} monitorID ID of monitor to check
+     * @returns {Promise<object|null>} Previous non-maintenance heartbeat
+     */
+    static async getPreviousNonMaintenanceHeartbeat(monitorID) {
+        return await R.findOne("heartbeat", " monitor_id = ? AND status != ? ORDER BY id DESC", [
+            monitorID,
+            MAINTENANCE,
+        ]);
+    }
+
+    /**
+     * Get the previous status to use when deciding whether to send a notification.
+     * If the most recent heartbeat is maintenance, use the most recent
+     * non-maintenance heartbeat instead.
+     * @param {number} monitorID ID of monitor to check
+     * @param {object|null} previousHeartbeat Previous heartbeat
+     * @returns {Promise<number|undefined>} Previous status for notification comparison
+     */
+    static async getPreviousStatusForNotification(monitorID, previousHeartbeat) {
+        if (previousHeartbeat?.status !== MAINTENANCE) {
+            return previousHeartbeat?.status;
+        }
+
+        const previousNonMaintenanceHeartbeat = await Monitor.getPreviousNonMaintenanceHeartbeat(monitorID);
+        return previousNonMaintenanceHeartbeat?.status ?? previousHeartbeat.status;
     }
 
     /**
