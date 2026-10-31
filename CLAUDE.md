@@ -9,7 +9,10 @@ funcionalidades que faltam no upstream. Destino de producao: **monitor-clientes.
 
 - **Remotes:** `origin` = github.com/gladfy/uptime-kuma (nosso), `upstream` = louislam/uptime-kuma.
   Sync: `git fetch upstream && git merge upstream/master`. Conflitos em arquivos que removemos
-  (workflows, CNAME, CLAUDE.md/AGENTS.md/CODE_OF_CONDUCT.md do upstream) resolvem-se mantendo a remocao.
+  (workflows, CNAME, CLAUDE.md/AGENTS.md/CODE_OF_CONDUCT.md do upstream, e
+  `test/backend-test/monitors/test-mssql.js`) resolvem-se mantendo a remocao. O teste do MSSQL saiu
+  porque a Winker nao usa MSSQL e ele baixa uma imagem de ~1,5 GB a cada rodada — o monitor type
+  continua no codigo; so o teste nao roda.
 - **Node 22** para desenvolver (`nvm use 22`). O `engines` exige `>= 20.4.0` e o server **recusa**
   versoes banidas (20.0–20.3) no boot (`server/server.js`).
 - **Workflows:** do upstream mantivemos so `auto-test.yml`, `validate.yml` e `codeql-analysis.yml`
