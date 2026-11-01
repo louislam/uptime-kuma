@@ -1678,7 +1678,7 @@ class Monitor extends BeanModel {
             }
         }
 
-        return [ ...activeMaintenances.values() ];
+        return [...activeMaintenances.values()];
     }
 
     /**
