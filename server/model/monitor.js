@@ -531,8 +531,10 @@ class Monitor extends BeanModel {
             }
 
             try {
-                if (await Monitor.isUnderMaintenance(this.id)) {
-                    bean.msg = "Monitor under maintenance";
+                const activeMaintenances = await Monitor.getActiveMaintenances(this.id);
+                if (activeMaintenances.length > 0) {
+                    // Show the actual maintenance title(s) instead of a generic message (#6029)
+                    bean.msg = activeMaintenances.map((maintenance) => maintenance.title).join(", ");
                     bean.status = MAINTENANCE;
                 } else if (this.type === "http" || this.type === "keyword" || this.type === "json-query") {
                     // Do not do any queries/high loading things before the "bean.ping"
@@ -1642,6 +1644,16 @@ class Monitor extends BeanModel {
      * @returns {Promise<boolean>} Is the monitor under maintenance
      */
     static async isUnderMaintenance(monitorID) {
+        return (await Monitor.getActiveMaintenances(monitorID)).length > 0;
+    }
+
+    /**
+     * Get all currently active maintenances for a monitor, including those
+     * inherited from parent group monitors
+     * @param {number} monitorID ID of monitor to check
+     * @returns {Promise<Maintenance[]>} Active maintenances, deduplicated by id
+     */
+    static async getActiveMaintenances(monitorID) {
         const maintenanceIDList = await R.getCol(
             `
             SELECT maintenance_id FROM monitor_maintenance
@@ -1650,19 +1662,23 @@ class Monitor extends BeanModel {
             [monitorID]
         );
 
+        const activeMaintenances = new Map();
+
         for (const maintenanceID of maintenanceIDList) {
             const maintenance = await UptimeKumaServer.getInstance().getMaintenance(maintenanceID);
             if (maintenance && (await maintenance.isUnderMaintenance())) {
-                return true;
+                activeMaintenances.set(maintenance.id, maintenance);
             }
         }
 
         const parent = await Monitor.getParent(monitorID);
         if (parent != null) {
-            return await Monitor.isUnderMaintenance(parent.id);
+            for (const maintenance of await Monitor.getActiveMaintenances(parent.id)) {
+                activeMaintenances.set(maintenance.id, maintenance);
+            }
         }
 
-        return false;
+        return [ ...activeMaintenances.values() ];
     }
 
     /**
