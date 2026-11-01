@@ -533,12 +533,7 @@ export default {
             // Display the latest event if the message differs
             const firstRecord = this.importantHeartBeatRecords[0] ?? null;
             const latest = this.$root.lastHeartbeatList[this.monitor.id] ?? null;
-            if (
-                firstRecord &&
-                latest && 
-                this.page === 1 &&
-                latest.msg !== firstRecord?.msg
-            ) {
+            if (firstRecord && latest && this.page === 1 && latest.msg !== firstRecord?.msg) {
                 return [latest, ...this.importantHeartBeatRecords];
             }
             return this.importantHeartBeatRecords;
