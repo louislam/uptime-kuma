@@ -531,10 +531,12 @@ class Monitor extends BeanModel {
             }
 
             try {
-                const activeMaintenances = await Monitor.getActiveMaintenances(this.id);
-                if (activeMaintenances.length > 0) {
+                if (await Monitor.isUnderMaintenance(this.id)) {
                     // Show the actual maintenance title(s) instead of a generic message (#6029)
-                    bean.msg = activeMaintenances.map((maintenance) => maintenance.title).join(", ");
+                    const titles = (await Monitor.getActiveMaintenances(this.id)).map(
+                        (maintenance) => maintenance.title
+                    );
+                    bean.msg = titles.length > 0 ? titles.join(", ") : "Monitor under maintenance";
                     bean.status = MAINTENANCE;
                 } else if (this.type === "http" || this.type === "keyword" || this.type === "json-query") {
                     // Do not do any queries/high loading things before the "bean.ping"
