@@ -1759,5 +1759,21 @@
     "Variable ID": "ID de variable",
     "indigoVariableIdHelptext": "Le message d’alerte est écrit dans cette variable.",
     "Action Group ID": "ID de groupe d’actions",
-    "indigoActionGroupIdHelptext": "Exécuté après la mise à jour de la variable. Définissez une variable, un groupe d’actions ou les deux. Copiez les ID depuis Indigo en cliquant avec le bouton droit → Copier l’ID."
+    "indigoActionGroupIdHelptext": "Exécuté après la mise à jour de la variable. Définissez une variable, un groupe d’actions ou les deux. Copiez les ID depuis Indigo en cliquant avec le bouton droit → Copier l’ID.",
+    "Prometheus API": "API Prometheus",
+    "prometheusApiDescription": "Exposez le point de terminaison /metrics pour Prometheus. Il nécessite une clé API, et il est désactivé par défaut car les collecteurs de métriques coûtent une petite quantité de processeur et de mémoire.",
+    "apiDescription": "Exposez les points de terminaison /api et le serveur MCP. Il nécessite une clé API, et il est désactivé par défaut car l’API est toujours en alpha et peut changer sans préavis.",
+    "apiDocumentation": "Documentation de l'API",
+    "browserlessSupportedVersion": "Version de Browserless prise en charge : {version}",
+    "Microsoft Graph Email": "Email (Microsoft Graph)",
+    "Tenant ID": "Id de client",
+    "msGraphTenantIdDescription": "Soit l’ID du locataire, soit n’importe quel domaine au sein du locataire (par exemple, contoso.onmicrosoft.com).",
+    "msGraphMailbox": "Boîte aux lettres de l’expéditeur",
+    "msGraphMailboxDescription": "Nom d’utilisateur principal ou adresse e-mail de la boîte aux lettres utilisée pour envoyer le courrier.",
+    "msGraphSetupDescription": "Vous devez créer une {appRegistration} avec l’autorisation d’application {mailSend} et la {consent} dans votre locataire. Vous pouvez limiter la portée de {mailSend} via {rbac}.",
+    "msGraphAppRegistration": "Enregistrement d'application",
+    "msGraphConsent": "Consentement",
+    "msGraphRbac": "RBAC dans Exchange Online",
+    "msGraphClientSecretDescription": "Apprenez comment {clientSecret} pour l’enregistrement de votre demande.",
+    "msGraphClientSecretLink": "Créer un secret client"
 }
