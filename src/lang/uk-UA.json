@@ -1740,5 +1740,7 @@
     "msGraphConsent": "надати згоду",
     "msGraphRbac": "RBAC в Exchange Online",
     "msGraphClientSecretDescription": "Дізнайтеся, як {clientSecret} для реєстрації вашої програми.",
-    "msGraphClientSecretLink": "створити секрет клієнта"
+    "msGraphClientSecretLink": "створити секрет клієнта",
+    "apiDocumentation": "Документація API",
+    "apiDescription": "Відкриває доступ до кінцевих точок /api та MCP-сервера. Для цього потрібен ключ API. За замовчуванням функцію вимкнено, оскільки API все ще перебуває на стадії альфа-тестування та може змінюватися без попередження."
 }
