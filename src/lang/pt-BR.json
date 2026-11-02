@@ -1729,5 +1729,18 @@
     "indigoActionGroupIdHelptext": "Executado após a atualização da variável. Defina uma variável, um grupo de ações ou ambos. Copie os IDs do Indigo usando o botão direito do mouse → Copiar ID.",
     "Prometheus API": "API do Prometheus",
     "prometheusApiDescription": "Exponha o endpoint `/metrics` para o Prometheus. Ele requer uma chave de API e vem desativado por padrão, uma vez que a coleta de métricas consome uma pequena quantidade de CPU e memória.",
-    "browserlessSupportedVersion": "Versão do Browserless compatível: {version}"
+    "browserlessSupportedVersion": "Versão do Browserless compatível: {version}",
+    "apiDescription": "Exponha os endpoints `/api` e o servidor MCP. É necessária uma chave de API, e o recurso está desativado por padrão, uma vez que a API ainda se encontra em fase alfa e pode sofrer alterações sem aviso prévio.",
+    "apiDocumentation": "Documentação da API",
+    "Microsoft Graph Email": "E-mail (Microsoft Graph)",
+    "Tenant ID": "ID do tenant",
+    "msGraphTenantIdDescription": "O ID do tenant (Tenant ID) ou qualquer domínio dentro do locatário (por exemplo, contoso.onmicrosoft.com).",
+    "msGraphMailbox": "Caixa de correio do remetente",
+    "msGraphMailboxDescription": "Nome principal de usuário ou endereço de e-mail da caixa de correio usada para enviar e-mails.",
+    "msGraphSetupDescription": "Você deve criar um {appRegistration} com a permissão de aplicativo {mailSend} e conceder {consent} a ele em seu tenant. É possível limitar o escopo de {mailSend} por meio de {rbac}.",
+    "msGraphAppRegistration": "registro da aplicação",
+    "msGraphConsent": "consentimento",
+    "msGraphRbac": "RBAC no Exchange Online",
+    "msGraphClientSecretDescription": "Saiba como obter o {clientSecret} para o registro da sua aplicação.",
+    "msGraphClientSecretLink": "criar um segredo de cliente"
 }
