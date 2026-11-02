@@ -38,6 +38,7 @@ describe("toCompactMonitor()", () => {
             pathName: "Group / Child",
             interval: 60,
             weight: 2000,
+            statusPageName: null,
         });
     });
 
