@@ -74,8 +74,11 @@ function createApiRouter() {
                 delete documented.resolve;
                 delete documented.errorMessage;
 
-                apiPaths[path] = {
-                    ...(apiPaths[path] || {}),
+                // OpenAPI writes path parameters as `{id}`, Express routes use `:id`
+                const documentedPath = path.replace(/:(\w+)/g, "{$1}");
+
+                apiPaths[documentedPath] = {
+                    ...(apiPaths[documentedPath] || {}),
                     [method]: {
                         security: [{ bearerAuth: [] }],
                         ...documented,
