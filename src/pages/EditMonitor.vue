@@ -2613,7 +2613,6 @@
                             >
                                 <h2 class="mt-5 mb-2">{{ $t("HTTP Options") }}</h2>
 
-// TODO
                                 <!-- Method -->
                                 <div class="my-3">
                                     <label for="method" class="form-label">{{ $t("Method") }}</label>
