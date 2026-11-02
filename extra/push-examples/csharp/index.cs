@@ -10,13 +10,15 @@ class Index
 {
     const string PushURL  = "https://example.com/api/push/key?status=up&msg=OK&ping=";
     const int Interval = 60;
+    const string Method = "GET";
 
     static void Main(string[] args)
     {
         while (true)
         {
-            WebClient client = new WebClient();
-            client.DownloadString(PushURL);
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(PushURL);
+            request.Method = Method;
+            request.GetResponse().Close();
             Console.WriteLine("Pushed!");
             Thread.Sleep(Interval * 1000);
         }
