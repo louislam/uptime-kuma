@@ -114,7 +114,7 @@ async function lookupIp(ip, apiKey) {
     return geo;
 }
 
-// Fill the monitor's geolocation columns. Never throws.
+// Fill the monitor's geolocation config. Never throws.
 /**
  * @param monitor
  */
@@ -140,12 +140,14 @@ async function applyGeoLocation(monitor) {
             return;
         }
 
-        monitor.ip2location_ip = geo.ip;
-        monitor.ip2location_country_code = geo.countryCode;
-        monitor.ip2location_country_name = geo.countryName;
-        monitor.ip2location_region = geo.region;
-        monitor.ip2location_city = geo.city;
-        monitor.ip2location_updated = Date.now();
+        monitor.setConfigValue("ip2location", {
+            ip: geo.ip,
+            countryCode: geo.countryCode,
+            countryName: geo.countryName,
+            region: geo.region,
+            city: geo.city,
+            updated: Date.now(),
+        });
     } catch (e) {
         log.debug("ip2location", `Geolocation lookup failed for monitor '${monitor.name}': ${e.message}`);
     }

@@ -187,26 +187,27 @@ export default {
             return c;
         },
         hasGeo() {
-            return this.$root.info.ip2locationEnabled && !!this.monitor.ip2locationCountryCode;
+            return this.$root.info.ip2locationEnabled && !!this.monitor.config?.ip2location?.countryCode;
         },
         geoFlag() {
-            const code = this.monitor.ip2locationCountryCode;
+            const code = this.monitor.config?.ip2location?.countryCode;
             if (!code || code.length !== 2) {
                 return "";
             }
             return String.fromCodePoint(...[...code.toUpperCase()].map((c) => 127462 - 65 + c.charCodeAt(0)));
         },
         geoText() {
-            return [this.monitor.ip2locationCity, this.monitor.ip2locationCountryName].filter(Boolean).join(", ");
+            const geo = this.monitor.config?.ip2location;
+            return [geo?.city, geo?.countryName].filter(Boolean).join(", ");
         },
         geoTitle() {
-            const parts = [
-                this.monitor.ip2locationCity,
-                this.monitor.ip2locationRegion,
-                this.monitor.ip2locationCountryName,
-            ].filter(Boolean);
-            if (this.monitor.ip2locationIp) {
-                parts.push(`(${this.monitor.ip2locationIp})`);
+            const geo = this.monitor.config?.ip2location;
+            if (!geo) {
+                return "";
+            }
+            const parts = [geo.city, geo.region, geo.countryName].filter(Boolean);
+            if (geo.ip) {
+                parts.push(`(${geo.ip})`);
             }
             return parts.join(", ");
         },
