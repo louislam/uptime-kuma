@@ -13,6 +13,9 @@ const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const lookupCache = new Map();
 
 // Get the hostname the monitor connects to.
+/**
+ * @param monitor
+ */
 function getMonitorHost(monitor) {
     for (const value of [monitor.url, monitor.hostname]) {
         if (!value || typeof value !== "string") {
@@ -51,6 +54,9 @@ function getMonitorHost(monitor) {
 }
 
 // Resolve a hostname to an IP. IP inputs are returned as-is.
+/**
+ * @param host
+ */
 async function resolveHost(host) {
     if (net.isIP(host)) {
         return host;
@@ -70,6 +76,10 @@ async function resolveHost(host) {
 }
 
 // Query IP2Location.io for an IP, cached in memory.
+/**
+ * @param ip
+ * @param apiKey
+ */
 async function lookupIp(ip, apiKey) {
     const cached = lookupCache.get(ip);
     if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
@@ -105,6 +115,9 @@ async function lookupIp(ip, apiKey) {
 }
 
 // Fill the monitor's geolocation columns. Never throws.
+/**
+ * @param monitor
+ */
 async function applyGeoLocation(monitor) {
     try {
         if (!(await Settings.get("ip2locationEnabled"))) {
