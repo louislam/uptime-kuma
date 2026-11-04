@@ -36,23 +36,23 @@
                     <div class="buttons">
                         <div class="btn-group" role="group">
                             <button
-                                v-if="item.active"
-                                class="btn btn-normal"
-                                :aria-label="$t('ariaPauseMaintenance')"
-                                @click="pauseDialog(item.id)"
-                            >
-                                <font-awesome-icon icon="pause" />
-                                {{ $t("Pause") }}
-                            </button>
+    			        v-if="item.active"
+    				class="btn btn-normal"
+    				:aria-label="item.strategy === 'manual' ? $t('ariaStopMaintenance') : $t('ariaPauseMaintenance')"
+    				@click="pauseDialog(item.id)"
+			    >
+    				<font-awesome-icon icon="pause" />
+    				{{ item.strategy === "manual" ? $t("Stop") : $t("Pause") }}
+			    </button>
 
                             <button
                                 v-if="!item.active"
                                 class="btn btn-primary"
-                                :aria-label="$t('ariaResumeMaintenance')"
+                                :aria-label="item.strategy === 'manual' ? $t('ariaStartMaintenance') : $t('ariaResumeMaintenance')"
                                 @click="resumeMaintenance(item.id)"
                             >
                                 <font-awesome-icon icon="play" />
-                                {{ $t("Resume") }}
+                                {{ item.strategy === "manual" ? $t("Start") : $t("Resume") }}
                             </button>
 
                             <router-link
@@ -267,7 +267,7 @@ export default {
 
     &.inactive {
         .circle {
-            background-color: $danger;
+            background-color: $dark-font-color;
         }
     }
 
