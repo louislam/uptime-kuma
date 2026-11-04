@@ -192,6 +192,14 @@ export default {
                     this.settings.apiEnabled = false;
                 }
 
+                if (this.settings.ip2locationEnabled === undefined) {
+                    this.settings.ip2locationEnabled = false;
+                }
+
+                if (this.settings.ip2locationApiKey === undefined) {
+                    this.settings.ip2locationApiKey = "";
+                }
+
                 this.settingsLoaded = true;
             });
         },
