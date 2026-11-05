@@ -358,7 +358,7 @@ class Monitor extends BeanModel {
      * @returns {boolean} Should the MQTT monitor keep the broker connection alive between checks?
      */
     getMqttStayConnected() {
-        return Boolean(this.mqtt_stay_connected);
+        return Monitor.getConfigValue(this.getConfig(), "mqttStayConnected", false);
     }
 
     /**
