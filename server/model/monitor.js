@@ -1251,8 +1251,8 @@ class Monitor extends BeanModel {
 
         this.prometheus?.remove();
 
-        // Close the persistent MQTT connection,
-        // TODO Improve with the use of this.isStop in the instance of the MQTT monitor type, so that it can close the connection itself.
+        // Close the persistent MQTT connection
+        // NB: MonitorType should handle an event to trigger this.
         if (this.type === "mqtt" && this.getMqttStayConnected()) {
             const mqttMonitorType = UptimeKumaServer.monitorTypeList["mqtt"];
             if (mqttMonitorType && typeof mqttMonitorType.closePersistentClient === "function") {
