@@ -1,6 +1,7 @@
 import express from "express";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "../better-auth";
+import { Settings } from "../settings";
 import { R } from "redbean-node";
 import { log } from "../../src/util";
 
@@ -25,6 +26,12 @@ export async function createBetterAuthRouter() {
 
         if (shouldSecureCookies(req)) {
             secureResponseCookies(res);
+        }
+
+        // Trust Proxy off: the header is client-controlled, so replace it with the socket address
+        // A header is the only way to pass the socket IP to better-auth
+        if (!(await Settings.get("trustProxy"))) {
+            req.headers["x-forwarded-for"] = req.socket.remoteAddress;
         }
 
         return toNodeHandler(auth())(req, res);
