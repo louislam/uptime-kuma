@@ -106,7 +106,24 @@ class MqttMonitorType extends MonitorType {
                 const expression = jsonata(monitor.jsonPath);
                 jsonValue = await expression.evaluate(parsedMessage);
             } catch (e) {
-                // JSON parsing failed, jsonValue remains null
+                // Swallowing this turned a broken query into a passing check.
+                //
+                // jsonValue stayed null, the condition data handed the operators
+                // an empty string, and `"" < 120` is `0 < 120` because JavaScript
+                // coerces the empty string to zero. So a monitor whose JSONata
+                // expression could never evaluate reported UP forever, and the
+                // only way to find out was to read the payload by hand.
+                //
+                // An evaluation that did not happen is not a value. Fail the
+                // check and say why.
+                throw new Error(`JSON query evaluation failed: ${e.message}`);
+            }
+            if (jsonValue === undefined) {
+                // jsonata returns undefined for "no match" without throwing, and
+                // that has the same consequence: undefined becomes "", which
+                // becomes 0. A condition cannot be meaningfully evaluated against
+                // a value that does not exist.
+                throw new Error("JSON query returned no result for expression: " + monitor.jsonPath);
             }
         }
 
