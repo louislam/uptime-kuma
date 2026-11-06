@@ -441,7 +441,7 @@ export async function checkPassword(username: string, password: string): Promise
     const { adapter, password: passwordVerifier } = await auth().$context;
     const internalAdapter = await authInternal();
 
-    const user = await adapter.findOne<Record<string, any>>({
+    const user = await adapter.findOne<Record<string, unknown>>({
         model: "user",
         where: [{ field: "username", value: username }],
     });

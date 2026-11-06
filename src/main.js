@@ -16,14 +16,9 @@ import theme from "./mixins/theme";
 import lang from "./mixins/lang";
 import { router } from "./router";
 import { appName } from "./util.ts";
-import dayjs from "dayjs";
-import timezone from "./modules/dayjs/plugin/timezone";
-import utc from "dayjs/plugin/utc";
-import relativeTime from "dayjs/plugin/relativeTime";
-import { loadToastSettings } from "./util-frontend";
-dayjs.extend(utc);
-dayjs.extend(timezone);
-dayjs.extend(relativeTime);
+import { initDayjs, loadToastSettings } from "./util-frontend";
+
+initDayjs();
 
 const app = createApp({
     mixins: [socket, theme, mobile, datetime, publicMixin, lang],

@@ -1,7 +1,7 @@
 const { MonitorType } = require("./monitor-type");
 const WebSocket = require("ws");
 const { UP } = require("../../src/util");
-const { checkStatusCode, getOidcTokenClientCredentials } = require("../util-server");
+const { checkStatusCode, getOidcTokenClientCredentials } = require("../util");
 // Define closing error codes https://www.iana.org/assignments/websocket/websocket.xml#close-code-number
 const WS_ERR_CODE = {
     1002: "Protocol error",

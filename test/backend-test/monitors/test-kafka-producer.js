@@ -1,6 +1,6 @@
 const { describe, test } = require("node:test");
 const assert = require("node:assert");
-const { kafkaProducerAsync } = require("../../../server/util-server");
+const { kafkaProducerAsync } = require("../../../server/util");
 
 describe("Kafka Producer", () => {
     test("rejects when broker is not reachable", async () => {

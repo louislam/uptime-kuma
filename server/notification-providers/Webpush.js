@@ -1,6 +1,6 @@
 const NotificationProvider = require("./notification-provider");
 const webpush = require("web-push");
-const { setting } = require("../util-server");
+const { setting } = require("../util");
 
 class Webpush extends NotificationProvider {
     name = "Webpush";

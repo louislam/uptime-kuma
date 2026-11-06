@@ -786,10 +786,6 @@ export default {
             return {};
         },
 
-        incidentClass() {
-            return "bg-" + this.incident.style;
-        },
-
         maintenanceClass() {
             return "bg-maintenance";
         },
@@ -1008,19 +1004,6 @@ export default {
                     this.imgDataUrl = this.config.icon;
                 }
 
-                this.maintenanceList = res.data.maintenanceList;
-                this.$root.publicGroupList = res.data.publicGroupList;
-
-                this.loading = false;
-
-                feedInterval = setInterval(
-                    () => {
-                        this.updateHeartbeatList();
-                    },
-                    Math.max(5, this.config.autoRefreshInterval) * 1000
-                );
-
-                this.incident = res.data.incident;
                 this.maintenanceList = res.data.maintenanceList;
                 this.$root.publicGroupList = res.data.publicGroupList;
 

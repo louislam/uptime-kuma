@@ -1,16 +1,12 @@
 const { describe, test, mock } = require("node:test");
 const assert = require("node:assert");
 const StatusPage = require("../../server/model/status_page");
-const dayjs = require("dayjs");
-const utc = require("dayjs/plugin/utc");
 const {
     STATUS_PAGE_ALL_UP,
     STATUS_PAGE_ALL_DOWN,
     STATUS_PAGE_PARTIAL_DOWN,
     STATUS_PAGE_MAINTENANCE,
 } = require("../../src/util");
-
-dayjs.extend(utc);
 
 describe("StatusPage", () => {
     describe("getStatusDescription()", () => {

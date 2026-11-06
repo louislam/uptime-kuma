@@ -7,7 +7,6 @@ const { UptimeCalculator } = require("../../server/uptime-calculator");
 const { R } = require("redbean-node");
 const dayjs = require("dayjs");
 const { UP } = require("../../src/util");
-dayjs.extend(require("dayjs/plugin/utc"));
 
 const originals = {
     getAll: R.getAll,

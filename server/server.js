@@ -3,6 +3,16 @@
  * node "server/server.js"
  * DO NOT require("./server") in other modules, it likely creates circular dependency!
  */
+import {
+    initDayjs,
+    getSettings,
+    setSettings,
+    setting,
+    checkLogin,
+    allowDevAllOrigin,
+    printServerUrls,
+    allowDevOrigin,
+} from "./util";
 import { getRandomInt, isDevEnv, log, sleep } from "../src/util";
 import { auth, createHeaders, doubleCheckPassword, getDisableAuthSession, getSessionFromHeaders } from "./better-auth";
 import { createBetterAuthRouter, needSetup } from "./routers/better-auth-router";
@@ -14,11 +24,7 @@ import * as fs from "node:fs";
 
 console.log("Welcome to Uptime Kuma");
 
-// As the log function need to use dayjs, it should be very top
-const dayjs = require("dayjs");
-dayjs.extend(require("dayjs/plugin/utc"));
-dayjs.extend(require("./modules/dayjs/plugin/timezone"));
-dayjs.extend(require("dayjs/plugin/customParseFormat"));
+initDayjs();
 
 // Load environment variables from `.env`
 try {
@@ -119,15 +125,6 @@ log.debug("server", "Importing Monitor");
 const Monitor = require("./model/monitor");
 
 log.debug("server", "Importing Settings");
-const {
-    getSettings,
-    setSettings,
-    setting,
-    checkLogin,
-    allowDevAllOrigin,
-    printServerUrls,
-    allowDevOrigin,
-} = require("./util-server");
 
 log.debug("server", "Importing Notification");
 const { Notification } = require("./notification");
@@ -199,7 +196,7 @@ const { maintenanceSocketHandler } = require("./socket-handlers/maintenance-sock
 const { apiKeySocketHandler } = require("./socket-handlers/api-key-socket-handler");
 const { generalSocketHandler } = require("./socket-handlers/general-socket-handler");
 const { Settings } = require("./settings");
-const apicache = require("./modules/apicache");
+const apicache = require("./utils/response-cache");
 const { resetChrome } = require("./monitor-types/real-browser-monitor-type");
 const { EmbeddedMariaDB } = require("./embedded-mariadb");
 const { SetupDatabase } = require("./setup-database");

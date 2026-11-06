@@ -7,7 +7,7 @@ const path = require("path");
 const Database = require("../database");
 const config = require("../config");
 const { RemoteBrowser } = require("../remote-browser");
-const { commandExists } = require("../util-server");
+const { commandExists } = require("../util");
 
 /**
  * Cached instance of a browser

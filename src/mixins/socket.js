@@ -6,7 +6,7 @@ import dayjs from "dayjs";
 import mitt from "mitt";
 
 import { DOWN, MAINTENANCE, PENDING, UP } from "../util.ts";
-import { getToastSuccessTimeout, getToastErrorTimeout } from "../util-frontend.js";
+import { getToastSuccessTimeout, getToastErrorTimeout } from "../util-frontend";
 import { BeatVersionThrottle } from "../beat-version-throttle";
 import { applyBeat, applyLatestBeats, beatStatusEntry } from "../beat-state";
 import { logout as betterAuthLogout } from "../auth-client";
@@ -153,9 +153,8 @@ export default {
 
             socket = io(url, {
                 withCredentials: true,
-                // Prefer WebSocket so the large login payload is compressed by perMessageDeflate
-                // and is not sent over a single slow polling response
-                transports: ["websocket", "polling"],
+                // Note for future: don't set transports to "websocket" first, due to origin issue
+                // Let it unset, it will connect via http first, then upgrade to websocket. This will avoid the origin issue.
             });
 
             socket.on("info", (info) => {
