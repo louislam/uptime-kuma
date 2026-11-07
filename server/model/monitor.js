@@ -88,6 +88,7 @@ class Monitor extends BeanModel {
         let obj = {
             id: this.id,
             name: this.name,
+            statusPageName: this.getConfigValue("statusPageName") || null,
             sendUrl: this.sendUrl,
             type: this.type,
         };
