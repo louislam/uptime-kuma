@@ -116,7 +116,10 @@ class NotificationProvider {
      * Throws an error
      * @param {any} error The error to throw
      * @returns {void}
-     * @throws {any} The error specified
+     * @throws {Error} A new Error with the same message as the original error, plus
+     * `.code` (when the original error has a `code`) and `.httpStatus` (when the
+     * original error has an axios `response.status`) so callers can inspect the
+     * failure without parsing the message.
      */
     throwGeneralAxiosError(error) {
         let msg = error && error.message ? error.message : String(error);
@@ -164,7 +167,17 @@ class NotificationProvider {
             msg += " - cause: " + error.cause.message;
         }
 
-        throw new Error(msg);
+        const wrappedError = new Error(msg);
+
+        if (error && error.code) {
+            wrappedError.code = error.code;
+        }
+
+        if (error && error.response && error.response.status) {
+            wrappedError.httpStatus = error.response.status;
+        }
+
+        throw wrappedError;
     }
 
     /**
