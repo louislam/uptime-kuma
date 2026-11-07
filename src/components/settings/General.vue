@@ -150,6 +150,40 @@
                 </i18n-t>
             </div>
 
+            <!-- IP2Location.io Geolocation -->
+            <div class="mb-4">
+                <label class="form-label" for="ip2locationEnabled">
+                    {{ $t("ip2locationGeoLookup") }}
+                </label>
+                <div class="form-check form-switch">
+                    <input
+                        id="ip2locationEnabled"
+                        v-model="settings.ip2locationEnabled"
+                        class="form-check-input"
+                        type="checkbox"
+                    />
+                    <label class="form-check-label" for="ip2locationEnabled">
+                        {{ $t("ip2locationGeoLookupEnabled") }}
+                    </label>
+                </div>
+                <div class="form-text">
+                    {{ $t("ip2locationGeoLookupDescription") }}
+                </div>
+            </div>
+
+            <!-- IP2Location.io API Key -->
+            <div v-if="settings.ip2locationEnabled" class="mb-4">
+                <label class="form-label" for="ip2locationApiKey">
+                    {{ $t("ip2locationApiKey") }}
+                </label>
+                <HiddenInput id="ip2locationApiKey" v-model="settings.ip2locationApiKey" autocomplete="new-password" />
+                <i18n-t keypath="ip2locationApiKeyDescription" tag="div" class="form-text">
+                    <a href="https://www.ip2location.io/?utm_source=uptimekuma" target="_blank">
+                        https://www.ip2location.io
+                    </a>
+                </i18n-t>
+            </div>
+
             <!-- DNS Cache (nscd) -->
             <div v-if="$root.info.isContainer" class="mb-4">
                 <label class="form-label">
