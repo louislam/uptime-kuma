@@ -526,6 +526,7 @@ class Monitor extends BeanModel {
 
             // Runtime patch timeout if it is 0
             // See https://github.com/louislam/uptime-kuma/pull/3961#issuecomment-1804149144
+            // this.timeout is in seconds; callers multiply by 1000 themselves.
             if (!this.timeout || this.timeout <= 0) {
                 this.timeout = this.interval * 0.8;
             }
