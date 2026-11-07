@@ -40,14 +40,41 @@ export default {
         datetime(value) {
             return this.datetimeFormat(value, "YYYY-MM-DD HH:mm:ss");
         },
+        formatInLocale(value, options) {
+            if (value === undefined || value === "" || value === null) {
+                return "";
+            }
+            const date = value instanceof Date ? value : daysj.utc(value).toDate();
+            if (NUmber.isNaN(date.getTime())) {
+                return "";
+            }
 
+            const formatOptions = {
+                timeZone: this.timezone,
+                hourCycle: "h23",
+                ...options,
+            };
+
+            try {
+                return this.$d(date, formatOptions);
+            } catch (error) {
+                return this.$d(date, { ...formatOptions, locale: "en" });
+            }
+        },
         /**
          * Converts a Unix timestamp to a formatted date and time string.
          * @param {number} value - The Unix timestamp to convert.
          * @returns {string} The formatted date and time string.
          */
         unixToDateTime(value) {
-            return dayjs.unix(value).tz(this.timezone).format("YYYY-MM-DD HH:mm:ss");
+            return this.formatInLocale(dayjs.unix(value).toDate(), {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+            });
         },
 
         /**
@@ -83,9 +110,15 @@ export default {
                 inputDate.getMonth() === now.getUTCMonth() &&
                 inputDate.getDay() === now.getUTCDay()
             ) {
-                return this.datetimeFormat(value, "HH:mm");
+                return this.formatInLocale(value, { hour: "2-digit", minute: "2-digit" });
             } else {
-                return this.datetimeFormat(value, "YYYY-MM-DD HH:mm");
+                return this.formatinLocale(value, {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                });
             }
         },
 
@@ -95,7 +128,7 @@ export default {
          * @returns {string} Formatted string
          */
         date(value) {
-            return this.datetimeFormat(value, "YYYY-MM-DD");
+            return this.formatInLocale(value, options);
         },
 
         /**
@@ -106,13 +139,11 @@ export default {
          * @returns {string} Formatted string
          */
         time(value, second = true) {
-            let secondString;
+            const options = { hour: "2-digit", minute: "2-digit" };
             if (second) {
-                secondString = ":ss";
-            } else {
-                secondString = "";
+                options.second = "2-digit";
             }
-            return this.datetimeFormat(value, "HH:mm" + secondString);
+            return this.formatInLocale(value, options);
         },
 
         /**
