@@ -18,9 +18,9 @@ jobs:
       packages: read
 
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
-        os: [macos-latest, ubuntu-22.04, windows-latest, ubuntu-22.04-arm]
+        os: [macos-26, ubuntu-24.04, windows-2025, ubuntu-24.04-arm]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
         node: [26]
 
