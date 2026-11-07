@@ -201,6 +201,7 @@ CONTRIBUTING's manual list still applies: clean Docker install on amd64/arm64/ar
 
 - **Backend**: Node.js test runner via tsx (`test/backend-test/**/*.{ts,js}`). Use `describe()`/`test()` from `node:test` and one test per scenario (see `test/backend-test/README.md`). `npm run test-backend` also prints a coverage summary via `--experimental-test-coverage`.
 - **TDD**: write the failing test first (red), watch it fail, implement the change, then confirm green before committing.
+- **No stubbed tests**: never fake the module, process or command under test. Run the real code path; if an external binary is missing, skip the test (`commandExists.sync`) instead of stubbing. Stub-based tests are not accepted.
 - **Coverage**: `npm run coverage` runs the backend suite and writes an HTML report to `private/coverage/backend/index.html` (e2e coverage is not collected).
 - Database monitor tests use Testcontainers; `npm run test-e2e-local` sets `SKIP_TESTCONTAINER=1` to skip them.
 - **E2E**: Playwright specs in `test/e2e/specs/*.spec.js`; `setup-process.once.js` is a one-time setup project every spec depends on. Requires `npx playwright install`.

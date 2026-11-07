@@ -12,6 +12,7 @@ ARG TARGETPLATFORM
 # ca-certificates = keep the cert up-to-date
 # sudo = for start service nscd with non-root user
 # nscd = for better DNS caching
+# sipsak = for the SIP Options Ping monitor
 RUN apt update && \
     apt --yes --no-install-recommends install  \
         sqlite3  \
@@ -21,6 +22,7 @@ RUN apt update && \
         dumb-init  \
         curl  \
         sudo \
+        sipsak \
         nscd && \
     rm -rf /var/lib/apt/lists/* && \
     apt --yes autoremove
