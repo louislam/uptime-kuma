@@ -426,7 +426,7 @@ is usually also baked into `dist` files. So:
 - Backend dependencies = "dependencies"
   - Examples: `socket.io`, `sqlite3`
 - Development dependencies = "devDependencies"
-  - Examples: `eslint`, `sass`
+  - Examples: `eslint`, `sass-embedded`
 
 ### Update Dependencies
 
