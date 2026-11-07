@@ -14,6 +14,12 @@
                         {{ statusText }}
                     </div>
                     <div class="tooltip-time">{{ timeText }}</div>
+                    <div v-if="bucketFailure" class="tooltip-message">
+                        <div>{{ $t("Failed checks: {percentage}", { percentage: bucketFailure.percentage }) }}</div>
+                        <div>
+                            {{ $t("About {duration} of downtime", { duration: $t("minutes", bucketFailure.minutes) }) }}
+                        </div>
+                    </div>
                     <div v-if="content?.msg" class="tooltip-message">{{ content.msg }}</div>
                 </slot>
             </div>
@@ -113,6 +119,21 @@ export default {
                 return `${start} - ${end}`;
             }
             return this.$root.datetime(this.content.time);
+        },
+
+        bucketFailure() {
+            const ratio = this.content?.failureRatio;
+            if (!Number.isFinite(ratio) || this.content.status === MAINTENANCE) {
+                return null;
+            }
+            const duration = Date.parse(this.content.time) - Date.parse(this.content.startTime);
+            return {
+                percentage: new Intl.NumberFormat(this.$i18n.locale, {
+                    style: "percent",
+                    maximumFractionDigits: 2,
+                }).format(ratio),
+                minutes: Math.round((duration / 60000) * ratio * 10) / 10,
+            };
         },
     },
 };

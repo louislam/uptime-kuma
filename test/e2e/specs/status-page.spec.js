@@ -263,6 +263,19 @@ test.describe("Status Page", () => {
 
         // The public page should show the configured range on the heartbeat bar
         await expect(page.getByText("35d")).toBeVisible();
+        const heartbeatUrl = "/api/status-page/heartbeat/heartbeat-range";
+        const rangedResponse = await page.request.get(heartbeatUrl);
+        expect(rangedResponse.ok()).toBeTruthy();
+        const ranged = await rangedResponse.json();
+        const sampled = Object.values(ranged.heartbeatList).flat().filter(Boolean);
+        expect(sampled.length).toBeGreaterThan(0);
+        expect(sampled.every((bucket) => typeof bucket.failureRatio === "number")).toBeTruthy();
+
+        const canvas = page.locator(".heartbeat-canvas");
+        await canvas.press("End");
+        await expect(page.getByText(/^Failed checks: .*%$/)).toBeVisible();
+        await expect(page.getByText(/^About .* of downtime$/)).toBeVisible();
+        await canvas.press("Escape");
         await screenshot(testInfo, page);
 
         /**
@@ -310,6 +323,12 @@ test.describe("Status Page", () => {
         await page.getByTestId("save-button").click();
         await expect(page.getByTestId("edit-sidebar")).toHaveCount(0);
         await expect(page.getByText("35d")).toHaveCount(0);
+        const autoResponse = await page.request.get(heartbeatUrl + "?maxBeats=99");
+        expect(autoResponse.ok()).toBeTruthy();
+        const auto = await autoResponse.json();
+        const checks = Object.values(auto.heartbeatList).flat();
+        expect(checks.length).toBeGreaterThan(0);
+        expect(checks.every((beat) => !Object.hasOwn(beat, "failureRatio"))).toBeTruthy();
         await screenshot(testInfo, page);
     });
 

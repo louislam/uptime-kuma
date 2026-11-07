@@ -66,6 +66,8 @@
     "days": "{n} day | {n} days",
     "hours": "{n} hour | {n} hours",
     "minutes": "{n} minute | {n} minutes",
+    "Failed checks: {percentage}": "Failed checks: {percentage}",
+    "About {duration} of downtime": "About {duration} of downtime",
     "minuteShort": "{n} min | {n} min",
     "years": "{n} year | {n} years",
     "Response": "Response",

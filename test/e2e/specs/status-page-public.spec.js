@@ -107,7 +107,7 @@ test.describe("Public status page", () => {
         await page.context().clearCookies();
         await page.goto("./status/maintenance-demo");
 
-        await expect(page.locator(".bg-maintenance")).toContainText("Planned Window");
+        await expect(page.getByRole("alert").filter({ hasText: "Planned Window" })).toBeVisible();
         await expect(page.getByTestId("monitor-name")).toContainText("Maintenance Monitor");
     });
 });

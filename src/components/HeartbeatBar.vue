@@ -40,6 +40,7 @@
 
 <script>
 import { claimHeartbeatHistory, releaseHeartbeatHistory, shouldRequestHistory } from "../heartbeat-history";
+import { getHeartbeatSeverityColor } from "../heartbeat-severity";
 import dayjs from "dayjs";
 import { DOWN, UP, PENDING, MAINTENANCE } from "../util.ts";
 import Tooltip from "./Tooltip.vue";
@@ -649,6 +650,11 @@ export default {
                 pending: rootStyles.getPropertyValue("--bs-warning") || "#ffc107",
                 maintenance: rootStyles.getPropertyValue("--maintenance") || "#1d4ed8",
                 up: rootStyles.getPropertyValue("--bs-primary") || "#5cdd8b",
+                severity: this.normalizedHeartbeatBarDays
+                    ? ["green", "yellow", "orange", "red"].map((stop) =>
+                          canvasStyles.getPropertyValue(`--beat-severity-${stop}-rgb`).split(",").map(Number)
+                      )
+                    : null,
             };
 
             // Draw each beat
@@ -729,7 +735,9 @@ export default {
             const status = Number(beat.status);
 
             if (status === DOWN) {
-                return colors.down;
+                return colors.severity && Number.isFinite(beat.failureRatio)
+                    ? getHeartbeatSeverityColor(beat.failureRatio, colors.severity)
+                    : colors.down;
             } else if (status === PENDING) {
                 return colors.pending;
             } else if (status === MAINTENANCE) {
@@ -906,9 +914,16 @@ export default {
 
 .hp-bar-big {
     --beat-empty-color: #f0f8ff;
+    --beat-severity-green-rgb: var(--bs-primary-rgb, 92, 221, 139);
+    --beat-severity-yellow-rgb: 255, 193, 7;
+    --beat-severity-orange-rgb: 253, 126, 20;
+    --beat-severity-red-rgb: 220, 53, 69;
 
     .dark & {
         --beat-empty-color: #848484;
+        --beat-severity-yellow-rgb: 255, 218, 88;
+        --beat-severity-orange-rgb: 255, 157, 73;
+        --beat-severity-red-rgb: 248, 113, 113;
     }
 
     .heartbeat-canvas {

@@ -131,6 +131,7 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
                         return 0;
                     }
 
+                    const checks = bucket.up + bucket.down;
                     return {
                         status: bucket.down > 0 ? DOWN : bucket.maintenance > 0 ? MAINTENANCE : UP,
                         startTime: dayjs.unix(bucket.start).toISOString(),
@@ -138,6 +139,7 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
                         time: dayjs.unix(Math.min(bucket.end, now)).toISOString(),
                         msg: "",
                         ping: null,
+                        failureRatio: checks > 0 ? bucket.down / checks : null,
                     };
                 });
 

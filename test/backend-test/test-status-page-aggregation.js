@@ -1,10 +1,15 @@
 const { test } = require("node:test");
 const assert = require("node:assert");
+const express = require("express");
+const { R } = require("redbean-node");
 const dayjs = require("dayjs");
 const utc = require("dayjs/plugin/utc");
-const { UP, DOWN, MAINTENANCE } = require("../../src/util");
+const { UP, DOWN, MAINTENANCE, PENDING } = require("../../src/util");
 const { UptimeCalculator } = require("../../server/uptime-calculator");
 const { getAggregatedBuckets } = require("../../server/utils/heartbeat-buckets");
+const apicache = require("../../server/modules/apicache");
+const statusPageRouter = require("../../server/routers/status-page-router");
+const StatusPage = require("../../server/model/status_page");
 
 dayjs.extend(utc);
 
@@ -17,6 +22,63 @@ function createCalculator() {
     calculator.currentBucketsLoaded = true;
     return calculator;
 }
+
+test("status page heartbeat includes failure ratios only for aggregated buckets", async (t) => {
+    const calculator = createCalculator();
+    const sampleTime = dayjs.utc().subtract(2, "days").startOf("day");
+    const previousDate = UptimeCalculator.currentDate;
+    UptimeCalculator.currentDate = dayjs.utc();
+    t.after(() => {
+        UptimeCalculator.currentDate = previousDate;
+        apicache.clear();
+    });
+    for (const [i, status] of [UP, DOWN, PENDING, UP, MAINTENANCE].entries()) {
+        await calculator.update(status, 0, sampleTime.add(i, "minute"));
+    }
+    await calculator.update(MAINTENANCE, 0, sampleTime.subtract(1, "day"));
+
+    const latest = { status: UP, time: sampleTime.add(1, "hour").toISOString() };
+    const raw = { ...latest, msg: "OK", ping: 1 };
+    let storedDays = 0;
+    t.mock.method(StatusPage, "slugToID", async () => 1);
+    t.mock.method(R, "getAll", async (query) => {
+        return query.includes("FROM monitor_group") ? [{ monitor_id: 1, interval: 60 }] : [raw];
+    });
+    t.mock.method(R, "findOne", async () => ({ heartbeat_bar_days: storedDays }));
+    t.mock.method(R, "convertToBeans", () => [{ toPublicJSON: () => raw }]);
+    t.mock.method(R, "getRow", async () => latest);
+    t.mock.method(UptimeCalculator, "getUptimeCalculator", async () => calculator);
+
+    const app = express();
+    app.use(statusPageRouter);
+    const server = app.listen(0, "127.0.0.1");
+    t.after(() => new Promise((resolve) => server.close(resolve)));
+    await new Promise((resolve) => server.once("listening", resolve));
+    const url = `http://127.0.0.1:${server.address().port}/api/status-page/heartbeat/sample`;
+    const response = await fetch(url);
+    assert.strictEqual(response.status, 200);
+    const autoUptime = calculator.get24Hour().uptime;
+    assert.deepStrictEqual(await response.json(), {
+        heartbeatList: { 1: [raw] },
+        uptimeList: { 1: autoUptime, "1_24": autoUptime },
+        lastHeartbeatList: {},
+    });
+
+    storedDays = 35;
+    const ranged = await fetch(url + "?maxBeats=100");
+    assert.strictEqual(ranged.status, 200);
+    const data = await ranged.json();
+    assert.deepStrictEqual(data.lastHeartbeatList, { 1: latest });
+    assert.ok(data.heartbeatList[1].includes(0));
+    const buckets = data.heartbeatList[1].filter(Boolean);
+    assert.deepStrictEqual(
+        buckets.map(({ status, failureRatio }) => [status, failureRatio]),
+        [
+            [MAINTENANCE, null],
+            [DOWN, 0.5],
+        ]
+    );
+});
 
 test("getAggregatedBuckets - caps bucket count at tier resolution (no grey gaps from upsampling)", async (t) => {
     const currentTime = dayjs.utc("2026-07-01 12:00:00");
