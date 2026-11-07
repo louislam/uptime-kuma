@@ -465,6 +465,8 @@ app.use(function (req, res, next) {
                 // Config is never imported as a whole, only its known keys are copied
                 const clientConfig = monitor.config;
                 delete monitor.config;
+                const informational = Boolean(monitor.informational);
+                delete monitor.informational;
 
                 /*
                  * List of frontend-only properties that should not be saved to the database.
@@ -483,6 +485,7 @@ app.use(function (req, res, next) {
 
                 bean.import(monitor);
                 bean.applyClientConfig(clientConfig);
+                bean.setInformational(informational);
                 // Map camelCase frontend property to snake_case database column
                 if (monitor.retryOnlyOnStatusCodeFailure !== undefined) {
                     bean.retry_only_on_status_code_failure = monitor.retryOnlyOnStatusCodeFailure;
@@ -654,6 +657,7 @@ app.use(function (req, res, next) {
 
                 // Known config keys only, so a payload never replaces the whole config
                 bean.applyClientConfig(monitor.config);
+                bean.setInformational(Boolean(monitor.informational));
 
                 bean.sshUsername = monitor.sshUsername;
                 bean.sshPassword = monitor.sshPassword;

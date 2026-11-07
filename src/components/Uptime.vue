@@ -30,6 +30,16 @@ export default {
                 return this.$t("statusMaintenance");
             }
 
+            if (this.monitor.informational) {
+                if (this.lastHeartBeat.status === UP) {
+                    return this.$t("Up");
+                }
+                if (this.lastHeartBeat.status === DOWN) {
+                    return this.$t("Offline");
+                }
+                return this.$t("Unknown");
+            }
+
             let key = this.monitor.id + "_" + this.type;
 
             if (this.$root.uptimeList[key] !== undefined) {
@@ -46,6 +56,10 @@ export default {
         },
 
         color() {
+            if (this.monitor.informational) {
+                return this.lastHeartBeat.status === UP ? "info" : "secondary";
+            }
+
             if (this.lastHeartBeat.status === MAINTENANCE) {
                 return "maintenance";
             }
@@ -84,6 +98,10 @@ export default {
         },
 
         title() {
+            if (this.monitor.informational) {
+                return this.$t("Informational Monitor");
+            }
+
             if (this.type === "1y") {
                 return this.$t("years", 1);
             }

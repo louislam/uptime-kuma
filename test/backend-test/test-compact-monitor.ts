@@ -22,7 +22,15 @@ function preload(overrides = {}) {
 
 describe("toCompactMonitor()", () => {
     test("keeps the fields the dashboard uses", () => {
-        const monitor = { id: 1, name: "API", type: "http", parent: null, interval: 60, weight: 2000 };
+        const monitor = {
+            id: 1,
+            name: "API",
+            type: "http",
+            informational: false,
+            parent: null,
+            interval: 60,
+            weight: 2000,
+        };
 
         const compact = toCompactMonitor(monitor, preload());
 
@@ -30,6 +38,7 @@ describe("toCompactMonitor()", () => {
             id: 1,
             name: "API",
             type: "http",
+            informational: false,
             active: true,
             parent: null,
             childrenIDs: [2, 3],
@@ -39,6 +48,17 @@ describe("toCompactMonitor()", () => {
             interval: 60,
             weight: 2000,
         });
+    });
+
+    test("includes the informational flag as a boolean", () => {
+        for (const informational of [true, 1]) {
+            const compact = toCompactMonitor(
+                { id: 1, name: "API", type: "http", informational, interval: 60 },
+                preload()
+            );
+
+            assert.strictEqual(compact.informational, true);
+        }
     });
 
     test("defaults missing parent, children, tags and path", () => {
@@ -54,6 +74,7 @@ describe("toCompactMonitor()", () => {
         assert.strictEqual(compact.pathName, "");
         assert.strictEqual(compact.parent, null);
         assert.strictEqual(compact.weight, null);
+        assert.strictEqual(compact.informational, false);
     });
 
     test("does not include sensitive monitor fields", () => {

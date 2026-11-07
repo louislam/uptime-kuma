@@ -73,6 +73,7 @@
                                                 <Status
                                                     v-if="showOnlyLastHeartbeat"
                                                     :status="statusOfLastHeartbeat(monitor.element.id)"
+                                                    :informational="monitor.element.informational"
                                                 />
                                                 <Uptime v-else :monitor="monitor.element" type="24" :pill="true" />
                                                 <a
@@ -116,7 +117,11 @@
                                             </div>
                                         </div>
                                         <div :key="$root.userHeartbeatBar" class="col-3 col-xl-6">
-                                            <HeartbeatBar size="mid" :monitor-id="monitor.element.id" />
+                                            <HeartbeatBar
+                                                size="mid"
+                                                :monitor-id="monitor.element.id"
+                                                :informational="monitor.element.informational"
+                                            />
                                         </div>
                                     </div>
                                 </div>
