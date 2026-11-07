@@ -483,6 +483,7 @@ app.use(function (req, res, next) {
 
                 bean.import(monitor);
                 bean.applyClientConfig(clientConfig);
+
                 // Map camelCase frontend property to snake_case database column
                 if (monitor.retryOnlyOnStatusCodeFailure !== undefined) {
                     bean.retry_only_on_status_code_failure = monitor.retryOnlyOnStatusCodeFailure;

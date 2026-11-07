@@ -1635,6 +1635,46 @@
                                 </div>
                             </div>
 
+                            <!-- Down Interval -->
+                            <div class="my-3">
+                                <div class="form-check">
+                                    <input
+                                        id="enable-down-interval"
+                                        type="checkbox"
+                                        class="form-check-input"
+                                        :checked="monitor.config?.downInterval != null"
+                                        @change="monitor.config.downInterval = $event.target.checked ? 60 : null"
+                                    />
+                                    <label for="enable-down-interval" class="form-check-label">
+                                        {{ $t("enableDownInterval") }}
+                                    </label>
+                                </div>
+
+                                <div v-if="monitor.config?.downInterval != null" class="mt-2">
+                                    <label for="down-interval" class="form-label">
+                                        {{ $t("downInterval") }} ({{
+                                            $t("checkEverySecond", [monitor.config.downInterval])
+                                        }})
+                                    </label>
+                                    <input
+                                        id="down-interval"
+                                        v-model.number="monitor.config.downInterval"
+                                        type="number"
+                                        class="form-control"
+                                        required
+                                        :min="minInterval"
+                                        step="1"
+                                        @focus="lowIntervalConfirmation.editedValue = true"
+                                    />
+                                    <div class="form-text">
+                                        {{ humanReadableDownInterval }}
+                                    </div>
+                                    <div v-if="monitor.config.downInterval < 20" class="form-text">
+                                        {{ $t("minimumIntervalWarning") }}
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Retry only on status code failure: JSON Query only -->
                             <div v-if="monitor.type === 'json-query' && monitor.maxretries > 0" class="my-3">
                                 <div class="form-check">
@@ -3364,7 +3404,9 @@ const monitorDefaults = {
     ntpStratumThreshold: 5,
     ntpTimeOffsetThreshold: 1000,
     ntpRootDispersionThreshold: 500,
-    config: {},
+    config: {
+        downInterval: null,
+    },
 };
 
 export default {
@@ -3422,6 +3464,11 @@ export default {
     },
 
     computed: {
+        humanReadableDownInterval() {
+            return this.monitor.config.downInterval != null
+                ? timeDurationFormatter.secondsToHumanReadableFormat(this.monitor.config.downInterval)
+                : "";
+        },
         timeoutStep() {
             return this.monitor.type === "ping" ? 1 : 0.1;
         },
@@ -4327,7 +4374,9 @@ message HealthCheckResponse {
             // do this if the interval value has changed since last save.
             if (
                 this.lowIntervalConfirmation.editedValue &&
-                (this.monitor.interval < 20 || this.monitor.retryInterval < 20) &&
+                (this.monitor.interval < 20 ||
+                    this.monitor.retryInterval < 20 ||
+                    (this.monitor.config.downInterval != null && this.monitor.config.downInterval < 20)) &&
                 !this.lowIntervalConfirmation.confirmed
             ) {
                 // The dialog will then re-call submit
