@@ -72,6 +72,38 @@ describe("Status page analytics", () => {
         });
     });
 
+    describe("deferUntilConsent()", () => {
+        test("disables every script tag of the google snippet", () => {
+            const html = analytics.deferUntilConsent(
+                analytics.getAnalyticsScript({ analyticsType: "google", analyticsId: "G-ABC123" })
+            );
+
+            assert.doesNotMatch(html, /<script(?![^>]*type="text\/plain")/);
+            assert.match(html, /data-uk-consent="analytics"/);
+        });
+
+        test("keeps the script source and inline code intact", () => {
+            const html = analytics.deferUntilConsent(
+                analytics.getAnalyticsScript({ analyticsType: "google", analyticsId: "G-ABC123" })
+            );
+
+            assert.match(html, /googletagmanager\.com\/gtag\/js\?id=G-ABC123/);
+            assert.match(html, /gtag\('config', 'G-ABC123'\)/);
+        });
+
+        test("remembers the original type of matomo's script", () => {
+            const html = analytics.deferUntilConsent(
+                analytics.getAnalyticsScript({
+                    analyticsType: "matomo",
+                    analyticsScriptUrl: "matomo.example.com",
+                    analyticsId: "7",
+                })
+            );
+
+            assert.match(html, /data-original-type="text\/javascript"/);
+        });
+    });
+
     describe("isValidAnalyticsConfig()", () => {
         test("accepts google analytics with only an id", () => {
             assert.strictEqual(analytics.isValidAnalyticsConfig({ analyticsType: "google", analyticsId: "G-1" }), true);
