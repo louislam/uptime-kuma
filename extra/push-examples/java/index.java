@@ -9,13 +9,14 @@ class Index {
 
     public static final String PUSH_URL = "https://example.com/api/push/key?status=up&msg=OK&ping=";
     public static final int INTERVAL = 60;
+    public static final String METHOD = "GET";
 
     public static void main(String[] args) {
         while (true) {
             try {
                 URL url = new URL(PUSH_URL);
                 HttpURLConnection con = (HttpURLConnection) url.openConnection();
-                con.setRequestMethod("GET");
+                con.setRequestMethod(METHOD);
                 con.getResponseCode();
                 con.disconnect();
                 System.out.println("Pushed!");
