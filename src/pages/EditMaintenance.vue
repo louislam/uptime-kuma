@@ -78,7 +78,7 @@
                                         class="form-check-input"
                                         type="checkbox"
                                     />
-                                    <label class="form-check-label" for="show-powered-by">
+                                    <label class="form-check-label" for="show-on-all-pages">
                                         {{ $t("All Status Pages") }}
                                     </label>
                                 </div>
