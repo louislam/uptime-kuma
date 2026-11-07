@@ -323,6 +323,8 @@ app.use(function (req, res, next) {
                 throw new Error("Unable to copy snapshot file.");
             }
             await Database.connect();
+            // Rebuild better-auth for the reopened database connection
+            auth(true);
 
             response.send("Snapshot restored.");
         });
