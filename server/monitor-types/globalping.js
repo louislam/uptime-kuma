@@ -498,9 +498,10 @@ class GlobalpingMonitorType extends MonitorType {
             monitor.prometheus.update(null, certResult);
         }
 
-        if (!monitor.ignoreTls && monitor.expiryNotification) {
+        if (monitor.expiryNotification) {
             await checkCertExpiryNotifications(monitor, certResult);
         }
+
     }
 
     /**
