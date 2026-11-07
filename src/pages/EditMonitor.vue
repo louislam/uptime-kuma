@@ -88,9 +88,7 @@
                                         <option value="mqtt">MQTT</option>
                                         <option value="ntp">NTP</option>
                                         <option value="rabbitmq">RabbitMQ</option>
-                                        <option value="sip-options">
-                                            SIP Options Ping
-                                        </option>
+                                        <option value="sip-options">SIP Options Ping</option>
                                         <option value="smtp">SMTP</option>
                                         <option value="snmp">SNMP</option>
                                         <option v-if="!$root.info.isContainer" value="tailscale-ping">

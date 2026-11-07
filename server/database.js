@@ -453,7 +453,6 @@ class Database {
         } else if (dbConfig.type.endsWith("mariadb")) {
             await this.initMariaDB();
         }
-
     }
 
     /**
