@@ -797,6 +797,11 @@ class Database {
         }
         log.info("db", "Database closed");
 
+        // Stop Embedded MariaDB if this process started it, so CLI tools can exit
+        if (Database.dbConfig.type === "embedded-mariadb" && EmbeddedMariaDB.hasInstance()) {
+            EmbeddedMariaDB.getInstance().stop();
+        }
+
         process.removeListener("unhandledRejection", listener);
     }
 
