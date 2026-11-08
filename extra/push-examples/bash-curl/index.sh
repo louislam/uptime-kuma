@@ -2,7 +2,6 @@
 # Filename: index.sh
 PUSH_URL="https://example.com/api/push/key?status=up&msg=OK&ping="
 INTERVAL=60
-# GET, POST or PUT
 METHOD="GET"
 
 while true; do
