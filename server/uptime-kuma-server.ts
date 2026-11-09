@@ -10,7 +10,7 @@ import checkVersion from "./check-version";
 import util from "node:util";
 import { Settings } from "./settings";
 import dayjs from "dayjs";
-import childProcessAsync from "promisify-child-process";
+import { execAsync } from "./util";
 import path from "node:path";
 import axios from "axios";
 import packageJson from "../package.json";
@@ -543,7 +543,7 @@ export class UptimeKumaServer {
         if (process.env.UPTIME_KUMA_IS_CONTAINER) {
             try {
                 log.info("services", "Starting nscd");
-                await childProcessAsync.exec("sudo service nscd start");
+                await execAsync("sudo service nscd start");
             } catch (e) {
                 log.info("services", "Failed to start nscd");
             }
@@ -558,7 +558,7 @@ export class UptimeKumaServer {
         if (process.env.UPTIME_KUMA_IS_CONTAINER) {
             try {
                 log.info("services", "Stopping nscd");
-                await childProcessAsync.exec("sudo service nscd stop");
+                await execAsync("sudo service nscd stop");
             } catch (e) {
                 log.info("services", "Failed to stop nscd");
             }

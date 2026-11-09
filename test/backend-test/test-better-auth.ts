@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import fs from "node:fs";
 import { auth, checkPassword, getSessionFromHeaders } from "../../server/better-auth";
+import { getAuthTables } from "better-auth/db";
 import { verifyAPIKey } from "../../server/auth";
 import { R } from "redbean-node";
 import passwordHash from "../../server/password-hash";
@@ -10,6 +11,34 @@ import assert from "node:assert";
 import TestDB from "../mock-testdb";
 
 const testDb = new TestDB();
+
+test("Better Auth schema", async (t) => {
+    const schemaDb = new TestDB("./data/test-better-auth-schema");
+
+    t.before(async () => {
+        fs.rmSync("./data/test-better-auth-schema", { recursive: true, force: true });
+        await schemaDb.create();
+    });
+
+    t.after(async () => {
+        await schemaDb.destroy();
+    });
+
+    await t.test("[Schema] the database has every table and column better-auth expects", async () => {
+        const tables = getAuthTables(auth().options);
+
+        for (const table of Object.values(tables)) {
+            assert.ok(await R.knex.schema.hasTable(table.modelName), `missing table ${table.modelName}`);
+
+            const columns = await R.knex(table.modelName).columnInfo();
+
+            for (const [key, field] of Object.entries(table.fields)) {
+                const column = field.fieldName || key;
+                assert.ok(column in columns, `missing column ${table.modelName}.${column}`);
+            }
+        }
+    });
+});
 
 test("Basic Auth", async (t) => {
     t.before(async () => {

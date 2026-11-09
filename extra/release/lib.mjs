@@ -2,7 +2,7 @@ import { loadEnvFile } from "node:process";
 import * as childProcess from "child_process";
 import semver from "semver";
 import fs from "fs";
-import tar from "tar";
+import * as tar from "tar";
 
 try {
     loadEnvFile();

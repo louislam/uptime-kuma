@@ -88,9 +88,7 @@
                                         <option value="mqtt">MQTT</option>
                                         <option value="ntp">NTP</option>
                                         <option value="rabbitmq">RabbitMQ</option>
-                                        <option v-if="!$root.info.isContainer" value="sip-options">
-                                            SIP Options Ping
-                                        </option>
+                                        <option value="sip-options">SIP Options Ping</option>
                                         <option value="smtp">SMTP</option>
                                         <option value="snmp">SNMP</option>
                                         <option v-if="!$root.info.isContainer" value="tailscale-ping">
@@ -154,7 +152,11 @@
                                 </select>
                             </div>
 
-                            <div v-if="monitor.type === 'sip-options'" class="alert alert-warning" role="alert">
+                            <div
+                                v-if="monitor.type === 'sip-options' && !$root.info.isContainer"
+                                class="alert alert-warning"
+                                role="alert"
+                            >
                                 {{ $t("sipsakPingWarning") }}
                             </div>
 

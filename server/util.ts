@@ -2,6 +2,8 @@ import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
+import { exec, execFile } from "node:child_process";
+import { promisify } from "node:util";
 import { ZodError } from "zod";
 import { checkLogin as betterAuthCheckLogin } from "./better-auth";
 import type { Request, Response } from "express";
@@ -30,6 +32,9 @@ const {
 
 const { Kafka } = require("kafkajs");
 const crypto = require("crypto");
+
+export const execAsync = promisify(exec);
+export const execFileAsync = promisify(execFile);
 
 /**
  * Gets an Access Token from an oidc/oauth2 provider

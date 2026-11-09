@@ -55,7 +55,7 @@ describe("Apprise notification provider", { skip }, () => {
         // Nothing is listening on port 1, so apprise exits non-zero.
         await assert.rejects(
             new Apprise().send({ appriseURL: "json://127.0.0.1:1/notify" }, "msg"),
-            /exited with code/
+            (error) => typeof error.code === "number" && error.code !== 0
         );
     });
 
