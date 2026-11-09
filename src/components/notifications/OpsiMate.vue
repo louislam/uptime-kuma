@@ -22,7 +22,12 @@
 
     <div class="mb-3">
         <label for="opsimate-api-token" class="form-label">{{ $t("API Token") }}</label>
-        <HiddenInput id="opsimate-api-token" v-model="$parent.notification.opsimateAPIToken" :required="true" autocomplete="new-password"></HiddenInput>
+        <HiddenInput
+            id="opsimate-api-token"
+            v-model="$parent.notification.opsimateAPIToken"
+            :required="true"
+            autocomplete="new-password"
+        ></HiddenInput>
         <div class="form-text">
             {{ $t("opsimateApiTokenDescription") }}
         </div>
