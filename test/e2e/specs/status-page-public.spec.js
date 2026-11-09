@@ -84,6 +84,22 @@ test.describe("Public status page", () => {
         expect(await badge.text()).toContain("<svg");
     });
 
+    test("shows the uptime badge in green for an up monitor", async ({ page }) => {
+        const pushUrl = await addPushMonitor(page, "Uptime Badge Monitor");
+
+        // One up beat gives a 100% uptime badge; push it before the status page is fetched
+        await page.request.get(pushUrl);
+
+        await addStatusPageWithMonitor(page, "Uptime Badge Demo", "uptime-badge-demo", "Uptime Badge Monitor");
+
+        await page.context().clearCookies();
+        await page.goto("./status/uptime-badge-demo");
+
+        const badge = page.getByTestId("monitor").locator(".badge");
+        await expect(badge).toHaveText("100%");
+        await expect(badge).toHaveClass(/bg-primary/);
+    });
+
     test("shows an active maintenance window to logged-out visitors", async ({ page }) => {
         const pushUrl = await addPushMonitor(page, "Maintenance Monitor");
         await addStatusPageWithMonitor(page, "Maintenance Demo", "maintenance-demo", "Maintenance Monitor");
