@@ -1,4 +1,4 @@
-const { checkLogin } = require("../util-server");
+const { checkLogin } = require("../util");
 const Database = require("../database");
 
 /**

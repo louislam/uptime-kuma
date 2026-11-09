@@ -1,5 +1,5 @@
 const { getMonitorRelativeURL, UP } = require("../../src/util");
-const { setting } = require("../util-server");
+const { setting } = require("../util");
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 

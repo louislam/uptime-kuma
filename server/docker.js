@@ -4,7 +4,7 @@ const https = require("https");
 const fsAsync = require("fs").promises;
 const path = require("path");
 const Database = require("./database");
-const { axiosAbortSignal, fsExists } = require("./util-server");
+const { axiosAbortSignal, fsExists } = require("./util");
 
 class DockerHost {
     static CertificateFileNameCA = "ca.pem";

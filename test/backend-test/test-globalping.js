@@ -1,6 +1,6 @@
 const { describe, test, mock } = require("node:test");
 const assert = require("node:assert");
-const { encodeBase64 } = require("../../server/util-server");
+const { encodeBase64 } = require("../../server/util");
 const { UP, PENDING } = require("../../src/util");
 
 describe("GlobalpingMonitorType", () => {

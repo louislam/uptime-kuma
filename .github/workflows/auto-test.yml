@@ -18,9 +18,9 @@ jobs:
       packages: read
 
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
-        os: [macos-latest, ubuntu-22.04, windows-latest, ubuntu-22.04-arm]
+        os: [macos-26, ubuntu-24.04, windows-2025, ubuntu-24.04-arm]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
         node: [26]
 
@@ -59,6 +59,15 @@ jobs:
         run: echo "$(uv tool dir --bin)" >> "$GITHUB_PATH"
       - name: Verify Apprise
         run: apprise --version
+
+      # sipsak is not pre-installed on the runners either, so install it to run
+      # the SIP options monitor test instead of skipping it.
+      - name: Install sipsak
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install --yes --no-install-recommends sipsak
+      - name: Verify sipsak
+        if: runner.os == 'Linux'
+        run: sipsak --version
 
       - if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: npm clean-install --no-fund

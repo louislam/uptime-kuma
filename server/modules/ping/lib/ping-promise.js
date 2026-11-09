@@ -19,6 +19,7 @@ var os = require('os');
 // Our library
 var builderFactory = require('./builder/factory');
 var parserFactory = require('./parser/factory');
+var encoding = require('./encoding');
 
 /**
  * Refer to probe()
@@ -64,16 +65,16 @@ function _probe(addr, config) {
         // Cache all lines from the system ping
         var outstring = [];
         ping.stdout.on('data', function (data) {
-            outstring.push(String(data));
+            outstring.push(data);
         });
         ping.stderr.on('data', function (data) {
-            outstring.push(String(data));
+            outstring.push(data);
         });
 
         // Parse lines we have on closing system ping
         ping.once('close', function () {
             // Merge lines we have and split it by \n
-            var lines = outstring.join('').split('\n');
+            var lines = encoding.convertToUTF8(Buffer.concat(outstring), platform).split('\n');
 
             // Parse line one by one
             lines.forEach(parser.eat, parser);

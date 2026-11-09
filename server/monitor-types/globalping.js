@@ -8,7 +8,7 @@ const {
     encodeBase64,
     getDaysRemaining,
     checkCertExpiryNotifications,
-} = require("../util-server");
+} = require("../util");
 const { R } = require("redbean-node");
 
 /**

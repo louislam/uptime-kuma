@@ -592,6 +592,8 @@
     "enableNSCD": "Enable NSCD (Name Service Cache Daemon) for caching all DNS requests",
     "Prometheus API": "Prometheus API",
     "prometheusApiDescription": "Expose the /metrics endpoint for Prometheus. It requires an API key, and it is disabled by default because the metrics collectors cost a small amount of CPU and memory.",
+    "apiDescription": "Expose the /api endpoints and the MCP server. It requires an API key, and it is disabled by default because the API is still in alpha and may change without notice.",
+    "apiDocumentation": "API documentation",
     "chromeExecutable": "Chrome/Chromium Executable",
     "chromeExecutableAutoDetect": "Auto Detect",
     "chromeExecutableDescription": "For Docker users, if Chromium is not yet installed, it may take a few minutes to install and display the test result. It takes 1GB of disk space.",
