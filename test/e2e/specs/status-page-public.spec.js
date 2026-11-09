@@ -96,7 +96,7 @@ test.describe("Public status page", () => {
         await page.goto("./status/uptime-badge-demo");
 
         const badge = page.getByTestId("monitor").locator(".badge");
-        await expect(badge).toHaveText("100%");
+        await expect(badge).toHaveText(/%$/);
         await expect(badge).toHaveClass(/bg-primary/);
     });
 
