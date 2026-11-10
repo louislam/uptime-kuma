@@ -1,4 +1,4 @@
-const { checkLogin } = require("../util-server");
+const { checkLogin } = require("../util");
 const { Proxy } = require("../proxy");
 const { sendProxyList } = require("../client");
 const { UptimeKumaServer } = require("../uptime-kuma-server");

@@ -1,4 +1,4 @@
-import { getTotalClientInRoom } from "./util-server";
+import { getTotalClientInRoom } from "./util";
 
 /**
  * Room every logged-in socket joins; v3 has a single dashboard.

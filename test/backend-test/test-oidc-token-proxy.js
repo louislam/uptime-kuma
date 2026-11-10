@@ -1,7 +1,7 @@
 const { describe, test, after } = require("node:test");
 const assert = require("node:assert");
 const http = require("http");
-const { getOidcTokenClientCredentials, selectMonitorProxyAgent } = require("../../server/util-server");
+const { getOidcTokenClientCredentials, selectMonitorProxyAgent } = require("../../server/util");
 const { Proxy } = require("../../server/proxy");
 
 /**

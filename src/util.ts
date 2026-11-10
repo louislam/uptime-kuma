@@ -3,14 +3,7 @@
 // Common Util for frontend and backend
 */
 
-import dayjsFrontend from "dayjs";
-
-// For dayjs plugins' type checking, don't remove event though it is not used in this file
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import * as timezone from "dayjs/plugin/timezone";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import * as utc from "dayjs/plugin/utc";
-
+import dayjs from "dayjs";
 import jsonata from "jsonata";
 
 /**
@@ -22,12 +15,6 @@ export function isDevEnv() {
 }
 
 export const isNode = typeof process !== "undefined" && process?.versions?.node;
-
-/**
- * Smarter dayjs import that supports both frontend and backend
- * @returns {dayjs.Dayjs} dayjs instance
- */
-const dayjs = isNode ? require("dayjs") : dayjsFrontend;
 
 export const devOriginList = [
     "http://127.0.0.1:3000",

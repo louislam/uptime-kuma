@@ -1,6 +1,6 @@
 import { describe, test } from "node:test";
 import assert from "node:assert";
-import { applyBeat, applyLatestBeats, beatStatusEntry } from "../../src/beat-state";
+import { applyBeat, applyHeartbeatSnapshot, applyLatestBeats, beatStatusEntry } from "../../src/beat-state";
 import { DOWN, MAINTENANCE, PENDING, UP } from "../../src/util";
 
 /**
@@ -75,6 +75,48 @@ describe("applyLatestBeats()", () => {
         applyLatestBeats(heartbeatList, 1, latest);
 
         assert.strictEqual(heartbeatList[2].length, 1);
+    });
+});
+
+describe("applyHeartbeatSnapshot()", () => {
+    /**
+     * Build empty mixin state
+     * @returns {object} State
+     */
+    function emptyState() {
+        return { lastHeartbeatList: {}, statusList: {}, lastBeatRaw: {} };
+    }
+
+    test("fills the badge state from a REST payload with string monitor ids", () => {
+        const state = emptyState();
+        const beats = [{ status: UP }];
+
+        applyHeartbeatSnapshot(state, { 7: beats }, translate);
+
+        assert.strictEqual(state.lastHeartbeatList[7], beats[0]);
+        assert.deepStrictEqual(state.statusList[7], { text: "Up", color: "primary" });
+    });
+
+    test("uses the newest beat of every monitor", () => {
+        const state = emptyState();
+        const heartbeatList = {
+            1: [{ status: DOWN }, { status: UP }],
+            2: [{ status: DOWN }],
+        };
+
+        applyHeartbeatSnapshot(state, heartbeatList, translate);
+
+        assert.deepStrictEqual(state.statusList[1], { text: "Up", color: "primary" });
+        assert.deepStrictEqual(state.statusList[2], { text: "Down", color: "danger" });
+    });
+
+    test("leaves monitors without beats untouched", () => {
+        const state = { lastHeartbeatList: { 1: { status: UP } }, statusList: {}, lastBeatRaw: {} };
+
+        applyHeartbeatSnapshot(state, { 2: [] }, translate);
+
+        assert.strictEqual(Object.keys(state.lastHeartbeatList).length, 1);
+        assert.deepStrictEqual(state.statusList, {});
     });
 });
 

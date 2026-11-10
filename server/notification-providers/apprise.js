@@ -1,5 +1,5 @@
 const NotificationProvider = require("./notification-provider");
-const childProcessAsync = require("promisify-child-process");
+const { execFileAsync } = require("../util");
 
 class Apprise extends NotificationProvider {
     name = "apprise";
@@ -16,8 +16,9 @@ class Apprise extends NotificationProvider {
             args.push(notification.title);
         }
         args.push("--", notification.appriseURL);
-        const s = await childProcessAsync.spawn("apprise", args, {
+        const s = await execFileAsync("apprise", args, {
             encoding: "utf8",
+            maxBuffer: 1024 * 1024,
         });
 
         // A successful run (exit code 0) may legitimately print nothing to

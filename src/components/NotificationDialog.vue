@@ -308,6 +308,7 @@ export default {
                 HeiiOnCall: "Heii On-Call",
                 Keep: "Keep",
                 Opsgenie: "Opsgenie",
+                OpsiMate: "OpsiMate",
                 JiraServiceManagement: this.$t("Jira Service Management"),
                 PagerDuty: "PagerDuty",
                 PagerTree: "PagerTree",
