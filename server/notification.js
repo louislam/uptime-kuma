@@ -43,6 +43,7 @@ const OneChat = require("./notification-providers/onechat");
 const OneBot = require("./notification-providers/onebot");
 const Ooredoo = require("./notification-providers/ooredoo");
 const Opsgenie = require("./notification-providers/opsgenie");
+const OpsiMate = require("./notification-providers/opsimate");
 const JiraServiceManagement = require("./notification-providers/jira-service-management");
 const PagerDuty = require("./notification-providers/pagerduty");
 const Pumble = require("./notification-providers/pumble");
@@ -170,6 +171,7 @@ class Notification {
             new Onesender(),
             new Ooredoo(),
             new Opsgenie(),
+            new OpsiMate(),
             new JiraServiceManagement(),
             new PagerDuty(),
             new FlashDuty(),
