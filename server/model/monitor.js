@@ -1078,9 +1078,21 @@ class Monitor extends BeanModel {
             let endTimeDayjs = await uptimeCalculator.update(bean.status, parseFloat(bean.ping));
             bean.end_time = R.isoDateTimeMillis(endTimeDayjs);
 
+            // Keep the dashboard numbers live instead of waiting for the stats cache
+            let liveStats;
+            try {
+                liveStats = await MonitorStats.recordBeat(this.id, bean.status, parseFloat(bean.ping));
+            } catch (e) {
+                log.warn("monitor", `Failed to update dashboard stats: ${e.message}`);
+            }
+
             // Send to frontend
             log.debug("monitor", `[${this.name}] Send to socket`);
-            emitHeartbeat(io, bean.toJSON());
+            const beatJSON = bean.toJSON();
+            if (liveStats) {
+                beatJSON.stats = liveStats;
+            }
+            emitHeartbeat(io, beatJSON);
             Monitor.sendStats(io, this.id);
 
             // Store to database
@@ -1356,7 +1368,7 @@ class Monitor extends BeanModel {
     }
 
     /**
-     * Send statistics to the dashboard
+     * Send cert/domain info and refresh the stats cache when it is stale
      * @param {Server} io Socket server instance
      * @param {number} monitorID ID of monitor to send
      * @returns {Promise<void>}
@@ -1365,13 +1377,6 @@ class Monitor extends BeanModel {
         const hasClients = getTotalClientInRoom(io, socketRoom) > 0;
 
         if (hasClients) {
-            // Serve the dashboard numbers from the grouped SQL cache; never initialize a full
-            // UptimeCalculator (thousands of stat rows) just to answer a heartbeat
-            const cached = MonitorStats.get(monitorID);
-            if (cached) {
-                io.to(socketRoom).emit("stats", { [monitorID]: cached });
-            }
-
             const server = UptimeKumaServer.getInstance();
             MonitorStats.maybeRefresh(io, Object.keys(server.monitorList));
 

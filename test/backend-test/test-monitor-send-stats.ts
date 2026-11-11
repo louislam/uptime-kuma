@@ -8,7 +8,6 @@ const { MonitorStats } = require("../../server/monitor-stats");
 import { socketRoom } from "../../server/heartbeat-emit";
 
 const originals = {
-    get: MonitorStats.get,
     maybeRefresh: MonitorStats.maybeRefresh,
     sendCertInfo: Monitor.sendCertInfo,
     sendDomainInfo: Monitor.sendDomainInfo,
@@ -16,7 +15,6 @@ const originals = {
 };
 
 afterEach(() => {
-    MonitorStats.get = originals.get;
     MonitorStats.maybeRefresh = originals.maybeRefresh;
     Monitor.sendCertInfo = originals.sendCertInfo;
     Monitor.sendDomainInfo = originals.sendDomainInfo;
@@ -67,7 +65,6 @@ describe("Monitor.sendStats()", () => {
         const io = fakeIo(false);
         const calls = stubInfoSenders();
         let refreshed = 0;
-        MonitorStats.get = () => undefined;
         MonitorStats.maybeRefresh = () => {
             refreshed++;
         };
@@ -79,12 +76,10 @@ describe("Monitor.sendStats()", () => {
         assert.strictEqual(refreshed, 0);
     });
 
-    test("emits the cached stats and sends cert/domain info once per minute", async () => {
+    test("sends cert/domain info once per minute", async () => {
         const io = fakeIo(true);
         const calls = stubInfoSenders();
-        const cached = { avgPing: 12.5, uptime24: 0.99, uptime720: 0.98, uptime1y: 0.97 };
         let refreshed = 0;
-        MonitorStats.get = () => cached;
         MonitorStats.maybeRefresh = () => {
             refreshed++;
         };
@@ -92,23 +87,18 @@ describe("Monitor.sendStats()", () => {
 
         await Monitor.sendStats(io, 101);
 
-        const statsEvents = io.events.filter((event) => event.event === "stats");
-        assert.strictEqual(statsEvents.length, 1);
-        assert.deepStrictEqual(statsEvents[0].args[0], { 101: cached });
         assert.strictEqual(refreshed, 1);
         assert.deepStrictEqual(calls, { cert: 1, domain: 1 });
 
-        // A second beat within the same minute only emits the stats
+        // A second beat within the same minute does not resend the info
         await Monitor.sendStats(io, 101);
 
-        assert.strictEqual(io.events.filter((event) => event.event === "stats").length, 2);
         assert.deepStrictEqual(calls, { cert: 1, domain: 1 });
     });
 
     test("sends the info again after the refresh interval", async () => {
         const io = fakeIo(true);
         const calls = stubInfoSenders();
-        MonitorStats.get = () => undefined;
         MonitorStats.maybeRefresh = () => {};
         Date.now = () => 2000000;
 
@@ -117,17 +107,5 @@ describe("Monitor.sendStats()", () => {
         await Monitor.sendStats(io, 202);
 
         assert.deepStrictEqual(calls, { cert: 2, domain: 2 });
-    });
-
-    test("skips the stats event when no cache entry exists", async () => {
-        const io = fakeIo(true);
-        stubInfoSenders();
-        MonitorStats.get = () => undefined;
-        MonitorStats.maybeRefresh = () => {};
-        Date.now = () => 3000000;
-
-        await Monitor.sendStats(io, 303);
-
-        assert.strictEqual(io.events.filter((event) => event.event === "stats").length, 0);
     });
 });
