@@ -744,8 +744,8 @@ export default {
 }
 
 .list-header {
-    border-bottom: 1px solid #dee2e6;
-    border-radius: 10px 10px 0 0;
+    border-bottom: 1px solid var(--border);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     margin-bottom: 10px;
     padding: 10px;
     display: flex;
@@ -797,12 +797,12 @@ export default {
         min-width: 140px;
         padding: 4px 0;
         border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        box-shadow: none;
 
         .dark & {
             background-color: $dark-bg;
             border-color: $dark-border-color;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            box-shadow: none;
         }
     }
 
@@ -821,23 +821,23 @@ export default {
         }
 
         &.text-danger {
-            color: #dc3545;
+            color: var(--danger);
 
             .dark & {
-                color: #dc3545;
+                color: var(--danger);
             }
 
             &:hover {
-                background-color: #dc3545 !important;
-                color: white !important;
+                background-color: var(--danger) !important;
+                color: var(--bg) !important;
 
                 .dark & {
-                    background-color: #dc3545 !important;
-                    color: white !important;
+                    background-color: var(--danger) !important;
+                    color: var(--bg) !important;
                 }
 
                 svg {
-                    color: white !important;
+                    color: var(--bg) !important;
                 }
             }
         }
@@ -854,7 +854,7 @@ export default {
 .selected-count {
     white-space: nowrap;
     font-size: 0.9em;
-    color: $primary;
+    color: var(--text-muted);
 
     .dark & {
         color: $dark-font-color;
@@ -923,7 +923,7 @@ export default {
 .search-icon {
     position: absolute;
     right: 10px;
-    color: #c0c0c0;
+    color: var(--text-subtle);
     cursor: pointer;
     transition: all ease-in-out 0.1s;
     z-index: 1;

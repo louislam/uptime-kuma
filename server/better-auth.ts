@@ -8,14 +8,16 @@ import { admin } from "better-auth/plugins";
 import { Socket } from "socket.io";
 import { haveIBeenPwned } from "better-auth/plugins";
 import { twoFactor } from "better-auth/plugins";
+import { genericOAuth } from "better-auth/plugins";
 import { apiKey } from "@better-auth/api-key";
-import { createAuthMiddleware } from "better-auth/api";
+import { APIError, createAuthMiddleware } from "better-auth/api";
 // @ts-ignore
 import * as oldAuth from "./auth";
 import { hasUser } from "./routers/better-auth-router";
 import { symmetricEncrypt } from "better-auth/crypto";
 // @ts-ignore
 import config from "./config.js";
+import { AEGIS_PROVIDER_ID, AegisConfig, getAegisConfig, isAegisReachable, isAegisUserAllowed } from "./aegis";
 
 export type BetterAuthUser = ReturnType<typeof createAuthInstance>["$Infer"]["Session"]["user"];
 
@@ -80,13 +82,22 @@ function createAuthInstance() {
     }
 
     const authDatabase = Database.createAuthDatabase(Database.dbConfig);
+    const aegis = getAegisConfig();
+
+    if (aegis) {
+        log.info("auth", `Sign-in with Aegis is enabled (issuer: ${aegis.issuer})`);
+    }
 
     return betterAuth({
         database: authDatabase,
 
-        // Just want to silent the warning message
-        // As we don't use callback/redirect, it is not used
-        baseURL: "http://localhost:3000",
+        // Only the Aegis redirect flow depends on it, it is not used otherwise
+        baseURL: aegis ? aegis.appURL : "http://localhost:3000",
+
+        onAPIError: {
+            // A failed Aegis callback lands on the sign-in page, which shows the error code
+            errorURL: aegis ? `${aegis.appURL}/dashboard` : undefined,
+        },
 
         secret: getAuthSecret(),
         // Should be handled in Express.js, check better-auth-router.ts
@@ -109,6 +120,9 @@ function createAuthInstance() {
             "/admin/revoke-user-session",
             "/admin/revoke-user-sessions",
             "/admin/has-permission",
+
+            // Aegis is the only way in when it is enabled
+            ...(aegis ? ["/sign-in/username", "/sign-in/email"] : []),
         ],
 
         emailAndPassword: {
@@ -158,6 +172,8 @@ function createAuthInstance() {
                 },
             }),
 
+            ...(aegis ? [createAegisPlugin(aegis)] : []),
+
             // It is not suitable for "Disable Auth", because it can not turn on/off after init.
             //anonymous(),
         ],
@@ -166,6 +182,8 @@ function createAuthInstance() {
         },
         account: {
             modelName: "better_auth_account",
+            // Aegis access, refresh and ID tokens never leave the server and are encrypted at rest
+            encryptOAuthTokens: true,
         },
         session: {
             modelName: "better_auth_session",
@@ -174,9 +192,27 @@ function createAuthInstance() {
             modelName: "better_auth_verification",
         },
 
+        databaseHooks: {
+            session: {
+                create: {
+                    // AUTH_ALLOWED_USERS: an error with a code makes the Aegis callback return to the sign-in page
+                    before: async (session) => {
+                        if (aegis && !(await isAllowedByAegis(aegis, session.userId))) {
+                            log.warn("auth", `User ${session.userId} is not in AUTH_ALLOWED_USERS, sign-in refused.`);
+                            throw new APIError("FORBIDDEN", {
+                                code: "access_denied",
+                                message: "This account is not allowed to sign in.",
+                            });
+                        }
+                    },
+                },
+            },
+        },
+
         hooks: {
             before: createAuthMiddleware(async (ctx) => {
-                if (ctx.path.startsWith("/sign-in/")) {
+                // Password sign-in only, not the Aegis redirect (/sign-in/social)
+                if (ctx.path.startsWith("/sign-in/") && ctx.path !== "/sign-in/social") {
                     const username = ctx.body?.username;
                     const password = ctx.body?.password;
 
@@ -189,6 +225,126 @@ function createAuthInstance() {
             }),
         },
     });
+}
+
+/**
+ * Create the OpenID Connect plugin for Aegis.
+ * Authorization code flow with PKCE (S256), `state` and `nonce`. The ID token signature, `iss` and `aud` are
+ * verified against the JWKS of the discovery document before a session is created.
+ * @param aegis Aegis configuration
+ * @returns The better-auth plugin
+ */
+function createAegisPlugin(aegis: AegisConfig) {
+    return genericOAuth({
+        config: [
+            {
+                providerId: AEGIS_PROVIDER_ID,
+                name: "Aegis",
+                discoveryUrl: aegis.discoveryUrl,
+                requireIdTokenVerification: true,
+                clientId: aegis.clientId,
+                clientSecret: aegis.clientSecret,
+                // client_secret_basic
+                authentication: "basic",
+                redirectURI: aegis.redirectURI,
+                scopes: aegis.scopes,
+                pkce: true,
+                // Access tokens last 1 hour, used when the token response has no expires_in
+                accessTokenExpiresIn: 60 * 60,
+                postLogoutRedirectURI: `${aegis.appURL}/`,
+                // Keep name, email and picture in sync with Aegis
+                overrideUserInfo: true,
+                mapProfileToUser: (profile) => {
+                    // No `username` here: the username plugin checks uniqueness outside the transaction that
+                    // creates the user, which deadlocks on SQLite. The UI shows the name instead.
+                    const displayName = [profile.preferred_username, profile.name, profile.email].find(
+                        (value) => typeof value === "string" && value
+                    ) as string | undefined;
+
+                    return {
+                        name: displayName,
+                    };
+                },
+            },
+        ],
+    });
+}
+
+/**
+ * Check a user against `AUTH_ALLOWED_USERS`. Local users are not restricted by it.
+ * @param aegis Aegis configuration
+ * @param userId better-auth user id
+ * @returns True if the user may have a session
+ */
+async function isAllowedByAegis(aegis: AegisConfig, userId: string): Promise<boolean> {
+    if (aegis.allowedUsers.length === 0) {
+        return true;
+    }
+
+    const internalAdapter = await authInternal();
+    const accounts = await internalAdapter.findAccounts(userId);
+    const account = accounts.find((candidate) => candidate.providerId === AEGIS_PROVIDER_ID);
+    if (!account) {
+        return true;
+    }
+
+    const user = await internalAdapter.findUserById(userId);
+    return isAegisUserAllowed(aegis, [account.accountId, user?.email, user?.name]);
+}
+
+/**
+ * Keep an Aegis browser session only while Aegis still honours the grant.
+ * The access token is refreshed with the refresh token once it has expired. When Aegis rejects the refresh
+ * (account disabled, grant revoked, refresh token expired) the session is deleted and the user signs in again.
+ * @param session Session of the request
+ * @returns True if the session is still valid
+ */
+async function verifyAegisSession(session: NonNullable<Awaited<ReturnType<typeof getSession>>>): Promise<boolean> {
+    const aegis = getAegisConfig();
+    if (!aegis) {
+        return true;
+    }
+
+    const internalAdapter = await authInternal();
+    const accounts = await internalAdapter.findAccounts(session.user.id);
+    const account = accounts.find((candidate) => candidate.providerId === AEGIS_PROVIDER_ID);
+    if (!account) {
+        // Local user, for example the admin that existed before Aegis was enabled
+        return true;
+    }
+
+    if (!isAegisUserAllowed(aegis, [account.accountId, session.user.email, session.user.name])) {
+        log.info("auth", `${session.user.name} is no longer in AUTH_ALLOWED_USERS, session ended.`);
+        await internalAdapter.deleteSession(session.session.token);
+        return false;
+    }
+
+    try {
+        // Refreshes and stores the tokens when the access token has expired
+        await authInstance.api.getAccessToken({
+            body: {
+                accountId: account.id,
+                userId: session.user.id,
+            },
+        });
+        return true;
+    } catch (e) {
+        const code = e instanceof APIError ? e.body?.code : undefined;
+        if (code !== "FAILED_TO_GET_ACCESS_TOKEN") {
+            log.error("auth", "Unexpected error while checking the Aegis tokens:", e);
+            return true;
+        }
+
+        // Do not sign everyone out because Aegis is down for a moment
+        if (!(await isAegisReachable(aegis))) {
+            log.warn("auth", "Aegis is unreachable, keeping the session without refreshing its tokens.");
+            return true;
+        }
+
+        log.info("auth", `Aegis did not renew the tokens of ${session.user.name}, session ended.`);
+        await internalAdapter.deleteSession(session.session.token);
+        return false;
+    }
 }
 
 /**
@@ -250,6 +406,9 @@ export async function getSessionFromHeaders(cookie?: string, apiKey?: string | s
         });
 
         if (cookieSession) {
+            if (!(await verifyAegisSession(cookieSession))) {
+                return null;
+            }
             return cookieSession;
         }
     }

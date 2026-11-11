@@ -1,0 +1,79 @@
+/* KyroNET design tokens. Generated from the design system's tokens.json. Dark is the default theme. */
+@font-face { font-family: "Geist"; src: url("./fonts/Geist-Variable.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url("./fonts/GeistMono-Variable.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: swap; }
+:root, [data-theme="dark"] {
+  --bg: #0a0a0a;
+  --bg-raised: #141414;
+  --bg-inset: #000000;
+  --bg-hover: #1c1c1c;
+  --bg-selected: #262626;
+  --border: #2a2a2a;
+  --border-strong: #6b6b6b;
+  --text: #f5f5f5;
+  --text-muted: #a3a3a3;
+  --text-subtle: #8c8c8c;
+  --accent: #ff4500;
+  --accent-hover: #ff6a33;
+  --accent-text: #ff5a1f;
+  --accent-subtle: #2b1107;
+  --on-accent: #0a0a0a;
+  --focus: #ff4500;
+  --success: #2ec4a6;
+  --warning: #f2c230;
+  --danger: #ff6b81;
+  --danger-hover: #ff8a9b;
+  --on-danger: #0a0a0a;
+  --info: #6cb6ff;
+  --font-sans: "Geist", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-24: 96px;
+  --radius-none: 0;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+  --radius-full: 9999px;
+  --control-sm: 24px;
+  --control-md: 32px;
+  --control-lg: 40px;
+  --row: 36px;
+  --icon: 16px;
+  --stroke: 1px;
+  --stroke-strong: 2px;
+  --sidebar: 240px;
+  --content: 1200px;
+  --measure: 640px;
+  color-scheme: dark;
+}
+[data-theme="light"] {
+  --bg: #ffffff;
+  --bg-raised: #f7f7f7;
+  --bg-inset: #f0f0f0;
+  --bg-hover: #f0f0f0;
+  --bg-selected: #e6e6e6;
+  --border: #e2e2e2;
+  --border-strong: #858585;
+  --text: #0a0a0a;
+  --text-muted: #525252;
+  --text-subtle: #666666;
+  --accent: #ff4500;
+  --accent-hover: #e63e00;
+  --accent-text: #b83100;
+  --accent-subtle: #ffece5;
+  --on-accent: #0a0a0a;
+  --focus: #cc3700;
+  --success: #006b58;
+  --warning: #7a5600;
+  --danger: #b8122e;
+  --danger-hover: #9c0f27;
+  --on-danger: #ffffff;
+  --info: #0b5cad;
+  color-scheme: light;
+}

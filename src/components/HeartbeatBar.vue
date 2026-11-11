@@ -867,10 +867,10 @@ export default {
 }
 
 .hp-bar-big {
-    --beat-empty-color: #f0f8ff;
+    --beat-empty-color: var(--border);
 
     .dark & {
-        --beat-empty-color: #848484;
+        --beat-empty-color: var(--border);
     }
 
     .heartbeat-canvas {
@@ -887,13 +887,13 @@ export default {
 .connecting-line {
     flex-grow: 1;
     height: 1px;
-    background-color: #ededed;
+    background-color: var(--border);
     margin-left: 10px;
     margin-right: 10px;
     margin-top: 2px;
 
     .dark & {
-        background-color: #333;
+        background-color: var(--border);
     }
 }
 </style>

@@ -968,12 +968,13 @@ export default {
 }
 
 .url {
-    color: $primary;
+    color: var(--accent-text);
     margin-bottom: 20px;
-    font-weight: bold;
+    font: 400 13px/18px var(--font-mono);
 
     a {
-        color: $primary;
+        color: var(--accent-text);
+        text-decoration: underline;
     }
 }
 

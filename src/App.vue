@@ -96,13 +96,13 @@ polyfillCountryFlagEmojis();
     max-width: 60vw;
     height: 6px;
     border-radius: 3px;
-    background-color: rgba(128, 128, 128, 0.25);
+    background-color: var(--bg-hover);
     overflow: hidden;
 }
 
 .app-loading-fill {
     height: 100%;
-    background-color: $primary;
+    background-color: var(--text-muted);
     border-radius: 3px;
     transition: width 0.2s linear;
 }

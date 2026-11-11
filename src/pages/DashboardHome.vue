@@ -311,7 +311,7 @@ export default {
 .num {
     font-size: 30px;
     color: $primary;
-    font-weight: bold;
+    font-weight: 600;
     display: block;
 }
 

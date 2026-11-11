@@ -17,6 +17,7 @@ import packageJson from "../package.json";
 import { isSSL, sslKey, sslCert, sslKeyPassphrase } from "./config";
 import { getSession, getDisableAuthSession } from "./better-auth";
 import { toCompactMonitor } from "./compact-monitor";
+import { isAegisEnabled } from "./aegis";
 import type { MonitorType } from "./monitor-types/monitor-type";
 import type Maintenance from "./model/maintenance";
 
@@ -604,6 +605,7 @@ export async function getInfo(hideVersion = false) {
         primaryBaseURL: await Settings.get("primaryBaseURL"),
         serverTimezone: await server.getTimezone(),
         serverTimezoneOffset: server.getTimezoneOffset(),
+        aegisEnabled: isAegisEnabled(),
     };
 
     if (!hideVersion) {

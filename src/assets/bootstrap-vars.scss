@@ -1,0 +1,34 @@
+// Compile-time values for Bootstrap, which needs real colors for its Sass functions.
+// They are the dark theme values of the KyroNET tokens; app.scss replaces them with the tokens at runtime.
+$primary: #2ec4a6;
+$success: #2ec4a6;
+$danger: #ff6b81;
+$warning: #f2c230;
+$info: #6cb6ff;
+$secondary: #6b6b6b;
+$light: #f7f7f7;
+$dark: #141414;
+
+$enable-shadows: false;
+$enable-gradients: false;
+
+$font-family-sans-serif: "Geist", "Helvetica Neue", Arial, sans-serif;
+$font-family-monospace: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+$font-size-base: 0.875rem;
+$line-height-base: 1.4286;
+$headings-font-weight: 600;
+$font-weight-bold: 600;
+$font-weight-bolder: 600;
+
+$border-radius: 4px;
+$border-radius-sm: 4px;
+$border-radius-lg: 6px;
+$border-radius-pill: 4px;
+$form-switch-border-radius: 9999px;
+$badge-border-radius: 2px;
+
+$input-btn-focus-width: 0;
+$input-btn-padding-y: 0.3125rem;
+$input-btn-padding-x: 0.75rem;
+$btn-font-weight: 500;
+$link-decoration: underline;

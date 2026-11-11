@@ -1,32 +1,41 @@
 @import "@vuepic/vue-datepicker/dist/main.css";
-@import "vars.scss";
 
-// Must use #{ }
-// Remark: https://stackoverflow.com/questions/50202991/unable-to-set-scss-variable-to-css-variable
-.dp__theme_dark {
-    --dp-background-color: #{$dark-bg2};
-    --dp-text-color: #{$dark-font-color};
-    --dp-hover-color: #484848;
-    --dp-hover-text-color: #ffffff;
-    --dp-hover-icon-color: #959595;
-    --dp-primary-color: #{#5cdd8b};
-    --dp-primary-text-color: #ffffff;
-    --dp-secondary-color: #494949;
-    --dp-border-color: #{$dark-border-color};
-    --dp-menu-border-color: #2d2d2d;
-    --dp-border-color-hover: #{$dark-border-color};
-    --dp-disabled-color: #212121;
-    --dp-scroll-bar-background: #212121;
-    --dp-scroll-bar-color: #484848;
-    --dp-success-color: #{$primary};
-    --dp-success-color-disabled: #428f59;
-    --dp-icon-color: #959595;
-    --dp-danger-color: #e53935;
-    --dp-highlight-color: rgba(0, 92, 178, 0.2);
+// KyroNET tokens for both date picker themes
+.dp__theme_dark,
+.dp__theme_light {
+    --dp-background-color: var(--bg-raised);
+    --dp-text-color: var(--text);
+    --dp-hover-color: var(--bg-hover);
+    --dp-hover-text-color: var(--text);
+    --dp-hover-icon-color: var(--text);
+    --dp-primary-color: var(--text);
+    --dp-primary-text-color: var(--bg);
+    --dp-secondary-color: var(--text-subtle);
+    --dp-border-color: var(--border-strong);
+    --dp-menu-border-color: var(--border-strong);
+    --dp-border-color-hover: var(--text-muted);
+    --dp-disabled-color: var(--bg-hover);
+    --dp-scroll-bar-background: var(--bg-raised);
+    --dp-scroll-bar-color: var(--border-strong);
+    --dp-success-color: var(--success);
+    --dp-success-color-disabled: var(--text-subtle);
+    --dp-icon-color: var(--text-muted);
+    --dp-danger-color: var(--danger);
+    --dp-highlight-color: var(--bg-selected);
+    --dp-border-radius: var(--radius-md);
+    --dp-cell-border-radius: var(--radius-sm);
+    --dp-font-family: var(--font-sans);
 }
 
 .dp__input {
-    border-radius: $border-radius;
+    border-radius: var(--radius-md);
+    background-color: var(--bg-inset);
+    font-family: var(--font-sans);
+    font-size: 14px;
+}
+
+.dp__menu {
+    box-shadow: none;
 }
 
 // Fix: Full width of text input when using "inline textInput inlineWithInput" mode

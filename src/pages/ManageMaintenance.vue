@@ -236,7 +236,7 @@ export default {
     align-items: center;
     gap: 10px;
     text-decoration: none;
-    border-radius: 10px;
+    border-radius: var(--radius-lg);
     transition: all ease-in-out 0.15s;
     justify-content: space-between;
     padding: 10px;
@@ -295,12 +295,12 @@ export default {
         .circle {
             width: 25px;
             height: 25px;
-            border-radius: 50rem;
+            border-radius: var(--radius-md);
         }
 
         .info {
             .title {
-                font-weight: bold;
+                font-weight: 600;
                 font-size: 20px;
             }
 

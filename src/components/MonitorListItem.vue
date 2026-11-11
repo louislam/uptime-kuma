@@ -392,8 +392,8 @@ export default {
 }
 
 .drag-over {
-    border: 4px dashed $primary;
-    border-radius: 0.5rem;
+    border: var(--stroke) dashed var(--border-strong);
+    border-radius: var(--radius-lg);
     background-color: $highlight-white;
 }
 

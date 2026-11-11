@@ -12,9 +12,9 @@ export default {
     },
 
     mounted() {
-        // Default Light
+        // KyroNET is dark first
         if (!this.userTheme) {
-            this.userTheme = "auto";
+            this.userTheme = "dark";
         }
 
         // Default Heartbeat Bar
@@ -28,7 +28,7 @@ export default {
         }
 
         document.body.classList.add(this.theme);
-        this.updateThemeColorMeta();
+        this.applyTheme();
     },
 
     computed: {
@@ -39,11 +39,6 @@ export default {
                     return this.system;
                 }
                 return this.statusPageTheme;
-            }
-
-            // Entry no need dark
-            if (this.path === "") {
-                return "light";
             }
 
             if (this.path.startsWith("/status-page") || this.path.startsWith("/status")) {
@@ -80,7 +75,7 @@ export default {
         theme(to, from) {
             document.body.classList.remove(from);
             document.body.classList.add(this.theme);
-            this.updateThemeColorMeta();
+            this.applyTheme();
         },
 
         userHeartbeatBar(to, from) {
@@ -95,14 +90,23 @@ export default {
 
     methods: {
         /**
+         * Apply the KyroNET theme to the root element and update the theme color meta tag
+         * @returns {void}
+         */
+        applyTheme() {
+            document.documentElement.setAttribute("data-theme", this.theme === "light" ? "light" : "dark");
+            this.updateThemeColorMeta();
+        },
+
+        /**
          * Update the theme color meta tag
          * @returns {void}
          */
         updateThemeColorMeta() {
             if (this.theme === "dark") {
-                document.querySelector("#theme-color").setAttribute("content", "#161B22");
+                document.querySelector("#theme-color").setAttribute("content", "#0a0a0a");
             } else {
-                document.querySelector("#theme-color").setAttribute("content", "#5cdd8b");
+                document.querySelector("#theme-color").setAttribute("content", "#ffffff");
             }
         },
     },

@@ -329,12 +329,12 @@ export default {
 
 .simple-status {
     min-width: 64px;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--border);
     background-color: transparent !important;
     color: inherit !important;
 
     .dark & {
-        border-color: #6b7280;
+        border-color: var(--border-strong);
     }
 }
 
@@ -344,7 +344,7 @@ export default {
     display: flex;
     align-items: center;
     padding: 2px 10px;
-    border-radius: 16px;
+    border-radius: var(--radius-lg);
     background-color: transparent;
 
     .dark & {
@@ -364,10 +364,10 @@ export default {
 
 .dropdown-divider {
     margin: 0.5rem 0;
-    border-top: 1px solid #d1d5db;
+    border-top: 1px solid var(--border);
 
     .dark & {
-        border-top-color: #6b7280;
+        border-top-color: var(--border-strong);
     }
 }
 
@@ -378,13 +378,13 @@ export default {
 
     &.running,
     &.paused {
-        background-color: white !important;
-        border: 1px solid #d1d5db;
+        background-color: var(--bg-raised) !important;
+        border: 1px solid var(--border);
         color: inherit;
 
         .dark & {
             background-color: transparent !important;
-            border-color: #6b7280;
+            border-color: var(--border-strong);
             color: $dark-font-color;
         }
 

@@ -433,8 +433,10 @@ app.use(function (req, res, next) {
             socket.userID = session.user.id;
             socket.session = session;
             socket.headers = createHeaders(socket.request.headers.cookie);
-            socket.emit("session", session.user.username);
-            log.debug("auth", `Session active:`, session.session.ipAddress, session.user.username);
+            // Aegis users have no local username, show their name
+            const displayName = session.user.username || session.user.name;
+            socket.emit("session", displayName);
+            log.debug("auth", `Session active:`, session.session.ipAddress, displayName);
         }
 
         // ***************************

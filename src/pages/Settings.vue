@@ -267,9 +267,10 @@ footer {
     }
 
     .menu-item {
-        border-radius: 10px;
-        margin: 0.5em;
-        padding: 0.7em 1em;
+        border-radius: var(--radius-md);
+        margin: 2px 0.5em;
+        padding: 6px var(--space-3);
+        color: var(--text-muted);
         cursor: pointer;
         border-left-width: 0;
         transition: all ease-in-out 0.1s;
@@ -284,10 +285,9 @@ footer {
     }
 
     .active .menu-item {
-        background: $highlight-white;
-        border-left: 4px solid $primary;
-        border-top-left-radius: 0;
-        border-bottom-left-radius: 0;
+        background: var(--bg-selected);
+        font-weight: 500;
+        box-shadow: inset var(--stroke-strong) 0 0 var(--accent);
 
         .dark & {
             background: $dark-header-bg;
@@ -298,17 +298,13 @@ footer {
 .settings-content {
     .settings-content-header {
         width: calc(100% + 20px);
-        border-bottom: 1px solid #dee2e6;
-        border-radius: 0 10px 0 0;
+        border-bottom: 1px solid var(--border);
+        border-radius: 0;
         margin-top: -20px;
         margin-right: -20px;
         padding: 12.5px 1em;
-        font-size: 26px;
-
-        .dark & {
-            background: $dark-header-bg;
-            border-bottom: 0;
-        }
+        font: 600 24px/30px var(--font-sans);
+        letter-spacing: -0.02em;
 
         .mobile & {
             padding: 15px 0 0 0;

@@ -121,7 +121,7 @@ export default {
     align-items: center;
     gap: 10px;
     text-decoration: none;
-    border-radius: 10px;
+    border-radius: var(--radius-lg);
     transition: all ease-in-out 0.15s;
     padding: 10px;
 
@@ -151,7 +151,7 @@ export default {
         flex: 1 1 auto;
 
         .title {
-            font-weight: bold;
+            font-weight: 600;
             font-size: 20px;
         }
 

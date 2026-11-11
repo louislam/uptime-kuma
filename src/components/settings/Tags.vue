@@ -174,7 +174,7 @@ export default {
 
 .tags-list .tags-list-row {
     cursor: pointer;
-    border-top: 1px solid rgba(0, 0, 0, 0.125);
+    border-top: 1px solid var(--border);
 
     .dark & {
         border-top: 1px solid $dark-border-color;

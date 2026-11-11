@@ -1,23 +1,25 @@
-$primary: #5cdd8b;
-$danger: #dc3545;
-$warning: #f8a306;
-$maintenance: #1747f5;
-$link-color: #111;
-$border-radius: 50rem;
-$secondary-text: #aaa;
+// Variables for component styles. They resolve to KyroNET tokens (kyronet/tokens.css), so every component
+// follows the active theme. Sass color functions do not work on them; Bootstrap compiles with bootstrap-vars.scss.
+$primary: var(--success);
+$danger: var(--danger);
+$warning: var(--warning);
+$maintenance: var(--info);
+$link-color: var(--text);
+$border-radius: var(--radius-md);
+$secondary-text: var(--text-subtle);
 
-$highlight: #7ce8a4;
-$highlight-white: #e7faec;
+$highlight: var(--bg-selected);
+$highlight-white: var(--bg-hover);
 
-$dark-font-color: #b1b8c0;
-$dark-font-color2: #020b05;
-$dark-bg: #0d1117;
-$dark-bg2: #070a10;
-$dark-border-color: #1d2634;
-$dark-header-bg: #161b22;
+$dark-font-color: var(--text);
+$dark-font-color2: var(--bg);
+$dark-bg: var(--bg-raised);
+$dark-bg2: var(--bg-hover);
+$dark-border-color: var(--border);
+$dark-header-bg: var(--bg-raised);
 
-$easing-in: cubic-bezier(0.54, 0.78, 0.55, 0.97);
-$easing-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
-$easing-in-out: cubic-bezier(0.79, 0.14, 0.15, 0.86);
+$easing-in: cubic-bezier(0.2, 0, 0, 1);
+$easing-out: cubic-bezier(0.2, 0, 0, 1);
+$easing-in-out: cubic-bezier(0.2, 0, 0, 1);
 
-$dropdown-border-radius: 0.5rem;
+$dropdown-border-radius: var(--radius-md);

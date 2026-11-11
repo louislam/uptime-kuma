@@ -140,7 +140,7 @@ export default {
                             padding: 3,
                         },
                         grid: {
-                            color: this.$root.theme === "light" ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.1)",
+                            color: this.token("--border"),
                             offset: false,
                         },
                     },
@@ -151,7 +151,7 @@ export default {
                         },
                         offset: false,
                         grid: {
-                            color: this.$root.theme === "light" ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.1)",
+                            color: this.token("--border"),
                         },
                     },
                     y1: {
@@ -171,9 +171,12 @@ export default {
                         mode: "nearest",
                         intersect: false,
                         padding: 10,
-                        backgroundColor: this.$root.theme === "light" ? "rgba(212,232,222,1.0)" : "rgba(32,42,38,1.0)",
-                        bodyColor: this.$root.theme === "light" ? "rgba(12,12,18,1.0)" : "rgba(220,220,220,1.0)",
-                        titleColor: this.$root.theme === "light" ? "rgba(12,12,18,1.0)" : "rgba(220,220,220,1.0)",
+                        backgroundColor: this.token("--bg-raised"),
+                        borderColor: this.token("--border-strong"),
+                        borderWidth: 1,
+                        cornerRadius: 4,
+                        bodyColor: this.token("--text"),
+                        titleColor: this.token("--text"),
                         // No longer rely solely on datasetIndex === 0; we want to hide tooltips only for the bars
                         filter: function (tooltipItem) {
                             const ds = tooltipItem?.chart?.data?.datasets?.[tooltipItem.datasetIndex];
@@ -203,7 +206,7 @@ export default {
                             }
                         },
                         labels: {
-                            color: this.$root.theme === "light" ? "rgba(12,12,18,1.0)" : "rgba(220,220,220,1.0)",
+                            color: this.token("--text"),
                             // Filter to display only the lines in the legend
                             filter: function (legendItem, data) {
                                 const ds = data.datasets[legendItem.datasetIndex];
@@ -287,20 +290,32 @@ export default {
         }
     },
     methods: {
+        /**
+         * Read a KyroNET color token for the canvas, which cannot use CSS variables
+         * @param {string} name Token name, for example "--text-muted"
+         * @param {string} alpha Optional two digit hex alpha
+         * @returns {string} Hex color
+         */
+        token(name, alpha = "") {
+            // Depend on the theme so the chart is redrawn when it changes
+            void this.$root.theme;
+            return getComputedStyle(document.documentElement).getPropertyValue(name).trim() + alpha;
+        },
+
         // Get color of bar chart for this datapoint
         getBarColorForDatapoint(datapoint) {
             if (datapoint.maintenance != null) {
                 // Target is in maintenance
-                return "rgba(23,71,245,0.41)";
+                return this.token("--info", "66");
             } else if (datapoint.down === 0) {
                 // Target is up, no need to display a bar
                 return "#000";
             } else if (datapoint.up === 0) {
                 // Target is down
-                return "rgba(220, 53, 69, 0.41)";
+                return this.token("--danger", "66");
             } else {
                 // Show yellow for mixed status
-                return "rgba(245, 182, 23, 0.41)";
+                return this.token("--warning", "66");
             }
         },
         // push datapoint to chartData
@@ -417,8 +432,8 @@ export default {
                         data: pingData,
                         fill: "origin",
                         tension: 0.2,
-                        borderColor: "#4ABF74",
-                        backgroundColor: "#4ABF7438",
+                        borderColor: this.token("--text-muted"),
+                        backgroundColor: this.token("--text-muted", "24"),
                         yAxisID: "y",
                         label: this.$t("avgPing"),
                     },
@@ -547,8 +562,8 @@ export default {
                         data: minPingData,
                         fill: "origin",
                         tension: 0.2,
-                        borderColor: "#126331",
-                        backgroundColor: "#2F9C5914",
+                        borderColor: this.token("--text-muted"),
+                        backgroundColor: this.token("--text-muted", "14"),
                         yAxisID: "y",
                         label: this.$t("minPing"),
                     },
@@ -557,8 +572,8 @@ export default {
                         data: avgPingData,
                         fill: "origin",
                         tension: 0.2,
-                        borderColor: "#5CDD8B",
-                        backgroundColor: "#5CDD8B06",
+                        borderColor: this.token("--text-subtle"),
+                        backgroundColor: this.token("--text-subtle", "06"),
                         yAxisID: "y",
                         label: this.$t("avgPing"),
                     },
@@ -567,8 +582,8 @@ export default {
                         data: maxPingData,
                         fill: "origin",
                         tension: 0.2,
-                        borderColor: "#21b55a",
-                        backgroundColor: "#1E7A4214",
+                        borderColor: this.token("--border-strong"),
+                        backgroundColor: this.token("--border-strong", "14"),
                         yAxisID: "y",
                         label: this.$t("maxPing"),
                     },
@@ -617,7 +632,7 @@ export default {
         }
 
         .dropdown-item {
-            border-radius: 0.3rem;
+            border-radius: var(--radius-md);
             padding: 2px 16px 4px;
 
             .dark & {
@@ -626,14 +641,14 @@ export default {
             }
 
             .dark &:hover {
-                background: $dark-font-color;
-                color: $dark-font-color2;
+                background: var(--bg-hover);
+                color: var(--text);
             }
         }
 
         .dark & .dropdown-item.active {
-            background: $primary;
-            color: $dark-font-color2;
+            background: var(--bg-selected);
+            color: var(--text);
         }
     }
 

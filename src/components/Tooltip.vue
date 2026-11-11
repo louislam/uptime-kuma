@@ -121,12 +121,12 @@ export default {
     transform: translateX(-50%);
 
     .tooltip-content {
-        background: rgba(17, 24, 39, 0.95);
-        backdrop-filter: blur(8px);
-        border: 1px solid rgba(75, 85, 99, 0.3);
-        border-radius: 8px;
+        background: var(--bg-raised);
+        backdrop-filter: none;
+        border: var(--stroke) solid var(--border-strong);
+        border-radius: var(--radius-md);
         padding: 8px 12px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+        box-shadow: none;
         min-width: 120px;
         text-align: center;
         position: relative;
@@ -138,16 +138,15 @@ export default {
             transform: translateX(-50%);
             width: 14px;
             height: 2px;
-            background: rgba(17, 24, 39, 0.95);
+            background: var(--bg-raised);
             top: -1px;
         }
 
         .tooltip-status {
-            font-size: 16px;
-            font-weight: 600;
+            font: 500 11px/16px var(--font-mono);
             margin-bottom: 4px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.08em;
 
             &.status-up {
                 color: $primary;
@@ -171,17 +170,17 @@ export default {
         }
 
         .tooltip-time {
-            color: #d1d5db;
-            font-size: 13px;
+            color: var(--text-muted);
+            font: 400 13px/18px var(--font-mono);
             margin-bottom: 2px;
         }
 
         .tooltip-message {
-            color: #f3f4f6;
+            color: var(--text);
             font-size: 12px;
             margin-top: 4px;
             padding-top: 4px;
-            border-top: 1px solid rgba(75, 85, 99, 0.3);
+            border-top: var(--stroke) solid var(--border);
         }
     }
 
@@ -202,8 +201,8 @@ export default {
             transform: translateX(-50%) translateY(-50%) rotate(45deg);
             width: 8px;
             height: 8px;
-            background: rgba(17, 24, 39, 0.95);
-            border: 1px solid rgba(75, 85, 99, 0.3);
+            background: var(--bg-raised);
+            border: var(--stroke) solid var(--border-strong);
             border-bottom: none;
             border-right: none;
         }
@@ -215,7 +214,7 @@ export default {
             &::before {
                 top: 0%;
                 transform: translateX(-50%) translateY(-50%) rotate(225deg);
-                border: 1px solid rgba(75, 85, 99, 0.3);
+                border: var(--stroke) solid var(--border-strong);
                 border-bottom: none;
                 border-right: none;
             }
@@ -231,25 +230,6 @@ export default {
         .tooltip-content::before {
             top: auto;
             bottom: -1px;
-        }
-    }
-}
-
-// Dark theme adjustments
-.dark .tooltip-wrapper {
-    .tooltip-content {
-        background: rgba(31, 41, 55, 0.95);
-        border-color: rgba(107, 114, 128, 0.3);
-
-        &::before {
-            background: rgba(31, 41, 55, 0.95);
-        }
-    }
-
-    .tooltip-arrow {
-        &::before {
-            background: rgba(31, 41, 55, 0.95);
-            border-color: rgba(107, 114, 128, 0.3);
         }
     }
 }

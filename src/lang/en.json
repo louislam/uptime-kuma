@@ -1650,5 +1650,14 @@
     "msGraphClientSecretLink": "create a client secret",
     "OpsiMate URL": "OpsiMate URL",
     "opsimateUrlDescription": "The base URL of the OpsiMate API (the server port, not the web UI).",
-    "opsimateApiTokenDescription": "The value of the API_TOKEN setting of your OpsiMate server (default: opsimate)."
+    "opsimateApiTokenDescription": "The value of the API_TOKEN setting of your OpsiMate server (default: opsimate).",
+    "Sign in": "Sign in",
+    "Signing in": "Signing in",
+    "Continue with Aegis": "Continue with Aegis",
+    "Host": "Host",
+    "signInDescription": "Uptime monitoring for KyroNET services. Sign in to manage monitors, status pages and notifications.",
+    "aegisAccessRequired": "Access requires a KyroNET account.",
+    "aegisNoAccount": "No account? Ask an accounts administrator.",
+    "aegisAccessDenied": "Sign-in was refused. This account does not have access to this tool.",
+    "aegisSignInFailed": "Sign-in failed ({0}). Try again."
 }

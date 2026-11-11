@@ -353,12 +353,12 @@ export default {
 }
 
 .btn-link {
-    color: #bbbbbb;
+    color: var(--text-subtle);
     margin-left: 5px;
 }
 
 .link-active {
-    color: $primary;
+    color: var(--accent-text);
 }
 
 .flip-list-move {
@@ -370,7 +370,7 @@ export default {
 }
 
 .drag {
-    color: #bbb;
+    color: var(--text-subtle);
     cursor: grab;
 }
 
@@ -392,7 +392,7 @@ export default {
 
 .chevron {
     font-size: 0.8em;
-    color: #bbb;
+    color: var(--text-subtle);
     transition: all 0.2s $easing-in;
 
     &.collapsed {

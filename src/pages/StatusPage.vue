@@ -1494,7 +1494,7 @@ export default {
 @import "../assets/vars.scss";
 
 .overall-status {
-    font-weight: bold;
+    font-weight: 600;
     font-size: 25px;
 
     .ok {
@@ -1535,10 +1535,10 @@ h1 {
     width: 300px;
     height: 100vh;
 
-    border-right: 1px solid #ededed;
+    border-right: 1px solid var(--border);
 
     .danger-zone {
-        border-top: 1px solid #ededed;
+        border-top: 1px solid var(--border);
         padding-top: 15px;
     }
 
@@ -1550,15 +1550,15 @@ h1 {
     }
 
     .sidebar-footer {
-        border-top: 1px solid #ededed;
-        border-right: 1px solid #ededed;
+        border-top: 1px solid var(--border);
+        border-right: 1px solid var(--border);
         padding: 10px;
         width: 300px;
         height: 70px;
         position: fixed;
         left: 0;
         bottom: 0;
-        background-color: white;
+        background-color: var(--bg-raised);
         display: flex;
         align-items: center;
     }
@@ -1595,11 +1595,11 @@ footer {
         bottom: 6px;
         font-size: 20px;
         left: -14px;
-        background-color: white;
+        background-color: var(--bg-raised);
         padding: 5px;
-        border-radius: 10px;
+        border-radius: var(--radius-lg);
         cursor: pointer;
-        box-shadow: 0 15px 70px rgba(0, 0, 0, 0.9);
+        box-shadow: none;
     }
 
     /* Reset button placed at top-left of the logo */
@@ -1618,14 +1618,14 @@ footer {
         border-radius: 50%;
         background: white;
         border: none;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+        box-shadow: none;
         cursor: pointer;
         transform-origin: center;
 
         &:hover {
             background-color: rgba(0, 0, 0, 0.06);
             transform: scale(1.18);
-            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+            box-shadow: none;
         }
 
         &:hover ~ .icon-upload {
@@ -1653,7 +1653,7 @@ footer {
         &:hover {
             background-color: rgba(0, 0, 0, 0.04);
             transform: scale(1.18);
-            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+            box-shadow: none;
         }
     }
 }
@@ -1749,7 +1749,7 @@ footer {
 
 .bg-maintenance {
     .alert-heading {
-        font-weight: bold;
+        font-weight: 600;
     }
 }
 

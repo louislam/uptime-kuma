@@ -44,6 +44,23 @@ export async function login(username: string, password: string, remember: boolea
 }
 
 /**
+ * Start the Aegis authorization code flow (PKCE). The server answers with the authorization URL
+ * and the client follows it, so this only returns when the redirect could not be started.
+ */
+export async function loginWithAegis() {
+    const returnURL = location.origin + "/dashboard";
+    const { error } = await authClient.signIn.social({
+        provider: "aegis",
+        callbackURL: returnURL,
+        errorCallbackURL: returnURL,
+    });
+
+    if (error) {
+        throw new Error(error.message || "Sign-in could not be started. Try again.");
+    }
+}
+
+/**
  * @param token Token
  */
 export async function verifyTotp(token: string) {
@@ -59,6 +76,8 @@ export async function verifyTotp(token: string) {
 }
 
 /**
+ * Sign out. For an Aegis session the server returns the Aegis end-session URL
+ * and the client follows it, so the Aegis session ends as well.
  * @param onSuccess
  */
 export async function logout(onSuccess = () => {}) {

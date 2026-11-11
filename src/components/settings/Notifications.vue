@@ -291,7 +291,7 @@ export default {
 }
 
 .cert-exp-days .cert-exp-day-row {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+    border-bottom: 1px solid var(--border);
 
     .dark & {
         border-bottom: 1px solid $dark-border-color;

@@ -66,8 +66,8 @@ export default {
 @import "../assets/vars.scss";
 
 .go-back {
-    text-decoration: none;
-    color: $primary !important;
+    color: var(--accent-text) !important;
+    text-decoration: underline !important;
 }
 
 .content {
@@ -90,7 +90,7 @@ export default {
 }
 
 .title {
-    font-weight: bold;
+    font-weight: 600;
 }
 
 .dark {
@@ -99,7 +99,7 @@ export default {
         border-bottom-color: $dark-header-bg !important;
 
         span {
-            color: #f0f6fc;
+            color: var(--text);
         }
     }
 

@@ -109,7 +109,7 @@ export default {
         .incident-item {
             display: flex;
             padding: 13px 15px 10px 15px;
-            border-radius: 10px;
+            border-radius: var(--radius-lg);
             transition: all ease-in-out 0.15s;
 
             &:hover {

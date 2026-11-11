@@ -4,6 +4,7 @@ import { auth } from "../better-auth";
 import { Settings } from "../settings";
 import { R } from "redbean-node";
 import { log } from "../../src/util";
+import { AEGIS_PROVIDER_ID, isAegisEnabled } from "../aegis";
 
 // @ts-ignore
 import { allowDevOrigin, generalErrorResponse, shouldSecureCookies, secureResponseCookies } from "../util";
@@ -21,6 +22,16 @@ const expiredMsg = "Setup has expired. Please restart the server to try again.";
  */
 export async function createBetterAuthRouter() {
     const betterAuthRouter = express.Router();
+
+    // The redirect URI registered on Aegis has no provider id, better-auth expects one in the path
+    betterAuthRouter.get("/api/auth/callback", (req, _res, next) => {
+        if (isAegisEnabled()) {
+            const query = req.url.includes("?") ? req.url.slice(req.url.indexOf("?")) : "";
+            req.url = `/api/auth/callback/${AEGIS_PROVIDER_ID}${query}`;
+        }
+        next();
+    });
+
     betterAuthRouter.all("/api/auth/*", async (req, res) => {
         allowDevOrigin(req, res);
 
@@ -160,6 +171,11 @@ export async function needSetup() {
     }
 
     if (expired) {
+        return false;
+    }
+
+    // The first Aegis sign-in creates the first user, there is no local admin to set up
+    if (isAegisEnabled()) {
         return false;
     }
 
