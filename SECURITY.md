@@ -2,12 +2,11 @@
 
 > [!CAUTION]
 > Unfortunately, I DO NOT check Security Advisories anymore. Thanks to AI slop reports, they keep running over my GitHub Security Advisories.
-> 
 
 ## Reporting a Vulnerability
 
 1. Create a new security advisory in https://github.com/louislam/uptime-kuma/security/advisories/new.
-2. Talk to me as a human in https://github.com/louislam/uptime-kuma/issues, explain the type of security issue but don't reveal the details. LLM description will be banned and closed immediately.  
+2. Talk to me as a human in https://github.com/louislam/uptime-kuma/issues, explain the type of security issue but don't reveal the details. LLM description will be banned and closed immediately.
 
 PS: Do not use the public issue tracker or discuss it in public as it will cause more damage.
 
@@ -34,16 +33,16 @@ All versions are upgradable to the latest version.
 
 ### Upgradable Docker Tags
 
-| Tag             | Supported                                                                             |
-| --------------- | ------------------------------------------------------------------------------------- |
-| 2               | :white_check_mark:                                                                    |
-| 2-slim          | :white_check_mark:                                                                    |
-| next            | :white_check_mark:                                                                    |
-| next-slim       | :white_check_mark:                                                                    |
-| 2-rootless      | :white_check_mark:                                                                    |
-| 2-slim-rootless | :white_check_mark:                                                                    |
-| 1               | ❌                                                                                    |
-| 1-debian        | ❌                                                                                    |
-| latest          | ❌                                                                                    |
-| debian          | ❌                                                                                    |
-| All other tags  | ❌                                                                                    |
+| Tag             | Supported          |
+| --------------- | ------------------ |
+| 2               | :white_check_mark: |
+| 2-slim          | :white_check_mark: |
+| next            | :white_check_mark: |
+| next-slim       | :white_check_mark: |
+| 2-rootless      | :white_check_mark: |
+| 2-slim-rootless | :white_check_mark: |
+| 1               | ❌                 |
+| 1-debian        | ❌                 |
+| latest          | ❌                 |
+| debian          | ❌                 |
+| All other tags  | ❌                 |
