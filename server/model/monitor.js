@@ -789,7 +789,7 @@ class Monitor extends BeanModel {
                             bean.duration = Math.round(msSinceLastBeat / 1000);
                             throw new Error("No heartbeat in the time window");
                         } else {
-                            let timeout = beatInterval * 1000; 
+                            let timeout = beatInterval * 1000;
                             // No need to insert successful heartbeat for push type, so end here
                             retries = 0;
                             log.debug("monitor", `[${this.name}] timeout = ${timeout}`);
@@ -798,7 +798,10 @@ class Monitor extends BeanModel {
                             if (!this.isStop) {
                                 log.debug("monitor", `[${this.name}] SetTimeout for next check.`);
 
-                                let intervalRemainingMs = Math.max(1, beatInterval * 1000 - dayjs().diff(dayjs.utc(bean.time)));
+                                let intervalRemainingMs = Math.max(
+                                    1,
+                                    beatInterval * 1000 - dayjs().diff(dayjs.utc(bean.time))
+                                );
 
                                 log.debug("monitor", `[${this.name}] Next heartbeat in: ${intervalRemainingMs}ms`);
 
@@ -807,7 +810,7 @@ class Monitor extends BeanModel {
                                 log.info("monitor", `[${this.name}] isStop = true, no next check.`);
                             }
                             return;
-                        } 
+                        }
                     } else {
                         bean.duration = beatInterval;
                         throw new Error("No heartbeat in the time window");

@@ -405,7 +405,6 @@ router.all("/api/push/:pushToken", async (request, response) => {
         bean.downCount = previousHeartbeat?.downCount || 0;
 
         if (previousHeartbeat) {
-
             isFirstBeat = false;
             bean.duration = dayjs(bean.time).diff(dayjs(previousHeartbeat.time), "second");
         }
@@ -428,14 +427,16 @@ router.all("/api/push/:pushToken", async (request, response) => {
             const nextHeartbeatTime = server.monitorList[monitor.id]?.nextHeartbeatTime;
             const nextHeartbeatMillis = dayjs(nextHeartbeatTime).valueOf();
             const intervalStartMillis = nextHeartbeatMillis - monitor.interval * 1000;
-            if (nextHeartbeatTime && dayjs(bean.time).valueOf() < nextHeartbeatMillis &&
-                dayjs(previousHeartbeat.time).valueOf() >= intervalStartMillis) {
-
+            if (
+                nextHeartbeatTime &&
+                dayjs(bean.time).valueOf() < nextHeartbeatMillis &&
+                dayjs(previousHeartbeat.time).valueOf() >= intervalStartMillis
+            ) {
                 log.debug("router", `/api/push/ called at ${dayjs().format("YYYY-MM-DD HH:mm:ss.SSS")}`);
                 log.debug("router", "Was disregarded, becuase it sent in same Window");
                 response.json({
                     ok: true,
-                    msg: "ping was not saved"
+                    msg: "ping was not saved",
                 });
                 return;
             }
