@@ -644,8 +644,6 @@ class UptimeCalculator {
             }
         }
 
-        let uptimeData = new UptimeDataResult();
-
         // If there is no data in the previous time ranges, use the last data?
         if (total.up === 0 && total.down === 0) {
             switch (type) {
@@ -654,7 +652,7 @@ class UptimeCalculator {
                         total = this.lastDailyUptimeData;
                         totalPing = total.avgPing * total.up;
                     } else {
-                        return uptimeData;
+                        return new UptimeDataResult();
                     }
                     break;
                 case "hour":
@@ -662,7 +660,7 @@ class UptimeCalculator {
                         total = this.lastHourlyUptimeData;
                         totalPing = total.avgPing * total.up;
                     } else {
-                        return uptimeData;
+                        return new UptimeDataResult();
                     }
                     break;
                 case "minute":
@@ -670,7 +668,7 @@ class UptimeCalculator {
                         total = this.lastUptimeData;
                         totalPing = total.avgPing * total.up;
                     } else {
-                        return uptimeData;
+                        return new UptimeDataResult();
                     }
                     break;
                 default:
@@ -678,21 +676,7 @@ class UptimeCalculator {
             }
         }
 
-        let avgPing;
-
-        if (total.up === 0) {
-            avgPing = null;
-        } else {
-            avgPing = totalPing / total.up;
-        }
-
-        if (total.up + total.down === 0) {
-            uptimeData.uptime = 0;
-        } else {
-            uptimeData.uptime = total.up / (total.up + total.down);
-        }
-        uptimeData.avgPing = avgPing;
-        return uptimeData;
+        return UptimeDataResult.fromTotals(total.up, total.down, totalPing);
     }
 
     /**
@@ -891,6 +875,20 @@ class UptimeDataResult {
      * @type {number} Average ping
      */
     avgPing = null;
+
+    /**
+     * Build a result from raw up/down/ping sums
+     * @param {number} up Up count
+     * @param {number} down Down count
+     * @param {number} pingSum Sum of ping * up, defaults to 0
+     * @returns {UptimeDataResult} Result
+     */
+    static fromTotals(up, down, pingSum = 0) {
+        const result = new UptimeDataResult();
+        result.uptime = up + down === 0 ? 0 : up / (up + down);
+        result.avgPing = up === 0 ? null : pingSum / up;
+        return result;
+    }
 }
 
 module.exports = {

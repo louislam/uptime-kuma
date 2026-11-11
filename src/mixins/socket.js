@@ -249,6 +249,14 @@ export default {
             });
 
             socket.on("heartbeat", (data) => {
+                if (data.stats) {
+                    this.avgPingList[data.monitorID] = data.stats.avgPing;
+                    this.uptimeList[`${data.monitorID}_24`] = data.stats.uptime24;
+                    this.uptimeList[`${data.monitorID}_720`] = data.stats.uptime720;
+                    this.uptimeList[`${data.monitorID}_1y`] = data.stats.uptime1y;
+                    delete data.stats;
+                }
+
                 if (!(data.monitorID in this.heartbeatList)) {
                     this.heartbeatList[data.monitorID] = [];
                 }
