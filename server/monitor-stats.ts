@@ -111,11 +111,7 @@ export class MonitorStats {
      * @returns Uptime and average ping
      */
     private static toUptime(sum?: StatSumRow): UptimeDataResult {
-        return UptimeDataResult.fromTotals(
-            Number(sum?.up) || 0,
-            Number(sum?.down) || 0,
-            Number(sum?.ping_sum) || 0
-        );
+        return UptimeDataResult.fromTotals(Number(sum?.up) || 0, Number(sum?.down) || 0, Number(sum?.ping_sum) || 0);
     }
 
     /**
@@ -281,11 +277,7 @@ export class MonitorStats {
             window.daily365.down++;
         }
 
-        const data24 = UptimeDataResult.fromTotals(
-            window.minutely.up,
-            window.minutely.down,
-            window.minutely.pingSum
-        );
+        const data24 = UptimeDataResult.fromTotals(window.minutely.up, window.minutely.down, window.minutely.pingSum);
         cached.uptime24 = data24.uptime;
         cached.avgPing = data24.avgPing === null ? null : Number(data24.avgPing.toFixed(2));
         cached.uptime720 = UptimeDataResult.fromTotals(window.daily30.up, window.daily30.down).uptime;

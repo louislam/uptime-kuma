@@ -261,7 +261,8 @@ describe("MonitorStats.recordBeat()", () => {
     test("drops the day buckets that left the 30d and 1y windows", async () => {
         seed({ daily30: { up: 30, down: 4, pingSum: 0 }, daily365: { up: 365, down: 9, pingSum: 0 } });
         let calls = 0;
-        stats.sumExpired = async () => (++calls === 1 ? { up: 0, down: 2, pingSum: 0 } : { up: 0, down: 6, pingSum: 0 });
+        stats.sumExpired = async () =>
+            ++calls === 1 ? { up: 0, down: 2, pingSum: 0 } : { up: 0, down: 6, pingSum: 0 };
 
         await stats.recordBeat(1, UP, 30, at(86400));
 
