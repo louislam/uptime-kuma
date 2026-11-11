@@ -480,6 +480,7 @@ class Monitor extends BeanModel {
         let retries = 0;
         this.nextHeartbeatTime = null;
 
+        // save the time of the next Heartbeat everytime it is scheduled
         const scheduleHeartbeat = (callback, delayMs) => {
             this.nextHeartbeatTime = R.isoDateTimeMillis(dayjs.utc().add(delayMs, "millisecond"));
             this.heartbeatInterval = setTimeout(callback, delayMs);
