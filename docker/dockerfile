@@ -36,6 +36,12 @@ RUN mkdir ./data
 FROM $BASE_IMAGE AS release
 WORKDIR /app
 
+# The base image is rebuilt only when docker/debian-base.dockerfile changes.
+# Pick up Debian security updates published since then on every release build.
+RUN apt-get update \
+    && apt-get --yes upgrade \
+    && rm -rf /var/lib/apt/lists/*
+
 LABEL org.opencontainers.image.source="https://github.com/louislam/uptime-kuma"
 
 ENV UPTIME_KUMA_IS_CONTAINER=1
