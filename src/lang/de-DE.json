@@ -1616,5 +1616,8 @@
     "maxApiUrlDescription": "Basis-API-URL für MAX Messenger. Standard: https://platform-api.max.ru",
     "Client Key": "Client Key",
     "wayToGetMaxToken": "Sie können einen MAX-Bot-Token und weitere Details von {0} erhalten.",
-    "Indigo URL": "Indigo URL"
+    "Indigo URL": "Indigo URL",
+    "refreshRate": "Intervall zur Neuberechnung der Uptime-Statistiken",
+    "statsRefreshDesc": "Der Server berechnet die Uptime-Statistiken in diesem Intervall (in Minuten) neu. Damit diese Einstellung wirksam wird, muss der Server neu gestartet werden."
+ 
 }
