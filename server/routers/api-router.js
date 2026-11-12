@@ -423,6 +423,25 @@ router.all("/api/push/:pushToken", async (request, response) => {
                 isExplicitDown
             );
         }
+        // If the status doesn't change through this dont save if too young
+        if (previousHeartbeat && bean.status === previousHeartbeat.status) {
+            const nextHeartbeatTime = server.monitorList[monitor.id]?.nextHeartbeatTime;
+            const nextHeartbeatMillis = dayjs(nextHeartbeatTime).valueOf();
+            const intervalStartMillis = nextHeartbeatMillis - monitor.interval * 1000;
+            if (
+                nextHeartbeatTime &&
+                dayjs(bean.time).valueOf() < nextHeartbeatMillis &&
+                dayjs(previousHeartbeat.time).valueOf() >= intervalStartMillis
+            ) {
+                log.debug("router", `/api/push/ called at ${dayjs().format("YYYY-MM-DD HH:mm:ss.SSS")}`);
+                log.debug("router", "Was disregarded, becuase it sent in same Window");
+                response.json({
+                    ok: true,
+                    msg: "ping was not saved",
+                });
+                return;
+            }
+        }
 
         // Calculate uptime
         let uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitor.id);
