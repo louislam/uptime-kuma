@@ -125,6 +125,20 @@
                             <br />
 
                             <div class="form-check form-switch">
+                                <input
+                                    v-model="notification.retryTransportErrors"
+                                    class="form-check-input"
+                                    type="checkbox"
+                                />
+                                <label class="form-check-label">{{ $t("Retry on connection errors") }}</label>
+                            </div>
+                            <div class="form-text">
+                                {{ $t("retryNotificationDescription") }}
+                            </div>
+
+                            <br />
+
+                            <div class="form-check form-switch">
                                 <input v-model="notification.applyExisting" class="form-check-input" type="checkbox" />
                                 <label class="form-check-label">{{ $t("Apply on all existing monitors") }}</label>
                             </div>
