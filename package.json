@@ -107,7 +107,7 @@
         "is-url": "~1.2.4",
         "isomorphic-ws": "~5.0.0",
         "jsesc": "~3.0.2",
-        "jsonata": "~2.2.2",
+        "jsonata": "2.2.0",
         "jsonwebtoken": "~9.0.3",
         "jwt-decode": "~3.1.2",
         "kafkajs": "~2.2.4",
