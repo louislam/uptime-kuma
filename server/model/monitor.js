@@ -38,19 +38,21 @@ const {
     axiosAbortSignal,
     encodeBase64,
     checkCertExpiryNotifications,
-} = require("../util-server");
+} = require("../util");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification");
+const { Proxy } = require("../proxy");
 const { demoMode } = require("../config");
 const version = require("../../package.json").version;
-const apicache = require("../modules/apicache");
+const apicache = require("../utils/response-cache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { DockerHost } = require("../docker");
 const crypto = require("crypto");
 const { UptimeCalculator } = require("../uptime-calculator");
+const { CookieJar } = require("tough-cookie");
+const { HttpsCookieAgent } = require("http-cookie-agent/http");
 const { MonitorStats } = require("../monitor-stats");
-const { attachKeylogListener, getMonitorAgents } = require("../monitor-agents");
 const { readTlsInfo } = require("../monitor-tls");
 const { emitHeartbeat, socketRoom } = require("../heartbeat-emit");
 const { updatePrometheusStats } = require("../prometheus-monitor");
@@ -64,6 +66,7 @@ const zlib = require("node:zlib");
 const { promisify } = require("node:util");
 const brotliCompress = promisify(zlib.brotliCompress);
 const DomainExpiry = require("./domain_expiry");
+const { monitorConfigSchema } = require("../types");
 
 const rootCertificates = rootCertificatesFingerprints();
 
@@ -187,7 +190,6 @@ class Monitor extends BeanModel {
             httpBodyEncoding: this.httpBodyEncoding,
             jsonPath: this.jsonPath,
             expectedValue: this.expectedValue,
-            system_service_name: this.system_service_name,
             kafkaProducerTopic: this.kafkaProducerTopic,
             kafkaProducerBrokers: JSON.parse(this.kafkaProducerBrokers),
             kafkaProducerSsl: this.getKafkaProducerSsl(),
@@ -220,6 +222,9 @@ class Monitor extends BeanModel {
             saveResponse: this.getSaveResponse(),
             saveErrorResponse: this.getSaveErrorResponse(),
             responseMaxLength: this.response_max_length ?? RESPONSE_BODY_LENGTH_DEFAULT,
+
+            // Extensible per monitor type settings
+            config: this.getConfig(),
         };
 
         if (includeSensitiveData) {
@@ -415,12 +420,64 @@ class Monitor extends BeanModel {
     }
 
     /**
+     * Get the full config
+     * @returns {object} Parsed config, empty object if null or invalid
+     */
+    getConfig() {
+        if (typeof this.config === "object" && this.config !== null) {
+            return this.config;
+        }
+
+        if (!this.config) {
+            return {};
+        }
+
+        try {
+            return JSON.parse(this.config);
+        } catch (e) {
+            log.warn("monitor", `Invalid config JSON for monitor ${this.id}, ignored: ${e.message}`);
+            return {};
+        }
+    }
+
+    /**
+     * Set the full config object
+     * @param {object} config The config object to store
+     * @returns {void}
+     */
+    setConfig(config) {
+        this.config = JSON.stringify(config);
+    }
+
+    /**
+     * Get one config value
+     * @param {string} key The config key to retrieve
+     * @param {*} defaultValue Default value if the key does not exist
+     * @returns {*} The config value or defaultValue
+     */
+    getConfigValue(key, defaultValue = undefined) {
+        const config = this.getConfig();
+        return key in config ? config[key] : defaultValue;
+    }
+
+    /**
+     * Set one config value
+     * @param {string} key The config key to set
+     * @param {*} value The value to store
+     * @returns {void}
+     */
+    setConfigValue(key, value) {
+        const config = this.getConfig();
+        config[key] = value;
+        this.setConfig(config);
+    }
+
+    /**
      * Start monitor
      * @param {Server} io Socket server instance
-     * @param {number} firstBeatDelayMs Delay the first check (used to spread startup)
      * @returns {Promise<void>}
      */
-    async start(io, firstBeatDelayMs = 0) {
+    async start(io) {
         let previousBeat = null;
         let retries = 0;
 
@@ -451,7 +508,7 @@ class Monitor extends BeanModel {
             let tlsInfo = undefined;
 
             if (!previousBeat || this.type === "push") {
-                previousBeat = await R.findOne("heartbeat", " monitor_id = ? ORDER BY time DESC", [this.id]);
+                previousBeat = await R.findOne("heartbeat", " monitor_id = ? ORDER BY id DESC", [this.id]);
                 if (previousBeat) {
                     retries = previousBeat.retries;
                 }
@@ -472,7 +529,7 @@ class Monitor extends BeanModel {
             // Runtime patch timeout if it is 0
             // See https://github.com/louislam/uptime-kuma/pull/3961#issuecomment-1804149144
             if (!this.timeout || this.timeout <= 0) {
-                this.timeout = this.interval * 1000 * 0.8;
+                this.timeout = this.interval * 0.8;
             }
 
             try {
@@ -595,19 +652,33 @@ class Monitor extends BeanModel {
                         };
                     }
 
-                    // Reuse keep-alive agents per monitor: creating a new agent and socket for
-                    // every check exhausts local ports and buffers with thousands of monitors
-                    const agents = await getMonitorAgents(this, {
-                        httpAgentOptions,
-                        httpsAgentOptions,
-                    });
+                    if (this.proxy_id) {
+                        const proxy = await R.load("proxy", this.proxy_id);
 
-                    if (agents.proxied) {
-                        options.proxy = false;
+                        if (proxy && proxy.active) {
+                            const { httpAgent, httpsAgent } = Proxy.createAgents(proxy, {
+                                httpsAgentOptions: httpsAgentOptions,
+                                httpAgentOptions: httpAgentOptions,
+                            });
+
+                            options.proxy = false;
+                            options.httpAgent = httpAgent;
+                            options.httpsAgent = httpsAgent;
+                        }
                     }
 
-                    options.httpAgent = agents.httpAgent;
-                    options.httpsAgent = agents.httpsAgent;
+                    if (!options.httpAgent) {
+                        options.httpAgent = new http.Agent(httpAgentOptions);
+                    }
+
+                    if (!options.httpsAgent) {
+                        let jar = new CookieJar();
+                        let httpsCookieAgentOptions = {
+                            ...httpsAgentOptions,
+                            cookies: { jar },
+                        };
+                        options.httpsAgent = new HttpsCookieAgent(httpsCookieAgentOptions);
+                    }
 
                     if (this.auth_method === "mtls") {
                         if (this.tlsCert !== null && this.tlsCert !== "") {
@@ -622,11 +693,13 @@ class Monitor extends BeanModel {
                     }
 
                     let tlsInfo = {};
-                    // Store tlsInfo when secureConnect event is emitted. The agent is reused,
-                    // so this replaces the listener of the previous beat instead of stacking
-                    attachKeylogListener(agents, options.httpsAgent, async (tlsSocket) => {
-                        tlsInfo = readTlsInfo(tlsSocket, this.getUrl()?.hostname);
-                        await this.handleTlsInfo(tlsInfo);
+                    // Store tlsInfo when secureConnect event is emitted
+                    // The keylog event listener is a workaround to access the tlsSocket
+                    options.httpsAgent.once("keylog", async (line, tlsSocket) => {
+                        tlsSocket.once("secureConnect", async () => {
+                            tlsInfo = readTlsInfo(tlsSocket, this.getUrl()?.hostname);
+                            await this.handleTlsInfo(tlsInfo);
+                        });
                     });
 
                     log.debug("monitor", `[${this.name}] Axios Options: ${JSON.stringify(options)}`);
@@ -1023,9 +1096,21 @@ class Monitor extends BeanModel {
             let endTimeDayjs = await uptimeCalculator.update(bean.status, parseFloat(bean.ping));
             bean.end_time = R.isoDateTimeMillis(endTimeDayjs);
 
+            // Keep the dashboard numbers live instead of waiting for the stats cache
+            let liveStats;
+            try {
+                liveStats = await MonitorStats.recordBeat(this.id, bean.status, parseFloat(bean.ping));
+            } catch (e) {
+                log.warn("monitor", `Failed to update dashboard stats: ${e.message}`);
+            }
+
             // Send to frontend
             log.debug("monitor", `[${this.name}] Send to socket`);
-            emitHeartbeat(io, bean.toJSON());
+            const beatJSON = bean.toJSON();
+            if (liveStats) {
+                beatJSON.stats = liveStats;
+            }
+            emitHeartbeat(io, beatJSON);
             Monitor.sendStats(io, this.id);
 
             // Store to database
@@ -1077,10 +1162,6 @@ class Monitor extends BeanModel {
             this.heartbeatInterval = setTimeout(() => {
                 safeBeat();
             }, this.interval * 1000);
-        } else if (firstBeatDelayMs > 0) {
-            // Spread the first check over the interval instead of checking every
-            // monitor at the same moment when the server starts
-            this.heartbeatInterval = setTimeout(safeBeat, firstBeatDelayMs);
         } else {
             safeBeat();
         }
@@ -1267,6 +1348,28 @@ class Monitor extends BeanModel {
     }
 
     /**
+     * Write the client writable config keys, one key at a time
+     * @param {object} raw Config payload from the client
+     * @returns {void}
+     * @throws {Error} If a known key has the wrong type
+     */
+    applyClientConfig(raw) {
+        if (!raw) {
+            return;
+        }
+
+        const result = monitorConfigSchema.safeParse(raw);
+
+        if (!result.success) {
+            throw new Error(result.error.issues.map((issue) => `${issue.path.join(".")}: ${issue.message}`).join("; "));
+        }
+
+        for (const [key, value] of Object.entries(result.data)) {
+            this.setConfigValue(key, value);
+        }
+    }
+
+    /**
      * Checks if the monitor is active based on itself and its parents
      * @param {number} monitorID ID of monitor to send
      * @param {boolean} active is active
@@ -1279,7 +1382,7 @@ class Monitor extends BeanModel {
     }
 
     /**
-     * Send statistics to the dashboard
+     * Send cert/domain info and refresh the stats cache when it is stale
      * @param {Server} io Socket server instance
      * @param {number} monitorID ID of monitor to send
      * @returns {Promise<void>}
@@ -1288,13 +1391,6 @@ class Monitor extends BeanModel {
         const hasClients = getTotalClientInRoom(io, socketRoom) > 0;
 
         if (hasClients) {
-            // Serve the dashboard numbers from the grouped SQL cache; never initialize a full
-            // UptimeCalculator (thousands of stat rows) just to answer a heartbeat
-            const cached = MonitorStats.get(monitorID);
-            if (cached) {
-                io.to(socketRoom).emit("stats", { [monitorID]: cached });
-            }
-
             const server = UptimeKumaServer.getInstance();
             MonitorStats.maybeRefresh(io, Object.keys(server.monitorList));
 
@@ -1560,11 +1656,36 @@ class Monitor extends BeanModel {
     }
 
     /**
-     * Check if monitor is under maintenance
+     * Check if monitor is under maintenance. A group's window also covers its children.
      * @param {number} monitorID ID of monitor to check
+     * @param {object} snapshot Bulk-loaded state, so a list build needs no per-monitor query, omit for live queries
+     * @param {Map<number, number[]>} snapshot.links Monitor id -> maintenance ids
+     * @param {Map<number, boolean>} snapshot.active Maintenance id -> running right now
+     * @param {Map<number, number|null>} snapshot.parents Monitor id -> parent monitor id
+     * @param {Map<number, boolean>} snapshot.cache Memo of the answers for one list build
      * @returns {Promise<boolean>} Is the monitor under maintenance
      */
-    static async isUnderMaintenance(monitorID) {
+    static async isUnderMaintenance(monitorID, snapshot = null) {
+        if (snapshot) {
+            if (snapshot.cache.has(monitorID)) {
+                return snapshot.cache.get(monitorID);
+            }
+
+            let result = (snapshot.links.get(monitorID) ?? []).some((maintenanceID) =>
+                snapshot.active.get(maintenanceID)
+            );
+
+            if (!result) {
+                const parentID = snapshot.parents.get(monitorID);
+                if (parentID != null) {
+                    result = await Monitor.isUnderMaintenance(parentID, snapshot);
+                }
+            }
+
+            snapshot.cache.set(monitorID, result);
+            return result;
+        }
+
         const maintenanceIDList = await R.getCol(
             `
             SELECT maintenance_id FROM monitor_maintenance
@@ -1662,19 +1783,20 @@ class Monitor extends BeanModel {
         }
 
         if (["system-service", "pm2"].includes(this.type)) {
-            this.system_service_name = (this.system_service_name || "").trim();
+            const serviceName = (this.getConfigValue("systemServiceName") || "").trim();
+            this.setConfigValue("systemServiceName", serviceName);
 
-            if (!this.system_service_name) {
+            if (!serviceName) {
                 throw new Error(this.type === "pm2" ? "PM2 process name is required." : "Service Name is required.");
             }
-        }
 
-        if (this.type === "system-service" && !/^[a-zA-Z0-9._\-@]+$/.test(this.system_service_name)) {
-            throw new Error("Invalid service name. Please use the internal Service Name (no spaces).");
-        }
+            if (this.type === "system-service" && !/^[a-zA-Z0-9._\-@]+$/.test(serviceName)) {
+                throw new Error("Invalid service name. Please use the internal Service Name (no spaces).");
+            }
 
-        if (this.type === "pm2" && /[\u0000-\u001F\u007F]/.test(this.system_service_name)) {
-            throw new Error("Invalid PM2 process name.");
+            if (this.type === "pm2" && /[\u0000-\u001F\u007F]/.test(serviceName)) {
+                throw new Error("Invalid PM2 process name.");
+            }
         }
 
         if (this.type === "ping") {
@@ -1808,8 +1930,10 @@ class Monitor extends BeanModel {
 
             const byId = new Map();
             const childrenById = new Map();
+            const parents = new Map();
             for (const row of allMonitors) {
                 byId.set(row.id, row);
+                parents.set(row.id, row.parent ?? null);
                 const key = row.parent ?? null;
                 if (!childrenById.has(key)) {
                     childrenById.set(key, []);
@@ -1880,22 +2004,13 @@ class Monitor extends BeanModel {
                 maintenanceByMonitor.get(row.monitor_id).push(row.maintenance_id);
             }
 
-            const maintenanceCache = new Map();
-            const isUnderMaintenance = (id) => {
-                if (maintenanceCache.has(id)) {
-                    return maintenanceCache.get(id);
-                }
-                let result = (maintenanceByMonitor.get(id) ?? []).some((maintenanceID) =>
-                    maintenanceActive.get(maintenanceID)
-                );
-                if (!result) {
-                    const node = byId.get(id);
-                    if (node?.parent) {
-                        result = isUnderMaintenance(node.parent);
-                    }
-                }
-                maintenanceCache.set(id, result);
-                return result;
+            // One snapshot feeds the same Monitor.isUnderMaintenance() rule the beat uses,
+            // so the dashboard and the beat cannot drift apart
+            const maintenanceSnapshot = {
+                links: maintenanceByMonitor,
+                active: maintenanceActive,
+                parents,
+                cache: new Map(),
             };
 
             notifications.forEach((row) => {
@@ -1918,14 +2033,14 @@ class Monitor extends BeanModel {
                 });
             });
 
-            monitorData.forEach((monitor) => {
+            for (const monitor of monitorData) {
                 const parentActive = isParentActive(monitor.id);
-                maintenanceStatusMap.set(monitor.id, isUnderMaintenance(monitor.id));
+                maintenanceStatusMap.set(monitor.id, await Monitor.isUnderMaintenance(monitor.id, maintenanceSnapshot));
                 childrenIDsMap.set(monitor.id, allChildrenIDs(monitor.id));
                 activeStatusMap.set(monitor.id, monitor.active === 1 && parentActive);
                 forceInactiveMap.set(monitor.id, !parentActive);
                 pathsMap.set(monitor.id, pathOf(monitor.id));
-            });
+            }
         }
 
         return {

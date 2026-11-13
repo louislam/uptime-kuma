@@ -7,10 +7,7 @@ const {
     PING_COUNT_DEFAULT,
     PING_PER_REQUEST_TIMEOUT_DEFAULT,
 } = require("../../src/util");
-const { convertToUTF8 } = require("../util-server");
 const pingLib = require("../modules/ping");
-
-const isWindows = process.platform === /^win/.test(process.platform);
 
 /**
  * Ping the specified machine
@@ -95,11 +92,7 @@ function pingAsync(
                 if (res.alive) {
                     resolve(res.time);
                 } else {
-                    if (isWindows) {
-                        reject(new Error(convertToUTF8(res.output)));
-                    } else {
-                        reject(new Error(res.output));
-                    }
+                    reject(new Error(res.output));
                 }
             })
             .catch((err) => {

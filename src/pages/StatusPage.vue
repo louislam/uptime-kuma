@@ -635,6 +635,7 @@ import {
 } from "../util.ts";
 import Tag from "../components/Tag.vue";
 import VueMultiselect from "vue-multiselect";
+import { applyHeartbeatSnapshot } from "../beat-state";
 
 const toast = useToast();
 dayjs.extend(duration);
@@ -784,10 +785,6 @@ export default {
                 };
             }
             return {};
-        },
-
-        incidentClass() {
-            return "bg-" + this.incident.style;
         },
 
         maintenanceClass() {
@@ -1013,19 +1010,6 @@ export default {
 
                 this.loading = false;
 
-                feedInterval = setInterval(
-                    () => {
-                        this.updateHeartbeatList();
-                    },
-                    Math.max(5, this.config.autoRefreshInterval) * 1000
-                );
-
-                this.incident = res.data.incident;
-                this.maintenanceList = res.data.maintenanceList;
-                this.$root.publicGroupList = res.data.publicGroupList;
-
-                this.loading = false;
-
                 // Configure auto-refresh loop
                 feedInterval = setInterval(
                     () => {
@@ -1092,6 +1076,7 @@ export default {
 
                     this.$root.heartbeatList = heartbeatList;
                     this.$root.uptimeList = uptimeList;
+                    applyHeartbeatSnapshot(this.$root, heartbeatList, this.$t.bind(this));
 
                     const heartbeatIds = Object.keys(heartbeatList);
                     const downMonitors = heartbeatIds.reduce((downMonitorsAmount, currentId) => {

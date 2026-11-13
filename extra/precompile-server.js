@@ -7,7 +7,7 @@ const path = require("path");
 const esbuild = require("esbuild");
 
 const root = path.resolve(__dirname, "..");
-const esmEntries = ["server/server.js", "server/util-server.js"];
+const esmEntries = ["server/server.js"];
 
 /**
  * Collect every .ts file below a directory.

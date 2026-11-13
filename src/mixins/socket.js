@@ -6,7 +6,7 @@ import dayjs from "dayjs";
 import mitt from "mitt";
 
 import { DOWN, MAINTENANCE, PENDING, UP } from "../util.ts";
-import { getToastSuccessTimeout, getToastErrorTimeout } from "../util-frontend.js";
+import { getToastSuccessTimeout, getToastErrorTimeout } from "../util-frontend";
 import { BeatVersionThrottle } from "../beat-version-throttle";
 import { applyBeat, applyLatestBeats, beatStatusEntry } from "../beat-state";
 import { logout as betterAuthLogout } from "../auth-client";
@@ -142,9 +142,8 @@ export default {
             let protocol = location.protocol + "//";
 
             let url;
-            // The Vite dev frontend runs on :3000 and the backend on :3001. Anywhere else,
-            // connect to the origin that served this page (do not rely on build-time NODE_ENV)
-            if (location.port === "3000" || localStorage.dev === "dev") {
+            const env = process.env.NODE_ENV || "production";
+            if (env === "development" || localStorage.dev === "dev") {
                 url = protocol + location.hostname + ":3001";
             } else {
                 // Connect to the current url
@@ -153,9 +152,8 @@ export default {
 
             socket = io(url, {
                 withCredentials: true,
-                // Prefer WebSocket so the large login payload is compressed by perMessageDeflate
-                // and is not sent over a single slow polling response
-                transports: ["websocket", "polling"],
+                // Note for future: don't set transports to "websocket" first, due to origin issue
+                // Let it unset, it will connect via http first, then upgrade to websocket. This will avoid the origin issue.
             });
 
             socket.on("info", (info) => {
@@ -250,6 +248,14 @@ export default {
             });
 
             socket.on("heartbeat", (data) => {
+                if (data.stats) {
+                    this.avgPingList[data.monitorID] = data.stats.avgPing;
+                    this.uptimeList[`${data.monitorID}_24`] = data.stats.uptime24;
+                    this.uptimeList[`${data.monitorID}_720`] = data.stats.uptime720;
+                    this.uptimeList[`${data.monitorID}_1y`] = data.stats.uptime1y;
+                    delete data.stats;
+                }
+
                 if (!(data.monitorID in this.heartbeatList)) {
                     this.heartbeatList[data.monitorID] = [];
                 }

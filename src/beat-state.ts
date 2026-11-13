@@ -72,3 +72,25 @@ export function applyLatestBeats(
     }
     heartbeatList[monitorID] = beats;
 }
+
+/**
+ * Store the newest beat of each monitor from a REST heartbeat payload
+ * @param state Mixin state
+ * @param heartbeatList Beats per monitor, oldest first
+ * @param translate Translation function
+ * @returns void
+ */
+export function applyHeartbeatSnapshot(
+    state: BeatState,
+    heartbeatList: Record<number | string, unknown[]>,
+    translate: Translate
+): void {
+    for (const monitorID in heartbeatList) {
+        const beats = heartbeatList[monitorID];
+        if (!beats || beats.length === 0) {
+            continue;
+        }
+        const beat = beats[beats.length - 1];
+        applyBeat(state, Number(monitorID), beat, beatStatusEntry(translate, beat));
+    }
+}

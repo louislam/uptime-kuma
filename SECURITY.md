@@ -1,19 +1,20 @@
 # Security Policy
 
 > [!CAUTION]
-> Unfortunately, AI slop reports keep wasting my time. It will be closed and you will get banned immediately if you try to do that.
+> Unfortunately, I DO NOT check Security Advisories anymore. Thanks to AI slop reports, they keep running over my GitHub Security Advisories.
 
 ## Reporting a Vulnerability
 
-1. Please report security issues to
-   <https://github.com/louislam/uptime-kuma/security/advisories/new>.
-2. Please also create an empty security issue to alert me, as GitHub Advisories
-   do not send a notification, I probably will miss it without this.
-   <https://github.com/louislam/uptime-kuma/issues/new?assignees=&labels=help&template=security.md>
+1. Create a new security advisory in https://github.com/louislam/uptime-kuma/security/advisories/new.
+2. Talk to me as a human in https://github.com/louislam/uptime-kuma/issues, explain the type of security issue but don't reveal the details. LLM description will be banned and closed immediately.
 
-- Do not report any upstream dependency issues / scan result by any tools. It will be closed immediately without explanations. Unless you have PoC to prove that the upstream issue affected Uptime Kuma.
-- Do not use the public issue tracker or discuss it in public as it will cause
-  more damage.
+PS: Do not use the public issue tracker or discuss it in public as it will cause more damage.
+
+## Will be Closed without explanation
+
+- No LLM description, I don't read it
+- Do not report any upstream dependency issues, unless you have PoC to prove that the upstream issue affected Uptime Kuma.
+- Do not report any scan result by any tools, unless you have PoC.
 - Do not report any SSRF issues.
 
 ## Do you accept other 3rd-party bug bounty platforms?
@@ -32,16 +33,16 @@ All versions are upgradable to the latest version.
 
 ### Upgradable Docker Tags
 
-| Tag             | Supported                                                                             |
-| --------------- | ------------------------------------------------------------------------------------- |
-| 2               | :white_check_mark:                                                                    |
-| 2-slim          | :white_check_mark:                                                                    |
-| next            | :white_check_mark:                                                                    |
-| next-slim       | :white_check_mark:                                                                    |
-| 2-rootless      | :white_check_mark:                                                                    |
-| 2-slim-rootless | :white_check_mark:                                                                    |
-| 1               | [⚠️ Deprecated](https://github.com/louislam/uptime-kuma/wiki/Migration-From-v1-To-v2) |
-| 1-debian        | [⚠️ Deprecated](https://github.com/louislam/uptime-kuma/wiki/Migration-From-v1-To-v2) |
-| latest          | [⚠️ Deprecated](https://github.com/louislam/uptime-kuma/wiki/Migration-From-v1-To-v2) |
-| debian          | [⚠️ Deprecated](https://github.com/louislam/uptime-kuma/wiki/Migration-From-v1-To-v2) |
-| All other tags  | ❌                                                                                    |
+| Tag             | Supported          |
+| --------------- | ------------------ |
+| 2               | :white_check_mark: |
+| 2-slim          | :white_check_mark: |
+| next            | :white_check_mark: |
+| next-slim       | :white_check_mark: |
+| 2-rootless      | :white_check_mark: |
+| 2-slim-rootless | :white_check_mark: |
+| 1               | ❌                 |
+| 1-debian        | ❌                 |
+| latest          | ❌                 |
+| debian          | ❌                 |
+| All other tags  | ❌                 |

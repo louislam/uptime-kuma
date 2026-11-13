@@ -1,6 +1,6 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
-const { setting } = require("../util-server");
+const { setting } = require("../util");
 const { DOWN, UP, getMonitorRelativeURL } = require("../../src/util");
 
 class Teams extends NotificationProvider {
