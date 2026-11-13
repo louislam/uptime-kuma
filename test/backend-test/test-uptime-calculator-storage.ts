@@ -271,4 +271,41 @@ describe("UptimeCalculator.update() storage", () => {
         await calc.update(UP);
         assert.strictEqual(execs.length, 2);
     });
+
+    test("stores the hourly and daily rows on every beat", async () => {
+        delete process.env.TEST_BACKEND;
+        UptimeCalculator.currentDate = dayjs.utc("2024-01-01T10:00:00Z");
+
+        const tables = [];
+        Object.defineProperty(R, "knex", {
+            configurable: true,
+            writable: true,
+            value: (table) => ({
+                insert() {
+                    tables.push(table);
+                    return {
+                        onConflict() {
+                            return {
+                                merge() {
+                                    return Promise.resolve();
+                                },
+                            };
+                        },
+                    };
+                },
+            }),
+        });
+        R.exec = async () => {};
+
+        const calc = calculator();
+        calc.currentBucketsLoaded = true;
+        calc.historyLoaded = true;
+
+        // Two beats inside the same minute: both must reach hourly and daily
+        await calc.update(UP);
+        await calc.update(UP);
+
+        assert.strictEqual(tables.filter((table) => table === "stat_hourly").length, 2);
+        assert.strictEqual(tables.filter((table) => table === "stat_daily").length, 2);
+    });
 });
