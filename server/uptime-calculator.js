@@ -63,18 +63,6 @@ class UptimeCalculator {
     lastPruneHour = null;
 
     /**
-     * Last minute in which the hourly stat row was written
-     * @type {number|null}
-     */
-    lastHourlyStore = null;
-
-    /**
-     * Last minute in which the daily stat row was written
-     * @type {number|null}
-     */
-    lastDailyStore = null;
-
-    /**
      * Whether the DB history has been loaded
      * @type {boolean}
      */
@@ -318,21 +306,14 @@ class UptimeCalculator {
             return date;
         }
 
-        // Store the aggregates. Minutely is written every beat, hourly/daily at most
-        // once per minute: their values only need to be durable, not per-check.
+        // Store the aggregates: every bucket is written on every beat, as before,
+        // so a crash cannot lose up to a minute of hourly/daily data
         let currentDate = this.getCurrentDate();
-        const currentMinute = this.getMinutelyKey(currentDate, false);
 
-        if (this.lastDailyStore !== currentMinute) {
-            this.lastDailyStore = currentMinute;
-            await this.upsertStat("stat_daily", dailyKey, dailyData);
-        }
+        await this.upsertStat("stat_daily", dailyKey, dailyData);
 
-        if (this.lastHourlyStore !== currentMinute) {
-            this.lastHourlyStore = currentMinute;
-            if (!this.migrationMode || date.isAfter(currentDate.subtract(this.statHourlyKeepDay, "day"))) {
-                await this.upsertStat("stat_hourly", hourlyKey, hourlyData);
-            }
+        if (!this.migrationMode || date.isAfter(currentDate.subtract(this.statHourlyKeepDay, "day"))) {
+            await this.upsertStat("stat_hourly", hourlyKey, hourlyData);
         }
 
         if (!this.migrationMode || date.isAfter(currentDate.subtract(this.statMinutelyKeepHour, "hour"))) {
