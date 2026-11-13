@@ -137,7 +137,6 @@ const Database = require("./database");
 log.debug("server", "Importing Background Jobs");
 const { initBackgroundJobs, stopBackgroundJobs } = require("./jobs");
 const { DeferredListsSender } = require("./login-lists");
-const { chunk, firstBeatDelayMs } = require("./start-monitors");
 const { startStatsRefresh } = require("./stats-refresh");
 const { apiAuth } = require("./auth");
 const {
@@ -1638,18 +1637,14 @@ async function startMonitors() {
         server.monitorList[monitor.id] = monitor;
     }
 
-    // Start every monitor in small concurrent batches, but spread their first check
-    // over the interval, so 5000 monitors do not all check at the same second
-    for (const batch of chunk(list, 50)) {
-        await Promise.allSettled(
-            batch.map(async (monitor) => {
-                try {
-                    await monitor.start(io, firstBeatDelayMs(monitor.interval));
-                } catch (e) {
-                    log.error("monitor", e);
-                }
-            })
-        );
+    for (let monitor of list) {
+        try {
+            await monitor.start(io);
+        } catch (e) {
+            log.error("monitor", e);
+        }
+        // Give some delays, so all monitors won't make request at the same moment when just start the server.
+        await sleep(getRandomInt(300, 1000));
     }
 }
 

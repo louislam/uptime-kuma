@@ -142,9 +142,8 @@ export default {
             let protocol = location.protocol + "//";
 
             let url;
-            // The Vite dev frontend runs on :3000 and the backend on :3001. Anywhere else,
-            // connect to the origin that served this page (do not rely on build-time NODE_ENV)
-            if (location.port === "3000" || localStorage.dev === "dev") {
+            const env = process.env.NODE_ENV || "production";
+            if (env === "development" || localStorage.dev === "dev") {
                 url = protocol + location.hostname + ":3001";
             } else {
                 // Connect to the current url

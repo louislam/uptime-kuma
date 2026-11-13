@@ -25,7 +25,6 @@ const MINUTE_KEY = 1704067200;
 const at = (seconds) => dayjs.utc((MINUTE_KEY + seconds) * 1000);
 
 const originalSumStats = stats.sumStats;
-const originalDaily = stats.sumDailyWindows;
 const originalCollect = stats.collect;
 const originalSumExpired = stats.sumExpired;
 
@@ -39,7 +38,6 @@ function reset() {
     stats.lastRefresh = 0;
     stats.refreshPromise = null;
     stats.sumStats = originalSumStats;
-    stats.sumDailyWindows = originalDaily;
     stats.collect = originalCollect;
     stats.sumExpired = originalSumExpired;
 }
@@ -71,13 +69,22 @@ function fakeIo() {
 
 describe("MonitorStats.collect()", () => {
     test("derives uptime and average ping from the grouped sums", async () => {
-        stats.sumStats = async () => new Map([[1, { monitor_id: 1, up: 3, down: 1, ping_sum: 300 }]]);
-        stats.sumDailyWindows = async () => new Map([[1, { up30: 29, down30: 1, up1y: 364, down1y: 1 }]]);
+        stats.sumStats = async (table) => {
+            if (table === "stat_minutely") {
+                return new Map([[1, { monitor_id: 1, up: 3, down: 1, ping_sum: 300 }]]);
+            }
+            if (table === "stat_hourly") {
+                return new Map([[1, { monitor_id: 1, up: 29, down: 1, ping_sum: 0 }]]);
+            }
+            return new Map([[1, { monitor_id: 1, up: 364, down: 1, ping_sum: 0 }]]);
+        };
 
         const { stats: result } = await stats.collect([1], NOW);
 
         assert.deepStrictEqual(result[1], {
             avgPing: 100,
+            avgPing720: 0,
+            avgPing1y: 0,
             uptime24: 0.75,
             uptime720: 29 / 30,
             uptime1y: 364 / 365,
@@ -86,12 +93,13 @@ describe("MonitorStats.collect()", () => {
 
     test("returns zeros when the monitor has no stat rows", async () => {
         stats.sumStats = async () => new Map();
-        stats.sumDailyWindows = async () => new Map();
 
         const { stats: result } = await stats.collect([5], NOW);
 
         assert.deepStrictEqual(result[5], {
             avgPing: null,
+            avgPing720: null,
+            avgPing1y: null,
             uptime24: 0,
             uptime720: 0,
             uptime1y: 0,
@@ -100,7 +108,6 @@ describe("MonitorStats.collect()", () => {
 
     test("rejects invalid monitor ids", async () => {
         stats.sumStats = async () => new Map();
-        stats.sumDailyWindows = async () => new Map();
 
         await assert.rejects(() => stats.collect([0]));
     });
@@ -191,6 +198,28 @@ describe("MonitorStats.maybeRefresh()", () => {
     });
 });
 
+describe("MonitorStats windows", () => {
+    test("computes the 30-day window from stat_hourly", async () => {
+        const queried = [];
+        stats.sumStats = async (table) => {
+            queried.push(table);
+            if (table === "stat_minutely") {
+                return new Map([[1, { monitor_id: 1, up: 24, down: 0, ping_sum: 240 }]]);
+            }
+            if (table === "stat_hourly") {
+                return new Map([[1, { monitor_id: 1, up: 700, down: 20, ping_sum: 2100 }]]);
+            }
+            return new Map([[1, { monitor_id: 1, up: 8000, down: 100, ping_sum: 16000 }]]);
+        };
+
+        const { stats: result } = await stats.collect([1], NOW);
+
+        assert.deepStrictEqual(queried.sort(), ["stat_daily", "stat_hourly", "stat_minutely"]);
+        assert.strictEqual(result[1].uptime720, 700 / 720);
+        assert.strictEqual(result[1].uptime1y, 8000 / 8100);
+    });
+});
+
 describe("MonitorStats.recordBeat()", () => {
     /**
      * Seed a cached result with raw window sums
@@ -201,9 +230,10 @@ describe("MonitorStats.recordBeat()", () => {
         stats.cache.set(1, { avgPing: 30, uptime24: 1, uptime720: 1, uptime1y: 1 });
         stats.windows.set(1, {
             minuteKey: MINUTE_KEY,
+            hourKey: MINUTE_KEY,
             dayKey: MINUTE_KEY,
             minutely: { up: 10, down: 0, pingSum: 300 },
-            daily30: { up: 30, down: 0, pingSum: 0 },
+            hourly30: { up: 30, down: 0, pingSum: 0 },
             daily365: { up: 365, down: 0, pingSum: 0 },
             ...sums,
         });
@@ -212,7 +242,7 @@ describe("MonitorStats.recordBeat()", () => {
     test("adds an up beat to every window", async () => {
         seed({
             minutely: { up: 10, down: 2, pingSum: 300 },
-            daily30: { up: 30, down: 2, pingSum: 0 },
+            hourly30: { up: 30, down: 2, pingSum: 0 },
             daily365: { up: 365, down: 3, pingSum: 0 },
         });
 
@@ -220,6 +250,8 @@ describe("MonitorStats.recordBeat()", () => {
 
         assert.deepStrictEqual(result, {
             avgPing: 30.91,
+            avgPing720: 1.29,
+            avgPing1y: 0.11,
             uptime24: 11 / 13,
             uptime720: 31 / 33,
             uptime1y: 366 / 369,
@@ -233,6 +265,8 @@ describe("MonitorStats.recordBeat()", () => {
 
         assert.deepStrictEqual(stats.get(1), {
             avgPing: 30,
+            avgPing720: 0,
+            avgPing1y: 0,
             uptime24: 10 / 11,
             uptime720: 30 / 31,
             uptime1y: 365 / 366,
@@ -258,8 +292,8 @@ describe("MonitorStats.recordBeat()", () => {
         assert.strictEqual(stats.get(1).uptime24, 8 / 9);
     });
 
-    test("drops the day buckets that left the 30d and 1y windows", async () => {
-        seed({ daily30: { up: 30, down: 4, pingSum: 0 }, daily365: { up: 365, down: 9, pingSum: 0 } });
+    test("drops the buckets that left the 30d and 1y windows", async () => {
+        seed({ hourly30: { up: 30, down: 4, pingSum: 0 }, daily365: { up: 365, down: 9, pingSum: 0 } });
         let calls = 0;
         stats.sumExpired = async () =>
             ++calls === 1 ? { up: 0, down: 2, pingSum: 0 } : { up: 0, down: 6, pingSum: 0 };

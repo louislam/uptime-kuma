@@ -218,7 +218,7 @@ describe("Monitor beat over HTTP", () => {
         };
 
         try {
-            await monitor.start(io, 0);
+            await monitor.start(io);
             await Promise.race([
                 beatFinished,
                 new Promise((_, reject) => setTimeout(() => reject(new Error("beat timeout")), 5000)),
@@ -267,7 +267,7 @@ describe("Monitor beat over HTTP", () => {
         Monitor.sendStats = async () => {};
 
         try {
-            await monitor.start(io, 0);
+            await monitor.start(io);
             // Prometheus is updated after the heartbeat was emitted and stored
             await Promise.race([
                 beatFinished,
@@ -319,7 +319,7 @@ describe("Monitor beat over HTTP", () => {
         };
 
         try {
-            await monitor.start(io, 0);
+            await monitor.start(io);
             await Promise.race([
                 beatFinished,
                 new Promise((_, reject) => setTimeout(() => reject(new Error("beat timeout")), 5000)),
@@ -330,6 +330,81 @@ describe("Monitor beat over HTTP", () => {
             assert.ok(heartbeat, "heartbeat emitted");
             // The proxy port is closed, so the check reports DOWN through the proxy
             assert.strictEqual(heartbeat.args[0].status, 0);
+        } finally {
+            monitor.stop();
+            await server.close();
+        }
+    });
+
+    test("does not replay cookies from one check to the next", async () => {
+        // Cookies that reached "/protected", one entry per check
+        const received = [];
+
+        // Mimics mod_auth_openidc: "/" sets a new uniquely named state cookie and redirects
+        let state = 0;
+        const server = https.createServer({ key: TEST_KEY, cert: TEST_CERT }, (req, res) => {
+            if (req.url === "/") {
+                state++;
+                res.writeHead(302, {
+                    Location: "/protected",
+                    "Set-Cookie": `oidc_state_${state}=${state}; Path=/; Max-Age=300`,
+                });
+                res.end();
+                return;
+            }
+
+            received.push(req.headers.cookie ?? "");
+            res.writeHead(200, { "Content-Type": "text/plain" });
+            res.end("OK");
+        });
+        await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+        const { port } = server.address();
+
+        const monitor = fakeMonitor(`https://127.0.0.1:${port}/`);
+        monitor.interval = 1;
+        monitor.ignoreTls = 1;
+        const io = fakeIo();
+
+        R.findOne = async () => null;
+        R.dispense = () => ({
+            monitor_id: monitor.id,
+            toJSON() {
+                return { monitor_id: this.monitor_id, status: this.status };
+            },
+        });
+        R.store = async () => {};
+        R.isoDateTimeMillis = () => "2024-01-01 00:00:00";
+        UptimeCalculator.getUptimeCalculator = async () => ({
+            update: async () => ({ unix: () => 1704067200 }),
+        });
+        Monitor.sendNotification = async () => {};
+        Monitor.isUnderMaintenance = async () => false;
+        Monitor.sendStats = async () => {};
+        Prometheus.prototype.remove = () => {};
+
+        let checks = 0;
+        let bothDone;
+        const twoChecks = new Promise((resolve) => {
+            bothDone = resolve;
+        });
+        // The cert info also updates prometheus, without a heartbeat, so count only checks
+        Prometheus.prototype.update = (bean) => {
+            if (bean && ++checks === 2) {
+                bothDone();
+            }
+        };
+
+        try {
+            await monitor.start(io);
+            await Promise.race([
+                twoChecks,
+                new Promise((_, reject) => setTimeout(() => reject(new Error("beat timeout")), 15000)),
+            ]);
+            await new Promise((resolve) => setImmediate(resolve));
+
+            assert.match(received[0], /oidc_state_1=1/, "the redirect of a check must replay its own cookie");
+            assert.doesNotMatch(received[1], /oidc_state_1=1/, "a cookie from the previous check must not be replayed");
+            assert.match(received[1], /oidc_state_2=2/);
         } finally {
             monitor.stop();
             await server.close();
