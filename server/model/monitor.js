@@ -1642,11 +1642,36 @@ class Monitor extends BeanModel {
     }
 
     /**
-     * Check if monitor is under maintenance
+     * Check if monitor is under maintenance. A group's window also covers its children.
      * @param {number} monitorID ID of monitor to check
+     * @param {object} snapshot Bulk-loaded state, so a list build needs no per-monitor query, omit for live queries
+     * @param {Map<number, number[]>} snapshot.links Monitor id -> maintenance ids
+     * @param {Map<number, boolean>} snapshot.active Maintenance id -> running right now
+     * @param {Map<number, number|null>} snapshot.parents Monitor id -> parent monitor id
+     * @param {Map<number, boolean>} snapshot.cache Memo of the answers for one list build
      * @returns {Promise<boolean>} Is the monitor under maintenance
      */
-    static async isUnderMaintenance(monitorID) {
+    static async isUnderMaintenance(monitorID, snapshot = null) {
+        if (snapshot) {
+            if (snapshot.cache.has(monitorID)) {
+                return snapshot.cache.get(monitorID);
+            }
+
+            let result = (snapshot.links.get(monitorID) ?? []).some((maintenanceID) =>
+                snapshot.active.get(maintenanceID)
+            );
+
+            if (!result) {
+                const parentID = snapshot.parents.get(monitorID);
+                if (parentID != null) {
+                    result = await Monitor.isUnderMaintenance(parentID, snapshot);
+                }
+            }
+
+            snapshot.cache.set(monitorID, result);
+            return result;
+        }
+
         const maintenanceIDList = await R.getCol(
             `
             SELECT maintenance_id FROM monitor_maintenance
@@ -1891,8 +1916,10 @@ class Monitor extends BeanModel {
 
             const byId = new Map();
             const childrenById = new Map();
+            const parents = new Map();
             for (const row of allMonitors) {
                 byId.set(row.id, row);
+                parents.set(row.id, row.parent ?? null);
                 const key = row.parent ?? null;
                 if (!childrenById.has(key)) {
                     childrenById.set(key, []);
@@ -1963,22 +1990,13 @@ class Monitor extends BeanModel {
                 maintenanceByMonitor.get(row.monitor_id).push(row.maintenance_id);
             }
 
-            const maintenanceCache = new Map();
-            const isUnderMaintenance = (id) => {
-                if (maintenanceCache.has(id)) {
-                    return maintenanceCache.get(id);
-                }
-                let result = (maintenanceByMonitor.get(id) ?? []).some((maintenanceID) =>
-                    maintenanceActive.get(maintenanceID)
-                );
-                if (!result) {
-                    const node = byId.get(id);
-                    if (node?.parent) {
-                        result = isUnderMaintenance(node.parent);
-                    }
-                }
-                maintenanceCache.set(id, result);
-                return result;
+            // One snapshot feeds the same Monitor.isUnderMaintenance() rule the beat uses,
+            // so the dashboard and the beat cannot drift apart
+            const maintenanceSnapshot = {
+                links: maintenanceByMonitor,
+                active: maintenanceActive,
+                parents,
+                cache: new Map(),
             };
 
             notifications.forEach((row) => {
@@ -2001,14 +2019,14 @@ class Monitor extends BeanModel {
                 });
             });
 
-            monitorData.forEach((monitor) => {
+            for (const monitor of monitorData) {
                 const parentActive = isParentActive(monitor.id);
-                maintenanceStatusMap.set(monitor.id, isUnderMaintenance(monitor.id));
+                maintenanceStatusMap.set(monitor.id, await Monitor.isUnderMaintenance(monitor.id, maintenanceSnapshot));
                 childrenIDsMap.set(monitor.id, allChildrenIDs(monitor.id));
                 activeStatusMap.set(monitor.id, monitor.active === 1 && parentActive);
                 forceInactiveMap.set(monitor.id, !parentActive);
                 pathsMap.set(monitor.id, pathOf(monitor.id));
-            });
+            }
         }
 
         return {
