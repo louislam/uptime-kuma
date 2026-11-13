@@ -1459,5 +1459,7 @@
     "deleteMonitorsMsg": "Está seguro de eliminar los monitores seleccionados?",
     "noMonitorsResumedMsg": "No hay monitores reanudados (ninguno estaba inactivo)",
     "noMonitorsPausedMsg": "No hay monitores pausados (ninguno estaba activo)",
-    "bulkDeleteErrorMsg": "Fallo al eliminar {n} monitor | Fallo al eliminar {n} monitores"
+    "bulkDeleteErrorMsg": "Fallo al eliminar {n} monitor | Fallo al eliminar {n} monitores",
+    "Client Key": "Clave del Cliente",
+    "Channel": "Canal"
 }
