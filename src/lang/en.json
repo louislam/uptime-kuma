@@ -1239,6 +1239,8 @@
     "wayToGetHeiiOnCallDetails": "How to get the Trigger ID and API Keys is explained in the {documentation}",
     "documentationOf": "{0} Documentation",
     "callMeBotGet": "Here you can generate an endpoint for {0}, {1} and {2}. Keep in mind that you might get rate limited. The ratelimits appear to be: {3}",
+    "jabeeApiKeyDescription": "Create an API key under Management, then Approvals, at {0}. Jabee sends from its own WhatsApp number, so you do not need a number, a WhatsApp Business account or an approved template of your own.",
+    "jabeeBaseURLDescription": "Leave empty unless you were given a different Jabee API address.",
     "gtxMessagingApiKeyHint": "You can find your API key at: My Routing Accounts > Show Account Information > API Credentials > REST API (v2.x)",
     "From Phone Number / Transmission Path Originating Address (TPOA)": "From Phone Number / Transmission Path Originating Address (TPOA)",
     "gtxMessagingFromHint": "On mobile phones, your recipients sees the TPOA displayed as the sender of the message. Allowed are up to 11 alphanumeric characters, a shortcode, the local longcode or international numbers ({e164}, {e212} or {e214})",

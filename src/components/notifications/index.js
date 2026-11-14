@@ -22,6 +22,7 @@ import GoogleChat from "./GoogleChat.vue";
 import GoogleSheets from "./GoogleSheets.vue";
 import Gorush from "./Gorush.vue";
 import Gotify from "./Gotify.vue";
+import Jabee from "./Jabee.vue";
 import GrafanaOncall from "./GrafanaOncall.vue";
 import GtxMessaging from "./GtxMessaging.vue";
 import HomeAssistant from "./HomeAssistant.vue";
@@ -140,6 +141,7 @@ const NotificationFormList = {
     GoogleSheets: GoogleSheets,
     gorush: Gorush,
     gotify: Gotify,
+    jabee: Jabee,
     GrafanaOncall: GrafanaOncall,
     HomeAssistant: HomeAssistant,
     Indigo: Indigo,

@@ -24,6 +24,7 @@ const GoogleChat = require("./notification-providers/google-chat");
 const GoogleSheets = require("./notification-providers/google-sheets");
 const Gorush = require("./notification-providers/gorush");
 const Gotify = require("./notification-providers/gotify");
+const Jabee = require("./notification-providers/jabee");
 const GrafanaOncall = require("./notification-providers/grafana-oncall");
 const HomeAssistant = require("./notification-providers/home-assistant");
 const Indigo = require("./notification-providers/indigo");
@@ -151,6 +152,7 @@ class Notification {
             new GoogleSheets(),
             new Gorush(),
             new Gotify(),
+            new Jabee(),
             new GrafanaOncall(),
             new HomeAssistant(),
             new Indigo(),

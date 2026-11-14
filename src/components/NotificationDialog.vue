@@ -250,6 +250,7 @@ export default {
                 waha: "WhatsApp (WAHA)",
                 Whatsapp360messenger: "WhatsApp (360messenger)",
                 openwa: "WhatsApp (OpenWA)",
+                jabee: "WhatsApp (Jabee)",
             };
 
             // Push Services - Push notification services
