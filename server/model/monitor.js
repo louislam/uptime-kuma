@@ -998,15 +998,36 @@ class Monitor extends BeanModel {
 
             bean.retries = retries;
 
+            // A retry is UP -> PENDING -> UP and must stay quiet.
+            // Checks that report PENDING themselves (docker "starting", group, manual)
+            // can be DOWN -> PENDING -> UP, which is a recovery.
+            const statusBeforePending = await Monitor.getStatusBeforePending(
+                this.id,
+                previousBeat?.status,
+                bean.status
+            );
+
             log.debug("monitor", `[${this.name}] Check isImportant`);
-            let isImportant = Monitor.isImportantBeat(isFirstBeat, previousBeat?.status, bean.status);
+            let isImportant = Monitor.isImportantBeat(
+                isFirstBeat,
+                previousBeat?.status,
+                bean.status,
+                statusBeforePending
+            );
 
             // Mark as important if status changed, ignore pending pings,
             // Don't notify if disrupted changes to up
             if (isImportant) {
                 bean.important = true;
 
-                if (Monitor.isImportantForNotification(isFirstBeat, previousBeat?.status, bean.status)) {
+                if (
+                    Monitor.isImportantForNotification(
+                        isFirstBeat,
+                        previousBeat?.status,
+                        bean.status,
+                        statusBeforePending
+                    )
+                ) {
                     log.debug("monitor", `[${this.name}] sendNotification`);
                     await Monitor.sendNotification(isFirstBeat, this, bean);
                 } else {
@@ -1442,21 +1463,46 @@ class Monitor extends BeanModel {
     }
 
     /**
+     * Last heartbeat status that was not PENDING, when this beat is PENDING to UP.
+     * Any other transition returns null and does not query.
+     * DOWN means this UP is a recovery. UP means the pending streak was only a retry.
+     * Null means the monitor has never had another status (first start).
+     * @param {number} monitorID ID of the monitor
+     * @param {number|null|undefined} previousStatus Status of the previous beat
+     * @param {number} currentStatus Status of the beat being recorded
+     * @returns {Promise<number|null>} Status before the pending streak, or null
+     */
+    static async getStatusBeforePending(monitorID, previousStatus, currentStatus) {
+        if (previousStatus !== PENDING || currentStatus !== UP) {
+            return null;
+        }
+
+        // The beat being recorded is not stored yet, so the newest row is still the previous one.
+        const beat = await R.findOne("heartbeat", " monitor_id = ? AND status != ? ORDER BY id DESC", [
+            monitorID,
+            PENDING,
+        ]);
+        return beat ? beat.status : null;
+    }
+
+    /**
      * Has status of monitor changed since last beat?
      * @param {boolean} isFirstBeat Is this the first beat of this monitor?
      * @param {const} previousBeatStatus Status of the previous beat
      * @param {const} currentBeatStatus Status of the current beat
+     * @param {number|null} statusBeforePending Last non-PENDING status. Only PENDING -> UP uses it.
      * @returns {boolean} True if is an important beat else false
      */
-    static isImportantBeat(isFirstBeat, previousBeatStatus, currentBeatStatus) {
+    static isImportantBeat(isFirstBeat, previousBeatStatus, currentBeatStatus, statusBeforePending = null) {
         // * ? -> ANY STATUS = important [isFirstBeat]
         // UP -> PENDING = not important
         // * UP -> DOWN = important
         // UP -> UP = not important
         // PENDING -> PENDING = not important
         // * PENDING -> DOWN = important
-        // PENDING -> UP = not important
-        // DOWN -> PENDING = this case not exists
+        // PENDING -> UP = not important (retry recovered, or the monitor has only ever been pending)
+        // * PENDING -> UP after DOWN = important (docker health "starting", or a push of pending)
+        // DOWN -> PENDING = not important
         // DOWN -> DOWN = not important
         // * DOWN -> UP = important
         // MAINTENANCE -> MAINTENANCE = not important
@@ -1472,7 +1518,8 @@ class Monitor extends BeanModel {
             (previousBeatStatus === MAINTENANCE && currentBeatStatus === UP) ||
             (previousBeatStatus === UP && currentBeatStatus === DOWN) ||
             (previousBeatStatus === DOWN && currentBeatStatus === UP) ||
-            (previousBeatStatus === PENDING && currentBeatStatus === DOWN)
+            (previousBeatStatus === PENDING && currentBeatStatus === DOWN) ||
+            (previousBeatStatus === PENDING && currentBeatStatus === UP && statusBeforePending === DOWN)
         );
     }
 
@@ -1481,17 +1528,19 @@ class Monitor extends BeanModel {
      * @param {boolean} isFirstBeat Is this the first beat of this monitor?
      * @param {const} previousBeatStatus Status of the previous beat
      * @param {const} currentBeatStatus Status of the current beat
+     * @param {number|null} statusBeforePending Last non-PENDING status. Only PENDING -> UP uses it.
      * @returns {boolean} True if is an important beat else false
      */
-    static isImportantForNotification(isFirstBeat, previousBeatStatus, currentBeatStatus) {
+    static isImportantForNotification(isFirstBeat, previousBeatStatus, currentBeatStatus, statusBeforePending = null) {
         // * ? -> ANY STATUS = important [isFirstBeat]
         // UP -> PENDING = not important
         // * UP -> DOWN = important
         // UP -> UP = not important
         // PENDING -> PENDING = not important
         // * PENDING -> DOWN = important
-        // PENDING -> UP = not important
-        // DOWN -> PENDING = this case not exists
+        // PENDING -> UP = not important (retry recovered, or the monitor has only ever been pending)
+        // * PENDING -> UP after DOWN = important (recovery notification)
+        // DOWN -> PENDING = not important
         // DOWN -> DOWN = not important
         // * DOWN -> UP = important
         // MAINTENANCE -> MAINTENANCE = not important
@@ -1504,7 +1553,8 @@ class Monitor extends BeanModel {
             (previousBeatStatus === MAINTENANCE && currentBeatStatus === DOWN) ||
             (previousBeatStatus === UP && currentBeatStatus === DOWN) ||
             (previousBeatStatus === DOWN && currentBeatStatus === UP) ||
-            (previousBeatStatus === PENDING && currentBeatStatus === DOWN)
+            (previousBeatStatus === PENDING && currentBeatStatus === DOWN) ||
+            (previousBeatStatus === PENDING && currentBeatStatus === UP && statusBeforePending === DOWN)
         );
     }
 

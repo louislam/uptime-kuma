@@ -440,9 +440,23 @@ router.all("/api/push/:pushToken", async (request, response) => {
         log.debug("router", "PreviousStatus: " + previousHeartbeat?.status);
         log.debug("router", "Current Status: " + bean.status);
 
-        bean.important = Monitor.isImportantBeat(isFirstBeat, previousHeartbeat?.status, bean.status);
+        // Same rule as Monitor.beat(): a pushed pending between DOWN and UP is still a recovery.
+        const statusBeforePending = await Monitor.getStatusBeforePending(
+            monitor.id,
+            previousHeartbeat?.status,
+            bean.status
+        );
 
-        if (Monitor.isImportantForNotification(isFirstBeat, previousHeartbeat?.status, bean.status)) {
+        bean.important = Monitor.isImportantBeat(
+            isFirstBeat,
+            previousHeartbeat?.status,
+            bean.status,
+            statusBeforePending
+        );
+
+        if (
+            Monitor.isImportantForNotification(isFirstBeat, previousHeartbeat?.status, bean.status, statusBeforePending)
+        ) {
             // Reset down count
             bean.downCount = 0;
 
