@@ -14,6 +14,14 @@ describe("Expression Evaluator", () => {
         assert.strictEqual(false, evaluateExpression(expr, { record: "mx2.example.com" }));
     });
 
+    test("evaluateExpression() lists the valid operators when the operator is unknown", () => {
+        const expr = new ConditionExpression("record", "no_such_operator", "mx1.example.com");
+        assert.throws(() => evaluateExpression(expr, { record: "mx1.example.com" }), {
+            name: "Error",
+            message: /^Unexpected expression operator ID 'no_such_operator'\. Expected one of \[.*\bcontains\b.*\]$/,
+        });
+    });
+
     test("evaluateExpressionGroup() with AND logic requires all conditions to be true", () => {
         const group = new ConditionExpressionGroup([
             new ConditionExpression("record", "contains", "mx1."),
