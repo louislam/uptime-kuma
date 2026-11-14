@@ -209,7 +209,7 @@
         "prismjs": "~1.30.0",
         "qrcode": "~1.5.4",
         "rollup-plugin-visualizer": "~7.0.1",
-        "sass-embedded": "^1.106.1",
+        "sass-embedded": "~1.108.2",
         "smtp-server": "^3.20.2",
         "ssh2": "~1.17.0",
         "stylelint": "^15.11.0",
