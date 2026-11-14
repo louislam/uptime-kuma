@@ -491,7 +491,7 @@ export default {
             },
             cacheTime: Date.now(),
             importantHeartBeatListLength: 0,
-            displayedRecords: [],
+            importantHeartBeatRecords: [],
             pushMonitor: {
                 showPushExamples: false,
                 currentExample: "javascript-fetch",
@@ -527,6 +527,16 @@ export default {
          */
         hasChildren() {
             return this.childrenCount > 0;
+        },
+
+        displayedRecords() {
+            // Display the latest event if the message differs
+            const firstRecord = this.importantHeartBeatRecords[0] ?? null;
+            const latest = this.$root.lastHeartbeatList[this.monitor.id] ?? null;
+            if (firstRecord && latest && this.page === 1 && latest.msg !== firstRecord?.msg) {
+                return [latest, ...this.importantHeartBeatRecords];
+            }
+            return this.importantHeartBeatRecords;
         },
 
         lastHeartBeat() {
@@ -865,7 +875,7 @@ export default {
                     .getSocket()
                     .emit("monitorImportantHeartbeatListPaged", this.monitor.id, offset, this.perPage, (res) => {
                         if (res.ok) {
-                            this.displayedRecords = res.data;
+                            this.importantHeartBeatRecords = res.data;
                         }
                     });
             }
@@ -879,9 +889,9 @@ export default {
         onNewImportantHeartbeat(heartbeat) {
             if (heartbeat.monitorID === this.monitor?.id) {
                 if (this.page === 1) {
-                    this.displayedRecords.unshift(heartbeat);
-                    if (this.displayedRecords.length > this.perPage) {
-                        this.displayedRecords.pop();
+                    this.importantHeartBeatRecords.unshift(heartbeat);
+                    if (this.importantHeartBeatRecords.length > this.perPage) {
+                        this.importantHeartBeatRecords.pop();
                     }
                     this.importantHeartBeatListLength += 1;
                 }
