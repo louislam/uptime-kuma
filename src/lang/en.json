@@ -436,6 +436,8 @@
     "Leave blank to use status page title": "Leave blank to use status page title",
     "Refresh Interval": "Refresh Interval",
     "Refresh Interval Description": "The status page will do a full site refresh every {0} seconds",
+    "refreshRate": "Uptime Statistics Refresh Rate",
+    "statsRefreshDesc": "The server recalculates uptime statistics at this interval, in minutes. The server may need to be restarted for this setting to take effect.",
     "Show Powered By": "Show Powered By",
     "Domain Names": "Domain Names",
     "signedInDisp": "Signed in as {0}",
