@@ -394,6 +394,10 @@ router.all("/api/push/:pushToken", async (request, response) => {
             throw new Error("Monitor not found or not active.");
         }
 
+        if (monitor.method && request.method !== monitor.method.toUpperCase()) {
+            throw new Error(`Method ${request.method} not allowed. Expected ${monitor.method}.`);
+        }
+
         const previousHeartbeat = await Monitor.getPreviousHeartbeat(monitor.id);
 
         let isFirstBeat = true;

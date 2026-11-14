@@ -262,6 +262,14 @@
 
                             <!-- Push URL -->
                             <div v-if="monitor.type === 'push'" class="my-3">
+                                <div class="mb-3">
+                                    <label for="push-method" class="form-label">{{ $t("Method") }}</label>
+                                    <select id="push-method" v-model="monitor.method" class="form-select">
+                                        <option value="GET">GET</option>
+                                        <option value="POST">POST</option>
+                                        <option value="PUT">PUT</option>
+                                    </select>
+                                </div>
                                 <label for="push-url" class="form-label">{{ $t("PushUrl") }}</label>
                                 <CopyableInput id="push-url" v-model="pushURL" type="url" disabled="disabled" />
                                 <div class="form-text">
