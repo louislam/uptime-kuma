@@ -469,7 +469,8 @@
                             <template #option="{ option }">
                                 <div class="d-inline-flex">
                                     <span>
-                                        {{ option.pathName }}
+                                        {{ option.pathName
+                                        }}{{ option.statusPageName ? ` (${option.statusPageName})` : "" }}
                                         <Tag v-for="tag in option.tags" :key="tag" :item="tag" :size="'sm'" />
                                     </span>
                                 </div>

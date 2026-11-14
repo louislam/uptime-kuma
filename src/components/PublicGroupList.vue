@@ -83,10 +83,26 @@
                                                     rel="noopener noreferrer"
                                                     data-testid="monitor-name"
                                                 >
-                                                    {{ monitor.element.name }}
+                                                    <template v-if="editMode">
+                                                        {{ monitor.element.name }}
+                                                        <template v-if="monitor.element.statusPageName">
+                                                            ({{ monitor.element.statusPageName }})
+                                                        </template>
+                                                    </template>
+                                                    <template v-else>
+                                                        {{ monitor.element.statusPageName || monitor.element.name }}
+                                                    </template>
                                                 </a>
                                                 <p v-else class="item-name" data-testid="monitor-name">
-                                                    {{ monitor.element.name }}
+                                                    <template v-if="editMode">
+                                                        {{ monitor.element.name }}
+                                                        <template v-if="monitor.element.statusPageName">
+                                                            ({{ monitor.element.statusPageName }})
+                                                        </template>
+                                                    </template>
+                                                    <template v-else>
+                                                        {{ monitor.element.statusPageName || monitor.element.name }}
+                                                    </template>
                                                 </p>
                                             </div>
                                             <div class="extra-info">
