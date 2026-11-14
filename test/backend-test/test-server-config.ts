@@ -31,6 +31,7 @@ function stubMonitorList() {
         interval: 60,
         weight: 2000,
         active: 1,
+        getConfigValue: () => false,
         toJSON: () => ({ id: 1, full: true }),
     };
     R.findAll = async () => [monitor];
@@ -64,6 +65,7 @@ describe("getMonitorJSONList()", () => {
             id: 1,
             name: "API",
             type: "http",
+            informational: false,
             active: true,
             parent: null,
             childrenIDs: [],
