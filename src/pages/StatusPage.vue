@@ -187,6 +187,20 @@
                     />
                 </div>
 
+                <div v-if="!!config.analyticsType" class="my-3 form-check form-switch">
+                    <input
+                        id="analytics-consent-required"
+                        v-model="config.analyticsConsentRequired"
+                        class="form-check-input"
+                        type="checkbox"
+                        data-testid="analytics-consent-required-checkbox"
+                    />
+                    <label class="form-check-label" for="analytics-consent-required">
+                        {{ $t("Require analytics consent") }}
+                    </label>
+                    <div class="form-text">{{ $t("analyticsConsentRequiredDescription") }}</div>
+                </div>
+
                 <!-- RSS Title -->
                 <div class="my-3">
                     <label for="rss-title" class="form-label">{{ $t("RSS Title") }}</label>
@@ -576,6 +590,17 @@
                     </a>
                 </p>
 
+                <p v-if="showConsentBanner">
+                    <a
+                        href="#"
+                        data-testid="analytics-consent-preferences"
+                        @click.prevent="$refs.analyticsConsentBanner.open()"
+                    >
+                        {{ $t("Cookie preferences") }}
+                    </a>
+                </p>
+                <AnalyticsConsentBanner v-if="showConsentBanner" ref="analyticsConsentBanner" :slug="slug" />
+
                 <div class="refresh-info mb-2">
                     <div>{{ $t("lastUpdatedAt", { date: lastUpdateTimeDisplay }) }}</div>
                     <div data-testid="update-countdown-text">
@@ -623,6 +648,7 @@ import MaintenanceTime from "../components/MaintenanceTime.vue";
 import IncidentHistory from "../components/IncidentHistory.vue";
 import IncidentManageModal from "../components/IncidentManageModal.vue";
 import IncidentEditForm from "../components/IncidentEditForm.vue";
+import AnalyticsConsentBanner from "../components/AnalyticsConsentBanner.vue";
 import { getResBaseURL } from "../util-frontend";
 import { authClient } from "../auth-client";
 import {
@@ -663,6 +689,7 @@ export default {
         IncidentHistory,
         IncidentManageModal,
         IncidentEditForm,
+        AnalyticsConsentBanner,
     },
 
     // Leave Page for vue route change
@@ -695,6 +722,7 @@ export default {
             authenticated: false,
             config: {
                 analyticsType: null,
+                analyticsConsentRequired: false,
             },
             selectedMonitor: null,
             incident: null,
@@ -832,6 +860,10 @@ export default {
 
         isMaintenance() {
             return this.overallStatus === STATUS_PAGE_MAINTENANCE;
+        },
+
+        showConsentBanner() {
+            return !this.enableEditMode && !!this.config.analyticsType && !!this.config.analyticsConsentRequired;
         },
 
         incidentHTML() {
