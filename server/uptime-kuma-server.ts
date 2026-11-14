@@ -602,6 +602,7 @@ export async function getInfo(hideVersion = false) {
 
     const info = {
         primaryBaseURL: await Settings.get("primaryBaseURL"),
+        ip2locationEnabled: Boolean(await Settings.get("ip2locationEnabled")),
         serverTimezone: await server.getTimezone(),
         serverTimezoneOffset: server.getTimezoneOffset(),
     };

@@ -43,6 +43,10 @@
                             </span>
                             <div class="flex-fill text-truncate" style="min-width: 0">
                                 <div class="text-truncate">{{ monitor.name }}</div>
+                                <div v-if="hasGeo" class="geo text-truncate" :title="geoTitle">
+                                    <span class="geo-flag">{{ geoFlag }}</span>
+                                    <span class="geo-text">{{ geoText }}</span>
+                                </div>
                                 <div v-if="monitor.tags.length > 0" class="tags gap-1">
                                     <Tag
                                         v-for="tag in monitor.tags"
@@ -181,6 +185,31 @@ export default {
                 c["col-xl-6"] = true;
             }
             return c;
+        },
+        hasGeo() {
+            return this.$root.info.ip2locationEnabled && !!this.monitor.config?.ip2location?.countryCode;
+        },
+        geoFlag() {
+            const code = this.monitor.config?.ip2location?.countryCode;
+            if (!code || code.length !== 2) {
+                return "";
+            }
+            return String.fromCodePoint(...[...code.toUpperCase()].map((c) => 127462 - 65 + c.charCodeAt(0)));
+        },
+        geoText() {
+            const geo = this.monitor.config?.ip2location;
+            return [geo?.city, geo?.countryName].filter(Boolean).join(", ");
+        },
+        geoTitle() {
+            const geo = this.monitor.config?.ip2location;
+            if (!geo) {
+                return "";
+            }
+            const parts = [geo.city, geo.region, geo.countryName].filter(Boolean);
+            if (geo.ip) {
+                parts.push(`(${geo.ip})`);
+            }
+            return parts.join(", ");
         },
     },
     watch: {
@@ -420,6 +449,19 @@ export default {
 
     &.dragging {
         cursor: grabbing;
+    }
+}
+
+.geo {
+    font-size: 0.75rem;
+    line-height: 1.2;
+    opacity: 0.75;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    .geo-flag {
+        margin-right: 0.25rem;
     }
 }
 
