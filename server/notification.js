@@ -77,6 +77,7 @@ const Telegram = require("./notification-providers/telegram");
 const Teltonika = require("./notification-providers/teltonika");
 const Telnyx = require("./notification-providers/telnyx");
 const Threema = require("./notification-providers/threema");
+const Trigv = require("./notification-providers/trigv");
 const Twilio = require("./notification-providers/twilio");
 const Splunk = require("./notification-providers/splunk");
 const Webhook = require("./notification-providers/webhook");
@@ -207,6 +208,7 @@ class Notification {
             new Teltonika(),
             new Telnyx(),
             new Threema(),
+            new Trigv(),
             new Twilio(),
             new Splunk(),
             new Webhook(),
