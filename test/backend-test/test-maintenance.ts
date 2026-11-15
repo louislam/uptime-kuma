@@ -6,6 +6,7 @@ import dayjs from "dayjs";
 const require = createRequire(import.meta.url);
 
 const Maintenance = require("../../server/model/maintenance");
+const Monitor = require("../../server/model/monitor");
 
 /**
  * Build a Maintenance instance without touching the database
@@ -15,6 +16,52 @@ const Maintenance = require("../../server/model/maintenance");
 function maintenanceWith(fields) {
     return Object.assign(Object.create(Maintenance.prototype), fields);
 }
+
+describe("Monitor.isUnderMaintenance()", () => {
+    /**
+     * Snapshot of two monitors, 2 inside group 1, plus one maintenance on the group
+     * @param {boolean} active Is the group's maintenance running
+     * @returns {object} Snapshot for the list build
+     */
+    function snapshot(active) {
+        return {
+            links: new Map([
+                [1, [10]],
+                [2, []],
+            ]),
+            active: new Map([[10, active]]),
+            parents: new Map([
+                [1, null],
+                [2, 1],
+            ]),
+            cache: new Map(),
+        };
+    }
+
+    test("applies the group's maintenance to its children", async () => {
+        const state = snapshot(true);
+
+        assert.strictEqual(await Monitor.isUnderMaintenance(1, state), true);
+        assert.strictEqual(await Monitor.isUnderMaintenance(2, state), true);
+    });
+
+    test("returns false for a monitor outside any running maintenance", async () => {
+        const state = snapshot(false);
+
+        assert.strictEqual(await Monitor.isUnderMaintenance(1, state), false);
+        assert.strictEqual(await Monitor.isUnderMaintenance(2, state), false);
+    });
+
+    test("memoizes the answers of one list build", async () => {
+        const state = snapshot(true);
+
+        await Monitor.isUnderMaintenance(2, state);
+        await Monitor.isUnderMaintenance(2, state);
+
+        assert.strictEqual(state.cache.get(1), true);
+        assert.strictEqual(state.cache.get(2), true);
+    });
+});
 
 describe("Maintenance", () => {
     describe("getDayOfWeekList()", () => {

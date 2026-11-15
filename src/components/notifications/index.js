@@ -43,6 +43,7 @@ import OneBot from "./OneBot.vue";
 import Onesender from "./Onesender.vue";
 import Ooredoo from "./Ooredoo.vue";
 import Opsgenie from "./Opsgenie.vue";
+import OpsiMate from "./OpsiMate.vue";
 import JiraServiceManagement from "./JiraServiceManagement.vue";
 import PagerDuty from "./PagerDuty.vue";
 import FlashDuty from "./FlashDuty.vue";
@@ -159,6 +160,7 @@ const NotificationFormList = {
     Onesender: Onesender,
     Ooredoo: Ooredoo,
     Opsgenie: Opsgenie,
+    OpsiMate: OpsiMate,
     JiraServiceManagement: JiraServiceManagement,
     PagerDuty: PagerDuty,
     FlashDuty: FlashDuty,

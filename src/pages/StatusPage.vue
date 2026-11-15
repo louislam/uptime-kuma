@@ -635,6 +635,7 @@ import {
 } from "../util.ts";
 import Tag from "../components/Tag.vue";
 import VueMultiselect from "vue-multiselect";
+import { applyHeartbeatSnapshot } from "../beat-state";
 
 const toast = useToast();
 dayjs.extend(duration);
@@ -1075,6 +1076,7 @@ export default {
 
                     this.$root.heartbeatList = heartbeatList;
                     this.$root.uptimeList = uptimeList;
+                    applyHeartbeatSnapshot(this.$root, heartbeatList, this.$t.bind(this));
 
                     const heartbeatIds = Object.keys(heartbeatList);
                     const downMonitors = heartbeatIds.reduce((downMonitorsAmount, currentId) => {
