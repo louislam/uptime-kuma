@@ -1,7 +1,7 @@
 const { MonitorType } = require("./monitor-type");
 const { log, UP } = require("../../src/util");
+const { jsonataSandbox } = require("../jsonata-sandbox");
 const mqtt = require("mqtt");
-const jsonata = require("jsonata");
 const { ConditionVariable } = require("../monitor-conditions/variables");
 const { defaultStringOperators, defaultNumberOperators } = require("../monitor-conditions/operators");
 const { ConditionExpressionGroup } = require("../monitor-conditions/expression");
@@ -76,8 +76,7 @@ class MqttMonitorType extends MonitorType {
      */
     async checkJsonQuery(monitor, heartbeat, receivedMessage) {
         const parsedMessage = JSON.parse(receivedMessage);
-        const expression = jsonata(monitor.jsonPath);
-        const result = await expression.evaluate(parsedMessage);
+        const result = await jsonataSandbox(monitor.jsonPath, parsedMessage);
 
         if (result?.toString() === monitor.expectedValue) {
             heartbeat.msg = "Message received, expected value is found";
@@ -103,8 +102,7 @@ class MqttMonitorType extends MonitorType {
         if (monitor.jsonPath) {
             try {
                 const parsedMessage = JSON.parse(receivedMessage);
-                const expression = jsonata(monitor.jsonPath);
-                jsonValue = await expression.evaluate(parsedMessage);
+                jsonValue = await jsonataSandbox(monitor.jsonPath, parsedMessage);
             } catch (e) {
                 // JSON parsing failed, jsonValue remains null
             }

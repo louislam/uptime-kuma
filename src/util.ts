@@ -4,7 +4,6 @@
 */
 
 import dayjs from "dayjs";
-import jsonata from "jsonata";
 
 /**
  * Check if NODE_ENV is development
@@ -642,102 +641,6 @@ export function intHash(str: string, length = 10): number {
     }
     // Normalize the hash to the range [0, 10]
     return ((hash % length) + length) % length; // Ensure the result is non-negative
-}
-
-/**
- * Evaluate a JSON query expression against the provided data.
- * @param data The data to evaluate the JSON query against.
- * @param jsonPath The JSON path or custom JSON query expression.
- * @param jsonPathOperator The operator to use for comparison.
- * @param expectedValue The expected value to compare against.
- * @returns An object containing the status and the evaluation result.
- * @throws Error if the evaluation returns undefined.
- */
-export async function evaluateJsonQuery(
-    data: any,
-    jsonPath: string,
-    jsonPathOperator: string,
-    expectedValue: any
-): Promise<{ status: boolean; response: any }> {
-    // Attempt to parse data as JSON; if unsuccessful, handle based on data type.
-    let response: any;
-    try {
-        response = JSON.parse(data);
-    } catch {
-        response =
-            (typeof data === "object" || typeof data === "number") && !Buffer.isBuffer(data) ? data : data.toString();
-    }
-
-    try {
-        // If a JSON path is provided, pre-evaluate the data using it.
-        response = jsonPath ? await jsonata(jsonPath).evaluate(response) : response;
-
-        if (response === null || response === undefined) {
-            throw new Error("Empty or undefined response. Check query syntax and response structure");
-        }
-
-        // Check for arrays: JSONata filter expressions like .[predicate] always return arrays
-        if (Array.isArray(response)) {
-            const responseStr = JSON.stringify(response);
-            const truncatedResponse = responseStr.length > 25 ? responseStr.substring(0, 25) + "...]" : responseStr;
-            throw new Error(
-                "JSON query returned the array " +
-                    truncatedResponse +
-                    ", but a primitive value is required. " +
-                    "Modify your query to return a single value via [0] to get the first element or use an aggregation like $count(), $sum() or $boolean()."
-            );
-        }
-
-        if (typeof response === "object" || response instanceof Date || typeof response === "function") {
-            throw new Error(
-                `The post-JSON query evaluated response from the server is of type ${typeof response}, which cannot be directly compared to the expected value`
-            );
-        }
-
-        // Perform the comparison logic using the chosen operator
-        let jsonQueryExpression;
-        switch (jsonPathOperator) {
-            case ">":
-            case ">=":
-            case "<":
-            case "<=":
-                jsonQueryExpression = `$number($.value) ${jsonPathOperator} $number($.expected)`;
-                break;
-            case "!=":
-                jsonQueryExpression = "$.value != $.expected";
-                break;
-            case "==":
-                jsonQueryExpression = "$.value = $.expected";
-                break;
-            case "contains":
-                jsonQueryExpression = "$contains($.value, $.expected)";
-                break;
-            default:
-                throw new Error(`Invalid condition ${jsonPathOperator}`);
-        }
-
-        // Evaluate the JSON Query Expression
-        const expression = jsonata(jsonQueryExpression);
-        const status = await expression.evaluate({
-            value: response.toString(),
-            expected: expectedValue.toString(),
-        });
-
-        if (status === undefined) {
-            throw new Error(
-                "Query evaluation returned undefined. Check query syntax and the structure of the response data"
-            );
-        }
-
-        return {
-            status, // The evaluation of the json query
-            response, // The response from the server or result from initial json-query evaluation
-        };
-    } catch (err: any) {
-        response = JSON.stringify(response); // Ensure the response is treated as a string for the console
-        response = response && response.length > 50 ? `${response.substring(0, 100)}… (truncated)` : response; // Truncate long responses to the console
-        throw new Error(`Error evaluating JSON query: ${err.message}. Response from server was: ${response}`);
-    }
 }
 
 // these types will have domain expiry support via the specified field

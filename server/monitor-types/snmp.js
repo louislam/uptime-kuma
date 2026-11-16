@@ -1,5 +1,6 @@
 const { MonitorType } = require("./monitor-type");
-const { UP, log, evaluateJsonQuery } = require("../../src/util");
+const { UP, log } = require("../../src/util");
+const { evaluateJsonQuery } = require("../jsonata-sandbox");
 const snmp = require("net-snmp");
 
 class SNMPMonitorType extends MonitorType {
