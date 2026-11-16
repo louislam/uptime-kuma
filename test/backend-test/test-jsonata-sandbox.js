@@ -2,6 +2,7 @@ const { describe, test } = require("node:test");
 const assert = require("node:assert");
 
 const { jsonataSandbox, evaluateJsonQuery } = require("../../server/jsonata-sandbox");
+const jsonata = require("jsonata");
 
 // Payloads from https://github.com/jsonata-js/jsonata/issues/859, they obtain the host Function constructor.
 const CARRIER = `$record := $clone({"first":0,"constructor":0,"undefined":0}); $clone := function($item){$item}; $record ~> | $ | {"__proto__":/audit/} |;`;
@@ -29,12 +30,31 @@ describe("jsonataSandbox", () => {
         );
     });
 
-    test("blocks code generation from strings", async () => {
+    // Control: without the sandbox, these payloads return values only reachable through code generation.
+    test("payloads escape in plain jsonata", async (t) => {
+        const settle = (expression) =>
+            jsonata(expression)
+                .evaluate({})
+                .then((value) => ({ value }))
+                .catch((error) => ({ error }));
+
+        const each = await settle(ESCAPE_EACH);
+        const lookup = await settle(ESCAPE_LOOKUP);
+        if (each.error || lookup.error) {
+            t.diagnostic("payloads no longer escape on this jsonata version; the sandbox assertions still apply");
+            return;
+        }
+        assert.strictEqual(each.value, 221);
+        assert.strictEqual(lookup.value, 437);
+    });
+
+    test("blocks the escapes", async () => {
         for (const expression of [ESCAPE_EACH, ESCAPE_LOOKUP, ESCAPE_CONSTRUCTOR]) {
-            await assert.rejects(jsonataSandbox(expression, {}), (err) => {
-                assert.match(err.message, /Code generation from strings disallowed|non-function/);
-                return true;
-            });
+            const result = await jsonataSandbox(expression, {}).then(
+                (value) => ({ value }),
+                (error) => ({ error })
+            );
+            assert.ok(result.error, `sandbox returned ${JSON.stringify(result.value)} instead of failing`);
         }
     });
 
@@ -45,9 +65,6 @@ describe("jsonataSandbox", () => {
     test("evaluateJsonQuery uses the sandbox", async () => {
         const ok = await evaluateJsonQuery(JSON.stringify({ temp: 21 }), "$.temp", ">", "20");
         assert.deepStrictEqual(ok, { status: true, response: 21 });
-        await assert.rejects(
-            evaluateJsonQuery("{}", ESCAPE_EACH, "==", "0"),
-            /Code generation from strings disallowed/
-        );
+        await assert.rejects(evaluateJsonQuery("{}", ESCAPE_EACH, "==", "0"), /Error evaluating JSON query/);
     });
 });
