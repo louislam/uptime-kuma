@@ -2,6 +2,7 @@ const dayjs = require("dayjs");
 const axios = require("axios");
 const { setTimeout, clearTimeout } = require("unlimited-timeout");
 const { Prometheus } = require("../prometheus");
+const { evaluateJsonQuery } = require("../jsonata-sandbox");
 const {
     log,
     UP,
@@ -11,7 +12,6 @@ const {
     flipStatus,
     MIN_INTERVAL_SECOND,
     SQL_DATETIME_FORMAT,
-    evaluateJsonQuery,
     PING_PACKET_SIZE_MIN,
     PING_PACKET_SIZE_MAX,
     PING_PACKET_SIZE_DEFAULT,
