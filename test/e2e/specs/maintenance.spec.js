@@ -63,7 +63,6 @@ test.describe("Maintenance", () => {
 
 test.describe("Maintenance actions", () => {
     test.beforeEach(async ({ page }) => {
-        await restoreSqliteSnapshot();
         await page.goto("./add-maintenance");
         await login(page);
         await page.locator("#name").fill("Mobile maintenance");
@@ -129,7 +128,10 @@ test.describe("Maintenance actions", () => {
                 if (active) {
                     await card.locator(".buttons button").first().click();
                     await page.locator(".modal.show .modal-footer .btn-primary").click();
-                    await expect(card.locator(".buttons .btn-primary")).toBeVisible();
+                    await expect(card.locator(".buttons button").first()).toHaveText(labels[1]);
+                } else {
+                    await card.locator(".buttons button").first().click();
+                    await expect(card.locator(".buttons button").first()).toHaveText(labels[0]);
                 }
             }
         });
