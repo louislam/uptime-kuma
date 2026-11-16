@@ -1650,5 +1650,8 @@
     "msGraphClientSecretLink": "create a client secret",
     "OpsiMate URL": "OpsiMate URL",
     "opsimateUrlDescription": "The base URL of the OpsiMate API (the server port, not the web UI).",
-    "opsimateApiTokenDescription": "The value of the API_TOKEN setting of your OpsiMate server (default: opsimate)."
+    "opsimateApiTokenDescription": "The value of the API_TOKEN setting of your OpsiMate server (default: opsimate).",
+    "trigvDefaultChannel": "general",
+    "trigvChannelHelp": "Enter your channel slug (up to 120 characters). Leave empty to use general.",
+    "trigvApiKeyDocs": "Trigv API key documentation"
 }
