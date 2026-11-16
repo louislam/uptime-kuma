@@ -27,8 +27,7 @@ on:
         default: false
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 concurrency:
   group: release3-${{ inputs.is_beta }}-${{ inputs.version }}
@@ -36,11 +35,13 @@ concurrency:
 
 jobs:
   # 1. Create the release branch, bump the version and create the draft PR
-  #    Re-runnable: reuses the existing open PR if there is one, and does nothing
-  #    when package.json already carries the target version (no bump, no PR).
+  #    Re-runnable: reuses the existing open PR if there is one
   prepare:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    permissions:
+      contents: read
+      pull-requests: write
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
