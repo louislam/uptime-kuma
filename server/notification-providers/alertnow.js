@@ -11,20 +11,23 @@ class AlertNow extends NotificationProvider {
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
-
         try {
             let textMsg = "";
             let status = "open";
             let eventType = "ERROR";
             let eventId = new Date().toISOString().slice(0, 10).replace(/-/g, "");
 
+            // Heartbeats carry no `name` (see Heartbeat#toJSON) — the monitor
+            // name lives on monitorJSON.
+            const monitorName = monitorJSON?.name;
+
             if (heartbeatJSON && heartbeatJSON.status === UP) {
-                textMsg = `[${heartbeatJSON.name}] ✅ Application is back online`;
+                textMsg = `[${monitorName}] ✅ Application is back online`;
                 status = "close";
                 eventType = "INFO";
-                eventId += `_${heartbeatJSON.name.replace(/\s/g, "")}`;
+                eventId += `_${(monitorName ?? "").replace(/\s/g, "")}`;
             } else if (heartbeatJSON && heartbeatJSON.status === DOWN) {
-                textMsg = `[${heartbeatJSON.name}] 🔴 Application went down`;
+                textMsg = `[${monitorName}] 🔴 Application went down`;
             }
 
             textMsg += ` - ${msg}`;
@@ -42,7 +45,6 @@ class AlertNow extends NotificationProvider {
             };
 
             let config = this.getAxiosConfigWithProxy({});
-
             await axios.post(notification.alertNowWebhookURL, data, config);
             return okMsg;
         } catch (error) {
