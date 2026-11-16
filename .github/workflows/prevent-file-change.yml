@@ -11,7 +11,7 @@ jobs:
       pull-requests: read
     steps:
       - name: Prevent file change
-        uses: xalvarez/prevent-file-change-action@dbc67c205c9ed02aa39c497b422c24f364c3e8dd # v3.0.1
+        uses: xalvarez/prevent-file-change-action@440fe0989b54093ce834a504af595ee55967da4d # v3.0.2
         with:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           # Regex, /src/lang/*.json is not allowed to be changed, except for /src/lang/en.json
