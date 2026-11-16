@@ -39,7 +39,7 @@ jobs:
           key: node-modules-${{ runner.os }}-${{ runner.arch }}-node${{ matrix.node }}-${{ hashFiles('**/package-lock.json') }}
 
       - name: Use Node.js ${{ matrix.node }}
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ matrix.node }}
 
@@ -51,7 +51,7 @@ jobs:
 
       # Apprise is not pre-installed on the runners, so install it from upstream
       # (via uv) to run the Apprise notification provider test instead of skipping it.
-      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
       - name: Install Apprise
         run: uv tool install "apprise~=2.0.1" --with paho-mqtt --with "slixmpp>=1.16.0"
       - name: Add uv tools to PATH
@@ -76,7 +76,7 @@ jobs:
       - name: Login to Docker Hub
         if: github.repository == 'louislam/uptime-kuma' && runner.os == 'Linux' && runner.arch == 'X64'
         continue-on-error: true
-        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -85,7 +85,7 @@ jobs:
       - name: Login to GitHub Container Registry
         if: github.repository == 'louislam/uptime-kuma' && runner.os == 'Linux' && runner.arch == 'X64'
         continue-on-error: true
-        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -115,7 +115,7 @@ jobs:
       #          key: node-modules-${{ runner.os }}-node${{ matrix.node }}-${{ hashFiles('**/package-lock.json') }}
 
       - name: Use Node.js 24
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
       - run: npm clean-install --no-fund
@@ -143,7 +143,7 @@ jobs:
           key: node-modules-e2e-${{ runner.os }}-${{ runner.arch }}-node26-${{ hashFiles('**/package-lock.json') }}
 
       - name: Setup Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 26
       - if: steps.cache-node-modules.outputs.cache-hit != 'true'
@@ -183,7 +183,7 @@ jobs:
 
       - name: Upload Playwright Report
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: playwright-report
           path: private/playwright-report
@@ -191,7 +191,7 @@ jobs:
 
       - name: Upload Playwright Test Results
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: playwright-test-results
           path: private/playwright-test-results
