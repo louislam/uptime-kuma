@@ -1775,5 +1775,8 @@
     "msGraphConsent": "Consentement",
     "msGraphRbac": "RBAC dans Exchange Online",
     "msGraphClientSecretDescription": "Apprenez comment {clientSecret} pour l’enregistrement de votre demande.",
-    "msGraphClientSecretLink": "Créer un secret client"
+    "msGraphClientSecretLink": "Créer un secret client",
+    "OpsiMate URL": "URL OpsiMate",
+    "opsimateUrlDescription": "URL de base de l’API OpsiMate (le port du serveur, pas l’interface utilisateur Web).",
+    "opsimateApiTokenDescription": "La valeur du paramètre API_TOKEN de votre serveur OpsiMate (par défaut : opsimate)."
 }

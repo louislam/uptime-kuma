@@ -1777,5 +1777,8 @@
     "msGraphMailbox": "发件人邮箱",
     "msGraphTenantIdDescription": "租户 ID，或者该租户的任一域名（例如 contoso.onmicrosoft.com）。",
     "Tenant ID": "租户 ID",
-    "Microsoft Graph Email": "电子邮件 (Microsoft Graph)"
+    "Microsoft Graph Email": "电子邮件 (Microsoft Graph)",
+    "opsimateApiTokenDescription": "OpsiMate 服务器设置里的 API_TOKEN 值（默认值：opsimate）。",
+    "opsimateUrlDescription": "OpsiMate API 基础地址（应为服务器端口，不是网页 UI 地址）。",
+    "OpsiMate URL": "OpsiMate 地址"
 }
