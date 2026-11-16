@@ -42,6 +42,7 @@ const {
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification");
+const { Proxy } = require("../proxy");
 const { demoMode } = require("../config");
 const version = require("../../package.json").version;
 const apicache = require("../utils/response-cache");
@@ -49,8 +50,9 @@ const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { DockerHost } = require("../docker");
 const crypto = require("crypto");
 const { UptimeCalculator } = require("../uptime-calculator");
+const { CookieJar } = require("tough-cookie");
+const { HttpsCookieAgent } = require("http-cookie-agent/http");
 const { MonitorStats } = require("../monitor-stats");
-const { attachKeylogListener, getMonitorAgents } = require("../monitor-agents");
 const { readTlsInfo } = require("../monitor-tls");
 const { emitHeartbeat, socketRoom } = require("../heartbeat-emit");
 const { updatePrometheusStats } = require("../prometheus-monitor");
@@ -472,10 +474,9 @@ class Monitor extends BeanModel {
     /**
      * Start monitor
      * @param {Server} io Socket server instance
-     * @param {number} firstBeatDelayMs Delay the first check (used to spread startup)
      * @returns {Promise<void>}
      */
-    async start(io, firstBeatDelayMs = 0) {
+    async start(io) {
         let previousBeat = null;
         let retries = 0;
 
@@ -650,19 +651,33 @@ class Monitor extends BeanModel {
                         };
                     }
 
-                    // Reuse keep-alive agents per monitor: creating a new agent and socket for
-                    // every check exhausts local ports and buffers with thousands of monitors
-                    const agents = await getMonitorAgents(this, {
-                        httpAgentOptions,
-                        httpsAgentOptions,
-                    });
+                    if (this.proxy_id) {
+                        const proxy = await R.load("proxy", this.proxy_id);
 
-                    if (agents.proxied) {
-                        options.proxy = false;
+                        if (proxy && proxy.active) {
+                            const { httpAgent, httpsAgent } = Proxy.createAgents(proxy, {
+                                httpsAgentOptions: httpsAgentOptions,
+                                httpAgentOptions: httpAgentOptions,
+                            });
+
+                            options.proxy = false;
+                            options.httpAgent = httpAgent;
+                            options.httpsAgent = httpsAgent;
+                        }
                     }
 
-                    options.httpAgent = agents.httpAgent;
-                    options.httpsAgent = agents.httpsAgent;
+                    if (!options.httpAgent) {
+                        options.httpAgent = new http.Agent(httpAgentOptions);
+                    }
+
+                    if (!options.httpsAgent) {
+                        let jar = new CookieJar();
+                        let httpsCookieAgentOptions = {
+                            ...httpsAgentOptions,
+                            cookies: { jar },
+                        };
+                        options.httpsAgent = new HttpsCookieAgent(httpsCookieAgentOptions);
+                    }
 
                     if (this.auth_method === "mtls") {
                         if (this.tlsCert !== null && this.tlsCert !== "") {
@@ -677,11 +692,13 @@ class Monitor extends BeanModel {
                     }
 
                     let tlsInfo = {};
-                    // Store tlsInfo when secureConnect event is emitted. The agent is reused,
-                    // so this replaces the listener of the previous beat instead of stacking
-                    attachKeylogListener(agents, options.httpsAgent, async (tlsSocket) => {
-                        tlsInfo = readTlsInfo(tlsSocket, this.getUrl()?.hostname);
-                        await this.handleTlsInfo(tlsInfo);
+                    // Store tlsInfo when secureConnect event is emitted
+                    // The keylog event listener is a workaround to access the tlsSocket
+                    options.httpsAgent.once("keylog", async (line, tlsSocket) => {
+                        tlsSocket.once("secureConnect", async () => {
+                            tlsInfo = readTlsInfo(tlsSocket, this.getUrl()?.hostname);
+                            await this.handleTlsInfo(tlsInfo);
+                        });
                     });
 
                     log.debug("monitor", `[${this.name}] Axios Options: ${JSON.stringify(options)}`);
@@ -1144,10 +1161,6 @@ class Monitor extends BeanModel {
             this.heartbeatInterval = setTimeout(() => {
                 safeBeat();
             }, this.interval * 1000);
-        } else if (firstBeatDelayMs > 0) {
-            // Spread the first check over the interval instead of checking every
-            // monitor at the same moment when the server starts
-            this.heartbeatInterval = setTimeout(safeBeat, firstBeatDelayMs);
         } else {
             safeBeat();
         }
@@ -1642,11 +1655,36 @@ class Monitor extends BeanModel {
     }
 
     /**
-     * Check if monitor is under maintenance
+     * Check if monitor is under maintenance. A group's window also covers its children.
      * @param {number} monitorID ID of monitor to check
+     * @param {object} snapshot Bulk-loaded state, so a list build needs no per-monitor query, omit for live queries
+     * @param {Map<number, number[]>} snapshot.links Monitor id -> maintenance ids
+     * @param {Map<number, boolean>} snapshot.active Maintenance id -> running right now
+     * @param {Map<number, number|null>} snapshot.parents Monitor id -> parent monitor id
+     * @param {Map<number, boolean>} snapshot.cache Memo of the answers for one list build
      * @returns {Promise<boolean>} Is the monitor under maintenance
      */
-    static async isUnderMaintenance(monitorID) {
+    static async isUnderMaintenance(monitorID, snapshot = null) {
+        if (snapshot) {
+            if (snapshot.cache.has(monitorID)) {
+                return snapshot.cache.get(monitorID);
+            }
+
+            let result = (snapshot.links.get(monitorID) ?? []).some((maintenanceID) =>
+                snapshot.active.get(maintenanceID)
+            );
+
+            if (!result) {
+                const parentID = snapshot.parents.get(monitorID);
+                if (parentID != null) {
+                    result = await Monitor.isUnderMaintenance(parentID, snapshot);
+                }
+            }
+
+            snapshot.cache.set(monitorID, result);
+            return result;
+        }
+
         const maintenanceIDList = await R.getCol(
             `
             SELECT maintenance_id FROM monitor_maintenance
@@ -1891,8 +1929,10 @@ class Monitor extends BeanModel {
 
             const byId = new Map();
             const childrenById = new Map();
+            const parents = new Map();
             for (const row of allMonitors) {
                 byId.set(row.id, row);
+                parents.set(row.id, row.parent ?? null);
                 const key = row.parent ?? null;
                 if (!childrenById.has(key)) {
                     childrenById.set(key, []);
@@ -1963,22 +2003,13 @@ class Monitor extends BeanModel {
                 maintenanceByMonitor.get(row.monitor_id).push(row.maintenance_id);
             }
 
-            const maintenanceCache = new Map();
-            const isUnderMaintenance = (id) => {
-                if (maintenanceCache.has(id)) {
-                    return maintenanceCache.get(id);
-                }
-                let result = (maintenanceByMonitor.get(id) ?? []).some((maintenanceID) =>
-                    maintenanceActive.get(maintenanceID)
-                );
-                if (!result) {
-                    const node = byId.get(id);
-                    if (node?.parent) {
-                        result = isUnderMaintenance(node.parent);
-                    }
-                }
-                maintenanceCache.set(id, result);
-                return result;
+            // One snapshot feeds the same Monitor.isUnderMaintenance() rule the beat uses,
+            // so the dashboard and the beat cannot drift apart
+            const maintenanceSnapshot = {
+                links: maintenanceByMonitor,
+                active: maintenanceActive,
+                parents,
+                cache: new Map(),
             };
 
             notifications.forEach((row) => {
@@ -2001,14 +2032,14 @@ class Monitor extends BeanModel {
                 });
             });
 
-            monitorData.forEach((monitor) => {
+            for (const monitor of monitorData) {
                 const parentActive = isParentActive(monitor.id);
-                maintenanceStatusMap.set(monitor.id, isUnderMaintenance(monitor.id));
+                maintenanceStatusMap.set(monitor.id, await Monitor.isUnderMaintenance(monitor.id, maintenanceSnapshot));
                 childrenIDsMap.set(monitor.id, allChildrenIDs(monitor.id));
                 activeStatusMap.set(monitor.id, monitor.active === 1 && parentActive);
                 forceInactiveMap.set(monitor.id, !parentActive);
                 pathsMap.set(monitor.id, pathOf(monitor.id));
-            });
+            }
         }
 
         return {

@@ -6,14 +6,18 @@ import { socketRoom } from "./heartbeat-emit";
 import { UptimeDataResult } from "./uptime-calculator";
 
 const MINUTE = 60;
+const HOUR = 3600;
 const DAY = 86400;
 const MINUTES_PER_DAY = 24 * 60;
+const HOURS_PER_DAY = 24;
 const REFRESH_INTERVAL_MS = 15 * 60 * 1000;
 const CHUNK_SIZE = 500;
 
 /** Dashboard uptime and ping numbers for a single monitor */
 export interface MonitorStatsResult {
     avgPing: number | null;
+    avgPing720: number | null;
+    avgPing1y: number | null;
     uptime24: number;
     uptime720: number;
     uptime1y: number;
@@ -29,9 +33,10 @@ interface WindowSum {
 /** Window anchors and sums of a cached result */
 interface StatsWindow {
     minuteKey: number;
+    hourKey: number;
     dayKey: number;
     minutely: WindowSum;
-    daily30: WindowSum;
+    hourly30: WindowSum;
     daily365: WindowSum;
 }
 
@@ -115,42 +120,9 @@ export class MonitorStats {
     }
 
     /**
-     * Aggregate the daily table once for both the 30-day and the 1-year window
-     * @param monitorIDs Monitor ids
-     * @param monthSince Unix timestamp (seconds)
-     * @param yearSince Unix timestamp (seconds)
-     * @returns monitorID -> { up30, down30, up1y, down1y }
-     */
-    private static async sumDailyWindows(monitorIDs: number[], monthSince: number, yearSince: number) {
-        const result = new Map<number, { up30: number; down30: number; up1y: number; down1y: number }>();
-        for (let i = 0; i < monitorIDs.length; i += CHUNK_SIZE) {
-            const chunk = monitorIDs.slice(i, i + CHUNK_SIZE);
-            const placeholders = chunk.map(() => "?").join(",");
-            const rows = await R.getAll(
-                `SELECT monitor_id,
-                        SUM(CASE WHEN timestamp >= ? THEN up ELSE 0 END) AS up30,
-                        SUM(CASE WHEN timestamp >= ? THEN down ELSE 0 END) AS down30,
-                        SUM(up) AS up1y,
-                        SUM(down) AS down1y
-                 FROM stat_daily
-                 WHERE timestamp >= ? AND monitor_id IN (${placeholders})
-                 GROUP BY monitor_id`,
-                [monthSince, monthSince, yearSince, ...chunk]
-            );
-            for (const row of rows) {
-                result.set(Number(row.monitor_id), {
-                    up30: Number(row.up30) || 0,
-                    down30: Number(row.down30) || 0,
-                    up1y: Number(row.up1y) || 0,
-                    down1y: Number(row.down1y) || 0,
-                });
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Compute 24h / 30d / 1y stats with two grouped queries
+     * Compute 24h / 30d / 1y stats with three grouped queries.
+     * The 30-day window reads stat_hourly, like the uptime calculator, so the
+     * dashboard and the charts answer with the same data.
      * @param monitorIDs Monitor ids
      * @param now Current time (tests)
      * @returns Stats plus the raw sums behind them
@@ -162,45 +134,53 @@ export class MonitorStats {
         const ids = monitorIdsSchema.parse(monitorIDs);
         const unix = now.unix();
         const minuteKey = Math.floor(unix / MINUTE) * MINUTE;
+        const hourKey = Math.floor(unix / HOUR) * HOUR;
         const dayKey = Math.floor(unix / DAY) * DAY;
         const minutelySince = minuteKey - MINUTE * (MINUTES_PER_DAY - 1);
-        const monthSince = dayKey - DAY * (30 - 1);
-        const yearSince = dayKey - DAY * (365 - 1);
+        const hourlySince = hourKey - HOUR * (HOURS_PER_DAY * 30 - 1);
+        const dailySince = dayKey - DAY * (365 - 1);
 
-        const [minutely, daily] = await Promise.all([
+        const [minutely, hourly, daily] = await Promise.all([
             MonitorStats.sumStats("stat_minutely", ids, minutelySince),
-            MonitorStats.sumDailyWindows(ids, monthSince, yearSince),
+            MonitorStats.sumStats("stat_hourly", ids, hourlySince),
+            MonitorStats.sumStats("stat_daily", ids, dailySince),
         ]);
 
         const stats: Record<number, MonitorStatsResult> = {};
         const windows = new Map<number, StatsWindow>();
         for (const monitorID of ids) {
             const minute = minutely.get(monitorID);
+            const hours = hourly.get(monitorID);
             const days = daily.get(monitorID);
             const data24 = MonitorStats.toUptime(minute);
+            const data30d = MonitorStats.toUptime(hours);
+            const data1y = MonitorStats.toUptime(days);
             stats[monitorID] = {
                 avgPing: data24.avgPing === null ? null : Number(data24.avgPing.toFixed(2)),
+                avgPing720: data30d.avgPing === null ? null : Number(data30d.avgPing.toFixed(2)),
+                avgPing1y: data1y.avgPing === null ? null : Number(data1y.avgPing.toFixed(2)),
                 uptime24: data24.uptime,
-                uptime720: UptimeDataResult.fromTotals(Number(days?.up30) || 0, Number(days?.down30) || 0).uptime,
-                uptime1y: UptimeDataResult.fromTotals(Number(days?.up1y) || 0, Number(days?.down1y) || 0).uptime,
+                uptime720: data30d.uptime,
+                uptime1y: data1y.uptime,
             };
             windows.set(monitorID, {
                 minuteKey,
+                hourKey,
                 dayKey,
                 minutely: {
                     up: Number(minute?.up) || 0,
                     down: Number(minute?.down) || 0,
                     pingSum: Number(minute?.ping_sum) || 0,
                 },
-                daily30: {
-                    up: Number(days?.up30) || 0,
-                    down: Number(days?.down30) || 0,
-                    pingSum: 0,
+                hourly30: {
+                    up: Number(hours?.up) || 0,
+                    down: Number(hours?.down) || 0,
+                    pingSum: Number(hours?.ping_sum) || 0,
                 },
                 daily365: {
-                    up: Number(days?.up1y) || 0,
-                    down: Number(days?.down1y) || 0,
-                    pingSum: 0,
+                    up: Number(days?.up) || 0,
+                    down: Number(days?.down) || 0,
+                    pingSum: Number(days?.ping_sum) || 0,
                 },
             });
         }
@@ -266,22 +246,28 @@ export class MonitorStats {
 
         if (status === UP) {
             window.minutely.up++;
-            window.daily30.up++;
+            window.hourly30.up++;
             window.daily365.up++;
             if (!Number.isNaN(ping)) {
                 window.minutely.pingSum += ping;
+                window.hourly30.pingSum += ping;
+                window.daily365.pingSum += ping;
             }
         } else if (status === DOWN || status === PENDING) {
             window.minutely.down++;
-            window.daily30.down++;
+            window.hourly30.down++;
             window.daily365.down++;
         }
 
         const data24 = UptimeDataResult.fromTotals(window.minutely.up, window.minutely.down, window.minutely.pingSum);
+        const data30d = UptimeDataResult.fromTotals(window.hourly30.up, window.hourly30.down, window.hourly30.pingSum);
+        const data1y = UptimeDataResult.fromTotals(window.daily365.up, window.daily365.down, window.daily365.pingSum);
         cached.uptime24 = data24.uptime;
         cached.avgPing = data24.avgPing === null ? null : Number(data24.avgPing.toFixed(2));
-        cached.uptime720 = UptimeDataResult.fromTotals(window.daily30.up, window.daily30.down).uptime;
-        cached.uptime1y = UptimeDataResult.fromTotals(window.daily365.up, window.daily365.down).uptime;
+        cached.uptime720 = data30d.uptime;
+        cached.avgPing720 = data30d.avgPing === null ? null : Number(data30d.avgPing.toFixed(2));
+        cached.uptime1y = data1y.uptime;
+        cached.avgPing1y = data1y.avgPing === null ? null : Number(data1y.avgPing.toFixed(2));
         return cached;
     }
 
@@ -295,6 +281,7 @@ export class MonitorStats {
     private static async expireWindow(monitorID: number, window: StatsWindow, now: dayjs.Dayjs): Promise<void> {
         const unix = now.unix();
         const minuteKey = Math.floor(unix / MINUTE) * MINUTE;
+        const hourKey = Math.floor(unix / HOUR) * HOUR;
         const dayKey = Math.floor(unix / DAY) * DAY;
 
         if (minuteKey > window.minuteKey) {
@@ -315,19 +302,29 @@ export class MonitorStats {
             }
         }
 
+        if (hourKey > window.hourKey) {
+            const gap = hourKey - window.hourKey;
+            const oldHourKey = window.hourKey;
+            window.hourKey = hourKey;
+            const expired30 =
+                gap >= HOURS_PER_DAY * 30 * HOUR
+                    ? { up: 0, down: 0, pingSum: 0 }
+                    : await MonitorStats.sumExpired(
+                          "stat_hourly",
+                          monitorID,
+                          oldHourKey - HOUR * (HOURS_PER_DAY * 30 - 1),
+                          hourKey - HOUR * (HOURS_PER_DAY * 30 - 1)
+                      );
+            window.hourly30 =
+                gap >= HOURS_PER_DAY * 30 * HOUR
+                    ? { up: 0, down: 0, pingSum: 0 }
+                    : MonitorStats.subtract(window.hourly30, expired30);
+        }
+
         if (dayKey > window.dayKey) {
             const gap = dayKey - window.dayKey;
             const oldDayKey = window.dayKey;
             window.dayKey = dayKey;
-            const expired30 =
-                gap >= 30 * DAY
-                    ? { up: 0, down: 0, pingSum: 0 }
-                    : await MonitorStats.sumExpired(
-                          "stat_daily",
-                          monitorID,
-                          oldDayKey - DAY * (30 - 1),
-                          dayKey - DAY * (30 - 1)
-                      );
             const expired365 =
                 gap >= 365 * DAY
                     ? { up: 0, down: 0, pingSum: 0 }
@@ -337,9 +334,6 @@ export class MonitorStats {
                           oldDayKey - DAY * (365 - 1),
                           dayKey - DAY * (365 - 1)
                       );
-            // A full window without beats leaves nothing to subtract
-            window.daily30 =
-                gap >= 30 * DAY ? { up: 0, down: 0, pingSum: 0 } : MonitorStats.subtract(window.daily30, expired30);
             window.daily365 =
                 gap >= 365 * DAY ? { up: 0, down: 0, pingSum: 0 } : MonitorStats.subtract(window.daily365, expired365);
         }
