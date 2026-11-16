@@ -1733,5 +1733,8 @@
     "msGraphAppRegistration": "registrácia aplikácie",
     "msGraphConsent": "súhlas",
     "msGraphRbac": "RBAC v Exchange Online",
-    "msGraphMailbox": "Sender Mailbox"
+    "msGraphMailbox": "Sender Mailbox",
+    "OpsiMate URL": "OpsiMate URL adresa",
+    "opsimateUrlDescription": "Základná URL adresa rozhrania API OpsiMate (port servera, nie webové používateľské rozhranie).",
+    "opsimateApiTokenDescription": "Hodnota nastavenia API_TOKEN vášho servera OpsiMate (predvolené nastavenie: opsimate)."
 }
