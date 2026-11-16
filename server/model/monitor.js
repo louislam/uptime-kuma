@@ -184,11 +184,7 @@ class Monitor extends BeanModel {
             databaseQuery: this.databaseQuery,
             authMethod: this.authMethod,
             slowResponseNotification: this.isEnabledSlowResponseNotification(),
-            slowResponseNotificationMethod: this.slowResponseNotificationMethod,
-            slowResponseNotificationRange: this.slowResponseNotificationRange,
-            slowResponseNotificationThresholdMethod: this.slowResponseNotificationThresholdMethod,
             slowResponseNotificationThreshold: this.slowResponseNotificationThreshold,
-            slowResponseNotificationThresholdMultiplier: this.slowResponseNotificationThresholdMultiplier,
             slowResponseNotificationResendInterval: this.slowResponseNotificationResendInterval,
             grpcUrl: this.grpcUrl,
             grpcProtobuf: this.grpcProtobuf,
@@ -1173,7 +1169,8 @@ class Monitor extends BeanModel {
                 await beat();
             } catch (e) {
                 console.trace(e);
-                UptimeKumaServer.errorLog(e, false);
+                UptimeKumaServer.errorLog(e, false)        // A push monitor can be up without a response time. null < threshold is true,
+                // which would look like a fast response and clear a slow streak.
                 log.error("monitor", "Please report to https://github.com/louislam/uptime-kuma/issues");
 
                 if (!this.isStop) {
@@ -1737,106 +1734,20 @@ class Monitor extends BeanModel {
             return;
         }
 
-        const method = monitor.slowResponseNotificationMethod;
-        const thresholdMethod = monitor.slowResponseNotificationThresholdMethod;
-        const thresholdMultipler = monitor.slowResponseNotificationThresholdMultiplier;
-        const windowDuration = monitor.slowResponseNotificationRange;
-        let actualResponseTime = 0;
-
-        let previousBeats;
-        if (method !== "last") {
-            //Get recent heartbeat list with range of time
-            const afterThisDate = new Date(Date.now() - 1000 * (monitor.slowResponseNotificationRange + 1)); // add 1 second otherwise we grab 0 previous beats when Time Range == Heartbeat Interval
-            previousBeats = await R.getAll(
-                `
-                SELECT * FROM heartbeat
-                WHERE monitor_id = ? AND time > datetime(?) AND status = ?`,
-                [monitor.id, afterThisDate.toISOString(), UP]
-            );
-        }
-
-        switch (method) {
-            case "average":
-                previousBeats.forEach((beat) => {
-                    actualResponseTime = actualResponseTime + beat.ping;
-                });
-                actualResponseTime = Math.round(actualResponseTime / previousBeats.length);
-                break;
-
-            case "max":
-                previousBeats.forEach((beat) => {
-                    actualResponseTime = Math.max(actualResponseTime, beat.ping);
-                });
-                break;
-
-            case "last":
-                actualResponseTime = bean.ping;
-                break;
-
-            default:
-                log.error(
-                    "monitor",
-                    `[${this.name}] Unknown response time calculation method for slow response notification: ${method}`
-                );
-                return;
-        }
-
-        let threshold;
-        let thresholdDescription;
-        let afterThisDate;
-        let avgPing;
-        switch (thresholdMethod) {
-            case "threshold-static":
-                threshold = monitor.slowResponseNotificationThreshold;
-                thresholdDescription = "static";
-                break;
-
-            case "threshold-relative-24-hour":
-                //Get average response time over last 24 hours
-                afterThisDate = new Date(Date.now() - 1000 * (24 * 60 * 60)); // 24 hours in milliseconds
-                avgPing = parseInt(
-                    await R.getCell(
-                        `
-                    SELECT AVG(ping) FROM heartbeat
-                    WHERE time > datetime(?)
-                    AND ping IS NOT NULL
-                    AND monitor_id = ?
-                    AND status = ?
-                    `,
-                        [afterThisDate.toISOString(), monitor.id, UP]
-                    )
-                );
-                //calculate threshold
-                threshold = Math.round(avgPing * thresholdMultipler);
-                thresholdDescription = `${thresholdMultipler}x 24H Avg`;
-                break;
-
-            default:
-                log.error(
-                    "monitor",
-                    `[${this.name}] Unknown threshold calculation method for slow response notification: ${thresholdMethod}`
-                );
-                return;
-        }
-
-        // Verify valid response time was calculated
-        if (actualResponseTime === 0 || !Number.isInteger(actualResponseTime)) {
-            log.debug("monitor", `[${this.name}] Failed to calculate valid response time`);
+        // Verify valid ping value.
+        if (bean.ping == null) {
+            log.debug("monitor", `[${this.name}] No response time for this beat, skipping slow response check`);
             return;
         }
 
-        // Verify valid threshold was calculated
-        if (!Number.isInteger(threshold)) {
-            log.debug("monitor", `[${this.name}] Failed to calculate valid threshold`);
-            return;
-        }
+        const actualResponseTime = bean.ping;
+        const threshold = monitor.slowResponseNotificationThreshold;
 
         // Create stats to append to messages/logs
-        const methodDescription = ["average", "max"].includes(method) ? `${method} of last ${windowDuration}s` : method;
-        let msgStats = `Response: ${actualResponseTime}ms (${methodDescription}) | Threshold: ${threshold}ms (${thresholdDescription})`;
+        let msgStats = `Response: ${actualResponseTime}ms | Threshold: ${threshold}ms`;
         const slowStats = {
-            calculatedResponse: `${actualResponseTime}ms (${methodDescription})`,
-            calculatedThreshold: `${threshold}ms (${thresholdDescription})`,
+            calculatedResponse: `${actualResponseTime}ms`,
+            calculatedThreshold: `${threshold}ms`,
             slowFor: `${bean.slowResponseCount * monitor.interval}s`,
         };
 

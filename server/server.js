@@ -593,11 +593,7 @@ app.use(function (req, res, next) {
                 bean.authWorkstation = monitor.authWorkstation;
                 bean.authDomain = monitor.authDomain;
                 bean.slowResponseNotification = monitor.slowResponseNotification;
-                bean.slowResponseNotificationMethod = monitor.slowResponseNotificationMethod;
-                bean.slowResponseNotificationRange = monitor.slowResponseNotificationRange;
-                bean.slowResponseNotificationThresholdMethod = monitor.slowResponseNotificationThresholdMethod;
                 bean.slowResponseNotificationThreshold = monitor.slowResponseNotificationThreshold;
-                bean.slowResponseNotificationThresholdMultiplier = monitor.slowResponseNotificationThresholdMultiplier;
                 bean.slowResponseNotificationResendInterval = monitor.slowResponseNotificationResendInterval;
                 bean.grpcUrl = monitor.grpcUrl;
                 bean.grpcProtobuf = monitor.grpcProtobuf;
