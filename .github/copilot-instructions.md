@@ -160,6 +160,7 @@ npm run dev  # Frontend on port 3000, backend on port 3001
 Releases are cut with the **Release** workflow (`.github/workflows/release.yml`), not `npm run release-final` (that local orchestrator needs a running Docker and is the older path).
 
 - Dispatch it from `master`, not `2.5.X`: master's workflow checks out `2.5.X` and sets `RELEASE_BASE_BRANCH=2.5.X`.
+- 3.X releases use `.github/workflows/release-3.yml`, dispatched from `master`: it checks out `master` and sets `RELEASE_BASE_BRANCH=master`.
 - `2.5.X`'s copy has a 6th `update-wiki` job; master's copy does not, so a run dispatched from master never bumps the wiki.
 - Inputs: `version`, `previous_version` (previous tag), `is_beta`, `dry_run`.
 
