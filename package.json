@@ -113,7 +113,7 @@
         "isomorphic-ws": "~5.0.0",
         "js-md4": "~0.3.2",
         "jsesc": "~3.0.2",
-        "jsonata": "~2.2.2",
+        "jsonata": "2.2.0",
         "kafkajs": "~2.2.4",
         "knex": "~3.3.0",
         "limiter": "~2.1.0",
