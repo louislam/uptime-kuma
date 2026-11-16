@@ -1,4 +1,4 @@
-// Udpate status_page table to generalize analytics fields
+// Update status_page table to generalize analytics fields
 exports.up = function (knex) {
     return knex.schema
         .alterTable("status_page", function (table) {
@@ -7,7 +7,7 @@ exports.up = function (knex) {
             table.enu("analytics_type", ["google", "umami", "plausible", "matomo"]).defaultTo(null);
         })
         .then(() => {
-            // After a succesful migration, add google as default for previous pages
+            // After a successful migration, add google as default for previous pages
             knex("status_page").whereNotNull("analytics_id").update({
                 analytics_type: "google",
             });

@@ -7,9 +7,7 @@
 Uptime Kuma is an easy-to-use self-hosted monitoring tool.
 
 <a target="_blank" href="https://github.com/louislam/uptime-kuma"><img src="https://img.shields.io/github/stars/louislam/uptime-kuma?style=flat" /></a> <a target="_blank" href="https://hub.docker.com/r/louislam/uptime-kuma"><img src="https://img.shields.io/docker/pulls/louislam/uptime-kuma" /></a> <a target="_blank" href="https://hub.docker.com/r/louislam/uptime-kuma"><img src="https://img.shields.io/docker/v/louislam/uptime-kuma/2?label=docker%20image%20ver." /></a> <a target="_blank" href="https://github.com/louislam/uptime-kuma"><img src="https://img.shields.io/github/last-commit/louislam/uptime-kuma" /></a> <a target="_blank" href="https://opencollective.com/uptime-kuma"><img src="https://opencollective.com/uptime-kuma/total/badge.svg?label=Open%20Collective%20Backers&color=brightgreen" /></a>
-[![GitHub Sponsors](https://img.shields.io/github/sponsors/louislam?label=GitHub%20Sponsors)](https://github.com/sponsors/louislam) <a href="https://weblate.kuma.pet/projects/uptime-kuma/uptime-kuma/">
-<img src="https://weblate.kuma.pet/widgets/uptime-kuma/-/svg-badge.svg" alt="Translation status" />
-</a>
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/louislam?label=GitHub%20Sponsors)](https://github.com/sponsors/louislam)
 
 <img src="https://user-images.githubusercontent.com/1336778/212262296-e6205815-ad62-488c-83ec-a5b0d0689f7c.jpg" width="700" alt="Uptime Kuma Dashboard Screenshot" />
 
@@ -20,6 +18,9 @@ Try it!
 Demo Server (Location: Frankfurt - Germany): <https://demo.kuma.pet/start-demo>
 
 It is a temporary live demo, all data will be deleted after 10 minutes. Sponsored by [Uptime Kuma Sponsors](https://github.com/louislam/uptime-kuma#%EF%B8%8F-sponsors).
+
+> [!WARNING]
+> Be careful - the top result in Google, uptimekuma.co, is not our official website, we don't control the website. I recommend following the installation guide in this GitHub repo.
 
 ## ⭐ Features
 
@@ -126,9 +127,21 @@ I will assign requests/issues to the next milestone.
 
 ## ❤️ Sponsors
 
-Thank you so much! (GitHub Sponsors will be updated manually. OpenCollective sponsors will be updated automatically, the list will be cached by GitHub though. It may need some time to be updated)
+Thank you so much for supporting this project!
 
-<img src="https://uptime.kuma.pet/sponsors?v=6" alt="Uptime Kuma Sponsors" />
+### Special Sponsors
+
+[<img src="https://avatars.githubusercontent.com/u/249862100?s=200&v=4">](https://www.atlascloud.ai)
+
+Atlas Cloud (https://www.atlascloud.ai) is sponsoring this project USD 400 per month for using their AI models.
+
+[![Powered by Atlas Cloud](https://www.atlascloud.ai/oss-program/powered-by-atlas-cloud.svg)](https://www.atlascloud.ai/?ref=UZCYBN)
+
+### Open Collective and GitHub Sponsors
+
+(The list will be cached by GitHub, it may take up 24 hours to be updated)
+
+<img src="https://raw.githubusercontent.com/louislam/uptime-kuma-website/refs/heads/master/sponsors.svg?version=2" alt="Uptime Kuma Sponsors" />
 
 ## 🖼 More Screenshots
 

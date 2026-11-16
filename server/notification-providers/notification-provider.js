@@ -2,6 +2,7 @@ const { Liquid } = require("liquidjs");
 const { DOWN } = require("../../src/util");
 const { HttpProxyAgent } = require("http-proxy-agent");
 const { HttpsProxyAgent } = require("https-proxy-agent");
+const { SocksProxyAgent } = require("socks-proxy-agent");
 
 class NotificationProvider {
     /**
@@ -42,9 +43,9 @@ class NotificationProvider {
             case "push":
                 return "Heartbeat";
             case "ping":
+            case "dns":
                 return monitorJSON["hostname"];
             case "port":
-            case "dns":
             case "gamedig":
             case "steam":
                 if (monitorJSON["port"]) {
@@ -187,6 +188,10 @@ class NotificationProvider {
                 axiosConfig.httpsAgent = new HttpsProxyAgent(proxyEnv);
             } else if (proxyUrl.protocol === "https:") {
                 const agent = new HttpsProxyAgent(proxyEnv);
+                axiosConfig.httpAgent = agent;
+                axiosConfig.httpsAgent = agent;
+            } else if (["socks:", "socks4:", "socks5:", "socks5h:"].includes(proxyUrl.protocol)) {
+                const agent = new SocksProxyAgent(proxyEnv);
                 axiosConfig.httpAgent = agent;
                 axiosConfig.httpsAgent = agent;
             }

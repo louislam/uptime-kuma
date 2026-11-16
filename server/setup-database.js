@@ -4,8 +4,10 @@ const expressStaticGzip = require("express-static-gzip");
 const fs = require("fs");
 const path = require("path");
 const Database = require("./database");
-const { allowDevAllOrigin, printServerUrls } = require("./util-server");
+const { allowDevAllOrigin, printServerUrls } = require("./util");
 const mysql = require("mysql2/promise");
+const { isSSL, sslKey, sslCert, sslKeyPassphrase } = require("./config");
+const https = require("https");
 
 /**
  * Reads a configuration value from an environment variable or a Docker secrets file.
@@ -306,9 +308,24 @@ class SetupDatabase {
                 response.end();
             });
 
-            tempServer = app.listen(port, hostname, () => {
+            let server;
+
+            if (isSSL) {
+                server = tempServer = https.createServer(
+                    {
+                        key: fs.readFileSync(sslKey),
+                        cert: fs.readFileSync(sslCert),
+                        passphrase: sslKeyPassphrase,
+                    },
+                    app
+                );
+            } else {
+                server = app;
+            }
+
+            tempServer = server.listen(port, hostname, () => {
                 log.info("setup-database", "Starting Setup Database");
-                printServerUrls("setup-database", port, hostname);
+                printServerUrls("setup-database", port, hostname, isSSL);
                 log.info("setup-database", "Waiting for user action...");
             });
         });

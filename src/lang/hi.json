@@ -115,5 +115,17 @@
     "New Password": "नया पासवर्ड",
     "Update Password": "पासवर्ड अपडेट करें",
     "Change Password": "पासवर्ड बदलें",
-    "Normal": "सामान्य"
+    "Normal": "सामान्य",
+    "enableSSL": "SSL/TLS सक्रिय करें",
+    "mariadbUseSSLHelptext": "अपने डेटाबेस से एन्क्रिप्टेड कनेक्शन का उपयोग करने के लिए इसे चालू करें। अधिकांश क्लाउड डेटाबेस के लिए ज़रूरी है।",
+    "mariadbCaCertificateLabel": "CA सर्टिफिकेट",
+    "No incidents recorded": "कोई घटना दर्ज नहीं की गई",
+    "unknownDays": "अनजाने दिन",
+    "mariadbCaCertificateHelptext": "CA सर्टिफिकेट को PEM format में पेस्ट करें, ताकि स्व-हस्ताक्षरित सर्टिफिकेट के साथ इस्तेमाल किया जा सके। अगर आपका डेटाबेस पब्लिक CA द्वारा हस्ताक्षरित सर्टिफिकेट का उपयोग करता है तो खाली छोड़ दें।",
+    "versionIs": "संस्करण: {version}",
+    "monitorTypeGameServer": "गेम सर्वर",
+    "monitorTypeSpecial": "विशेष",
+    "Load More": "और दिखायें",
+    "monitorTypeDatabase": "डेटाबेस निगरानी प्रकार",
+    "oracledbConnectionString": "Oracle डेटाबेस: {connectionString}"
 }

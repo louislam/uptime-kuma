@@ -1,6 +1,8 @@
 const dayjs = require("dayjs");
 const axios = require("axios");
+const { setTimeout, clearTimeout } = require("unlimited-timeout");
 const { Prometheus } = require("../prometheus");
+const { evaluateJsonQuery } = require("../jsonata-sandbox");
 const {
     log,
     UP,
@@ -10,10 +12,8 @@ const {
     NOMINAL,
     SLOW,
     flipStatus,
-    MAX_INTERVAL_SECOND,
     MIN_INTERVAL_SECOND,
     SQL_DATETIME_FORMAT,
-    evaluateJsonQuery,
     PING_PACKET_SIZE_MIN,
     PING_PACKET_SIZE_MAX,
     PING_PACKET_SIZE_DEFAULT,
@@ -30,41 +30,45 @@ const {
     RESPONSE_BODY_LENGTH_MAX,
 } = require("../../src/util");
 const {
-    ping,
-    checkCertificate,
     checkStatusCode,
     getTotalClientInRoom,
-    setting,
     httpNtlm,
     radius,
     kafkaProducerAsync,
     getOidcTokenClientCredentials,
     rootCertificatesFingerprints,
     axiosAbortSignal,
-    checkCertificateHostname,
     encodeBase64,
     checkCertExpiryNotifications,
-} = require("../util-server");
+} = require("../util");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification");
 const { Proxy } = require("../proxy");
 const { demoMode } = require("../config");
 const version = require("../../package.json").version;
-const apicache = require("../modules/apicache");
+const apicache = require("../utils/response-cache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { DockerHost } = require("../docker");
-const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const { UptimeCalculator } = require("../uptime-calculator");
 const { CookieJar } = require("tough-cookie");
 const { HttpsCookieAgent } = require("http-cookie-agent/http");
+const { MonitorStats } = require("../monitor-stats");
+const { readTlsInfo } = require("../monitor-tls");
+const { emitHeartbeat, socketRoom } = require("../heartbeat-emit");
+const { updatePrometheusStats } = require("../prometheus-monitor");
+
+// Last time certificate/domain info was sent to a client, per monitor
+const lastInfoSent = new Map();
+const INFO_REFRESH_INTERVAL_MS = 60 * 1000;
 const https = require("https");
 const http = require("http");
 const zlib = require("node:zlib");
 const { promisify } = require("node:util");
 const brotliCompress = promisify(zlib.brotliCompress);
 const DomainExpiry = require("./domain_expiry");
+const { monitorConfigSchema } = require("../types");
 
 const rootCertificates = rootCertificatesFingerprints();
 
@@ -123,7 +127,7 @@ class Monitor extends BeanModel {
         let screenshot = null;
 
         if (this.type === "real-browser") {
-            screenshot = "/screenshots/" + jwt.sign(this.id, UptimeKumaServer.getInstance().jwtSecret) + ".png";
+            screenshot = "/screenshots/" + this.id + ".png";
         }
 
         const path = preloadData.paths.get(this.id) || [];
@@ -198,7 +202,6 @@ class Monitor extends BeanModel {
             httpBodyEncoding: this.httpBodyEncoding,
             jsonPath: this.jsonPath,
             expectedValue: this.expectedValue,
-            system_service_name: this.system_service_name,
             kafkaProducerTopic: this.kafkaProducerTopic,
             kafkaProducerBrokers: JSON.parse(this.kafkaProducerBrokers),
             kafkaProducerSsl: this.getKafkaProducerSsl(),
@@ -207,14 +210,19 @@ class Monitor extends BeanModel {
             screenshot,
             cacheBust: this.getCacheBust(),
             remote_browser: this.remote_browser,
+            screenshot_delay: this.screenshot_delay,
             snmpOid: this.snmpOid,
             jsonPathOperator: this.jsonPathOperator,
             snmpVersion: this.snmpVersion,
             smtpSecurity: this.smtpSecurity,
             rabbitmqNodes: JSON.parse(this.rabbitmqNodes),
             conditions: JSON.parse(this.conditions),
+            ntpStratumThreshold: this.ntp_stratum_threshold,
+            ntpTimeOffsetThreshold: this.ntp_time_offset_threshold,
+            ntpRootDispersionThreshold: this.ntp_root_dispersion_threshold,
             ipFamily: this.ipFamily,
-            expectedTlsAlert: this.expected_tls_alert,
+            sftpPath: this.sftpPath,
+            sshAuthMethod: this.sshAuthMethod || "password",
 
             // ping advanced options
             ping_numeric: this.isPingNumeric(),
@@ -225,6 +233,9 @@ class Monitor extends BeanModel {
             saveResponse: this.getSaveResponse(),
             saveErrorResponse: this.getSaveErrorResponse(),
             responseMaxLength: this.response_max_length ?? RESPONSE_BODY_LENGTH_DEFAULT,
+
+            // Extensible per monitor type settings
+            config: this.getConfig(),
         };
 
         if (includeSensitiveData) {
@@ -242,6 +253,8 @@ class Monitor extends BeanModel {
                 oauth_scopes: this.oauth_scopes,
                 oauth_audience: this.oauth_audience,
                 oauth_auth_method: this.oauth_auth_method,
+                bearer_token: this.bearer_token,
+                gamedigToken: this.gamedigToken,
                 pushToken: this.pushToken,
                 databaseConnectionString: this.databaseConnectionString,
                 radiusUsername: this.radiusUsername,
@@ -258,6 +271,10 @@ class Monitor extends BeanModel {
                 kafkaProducerSaslOptions: JSON.parse(this.kafkaProducerSaslOptions),
                 rabbitmqUsername: this.rabbitmqUsername,
                 rabbitmqPassword: this.rabbitmqPassword,
+                sshUsername: this.sshUsername,
+                sshPassword: this.sshPassword,
+                sshPrivateKey: this.sshPrivateKey,
+                sshPassphrase: this.sshPassphrase,
             };
         }
 
@@ -422,6 +439,59 @@ class Monitor extends BeanModel {
     }
 
     /**
+     * Get the full config
+     * @returns {object} Parsed config, empty object if null or invalid
+     */
+    getConfig() {
+        if (typeof this.config === "object" && this.config !== null) {
+            return this.config;
+        }
+
+        if (!this.config) {
+            return {};
+        }
+
+        try {
+            return JSON.parse(this.config);
+        } catch (e) {
+            log.warn("monitor", `Invalid config JSON for monitor ${this.id}, ignored: ${e.message}`);
+            return {};
+        }
+    }
+
+    /**
+     * Set the full config object
+     * @param {object} config The config object to store
+     * @returns {void}
+     */
+    setConfig(config) {
+        this.config = JSON.stringify(config);
+    }
+
+    /**
+     * Get one config value
+     * @param {string} key The config key to retrieve
+     * @param {*} defaultValue Default value if the key does not exist
+     * @returns {*} The config value or defaultValue
+     */
+    getConfigValue(key, defaultValue = undefined) {
+        const config = this.getConfig();
+        return key in config ? config[key] : defaultValue;
+    }
+
+    /**
+     * Set one config value
+     * @param {string} key The config key to set
+     * @param {*} value The value to store
+     * @returns {void}
+     */
+    setConfigValue(key, value) {
+        const config = this.getConfig();
+        config[key] = value;
+        this.setConfig(config);
+    }
+
+    /**
      * Start monitor
      * @param {Server} io Socket server instance
      * @returns {Promise<void>}
@@ -457,7 +527,7 @@ class Monitor extends BeanModel {
             let tlsInfo = undefined;
 
             if (!previousBeat || this.type === "push") {
-                previousBeat = await R.findOne("heartbeat", " monitor_id = ? ORDER BY time DESC", [this.id]);
+                previousBeat = await R.findOne("heartbeat", " monitor_id = ? ORDER BY id DESC", [this.id]);
                 if (previousBeat) {
                     retries = previousBeat.retries;
                 }
@@ -479,7 +549,7 @@ class Monitor extends BeanModel {
             // Runtime patch timeout if it is 0
             // See https://github.com/louislam/uptime-kuma/pull/3961#issuecomment-1804149144
             if (!this.timeout || this.timeout <= 0) {
-                this.timeout = this.interval * 1000 * 0.8;
+                this.timeout = this.interval * 0.8;
             }
 
             try {
@@ -495,6 +565,14 @@ class Monitor extends BeanModel {
                     if (this.auth_method === "basic") {
                         basicAuthHeader = {
                             Authorization: "Basic " + encodeBase64(this.basic_auth_user, this.basic_auth_pass),
+                        };
+                    }
+
+                    // Bearer token auth
+                    let bearerAuthHeader = {};
+                    if (this.auth_method === "bearer") {
+                        bearerAuthHeader = {
+                            Authorization: "Bearer " + this.bearer_token,
                         };
                     }
 
@@ -571,6 +649,7 @@ class Monitor extends BeanModel {
                             Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
                             ...(contentType ? { "Content-Type": contentType } : {}),
                             ...basicAuthHeader,
+                            ...bearerAuthHeader,
                             ...oauth2AuthHeader,
                             ...(this.headers ? JSON.parse(this.headers) : {}),
                         },
@@ -638,13 +717,7 @@ class Monitor extends BeanModel {
                     // The keylog event listener is a workaround to access the tlsSocket
                     options.httpsAgent.once("keylog", async (line, tlsSocket) => {
                         tlsSocket.once("secureConnect", async () => {
-                            tlsInfo = checkCertificate(tlsSocket);
-                            tlsInfo.valid = tlsSocket.authorized || false;
-                            tlsInfo.hostnameMatchMonitorUrl = checkCertificateHostname(
-                                tlsInfo.certInfo.raw,
-                                this.getUrl()?.hostname
-                            );
-
+                            tlsInfo = readTlsInfo(tlsSocket, this.getUrl()?.hostname);
                             await this.handleTlsInfo(tlsInfo);
                         });
                     });
@@ -669,13 +742,7 @@ class Monitor extends BeanModel {
                         const tlsSocket = res.request.res.socket;
 
                         if (tlsSocket) {
-                            tlsInfo = checkCertificate(tlsSocket);
-                            tlsInfo.valid = tlsSocket.authorized || false;
-                            tlsInfo.hostnameMatchMonitorUrl = checkCertificateHostname(
-                                tlsInfo.certInfo.raw,
-                                this.getUrl()?.hostname
-                            );
-
+                            tlsInfo = readTlsInfo(tlsSocket, this.getUrl()?.hostname);
                             await this.handleTlsInfo(tlsInfo);
                         }
                     }
@@ -732,18 +799,6 @@ class Monitor extends BeanModel {
                             );
                         }
                     }
-                } else if (this.type === "ping") {
-                    bean.ping = await ping(
-                        this.hostname,
-                        this.ping_count,
-                        "",
-                        this.ping_numeric,
-                        this.packetSize,
-                        this.timeout,
-                        this.ping_per_request_timeout
-                    );
-                    bean.msg = "";
-                    bean.status = UP;
                 } else if (this.type === "push") {
                     // Type: Push
                     log.debug(
@@ -781,56 +836,6 @@ class Monitor extends BeanModel {
                     } else {
                         bean.duration = beatInterval;
                         throw new Error("No heartbeat in the time window");
-                    }
-                } else if (this.type === "steam") {
-                    const steamApiUrl = "https://api.steampowered.com/IGameServersService/GetServerList/v1/";
-                    const steamAPIKey = await setting("steamAPIKey");
-                    const filter = `addr\\${this.hostname}:${this.port}`;
-
-                    if (!steamAPIKey) {
-                        throw new Error("Steam API Key not found");
-                    }
-
-                    let res = await axios.get(steamApiUrl, {
-                        timeout: this.timeout * 1000,
-                        headers: {
-                            Accept: "*/*",
-                        },
-                        httpsAgent: new https.Agent({
-                            maxCachedSessions: 0, // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
-                            rejectUnauthorized: !this.getIgnoreTls(),
-                            secureOptions: crypto.constants.SSL_OP_LEGACY_SERVER_CONNECT,
-                        }),
-                        httpAgent: new http.Agent({
-                            maxCachedSessions: 0,
-                        }),
-                        maxRedirects: this.maxredirects,
-                        validateStatus: (status) => {
-                            return checkStatusCode(status, this.getAcceptedStatuscodes());
-                        },
-                        params: {
-                            filter: filter,
-                            key: steamAPIKey,
-                        },
-                    });
-
-                    if (res.data.response && res.data.response.servers && res.data.response.servers.length > 0) {
-                        bean.status = UP;
-                        bean.msg = res.data.response.servers[0].name;
-
-                        try {
-                            bean.ping = await ping(
-                                this.hostname,
-                                PING_COUNT_DEFAULT,
-                                "",
-                                true,
-                                this.packetSize,
-                                PING_GLOBAL_TIMEOUT_DEFAULT,
-                                PING_PER_REQUEST_TIMEOUT_DEFAULT
-                            );
-                        } catch (_) {}
-                    } else {
-                        throw new Error("Server not found on Steam");
                     }
                 } else if (this.type === "docker") {
                     log.debug("monitor", `[${this.name}] Prepare Options for Axios`);
@@ -949,6 +954,7 @@ class Monitor extends BeanModel {
                             ssl: this.kafkaProducerSsl,
                             clientId: `Uptime-Kuma/${version}`,
                             interval: this.interval,
+                            connectionTimeout: this.timeout,
                         },
                         JSON.parse(this.kafkaProducerSaslOptions)
                     );
@@ -1038,7 +1044,7 @@ class Monitor extends BeanModel {
                 log.debug("monitor", `[${this.name}] apicache clear`);
                 apicache.clear();
 
-                await UptimeKumaServer.getInstance().sendMaintenanceListByUserID(this.user_id);
+                await UptimeKumaServer.getInstance().sendMaintenanceListToDashboard();
             } else {
                 bean.important = false;
 
@@ -1077,7 +1083,7 @@ class Monitor extends BeanModel {
                     ) {
                         log.warn(
                             "domain_expiry",
-                            `Domain expiry unsupported for '.${error.meta.publicSuffix}' because its RDAP endpoint is not listed in the IANA database.`
+                            `Domain expiry unsupported for '.${error.meta.publicSuffix}' because it lacks an RDAP endpoint in the IANA database. This isn’t an Uptime Kuma bug, a limitation of your registry. If an RDAP server exists, ask your registrar politely to submit it to IANA so expiry checks can work.`
                         );
                     }
                 }
@@ -1116,20 +1122,32 @@ class Monitor extends BeanModel {
                 await this.checkSlowResponseNotification(this, bean);
             }
 
+            // Keep the dashboard numbers live instead of waiting for the stats cache
+            let liveStats;
+            try {
+                liveStats = await MonitorStats.recordBeat(this.id, bean.status, parseFloat(bean.ping));
+            } catch (e) {
+                log.warn("monitor", `Failed to update dashboard stats: ${e.message}`);
+            }
+
             // Send to frontend
             log.debug("monitor", `[${this.name}] Send to socket`);
-            io.to(this.user_id).emit("heartbeat", bean.toJSON());
-            Monitor.sendStats(io, this.id, this.user_id);
+            const beatJSON = bean.toJSON();
+            if (liveStats) {
+                beatJSON.stats = liveStats;
+            }
+            emitHeartbeat(io, beatJSON);
+            Monitor.sendStats(io, this.id);
 
             // Store to database
             log.debug("monitor", `[${this.name}] Store`);
             await R.store(bean);
 
             log.debug("monitor", `[${this.name}] prometheus.update`);
-            const data24h = uptimeCalculator.get24Hour();
-            const data30d = uptimeCalculator.get30Day();
-            const data1y = uptimeCalculator.get1Year();
-            this.prometheus?.update(bean, tlsInfo, { data24h, data30d, data1y });
+            if (this.prometheus) {
+                // Serve the gauges from the grouped stats cache, never from full history
+                updatePrometheusStats(this.prometheus, this.id, bean, tlsInfo);
+            }
 
             previousBeat = bean;
 
@@ -1167,7 +1185,7 @@ class Monitor extends BeanModel {
 
         // Delay Push Type
         if (this.type === "push") {
-            setTimeout(() => {
+            this.heartbeatInterval = setTimeout(() => {
                 safeBeat();
             }, this.interval * 1000);
         } else {
@@ -1216,6 +1234,7 @@ class Monitor extends BeanModel {
             let res;
             if (this.auth_method === "ntlm") {
                 options.httpsAgent.keepAlive = true;
+                options.httpAgent.keepAlive = true;
 
                 res = await httpNtlm(options, {
                     username: this.basic_auth_user,
@@ -1355,6 +1374,28 @@ class Monitor extends BeanModel {
     }
 
     /**
+     * Write the client writable config keys, one key at a time
+     * @param {object} raw Config payload from the client
+     * @returns {void}
+     * @throws {Error} If a known key has the wrong type
+     */
+    applyClientConfig(raw) {
+        if (!raw) {
+            return;
+        }
+
+        const result = monitorConfigSchema.safeParse(raw);
+
+        if (!result.success) {
+            throw new Error(result.error.issues.map((issue) => `${issue.path.join(".")}: ${issue.message}`).join("; "));
+        }
+
+        for (const [key, value] of Object.entries(result.data)) {
+            this.setConfigValue(key, value);
+        }
+    }
+
+    /**
      * Checks if the monitor is active based on itself and its parents
      * @param {number} monitorID ID of monitor to send
      * @param {boolean} active is active
@@ -1367,53 +1408,45 @@ class Monitor extends BeanModel {
     }
 
     /**
-     * Send statistics to clients
+     * Send cert/domain info and refresh the stats cache when it is stale
      * @param {Server} io Socket server instance
      * @param {number} monitorID ID of monitor to send
-     * @param {number} userID ID of user to send to
-     * @returns {void}
+     * @returns {Promise<void>}
      */
-    static async sendStats(io, monitorID, userID) {
-        const hasClients = getTotalClientInRoom(io, userID) > 0;
-        let uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);
+    static async sendStats(io, monitorID) {
+        const hasClients = getTotalClientInRoom(io, socketRoom) > 0;
 
         if (hasClients) {
-            // Send 24 hour average ping
-            let data24h = await uptimeCalculator.get24Hour();
-            io.to(userID).emit("avgPing", monitorID, data24h.avgPing ? Number(data24h.avgPing.toFixed(2)) : null);
+            const server = UptimeKumaServer.getInstance();
+            MonitorStats.maybeRefresh(io, Object.keys(server.monitorList));
 
-            // Send 24 hour uptime
-            io.to(userID).emit("uptime", monitorID, 24, data24h.uptime);
+            // Cert and domain info are slow (DB + DNS). At one beat per monitor per minute
+            // and thousands of monitors they must not run on every beat while a client is open
+            const now = Date.now();
+            if (now - (lastInfoSent.get(monitorID) || 0) >= INFO_REFRESH_INTERVAL_MS) {
+                lastInfoSent.set(monitorID, now);
 
-            // Send 30 day uptime
-            let data30d = await uptimeCalculator.get30Day();
-            io.to(userID).emit("uptime", monitorID, 720, data30d.uptime);
+                // Send Cert Info
+                await Monitor.sendCertInfo(io, monitorID);
 
-            // Send 1-year uptime
-            let data1y = await uptimeCalculator.get1Year();
-            io.to(userID).emit("uptime", monitorID, "1y", data1y.uptime);
-
-            // Send Cert Info
-            await Monitor.sendCertInfo(io, monitorID, userID);
-
-            // Send domain info
-            await Monitor.sendDomainInfo(io, monitorID, userID);
+                // Send domain info
+                await Monitor.sendDomainInfo(io, monitorID);
+            }
         } else {
             log.debug("monitor", "No clients in the room, no need to send stats");
         }
     }
 
     /**
-     * Send certificate information to client
+     * Send certificate information to the dashboard
      * @param {Server} io Socket server instance
      * @param {number} monitorID ID of monitor to send
-     * @param {number} userID ID of user to send to
      * @returns {void}
      */
-    static async sendCertInfo(io, monitorID, userID) {
+    static async sendCertInfo(io, monitorID) {
         let tlsInfo = await R.findOne("monitor_tls_info", "monitor_id = ?", [monitorID]);
         if (tlsInfo != null) {
-            io.to(userID).emit("certInfo", monitorID, tlsInfo.info_json);
+            io.to(socketRoom).emit("certInfo", monitorID, tlsInfo.info_json);
         }
     }
 
@@ -1421,17 +1454,16 @@ class Monitor extends BeanModel {
      * Send domain name information to client
      * @param {Server} io Socket server instance
      * @param {number} monitorID ID of monitor to send
-     * @param {number} userID ID of user to send to
      * @returns {void}
      */
-    static async sendDomainInfo(io, monitorID, userID) {
+    static async sendDomainInfo(io, monitorID) {
         const monitor = await R.findOne("monitor", "id = ?", [monitorID]);
 
         try {
             const supportInfo = await DomainExpiry.checkSupport(monitor);
             const domain = await DomainExpiry.findByDomainNameOrCreate(supportInfo.domain);
             if (domain?.expiry) {
-                io.to(userID).emit("domainInfo", monitorID, domain.daysRemaining, new Date(domain.expiry));
+                io.to(socketRoom).emit("domainInfo", monitorID, domain.daysRemaining, new Date(domain.expiry));
             }
         } catch (e) {}
     }
@@ -1882,11 +1914,36 @@ class Monitor extends BeanModel {
     }
 
     /**
-     * Check if monitor is under maintenance
+     * Check if monitor is under maintenance. A group's window also covers its children.
      * @param {number} monitorID ID of monitor to check
+     * @param {object} snapshot Bulk-loaded state, so a list build needs no per-monitor query, omit for live queries
+     * @param {Map<number, number[]>} snapshot.links Monitor id -> maintenance ids
+     * @param {Map<number, boolean>} snapshot.active Maintenance id -> running right now
+     * @param {Map<number, number|null>} snapshot.parents Monitor id -> parent monitor id
+     * @param {Map<number, boolean>} snapshot.cache Memo of the answers for one list build
      * @returns {Promise<boolean>} Is the monitor under maintenance
      */
-    static async isUnderMaintenance(monitorID) {
+    static async isUnderMaintenance(monitorID, snapshot = null) {
+        if (snapshot) {
+            if (snapshot.cache.has(monitorID)) {
+                return snapshot.cache.get(monitorID);
+            }
+
+            let result = (snapshot.links.get(monitorID) ?? []).some((maintenanceID) =>
+                snapshot.active.get(maintenanceID)
+            );
+
+            if (!result) {
+                const parentID = snapshot.parents.get(monitorID);
+                if (parentID != null) {
+                    result = await Monitor.isUnderMaintenance(parentID, snapshot);
+                }
+            }
+
+            snapshot.cache.set(monitorID, result);
+            return result;
+        }
+
         const maintenanceIDList = await R.getCol(
             `
             SELECT maintenance_id FROM monitor_maintenance
@@ -1911,21 +1968,15 @@ class Monitor extends BeanModel {
     }
 
     /**
-     * Make sure monitor interval is between bounds
+     * Validate monitor configuration
      * @returns {void}
-     * @throws Interval is outside of range
+     * @throws {Error} If validation fails
      */
     validate() {
-        if (this.interval > MAX_INTERVAL_SECOND) {
-            throw new Error(`Interval cannot be more than ${MAX_INTERVAL_SECOND} seconds`);
-        }
         if (this.interval < MIN_INTERVAL_SECOND) {
             throw new Error(`Interval cannot be less than ${MIN_INTERVAL_SECOND} seconds`);
         }
 
-        if (this.retryInterval > MAX_INTERVAL_SECOND) {
-            throw new Error(`Retry interval cannot be more than ${MAX_INTERVAL_SECOND} seconds`);
-        }
         if (this.retryInterval < MIN_INTERVAL_SECOND) {
             throw new Error(`Retry interval cannot be less than ${MIN_INTERVAL_SECOND} seconds`);
         }
@@ -1986,6 +2037,23 @@ class Monitor extends BeanModel {
                 JSON.parse(this.accepted_statuscodes_json);
             } catch (e) {
                 throw new Error(`Accepted status codes must be valid JSON: ${e.message}`);
+            }
+        }
+
+        if (["system-service", "pm2"].includes(this.type)) {
+            const serviceName = (this.getConfigValue("systemServiceName") || "").trim();
+            this.setConfigValue("systemServiceName", serviceName);
+
+            if (!serviceName) {
+                throw new Error(this.type === "pm2" ? "PM2 process name is required." : "Service Name is required.");
+            }
+
+            if (this.type === "system-service" && !/^[a-zA-Z0-9._\-@]+$/.test(serviceName)) {
+                throw new Error("Invalid service name. Please use the internal Service Name (no spaces).");
+            }
+
+            if (this.type === "pm2" && /[\u0000-\u001F\u007F]/.test(serviceName)) {
+                throw new Error("Invalid PM2 process name.");
             }
         }
 
@@ -2111,19 +2179,97 @@ class Monitor extends BeanModel {
 
         if (monitorData.length > 0) {
             const monitorIDs = monitorData.map((monitor) => monitor.id);
-            const notifications = await Monitor.getMonitorNotification(monitorIDs);
-            const tags = await Monitor.getMonitorTag(monitorIDs);
-            const maintenanceStatuses = await Promise.all(
-                monitorData.map((monitor) => Monitor.isUnderMaintenance(monitor.id))
-            );
-            const childrenIDs = await Promise.all(monitorData.map((monitor) => Monitor.getAllChildrenIDs(monitor.id)));
-            const activeStatuses = await Promise.all(
-                monitorData.map((monitor) => Monitor.isActive(monitor.id, monitor.active))
-            );
-            const forceInactiveStatuses = await Promise.all(
-                monitorData.map((monitor) => Monitor.isParentActive(monitor.id))
-            );
-            const paths = await Promise.all(monitorData.map((monitor) => Monitor.getAllPath(monitor.id, monitor.name)));
+            const [notifications, tags, allMonitors, maintenanceRows] = await Promise.all([
+                Monitor.getMonitorNotification(monitorIDs),
+                Monitor.getMonitorTag(monitorIDs),
+                R.getAll("SELECT id, name, parent, active FROM monitor"),
+                R.getAll("SELECT monitor_id, maintenance_id FROM monitor_maintenance"),
+            ]);
+
+            const byId = new Map();
+            const childrenById = new Map();
+            const parents = new Map();
+            for (const row of allMonitors) {
+                byId.set(row.id, row);
+                parents.set(row.id, row.parent ?? null);
+                const key = row.parent ?? null;
+                if (!childrenById.has(key)) {
+                    childrenById.set(key, []);
+                }
+                childrenById.get(key).push(row);
+            }
+
+            // All hierarchy work below is memoized in memory, so 5000 monitors cost
+            // a fixed number of queries instead of ~6 queries per monitor
+            const parentActiveCache = new Map();
+            const isParentActive = (id) => {
+                if (parentActiveCache.has(id)) {
+                    return parentActiveCache.get(id);
+                }
+                const node = byId.get(id);
+                const parent = node?.parent ? byId.get(node.parent) : null;
+                const result = !parent ? true : parent.active === 1 && isParentActive(parent.id);
+                parentActiveCache.set(id, result);
+                return result;
+            };
+
+            const childrenCache = new Map();
+            const allChildrenIDs = (id) => {
+                if (childrenCache.has(id)) {
+                    return childrenCache.get(id);
+                }
+                const result = [];
+                for (const child of childrenById.get(id) ?? []) {
+                    result.push(child.id);
+                    result.push(...allChildrenIDs(child.id));
+                }
+                childrenCache.set(id, result);
+                return result;
+            };
+
+            const pathCache = new Map();
+            const pathOf = (id) => {
+                if (pathCache.has(id)) {
+                    return pathCache.get(id);
+                }
+                const node = byId.get(id);
+                if (!node) {
+                    return [];
+                }
+                const parent = node.parent ? byId.get(node.parent) : null;
+                const result = parent ? [...pathOf(parent.id), node.name] : [node.name];
+                pathCache.set(id, result);
+                return result;
+            };
+
+            const maintenanceActive = new Map();
+            const server = UptimeKumaServer.getInstance();
+            for (const row of maintenanceRows) {
+                if (!maintenanceActive.has(row.maintenance_id)) {
+                    const maintenance = server.getMaintenance(row.maintenance_id);
+                    maintenanceActive.set(
+                        row.maintenance_id,
+                        maintenance ? await maintenance.isUnderMaintenance() : false
+                    );
+                }
+            }
+
+            const maintenanceByMonitor = new Map();
+            for (const row of maintenanceRows) {
+                if (!maintenanceByMonitor.has(row.monitor_id)) {
+                    maintenanceByMonitor.set(row.monitor_id, []);
+                }
+                maintenanceByMonitor.get(row.monitor_id).push(row.maintenance_id);
+            }
+
+            // One snapshot feeds the same Monitor.isUnderMaintenance() rule the beat uses,
+            // so the dashboard and the beat cannot drift apart
+            const maintenanceSnapshot = {
+                links: maintenanceByMonitor,
+                active: maintenanceActive,
+                parents,
+                cache: new Map(),
+            };
 
             notifications.forEach((row) => {
                 if (!notificationsMap.has(row.monitor_id)) {
@@ -2145,25 +2291,14 @@ class Monitor extends BeanModel {
                 });
             });
 
-            monitorData.forEach((monitor, index) => {
-                maintenanceStatusMap.set(monitor.id, maintenanceStatuses[index]);
-            });
-
-            monitorData.forEach((monitor, index) => {
-                childrenIDsMap.set(monitor.id, childrenIDs[index]);
-            });
-
-            monitorData.forEach((monitor, index) => {
-                activeStatusMap.set(monitor.id, activeStatuses[index]);
-            });
-
-            monitorData.forEach((monitor, index) => {
-                forceInactiveMap.set(monitor.id, !forceInactiveStatuses[index]);
-            });
-
-            monitorData.forEach((monitor, index) => {
-                pathsMap.set(monitor.id, paths[index]);
-            });
+            for (const monitor of monitorData) {
+                const parentActive = isParentActive(monitor.id);
+                maintenanceStatusMap.set(monitor.id, await Monitor.isUnderMaintenance(monitor.id, maintenanceSnapshot));
+                childrenIDsMap.set(monitor.id, allChildrenIDs(monitor.id));
+                activeStatusMap.set(monitor.id, monitor.active === 1 && parentActive);
+                forceInactiveMap.set(monitor.id, !parentActive);
+                pathsMap.set(monitor.id, pathOf(monitor.id));
+            }
         }
 
         return {
@@ -2265,10 +2400,9 @@ class Monitor extends BeanModel {
     /**
      * Delete a monitor from the system
      * @param {number} monitorID ID of the monitor to delete
-     * @param {number} userID ID of the user who owns the monitor
      * @returns {Promise<void>}
      */
-    static async deleteMonitor(monitorID, userID) {
+    static async deleteMonitor(monitorID) {
         const server = UptimeKumaServer.getInstance();
 
         // Stop the monitor if it's running
@@ -2278,31 +2412,30 @@ class Monitor extends BeanModel {
         }
 
         // Delete from database
-        await R.exec("DELETE FROM monitor WHERE id = ? AND user_id = ? ", [monitorID, userID]);
+        await R.exec("DELETE FROM monitor WHERE id = ? ", [monitorID]);
     }
 
     /**
      * Recursively delete a monitor and all its descendants
      * @param {number} monitorID ID of the monitor to delete
-     * @param {number} userID ID of the user who owns the monitor
      * @returns {Promise<void>}
      */
-    static async deleteMonitorRecursively(monitorID, userID) {
+    static async deleteMonitorRecursively(monitorID) {
         // Check if this monitor is a group
-        const monitor = await R.findOne("monitor", " id = ? AND user_id = ? ", [monitorID, userID]);
+        const monitor = await R.findOne("monitor", " id = ? ", [monitorID]);
 
         if (monitor && monitor.type === "group") {
             // Get all children and delete them recursively
             const children = await Monitor.getChildren(monitorID);
             if (children && children.length > 0) {
                 for (const child of children) {
-                    await Monitor.deleteMonitorRecursively(child.id, userID);
+                    await Monitor.deleteMonitorRecursively(child.id);
                 }
             }
         }
 
         // Delete the monitor itself
-        await Monitor.deleteMonitor(monitorID, userID);
+        await Monitor.deleteMonitor(monitorID);
     }
 
     /**
@@ -2318,7 +2451,7 @@ class Monitor extends BeanModel {
         }
 
         const parentActive = await Monitor.isParentActive(parent.id);
-        return parent.active && parentActive;
+        return parent.active === 1 && parentActive;
     }
 
     /**

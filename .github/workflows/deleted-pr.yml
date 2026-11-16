@@ -1,0 +1,43 @@
+name: Mark as Deleted
+
+on:
+  pull_request_target:
+    types:
+      - labeled
+  issues:
+    types:
+      - labeled
+
+permissions: {}
+
+jobs:
+  handle-deleted:
+    if: github.event.label.name == 'deleted' && github.repository == 'louislam/uptime-kuma'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Rename title and clear body
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const repo = { owner: context.repo.owner, repo: context.repo.repo };
+            const isPR = !!context.payload.pull_request;
+            const issueNumber = isPR ? context.payload.pull_request.number : context.payload.issue.number;
+
+            if (isPR) {
+                await github.rest.pulls.update({
+                    ...repo,
+                    pull_number: issueNumber,
+                    title: "[DELETED]",
+                    body: ""
+                });
+            } else {
+                await github.rest.issues.update({
+                    ...repo,
+                    issue_number: issueNumber,
+                    title: "[DELETED]",
+                    body: ""
+                });
+            }

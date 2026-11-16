@@ -214,7 +214,10 @@ export default {
             let chatPlatforms = {
                 bale: "Bale",
                 Bitrix24: "Bitrix24",
+                ClickUp: "ClickUp",
                 discord: "Discord",
+                max: this.$t("maxMessenger"),
+                fluxer: "Fluxer",
                 GoogleChat: "Google Chat (Google Workspace)",
                 gorush: "Gorush",
                 gotify: "Gotify",
@@ -227,6 +230,7 @@ export default {
                 line: "LINE Messenger",
                 matrix: "Matrix",
                 mattermost: "Mattermost",
+                Milky: "Milky(QQ)",
                 nextcloudtalk: "Nextcloud Talk",
                 nostr: "Nostr",
                 OneChat: "OneChat",
@@ -244,6 +248,8 @@ export default {
                 whapi: "WhatsApp (Whapi)",
                 evolution: "WhatsApp (Evolution)",
                 waha: "WhatsApp (WAHA)",
+                Whatsapp360messenger: "WhatsApp (360messenger)",
+                openwa: "WhatsApp (OpenWA)",
             };
 
             // Push Services - Push notification services
@@ -253,11 +259,15 @@ export default {
                 gotify: "Gotify",
                 lunasea: "LunaSea",
                 notifery: "Notifery",
+                notifyapp: "Notify!",
                 ntfy: "Ntfy",
+                pinglet: "Pinglet",
                 pushbullet: "Pushbullet",
                 PushByTechulus: "Push by Techulus",
                 pushover: "Pushover",
                 pushy: "Pushy",
+                signalgrid: "Signalgrid",
+                trigv: "Trigv",
                 Webpush: "Webpush",
             };
 
@@ -269,9 +279,12 @@ export default {
                 gtxmessaging: "GtxMessaging",
                 octopush: "Octopush",
                 Onesender: "Onesender",
+                plivo: "Plivo",
                 SevenIO: "SevenIO",
                 SMSEagle: "SMSEagle",
+                SMSGateway: "SMS Gateway",
                 SMSPartner: "SMS Partner",
+                telnyx: "Telnyx",
                 Teltonika: this.$t("Teltonika SMS Gateway"),
                 twilio: "Twilio",
             };
@@ -279,20 +292,24 @@ export default {
             // Email - Email services
             let email = {
                 Brevo: "Brevo",
+                MicrosoftGraph: this.$t("Microsoft Graph Email"),
                 Resend: "Resend",
                 SendGrid: "SendGrid",
                 smtp: this.$t("smtp"),
+                TurboSMTP: "TurboSMTP",
             };
 
             // Incident Management - On-call and alerting platforms
             let incidentManagement = {
                 alerta: "Alerta",
                 AlertNow: "AlertNow",
+                Flowtriq: "Flowtriq",
                 GoAlert: "GoAlert",
                 GrafanaOncall: "Grafana Oncall",
                 HeiiOnCall: "Heii On-Call",
                 Keep: "Keep",
                 Opsgenie: "Opsgenie",
+                OpsiMate: "OpsiMate",
                 JiraServiceManagement: this.$t("Jira Service Management"),
                 PagerDuty: "PagerDuty",
                 PagerTree: "PagerTree",
@@ -304,6 +321,7 @@ export default {
             // Home Automation - Smart home and IoT platforms
             let homeAutomation = {
                 HomeAssistant: "Home Assistant",
+                Indigo: "Indigo",
             };
 
             // Other Integrations
@@ -314,10 +332,13 @@ export default {
             // Regional - Not supported in most regions or documentation is not in English
             let regional = {
                 AliyunSMS: "AliyunSMS (阿里云短信服务)",
+                bearsms: "BearSMS (Israel)",
+                egosms: "EgoSMS (Uganda)",
                 DingDing: "DingDing (钉钉自定义机器人)",
                 Feishu: "Feishu (飞书)",
                 FlashDuty: "FlashDuty (快猫星云)",
                 FreeMobile: "FreeMobile (mobile.free.fr)",
+                Ooredoo: "Ooredoo (Maldives)",
                 PushDeer: "PushDeer",
                 promosms: "PromoSMS",
                 serwersms: "SerwerSMS.pl",
@@ -326,11 +347,15 @@ export default {
                 ServerChan: "ServerChan (Server酱)",
                 PushPlus: "PushPlus (推送加)",
                 SpugPush: "SpugPush（Spug推送助手）",
+                amootsms: "Amoot SMS",
                 smsc: "SMSC",
                 smsir: "SMS.IR",
                 WPush: "WPush(wpush.cn)",
+                WxPusher: "WxPusher SPT Push (WxPusher极简推送)",
                 YZJ: "YZJ (云之家自定义机器人)",
                 SMSPlanet: "SMSPlanet.pl",
+                VK: "VK",
+                VKTeams: "VKTeams",
             };
 
             // Sort by notification name alphabetically
@@ -414,6 +439,10 @@ export default {
                 for (let n of this.$root.notificationList) {
                     if (n.id === notificationID) {
                         this.notification = JSON.parse(n.config);
+
+                        // applyExisting is one time only, but it got saved to database previously. Workaround fix, set it to false here to deal with the problem.
+                        this.notification.applyExisting = false;
+
                         break;
                     }
                 }

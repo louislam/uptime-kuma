@@ -29,10 +29,10 @@ class Settings {
         // Start cache clear if not started yet
         if (!Settings.cacheCleaner) {
             Settings.cacheCleaner = setInterval(() => {
-                log.debug("settings", "Cache Cleaner is just started.");
+                //log.debug("settings", "Cache Cleaner is just started.");
                 for (key in Settings.cacheList) {
                     if (Date.now() - Settings.cacheList[key].timestamp > 60 * 1000) {
-                        log.debug("settings", "Cache Cleaner deleted: " + key);
+                        //log.debug("settings", "Cache Cleaner deleted: " + key);
                         delete Settings.cacheList[key];
                     }
                 }
@@ -42,7 +42,6 @@ class Settings {
         // Query from cache
         if (key in Settings.cacheList) {
             const v = Settings.cacheList[key].value;
-            log.debug("settings", `Get Setting (cache): ${key}: ${v}`);
             return v;
         }
 
@@ -50,7 +49,6 @@ class Settings {
 
         try {
             const v = JSON.parse(value);
-            log.debug("settings", `Get Setting: ${key}: ${v}`);
 
             Settings.cacheList[key] = {
                 value: v,

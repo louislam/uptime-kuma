@@ -1448,5 +1448,16 @@
     "createdAt": "Dibuat: {date}",
     "lastUpdatedAt": "Terakhir Diperbarui: {date}",
     "Sets end time based on start time": "Atur waktu akhir berdasar waktu mulai",
-    "Please set start time first": "Mohon atur waktu mulai terlebih dahulu"
+    "Please set start time first": "Mohon atur waktu mulai terlebih dahulu",
+    "example": "Contoh",
+    "Result": "Hasil",
+    "Cloud ID": "ID Cloud",
+    "API Token": "Token API",
+    "See Jira Cloud Docs": "Lihat Dokumentasi Jira Cloud",
+    "templateAvailableVariables": "Variable Tersedia",
+    "pingPacketSizeWarning": "Ukuran paket yang lebih kecil dari 16 tidak menghasilkan waktu bolak-balik di Linux",
+    "monitorTypeGameServer": "Server Game",
+    "monitorTypeDatabase": "Tipe Database Monitor",
+    "monitorTypeSpecial": "Spesial",
+    "oracledbConnectionString": "Database Oracle: {connectionString}"
 }

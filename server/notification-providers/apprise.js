@@ -1,5 +1,5 @@
 const NotificationProvider = require("./notification-provider");
-const childProcessAsync = require("promisify-child-process");
+const { execFileAsync } = require("../util");
 
 class Apprise extends NotificationProvider {
     name = "apprise";
@@ -10,26 +10,26 @@ class Apprise extends NotificationProvider {
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
 
-        const args = ["-vv", "-b", msg, notification.appriseURL];
+        const args = ["-vv", "-b", msg];
         if (notification.title) {
             args.push("-t");
             args.push(notification.title);
         }
-        const s = await childProcessAsync.spawn("apprise", args, {
+        args.push("--", notification.appriseURL);
+        const s = await execFileAsync("apprise", args, {
             encoding: "utf8",
+            maxBuffer: 1024 * 1024,
         });
 
-        const output = s.stdout ? s.stdout.toString() : "ERROR: maybe apprise not found";
+        // A successful run (exit code 0) may legitimately print nothing to
+        // stdout, so empty output must not be treated as a failure (#5547).
+        const output = s.stdout ? s.stdout.toString() : "";
 
-        if (output) {
-            if (!output.includes("ERROR")) {
-                return okMsg;
-            }
-
+        if (output.includes("ERROR")) {
             throw new Error(output);
-        } else {
-            return "No output from apprise";
         }
+
+        return okMsg;
     }
 }
 

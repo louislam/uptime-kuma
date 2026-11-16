@@ -1,14 +1,15 @@
 const { MonitorType } = require("./monitor-type");
 const { Globalping, IpVersion } = require("globalping");
 const { Settings } = require("../settings");
-const { log, UP, evaluateJsonQuery } = require("../../src/util");
+const { log, UP } = require("../../src/util");
+const { evaluateJsonQuery } = require("../jsonata-sandbox");
 const {
     checkStatusCode,
     getOidcTokenClientCredentials,
     encodeBase64,
     getDaysRemaining,
     checkCertExpiryNotifications,
-} = require("../util-server");
+} = require("../util");
 const { R } = require("redbean-node");
 
 /**
@@ -90,6 +91,11 @@ class GlobalpingMonitorType extends MonitorType {
         log.debug("monitor", `Globalping create measurement: ${JSON.stringify(opts)}`);
         let res = await client.createMeasurement(opts);
 
+        // Retry if the server returns a 500 error
+        if (!res.ok && Globalping.isHttpStatus(500, res)) {
+            res = await client.createMeasurement(opts);
+        }
+
         if (!res.ok) {
             if (Globalping.isHttpStatus(429, res)) {
                 throw new Error(`Failed to create measurement: ${this.formatTooManyRequestsError(hasAPIToken)}`);
@@ -139,9 +145,11 @@ class GlobalpingMonitorType extends MonitorType {
         }
 
         const basicAuthHeader = this.getBasicAuthHeader(monitor);
+        const bearerAuthHeader = this.getBearerAuthHeader(monitor);
         const oauth2AuthHeader = await this.getOauth2AuthHeader(monitor);
         const headers = {
             ...basicAuthHeader,
+            ...bearerAuthHeader,
             ...oauth2AuthHeader,
             ...(monitor.headers ? JSON.parse(monitor.headers) : {}),
         };
@@ -186,6 +194,11 @@ class GlobalpingMonitorType extends MonitorType {
 
         log.debug("monitor", `Globalping create measurement: ${JSON.stringify(opts)}`);
         let res = await client.createMeasurement(opts);
+
+        // Retry if the server returns a 500 error
+        if (!res.ok && Globalping.isHttpStatus(500, res)) {
+            res = await client.createMeasurement(opts);
+        }
 
         if (!res.ok) {
             if (Globalping.isHttpStatus(429, res)) {
@@ -275,7 +288,14 @@ class GlobalpingMonitorType extends MonitorType {
 
         log.debug("monitor", `Globalping create measurement: ${JSON.stringify(opts)}`);
         let res = await client.createMeasurement(opts);
+
         log.debug("monitor", `Globalping ${JSON.stringify(res)}`);
+
+        // Retry if the server returns a 500 error
+        if (!res.ok && Globalping.isHttpStatus(500, res)) {
+            res = await client.createMeasurement(opts);
+        }
+
         if (!res.ok) {
             if (Globalping.isHttpStatus(429, res)) {
                 throw new Error(`Failed to create measurement: ${this.formatTooManyRequestsError(hasAPIToken)}`);
@@ -531,6 +551,21 @@ class GlobalpingMonitorType extends MonitorType {
 
         return {
             Authorization: "Basic " + encodeBase64(monitor.basic_auth_user, monitor.basic_auth_pass),
+        };
+    }
+
+    /**
+     * Generates the bearer authentication header for a monitor if it is enabled.
+     * @param {object} monitor - The monitor object.
+     * @returns {object} The bearer authentication header.
+     */
+    getBearerAuthHeader(monitor) {
+        if (monitor.auth_method !== "bearer") {
+            return {};
+        }
+
+        return {
+            Authorization: "Bearer " + monitor.bearer_token,
         };
     }
 

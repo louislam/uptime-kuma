@@ -1,0 +1,8 @@
+{
+    "name": "docker-latest-warning",
+    "private": true,
+    "scripts": {
+        "build": "docker build -f Dockerfile.latest-warning -t louislam/uptime-kuma:latest-warning-test .",
+        "multi-build-and-push": "docker buildx build -f Dockerfile.latest-warning --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma:latest -t louislam/uptime-kuma:1 --push ."
+    }
+}

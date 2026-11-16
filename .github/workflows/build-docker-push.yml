@@ -1,0 +1,49 @@
+name: Build Docker Push Image
+
+on:
+  schedule:
+    # Runs at 2:00 AM UTC on the 1st of every month
+    - cron: "0 2 1 * *"
+  workflow_dispatch: # Allow manual trigger
+
+permissions: {}
+
+jobs:
+  build-docker-push:
+    # Only run on the original repository, not on forks
+    if: github.repository == 'louislam/uptime-kuma'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false }
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 20
+
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+
+      - name: Install cross-env
+        run: npm install -g cross-env@7.0.3 # zizmor: ignore[adhoc-packages]
+
+      - name: Build and push Docker image
+        working-directory: extra/uptime-kuma-push
+        run: npm run build-docker

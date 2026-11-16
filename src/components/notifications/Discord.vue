@@ -1,11 +1,10 @@
 <template>
     <div class="mb-3">
         <label for="discord-webhook-url" class="form-label">{{ $t("Discord Webhook URL") }}</label>
-        <input
+        <HiddenInput
             id="discord-webhook-url"
             v-model="$parent.notification.discordWebhookUrl"
             type="text"
-            class="form-control"
             required
             autocomplete="false"
         />
@@ -144,11 +143,13 @@
     </div>
 </template>
 <script>
+import HiddenInput from "../HiddenInput.vue";
 import TemplatedTextarea from "../TemplatedTextarea.vue";
 
 export default {
     components: {
         TemplatedTextarea,
+        HiddenInput,
     },
     mounted() {
         if (!this.$parent.notification.discordChannelType) {

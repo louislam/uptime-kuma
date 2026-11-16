@@ -1,7 +1,8 @@
-const { checkLogin, setSetting, setting, doubleCheckPassword } = require("../util-server");
+const { checkLogin, setSetting, setting } = require("../util");
 const { CloudflaredTunnel } = require("node-cloudflared-tunnel");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { log } = require("../../src/util");
+const { doubleCheckPassword } = require("../better-auth");
 const io = UptimeKumaServer.getInstance().io;
 
 const prefix = "cloudflared_";
@@ -74,7 +75,7 @@ module.exports.cloudflaredSocketHandler = (socket) => {
             checkLogin(socket);
             const disabledAuth = await setting("disableAuth");
             if (!disabledAuth) {
-                await doubleCheckPassword(socket, currentPassword);
+                await doubleCheckPassword(socket.request.headers.cookie, currentPassword);
             }
             cloudflared.stop();
         } catch (error) {
@@ -106,11 +107,11 @@ module.exports.autoStart = async (token) => {
     } else {
         // Override the current token via args or env var
         await setSetting("cloudflaredTunnelToken", token);
-        console.log("Use cloudflared token from args or env var");
+        log.info("cloudflare", "Use cloudflared token from args or env var");
     }
 
     if (token) {
-        console.log("Start cloudflared");
+        log.info("cloudflare", "Start cloudflared");
         cloudflared.token = token;
         cloudflared.start();
     }

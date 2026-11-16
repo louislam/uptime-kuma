@@ -15,6 +15,7 @@ class SMTP extends NotificationProvider {
             host: notification.smtpHost,
             port: notification.smtpPort,
             secure: notification.smtpSecure,
+            headers: {},
         };
 
         // Handle TLS/STARTTLS options
@@ -54,6 +55,18 @@ class SMTP extends NotificationProvider {
             };
         }
 
+        // Handle additional headers
+        if (notification.smtpAdditionalHeaders) {
+            try {
+                config.headers = {
+                    ...config.headers,
+                    ...JSON.parse(notification.smtpAdditionalHeaders),
+                };
+            } catch (err) {
+                throw new Error("Additional Headers is not a valid JSON");
+            }
+        }
+
         // default values in case the user does not want to template
         let subject = msg;
         let body = msg;
@@ -83,6 +96,7 @@ class SMTP extends NotificationProvider {
             bcc: notification.smtpBCC,
             to: notification.smtpTo,
             subject: subject,
+            headers: config.headers,
             // If the email body is custom, and the user wants it, set the email body as HTML
             [useHTMLBody ? "html" : "text"]: body,
         });

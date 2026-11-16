@@ -29,14 +29,15 @@ export default {
         },
     },
     computed: {
+        // Single slots contain local SQL datetimes, recurring slots contain ISO instants
         startDateTime() {
             return dayjs(this.maintenance.timeslotList[0].startDate)
-                .tz(this.maintenance.timezone, true)
+                .tz(this.maintenance.timezone, this.maintenance.strategy === "single")
                 .format(SQL_DATETIME_FORMAT_WITHOUT_SECOND);
         },
         endDateTime() {
             return dayjs(this.maintenance.timeslotList[0].endDate)
-                .tz(this.maintenance.timezone, true)
+                .tz(this.maintenance.timezone, this.maintenance.strategy === "single")
                 .format(SQL_DATETIME_FORMAT_WITHOUT_SECOND);
         },
     },

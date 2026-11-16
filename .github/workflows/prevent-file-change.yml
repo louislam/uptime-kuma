@@ -1,7 +1,7 @@
 name: prevent-file-change
 
-on:
-  pull_request:
+on: # zizmor: ignore[dangerous-triggers] the action only supports pull_request_target; no PR code is checked out or run
+  pull_request_target:
 permissions: {}
 
 jobs:
@@ -11,7 +11,7 @@ jobs:
       pull-requests: read
     steps:
       - name: Prevent file change
-        uses: xalvarez/prevent-file-change-action@004d9f17c2e4a7afa037cda5f38dc55a5e9c9c06 # v1.9.1
+        uses: xalvarez/prevent-file-change-action@440fe0989b54093ce834a504af595ee55967da4d # v3.0.2
         with:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           # Regex, /src/lang/*.json is not allowed to be changed, except for /src/lang/en.json

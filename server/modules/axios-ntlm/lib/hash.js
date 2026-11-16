@@ -1,6 +1,22 @@
 "use strict";
 // Original source at https://github.com/elasticio/node-ntlm-client/blob/master/lib/hash.js
 var crypto = require("crypto");
+/**
+ * MD4 digest with a pure JavaScript fallback.
+ * OpenSSL 3 disables MD4 by default, so Node throws ERR_OSSL_EVP_UNSUPPORTED.
+ * @param {Buffer} data Data to hash
+ * @returns {Buffer} MD4 digest
+ */
+function md4(data) {
+    try {
+        return crypto.createHash("md4").update(data).digest();
+    } catch (e) {
+        if (e.code !== "ERR_OSSL_EVP_UNSUPPORTED") {
+            throw e;
+        }
+        return Buffer.from(require("js-md4").create().update(data).digest());
+    }
+}
 function createLMResponse(challenge, lmhash) {
     var buf = new Buffer.alloc(24),
         pwBuffer = new Buffer.alloc(21).fill(0);
@@ -52,9 +68,7 @@ function createNTLMResponse(challenge, ntlmhash) {
     return buf;
 }
 function createNTLMHash(password) {
-    var md4sum = crypto.createHash("md4");
-    md4sum.update(new Buffer.from(password, "ucs2"));
-    return md4sum.digest();
+    return md4(new Buffer.from(password, "ucs2"));
 }
 function createNTLMv2Hash(ntlmhash, username, authTargetName) {
     var hmac = crypto.createHmac("md5", ntlmhash);

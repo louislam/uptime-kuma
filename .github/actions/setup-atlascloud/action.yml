@@ -1,0 +1,33 @@
+name: Setup Atlas Cloud provider
+description: Write the Atlas Cloud provider config so opencode can use the models listed in .github/opencode-models.json
+
+inputs:
+  api-key:
+    description: Atlas Cloud API key
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Write opencode provider config
+      shell: bash
+      env:
+        ATLASCLOUD_API_KEY: ${{ inputs.api-key }}
+      run: |
+        mkdir -p ~/.config/opencode
+        jq -n \
+          --arg key "$ATLASCLOUD_API_KEY" \
+          --slurpfile models .github/opencode-models.json \
+          '{
+            provider: {
+              atlascloud: {
+                npm: "@ai-sdk/openai-compatible",
+                name: "Atlas Cloud",
+                options: {
+                  baseURL: "https://api.atlascloud.ai/v1",
+                  apiKey: $key
+                },
+                models: ($models[0] | map({ (. | sub("^atlascloud/"; "")): { name: (. | split("/") | last) } }) | add)
+              }
+            }
+          }' > ~/.config/opencode/opencode.json

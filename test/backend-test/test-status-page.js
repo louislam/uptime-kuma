@@ -1,16 +1,12 @@
 const { describe, test, mock } = require("node:test");
 const assert = require("node:assert");
 const StatusPage = require("../../server/model/status_page");
-const dayjs = require("dayjs");
-const utc = require("dayjs/plugin/utc");
 const {
     STATUS_PAGE_ALL_UP,
     STATUS_PAGE_ALL_DOWN,
     STATUS_PAGE_PARTIAL_DOWN,
     STATUS_PAGE_MAINTENANCE,
 } = require("../../src/util");
-
-dayjs.extend(utc);
 
 describe("StatusPage", () => {
     describe("getStatusDescription()", () => {
@@ -53,6 +49,15 @@ describe("StatusPage", () => {
                 title: "Test Status Page",
             };
 
+            const mockIncidents = [
+                {
+                    title: "Test Monitor",
+                    content: "Test content",
+                    id: 1,
+                    createdDate: "2026-05-21 15:07:35.600",
+                },
+            ];
+
             const mockHeartbeats = [
                 {
                     name: "Test Monitor",
@@ -62,6 +67,7 @@ describe("StatusPage", () => {
             ];
 
             mock.method(StatusPage, "getRSSPageData", async () => ({
+                incidents: mockIncidents,
                 heartbeats: mockHeartbeats,
                 statusDescription: "All Systems Operational",
             }));

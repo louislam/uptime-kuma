@@ -1,9 +1,10 @@
 const { log } = require("../../src/util");
 const { Settings } = require("../settings");
 const { sendInfo } = require("../client");
-const { checkLogin } = require("../util-server");
+const { checkLogin } = require("../util");
 const { games } = require("gamedig");
 const { testChrome } = require("../monitor-types/real-browser-monitor-type");
+const { getPM2ProcessList } = require("../util/pm2");
 const fsAsync = require("fs").promises;
 const path = require("path");
 
@@ -59,6 +60,21 @@ module.exports.generalSocketHandler = (socket, server) => {
             callback({
                 ok: true,
                 gameList: getGameList(),
+            });
+        } catch (e) {
+            callback({
+                ok: false,
+                msg: e.message,
+            });
+        }
+    });
+
+    socket.on("getPM2ProcessList", async (callback) => {
+        try {
+            checkLogin(socket);
+            callback({
+                ok: true,
+                processList: await getPM2ProcessList(),
             });
         } catch (e) {
             callback({

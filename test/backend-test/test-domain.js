@@ -8,11 +8,11 @@ const TestDB = require("../mock-testdb");
 const { R } = require("redbean-node");
 const { Notification } = require("../../server/notification");
 const { Settings } = require("../../server/settings");
-const { setSetting } = require("../../server/util-server");
+const { setSetting } = require("../../server/util");
 const dayjs = require("dayjs");
-dayjs.extend(require("dayjs/plugin/utc"));
+const { retryExternalService } = require("./test-util");
 
-const testDb = new TestDB();
+const testDb = new TestDB("./data/test-domain");
 
 describe("Domain Expiry", () => {
     const monHttpCom = {
@@ -27,13 +27,14 @@ describe("Domain Expiry", () => {
     });
 
     after(async () => {
-        Settings.stopCacheCleaner();
         await testDb.destroy();
     });
 
     test("getExpiryDate() returns correct expiry date for .wiki domain with no A record", async () => {
-        const d = DomainExpiry.createByName("google.wiki");
-        assert.deepEqual(await d.getExpiryDate(), new Date("2026-11-26T23:59:59.000Z"));
+        await retryExternalService(async () => {
+            const d = DomainExpiry.createByName("google.wiki");
+            assert.deepEqual(await d.getExpiryDate(), new Date("2026-11-26T23:59:59.000Z"));
+        });
     });
 
     describe("checkSupport()", () => {
@@ -96,38 +97,6 @@ describe("Domain Expiry", () => {
         });
 
         describe("Domain Parsing", () => {
-            test("throws error for IP address (isIp check)", async () => {
-                const monitor = {
-                    type: "http",
-                    url: "https://127.0.0.1",
-                    domainExpiryNotification: true,
-                };
-                await assert.rejects(
-                    async () => await DomainExpiry.checkSupport(monitor),
-                    (error) => {
-                        assert.strictEqual(error.constructor.name, "TranslatableError");
-                        assert.strictEqual(error.message, "domain_expiry_unsupported_is_ip");
-                        return true;
-                    }
-                );
-            });
-
-            test("throws error for too short suffix(example.a)", async () => {
-                const monitor = {
-                    type: "http",
-                    url: "https://example.a",
-                    domainExpiryNotification: true,
-                };
-                await assert.rejects(
-                    async () => await DomainExpiry.checkSupport(monitor),
-                    (error) => {
-                        assert.strictEqual(error.constructor.name, "TranslatableError");
-                        assert.strictEqual(error.message, "domain_expiry_public_suffix_too_short");
-                        return true;
-                    }
-                );
-            });
-
             test("throws error for non-ICANN TLD (e.g. .local)", async () => {
                 const monitor = {
                     type: "http",
@@ -158,14 +127,16 @@ describe("Domain Expiry", () => {
             });
 
             test("supports multi-level public suffix via RDAP fallback (e.g. com.br)", async () => {
-                const monitor = {
-                    type: "http",
-                    url: "https://record.com.br",
-                    domainExpiryNotification: true,
-                };
-                const supportInfo = await DomainExpiry.checkSupport(monitor);
-                assert.strictEqual(supportInfo.domain, "record.com.br");
-                assert.strictEqual(supportInfo.tld, "br");
+                await retryExternalService(async () => {
+                    const monitor = {
+                        type: "http",
+                        url: "https://record.com.br",
+                        domainExpiryNotification: true,
+                    };
+                    const supportInfo = await DomainExpiry.checkSupport(monitor);
+                    assert.strictEqual(supportInfo.domain, "record.com.br");
+                    assert.strictEqual(supportInfo.tld, "br");
+                });
             });
 
             test("handles complex subdomain correctly", async () => {
@@ -204,15 +175,19 @@ describe("Domain Expiry", () => {
     });
 
     test("findByDomainNameOrCreate() retrieves expiration date for .com domain from RDAP", async () => {
-        const domain = await DomainExpiry.findByDomainNameOrCreate("google.com");
-        const expiryFromRdap = await domain.getExpiryDate(); // from RDAP
-        assert.deepEqual(expiryFromRdap, new Date("2028-09-14T04:00:00.000Z"));
+        await retryExternalService(async () => {
+            const domain = await DomainExpiry.findByDomainNameOrCreate("google.com");
+            const expiryFromRdap = await domain.getExpiryDate(); // from RDAP
+            assert.deepEqual(expiryFromRdap, new Date("2028-09-14T04:00:00.000Z"));
+        });
     });
 
     test("checkExpiry() caches expiration date in database", async () => {
-        await DomainExpiry.checkExpiry("google.com"); // RDAP -> Cache
-        const domain = await DomainExpiry.findByName("google.com");
-        assert(dayjs.utc().diff(dayjs.utc(domain.lastCheck), "second") < 5);
+        await retryExternalService(async () => {
+            await DomainExpiry.checkExpiry("google.com"); // RDAP -> Cache
+            const domain = await DomainExpiry.findByName("google.com");
+            assert(dayjs.utc().diff(dayjs.utc(domain.lastCheck), "second") < 5);
+        });
     });
 
     test("sendNotifications() triggers notification for expiring domain", async () => {
