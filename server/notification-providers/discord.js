@@ -279,11 +279,11 @@ class Discord extends NotificationProvider {
                                 },
                                 {
                                     name: "Ping",
-                                    value: heartbeatJSON["calculatedResponse"],
+                                    value: heartbeatJSON["ping"] + " ms",
                                 },
                                 {
                                     name: "Threshold",
-                                    value: heartbeatJSON["calculatedThreshold"],
+                                    value: heartbeatJSON["pingThreshold"] + " ms",
                                 },
                             ],
                         },
@@ -320,11 +320,11 @@ class Discord extends NotificationProvider {
                                 },
                                 {
                                     name: "Ping",
-                                    value: heartbeatJSON["calculatedResponse"],
+                                    value: heartbeatJSON["ping"] + " ms",
                                 },
                                 {
                                     name: "Threshold",
-                                    value: heartbeatJSON["calculatedThreshold"],
+                                    value: heartbeatJSON["pingThreshold"] + " ms",
                                 },
                                 {
                                     name: "Slow For",

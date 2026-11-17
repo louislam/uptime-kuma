@@ -1671,12 +1671,12 @@ class Monitor extends BeanModel {
 
     /**
      * Send a slow response notification about a monitor
-     * @param {Monitor} monitor The monitor to send a notificaton about
+     * @param {Monitor} monitor The monitor to send a notification about
      * @param {Bean} bean Status information about monitor
-     * @param {object} slowStats Slow response information
+     * @param {string} slowFor How long the monitor has been responding slowly
      * @returns {void}
      */
-    static async sendSlowResponseNotification(monitor, bean, slowStats) {
+    static async sendSlowResponseNotification(monitor, bean, slowFor) {
         // Send notification
         const notificationList = await Monitor.getNotificationList(monitor);
 
@@ -1695,11 +1695,9 @@ class Monitor extends BeanModel {
                 const monitorData = [{ id: monitor.id, active: monitor.active, name: monitor.name }];
                 const preloadData = await Monitor.preparePreloadData(monitorData);
 
-                // Override status with SLOW/NOMINAL, add slowStats
+                // Override status with SLOW/NOMINAL. Ping and threshold are already on the heartbeat.
                 heartbeatJSON["status"] = bean.pingStatus;
-                heartbeatJSON["calculatedResponse"] = slowStats.calculatedResponse;
-                heartbeatJSON["calculatedThreshold"] = slowStats.calculatedThreshold;
-                heartbeatJSON["slowFor"] = slowStats.slowFor;
+                heartbeatJSON["slowFor"] = slowFor;
 
                 // Also provide the time in server timezone
                 heartbeatJSON["timezone"] = await UptimeKumaServer.getInstance().getTimezone();
@@ -1740,21 +1738,15 @@ class Monitor extends BeanModel {
             return;
         }
 
-        const actualResponseTime = bean.ping;
-        const threshold = monitor.slowResponseNotificationThreshold;
+        // Record the threshold used for this beat. Providers and the ping chart read it from the heartbeat.
+        bean.pingThreshold = monitor.slowResponseNotificationThreshold;
 
         // Create stats to append to messages/logs
-        let msgStats = `Response: ${actualResponseTime}ms | Threshold: ${threshold}ms`;
-        const slowStats = {
-            calculatedResponse: `${actualResponseTime}ms`,
-            calculatedThreshold: `${threshold}ms`,
-            slowFor: `${bean.slowResponseCount * monitor.interval}s`,
-        };
-
-        bean.pingThreshold = threshold;
+        let msgStats = `Response: ${bean.ping}ms | Threshold: ${monitor.slowResponseNotificationThreshold}ms`;
+        const slowFor = `${bean.slowResponseCount * monitor.interval}s`;
 
         // Responding normally
-        if (actualResponseTime < threshold) {
+        if (bean.ping < monitor.slowResponseNotificationThreshold) {
             bean.pingStatus = NOMINAL;
             if (bean.slowResponseCount === 0) {
                 log.debug(
@@ -1769,7 +1761,7 @@ class Monitor extends BeanModel {
                 bean.pingImportant = true;
                 bean.pingMsg = `Returned to Normal Response Time \n${msgStats}`;
 
-                Monitor.sendSlowResponseNotification(monitor, bean, slowStats);
+                Monitor.sendSlowResponseNotification(monitor, bean, slowFor);
             }
 
             // Reset slow response count
@@ -1788,7 +1780,7 @@ class Monitor extends BeanModel {
                 bean.pingImportant = true;
                 bean.pingMsg = `Responded Slow \n${msgStats}`;
 
-                Monitor.sendSlowResponseNotification(monitor, bean, slowStats);
+                Monitor.sendSlowResponseNotification(monitor, bean, slowFor);
 
                 // Send notification every x times
             } else if (this.slowResponseNotificationResendInterval > 0) {
@@ -1802,7 +1794,7 @@ class Monitor extends BeanModel {
 
                     bean.pingMsg = `Still Responding Slow \n${msgStats}`;
 
-                    Monitor.sendSlowResponseNotification(monitor, bean, slowStats);
+                    Monitor.sendSlowResponseNotification(monitor, bean, slowFor);
                 } else {
                     log.debug(
                         "monitor",
