@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
-      contents: read
+      contents: write
       pull-requests: write
 
     steps:
@@ -270,6 +270,8 @@ jobs:
   #    Re-runnable: does nothing when the page is already on the target version
   update-wiki:
     needs: docker-images
+    # A beta must not point the update docs at a pre-release
+    if: inputs.is_beta == false
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
