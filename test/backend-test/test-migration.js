@@ -44,6 +44,15 @@ describe("Database Migration", () => {
                 directory: path.join(__dirname, "../../db/knex_migrations"),
             });
 
+            // MySQL with lower_case_table_names=1 stores table names in lower case, so an
+            // upper-case name is reported as a missing table (#8205)
+            const tableNames = await R.knex("sqlite_master").where({ type: "table" }).pluck("name");
+            assert.deepStrictEqual(
+                tableNames.filter((name) => name !== name.toLowerCase()),
+                [],
+                "migration table names must be lower case"
+            );
+
             // Test passes if migrations complete successfully without errors
         } finally {
             // Clean up
@@ -245,6 +254,17 @@ describe("Database Migration", () => {
                     directory: path.join(__dirname, "../../db/knex_migrations"),
                 });
 
+                // MySQL with lower_case_table_names=1 stores table names in lower case, so an
+                // upper-case name is reported as a missing table (#8205)
+                const tableNames = await R.getAll(
+                    "SELECT table_name AS name FROM information_schema.tables WHERE table_schema = DATABASE()"
+                );
+                assert.deepStrictEqual(
+                    tableNames.map((table) => table.name).filter((name) => name !== name.toLowerCase()),
+                    [],
+                    "migration table names must be lower case"
+                );
+
                 // Test passes if migrations complete successfully without errors
             } finally {
                 // Clean up
@@ -305,6 +325,17 @@ describe("Database Migration", () => {
                 await R.knex.migrate.latest({
                     directory: path.join(__dirname, "../../db/knex_migrations"),
                 });
+
+                // MySQL with lower_case_table_names=1 stores table names in lower case, so an
+                // upper-case name is reported as a missing table (#8205)
+                const tableNames = await R.getAll(
+                    "SELECT table_name AS name FROM information_schema.tables WHERE table_schema = DATABASE()"
+                );
+                assert.deepStrictEqual(
+                    tableNames.map((table) => table.name).filter((name) => name !== name.toLowerCase()),
+                    [],
+                    "migration table names must be lower case"
+                );
 
                 // Test passes if migrations complete successfully without errors
             } finally {
