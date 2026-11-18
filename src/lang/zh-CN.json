@@ -1665,7 +1665,6 @@
     "Bearer Token": "Bearer Token",
     "smtpAdditionalHeadersTitle": "额外 Header",
     "smtpAdditionalHeadersDesc": "请访问 Nodemailer 自定义 Header {0} 了解配置方法。",
-    "DNS resolution failed": "DNS 解析失败",
     "Connection Timeout": "连接超时",
     "Rybbit": "Rybbit",
     "flowtriqApiKeyDescription": "可选的 API 密钥以验证发送至 Flowtriq 实例的 Webhook 请求。",
