@@ -101,6 +101,18 @@
                     </label>
                 </div>
 
+                <div class="my-3 form-check form-switch">
+                    <input
+                        id="show-domain-expiry"
+                        v-model="config.showDomainExpiry"
+                        class="form-check-input"
+                        type="checkbox"
+                    />
+                    <label class="form-check-label" for="show-domain-expiry">
+                        {{ $t("showDomainExpiry") }}
+                    </label>
+                </div>
+
                 <!-- Show only last heartbeat -->
                 <div class="my-3 form-check form-switch">
                     <input
@@ -493,6 +505,7 @@
                     :edit-mode="enableEditMode"
                     :show-tags="config.showTags"
                     :show-certificate-expiry="config.showCertificateExpiry"
+                    :show-domain-expiry="config.showDomainExpiry"
                     :show-only-last-heartbeat="config.showOnlyLastHeartbeat"
                 />
             </div>
