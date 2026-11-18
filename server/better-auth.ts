@@ -1,4 +1,5 @@
 import { betterAuth } from "better-auth";
+import type { BetterAuthPlugin } from "better-auth";
 // @ts-ignore
 import * as Database from "./database.js";
 import { genSecret, isDevEnv, log } from "../src/util";
@@ -9,15 +10,18 @@ import { Socket } from "socket.io";
 import { haveIBeenPwned } from "better-auth/plugins";
 import { twoFactor } from "better-auth/plugins";
 import { apiKey } from "@better-auth/api-key";
-import { createAuthMiddleware } from "better-auth/api";
+import { createAuthMiddleware, isAPIError } from "better-auth/api";
 // @ts-ignore
 import * as oldAuth from "./auth";
 import { hasUser } from "./routers/better-auth-router";
-import { symmetricEncrypt } from "better-auth/crypto";
+import { symmetricEncrypt, hashPassword } from "better-auth/crypto";
 // @ts-ignore
 import config from "./config.js";
 
 export type BetterAuthUser = ReturnType<typeof createAuthInstance>["$Infer"]["Session"]["user"];
+
+// Single-user app: the email is never used, so a fixed valid address keeps any legacy username working (#8210)
+export const PLACEHOLDER_EMAIL = "admin@noreply.uptime-kuma.internal";
 
 let authInstance: ReturnType<typeof createAuthInstance>;
 
@@ -58,6 +62,48 @@ export function auth(force = false) {
  */
 export async function authInternal() {
     return (await auth().$context).internalAdapter;
+}
+
+/**
+ * Whether Better Auth could not reach the leaked-password service, so the check never ran.
+ * @param error Error thrown while hashing or creating a password
+ * @returns True when the password can be hashed without the check
+ */
+function isLeakCheckUnavailable(error: unknown): boolean {
+    return isAPIError(error) && error.statusCode === 500 && error.message.startsWith("Failed to check password");
+}
+
+/**
+ * Keep first-run setup and password changes working when the leaked-password service is unreachable (#8212).
+ * @returns Better Auth plugin, registered after `haveIBeenPwned` so it wraps the check
+ */
+function leakCheckFailOpen(): BetterAuthPlugin {
+    return {
+        id: "leak-check-fail-open",
+        init(ctx) {
+            const hashWithLeakCheck = ctx.password.hash;
+            return {
+                context: {
+                    password: {
+                        ...ctx.password,
+                        async hash(password: string) {
+                            try {
+                                return await hashWithLeakCheck(password);
+                            } catch (e) {
+                                if (!isLeakCheckUnavailable(e)) {
+                                    throw e;
+                                }
+
+                                // No internet: the check cannot run, so let the password through
+                                log.warn("auth", "Leaked-password service is unreachable, skipping the check.");
+                                return hashPassword(password);
+                            }
+                        },
+                    },
+                },
+            };
+        },
+    };
 }
 
 /**
@@ -128,13 +174,21 @@ function createAuthInstance() {
         },
         plugins: [
             // Enable login by username
-            username(),
+            username({
+                // v1/v2 accepted any username (email, spaces, non-Latin), the defaults allow only [a-zA-Z0-9_.] (#8210)
+                usernameValidator: () => true,
+                minUsernameLength: 1,
+                maxUsernameLength: 255,
+            }),
 
             // Enable user management API (used for creating the first admin user)
             admin(),
 
             // Check if the password has been pwned in data breaches
             haveIBeenPwned(haveIBeenPwnedOptions),
+
+            // Keep setup and password changes working when the service above cannot be reached
+            leakCheckFailOpen(),
 
             twoFactor({
                 schema: {
@@ -388,7 +442,7 @@ export async function migrateUser(username: string, password: string) {
             const newUser = await auth().api.createUser({
                 body: {
                     name: username,
-                    email: `${username}@noreply.uptime-kuma.internal`,
+                    email: PLACEHOLDER_EMAIL,
                     password,
                     role: "admin",
                     data: {
