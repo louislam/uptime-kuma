@@ -18,8 +18,8 @@ test(
         timeout: 300000,
     },
     async () => {
-        // This setting stores every table name in lower case, like the reporter's MySQL, so the table
-        // the migrations create as better_auth_twoFactor ends up being stored as better_auth_twofactor.
+        // This setting stores every table name in lower case, like the reporter's MySQL, so
+        // better_auth_twofactor is reported back exactly as it is configured in better-auth.
         const mariadb = await new GenericContainer("mariadb:12")
             .withCommand(["--lower-case-table-names=1"])
             .withEnvironment({
@@ -87,7 +87,7 @@ test(
         } finally {
             try {
                 await Database.close();
-            } catch (e) {
+            } catch {
                 // Ignore cleanup errors
             }
             await mariadb.stop();

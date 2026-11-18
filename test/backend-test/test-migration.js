@@ -125,6 +125,69 @@ describe("Database Migration", () => {
         }
     });
 
+    test("SQLite lowers the 2FA table name and keeps its rows (#8205)", async () => {
+        const testDbPath = path.join(__dirname, "../../data/test-migration-2fa-lowercase.db");
+        const testDbDir = path.dirname(testDbPath);
+
+        if (!fs.existsSync(testDbDir)) {
+            fs.mkdirSync(testDbDir, { recursive: true });
+        }
+
+        if (fs.existsSync(testDbPath)) {
+            fs.unlinkSync(testDbPath);
+        }
+
+        const knex = require("knex");
+        const db = knex({
+            client: "better-sqlite3",
+            connection: {
+                filename: testDbPath,
+            },
+            useNullAsDefault: true,
+        });
+
+        const { R } = require("redbean-node");
+        R.setup(db);
+        const migrationsDirectory = path.join(__dirname, "../../db/knex_migrations");
+
+        try {
+            const { createTables } = require("../../db/knex_init_db.js");
+            await createTables();
+
+            // Stop as soon as the 2FA table exists, as a 3.0.0-beta.1 database has it
+            for (let i = 0; i < 100 && !(await R.knex.schema.hasTable("better_auth_twoFactor")); i++) {
+                await R.knex.migrate.up({ directory: migrationsDirectory });
+            }
+
+            await R.knex("better_auth_user").insert({
+                id: "two-factor-user",
+                name: "admin",
+                email: "admin@noreply.uptime-kuma.internal",
+                emailVerified: 0,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            });
+            await R.knex("better_auth_twoFactor").insert({
+                id: "two-factor-row",
+                secret: "secret",
+                backupCodes: "[]",
+                verified: 1,
+                userId: "two-factor-user",
+            });
+
+            await R.knex.migrate.latest({ directory: migrationsDirectory });
+
+            assert.strictEqual(await R.knex.schema.hasTable("better_auth_twoFactor"), false);
+            assert.strictEqual(await R.knex.schema.hasTable("better_auth_twofactor"), true);
+            assert.deepStrictEqual(await R.knex("better_auth_twofactor").pluck("id"), ["two-factor-row"]);
+        } finally {
+            await R.knex.destroy();
+            if (fs.existsSync(testDbPath)) {
+                fs.unlinkSync(testDbPath);
+            }
+        }
+    });
+
     test(
         "MariaDB migrations run successfully from fresh database",
         {
