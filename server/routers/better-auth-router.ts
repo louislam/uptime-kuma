@@ -1,6 +1,6 @@
 import express from "express";
 import { toNodeHandler } from "better-auth/node";
-import { auth, PLACEHOLDER_EMAIL } from "../better-auth";
+import { auth, placeholderEmail } from "../better-auth";
 import { Settings } from "../settings";
 import { R } from "redbean-node";
 import { log } from "../../src/util";
@@ -142,7 +142,8 @@ export async function createFirstAdmin(username: string, password: string) {
 
     const body = {
         name: username,
-        email: PLACEHOLDER_EMAIL,
+        // The email is never used, so a random one is enough and stays unique with multiple users
+        email: placeholderEmail(),
         password,
         role: "admin",
         data: {

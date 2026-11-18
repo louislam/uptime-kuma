@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth";
 import type { BetterAuthPlugin } from "better-auth";
+import { randomUUID } from "node:crypto";
 // @ts-ignore
 import * as Database from "./database.js";
 import { genSecret, isDevEnv, log } from "../src/util";
@@ -20,8 +21,14 @@ import config from "./config.js";
 
 export type BetterAuthUser = ReturnType<typeof createAuthInstance>["$Infer"]["Session"]["user"];
 
-// Single-user app: the email is never used, so a fixed valid address keeps any legacy username working (#8210)
-export const PLACEHOLDER_EMAIL = "admin@noreply.uptime-kuma.internal";
+/**
+ * Build a unique placeholder email for a better-auth user. It is never used, so it only has to be valid (#8210).
+ * A random id keeps it unique before the user exists, which a user id could not do.
+ * @returns A placeholder email
+ */
+export function placeholderEmail() {
+    return `${randomUUID()}@noreply.uptime-kuma.internal`;
+}
 
 let authInstance: ReturnType<typeof createAuthInstance>;
 
@@ -442,7 +449,7 @@ export async function migrateUser(username: string, password: string) {
             const newUser = await auth().api.createUser({
                 body: {
                     name: username,
-                    email: PLACEHOLDER_EMAIL,
+                    email: placeholderEmail(),
                     password,
                     role: "admin",
                     data: {
