@@ -270,7 +270,7 @@ test(
             const baseUrl = `http://127.0.0.1:${port}`;
             await waitForServer(`${baseUrl}/api/entry-page`);
 
-            // The login form signs in by username, so both the migration and the sign-in must accept "@"
+            // Both migration and sign-in must accept "@"
             const login = await fetch(`${baseUrl}/api/auth/sign-in/username`, {
                 method: "POST",
                 headers: { "content-type": "application/json" },
@@ -278,7 +278,7 @@ test(
             });
             assert.strictEqual(login.status, 200, `login failed: ${login.status}\n${serverOutput}`);
 
-            // The legacy user is migrated to better-auth under the same username, with a random placeholder email
+            // Migrated under the same username, with a random internal email
             const authDb = new BetterSqlite3(path.join(emailDataDir, "kuma.db"), { readonly: true });
             const migrated = authDb.prepare("SELECT username, email FROM better_auth_user").all() as {
                 username: string;

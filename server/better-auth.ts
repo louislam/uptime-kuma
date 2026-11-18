@@ -22,11 +22,10 @@ import config from "./config.js";
 export type BetterAuthUser = ReturnType<typeof createAuthInstance>["$Infer"]["Session"]["user"];
 
 /**
- * Build a unique placeholder email for a better-auth user. It is never used, so it only has to be valid (#8210).
- * A random id keeps it unique before the user exists, which a user id could not do.
- * @returns A placeholder email
+ * Unique internal email for a better-auth user, never used, only valid (#8210).
+ * @returns An internal email
  */
-export function placeholderEmail() {
+export function genInternalEmail() {
     return `${randomUUID()}@noreply.uptime-kuma.internal`;
 }
 
@@ -72,17 +71,17 @@ export async function authInternal() {
 }
 
 /**
- * Whether Better Auth could not reach the leaked-password service, so the check never ran.
- * @param error Error thrown while hashing or creating a password
- * @returns True when the password can be hashed without the check
+ * Whether the leaked-password check could not run (service unreachable).
+ * @param error Error thrown while hashing a password
+ * @returns True to hash without the check
  */
 function isLeakCheckUnavailable(error: unknown): boolean {
     return isAPIError(error) && error.statusCode === 500 && error.message.startsWith("Failed to check password");
 }
 
 /**
- * Keep first-run setup and password changes working when the leaked-password service is unreachable (#8212).
- * @returns Better Auth plugin, registered after `haveIBeenPwned` so it wraps the check
+ * Keep setup and password changes working without internet (#8212).
+ * @returns Plugin wrapping the check above
  */
 function leakCheckFailOpen(): BetterAuthPlugin {
     return {
@@ -449,7 +448,7 @@ export async function migrateUser(username: string, password: string) {
             const newUser = await auth().api.createUser({
                 body: {
                     name: username,
-                    email: placeholderEmail(),
+                    email: genInternalEmail(),
                     password,
                     role: "admin",
                     data: {
