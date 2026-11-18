@@ -1,6 +1,6 @@
 import express from "express";
 import { toNodeHandler } from "better-auth/node";
-import { auth } from "../better-auth";
+import { auth, genInternalEmail } from "../better-auth";
 import { Settings } from "../settings";
 import { R } from "redbean-node";
 import { log } from "../../src/util";
@@ -104,6 +104,29 @@ export async function hasUser(checkLegacyUser = false) {
 }
 
 /**
+ * Remove the user that `createUser()` inserted before the leaked-password check failed.
+ * @param {string} username Username of the partially created user
+ * @returns {Promise<void>}
+ */
+async function removePartialFirstAdmin(username: string) {
+    if (!username) {
+        return;
+    }
+
+    try {
+        const users = await R.knex("better_auth_user").where({ username }).select("id");
+        const ids = users.map((user: { id: string }) => user.id);
+
+        if (ids.length > 0) {
+            await R.knex("better_auth_account").whereIn("userId", ids).del();
+            await R.knex("better_auth_user").whereIn("id", ids).del();
+        }
+    } catch (cleanupError) {
+        log.error("auth", "Failed to clean up the partially created admin:", cleanupError);
+    }
+}
+
+/**
  * Create the first admin user.
  * @param {string} username Admin username
  * @param {string} password Admin password
@@ -117,27 +140,24 @@ export async function createFirstAdmin(username: string, password: string) {
         );
     }
 
+    const body = {
+        name: username,
+        // Unique per user; the email is never used
+        email: genInternalEmail(),
+        password,
+        role: "admin",
+        data: {
+            username,
+        },
+    };
+
     let user;
     try {
-        user = await auth().api.createUser({
-            body: {
-                name: username,
-                email: `${username}@noreply.uptime-kuma.internal`,
-                password,
-                role: "admin",
-                data: {
-                    username,
-                },
-            },
-        });
+        user = await auth().api.createUser({ body });
     } catch (createError) {
         // HIBP rejected after admin user creation, we need to clean up the partially created user
         // very stupid.... https://github.com/better-auth/better-auth/issues/11706
-        try {
-            if (username) {
-                await R.knex("better_auth_user").where({ username }).del();
-            }
-        } catch (cleanupError) {}
+        await removePartialFirstAdmin(username);
         throw createError;
     }
 
