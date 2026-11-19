@@ -1169,8 +1169,7 @@ class Monitor extends BeanModel {
                 await beat();
             } catch (e) {
                 console.trace(e);
-                UptimeKumaServer.errorLog(e, false)        // A push monitor can be up without a response time. null < threshold is true,
-                // which would look like a fast response and clear a slow streak.
+                UptimeKumaServer.errorLog(e, false)
                 log.error("monitor", "Please report to https://github.com/louislam/uptime-kuma/issues");
 
                 if (!this.isStop) {
