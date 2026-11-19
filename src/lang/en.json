@@ -1653,5 +1653,11 @@
     "opsimateApiTokenDescription": "The value of the API_TOKEN setting of your OpsiMate server (default: opsimate).",
     "trigvDefaultChannel": "general",
     "trigvChannelHelp": "Enter your channel slug (up to 120 characters). Leave empty to use general.",
-    "trigvApiKeyDocs": "Trigv API key documentation"
+    "trigvApiKeyDocs": "Trigv API key documentation",
+    "kwtsmsApiCredentialsDescription": "Use your kwtSMS API username and API password (not your account mobile number). Find them in your kwtSMS account {here}, under API.",
+    "kwtsmsSenderId": "Sender ID",
+    "kwtsmsSenderIdDescription": "A Sender ID registered in your kwtSMS account. KWT-SMS is a shared test sender; use your own Sender ID in production.",
+    "kwtsmsRecipientDescription": "One or more numbers in international format, separated by a comma (for example 965XXXXXXXX). Spaces and a leading + or 00 are removed.",
+    "kwtsmsTestMode": "Test mode",
+    "kwtsmsTestModeDescription": "kwtSMS accepts the message but does not deliver it. Use it to check the setup, then turn it off."
 }
