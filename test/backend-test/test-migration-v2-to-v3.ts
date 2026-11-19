@@ -228,3 +228,78 @@ test("A v2.5.3 database still works after upgrading to v3 (#7944, #7946)", { tim
         }
     }
 });
+
+test(
+    "A v2.5.3 user whose username is an email address can still log in after upgrading to v3 (#8210)",
+    { timeout: 180000 },
+    async () => {
+        assert.ok(fs.existsSync(fixturePath), `v2 fixture not found: ${fixturePath}`);
+
+        // v1/v2 accepted any string as a username, and an email address is a common choice
+        const emailUsername = "user@example.com";
+        const emailDataDir = path.join(__dirname, "../../data/test-migration-v2-upgrade-email-username");
+
+        fs.rmSync(emailDataDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 });
+        fs.mkdirSync(emailDataDir, { recursive: true });
+        fs.writeFileSync(path.join(emailDataDir, "kuma.db"), zlib.gunzipSync(fs.readFileSync(fixturePath)));
+
+        const seedDb = new BetterSqlite3(path.join(emailDataDir, "kuma.db"));
+        seedDb
+            .prepare("UPDATE user SET username = ?, password = ? WHERE username = ?")
+            .run(emailUsername, await bcrypt.hash(password, 10), username);
+        seedDb.close();
+
+        let child;
+
+        try {
+            const port = await getFreePort();
+            child = spawn(process.execPath, ["--import=tsx", "server/server.js"], {
+                cwd: path.join(__dirname, "../.."),
+                env: {
+                    ...process.env,
+                    DATA_DIR: emailDataDir,
+                    UPTIME_KUMA_PORT: String(port),
+                    UPTIME_KUMA_DB_TYPE: "sqlite",
+                },
+                stdio: ["ignore", "pipe", "pipe"],
+            });
+            let serverOutput = "";
+            child.stdout.on("data", (data) => (serverOutput += data.toString()));
+            child.stderr.on("data", (data) => (serverOutput += data.toString()));
+
+            const baseUrl = `http://127.0.0.1:${port}`;
+            await waitForServer(`${baseUrl}/api/entry-page`);
+
+            // Both migration and sign-in must accept "@"
+            const login = await fetch(`${baseUrl}/api/auth/sign-in/username`, {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ username: emailUsername, password }),
+            });
+            assert.strictEqual(login.status, 200, `login failed: ${login.status}\n${serverOutput}`);
+
+            // Migrated under the same username, with a random internal email
+            const authDb = new BetterSqlite3(path.join(emailDataDir, "kuma.db"), { readonly: true });
+            const migrated = authDb.prepare("SELECT username, email FROM better_auth_user").all() as {
+                username: string;
+                email: string;
+            }[];
+            authDb.close();
+            assert.deepStrictEqual(
+                migrated.map((user) => user.username),
+                [emailUsername]
+            );
+            assert.match(migrated[0].email, /^[0-9a-f-]{36}@noreply\.uptime-kuma\.internal$/);
+        } finally {
+            if (child) {
+                child.kill();
+            }
+            await new Promise((resolve) => setTimeout(resolve, 500));
+            try {
+                fs.rmSync(emailDataDir, { recursive: true, force: true, maxRetries: 20, retryDelay: 250 });
+            } catch (e) {
+                // Windows/Dropbox can keep a handle on the directory for a moment; the next run cleans it up
+            }
+        }
+    }
+);

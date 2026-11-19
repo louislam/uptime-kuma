@@ -1725,5 +1725,13 @@
     "msGraphConsent": "medgivande",
     "msGraphRbac": "RBAC i Exchange Online",
     "msGraphClientSecretDescription": "Lär dig hur du hanterar {clientSecret} för din applikationsregistrering.",
-    "msGraphClientSecretLink": "skapa en klienthemlighet"
+    "msGraphClientSecretLink": "skapa en klienthemlighet",
+    "trigvDefaultChannel": "allmän",
+    "apiDescription": "Exponera /api-slutpunkterna och MCP-servern. Detta kräver en API-nyckel och är inaktiverat som standard, eftersom API:et fortfarande befinner sig i ett alfastadium och kan komma att ändras utan förvarning.",
+    "apiDocumentation": "API-dokumentation",
+    "OpsiMate URL": "OpsiMate-URL",
+    "opsimateUrlDescription": "Bas-URL:en för OpsiMate-API:et (serverporten, inte webbgränssnittet).",
+    "opsimateApiTokenDescription": "Värdet för inställningen API_TOKEN på din OpsiMate-server (standard: opsimate).",
+    "trigvChannelHelp": "Ange din kanal-slug (högst 120 tecken). Lämna tom för att använda den allmänna.",
+    "trigvApiKeyDocs": "Trigv API-nyckeldokumentation"
 }

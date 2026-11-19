@@ -1774,5 +1774,11 @@
     "msGraphConsent": "съгласие",
     "msGraphRbac": "RBAC в Exchange Online",
     "msGraphClientSecretDescription": "Научете как да {clientSecret} за регистрацията на приложението.",
-    "msGraphClientSecretLink": "създайте тайна за клиент"
+    "msGraphClientSecretLink": "създайте тайна за клиент",
+    "OpsiMate URL": "OpsiMate URL адрес",
+    "opsimateUrlDescription": "Основният URL адрес за API на OpsiMate (портът на сървъра, а не уеб потребителският интерфейс).",
+    "opsimateApiTokenDescription": "Стойността на настройката API_TOKEN на вашия OpsiMate сървър (по подразбиране: opsimate).",
+    "trigvDefaultChannel": "общ",
+    "trigvChannelHelp": "Въведете слъг на вашия канал (до 120 знака). Оставете празно, за да използвате общ.",
+    "trigvApiKeyDocs": "Документация за Trigv API ключ"
 }
