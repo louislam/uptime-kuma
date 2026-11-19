@@ -265,9 +265,62 @@ class Discord extends NotificationProvider {
      */
     async sendSlowMessage(notification, msg, monitorJSON, responseTimeJSON) {
         const okMsg = "Sent Successfully.";
-        const discordDisplayName = notification.discordUsername || "Uptime Kuma";
+
+        // Discord Message Flags
+        // @see https://discord.com/developers/docs/resources/message#message-object-message-flags
+        // This message will not trigger push and desktop notifications
+        const SUPPRESS_NOTIFICATIONS_FLAG = 1 << 12;
 
         try {
+            let config = this.getAxiosConfigWithProxy({});
+            const discordDisplayName = notification.discordUsername || "Uptime Kuma";
+            const webhookUrl = new URL(notification.discordWebhookUrl);
+            if (notification.discordChannelType === "postToThread") {
+                webhookUrl.searchParams.append("thread_id", notification.threadId);
+            }
+
+            // Check if the webhook has an avatar
+            let webhookHasAvatar = true;
+            try {
+                const webhookInfo = await axios.get(webhookUrl.toString(), config);
+                webhookHasAvatar = !!webhookInfo.data.avatar;
+            } catch (e) {
+                // If we can't verify, we assume he has an avatar to avoid forcing the default avatar
+                webhookHasAvatar = true;
+            }
+
+            const messageFormat =
+                notification.discordMessageFormat || (notification.discordUseMessageTemplate ? "custom" : "normal");
+
+            let address = this.extractAddress(monitorJSON);
+
+            // Minimalist: status + name only (is slow / is responding normally)
+            if (messageFormat === "minimalist") {
+                const content =
+                    responseTimeJSON["pingStatus"] === SLOW
+                        ? "🐌 " + monitorJSON["name"] + " is slow."
+                        : "🚀 " + monitorJSON["name"] + " is responding normally.";
+                let payload = {
+                    username: discordDisplayName,
+                    content: content,
+                };
+                if (!webhookHasAvatar) {
+                    payload.avatar_url = "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png";
+                }
+                if (notification.discordChannelType === "createNewForumPost") {
+                    payload.thread_name = notification.postName;
+                }
+                if (notification.discordSuppressNotifications) {
+                    payload.flags = SUPPRESS_NOTIFICATIONS_FLAG;
+                }
+                await axios.post(webhookUrl.toString(), payload, config);
+                return okMsg;
+            }
+
+            // TODO: Custom template support
+            // Custom templates stay on the up/down path. renderTemplate() has no slow/nominal
+            // context yet, so a custom format uses the normal rich embeds below.
+
             if (responseTimeJSON["pingStatus"] === SLOW) {
                 let discordslowdata = {
                     username: discordDisplayName,
@@ -281,19 +334,26 @@ class Discord extends NotificationProvider {
                                     name: "Service Name",
                                     value: monitorJSON["name"],
                                 },
-                                {
-                                    name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
-                                    value:
-                                        monitorJSON["type"] === "push" ? "Heartbeat" : this.extractAddress(monitorJSON),
-                                },
+                                ...(!notification.disableUrl && address
+                                    ? [
+                                          {
+                                              name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
+                                              value: address,
+                                          },
+                                      ]
+                                    : []),
                                 {
                                     name: `Time (${responseTimeJSON["timezone"]})`,
                                     value: responseTimeJSON["localDateTime"],
                                 },
-                                {
-                                    name: "Ping",
-                                    value: responseTimeJSON["ping"] + " ms",
-                                },
+                                ...(responseTimeJSON["ping"] != null
+                                    ? [
+                                          {
+                                              name: "Ping",
+                                              value: responseTimeJSON["ping"] + " ms",
+                                          },
+                                      ]
+                                    : []),
                                 {
                                     name: "Threshold",
                                     value: responseTimeJSON["pingThreshold"] + " ms",
@@ -302,12 +362,20 @@ class Discord extends NotificationProvider {
                         },
                     ],
                 };
-
+                if (!webhookHasAvatar) {
+                    discordslowdata.avatar_url = "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png";
+                }
+                if (notification.discordChannelType === "createNewForumPost") {
+                    discordslowdata.thread_name = notification.postName;
+                }
                 if (notification.discordPrefixMessage) {
                     discordslowdata.content = notification.discordPrefixMessage;
                 }
+                if (notification.discordSuppressNotifications) {
+                    discordslowdata.flags = SUPPRESS_NOTIFICATIONS_FLAG;
+                }
 
-                await axios.post(notification.discordWebhookUrl, discordslowdata);
+                await axios.post(webhookUrl.toString(), discordslowdata, config);
                 return okMsg;
             } else if (responseTimeJSON["pingStatus"] === NOMINAL) {
                 let discordnominaldata = {
@@ -322,19 +390,27 @@ class Discord extends NotificationProvider {
                                     name: "Service Name",
                                     value: monitorJSON["name"],
                                 },
-                                {
-                                    name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
-                                    value:
-                                        monitorJSON["type"] === "push" ? "Heartbeat" : this.extractAddress(monitorJSON),
-                                },
+                                ...(!notification.disableUrl && address
+                                    ? [
+                                          {
+                                              name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
+                                              value: address,
+                                          },
+                                      ]
+                                    : []),
+                                // Show server timezone for parity with the SLOW notification embed
                                 {
                                     name: `Time (${responseTimeJSON["timezone"]})`,
                                     value: responseTimeJSON["localDateTime"],
                                 },
-                                {
-                                    name: "Ping",
-                                    value: responseTimeJSON["ping"] + " ms",
-                                },
+                                ...(responseTimeJSON["ping"] != null
+                                    ? [
+                                          {
+                                              name: "Ping",
+                                              value: responseTimeJSON["ping"] + " ms",
+                                          },
+                                      ]
+                                    : []),
                                 {
                                     name: "Threshold",
                                     value: responseTimeJSON["pingThreshold"] + " ms",
@@ -347,12 +423,23 @@ class Discord extends NotificationProvider {
                         },
                     ],
                 };
+                if (!webhookHasAvatar) {
+                    discordnominaldata.avatar_url =
+                        "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png";
+                }
+
+                if (notification.discordChannelType === "createNewForumPost") {
+                    discordnominaldata.thread_name = notification.postName;
+                }
 
                 if (notification.discordPrefixMessage) {
                     discordnominaldata.content = notification.discordPrefixMessage;
                 }
+                if (notification.discordSuppressNotifications) {
+                    discordnominaldata.flags = SUPPRESS_NOTIFICATIONS_FLAG;
+                }
 
-                await axios.post(notification.discordWebhookUrl, discordnominaldata);
+                await axios.post(webhookUrl.toString(), discordnominaldata, config);
                 return okMsg;
             }
         } catch (error) {
