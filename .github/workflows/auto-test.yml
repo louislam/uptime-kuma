@@ -13,6 +13,7 @@ permissions: {}
 jobs:
   auto-test:
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
     permissions:
       contents: read
       packages: read
@@ -60,6 +61,31 @@ jobs:
       - name: Verify Apprise
         run: apprise --version
 
+      # Keep the sipsak apt download across runs instead of fetching it every time
+      - name: Point apt at a cacheable archive dir
+        if: runner.os == 'Linux'
+        run: |
+          mkdir -p "$HOME/.apt-archives/partial"
+          chmod 777 "$HOME/.apt-archives/partial"
+          sudo tee /etc/apt/apt.conf.d/99-apt-cache >/dev/null <<EOF
+          Dir::Cache::archives "$HOME/.apt-archives";
+          APT::Keep-Downloaded-Packages "true";
+          EOF
+
+      - name: Compute weekly apt cache key
+        if: runner.os == 'Linux'
+        id: apt-week
+        run: echo "week=$(date -u +%G-%V)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache apt packages
+        if: runner.os == 'Linux'
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.apt-archives
+          key: apt-sipsak-${{ runner.os }}-${{ runner.arch }}-${{ steps.apt-week.outputs.week }}
+          restore-keys: |
+            apt-sipsak-${{ runner.os }}-${{ runner.arch }}-
+
       # sipsak is not pre-installed on the runners either, so install it to run
       # the SIP options monitor test instead of skipping it.
       - name: Install sipsak
@@ -68,6 +94,11 @@ jobs:
       - name: Verify sipsak
         if: runner.os == 'Linux'
         run: sipsak --version
+
+      # apt runs as root, leaving root-owned files that the cache's tar cannot read
+      - name: Hand the apt archives back to the cache
+        if: always() && runner.os == 'Linux'
+        run: sudo chown -R "$USER" "$HOME/.apt-archives"
 
       - if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: npm clean-install --no-fund
