@@ -13,6 +13,7 @@ permissions: {}
 jobs:
   auto-test:
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
     permissions:
       contents: read
       packages: read
