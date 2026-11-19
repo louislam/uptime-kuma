@@ -1691,27 +1691,25 @@ class Monitor extends BeanModel {
 
         for (let notification of notificationList) {
             try {
-                const heartbeatJSON = bean.toJSON();
+                const responseTimeJSON = bean.toJSON();
                 const monitorData = [{ id: monitor.id, active: monitor.active, name: monitor.name }];
                 const preloadData = await Monitor.preparePreloadData(monitorData);
 
-                // Override status with SLOW/NOMINAL. Ping and threshold are already on the heartbeat.
-                heartbeatJSON["status"] = bean.pingStatus;
-                heartbeatJSON["slowFor"] = slowFor;
+                responseTimeJSON["slowFor"] = slowFor;
 
                 // Also provide the time in server timezone
-                heartbeatJSON["timezone"] = await UptimeKumaServer.getInstance().getTimezone();
-                heartbeatJSON["timezoneOffset"] = UptimeKumaServer.getInstance().getTimezoneOffset();
-                heartbeatJSON["localDateTime"] = dayjs
-                    .utc(heartbeatJSON["time"])
-                    .tz(heartbeatJSON["timezone"])
+                responseTimeJSON["timezone"] = await UptimeKumaServer.getInstance().getTimezone();
+                responseTimeJSON["timezoneOffset"] = UptimeKumaServer.getInstance().getTimezoneOffset();
+                responseTimeJSON["localDateTime"] = dayjs
+                    .utc(responseTimeJSON["time"])
+                    .tz(responseTimeJSON["timezone"])
                     .format(SQL_DATETIME_FORMAT);
 
-                await Notification.send(
+                await Notification.sendSlowMessage(
                     JSON.parse(notification.config),
                     msg,
                     monitor.toJSON(preloadData, false),
-                    heartbeatJSON
+                    responseTimeJSON
                 );
             } catch (e) {
                 log.error("monitor", `[${this.name}] Cannot send slow response notification to ${notification.name}`);

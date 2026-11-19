@@ -1,5 +1,5 @@
 const { R } = require("redbean-node");
-const { log, SLOW, NOMINAL } = require("../src/util");
+const { log } = require("../src/util");
 const Alerta = require("./notification-providers/alerta");
 const AlertNow = require("./notification-providers/alertnow");
 const AliyunSms = require("./notification-providers/aliyun-sms");
@@ -265,19 +265,42 @@ class Notification {
      */
     static async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         if (this.providerList[notification.type]) {
-            if (
-                (heartbeatJSON?.status === SLOW || heartbeatJSON?.status === NOMINAL) &&
-                !this.providerList[notification.type].supportSlowNotifications
-            ) {
-                // This is a SLOW/NOMINAL notification where the provider does NOT support card notificatons yet
-                // TODO Ideally, this goes away once all the notification providers support slow response notification cards
-                log.debug(
-                    "notification",
-                    `${notification.type} does not support card notifications for SLOW/NOMINAL events yet. Sending plain text message.`
+            return this.providerList[notification.type].send(notification, msg, monitorJSON, heartbeatJSON);
+        } else {
+            throw new Error("Notification type is not supported");
+        }
+    }
+
+    /**
+     * Send a slow-response notification.
+     * Providers that have not implemented sendSlowMessage receive the plain text message.
+     * @param {BeanModel} notification Notification to send
+     * @param {string} msg General Message
+     * @param {object} monitorJSON Monitor details
+     * @param {object} responseTimeJSON Heartbeat JSON (status unchanged) plus slowFor and timezone fields
+     * @returns {Promise<string>} Successful msg
+     * @throws Error with fail msg
+     */
+    static async sendSlowMessage(notification, msg, monitorJSON = null, responseTimeJSON = null) {
+        if (this.providerList[notification.type]) {
+            try {
+                return await this.providerList[notification.type].sendSlowMessage(
+                    notification,
+                    msg,
+                    monitorJSON,
+                    responseTimeJSON
                 );
-                return this.providerList[notification.type].send(notification, msg);
-            } else {
-                return this.providerList[notification.type].send(notification, msg, monitorJSON, heartbeatJSON);
+            } catch (error) {
+                // Provider has no slow card. Send the text message only.
+                if (error.message === "Have to override Notification.sendSlowMessage(...)") {
+                    log.debug(
+                        "notification",
+                        `${notification.type} does not implement sendSlowMessage. Sending plain text message.`
+                    );
+                    return this.send(notification, msg);
+                } else {
+                    throw error;
+                }
             }
         } else {
             throw new Error("Notification type is not supported");

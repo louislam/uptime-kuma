@@ -6,7 +6,6 @@ const isUrl = require("is-url");
 
 class Slack extends NotificationProvider {
     name = "slack";
-    supportSlowNotifications = true;
 
     /**
      * Deprecated property notification.slackbutton
@@ -198,11 +197,7 @@ class Slack extends NotificationProvider {
             let alertColor;
             switch (heartbeatJSON["status"]) {
                 case UP:
-                case NOMINAL:
                     alertColor = "#2eb886";
-                    break;
-                case SLOW:
-                    alertColor = "#ffc107";
                     break;
                 case DOWN:
                     alertColor = "#e01e5a";
@@ -215,6 +210,92 @@ class Slack extends NotificationProvider {
                 data.attachments.push({
                     color: alertColor,
                     blocks: this.buildBlocks(baseURL, monitorJSON, heartbeatJSON, title, msg, includeGroupName),
+                });
+            } else {
+                // Include group name in plain text messages if enabled
+                if (includeGroupName && groupPath) {
+                    data.text = `_${groupPath}_\n${title}\n${msg}`;
+                } else {
+                    data.text = `${title}\n${msg}`;
+                }
+            }
+
+            if (notification.slackbutton) {
+                await Slack.deprecateURL(notification.slackbutton);
+            }
+
+            await axios.post(notification.slackwebhookURL, data, config);
+            return okMsg;
+        } catch (error) {
+            this.throwGeneralAxiosError(error);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async sendSlowMessage(notification, msg, monitorJSON, responseTimeJSON) {
+        const okMsg = "Sent Successfully.";
+
+        if (notification.slackchannelnotify) {
+            msg += " <!channel>";
+        }
+
+        try {
+            let config = this.getAxiosConfigWithProxy({});
+            const baseURL = await setting("primaryBaseURL");
+
+            // Check if templating is enabled
+            if (notification.slackUseTemplate) {
+                const renderedText = await this.renderTemplate(
+                    notification.slackTemplate,
+                    msg,
+                    monitorJSON,
+                    responseTimeJSON
+                );
+
+                let data = {
+                    text: renderedText,
+                    channel: notification.slackchannel,
+                    username: notification.slackusername,
+                    icon_emoji: notification.slackiconemo,
+                };
+
+                await axios.post(notification.slackwebhookURL, data, config);
+                return okMsg;
+            }
+
+            const includeGroupName = notification.slackIncludeGroupName ?? true;
+
+            const groupPath =
+                includeGroupName && monitorJSON?.path?.length > 1 ? monitorJSON.path.slice(0, -1).join(" / ") : "";
+
+            const title = monitorJSON?.name || "Uptime Kuma Alert";
+
+            let data = {
+                text: msg,
+                channel: notification.slackchannel,
+                username: notification.slackusername,
+                icon_emoji: notification.slackiconemo,
+                attachments: [],
+            };
+
+            let alertColor;
+            switch (responseTimeJSON["pingStatus"]) {
+                case NOMINAL:
+                    alertColor = "#2eb886";
+                    break;
+                case SLOW:
+                    alertColor = "#ffc107";
+                    break;
+                default:
+                    alertColor = "#0dcaf0";
+            }
+
+            if (notification.slackrichmessage) {
+                data.attachments.push({
+                    color: alertColor,
+                    blocks: this.buildBlocks(baseURL, monitorJSON, responseTimeJSON, title, msg, includeGroupName),
                 });
             } else {
                 // Include group name in plain text messages if enabled

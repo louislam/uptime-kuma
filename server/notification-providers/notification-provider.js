@@ -12,12 +12,6 @@ class NotificationProvider {
     name = undefined;
 
     /**
-     * Does the notification provider support slow response notifications?
-     * @type {boolean}
-     */
-    supportSlowNotifications = false;
-
-    /**
      * Send a notification
      * @param {BeanModel} notification Notification to send
      * @param {string} msg General Message
@@ -28,6 +22,19 @@ class NotificationProvider {
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         throw new Error("Have to override Notification.send(...)");
+    }
+
+    /**
+     * Send a slow-response notification.
+     * @param {BeanModel} notification Notification to send
+     * @param {string} msg General Message
+     * @param {?object} monitorJSON Monitor details
+     * @param {?object} responseTimeJSON Response time details
+     * @returns {Promise<string>} Return Successful Message
+     * @throws Error with fail msg
+     */
+    async sendSlowMessage(notification, msg, monitorJSON = null, responseTimeJSON = null) {
+        throw new Error("Have to override Notification.sendSlowMessage(...)");
     }
 
     /**
