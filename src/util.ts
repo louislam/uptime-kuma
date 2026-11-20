@@ -27,6 +27,9 @@ export const DOWN = 0;
 export const UP = 1;
 export const PENDING = 2;
 export const MAINTENANCE = 3;
+// pingStatus values for monitoring slow response
+export const SLOW = 4;
+export const NOMINAL = 5;
 
 export const STATUS_PAGE_ALL_DOWN = 0;
 export const STATUS_PAGE_ALL_UP = 1;
@@ -642,6 +645,44 @@ export function intHash(str: string, length = 10): number {
     // Normalize the hash to the range [0, 10]
     return ((hash % length) + length) % length; // Ensure the result is non-negative
 }
+
+// these types will have slow-response notification support
+export const TYPES_WITH_RESPONSE_TIME_SUPPORT = [
+    "http",
+    "keyword",
+    "port",
+    "ping",
+    "dns",
+    // docker: never records a ping, so the slow-response check returns immediately
+    "system-service",
+    "pm2",
+    "real-browser",
+    "websocket-upgrade",
+    "sftp",
+    "group",
+    // push: the beat loop returns before the slow-response check
+    "manual",
+    "globalping",
+    "grpc-keyword",
+    "json-query",
+    "kafka-producer",
+    "mqtt",
+    "ntp",
+    "rabbitmq",
+    "sip-options",
+    "smtp",
+    "snmp",
+    "tailscale-ping",
+    "sqlserver",
+    "mongodb",
+    "mysql",
+    "oracledb",
+    "postgres",
+    "radius",
+    "redis",
+    "gamedig",
+    "steam",
+] as const;
 
 // these types will have domain expiry support via the specified field
 export const TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD = {

@@ -20,6 +20,12 @@
                         </span>
                     </div>
                     <div class="col">
+                        <h3>{{ $t("Slow") }}</h3>
+                        <span class="num" :class="$root.stats.slow > 0 ? 'text-warning' : 'text-secondary'">
+                            {{ $root.stats.slow }}
+                        </span>
+                    </div>
+                    <div class="col">
                         <h3>{{ $t("Maintenance") }}</h3>
                         <span class="num" :class="$root.stats.maintenance > 0 ? 'text-maintenance' : 'text-secondary'">
                             {{ $root.stats.maintenance }}
@@ -76,11 +82,16 @@
                                     {{ $root.monitorList[beat.monitorID]?.name }}
                                 </router-link>
                             </td>
-                            <td><Status :status="beat.status" /></td>
+                            <td>
+                                <div v-if="beat.important"><Status :status="beat.status" /></div>
+                                <div v-if="beat.pingImportant"><PingStatus :ping-status="beat.pingStatus" /></div>
+                            </td>
                             <td :class="{ 'border-0': !beat.msg }"><Datetime :value="beat.time" /></td>
-                            <td class="border-0">{{ beat.msg }}</td>
+                            <td class="border-0">
+                                <div v-if="beat.important">{{ beat.msg }}</div>
+                                <div v-if="beat.pingImportant">{{ beat.pingMsg }}</div>
+                            </td>
                         </tr>
-
                         <tr v-if="importantHeartBeatListLength === 0">
                             <td :colspan="tableColumnCount">
                                 {{ $t("No important events") }}
@@ -114,6 +125,7 @@
 
 <script>
 import Status from "../components/Status.vue";
+import PingStatus from "../components/PingStatus.vue";
 import Datetime from "../components/Datetime.vue";
 import Pagination from "v-pagination-3";
 import Confirm from "../components/Confirm.vue";
@@ -122,6 +134,7 @@ export default {
     components: {
         Datetime,
         Status,
+        PingStatus,
         Pagination,
         Confirm,
     },

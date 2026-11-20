@@ -9,6 +9,8 @@ const {
     DOWN,
     PENDING,
     MAINTENANCE,
+    NOMINAL,
+    SLOW,
     flipStatus,
     MIN_INTERVAL_SECOND,
     SQL_DATETIME_FORMAT,
@@ -76,6 +78,9 @@ const rootCertificates = rootCertificatesFingerprints();
  *      1 = UP
  *      2 = PENDING
  *      3 = MAINTENANCE
+ *  pingStatus:
+ *      4 = SLOW
+ *      5 = NOMINAL
  */
 class Monitor extends BeanModel {
     /**
@@ -178,6 +183,9 @@ class Monitor extends BeanModel {
             mqttCheckType: this.mqttCheckType,
             databaseQuery: this.databaseQuery,
             authMethod: this.authMethod,
+            slowResponseNotification: this.isEnabledSlowResponseNotification(),
+            slowResponseNotificationThreshold: this.slowResponseNotificationThreshold,
+            slowResponseNotificationResendInterval: this.slowResponseNotificationResendInterval,
             grpcUrl: this.grpcUrl,
             grpcProtobuf: this.grpcProtobuf,
             grpcMethod: this.grpcMethod,
@@ -387,6 +395,14 @@ class Monitor extends BeanModel {
     }
 
     /**
+     * Is the slow response notification enabled?
+     * @returns {boolean} Slow response notification is enabled?
+     */
+    isEnabledSlowResponseNotification() {
+        return Boolean(this.slowResponseNotification);
+    }
+
+    /**
      * Parse to boolean
      * @returns {boolean} Kafka Producer Ssl enabled?
      */
@@ -520,6 +536,7 @@ class Monitor extends BeanModel {
             bean.time = R.isoDateTimeMillis(dayjs.utc());
             bean.status = DOWN;
             bean.downCount = previousBeat?.downCount || 0;
+            bean.slowResponseCount = previousBeat?.slowResponseCount || 0;
 
             if (this.isUpsideDown()) {
                 bean.status = flipStatus(bean.status);
@@ -1095,6 +1112,12 @@ class Monitor extends BeanModel {
             let endTimeDayjs = await uptimeCalculator.update(bean.status, parseFloat(bean.ping));
             bean.end_time = R.isoDateTimeMillis(endTimeDayjs);
 
+            // Check if response time is slow
+            if (this.isEnabledSlowResponseNotification()) {
+                log.debug("monitor", `[${this.name}] Check if response is slow`);
+                await this.checkSlowResponseNotification(bean);
+            }
+
             // Keep the dashboard numbers live instead of waiting for the stats cache
             let liveStats;
             try {
@@ -1146,7 +1169,7 @@ class Monitor extends BeanModel {
                 await beat();
             } catch (e) {
                 console.trace(e);
-                UptimeKumaServer.errorLog(e, false);
+                UptimeKumaServer.errorLog(e, false)
                 log.error("monitor", "Please report to https://github.com/louislam/uptime-kuma/issues");
 
                 if (!this.isStop) {
@@ -1642,6 +1665,140 @@ class Monitor extends BeanModel {
                 this.id,
                 targetDays,
             ]);
+        }
+    }
+
+    /**
+     * Send a slow response notification about a monitor
+     * @param {Monitor} monitor The monitor to send a notification about
+     * @param {import("./heartbeat")} bean Status information about monitor
+     * @param {string} slowFor How long the monitor has been responding slowly
+     * @returns {Promise<void>}
+     */
+    static async sendSlowResponseNotification(monitor, bean, slowFor) {
+        // Send notification
+        const notificationList = await Monitor.getNotificationList(monitor);
+
+        let text;
+        if (bean.pingStatus === NOMINAL) {
+            text = "🚀 Nominal";
+        } else {
+            text = "🐌 Slow";
+        }
+
+        let msg = `[${monitor.name}] [${text}] ${bean.pingMsg}`;
+
+        const responseTimeJSON = await bean.toJSONAsync({ decodeResponse: true });
+        const monitorData = [{ id: monitor.id, active: monitor.active, name: monitor.name }];
+        const preloadData = await Monitor.preparePreloadData(monitorData);
+
+        responseTimeJSON["slowFor"] = slowFor;
+
+        // Also provide the time in server timezone
+        responseTimeJSON["timezone"] = await UptimeKumaServer.getInstance().getTimezone();
+        responseTimeJSON["timezoneOffset"] = UptimeKumaServer.getInstance().getTimezoneOffset();
+        responseTimeJSON["localDateTime"] = dayjs
+            .utc(responseTimeJSON["time"])
+            .tz(responseTimeJSON["timezone"])
+            .format(SQL_DATETIME_FORMAT);
+
+        for (let notification of notificationList) {
+            try {
+                await Notification.sendSlowMessage(
+                    JSON.parse(notification.config),
+                    msg,
+                    monitor.toJSON(preloadData, false),
+                    responseTimeJSON
+                );
+            } catch (e) {
+                log.error("monitor", "Cannot send slow response notification to " + notification.name);
+                log.error("monitor", e);
+            }
+        }
+    }
+
+    /**
+     * Check if heartbeat response time is slower than threshold.
+     * @param {import("./heartbeat")} bean Status information about monitor
+     * @returns {Promise<void>}
+     */
+    async checkSlowResponseNotification(bean) {
+        if (bean.status !== UP) {
+            log.debug("monitor", `[${this.name}] Monitor status is not UP, skipping slow response check`);
+            return;
+        }
+
+        // Verify valid ping value.
+        if (bean.ping == null) {
+            log.debug("monitor", `[${this.name}] No response time for this beat, skipping slow response check`);
+            return;
+        }
+
+        // Create stats to append to messages/logs
+        let msgStats = `Response: ${bean.ping}ms | Threshold: ${this.slowResponseNotificationThreshold}ms`;
+
+        // Responding normally
+        if (bean.ping <= this.slowResponseNotificationThreshold) {
+            bean.pingStatus = NOMINAL;
+            if (bean.slowResponseCount === 0) {
+                log.debug(
+                    "monitor",
+                    `[${this.name}] Responding normally. No need to send slow response notification | ${msgStats}`
+                );
+            } else {
+                const slowFor = `${bean.slowResponseCount * this.interval}s`;
+                msgStats += ` | Slow for: ${bean.slowResponseCount * this.interval}s`;
+                log.debug("monitor", `[${this.name}] Returned to normal response time | ${msgStats}`);
+
+                // Mark important (SLOW -> NOMINAL)
+                bean.pingImportant = true;
+                bean.pingMsg = `Returned to Normal Response Time \n${msgStats}`;
+
+                await Monitor.sendSlowResponseNotification(this, bean, slowFor);
+            }
+
+            // Reset slow response count
+            bean.slowResponseCount = 0;
+
+            // Responding slowly
+        } else {
+            bean.pingStatus = SLOW;
+            ++bean.slowResponseCount;
+
+            const slowFor = `${bean.slowResponseCount * this.interval}s`;
+
+            // Always send first notification
+            if (bean.slowResponseCount === 1) {
+                log.debug("monitor", `[${this.name}] Responded slow, sending notification | ${msgStats}`);
+
+                // Mark important (NOMINAL -> SLOW)
+                bean.pingImportant = true;
+                bean.pingMsg = `Responded Slow \n${msgStats}`;
+
+                await Monitor.sendSlowResponseNotification(this, bean, slowFor);
+
+                // Send notification every x times
+            } else if (this.slowResponseNotificationResendInterval > 0) {
+                if ((bean.slowResponseCount - 1) % this.slowResponseNotificationResendInterval === 0) {
+                    // Send notification again, because we are still responding slow
+                    msgStats += ` | Slow for: ${bean.slowResponseCount * this.interval}s`;
+                    log.debug(
+                        "monitor",
+                        `[${this.name}] Still responding slow, sendSlowResponseNotification again | ${msgStats}`
+                    );
+
+                    bean.pingMsg = `Still Responding Slow \n${msgStats}`;
+
+                    await Monitor.sendSlowResponseNotification(this, bean, slowFor);
+                } else {
+                    log.debug(
+                        "monitor",
+                        `[${this.name}] Still responding slow, waiting for resend interal | ${msgStats}`
+                    );
+                }
+            } else {
+                log.debug("monitor", `[${this.name}] Still responding slow, but resend is disabled | ${msgStats}`);
+            }
         }
     }
 

@@ -5,7 +5,7 @@ import Favico from "favico.js";
 import dayjs from "dayjs";
 import mitt from "mitt";
 
-import { DOWN, MAINTENANCE, PENDING, UP } from "../util.ts";
+import { DOWN, MAINTENANCE, PENDING, UP, SLOW, NOMINAL } from "../util.ts";
 import { getToastSuccessTimeout, getToastErrorTimeout } from "../util-frontend";
 import { BeatVersionThrottle } from "../beat-version-throttle";
 import { applyBeat, applyLatestBeats, beatStatusEntry } from "../beat-state";
@@ -268,6 +268,10 @@ export default {
                 }
 
                 // Add to important list if it is important
+                if (data.important || data.pingImportant) {
+                    this.emitter.emit("newImportantHeartbeat", data);
+                }
+
                 // Also toast
                 if (data.important) {
                     if (this.monitorList[data.monitorID] !== undefined) {
@@ -283,8 +287,22 @@ export default {
                             toast(`[${this.monitorList[data.monitorID].name}] ${data.msg}`);
                         }
                     }
+                }
 
-                    this.emitter.emit("newImportantHeartbeat", data);
+                if (data.pingImportant) {
+                    if (this.monitorList[data.monitorID] !== undefined) {
+                        if (data.pingStatus === SLOW) {
+                            toast.warning(`[${this.monitorList[data.monitorID].name}] [SLOW] ${data.pingMsg}`, {
+                                timeout: getToastErrorTimeout(),
+                            });
+                        } else if (data.pingStatus === NOMINAL) {
+                            toast.success(`[${this.monitorList[data.monitorID].name}] [NOMINAL] ${data.pingMsg}`, {
+                                timeout: getToastSuccessTimeout(),
+                            });
+                        } else {
+                            toast(`[${this.monitorList[data.monitorID].name}] ${data.pingMsg}`);
+                        }
+                    }
                 }
             });
 
@@ -713,11 +731,35 @@ export default {
             }
         },
 
+        /**
+         * Slow badge for monitors whose latest beat is up but over the response threshold.
+         * Up/Down status lives in statusList, which is updated per beat.
+         * @returns {Record<string, {text: string, color: string}>} Slow status by monitor id
+         */
+        pingStatusList() {
+            let result = {};
+
+            for (let monitorID in this.lastHeartbeatList) {
+                let lastHeartBeat = this.lastHeartbeatList[monitorID];
+                // Page load beat carries raw database row `ping_status`, live beats carry `pingStatus`
+                const pingStatus = lastHeartBeat?.pingStatus ?? lastHeartBeat?.ping_status;
+
+                if (lastHeartBeat?.status === UP && pingStatus === SLOW) {
+                    result[monitorID] = {
+                        text: this.$t("Slow"),
+                        color: "warning",
+                    };
+                }
+            }
+            return result;
+        },
+
         stats() {
             let result = {
                 active: 0,
                 up: 0,
                 down: 0,
+                slow: 0,
                 maintenance: 0,
                 pending: 0,
                 unknown: 0,
@@ -745,6 +787,11 @@ export default {
                         result.maintenance++;
                     } else {
                         result.unknown++;
+                    }
+
+                    // Page load beat carries raw database row `ping_status`, live beats carry `pingStatus`
+                    if ((beat.pingStatus ?? beat.ping_status) === SLOW) {
+                        result.slow++;
                     }
                 } else {
                     result.unknown++;

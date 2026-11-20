@@ -272,6 +272,42 @@ class Notification {
     }
 
     /**
+     * Send a slow-response notification.
+     * Providers that have not implemented sendSlowMessage receive the plain text message.
+     * @param {BeanModel} notification Notification to send
+     * @param {string} msg General Message
+     * @param {object} monitorJSON Monitor details
+     * @param {object} responseTimeJSON Heartbeat JSON (status unchanged) plus slowFor and timezone fields
+     * @returns {Promise<string>} Successful msg
+     * @throws Error with fail msg
+     */
+    static async sendSlowMessage(notification, msg, monitorJSON = null, responseTimeJSON = null) {
+        if (this.providerList[notification.type]) {
+            try {
+                return await this.providerList[notification.type].sendSlowMessage(
+                    notification,
+                    msg,
+                    monitorJSON,
+                    responseTimeJSON
+                );
+            } catch (error) {
+                // Provider has no slow card. Send the text message only.
+                if (error.message === "Have to override Notification.sendSlowMessage(...)") {
+                    log.debug(
+                        "notification",
+                        `${notification.type} does not implement sendSlowMessage. Sending plain text message.`
+                    );
+                    return this.send(notification, msg);
+                } else {
+                    throw error;
+                }
+            }
+        } else {
+            throw new Error("Notification type is not supported");
+        }
+    }
+
+    /**
      * Save a notification
      * @param {object} notification Notification to save
      * @param {?number} notificationID ID of notification to update

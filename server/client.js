@@ -77,7 +77,8 @@ async function sendHeartbeatLists(socket, monitorIDs) {
         const placeholders = chunk.map(() => "?").join(",");
         const rows = await R.getAll(
             `
-            SELECT h.id, h.monitor_id, h.status, h.msg, h.time, h.ping, h.important, h.duration, h.down_count, h.retries
+            SELECT h.id, h.monitor_id, h.status, h.msg, h.time, h.ping, h.important, h.duration, h.down_count, h.retries,
+                   h.ping_status
             FROM heartbeat h
             JOIN (
                 SELECT monitor_id, MAX(id) AS max_id
