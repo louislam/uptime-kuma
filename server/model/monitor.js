@@ -1780,7 +1780,7 @@ class Monitor extends BeanModel {
 
                 // Send notification every x times
             } else if (this.slowResponseNotificationResendInterval > 0) {
-                if (bean.slowResponseCount % this.slowResponseNotificationResendInterval === 0) {
+                if ((bean.slowResponseCount - 1) % this.slowResponseNotificationResendInterval === 0) {
                     // Send notification again, because we are still responding slow
                     msgStats += ` | Slow for: ${bean.slowResponseCount * monitor.interval}s`;
                     log.debug(
