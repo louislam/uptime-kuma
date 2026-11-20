@@ -11,6 +11,7 @@ import type { SASLOptions } from "kafkajs";
 import type { TokenSet } from "openid-client";
 import type { Bean } from "redbean-node";
 import type { Server, Socket } from "socket.io";
+import type { Agent } from "http";
 import type { TLSSocket } from "tls";
 
 const { R } = require("redbean-node");
@@ -37,6 +38,27 @@ export const execAsync = promisify(exec);
 export const execFileAsync = promisify(execFile);
 
 /**
+ * Choose the proxy agent the monitor request already uses for this URL.
+ * A direct monitor connection returns undefined so the token request is unchanged.
+ * @param {string} url Absolute URL of the request
+ * @param {{ proxied?: boolean, httpAgent?: import("http").Agent, httpsAgent?: import("https").Agent }} agents Agents built for the monitor request
+ * @returns {import("http").Agent|undefined} The monitor's proxy agent, or undefined when not proxied
+ */
+export function selectMonitorProxyAgent(
+    url: string,
+    agents: { proxied?: boolean; httpAgent?: Agent; httpsAgent?: Agent } | undefined
+): Agent | undefined {
+    if (!agents || agents.proxied !== true) {
+        return undefined;
+    }
+
+    if (new URL(url).protocol === "http:") {
+        return agents.httpAgent;
+    }
+    return agents.httpsAgent;
+}
+
+/**
  * Gets an Access Token from an oidc/oauth2 provider
  * @param tokenEndpoint The token URI from the auth service provider
  * @param clientId The oidc/oauth application client id
@@ -44,6 +66,7 @@ export const execFileAsync = promisify(execFile);
  * @param scope The scope(s) for which the token should be issued for
  * @param audience The audience for which the token should be issued for
  * @param authMethod The method used to send the credentials. Default client_secret_basic
+ * @param agent Proxy agent shared with the monitor request. Omit for a direct connection.
  * @returns TokenSet promise if the token request was successful
  */
 export async function getOidcTokenClientCredentials(
@@ -52,7 +75,8 @@ export async function getOidcTokenClientCredentials(
     clientSecret: string,
     scope: string,
     audience: string,
-    authMethod: string = "client_secret_basic"
+    authMethod: string = "client_secret_basic",
+    agent?: Agent
 ): Promise<TokenSet> {
     const oauthProvider = new oidc.Issuer({ token_endpoint: tokenEndpoint });
     let client = new oauthProvider.Client({
@@ -61,8 +85,12 @@ export async function getOidcTokenClientCredentials(
         token_endpoint_auth_method: authMethod,
     });
 
-    // Increase default timeout and clock tolerance
-    client[oidc.custom.http_options] = () => ({ timeout: 10000 });
+    // Increase default timeout and clock tolerance. The agent is the same object
+    // the monitor request uses, so a configured proxy applies to the token fetch.
+    client[oidc.custom.http_options] = () => ({
+        timeout: 10000,
+        ...(agent ? { agent } : {}),
+    });
     client[oidc.custom.clock_tolerance] = 5;
 
     let grantParams = { grant_type: "client_credentials" };
