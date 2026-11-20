@@ -1735,9 +1735,6 @@ class Monitor extends BeanModel {
             return;
         }
 
-        // Record the threshold used for this beat. Providers and the ping chart read it from the heartbeat.
-        bean.pingThreshold = monitor.slowResponseNotificationThreshold;
-
         // Create stats to append to messages/logs
         let msgStats = `Response: ${bean.ping}ms | Threshold: ${monitor.slowResponseNotificationThreshold}ms`;
         const slowFor = `${bean.slowResponseCount * monitor.interval}s`;

@@ -9,7 +9,6 @@ exports.up = async function (knex) {
         .alterTable("heartbeat", function (table) {
             table.integer("slow_response_count").notNullable().defaultTo(0);
             table.integer("ping_status").nullable().defaultTo(null);
-            table.integer("ping_threshold").nullable().defaultTo(null);
             table.boolean("ping_important").notNullable().defaultTo(0);
             table.string("ping_msg").nullable().defaultTo(null);
         });
@@ -59,7 +58,6 @@ exports.down = async function (knex) {
         .alterTable("heartbeat", function (table) {
             table.dropColumn("slow_response_count");
             table.dropColumn("ping_status");
-            table.dropColumn("ping_threshold");
             table.dropColumn("ping_important");
             table.dropColumn("ping_msg");
         });
