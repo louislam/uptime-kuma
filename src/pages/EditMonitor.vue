@@ -1757,11 +1757,7 @@
                             <!-- Slow Response Resend Interval -->
                             <div v-if="showSlowResponseNotification && monitor.slowResponseNotification" class="my-3">
                                 <label for="slow-response-notification-resend-interval" class="form-label">
-                                    {{
-                                        $t("slowResponseNotificationResendInterval", [
-                                            monitor.slowResponseNotificationInterval,
-                                        ])
-                                    }}
+                                    {{ $t("slowResponseNotificationResendInterval") }}
                                     <span v-if="monitor.slowResponseNotificationResendInterval > 0">
                                         ({{
                                             $t("resendEveryXTimes", [monitor.slowResponseNotificationResendInterval])
