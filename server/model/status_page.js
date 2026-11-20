@@ -439,6 +439,7 @@ class StatusPage extends BeanModel {
         return {
             id: this.id,
             slug: this.slug,
+            statusPageLanguage: this.status_page_language,
             title: this.title,
             description: this.description,
             icon: this.getIcon(),
@@ -467,6 +468,7 @@ class StatusPage extends BeanModel {
     async toPublicJSON() {
         return {
             slug: this.slug,
+            statusPageLanguage: this.status_page_language,
             title: this.title,
             description: this.description,
             icon: this.getIcon(),
