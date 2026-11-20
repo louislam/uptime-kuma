@@ -17,7 +17,7 @@ function evaluateExpression(expression, context) {
             "Unexpected expression operator ID '" +
                 expression.operator +
                 "'. Expected one of [" +
-                operatorMap.keys().join(",") +
+                Array.from(operatorMap.keys()).join(",") +
                 "]"
         );
     }
