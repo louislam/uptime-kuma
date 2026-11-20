@@ -50,6 +50,7 @@ const languageList = {
     ga: "Gaeilge",
     sk: "Slovenčina",
     "en-GB": "English (United Kingdom)",
+    ca: "Català",
 };
 
 let messages = {
