@@ -189,6 +189,28 @@ class DomainExpiry extends BeanModel {
     static parseTld = parseTld;
 
     /**
+     * Read remaining domain registration time from the cached RDAP result.
+     * @param {Monitor} monitor Monitor whose target domain should be used
+     * @returns {Promise<number | undefined>} Remaining days, when known
+     */
+    static async getCachedDaysRemaining(monitor) {
+        const target = monitor[TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD[monitor.type]];
+        if (typeof target !== "string" || !target) {
+            return;
+        }
+
+        const { domain, isIcann } = parseTld(target);
+        if (!domain || !isIcann) {
+            return;
+        }
+
+        const cached = await DomainExpiry.findByName(domain);
+        if (cached?.expiry && dayjs.utc(cached.expiry).isValid()) {
+            return cached.daysRemaining;
+        }
+    }
+
+    /**
      * @typedef {import("tldts-core").IResult} DomainComponents
      * @returns {DomainComponents} parsed domain components
      */
