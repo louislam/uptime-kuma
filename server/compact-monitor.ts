@@ -9,6 +9,7 @@ export interface CompactMonitor {
     id: number;
     name: string;
     type: string;
+    informational: boolean;
     active: boolean | undefined;
     parent: number | null;
     childrenIDs: number[];
@@ -31,6 +32,7 @@ export function toCompactMonitor(
         id: number;
         name: string;
         type: string;
+        informational?: boolean | number;
         parent?: number | null;
         interval: number;
         weight?: number | null;
@@ -43,6 +45,7 @@ export function toCompactMonitor(
         id: monitor.id,
         name: monitor.name,
         type: monitor.type,
+        informational: monitor.informational === 1 || monitor.informational === true,
         active: preloadData.activeStatus.get(monitor.id),
         parent: monitor.parent ?? null,
         childrenIDs: preloadData.childrenIDs.get(monitor.id) || [],

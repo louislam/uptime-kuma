@@ -76,7 +76,12 @@
                                     {{ $root.monitorList[beat.monitorID]?.name }}
                                 </router-link>
                             </td>
-                            <td><Status :status="beat.status" /></td>
+                            <td>
+                                <Status
+                                    :status="beat.status"
+                                    :informational="$root.monitorList[beat.monitorID]?.informational"
+                                />
+                            </td>
                             <td :class="{ 'border-0': !beat.msg }"><Datetime :value="beat.time" /></td>
                             <td class="border-0">{{ beat.msg }}</td>
                         </tr>
