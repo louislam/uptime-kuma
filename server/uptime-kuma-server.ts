@@ -17,6 +17,7 @@ import packageJson from "../package.json";
 import { isSSL, sslKey, sslCert, sslKeyPassphrase } from "./config";
 import { getSession, getDisableAuthSession } from "./better-auth";
 import { toCompactMonitor } from "./compact-monitor";
+import qs from "qs";
 import type { MonitorType } from "./monitor-types/monitor-type";
 import type Maintenance from "./model/maintenance";
 
@@ -78,6 +79,12 @@ export class UptimeKumaServer {
 
         log.info("server", "Creating express and socket.io instance");
         this.app = express();
+
+        // Keep the first value of repeated query parameters instead of an array
+        this.app.set("query parser", (queryString: string) => {
+            return qs.parse(queryString, { duplicates: "first" });
+        });
+
         if (isSSL) {
             log.info("server", "Server Type: HTTPS");
             this.httpServer = https.createServer(
