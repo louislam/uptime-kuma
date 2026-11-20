@@ -1671,9 +1671,9 @@ class Monitor extends BeanModel {
     /**
      * Send a slow response notification about a monitor
      * @param {Monitor} monitor The monitor to send a notification about
-     * @param {Bean} bean Status information about monitor
+     * @param {import("./heartbeat")} bean Status information about monitor
      * @param {string} slowFor How long the monitor has been responding slowly
-     * @returns {void}
+     * @returns {Promise<void>}
      */
     static async sendSlowResponseNotification(monitor, bean, slowFor) {
         // Send notification
@@ -1720,7 +1720,7 @@ class Monitor extends BeanModel {
     /**
      * Check if heartbeat response time is slower than threshold.
      * @param {Monitor} monitor The monitor to send a notification about
-     * @param {Bean} bean Status information about monitor
+     * @param {import("./heartbeat")} bean Status information about monitor
      * @returns {Promise<void>}
      */
     async checkSlowResponseNotification(monitor, bean) {
