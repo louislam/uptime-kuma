@@ -233,6 +233,7 @@ export default {
 
 .item {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 10px;
     text-decoration: none;
@@ -315,13 +316,17 @@ export default {
         gap: 8px;
         flex-direction: row-reverse;
 
+        .btn-group {
+            flex-wrap: wrap;
+        }
+
         @media (max-width: 550px) {
             & {
                 width: 100%;
             }
 
             .btn-group {
-                margin: 1em 1em 0 1em;
+                margin: 1em 0 0;
                 width: 100%;
             }
         }
