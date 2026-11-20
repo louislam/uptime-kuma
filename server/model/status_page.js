@@ -178,6 +178,9 @@ class StatusPage extends BeanModel {
 
         if (analytics.isValidAnalyticsConfig(statusPage)) {
             let escapedAnalyticsScript = analytics.getAnalyticsScript(statusPage);
+            if (statusPage.analytics_consent_required) {
+                escapedAnalyticsScript = analytics.deferUntilConsent(escapedAnalyticsScript);
+            }
             head.append($(escapedAnalyticsScript));
         }
 
@@ -453,6 +456,7 @@ class StatusPage extends BeanModel {
             analyticsId: this.analytics_id,
             analyticsScriptUrl: this.analytics_script_url,
             analyticsType: this.analytics_type,
+            analyticsConsentRequired: !!this.analytics_consent_required,
             showCertificateExpiry: !!this.show_certificate_expiry,
             showOnlyLastHeartbeat: !!this.show_only_last_heartbeat,
             rssTitle: this.rss_title,
@@ -480,6 +484,7 @@ class StatusPage extends BeanModel {
             analyticsId: this.analytics_id,
             analyticsScriptUrl: this.analytics_script_url,
             analyticsType: this.analytics_type,
+            analyticsConsentRequired: !!this.analytics_consent_required,
             showCertificateExpiry: !!this.show_certificate_expiry,
             showOnlyLastHeartbeat: !!this.show_only_last_heartbeat,
             rssTitle: this.rss_title,
