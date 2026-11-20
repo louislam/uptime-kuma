@@ -226,12 +226,11 @@ export default {
                         annotations: {
                             line1: {
                                 type: "line",
-                                mode: "horizontal",
                                 scaleID: "y",
                                 value: this.threshold,
                                 endValue: this.threshold,
                                 borderColor: "rgba(248,163,6,1.0)",
-                                borderWith: 2,
+                                borderWidth: 2,
                                 borderDash: [1, 3],
                                 adjustScaleRange: false,
                                 display: this.threshold !== undefined,
