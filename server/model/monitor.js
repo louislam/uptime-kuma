@@ -1755,7 +1755,7 @@ class Monitor extends BeanModel {
                 bean.pingImportant = true;
                 bean.pingMsg = `Returned to Normal Response Time \n${msgStats}`;
 
-                Monitor.sendSlowResponseNotification(monitor, bean, slowFor);
+                await Monitor.sendSlowResponseNotification(monitor, bean, slowFor);
             }
 
             // Reset slow response count
@@ -1776,7 +1776,7 @@ class Monitor extends BeanModel {
                 bean.pingImportant = true;
                 bean.pingMsg = `Responded Slow \n${msgStats}`;
 
-                Monitor.sendSlowResponseNotification(monitor, bean, slowFor);
+                await Monitor.sendSlowResponseNotification(monitor, bean, slowFor);
 
                 // Send notification every x times
             } else if (this.slowResponseNotificationResendInterval > 0) {
@@ -1790,7 +1790,7 @@ class Monitor extends BeanModel {
 
                     bean.pingMsg = `Still Responding Slow \n${msgStats}`;
 
-                    Monitor.sendSlowResponseNotification(monitor, bean, slowFor);
+                    await Monitor.sendSlowResponseNotification(monitor, bean, slowFor);
                 } else {
                     log.debug(
                         "monitor",
