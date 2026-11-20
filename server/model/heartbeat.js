@@ -4,6 +4,22 @@ const { promisify } = require("node:util");
 const brotliDecompress = promisify(zlib.brotliDecompress);
 
 /**
+ * Classify a probe failure without exposing its original message.
+ * @param {string|null} message Internal heartbeat message
+ * @returns {string|number|null} Fixed reason code or HTTP error status
+ */
+function publicFailureReason(message) {
+    if (/\b(?:ENOTFOUND|EAI_AGAIN|ENODATA)\b/.test(message)) {
+        return "dns";
+    }
+    if (/\b(?:ETIMEDOUT|ESOCKETTIMEDOUT|ECONNABORTED)\b|^timeout of \d+ms exceeded$/i.test(message)) {
+        return "timeout";
+    }
+    const status = /^Request failed with status code ([45]\d{2})\b/.exec(message);
+    return status ? Number(status[1]) : null;
+}
+
+/**
  * status:
  *      0 = DOWN
  *      1 = UP
@@ -21,6 +37,7 @@ class Heartbeat extends BeanModel {
             status: this.status,
             time: this.time,
             msg: "", // Hide for public
+            ...(this.status === 0 ? { failureReason: publicFailureReason(this.msg) } : {}),
             ping: this.ping,
         };
     }
