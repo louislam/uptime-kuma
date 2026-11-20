@@ -2321,6 +2321,7 @@
                                             v-model="monitor.bearer_token"
                                             autocomplete="new-password"
                                             :placeholder="$t('Token')"
+                                            :maxlength="8192"
                                         />
                                     </div>
                                 </template>
@@ -2726,6 +2727,7 @@
                                                 v-model="monitor.bearer_token"
                                                 autocomplete="new-password"
                                                 :placeholder="$t('Token')"
+                                                :maxlength="8192"
                                             />
                                         </div>
                                     </template>
@@ -2947,6 +2949,7 @@
                                             v-model="monitor.bearer_token"
                                             autocomplete="new-password"
                                             :placeholder="$t('Token')"
+                                            :maxlength="8192"
                                         />
                                     </div>
                                 </template>
