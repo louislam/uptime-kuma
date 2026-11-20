@@ -64,9 +64,7 @@ test("Push monitor uptime", async (t) => {
         };
 
         try {
-            const response = await fetch(
-                `http://127.0.0.1:${(httpServer.address()).port}/api/push/test-token`
-            );
+            const response = await fetch(`http://127.0.0.1:${httpServer.address().port}/api/push/test-token`);
             const body = await response.json();
 
             assert.deepStrictEqual(body, { ok: true, msg: "ping was not saved" });
