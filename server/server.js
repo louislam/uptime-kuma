@@ -585,6 +585,7 @@ app.use(function (req, res, next) {
                 bean.mqttPassword = monitor.mqttPassword;
                 bean.mqttTopic = monitor.mqttTopic;
                 bean.mqttSuccessMessage = monitor.mqttSuccessMessage;
+                bean.mqttStayConnected = Boolean(monitor.mqttStayConnected);
                 bean.mqttCheckType = monitor.mqttCheckType;
                 bean.mqttWebsocketPath = monitor.mqttWebsocketPath;
                 bean.databaseConnectionString = monitor.databaseConnectionString;
@@ -879,6 +880,13 @@ app.use(function (req, res, next) {
                             }
                         }
                     }
+                }
+
+                // TODO FIX
+                // Close the persistent MQTT connection of the monitor, if any
+                const mqttMonitorType = UptimeKumaServer.monitorTypeList["mqtt"];
+                if (mqttMonitorType && typeof mqttMonitorType.closePersistentClient === "function") {
+                    mqttMonitorType.closePersistentClient(monitorID);
                 }
 
                 // Delete the monitor itself
