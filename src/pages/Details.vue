@@ -368,7 +368,7 @@
                         <tr v-for="(beat, index) in displayedRecords" :key="index" style="padding: 10px">
                             <td>
                                 <div v-if="beat.important"><Status :status="beat.status" /></div>
-                                <div v-if="beat.pingImportant"><Status :status="beat.pingStatus" /></div>
+                                <div v-if="beat.pingImportant"><PingStatus :ping-status="beat.pingStatus" /></div>
                             </td>
                             <td :class="{ 'border-0': !beat.msg }">
                                 <Datetime :value="beat.time" />
@@ -457,6 +457,7 @@ const toast = useToast();
 import Confirm from "../components/Confirm.vue";
 import HeartbeatBar from "../components/HeartbeatBar.vue";
 import Status from "../components/Status.vue";
+import PingStatus from "../components/PingStatus.vue";
 import Datetime from "../components/Datetime.vue";
 import CountUp from "../components/CountUp.vue";
 import Uptime from "../components/Uptime.vue";
@@ -485,6 +486,7 @@ export default {
         HeartbeatBar,
         Confirm,
         Status,
+        PingStatus,
         Pagination,
         PingChart,
         Tag,

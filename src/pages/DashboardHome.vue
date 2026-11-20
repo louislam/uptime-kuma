@@ -84,7 +84,7 @@
                             </td>
                             <td>
                                 <div v-if="beat.important"><Status :status="beat.status" /></div>
-                                <div v-if="beat.pingImportant"><Status :status="beat.pingStatus" /></div>
+                                <div v-if="beat.pingImportant"><PingStatus :ping-status="beat.pingStatus" /></div>
                             </td>
                             <td :class="{ 'border-0': !beat.msg }"><Datetime :value="beat.time" /></td>
                             <td class="border-0">
@@ -125,6 +125,7 @@
 
 <script>
 import Status from "../components/Status.vue";
+import PingStatus from "../components/PingStatus.vue";
 import Datetime from "../components/Datetime.vue";
 import Pagination from "v-pagination-3";
 import Confirm from "../components/Confirm.vue";
@@ -133,6 +134,7 @@ export default {
     components: {
         Datetime,
         Status,
+        PingStatus,
         Pagination,
         Confirm,
     },

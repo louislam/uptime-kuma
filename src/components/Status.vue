@@ -30,14 +30,6 @@ export default {
                 return "maintenance";
             }
 
-            if (this.status === 4) {
-                return "warning";
-            }
-
-            if (this.status === 5) {
-                return "primary";
-            }
-
             return "secondary";
         },
 
@@ -56,14 +48,6 @@ export default {
 
             if (this.status === 3) {
                 return this.$t("statusMaintenance");
-            }
-
-            if (this.status === 4) {
-                return this.$t("Slow");
-            }
-
-            if (this.status === 5) {
-                return this.$t("Nominal");
             }
 
             return this.$t("Unknown");
