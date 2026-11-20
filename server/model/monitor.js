@@ -50,6 +50,7 @@ const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { DockerHost } = require("../docker");
 const crypto = require("crypto");
 const { UptimeCalculator } = require("../uptime-calculator");
+const { Settings } = require("../settings");
 const { CookieJar } = require("tough-cookie");
 const { HttpsCookieAgent } = require("http-cookie-agent/http");
 const { MonitorStats } = require("../monitor-stats");
@@ -1115,6 +1116,15 @@ class Monitor extends BeanModel {
             // Store to database
             log.debug("monitor", `[${this.name}] Store`);
             await R.store(bean);
+
+            // keepDataPeriodDays = -1: keep only the current and previous heartbeat
+            if (parseInt(await Settings.get("keepDataPeriodDays")) === -1) {
+                // Nested subquery is required for MariaDB support
+                await R.exec(
+                    "DELETE FROM heartbeat WHERE monitor_id = ? AND id NOT IN (SELECT id FROM (SELECT id FROM heartbeat WHERE monitor_id = ? ORDER BY time DESC LIMIT 2) AS limited_ids)",
+                    [this.id, this.id]
+                );
+            }
 
             log.debug("monitor", `[${this.name}] prometheus.update`);
             if (this.prometheus) {
