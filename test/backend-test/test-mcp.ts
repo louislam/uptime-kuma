@@ -128,6 +128,7 @@ test("MCP", async (t) => {
         assert.strictEqual(result.status, 200);
         assert.deepStrictEqual(result.body.result.tools.map((tool: { name: string }) => tool.name).sort(), [
             "get_info",
+            "get_maintenance_list",
             "get_monitors",
         ]);
     });
