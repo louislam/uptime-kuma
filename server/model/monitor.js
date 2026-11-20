@@ -1113,7 +1113,7 @@ class Monitor extends BeanModel {
             bean.end_time = R.isoDateTimeMillis(endTimeDayjs);
 
             // Check if response time is slow
-            if (this.isEnabledSlowResponseNotification() && !isFirstBeat) {
+            if (this.isEnabledSlowResponseNotification()) {
                 log.debug("monitor", `[${this.name}] Check if response is slow`);
                 await this.checkSlowResponseNotification(this, bean);
             }
