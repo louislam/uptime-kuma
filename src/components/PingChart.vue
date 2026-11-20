@@ -92,16 +92,10 @@ export default {
     },
     computed: {
         threshold() {
-            let heartbeatList =
-                (this.monitorId in this.$root.heartbeatList && this.$root.heartbeatList[this.monitorId]) || [];
+            const beat = this.$root.lastHeartbeatList[this.monitorId];
 
-            let lastBeat = heartbeatList.at(-1);
-
-            if (lastBeat) {
-                return lastBeat.pingThreshold;
-            } else {
-                return undefined;
-            }
+            // Page load beat carries raw database row `ping_threshold`, live beats carry `pingThreshold`
+            return beat?.pingThreshold ?? beat?.ping_threshold ?? undefined;
         },
         chartOptions() {
             return {

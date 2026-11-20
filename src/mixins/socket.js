@@ -741,8 +741,10 @@ export default {
 
             for (let monitorID in this.lastHeartbeatList) {
                 let lastHeartBeat = this.lastHeartbeatList[monitorID];
+                // Page load beat carries raw database row `ping_status`, live beats carry `pingStatus`
+                const pingStatus = lastHeartBeat?.pingStatus ?? lastHeartBeat?.ping_status;
 
-                if (lastHeartBeat?.status === UP && lastHeartBeat.pingStatus === SLOW) {
+                if (lastHeartBeat?.status === UP && pingStatus === SLOW) {
                     result[monitorID] = {
                         text: this.$t("Slow"),
                         color: "warning",
@@ -787,7 +789,8 @@ export default {
                         result.unknown++;
                     }
 
-                    if (beat.pingStatus === SLOW) {
+                    // Page load beat carries raw database row `ping_status`, live beats carry `pingStatus`
+                    if ((beat.pingStatus ?? beat.ping_status) === SLOW) {
                         result.slow++;
                     }
                 } else {
