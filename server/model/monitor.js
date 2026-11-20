@@ -1737,7 +1737,6 @@ class Monitor extends BeanModel {
 
         // Create stats to append to messages/logs
         let msgStats = `Response: ${bean.ping}ms | Threshold: ${monitor.slowResponseNotificationThreshold}ms`;
-        const slowFor = `${bean.slowResponseCount * monitor.interval}s`;
 
         // Responding normally
         if (bean.ping < monitor.slowResponseNotificationThreshold) {
@@ -1748,6 +1747,7 @@ class Monitor extends BeanModel {
                     `[${this.name}] Responding normally. No need to send slow response notification | ${msgStats}`
                 );
             } else {
+                const slowFor = `${bean.slowResponseCount * monitor.interval}s`;
                 msgStats += ` | Slow for: ${bean.slowResponseCount * monitor.interval}s`;
                 log.debug("monitor", `[${this.name}] Returned to normal response time | ${msgStats}`);
 
@@ -1765,6 +1765,8 @@ class Monitor extends BeanModel {
         } else {
             bean.pingStatus = SLOW;
             ++bean.slowResponseCount;
+
+            const slowFor = `${bean.slowResponseCount * monitor.interval}s`;
 
             // Always send first notification
             if (bean.slowResponseCount === 1) {
