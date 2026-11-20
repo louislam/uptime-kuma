@@ -1739,7 +1739,7 @@ class Monitor extends BeanModel {
         let msgStats = `Response: ${bean.ping}ms | Threshold: ${monitor.slowResponseNotificationThreshold}ms`;
 
         // Responding normally
-        if (bean.ping < monitor.slowResponseNotificationThreshold) {
+        if (bean.ping <= monitor.slowResponseNotificationThreshold) {
             bean.pingStatus = NOMINAL;
             if (bean.slowResponseCount === 0) {
                 log.debug(
