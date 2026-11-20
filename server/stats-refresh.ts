@@ -20,7 +20,7 @@ export function startStatsRefresh(options: StatsRefreshOptions): { stop: () => v
     const run = () => {
         options.refresh(options.monitorIDs).catch((error) => options.onError(error));
     };
-
+    console.log("SDFJDSKF", options.intervalMs);
     const initial = setTimer(run, options.initialDelayMs ?? 5000);
     const interval = setIntervalFn(run, options.intervalMs ?? 15 * 60 * 1000);
     initial.unref?.();

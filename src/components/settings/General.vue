@@ -258,6 +258,31 @@
                 </div>
             </div>
 
+            <!-- RefreshRate -->
+            <div class="mb-4">
+                <label class="form-label" for="refreshRate">
+                    {{ $t("refreshRate") }}
+                </label>
+
+                <div class="input-group mb-3">
+                    <input
+                        id="refreshRate"
+                        v-model="settings.statsRefreshInterval"
+                        class="form-control"
+                        name="refreshRate"
+                        type="number"
+                        required
+                        min="0"
+                        step="1"
+                        standard=15
+                    />
+                </div>
+
+                <div class="form-text">
+                    {{ $t("statsRefreshDesc") }}
+                </div>
+            </div>
+
             <!-- Save Button -->
             <div>
                 <button class="btn btn-primary" type="submit">

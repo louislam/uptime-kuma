@@ -28,7 +28,7 @@ initDayjs();
 // Load environment variables from `.env`
 try {
     loadEnvFile();
-} catch (_) {}
+} catch (_) { }
 
 // Check Node.js Version
 const nodeVersion = process.versions.node;
@@ -203,7 +203,7 @@ const { chartSocketHandler } = require("./socket-handlers/chart-socket-handler")
 app.use(express.json());
 
 // Global Middleware
-app.use(function (req, res, next) {
+app.use(function(req, res, next) {
     if (!disableFrameSameOrigin) {
         res.setHeader("X-Frame-Options", "SAMEORIGIN");
     }
@@ -1464,6 +1464,8 @@ app.use(function (req, res, next) {
                 monitorIDs: statMonitorIDs,
                 refresh: (ids) => MonitorStats.refresh(ids),
                 onError: (e) => log.error("monitor", "Failed to refresh monitor stats: " + e.message),
+
+                intervalMs: await Settings.get("statsRefreshInterval") * 60 * 1000 // because statRefreshInterval is in Minutes
             });
         }
 
