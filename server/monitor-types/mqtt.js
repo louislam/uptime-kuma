@@ -104,7 +104,7 @@ class MqttMonitorType extends MonitorType {
                 const parsedMessage = JSON.parse(receivedMessage);
                 jsonValue = await jsonataSandbox(monitor.jsonPath, parsedMessage);
             } catch (e) {
-                // JSON parsing failed, jsonValue remains null
+                throw new Error(`Error evaluating JSON query: ${e.message}. Response from server was: ${receivedMessage}`);
             }
         }
 
