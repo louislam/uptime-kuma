@@ -173,7 +173,7 @@ export default {
                 }
 
                 if (this.settings.keepDataPeriodDays === undefined) {
-                    this.settings.keepDataPeriodDays = 180;
+                    this.settings.keepDataPeriodDays = 365;
                 }
 
                 if (this.settings.tlsExpiryNotifyDays === undefined) {
