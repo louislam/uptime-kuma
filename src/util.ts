@@ -646,6 +646,44 @@ export function intHash(str: string, length = 10): number {
     return ((hash % length) + length) % length; // Ensure the result is non-negative
 }
 
+// these types will have slow-response notification support
+export const TYPES_WITH_RESPONSE_TIME_SUPPORT = [
+    "http",
+    "keyword",
+    "port",
+    "ping",
+    "dns",
+    // docker: never records a ping, so the slow-response check returns immediately
+    "system-service",
+    "pm2",
+    "real-browser",
+    "websocket-upgrade",
+    "sftp",
+    "group",
+    // push: the beat loop returns before the slow-response check
+    "manual",
+    "globalping",
+    "grpc-keyword",
+    "json-query",
+    "kafka-producer",
+    "mqtt",
+    "ntp",
+    "rabbitmq",
+    "sip-options",
+    "smtp",
+    "snmp",
+    "tailscale-ping",
+    "sqlserver",
+    "mongodb",
+    "mysql",
+    "oracledb",
+    "postgres",
+    "radius",
+    "redis",
+    "gamedig",
+    "steam",
+] as const;
+
 // these types will have domain expiry support via the specified field
 export const TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD = {
     http: "url",

@@ -1716,7 +1716,7 @@
                             </div>
 
                             <!-- Slow Response Notification -->
-                            <div class="my-3 form-check">
+                            <div v-if="showSlowResponseNotification" class="my-3 form-check">
                                 <input
                                     id="slow-response-notification"
                                     v-model="monitor.slowResponseNotification"
@@ -1732,7 +1732,7 @@
                             </div>
 
                             <!-- Threshold -->
-                            <div v-if="monitor.slowResponseNotification" class="my-3">
+                            <div v-if="showSlowResponseNotification && monitor.slowResponseNotification" class="my-3">
                                 <label for="slow-response-notification-threshold" class="form-label">
                                     {{ $t("slowResponseNotificationThreshold") }}
                                 </label>
@@ -1755,7 +1755,7 @@
                             </div>
 
                             <!-- Slow Response Resend Interval -->
-                            <div v-if="monitor.slowResponseNotification" class="my-3">
+                            <div v-if="showSlowResponseNotification && monitor.slowResponseNotification" class="my-3">
                                 <label for="slow-response-notification-resend-interval" class="form-label">
                                     {{
                                         $t("slowResponseNotificationResendInterval", [
@@ -3347,6 +3347,7 @@ import {
     PING_PER_REQUEST_TIMEOUT_MAX,
     sleep,
     TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD,
+    TYPES_WITH_RESPONSE_TIME_SUPPORT,
 } from "../util.ts";
 import { timeDurationFormatter } from "../util-frontend";
 import isFQDN from "validator/lib/isFQDN";
@@ -3528,6 +3529,13 @@ export default {
 
         showDomainExpiryNotification() {
             return this.monitor.type in TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD;
+        },
+
+        /**
+         * @returns {boolean} Whether this monitor type has a response time support
+         */
+        showSlowResponseNotification() {
+            return TYPES_WITH_RESPONSE_TIME_SUPPORT.includes(this.monitor.type);
         },
 
         pageName() {
