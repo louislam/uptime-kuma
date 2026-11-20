@@ -11,6 +11,17 @@
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
+                            <label for="proxy-name" class="form-label">{{ $t("Proxy Name") }}</label>
+                            <input
+                                id="proxy-name"
+                                v-model="proxy.name"
+                                type="text"
+                                class="form-control"
+                                maxlength="255"
+                            />
+                        </div>
+
+                        <div class="mb-3">
                             <label for="proxy-protocol" class="form-label">{{ $t("Proxy Protocol") }}</label>
                             <select id="proxy-protocol" v-model="proxy.protocol" class="form-select">
                                 <option value="https">HTTPS</option>
@@ -166,6 +177,7 @@ export default {
             processing: false,
             id: null,
             proxy: {
+                name: null,
                 protocol: null,
                 host: null,
                 port: null,
@@ -212,6 +224,7 @@ export default {
             } else {
                 this.id = null;
                 this.proxy = {
+                    name: null,
                     protocol: "https",
                     host: null,
                     port: null,
@@ -238,6 +251,7 @@ export default {
                     if (proxy.id === proxyID) {
                         // Create a clone of the proxy data
                         this.proxy = {
+                            name: proxy.name,
                             protocol: proxy.protocol,
                             host: proxy.host,
                             port: proxy.port,
