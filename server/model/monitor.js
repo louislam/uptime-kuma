@@ -955,6 +955,14 @@ class Monitor extends BeanModel {
             } catch (error) {
                 if (error?.name === "CanceledError") {
                     bean.msg = `timeout by AbortSignal (${this.timeout}s)`;
+                } else if (!error?.message && Array.isArray(error?.errors) && error.errors.length > 0) {
+                    // When every address of a dual-stack host fails, Node throws an AggregateError
+                    // with an empty message. The reasons are in its inner errors.
+                    bean.msg =
+                        error.errors
+                            .map((e) => e?.message)
+                            .filter(Boolean)
+                            .join("; ") || error.code;
                 } else {
                     bean.msg = error.message;
                 }
