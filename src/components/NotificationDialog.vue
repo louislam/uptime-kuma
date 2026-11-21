@@ -338,6 +338,7 @@ export default {
                 Feishu: "Feishu (飞书)",
                 FlashDuty: "FlashDuty (快猫星云)",
                 FreeMobile: "FreeMobile (mobile.free.fr)",
+                kwtsms: "kwtSMS (Kuwait)",
                 Ooredoo: "Ooredoo (Maldives)",
                 PushDeer: "PushDeer",
                 promosms: "PromoSMS",
