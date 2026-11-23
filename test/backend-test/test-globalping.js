@@ -1,4 +1,4 @@
-const { describe, test, mock } = require("node:test");
+const { describe, test, mock, beforeEach, afterEach } = require("node:test");
 const assert = require("node:assert");
 const { encodeBase64 } = require("../../server/util");
 const { UP, PENDING } = require("../../src/util");
@@ -1396,3 +1396,177 @@ function createDnsMeasurement() {
         ],
     };
 }
+
+describe("GlobalpingMonitorType.confirmReachable", () => {
+    const { GlobalpingMonitorType } = require("../../server/monitor-types/globalping");
+    const { Settings } = require("../../server/settings");
+
+    beforeEach(() => {
+        mock.method(Settings, "get", async () => "test-token");
+    });
+
+    afterEach(() => {
+        mock.restoreAll();
+    });
+
+    const makeMonitor = (overrides = {}, config = {}) => {
+        const cfg = { globalpingConfirmProbes: 1, globalpingConfirmMinInterval: 300, ...config };
+        return {
+            id: 1,
+            type: "http",
+            url: "https://example.com/",
+            method: "GET",
+            accepted_statuscodes_json: JSON.stringify(["200-299"]),
+            ping_count: 1,
+            getConfigValue: (key, def) => cfg[key] ?? def,
+            ...overrides,
+        };
+    };
+
+    const up = async (client, view, heartbeat) => {
+        heartbeat.status = UP;
+        heartbeat.msg = "OK";
+        heartbeat.ping = 12;
+    };
+
+    test("rejects unsupported monitor types", async () => {
+        const monitorType = new GlobalpingMonitorType("test-agent/1.0");
+        await assert.rejects(() => monitorType.confirmReachable(makeMonitor({ type: "dns" })), /not supported/);
+    });
+
+    test("maps supported types to a globalping subtype", () => {
+        assert.deepStrictEqual(GlobalpingMonitorType.CONFIRM_SUBTYPES, {
+            http: "http",
+            keyword: "http",
+            "json-query": "http",
+            ping: "ping",
+            port: "ping",
+        });
+    });
+
+    test("returns up=false instead of throwing when the probe fails", async () => {
+        const monitorType = new GlobalpingMonitorType("test-agent/1.0");
+        const calls = [];
+        monitorType.http = async (client, view) => {
+            calls.push(view);
+            throw new Error("probe: Failed: timeout");
+        };
+        const result = await monitorType.confirmReachable(makeMonitor({}, { globalpingConfirmLocation: "Europe" }));
+        assert.strictEqual(result.up, false);
+        assert.match(result.msg, /1\/1 probes failed, probe: Failed: timeout/);
+        assert.strictEqual(calls[0].location, "Europe");
+        assert.strictEqual(calls[0].skipTlsInfoStore, true);
+        assert.strictEqual(calls[0].dns_resolve_server, null);
+    });
+
+    test("accepts redirects in the confirmation when the monitor follows redirects", async () => {
+        const monitorType = new GlobalpingMonitorType("test-agent/1.0");
+        const seen = [];
+        monitorType.http = async (client, view) => {
+            seen.push(JSON.parse(view.accepted_statuscodes_json));
+            throw new Error("Failed: x");
+        };
+        await monitorType.confirmReachable(makeMonitor({ id: 1, maxredirects: 10 }));
+        await monitorType.confirmReachable(makeMonitor({ id: 2, maxredirects: 0 }));
+        assert.deepStrictEqual(seen, [["200-299", "300-399"], ["200-299"]]);
+    });
+
+    test("rethrows Globalping API errors so the local result is kept", async () => {
+        const monitorType = new GlobalpingMonitorType("test-agent/1.0");
+        monitorType.http = async () => {
+            throw new Error("Failed to create measurement: rate limited");
+        };
+        await assert.rejects(() => monitorType.confirmReachable(makeMonitor()), /inconclusive.*rate limited/);
+    });
+
+    test("returns up=true and uses TCP for port monitors", async () => {
+        const monitorType = new GlobalpingMonitorType("test-agent/1.0");
+        let seen;
+        monitorType.ping = async (client, view, heartbeat) => {
+            seen = view;
+            await up(client, view, heartbeat);
+        };
+        const result = await monitorType.confirmReachable(
+            makeMonitor({ type: "port", hostname: "example.com", port: 443 })
+        );
+        assert.deepStrictEqual(result, { up: true, msg: "1/1 probes OK, OK", ping: 12 });
+        assert.strictEqual(seen.protocol, "TCP");
+        assert.strictEqual(seen.port, 443);
+    });
+
+    test("spreads probes over the configured locations", async () => {
+        const monitorType = new GlobalpingMonitorType("test-agent/1.0");
+        const locations = [];
+        monitorType.http = async (client, view, heartbeat) => {
+            locations.push(view.location);
+            await up(client, view, heartbeat);
+        };
+        await monitorType.confirmReachable(
+            makeMonitor({}, { globalpingConfirmProbes: 3, globalpingConfirmLocation: "Europe, Asia" })
+        );
+        assert.deepStrictEqual(locations.sort(), ["Asia", "Europe", "Europe"]);
+    });
+
+    test("is up when at least half of the probes succeed, down otherwise", async () => {
+        const run = async (okCount) => {
+            const monitorType = new GlobalpingMonitorType("test-agent/1.0");
+            let n = 0;
+            monitorType.http = async (client, view, heartbeat) => {
+                if (n++ < okCount) {
+                    return up(client, view, heartbeat);
+                }
+                throw new Error("Failed: nope");
+            };
+            return monitorType.confirmReachable(makeMonitor({}, { globalpingConfirmProbes: 3 }));
+        };
+        assert.strictEqual((await run(3)).up, true);
+        assert.strictEqual((await run(2)).up, true);
+        assert.strictEqual((await run(1)).up, false);
+        assert.match((await run(0)).msg, /3\/3 probes failed/);
+    });
+
+    test("is inconclusive when API errors could change the outcome", async () => {
+        const monitorType = new GlobalpingMonitorType("test-agent/1.0");
+        let n = 0;
+        monitorType.http = async (client, view, heartbeat) => {
+            if (n++ === 0) {
+                return up(client, view, heartbeat);
+            }
+            throw new Error("Failed to create measurement: 429");
+        };
+        await assert.rejects(
+            () => monitorType.confirmReachable(makeMonitor({}, { globalpingConfirmProbes: 3 })),
+            /inconclusive/
+        );
+    });
+
+    test("reuses the cached result within the minimum interval", async () => {
+        const monitorType = new GlobalpingMonitorType("test-agent/1.0");
+        let calls = 0;
+        monitorType.http = async (client, view, heartbeat) => {
+            calls++;
+            await up(client, view, heartbeat);
+        };
+        const monitor = makeMonitor();
+        await monitorType.confirmReachable(monitor, 1_000_000);
+        await monitorType.confirmReachable(monitor, 1_000_000 + 299_000);
+        assert.strictEqual(calls, 1);
+        await monitorType.confirmReachable(monitor, 1_000_000 + 301_000);
+        assert.strictEqual(calls, 2);
+    });
+
+    test("caches API errors only briefly", async () => {
+        const monitorType = new GlobalpingMonitorType("test-agent/1.0");
+        let calls = 0;
+        monitorType.http = async () => {
+            calls++;
+            throw new Error("Failed to create measurement: 429");
+        };
+        const monitor = makeMonitor();
+        await assert.rejects(() => monitorType.confirmReachable(monitor, 0));
+        await assert.rejects(() => monitorType.confirmReachable(monitor, 30_000));
+        assert.strictEqual(calls, 1);
+        await assert.rejects(() => monitorType.confirmReachable(monitor, 61_000));
+        assert.strictEqual(calls, 2);
+    });
+});

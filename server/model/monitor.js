@@ -419,6 +419,18 @@ class Monitor extends BeanModel {
     }
 
     /**
+     * Whether a failed local check must be confirmed via Globalping before the monitor goes DOWN
+     * @returns {boolean} True if enabled and supported for this monitor
+     */
+    shouldConfirmWithGlobalping() {
+        return (
+            this.getConfigValue("globalpingConfirm", false) === true &&
+            !this.isUpsideDown() &&
+            Object.hasOwn(require("../monitor-types/globalping").GlobalpingMonitorType.CONFIRM_SUBTYPES, this.type)
+        );
+    }
+
+    /**
      * Get the full config
      * @returns {object} Parsed config, empty object if null or invalid
      */
@@ -1010,6 +1022,29 @@ class Monitor extends BeanModel {
                         // Continue counting retries during DOWN
                         retries++;
                     }
+                }
+            }
+
+            // Before going DOWN, optionally confirm the failure from the Globalping network
+            if (bean.status === DOWN && this.shouldConfirmWithGlobalping()) {
+                try {
+                    const confirmation = await UptimeKumaServer.monitorTypeList["globalping"].confirmReachable(this);
+                    if (confirmation.up) {
+                        log.info(
+                            "monitor",
+                            `[${this.name}] Local check failed (${bean.msg}) but Globalping can reach the target, staying UP`
+                        );
+                        bean.msg = `Local check failed: ${bean.msg} | Globalping: ${confirmation.msg}`;
+                        bean.status = UP;
+                        if (confirmation.ping) {
+                            bean.ping = confirmation.ping;
+                        }
+                    } else {
+                        bean.msg = `${bean.msg} | Confirmed by Globalping: ${confirmation.msg}`;
+                    }
+                } catch (confirmError) {
+                    // Fail-safe: if Globalping cannot be used, keep the local result
+                    log.warn("monitor", `[${this.name}] Globalping confirmation failed: ${confirmError.message}`);
                 }
             }
 
