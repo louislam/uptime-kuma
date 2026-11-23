@@ -1160,7 +1160,7 @@
     "mqttWebSocketPath": "Ruta de MQTT WebSocket",
     "smseagleMsgRing": "Llamada",
     "Clear All Events": "Limpiar todos los eventos",
-    "clearAllEventsMsg": "¿Seguro deseas eliminar todos los eventos? para todos los monitores? Esto remueve permanentemente los datos de los mensajes asociados y no se puede deshacer.",
+    "clearAllEventsMsg": "¿Seguro deseas eliminar todos los eventos para todos los monitores? Esto remueve permanentemente los datos de los mensajes asociados y no se puede deshacer.",
     "Events cleared successfully": "Eventos limpiados exitosamente.",
     "No monitors found": "No se encontraron monitores.",
     "Could not clear events": "No se pudieron limpiar {failed}/{total} eventos",
