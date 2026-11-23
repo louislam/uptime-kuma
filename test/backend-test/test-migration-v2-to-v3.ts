@@ -324,7 +324,9 @@ test(
 
         // Auth was disabled in v2, so nobody signs in and the legacy user is never migrated
         const seedDb = new BetterSqlite3(path.join(disabledDataDir, "kuma.db"));
-        seedDb.prepare("UPDATE user SET password = ? WHERE username = ?").run(await bcrypt.hash(password, 10), username);
+        seedDb
+            .prepare("UPDATE user SET password = ? WHERE username = ?")
+            .run(await bcrypt.hash(password, 10), username);
         seedDb.prepare("INSERT INTO setting (`key`, `value`, `type`) VALUES ('disableAuth', 'true', 'general')").run();
         seedDb.close();
 
@@ -356,10 +358,7 @@ test(
             socket.on("setup", () => (setupRequested = true));
 
             const sessionUsername = await new Promise((resolve, reject) => {
-                const timer = setTimeout(
-                    () => reject(new Error(`No session after 15s\n${serverOutput}`)),
-                    15000
-                );
+                const timer = setTimeout(() => reject(new Error(`No session after 15s\n${serverOutput}`)), 15000);
                 socket.on("session", (name) => {
                     clearTimeout(timer);
                     resolve(name);
