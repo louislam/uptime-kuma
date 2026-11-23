@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 // @ts-ignore
 import * as Database from "./database.js";
 import { genSecret, isDevEnv, log } from "../src/util";
-import { R } from "redbean-node";
+import { R, type Bean } from "redbean-node";
 import { username } from "better-auth/plugins";
 import { admin } from "better-auth/plugins";
 import { Socket } from "socket.io";
@@ -14,7 +14,6 @@ import { apiKey } from "@better-auth/api-key";
 import { createAuthMiddleware, isAPIError } from "better-auth/api";
 // @ts-ignore
 import * as oldAuth from "./auth";
-import { hasUser } from "./routers/better-auth-router";
 import { symmetricEncrypt, hashPassword } from "better-auth/crypto";
 // @ts-ignore
 import config from "./config.js";
@@ -240,9 +239,12 @@ function createAuthInstance() {
                     const username = ctx.body?.username;
                     const password = ctx.body?.password;
 
-                    // Migrate legacy user from old user table to better-auth
-                    // Only do this when there is no user in better-auth
-                    if (!(await hasUser())) {
+                    // Migrate the legacy user while better-auth has no password for it
+                    const credentialAccount = await R.knex("better_auth_account")
+                        .where({ providerId: "credential" })
+                        .first();
+
+                    if (!credentialAccount) {
                         await migrateUser(username, password);
                     }
                 }
@@ -349,7 +351,19 @@ export function createHeaders(cookie: string) {
 export async function getDisableAuthSession(): ReturnType<typeof getSession> {
     log.info("auth", "Logged in with Disable Auth");
 
-    const obj = await R.getRow("SELECT * FROM better_auth_user LIMIT 1");
+    let obj = await R.getRow("SELECT * FROM better_auth_user LIMIT 1");
+
+    if (!obj) {
+        // Disable Auth never signs in, so import the v2 user here
+        const legacyUser = await R.getRow("SELECT * FROM user ORDER BY id LIMIT 1");
+
+        if (!legacyUser) {
+            throw new Error("Unexpected Error: No user found in the database.");
+        }
+
+        await importLegacyUserForDisableAuth(legacyUser);
+        obj = await R.getRow("SELECT * FROM better_auth_user LIMIT 1");
+    }
 
     if (!obj) {
         throw new Error("Unexpected Error: No user found in the database.");
@@ -385,6 +399,32 @@ export async function getDisableAuthSession(): ReturnType<typeof getSession> {
             token: "disable-auth",
         },
     };
+}
+
+/**
+ * Import the v2 user into better-auth for Disable Auth, no password or 2FA yet.
+ * @param legacyUser Row of the old `user` table
+ */
+async function importLegacyUserForDisableAuth(legacyUser: Bean) {
+    const userId = String(legacyUser.id);
+    log.info("auth", `Disable Auth is importing the legacy user: ${legacyUser.username}`);
+
+    const now = new Date();
+    await R.knex("better_auth_user")
+        .insert({
+            id: userId,
+            name: legacyUser.username,
+            email: `legacy-${legacyUser.id}@noreply.uptime-kuma.internal`,
+            emailVerified: false,
+            createdAt: now,
+            updatedAt: now,
+            username: legacyUser.username,
+            displayUsername: legacyUser.username,
+            role: "admin",
+        })
+        // Two sockets can connect at the same time
+        .onConflict("id")
+        .ignore();
 }
 
 /**
@@ -441,6 +481,24 @@ export async function verifyApiKey(key: string): Promise<boolean> {
 export async function migrateUser(username: string, password: string) {
     const legacyUser = await oldAuth.login(username, password);
     if (legacyUser) {
+        // Disable Auth imported the user row without a password, attach it now
+        const importedUser = await R.knex("better_auth_user").where({ username }).first();
+        if (importedUser) {
+            const internalAdapter = await authInternal();
+            const accounts = await internalAdapter.findAccounts(importedUser.id);
+
+            if (!accounts.some((account) => account.providerId === "credential")) {
+                await internalAdapter.linkAccount({
+                    userId: importedUser.id,
+                    accountId: importedUser.id,
+                    providerId: "credential",
+                    password: await hashPassword(password),
+                });
+                log.info("auth", `Attached the legacy password to the imported user: ${username}`);
+            }
+            return;
+        }
+
         // Skip the HIBP check: the legacy user's existing password must not be rejected (#7946)
         haveIBeenPwnedOptions.enabled = false;
         try {
