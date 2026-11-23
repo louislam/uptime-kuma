@@ -267,6 +267,7 @@ export default {
                 pushover: "Pushover",
                 pushy: "Pushy",
                 signalgrid: "Signalgrid",
+                trigv: "Trigv",
                 Webpush: "Webpush",
             };
 

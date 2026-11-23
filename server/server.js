@@ -20,7 +20,6 @@ import { readApiKey } from "./auth";
 import { initAdminFromEnv } from "./initial-admin";
 import { betterAuthSocketHandler } from "./socket-handlers/better-auth-socket-handler";
 import { loadEnvFile } from "node:process";
-import * as fs from "node:fs";
 
 console.log("Welcome to Uptime Kuma");
 
@@ -138,7 +137,6 @@ const Database = require("./database");
 log.debug("server", "Importing Background Jobs");
 const { initBackgroundJobs, stopBackgroundJobs } = require("./jobs");
 const { DeferredListsSender } = require("./login-lists");
-const { chunk, firstBeatDelayMs } = require("./start-monitors");
 const { startStatsRefresh } = require("./stats-refresh");
 const { apiAuth } = require("./auth");
 const {
@@ -303,37 +301,16 @@ app.use(function (req, res, next) {
             response.send("OK");
         });
 
-        app.get("/_e2e/take-sqlite-snapshot", async (request, response) => {
-            // Checkpoint WAL to flush all data to the main .db file, then copy.
-            // No close/reopen needed — the file is consistent after checkpoint.
-            await R.exec("PRAGMA wal_checkpoint(TRUNCATE)");
-            fs.cpSync(Database.sqlitePath, `${Database.sqlitePath}.e2e-snapshot`);
-            response.send("Snapshot taken.");
-        });
-
-        app.get("/_e2e/restore-sqlite-snapshot", async (request, response) => {
-            if (!fs.existsSync(`${Database.sqlitePath}.e2e-snapshot`)) {
-                throw new Error("Snapshot doesn't exist.");
-            }
-
-            await Database.close();
-            try {
-                fs.cpSync(`${Database.sqlitePath}.e2e-snapshot`, Database.sqlitePath);
-            } catch (err) {
-                throw new Error("Unable to copy snapshot file.");
-            }
-            await Database.connect();
-            // Rebuild better-auth for the reopened database connection
-            auth(true);
-
-            response.send("Snapshot restored.");
-        });
-
         app.post("/test-x-www-form-urlencoded", async (request, response) => {
             log.debug("test", request.headers);
             log.debug("test", request.body);
             response.send("OK");
         });
+    }
+
+    if (process.env.E2E_TEST === "1") {
+        const { e2eRouter } = await import("../test/e2e/e2e-router");
+        app.use(e2eRouter);
     }
 
     // Robots.txt
@@ -1660,18 +1637,14 @@ async function startMonitors() {
         server.monitorList[monitor.id] = monitor;
     }
 
-    // Start every monitor in small concurrent batches, but spread their first check
-    // over the interval, so 5000 monitors do not all check at the same second
-    for (const batch of chunk(list, 50)) {
-        await Promise.allSettled(
-            batch.map(async (monitor) => {
-                try {
-                    await monitor.start(io, firstBeatDelayMs(monitor.interval));
-                } catch (e) {
-                    log.error("monitor", e);
-                }
-            })
-        );
+    for (let monitor of list) {
+        try {
+            await monitor.start(io);
+        } catch (e) {
+            log.error("monitor", e);
+        }
+        // Give some delays, so all monitors won't make request at the same moment when just start the server.
+        await sleep(getRandomInt(300, 1000));
     }
 }
 

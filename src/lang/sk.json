@@ -1733,5 +1733,11 @@
     "msGraphAppRegistration": "registrácia aplikácie",
     "msGraphConsent": "súhlas",
     "msGraphRbac": "RBAC v Exchange Online",
-    "msGraphMailbox": "Sender Mailbox"
+    "msGraphMailbox": "Sender Mailbox",
+    "OpsiMate URL": "OpsiMate URL adresa",
+    "opsimateUrlDescription": "Základná URL adresa rozhrania API OpsiMate (port servera, nie webové používateľské rozhranie).",
+    "opsimateApiTokenDescription": "Hodnota nastavenia API_TOKEN vášho servera OpsiMate (predvolené nastavenie: opsimate).",
+    "trigvChannelHelp": "Zadajte skrátený názov kanála (maximálne 120 znakov). Ak necháte pole prázdne, použije sa všeobecný názov.",
+    "trigvApiKeyDocs": "Dokumentácia k API kľúču Trigv",
+    "trigvDefaultChannel": "general"
 }

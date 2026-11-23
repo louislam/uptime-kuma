@@ -130,6 +130,7 @@ npm run dev  # Frontend on port 3000, backend on port 3001
 - **Commits**: one short sentence describing the change; no long body
 - **Naming**: JavaScript/TypeScript (camelCase), SQLite (snake_case), CSS/SCSS (kebab-case)
 - **New code**: new files and modules are TypeScript (`*.ts`) with Zod validation for external/DB input; leave existing JavaScript files in JS unless that file is being converted for a reason
+- **No duplicate logic**: one implementation per rule; share it (e.g. an optional preloaded snapshot) instead of copying it for another caller
 - JSDoc is required on every function declaration and method (`jsdoc/require-jsdoc`); `*.ts` relaxes some JSDoc and `any` rules
 - Notable ESLint rules: `no-var`, `one-var: never`, `max-statements-per-line: 1`, `jsdoc/require-throws`
 - **Module system**: no `"type": "module"` in package.json — `*.js` is CommonJS (`require`), `*.mjs`/`*.mts` are ESM, and `*.ts` is executed via `tsx`
@@ -159,6 +160,7 @@ npm run dev  # Frontend on port 3000, backend on port 3001
 Releases are cut with the **Release** workflow (`.github/workflows/release.yml`), not `npm run release-final` (that local orchestrator needs a running Docker and is the older path).
 
 - Dispatch it from `master`, not `2.5.X`: master's workflow checks out `2.5.X` and sets `RELEASE_BASE_BRANCH=2.5.X`.
+- 3.X releases use `.github/workflows/release-3.yml`, dispatched from `master`: it checks out `master` and sets `RELEASE_BASE_BRANCH=master`.
 - `2.5.X`'s copy has a 6th `update-wiki` job; master's copy does not, so a run dispatched from master never bumps the wiki.
 - Inputs: `version`, `previous_version` (previous tag), `is_beta`, `dry_run`.
 
@@ -166,7 +168,7 @@ After it succeeds, check in this order:
 
 1. **Release**: `gh release view <version> --json isDraft,publishedAt,assets` is not a draft, has `dist.tar.gz`, and `git/ref/tags/<version>` points at the squash merge commit on `2.5.X`.
 2. **Changelog**: generated from PRs only. Base-image work (Node.js version, CA store) is not a PR, so add it by hand with `gh release edit <version> --notes-file notes.md` before publishing.
-3. **Docker Hub**: `<version>`, `<version>-slim`, `<version>-rootless`, `<version>-slim-rootless`, plus the aliases `2`, `2-slim`, `2-rootless`, `next`, `next-slim`, `next-rootless` all point at the new build.
+3. **Docker Hub and GHCR**: `<version>`, `<version>-slim`, `<version>-rootless`, `<version>-slim-rootless`, plus the aliases `2`, `2-slim`, `2-rootless`, `next`, `next-slim`, `next-rootless` all point at the new build on both `louislam/uptime-kuma` and `ghcr.io/louislam/uptime-kuma`.
 4. **Node.js inside the images**: `docker run --rm --entrypoint node louislam/uptime-kuma:<version> -p process.versions.node` matches the base image (`louislam/uptime-kuma:base2`) on amd64, arm64 and arm/v7.
 5. **App version**: `package.json` on `2.5.X` is `<version>`; the server sends it over Socket.IO as `info.version` (`server/client.js`) and as `User-Agent: Uptime-Kuma/<version>` (`server/uptime-kuma-server.ts`). There is no `/api/version` route.
 6. **Wiki**: `🆙-How-to-Update.md` must contain `git checkout <version> --force`. If the `update-wiki` job did not run, run `RELEASE_VERSION=<version> GITHUB_TOKEN=<token> node extra/release/update-wiki.mjs`.

@@ -458,6 +458,7 @@ export function pressAnyKey() {
 
 /**
  * Append version identifier
+ * e.g. 2.5.12 + slim -> 2.5.12-slim, 3.0.0-beta.1 + slim -> 3.0.0-beta.1-slim
  * @param {string} version Version
  * @param {string} identifier Identifier
  * @returns {string} Version with identifier
@@ -465,12 +466,12 @@ export function pressAnyKey() {
 export function ver(version, identifier) {
     const obj = semver.parse(version);
 
-    if (obj.prerelease.length === 0) {
-        obj.prerelease = [identifier];
-    } else {
-        obj.prerelease[0] = [obj.prerelease[0], identifier].join("-");
+    if (!obj) {
+        throw new Error(`Invalid version: ${version}`);
     }
-    return obj.format();
+
+    // Keep the whole prerelease intact, so a suffix never lands inside it (3.0.0-beta-slim.1)
+    return `${obj.format()}-${identifier}`;
 }
 
 /**

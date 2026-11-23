@@ -20,7 +20,7 @@ async function main() {
     const args = parseArgs(process.argv);
     try {
         loadEnvFile();
-    } catch { }
+    } catch {}
 
     console.log("Dev Environment:", isDevEnv());
 
@@ -31,48 +31,75 @@ async function main() {
     const internalAdapter = context.internalAdapter;
 
     const users = await internalAdapter.listUsers();
-    const choices = users.map((user) => {
-        const userId = user.id;
-        const username = user.name || user.email;
 
-        return {
-            name: username,
-            value: userId,
-            description: "",
-        };
-    });
+    /** Non-interactive path, same as the 2.x tool: --new-password=<password> */
+    const requestedPassword: string | undefined = args["new-password"];
 
     let userId: string;
 
-    while (true) {
-        const selectedUserId = await select({
-            message: "Select a username:",
-            choices,
-        });
+    if (requestedPassword) {
+        const user = users[0];
 
-        if (!selectedUserId) {
-            console.log("Invalid choice");
-            continue;
+        if (!user) {
+            console.error("user not found, have you installed?");
+            process.exit(1);
         }
 
-        userId = selectedUserId;
-        break;
-    }
+        console.log("Found user: " + (user.name || user.email));
+        console.warn(
+            "\x1b[31m%s\x1b[0m",
+            "Warning: the password might be stored, in plain text, in your shell's history"
+        );
 
-    while (true) {
-        const password = await passwordInput({
-            message: "Enter new password:",
-            mask: "*",
+        userId = user.id;
+    } else {
+        const choices = users.map((user) => {
+            const userId = user.id;
+            const username = user.name || user.email;
+
+            return {
+                name: username,
+                value: userId,
+                description: "",
+            };
         });
 
-        try {
-            const hash = await hashPassword(password); // We do that because the method under doesn't hash the password (it stores it in plain text)
-            await internalAdapter.updatePassword(userId, hash);
+        while (true) {
+            const selectedUserId = await select({
+                message: "Select a username:",
+                choices,
+            });
 
-            console.log("Password reset succesfully!");
+            if (!selectedUserId) {
+                console.log("Invalid choice");
+                continue;
+            }
+
+            userId = selectedUserId;
             break;
-        } catch (_) {
-            // Better Auth shows Cli error message in cli already, we don't need to
+        }
+    }
+
+    if (requestedPassword) {
+        const hash = await hashPassword(requestedPassword); // We do that because the method under doesn't hash the password (it stores it in plain text)
+        await internalAdapter.updatePassword(userId, hash);
+        console.log("Password reset successfully.");
+    } else {
+        while (true) {
+            const password = await passwordInput({
+                message: "Enter new password:",
+                mask: "*",
+            });
+
+            try {
+                const hash = await hashPassword(password); // We do that because the method under doesn't hash the password (it stores it in plain text)
+                await internalAdapter.updatePassword(userId, hash);
+
+                console.log("Password reset successfully.");
+                break;
+            } catch (_) {
+                // Better Auth shows Cli error message in cli already, we don't need to
+            }
         }
     }
 

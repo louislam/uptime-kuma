@@ -1,4 +1,6 @@
 import { betterAuth } from "better-auth";
+import type { BetterAuthPlugin } from "better-auth";
+import { randomUUID } from "node:crypto";
 // @ts-ignore
 import * as Database from "./database.js";
 import { genSecret, isDevEnv, log } from "../src/util";
@@ -9,15 +11,23 @@ import { Socket } from "socket.io";
 import { haveIBeenPwned } from "better-auth/plugins";
 import { twoFactor } from "better-auth/plugins";
 import { apiKey } from "@better-auth/api-key";
-import { createAuthMiddleware } from "better-auth/api";
+import { createAuthMiddleware, isAPIError } from "better-auth/api";
 // @ts-ignore
 import * as oldAuth from "./auth";
 import { hasUser } from "./routers/better-auth-router";
-import { symmetricEncrypt } from "better-auth/crypto";
+import { symmetricEncrypt, hashPassword } from "better-auth/crypto";
 // @ts-ignore
 import config from "./config.js";
 
 export type BetterAuthUser = ReturnType<typeof createAuthInstance>["$Infer"]["Session"]["user"];
+
+/**
+ * Unique internal email for a better-auth user, never used, only valid (#8210).
+ * @returns An internal email
+ */
+export function genInternalEmail() {
+    return `${randomUUID()}@noreply.uptime-kuma.internal`;
+}
 
 let authInstance: ReturnType<typeof createAuthInstance>;
 
@@ -58,6 +68,48 @@ export function auth(force = false) {
  */
 export async function authInternal() {
     return (await auth().$context).internalAdapter;
+}
+
+/**
+ * Whether the leaked-password check could not run (service unreachable).
+ * @param error Error thrown while hashing a password
+ * @returns True to hash without the check
+ */
+function isLeakCheckUnavailable(error: unknown): boolean {
+    return isAPIError(error) && error.statusCode === 500 && error.message.startsWith("Failed to check password");
+}
+
+/**
+ * Keep setup and password changes working without internet (#8212).
+ * @returns Plugin wrapping the check above
+ */
+function leakCheckFailOpen(): BetterAuthPlugin {
+    return {
+        id: "leak-check-fail-open",
+        init(ctx) {
+            const hashWithLeakCheck = ctx.password.hash;
+            return {
+                context: {
+                    password: {
+                        ...ctx.password,
+                        async hash(password: string) {
+                            try {
+                                return await hashWithLeakCheck(password);
+                            } catch (e) {
+                                if (!isLeakCheckUnavailable(e)) {
+                                    throw e;
+                                }
+
+                                // No internet: the check cannot run, so let the password through
+                                log.warn("auth", "Leaked-password service is unreachable, skipping the check.");
+                                return hashPassword(password);
+                            }
+                        },
+                    },
+                },
+            };
+        },
+    };
 }
 
 /**
@@ -128,7 +180,12 @@ function createAuthInstance() {
         },
         plugins: [
             // Enable login by username
-            username(),
+            username({
+                // v1/v2 accepted any username (email, spaces, non-Latin), the defaults allow only [a-zA-Z0-9_.] (#8210)
+                usernameValidator: () => true,
+                minUsernameLength: 1,
+                maxUsernameLength: 255,
+            }),
 
             // Enable user management API (used for creating the first admin user)
             admin(),
@@ -136,10 +193,13 @@ function createAuthInstance() {
             // Check if the password has been pwned in data breaches
             haveIBeenPwned(haveIBeenPwnedOptions),
 
+            // Keep setup and password changes working when the service above cannot be reached
+            leakCheckFailOpen(),
+
             twoFactor({
                 schema: {
                     twoFactor: {
-                        modelName: "better_auth_twoFactor",
+                        modelName: "better_auth_twofactor",
                     },
                 },
             }),
@@ -388,7 +448,7 @@ export async function migrateUser(username: string, password: string) {
             const newUser = await auth().api.createUser({
                 body: {
                     name: username,
-                    email: `${username}@noreply.uptime-kuma.internal`,
+                    email: genInternalEmail(),
                     password,
                     role: "admin",
                     data: {
@@ -407,7 +467,7 @@ export async function migrateUser(username: string, password: string) {
                 const encryptedSecret = await betterAuthEncrypt(legacyUser.twofa_secret);
                 const encryptedBackupCodes = await betterAuthEncrypt(JSON.stringify([])); // Empty backup codes for migration, as we don't have the original backup codes
 
-                await R.knex("better_auth_twoFactor").insert({
+                await R.knex("better_auth_twofactor").insert({
                     id: rowId,
                     secret: encryptedSecret,
                     backupCodes: encryptedBackupCodes,

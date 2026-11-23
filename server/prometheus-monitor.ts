@@ -27,8 +27,8 @@ export function updatePrometheusStats(
         stats
             ? {
                   data24h: { uptime: stats.uptime24, avgPing: stats.avgPing ?? 0 },
-                  data30d: { uptime: stats.uptime720, avgPing: stats.avgPing ?? 0 },
-                  data1y: { uptime: stats.uptime1y, avgPing: stats.avgPing ?? 0 },
+                  data30d: { uptime: stats.uptime720, avgPing: stats.avgPing720 ?? 0 },
+                  data1y: { uptime: stats.uptime1y, avgPing: stats.avgPing1y ?? 0 },
               }
             : null
     );

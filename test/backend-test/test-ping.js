@@ -52,8 +52,10 @@ describe("Monitor Type: ping", () => {
     });
 
     test("should strip brackets from IPv6 addresses before pinging", async () => {
-        const ipv6WithBrackets = "[2606:4700:4700::1111]";
-        const ipv6Raw = "2606:4700:4700::1111";
+        // 2001:db8::/32 is reserved for documentation (RFC 3849) and never answers, so the
+        // ping fails even on machines with working IPv6, where a public address would reply.
+        const ipv6WithBrackets = "[2001:db8::1]";
+        const ipv6Raw = "2001:db8::1";
 
         await assert.rejects(pingAsync(ipv6WithBrackets, true, 1, "", true, 56, 1, 1), (err) => {
             assert.strictEqual(

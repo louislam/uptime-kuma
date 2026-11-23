@@ -28,7 +28,14 @@ function fakePrometheus() {
 
 describe("updatePrometheusStats()", () => {
     test("passes the cached stats in the prometheus shape", () => {
-        MonitorStats.get = () => ({ avgPing: 12.345, uptime24: 0.9, uptime720: 0.8, uptime1y: 0.7 });
+        MonitorStats.get = () => ({
+            avgPing: 12.345,
+            avgPing720: 34,
+            avgPing1y: 56,
+            uptime24: 0.9,
+            uptime720: 0.8,
+            uptime1y: 0.7,
+        });
         const prometheus = fakePrometheus();
         const heartbeat = { id: 1 };
         const tlsInfo = { valid: true };
@@ -41,8 +48,8 @@ describe("updatePrometheusStats()", () => {
         assert.strictEqual(prometheus.calls[0][1], tlsInfo);
         assert.deepStrictEqual(prometheus.calls[0][2], {
             data24h: { uptime: 0.9, avgPing: 12.345 },
-            data30d: { uptime: 0.8, avgPing: 12.345 },
-            data1y: { uptime: 0.7, avgPing: 12.345 },
+            data30d: { uptime: 0.8, avgPing: 34 },
+            data1y: { uptime: 0.7, avgPing: 56 },
         });
     });
 
