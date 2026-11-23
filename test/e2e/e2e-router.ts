@@ -4,6 +4,7 @@ import { R } from "redbean-node";
 import * as Database from "../../server/database.js";
 import { auth } from "../../server/better-auth";
 import { MonitorStats } from "../../server/monitor-stats";
+import { Settings } from "../../server/settings";
 
 export const e2eRouter = express.Router();
 
@@ -29,6 +30,9 @@ e2eRouter.get("/_e2e/restore-sqlite-snapshot", async (request, response) => {
     await Database.connect();
     // Rebuild better-auth for the reopened database connection
     auth(true);
+
+    // Settings read before the restore must not survive the database swap
+    Settings.deleteCache(Object.keys(Settings.cacheList));
 
     // Cached stats belong to the database that was just replaced
     MonitorStats.cache.clear();
