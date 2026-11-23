@@ -1,14 +1,15 @@
 const { MonitorType } = require("./monitor-type");
 const { Globalping, IpVersion } = require("globalping");
 const { Settings } = require("../settings");
-const { log, UP, evaluateJsonQuery } = require("../../src/util");
+const { log, UP } = require("../../src/util");
+const { evaluateJsonQuery } = require("../jsonata-sandbox");
 const {
     checkStatusCode,
     getOidcTokenClientCredentials,
     encodeBase64,
     getDaysRemaining,
     checkCertExpiryNotifications,
-} = require("../util-server");
+} = require("../util");
 const { R } = require("redbean-node");
 
 /**

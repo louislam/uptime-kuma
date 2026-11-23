@@ -1,4 +1,4 @@
-const { checkLogin } = require("../util-server");
+const { checkLogin } = require("../util");
 const { UptimeCalculator } = require("../uptime-calculator");
 const { log } = require("../../src/util");
 
@@ -14,6 +14,7 @@ module.exports.chartSocketHandler = (socket) => {
             }
 
             let uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);
+            await uptimeCalculator.ensureHistoryLoaded();
 
             let data;
             if (period <= 24) {

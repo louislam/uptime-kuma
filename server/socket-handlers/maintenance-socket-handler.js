@@ -1,7 +1,7 @@
-const { checkLogin } = require("../util-server");
+const { checkLogin } = require("../util");
 const { log } = require("../../src/util");
 const { R } = require("redbean-node");
-const apicache = require("../modules/apicache");
+const apicache = require("../utils/response-cache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const Maintenance = require("../model/maintenance");
 const server = UptimeKumaServer.getInstance();
@@ -48,10 +48,6 @@ module.exports.maintenanceSocketHandler = (socket) => {
             checkLogin(socket);
 
             let bean = server.getMaintenance(maintenance.id);
-
-            if (bean.user_id !== socket.userID) {
-                throw new Error("Permission denied.");
-            }
 
             await Maintenance.jsonToBean(bean, maintenance);
             await R.store(bean);
@@ -143,7 +139,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
 
             log.debug("maintenance", `Get Maintenance: ${maintenanceID} User ID: ${socket.userID}`);
 
-            let bean = await R.findOne("maintenance", " id = ? AND user_id = ? ", [maintenanceID, socket.userID]);
+            let bean = await R.findOne("maintenance", " id = ? ", [maintenanceID]);
 
             callback({
                 ok: true,
@@ -232,7 +228,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
                 delete server.maintenanceList[maintenanceID];
             }
 
-            await R.exec("DELETE FROM maintenance WHERE id = ? AND user_id = ? ", [maintenanceID, socket.userID]);
+            await R.exec("DELETE FROM maintenance WHERE id = ? ", [maintenanceID]);
 
             apicache.clear();
 

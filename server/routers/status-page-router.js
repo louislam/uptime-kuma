@@ -1,8 +1,8 @@
 let express = require("express");
-const apicache = require("../modules/apicache");
+const apicache = require("../utils/response-cache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const StatusPage = require("../model/status_page");
-const { allowDevAllOrigin, sendHttpError } = require("../util-server");
+const { allowDevAllOrigin, sendHttpError } = require("../util");
 const { R } = require("redbean-node");
 const { badgeConstants } = require("../../src/util");
 const { makeBadge } = require("badge-maker");
@@ -97,6 +97,7 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
             heartbeatList[monitorID] = list.reverse().map((row) => row.toPublicJSON());
 
             const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);
+            await uptimeCalculator.ensureHistoryLoaded();
             uptimeList[`${monitorID}_24`] = uptimeCalculator.get24Hour().uptime;
         }
 

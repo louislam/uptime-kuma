@@ -15,6 +15,7 @@
                 <input
                     class="form-check-input select-input"
                     type="checkbox"
+                    :data-testid="'monitor-select-' + monitor.id"
                     :aria-label="$t('Check/Uncheck')"
                     :checked="isSelected(monitor.id)"
                     @click.stop="toggleSelection"
@@ -28,7 +29,12 @@
                             <Uptime :monitor="monitor" type="24" :pill="true" />
                         </div>
                         <div class="d-flex align-items-center gap-2 flex-fill" style="min-width: 0">
-                            <span v-if="hasChildren" class="collapse-padding" @click.prevent="changeCollapsed">
+                            <span
+                                v-if="hasChildren"
+                                class="collapse-padding"
+                                data-testid="monitor-collapse"
+                                @click.prevent="changeCollapsed"
+                            >
                                 <font-awesome-icon
                                     icon="chevron-down"
                                     class="animated"
@@ -49,11 +55,7 @@
                             </div>
                         </div>
                     </div>
-                    <div
-                        v-show="$root.userHeartbeatBar == 'normal'"
-                        :key="$root.userHeartbeatBar"
-                        class="col-3 col-xl-6"
-                    >
+                    <div v-if="$root.userHeartbeatBar == 'normal'" :key="$root.userHeartbeatBar" class="col-3 col-xl-6">
                         <HeartbeatBar ref="heartbeatBar" size="small" :monitor-id="monitor.id" />
                     </div>
                 </div>
@@ -72,6 +74,7 @@
                     v-for="(item, index) in sortedChildMonitorList"
                     :key="index"
                     :monitor="item"
+                    :children-by-parent="childrenByParent"
                     :isSelectMode="isSelectMode"
                     :isSelected="isSelected"
                     :select="select"
@@ -99,6 +102,11 @@ export default {
         Tag,
     },
     props: {
+        /** Parent id -> children index, shared by the whole list */
+        childrenByParent: {
+            type: Map,
+            default: () => new Map(),
+        },
         /** Monitor this represents */
         monitor: {
             type: Object,
@@ -148,10 +156,7 @@ export default {
     },
     computed: {
         sortedChildMonitorList() {
-            let result = Object.values(this.$root.monitorList);
-
-            // Get children
-            result = result.filter((childMonitor) => childMonitor.parent === this.monitor.id);
+            let result = this.childrenByParent.get(this.monitor.id) ?? [];
 
             // Run filter on children
             result = result.filter(this.filterFunc);
@@ -276,37 +281,58 @@ export default {
                 return;
             }
 
+            const parentId = this.monitor.id;
+            if (draggedMonitor.parent === parentId) {
+                return;
+            }
+
+            // Never move a group into itself or one of its descendants
+            let ancestorId = parentId;
+            while (ancestorId != null) {
+                if (ancestorId === draggedMonitorId) {
+                    this.$root.toastError("Cannot move a group into its own subgroup");
+                    return;
+                }
+                ancestorId = this.$root.monitorList[ancestorId]?.parent ?? null;
+            }
+
             // Save original parent so we can revert locally if server returns error
             const originalParent = draggedMonitor.parent;
-
-            // Prepare a full monitor object (clone) and set new parent
-            const monitorToSave = JSON.parse(JSON.stringify(draggedMonitor));
-            monitorToSave.parent = this.monitor.id;
-
-            // Optimistically update local state so UI updates immediately
-            this.$root.monitorList[draggedMonitorId].parent = this.monitor.id;
-
-            // Send updated monitor state via socket
-            try {
-                this.$root.getSocket().emit("editMonitor", monitorToSave, (res) => {
-                    if (!res || !res.ok) {
-                        // Revert local change on error
-                        if (this.$root.monitorList[draggedMonitorId]) {
-                            this.$root.monitorList[draggedMonitorId].parent = originalParent;
-                        }
-                        if (res && res.msg) {
-                            this.$root.toastError(res.msg);
-                        }
-                    } else {
-                        this.$root.toastRes(res);
-                    }
-                });
-            } catch (e) {
-                // revert on exception
+            const revert = () => {
                 if (this.$root.monitorList[draggedMonitorId]) {
                     this.$root.monitorList[draggedMonitorId].parent = originalParent;
                 }
-            }
+            };
+
+            // Optimistically update local state so UI updates immediately
+            this.$root.monitorList[draggedMonitorId].parent = parentId;
+
+            // The dashboard list only holds summary fields, so load the full monitor first:
+            // saving the summary would clear the monitor's other settings
+            this.$root.getSocket().emit("getMonitor", draggedMonitorId, (res) => {
+                if (!res || !res.ok) {
+                    revert();
+                    return;
+                }
+
+                const monitorToSave = res.monitor;
+                monitorToSave.parent = parentId;
+
+                try {
+                    this.$root.getSocket().emit("editMonitor", monitorToSave, (saveRes) => {
+                        if (!saveRes || !saveRes.ok) {
+                            revert();
+                            if (saveRes && saveRes.msg) {
+                                this.$root.toastError(saveRes.msg);
+                            }
+                        } else {
+                            this.$root.toastRes(saveRes);
+                        }
+                    });
+                } catch (e) {
+                    revert();
+                }
+            });
         },
         /**
          * Get URL of monitor

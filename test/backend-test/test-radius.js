@@ -2,7 +2,7 @@ const { describe, test } = require("node:test");
 const assert = require("node:assert/strict");
 const dgram = require("dgram");
 const radius = require("radius");
-const { radius: radiusCheck } = require("../../server/util-server");
+const { radius: radiusCheck } = require("../../server/util");
 
 /**
  * Start a UDP RADIUS server that replies to every Access-Request with the given response code.

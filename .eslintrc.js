@@ -104,9 +104,26 @@ module.exports = {
             extends: ["plugin:@typescript-eslint/recommended"],
             rules: {
                 "jsdoc/require-returns-type": "off",
+                "jsdoc/require-returns": [
+                    "warn",
+                    {
+                        forceRequireReturn: false,
+                        forceReturnsWithAsync: false,
+                    },
+                ],
                 "jsdoc/require-param-type": "off",
                 "@typescript-eslint/no-explicit-any": "off",
+                "@typescript-eslint/ban-ts-comment": "off",
                 "prefer-const": "off",
+                "@typescript-eslint/no-unused-vars": "warn",
+                eqeqeq: "off",
+            },
+        },
+        // Backend: no `any`
+        {
+            files: ["server/**/*.ts"],
+            rules: {
+                "@typescript-eslint/no-explicit-any": "error",
             },
         },
     ],

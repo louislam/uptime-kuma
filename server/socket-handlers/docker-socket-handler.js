@@ -1,5 +1,5 @@
 const { sendDockerHostList } = require("../client");
-const { checkLogin } = require("../util-server");
+const { checkLogin } = require("../util");
 const { DockerHost } = require("../docker");
 const { log } = require("../../src/util");
 
@@ -34,7 +34,7 @@ module.exports.dockerSocketHandler = (socket) => {
         try {
             checkLogin(socket);
 
-            await DockerHost.delete(dockerHostID, socket.userID);
+            await DockerHost.delete(dockerHostID);
             await sendDockerHostList(socket);
 
             callback({

@@ -24,7 +24,9 @@ async function createAndStartMSSQLContainer() {
 describe(
     "MSSQL Monitor",
     {
-        skip: !!process.env.CI && (process.platform !== "linux" || process.arch !== "x64"),
+        skip:
+            (!!process.env.CI && (process.platform !== "linux" || process.arch !== "x64")) ||
+            process.env.SKIP_TESTCONTAINER,
     },
     () => {
         test("check() sets status to UP when MSSQL server is reachable", async () => {

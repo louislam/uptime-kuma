@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "../fixtures";
 import { login, restoreSqliteSnapshot, screenshot } from "../util-test";
 
 test.describe("Domain Expiry Notification", () => {

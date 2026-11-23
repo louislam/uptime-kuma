@@ -1,5 +1,8 @@
 <template>
-    <MonitorListFilterDropdown :filterActive="filterState.status?.length > 0 || filterState.active?.length > 0">
+    <MonitorListFilterDropdown
+        test-id="filter-status"
+        :filterActive="filterState.status?.length > 0 || filterState.active?.length > 0"
+    >
         <template #status>
             <Status
                 v-if="filterState.status?.length === 1 && !filterState.active?.length"
@@ -19,7 +22,12 @@
         </template>
         <template #dropdown>
             <li>
-                <div class="dropdown-item" tabindex="0" @click.stop="toggleStatusFilter(1)">
+                <div
+                    class="dropdown-item"
+                    tabindex="0"
+                    data-testid="filter-status-up"
+                    @click.stop="toggleStatusFilter(1)"
+                >
                     <div class="d-flex align-items-center justify-content-between">
                         <Status :status="1" />
                         <span class="ps-3">
@@ -32,7 +40,12 @@
                 </div>
             </li>
             <li>
-                <div class="dropdown-item" tabindex="0" @click.stop="toggleStatusFilter(0)">
+                <div
+                    class="dropdown-item"
+                    tabindex="0"
+                    data-testid="filter-status-down"
+                    @click.stop="toggleStatusFilter(0)"
+                >
                     <div class="d-flex align-items-center justify-content-between">
                         <Status :status="0" />
                         <span class="ps-3">
@@ -45,7 +58,12 @@
                 </div>
             </li>
             <li>
-                <div class="dropdown-item" tabindex="0" @click.stop="toggleStatusFilter(2)">
+                <div
+                    class="dropdown-item"
+                    tabindex="0"
+                    data-testid="filter-status-pending"
+                    @click.stop="toggleStatusFilter(2)"
+                >
                     <div class="d-flex align-items-center justify-content-between">
                         <Status :status="2" />
                         <span class="ps-3">
@@ -58,7 +76,12 @@
                 </div>
             </li>
             <li>
-                <div class="dropdown-item" tabindex="0" @click.stop="toggleStatusFilter(3)">
+                <div
+                    class="dropdown-item"
+                    tabindex="0"
+                    data-testid="filter-status-maintenance"
+                    @click.stop="toggleStatusFilter(3)"
+                >
                     <div class="d-flex align-items-center justify-content-between">
                         <Status :status="3" />
                         <span class="ps-3">
@@ -74,7 +97,12 @@
                 <hr class="dropdown-divider" />
             </li>
             <li>
-                <div class="dropdown-item" tabindex="0" @click.stop="toggleActiveFilter(true)">
+                <div
+                    class="dropdown-item"
+                    tabindex="0"
+                    data-testid="filter-active-running"
+                    @click.stop="toggleActiveFilter(true)"
+                >
                     <div class="d-flex align-items-center justify-content-between">
                         <span class="badge status-pill running">
                             <font-awesome-icon icon="play" class="icon-small" />
@@ -90,7 +118,12 @@
                 </div>
             </li>
             <li>
-                <div class="dropdown-item" tabindex="0" @click.stop="toggleActiveFilter(false)">
+                <div
+                    class="dropdown-item"
+                    tabindex="0"
+                    data-testid="filter-active-paused"
+                    @click.stop="toggleActiveFilter(false)"
+                >
                     <div class="d-flex align-items-center justify-content-between">
                         <span class="badge status-pill paused">
                             <font-awesome-icon icon="pause" class="icon-small" />
@@ -107,7 +140,11 @@
             </li>
         </template>
     </MonitorListFilterDropdown>
-    <MonitorListFilterDropdown :filterActive="filterState.tags?.length > 0" @open-menu="getExistingTags">
+    <MonitorListFilterDropdown
+        test-id="filter-tags"
+        :filterActive="filterState.tags?.length > 0"
+        @open-menu="getExistingTags"
+    >
         <template #status>
             <span
                 v-if="filterState.tags?.length === 1"
@@ -125,7 +162,12 @@
                 <div class="tags-dropdown-scroll">
                     <ul class="list-unstyled m-0 p-0">
                         <li v-for="tag in tagsList" :key="tag.id">
-                            <div class="dropdown-item" tabindex="0" @click.stop="toggleTagFilter(tag)">
+                            <div
+                                class="dropdown-item"
+                                tabindex="0"
+                                :data-testid="'filter-tag-' + tag.id"
+                                @click.stop="toggleTagFilter(tag)"
+                            >
                                 <div class="d-flex align-items-center justify-content-between">
                                     <span class="tag-name-wrapper" :title="tag.name">
                                         <Tag :item="tag" :size="'sm'" :scrollable="true" :constrained="true" />
@@ -153,6 +195,7 @@
         v-if="hasGroups"
         type="button"
         class="btn btn-outline-normal btn-collapse-all"
+        data-testid="collapse-all"
         :title="allCollapsed ? $t('Expand All Groups') : $t('Collapse All Groups')"
         @click="$emit('toggle-collapse-all')"
     >

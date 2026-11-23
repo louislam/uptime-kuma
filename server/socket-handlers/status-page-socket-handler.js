@@ -1,10 +1,10 @@
 const { R } = require("redbean-node");
-const { checkLogin } = require("../util-server");
+const { checkLogin } = require("../util");
 const dayjs = require("dayjs");
 const { log } = require("../../src/util");
 const ImageDataURI = require("../image-data-uri");
 const Database = require("../database");
-const apicache = require("../modules/apicache");
+const apicache = require("../utils/response-cache");
 const StatusPage = require("../model/status_page");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { Settings } = require("../settings");

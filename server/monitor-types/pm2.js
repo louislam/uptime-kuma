@@ -8,12 +8,12 @@ class PM2MonitorType extends MonitorType {
 
     /**
      * Check the PM2 process status.
-     * @param {object} monitor The monitor object containing monitor.system_service_name.
+     * @param {object} monitor The monitor object containing the PM2 process name in its config.
      * @param {object} heartbeat The heartbeat object to update.
      * @returns {Promise<void>}
      */
     async check(monitor, heartbeat) {
-        const processName = (monitor.system_service_name || "").trim();
+        const processName = (monitor.getConfigValue("systemServiceName") || "").trim();
         const processList = await getPM2ProcessList();
         const entry = processList.find((item) => item.name === processName || item.id === processName);
 

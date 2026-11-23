@@ -7,6 +7,7 @@
 //   3. Draft release: generate changelog (LLM) and create the draft GitHub Release
 //   4. Images: build the frontend dist once, then build and push all docker images
 //   5. Assets: upload dist.tar.gz to the draft release
+//   6. Wiki: bump the version on the "How to Update" wiki page
 //
 // Usage:
 //   node extra/release/release.mjs          # final release
@@ -19,6 +20,7 @@ import { runMergePR } from "./merge-pr.mjs";
 import { runCreateDraftRelease } from "./create-draft-release.mjs";
 import { runBuildImages } from "./build-images.mjs";
 import { runBuildAndUploadAssets } from "./build-and-upload-assets.mjs";
+import { runUpdateWiki } from "./update-wiki.mjs";
 
 if (process.argv.includes("--beta")) {
     process.env.RELEASE_IS_BETA = "true";
@@ -52,3 +54,6 @@ await runBuildImages();
 
 // 5. Upload dist.tar.gz to the draft release
 await runBuildAndUploadAssets();
+
+// 6. Bump the version on the "How to Update" wiki page
+await runUpdateWiki();

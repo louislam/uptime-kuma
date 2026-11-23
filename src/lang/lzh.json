@@ -1,1 +1,5 @@
-{}
+{
+    "languageName": "英文",
+    "setupDatabaseChooseDatabase": "爾欲用何資料庫？",
+    "setupDatabaseEmbeddedMariaDB": "爾無庸設置。此容器映像已自動預載並配置 MariaDB 數庫。Uptime Kuma 亦將透過 Unix 套接字直連此庫。"
+}

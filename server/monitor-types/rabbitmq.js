@@ -1,6 +1,6 @@
 const { MonitorType } = require("./monitor-type");
 const { log, UP } = require("../../src/util");
-const { axiosAbortSignal } = require("../util-server");
+const { axiosAbortSignal } = require("../util");
 const axios = require("axios");
 
 class RabbitMqMonitorType extends MonitorType {

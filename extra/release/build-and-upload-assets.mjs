@@ -7,8 +7,8 @@
 // single time per release.
 //
 // Usage: node extra/release/build-and-upload-assets.mjs
+// .env is loaded by lib.mjs (node:process loadEnvFile), this job has no dotenv installed.
 
-import "dotenv/config";
 import * as childProcess from "child_process";
 import fs from "fs";
 import {

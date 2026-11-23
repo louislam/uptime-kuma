@@ -1,7 +1,7 @@
 <template>
     <div v-if="loadedTheme" class="container mt-3">
         <!-- Sidebar for edit mode -->
-        <div v-if="enableEditMode" class="sidebar" data-testid="edit-sidebar">
+        <div v-if="enableEditMode" class="sidebar" data-testid="edit-sidebar" :data-status-page-id="config.id">
             <div class="sidebar-body">
                 <div class="my-3">
                     <label for="slug" class="form-label">{{ $t("Slug") }}</label>
@@ -273,7 +273,7 @@
             </h1>
 
             <!-- Admin functions -->
-            <div v-if="hasToken" class="mb-2">
+            <div v-if="authenticated" class="mb-2">
                 <div v-if="!enableEditMode">
                     <button class="btn btn-primary mb-2 me-2" data-testid="edit-button" @click="edit">
                         <font-awesome-icon icon="edit" />
@@ -624,6 +624,7 @@ import IncidentHistory from "../components/IncidentHistory.vue";
 import IncidentManageModal from "../components/IncidentManageModal.vue";
 import IncidentEditForm from "../components/IncidentEditForm.vue";
 import { getResBaseURL } from "../util-frontend";
+import { authClient } from "../auth-client";
 import {
     STATUS_PAGE_ALL_DOWN,
     STATUS_PAGE_ALL_UP,
@@ -634,6 +635,7 @@ import {
 } from "../util.ts";
 import Tag from "../components/Tag.vue";
 import VueMultiselect from "vue-multiselect";
+import { applyHeartbeatSnapshot } from "../beat-state";
 
 const toast = useToast();
 dayjs.extend(duration);
@@ -648,6 +650,8 @@ const favicon = new Favico({
 });
 
 export default {
+    _authPromise: null,
+
     components: {
         PublicGroupList,
         ImageCropUpload,
@@ -688,7 +692,7 @@ export default {
             slug: null,
             enableEditMode: false,
             enableEditIncidentMode: false,
-            hasToken: false,
+            authenticated: false,
             config: {
                 analyticsType: null,
             },
@@ -781,10 +785,6 @@ export default {
                 };
             }
             return {};
-        },
-
-        incidentClass() {
-            return "bg-" + this.incident.style;
         },
 
         maintenanceClass() {
@@ -904,6 +904,7 @@ export default {
          */
         "$root.loggedIn"(loggedIn) {
             if (loggedIn) {
+                this.authenticated = true;
                 this.$root.getSocket().emit("getStatusPage", this.slug, (res) => {
                     if (res.ok) {
                         this.config = res.config;
@@ -961,8 +962,15 @@ export default {
             }
         },
     },
-    async created() {
-        this.hasToken = "token" in this.$root.storage();
+    created() {
+        this._authPromise = authClient
+            .getSession()
+            .then((session) => {
+                this.authenticated = session.data !== null;
+            })
+            .catch(() => {
+                this.authenticated = false;
+            });
 
         // Browser change page
         // https://stackoverflow.com/questions/7317273/warn-user-before-leaving-web-page-with-unsaved-changes
@@ -1002,19 +1010,6 @@ export default {
 
                 this.loading = false;
 
-                feedInterval = setInterval(
-                    () => {
-                        this.updateHeartbeatList();
-                    },
-                    Math.max(5, this.config.autoRefreshInterval) * 1000
-                );
-
-                this.incident = res.data.incident;
-                this.maintenanceList = res.data.maintenanceList;
-                this.$root.publicGroupList = res.data.publicGroupList;
-
-                this.loading = false;
-
                 // Configure auto-refresh loop
                 feedInterval = setInterval(
                     () => {
@@ -1038,6 +1033,7 @@ export default {
         // Go to edit page if ?edit present
         // null means ?edit present, but no value
         if (this.$route.query.edit || this.$route.query.edit === null) {
+            await this._authPromise;
             this.edit();
         }
     },
@@ -1080,6 +1076,7 @@ export default {
 
                     this.$root.heartbeatList = heartbeatList;
                     this.$root.uptimeList = uptimeList;
+                    applyHeartbeatSnapshot(this.$root, heartbeatList, this.$t.bind(this));
 
                     const heartbeatIds = Object.keys(heartbeatList);
                     const downMonitors = heartbeatIds.reduce((downMonitorsAmount, currentId) => {
@@ -1132,7 +1129,7 @@ export default {
          * @returns {void}
          */
         edit() {
-            if (this.hasToken) {
+            if (this.authenticated) {
                 this.$root.initSocketIO(true);
                 this.enableEditMode = true;
                 this.clickedEditButton = true;

@@ -2,7 +2,10 @@ module.exports = {
     apps: [
         {
             name: "uptime-kuma",
-            script: "./server/server.js",
+            script: "node",
+            args: "--run start-server",
+            interpreter: "none",
+            cwd: __dirname,
         },
     ],
 };

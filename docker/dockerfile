@@ -1,16 +1,16 @@
-ARG BASE_IMAGE=louislam/uptime-kuma:base2
+ARG BASE_IMAGE=louislam/uptime-kuma:base3
 
 ############################################
 # Build in Golang
-# Run npm run build-healthcheck-armv7 in the host first, otherwise it will be super slow where it is building the armv7 healthcheck
+
 # Check file: builder-go.dockerfile
 ############################################
-FROM louislam/uptime-kuma:builder-go AS build_healthcheck
+FROM louislam/uptime-kuma:builder-go3 AS build_healthcheck
 
 ############################################
 # Build in Node.js
 ############################################
-FROM louislam/uptime-kuma:base2 AS build
+FROM louislam/uptime-kuma:base3 AS build
 USER node
 WORKDIR /app
 
@@ -20,6 +20,13 @@ COPY --chown=node:node package.json package.json
 COPY --chown=node:node package-lock.json package-lock.json
 RUN npm ci --omit=dev
 COPY . .
+# Compile TypeScript for plain node (needs root: `COPY . .` is root-owned), then
+# drop the .ts sources and the loader.
+USER root
+RUN npm run precompile-server && \
+    find server src -name '*.ts' -delete && \
+    rm -rf node_modules/tsx node_modules/esbuild node_modules/@esbuild
+USER node
 COPY --chown=node:node --from=build_healthcheck /app/extra/healthcheck /app/extra/healthcheck
 RUN mkdir ./data
 
@@ -32,6 +39,7 @@ WORKDIR /app
 LABEL org.opencontainers.image.source="https://github.com/louislam/uptime-kuma"
 
 ENV UPTIME_KUMA_IS_CONTAINER=1
+ENV NODE_ENV=production
 
 # Copy app files from build layer
 COPY --chown=node:node --from=build /app /app
@@ -59,7 +67,7 @@ USER node
 ############################################
 # Build an image for testing pr
 ############################################
-FROM louislam/uptime-kuma:base2 AS pr-test2
+FROM louislam/uptime-kuma:base3 AS pr-test2
 WORKDIR /app
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1
 
@@ -92,7 +100,7 @@ CMD ["npm", "run", "start-pr-test"]
 ############################################
 # Upload the artifact to Github
 ############################################
-FROM louislam/uptime-kuma:base2 AS upload-artifact
+FROM louislam/uptime-kuma:base3 AS upload-artifact
 WORKDIR /
 RUN apt update && \
     apt --yes install curl file

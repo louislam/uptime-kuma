@@ -60,6 +60,8 @@
                                         <option value="real-browser">
                                             HTTP(s) - Browser Engine (Chrome/Chromium) (Beta)
                                         </option>
+                                        <option value="websocket-upgrade">Websocket Upgrade</option>
+                                        <option value="sftp">SFTP</option>
                                     </optgroup>
 
                                     <optgroup :label="$t('monitorTypeSpecial')">
@@ -86,9 +88,7 @@
                                         <option value="mqtt">MQTT</option>
                                         <option value="ntp">NTP</option>
                                         <option value="rabbitmq">RabbitMQ</option>
-                                        <option v-if="!$root.info.isContainer" value="sip-options">
-                                            SIP Options Ping
-                                        </option>
+                                        <option value="sip-options">SIP Options Ping</option>
                                         <option value="smtp">SMTP</option>
                                         <option value="snmp">SNMP</option>
                                         <option v-if="!$root.info.isContainer" value="tailscale-ping">
@@ -152,7 +152,11 @@
                                 </select>
                             </div>
 
-                            <div v-if="monitor.type === 'sip-options'" class="alert alert-warning" role="alert">
+                            <div
+                                v-if="monitor.type === 'sip-options' && !$root.info.isContainer"
+                                class="alert alert-warning"
+                                role="alert"
+                            >
                                 {{ $t("sipsakPingWarning") }}
                             </div>
 
@@ -490,6 +494,7 @@
                                     monitor.type === 'smtp' ||
                                     monitor.type === 'snmp' ||
                                     monitor.type === 'sip-options' ||
+                                    monitor.type === 'sftp' ||
                                     monitor.type === 'ntp'
                                 "
                                 class="my-3"
@@ -702,6 +707,7 @@
                                     monitor.type === 'smtp' ||
                                     monitor.type === 'snmp' ||
                                     monitor.type === 'sip-options' ||
+                                    monitor.type === 'sftp' ||
                                     monitor.type === 'ntp' ||
                                     (monitor.type === 'globalping' &&
                                         monitor.subtype === 'ping' &&
@@ -808,53 +814,83 @@
                                 </div>
                             </div>
 
-                            <div v-if="monitor.type === 'port'" class="my-3">
-                                <label for="port_security" class="form-label">{{ $t("SSL/TLS") }}</label>
-                                <select id="port_security" v-model="monitor.smtpSecurity" class="form-select">
-                                    <option value="nostarttls">{{ $t("None") }}</option>
-                                    <option value="secure">SSL</option>
-                                    <option value="starttls">STARTTLS</option>
-                                </select>
-                            </div>
-
-                            <!-- Expected TLS Alert (for TCP monitor mTLS verification) -->
-                            <template v-if="monitor.type === 'port'">
+                            <!-- SFTP Monitor Fields -->
+                            <template v-if="monitor.type === 'sftp'">
                                 <div class="my-3">
-                                    <label for="expected_tls_alert" class="form-label">
-                                        {{ $t("Expected TLS Alert") }}
+                                    <label for="ssh_username" class="form-label">{{ $t("Username") }}</label>
+                                    <input
+                                        id="ssh_username"
+                                        v-model="monitor.sshUsername"
+                                        type="text"
+                                        class="form-control"
+                                        required
+                                        autocomplete="username"
+                                    />
+                                </div>
+
+                                <!-- Auth Method -->
+                                <div class="my-3">
+                                    <label for="ssh_auth_method" class="form-label">
+                                        {{ $t("Authentication Method") }}
                                     </label>
-                                    <select
-                                        id="expected_tls_alert"
-                                        v-model="monitor.expectedTlsAlert"
-                                        class="form-select"
-                                    >
-                                        <option value="none">{{ $t("None (Successful Connection)") }}</option>
-                                        <!-- TLS alert names are from RFC 8446 spec and should NOT be translated -->
-                                        <optgroup :label="$t('TLS Alerts')">
-                                            <option value="certificate_required">certificate_required (116)</option>
-                                            <option value="bad_certificate">bad_certificate (42)</option>
-                                            <option value="certificate_unknown">certificate_unknown (46)</option>
-                                            <option value="unknown_ca">unknown_ca (48)</option>
-                                            <option value="access_denied">access_denied (49)</option>
-                                            <option value="handshake_failure">handshake_failure (40)</option>
-                                            <option value="certificate_expired">certificate_expired (45)</option>
-                                            <option value="certificate_revoked">certificate_revoked (44)</option>
-                                        </optgroup>
+                                    <select id="ssh_auth_method" v-model="monitor.sshAuthMethod" class="form-select">
+                                        <option value="password">{{ $t("Password") }}</option>
+                                        <option value="privateKey">{{ $t("SSH Private Key") }}</option>
                                     </select>
-                                    <i18n-t tag="div" class="form-text" keypath="expectedTlsAlertDescription">
-                                        <template #code>
-                                            <code>certificate_required</code>
-                                        </template>
-                                        <template #link>
-                                            <a
-                                                href="https://www.rfc-editor.org/rfc/rfc8446#section-6.2"
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                            >
-                                                {{ $t("TLS Alert Spec") }}
-                                            </a>
-                                        </template>
-                                    </i18n-t>
+                                </div>
+
+                                <!-- Password auth -->
+                                <div v-if="monitor.sshAuthMethod !== 'privateKey'" class="my-3">
+                                    <label for="ssh_password" class="form-label">{{ $t("Password") }}</label>
+                                    <HiddenInput
+                                        id="ssh_password"
+                                        v-model="monitor.sshPassword"
+                                        autocomplete="current-password"
+                                        required="true"
+                                    ></HiddenInput>
+                                </div>
+
+                                <!-- SSH Key auth -->
+                                <template v-if="monitor.sshAuthMethod === 'privateKey'">
+                                    <div class="my-3">
+                                        <label for="ssh_private_key" class="form-label">
+                                            {{ $t("SSH Private Key") }}
+                                        </label>
+                                        <textarea
+                                            id="ssh_private_key"
+                                            v-model="monitor.sshPrivateKey"
+                                            class="form-control"
+                                            rows="6"
+                                            :placeholder="$t('sshPrivateKeyPlaceholder')"
+                                            required
+                                            autocomplete="off"
+                                        ></textarea>
+                                        <div class="form-text">{{ $t("sshPrivateKeyHelpText") }}</div>
+                                    </div>
+                                    <div class="my-3">
+                                        <label for="ssh_passphrase" class="form-label">
+                                            {{ $t("Passphrase") }}
+                                            <span class="text-muted small">({{ $t("optional") }})</span>
+                                        </label>
+                                        <HiddenInput
+                                            id="ssh_passphrase"
+                                            v-model="monitor.sshPassphrase"
+                                            autocomplete="off"
+                                        ></HiddenInput>
+                                        <div class="form-text">{{ $t("sshPassphraseHelpText") }}</div>
+                                    </div>
+                                </template>
+
+                                <div class="my-3">
+                                    <label for="sftp_path" class="form-label">{{ $t("SFTP Path to Check") }}</label>
+                                    <input
+                                        id="sftp_path"
+                                        v-model="monitor.sftpPath"
+                                        type="text"
+                                        class="form-control"
+                                        placeholder="/path/to/check (optional)"
+                                    />
+                                    <div class="form-text">{{ $t("sftpPathHelpText") }}</div>
                                 </div>
                             </template>
 
@@ -1310,7 +1346,7 @@
                                     </label>
                                     <input
                                         id="system-service-name"
-                                        v-model="monitor.system_service_name"
+                                        v-model="monitor.config.systemServiceName"
                                         type="text"
                                         class="form-control"
                                         required
@@ -1321,29 +1357,29 @@
                                         <template v-if="$root.info.runtime.platform === 'linux'">
                                             {{
                                                 $t("systemServiceDescriptionLinux", {
-                                                    service_name: monitor.system_service_name || "nginx",
+                                                    service_name: monitor.config.systemServiceName || "nginx",
                                                 })
                                             }}
                                         </template>
                                         <template v-else-if="$root.info.runtime.platform === 'win32'">
                                             {{
                                                 $t("systemServiceDescriptionWindows", {
-                                                    service_name: monitor.system_service_name || "Dnscache",
+                                                    service_name: monitor.config.systemServiceName || "Dnscache",
                                                 })
                                             }}
                                         </template>
                                         <template v-else>
                                             {{
                                                 $t("systemServiceDescription", {
-                                                    service_name: monitor.system_service_name || "nginx",
+                                                    service_name: monitor.config.systemServiceName || "nginx",
                                                 })
                                             }}
                                         </template>
 
                                         <template
                                             v-if="
-                                                !monitor.system_service_name ||
-                                                /^[a-zA-Z0-9_\-\.\@\ ]+$/.test(monitor.system_service_name)
+                                                !monitor.config.systemServiceName ||
+                                                /^[a-zA-Z0-9_\-\.\@\ ]+$/.test(monitor.config.systemServiceName)
                                             "
                                         >
                                             <div v-if="$root.info.runtime.platform === 'linux'" class="mt-2">
@@ -1352,7 +1388,7 @@
                                                         <template #command>
                                                             <code>
                                                                 systemctl is-active
-                                                                {{ monitor.system_service_name || "nginx" }}
+                                                                {{ monitor.config.systemServiceName || "nginx" }}
                                                             </code>
                                                         </template>
                                                     </i18n-t>
@@ -1368,7 +1404,7 @@
                                                             <code>
                                                                 (Get-Service -Name '{{
                                                                     (
-                                                                        monitor.system_service_name || "Dnscache"
+                                                                        monitor.config.systemServiceName || "Dnscache"
                                                                     ).replaceAll("'", "''")
                                                                 }}').Status
                                                             </code>
@@ -1402,7 +1438,7 @@
                                     <select
                                         v-if="pm2ProcessOptions.length > 0"
                                         id="pm2-process-name"
-                                        v-model="monitor.system_service_name"
+                                        v-model="monitor.config.systemServiceName"
                                         class="form-select mt-2"
                                         required
                                     >
@@ -1419,7 +1455,7 @@
                                     <input
                                         v-else
                                         id="pm2-process-name"
-                                        v-model="monitor.system_service_name"
+                                        v-model="monitor.config.systemServiceName"
                                         type="text"
                                         class="form-control mt-2"
                                         placeholder="api"
@@ -1432,7 +1468,7 @@
                                     <div class="form-text">
                                         {{
                                             $t("pm2Description", {
-                                                service_name: monitor.system_service_name || "api",
+                                                service_name: monitor.config.systemServiceName || "api",
                                             })
                                         }}
                                         <div class="mt-2">
@@ -1686,8 +1722,6 @@
                                     monitor.type === 'http' ||
                                     monitor.type === 'keyword' ||
                                     monitor.type === 'json-query' ||
-                                    (monitor.type === 'port' &&
-                                        ['starttls', 'secure'].includes(monitor.smtpSecurity)) ||
                                     (monitor.type === 'globalping' && monitor.subtype === 'http')
                                 "
                                 class="my-3 form-check"
@@ -3328,10 +3362,11 @@ const monitorDefaults = {
     rabbitmqUsername: "",
     rabbitmqPassword: "",
     conditions: [],
-    system_service_name: "",
+    sshAuthMethod: "password",
     ntpStratumThreshold: 5,
     ntpTimeOffsetThreshold: 1000,
     ntpRootDispersionThreshold: 500,
+    config: {},
 };
 
 export default {
@@ -3405,8 +3440,8 @@ export default {
             if (this.monitor.hostname) {
                 return this.monitor.hostname;
             }
-            if (this.monitor.system_service_name) {
-                return this.monitor.system_service_name;
+            if (this.monitor.config?.systemServiceName) {
+                return this.monitor.config.systemServiceName;
             }
             if (this.monitor.url) {
                 if (this.monitor.url !== "http://" && this.monitor.url !== "https://") {
@@ -3797,7 +3832,8 @@ message HealthCheckResponse {
                 !this.monitor.port ||
                 this.monitor.port === "53" ||
                 this.monitor.port === "1812" ||
-                this.monitor.port === "123"
+                this.monitor.port === "123" ||
+                this.monitor.port === "22"
             ) {
                 if (this.monitor.type === "dns") {
                     this.monitor.port = "53";
@@ -3807,6 +3843,8 @@ message HealthCheckResponse {
                     this.monitor.port = "161";
                 } else if (this.monitor.type === "ntp") {
                     this.monitor.port = "123";
+                } else if (this.monitor.type === "sftp") {
+                    this.monitor.port = "22";
                 } else if (this.monitor.type === "globalping" && this.monitor.subtype === "ping") {
                     this.monitor.port = "80";
                 } else {
@@ -4006,12 +4044,13 @@ message HealthCheckResponse {
 
                 const selectedProcess = this.pm2ProcessOptions.find(
                     (item) =>
-                        item.id === this.monitor.system_service_name || item.name === this.monitor.system_service_name
+                        item.id === this.monitor.config.systemServiceName ||
+                        item.name === this.monitor.config.systemServiceName
                 );
 
                 // Convert a legacy numeric id to the stable process name without replacing a missing saved target.
                 if (selectedProcess) {
-                    this.monitor.system_service_name = selectedProcess.name;
+                    this.monitor.config.systemServiceName = selectedProcess.name;
                 }
             });
         },
@@ -4333,8 +4372,8 @@ message HealthCheckResponse {
                 this.monitor.url = this.monitor.url.trim();
             }
 
-            if (["system-service", "pm2"].includes(this.monitor.type) && this.monitor.system_service_name) {
-                this.monitor.system_service_name = this.monitor.system_service_name.trim();
+            if (["system-service", "pm2"].includes(this.monitor.type) && this.monitor.config.systemServiceName) {
+                this.monitor.config.systemServiceName = this.monitor.config.systemServiceName.trim();
             }
 
             if (this.monitor.databaseConnectionString) {

@@ -146,6 +146,7 @@
 <script>
 import Confirm from "../../components/Confirm.vue";
 import TwoFADialog from "../../components/TwoFADialog.vue";
+import { authClient } from "../../auth-client";
 
 export default {
     components: {
@@ -185,26 +186,25 @@ export default {
     methods: {
         /**
          * Check new passwords match before saving them
-         * @returns {void}
+         * @returns {Promise<void>}
          */
-        savePassword() {
+        async savePassword() {
             if (this.password.newPassword !== this.password.repeatNewPassword) {
                 this.invalidPassword = true;
             } else {
-                this.$root.getSocket().emit("changePassword", this.password, (res) => {
-                    this.$root.toastRes(res);
-                    if (res.ok) {
-                        this.password.currentPassword = "";
-                        this.password.newPassword = "";
-                        this.password.repeatNewPassword = "";
-
-                        // Update token of the current session
-                        if (res.token) {
-                            this.$root.storage().token = res.token;
-                            this.$root.socket.token = res.token;
-                        }
-                    }
+                const { error } = await authClient.changePassword({
+                    currentPassword: this.password.currentPassword,
+                    newPassword: this.password.newPassword,
                 });
+
+                if (error) {
+                    this.$root.toastRes({ ok: false, msg: error.message });
+                } else {
+                    this.$root.toastRes({ ok: true, msg: this.$t("successAuthChangePassword") });
+                    this.password.currentPassword = "";
+                    this.password.newPassword = "";
+                    this.password.repeatNewPassword = "";
+                }
             }
         },
 
@@ -220,7 +220,6 @@ export default {
             this.saveSettings(() => {
                 this.password.currentPassword = "";
                 this.$root.username = null;
-                this.$root.socket.token = "autoLogin";
             }, this.password.currentPassword);
         },
 
@@ -231,7 +230,6 @@ export default {
         enableAuth() {
             this.settings.disableAuth = false;
             this.saveSettings();
-            this.$root.storage().removeItem("token");
             location.reload();
         },
 

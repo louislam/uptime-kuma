@@ -25,6 +25,7 @@ import Gotify from "./Gotify.vue";
 import GrafanaOncall from "./GrafanaOncall.vue";
 import GtxMessaging from "./GtxMessaging.vue";
 import HomeAssistant from "./HomeAssistant.vue";
+import Indigo from "./Indigo.vue";
 import HeiiOnCall from "./HeiiOnCall.vue";
 import Keep from "./Keep.vue";
 import Kook from "./Kook.vue";
@@ -42,6 +43,7 @@ import OneBot from "./OneBot.vue";
 import Onesender from "./Onesender.vue";
 import Ooredoo from "./Ooredoo.vue";
 import Opsgenie from "./Opsgenie.vue";
+import OpsiMate from "./OpsiMate.vue";
 import JiraServiceManagement from "./JiraServiceManagement.vue";
 import PagerDuty from "./PagerDuty.vue";
 import FlashDuty from "./FlashDuty.vue";
@@ -60,6 +62,7 @@ import RocketChat from "./RocketChat.vue";
 import ServerChan from "./ServerChan.vue";
 import SerwerSMS from "./SerwerSMS.vue";
 import Signal from "./Signal.vue";
+import Signalgrid from "./Signalgrid.vue";
 import SMSGateway from "./SMSGateway.vue";
 import SMSManager from "./SMSManager.vue";
 import SMSPartner from "./SMSPartner.vue";
@@ -68,12 +71,14 @@ import Squadcast from "./Squadcast.vue";
 import SMSEagle from "./SMSEagle.vue";
 import Stackfield from "./Stackfield.vue";
 import STMP from "./SMTP.vue";
+import MicrosoftGraph from "./MicrosoftGraph.vue";
 import Teams from "./Teams.vue";
 import TechulusPush from "./TechulusPush.vue";
 import Telegram from "./Telegram.vue";
 import Teltonika from "./Teltonika.vue";
 import Telnyx from "./Telnyx.vue";
 import Threema from "./Threema.vue";
+import Trigv from "./Trigv.vue";
 import Twilio from "./Twilio.vue";
 import Webhook from "./Webhook.vue";
 import WeCom from "./WeCom.vue";
@@ -95,6 +100,7 @@ import SendGrid from "./SendGrid.vue";
 import TurboSMTP from "./TurboSMTP.vue";
 import Brevo from "./Brevo.vue";
 import YZJ from "./YZJ.vue";
+import AmootSMS from "./AmootSMS.vue";
 import SMSPlanet from "./SMSPlanet.vue";
 import SMSIR from "./SMSIR.vue";
 import Webpush from "./Webpush.vue";
@@ -121,6 +127,7 @@ const NotificationFormList = {
     ClickUp: ClickUp,
     clicksendsms: ClickSendSMS,
     CallMeBot: CallMeBot,
+    amootsms: AmootSMS,
     smsc: SMSC,
     smsir: SMSIR,
     DingDing: DingDing,
@@ -136,6 +143,7 @@ const NotificationFormList = {
     gotify: Gotify,
     GrafanaOncall: GrafanaOncall,
     HomeAssistant: HomeAssistant,
+    Indigo: Indigo,
     HeiiOnCall: HeiiOnCall,
     Keep: Keep,
     Kook: Kook,
@@ -153,6 +161,7 @@ const NotificationFormList = {
     Onesender: Onesender,
     Ooredoo: Ooredoo,
     Opsgenie: Opsgenie,
+    OpsiMate: OpsiMate,
     JiraServiceManagement: JiraServiceManagement,
     PagerDuty: PagerDuty,
     FlashDuty: FlashDuty,
@@ -171,6 +180,7 @@ const NotificationFormList = {
     "rocket.chat": RocketChat,
     serwersms: SerwerSMS,
     signal: Signal,
+    signalgrid: Signalgrid,
     SIGNL4: SIGNL4,
     SMSGateway: SMSGateway,
     SMSManager: SMSManager,
@@ -179,12 +189,14 @@ const NotificationFormList = {
     squadcast: Squadcast,
     SMSEagle: SMSEagle,
     smtp: STMP,
+    MicrosoftGraph: MicrosoftGraph,
     stackfield: Stackfield,
     teams: Teams,
     telegram: Telegram,
     Teltonika: Teltonika,
     telnyx: Telnyx,
     threema: Threema,
+    trigv: Trigv,
     twilio: Twilio,
     Splunk: Splunk,
     SpugPush: SpugPush,

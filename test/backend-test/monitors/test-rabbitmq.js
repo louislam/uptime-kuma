@@ -4,15 +4,19 @@ const { RabbitMQContainer } = require("@testcontainers/rabbitmq");
 const { RabbitMqMonitorType } = require("../../../server/monitor-types/rabbitmq");
 const { UP, PENDING } = require("../../../src/util");
 
+const RABBITMQ_IMAGE = "rabbitmq:3.12.11-management-alpine";
+
 describe(
     "RabbitMQ Single Node",
     {
-        skip: !!process.env.CI && (process.platform !== "linux" || process.arch !== "x64"),
+        skip:
+            (!!process.env.CI && (process.platform !== "linux" || process.arch !== "x64")) ||
+            process.env.SKIP_TESTCONTAINER,
     },
     () => {
         test("check() sets status to UP when RabbitMQ server is reachable", async () => {
             // The default timeout of 30 seconds might not be enough for the container to start
-            const rabbitMQContainer = await new RabbitMQContainer().withStartupTimeout(60000).start();
+            const rabbitMQContainer = await new RabbitMQContainer(RABBITMQ_IMAGE).withStartupTimeout(60000).start();
             const rabbitMQMonitor = new RabbitMqMonitorType();
             const connectionString = `http://${rabbitMQContainer.getHost()}:${rabbitMQContainer.getMappedPort(15672)}`;
 
@@ -58,7 +62,7 @@ describe(
         });
 
         test("checkSingleNode() succeeds when node is healthy", async () => {
-            const rabbitMQContainer = await new RabbitMQContainer().withStartupTimeout(60000).start();
+            const rabbitMQContainer = await new RabbitMQContainer(RABBITMQ_IMAGE).withStartupTimeout(60000).start();
             const rabbitMQMonitor = new RabbitMqMonitorType();
             const connectionString = `http://${rabbitMQContainer.getHost()}:${rabbitMQContainer.getMappedPort(15672)}`;
 

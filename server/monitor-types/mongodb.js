@@ -1,7 +1,7 @@
 const { MonitorType } = require("./monitor-type");
 const { UP } = require("../../src/util");
+const { jsonataSandbox } = require("../jsonata-sandbox");
 const { MongoClient } = require("mongodb");
-const jsonata = require("jsonata");
 
 class MongodbMonitorType extends MonitorType {
     name = "mongodb";
@@ -24,8 +24,7 @@ class MongodbMonitorType extends MonitorType {
         }
 
         if (monitor.jsonPath) {
-            let expression = jsonata(monitor.jsonPath);
-            result = await expression.evaluate(result);
+            result = await jsonataSandbox(monitor.jsonPath, result);
             if (result) {
                 heartbeat.msg = "Command executed successfully and the jsonata expression produces a result.";
             } else {
