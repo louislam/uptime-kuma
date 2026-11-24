@@ -339,8 +339,16 @@ export default {
          * @param {number} id ID of monitor
          * @returns {string} Relative URL of monitor
          */
+        /**
+         * Keep dashboard filter query params when opening a monitor
+         * @param {number} id Monitor id
+         * @returns {{path: string, query: object}} Route location
+         */
         monitorURL(id) {
-            return getMonitorRelativeURL(id);
+            return {
+                path: getMonitorRelativeURL(id),
+                query: this.$route.query,
+            };
         },
         /**
          * Toggle selection of monitor

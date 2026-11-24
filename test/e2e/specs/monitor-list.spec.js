@@ -97,6 +97,24 @@ test.describe("Monitor list", () => {
         await page.getByTestId("filter-status").click();
         await page.getByTestId("filter-status-down").click();
 
+        await expect(page).toHaveURL(/[?&]status=0(?:&|$)/);
+        await expect(list).toContainText("Push Down");
+        await expect(list).not.toContainText("Push Up");
+    });
+
+    test("applies status filter from the dashboard URL query", async ({ page }) => {
+        await addMonitor(page, { name: "Push Up", type: "push" }, true);
+        const pushUp = await page.locator('a[href*="/api/push/"]').first().getAttribute("href");
+        await page.request.get(pushUp);
+
+        await addMonitor(page, { name: "Push Down", type: "push" });
+        const pushDown = await page.locator('a[href*="/api/push/"]').first().getAttribute("href");
+        await page.request.get(pushDown.replace("status=up", "status=down"));
+
+        await page.goto("./dashboard?status=0");
+        await page.waitForSelector('[data-testid="monitor-list"] .draggable-item');
+        const list = page.getByTestId("monitor-list");
+
         await expect(list).toContainText("Push Down");
         await expect(list).not.toContainText("Push Up");
     });
