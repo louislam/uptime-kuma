@@ -5,7 +5,7 @@
 
 ## Reporting a Vulnerability
 
-1. Please report security issues to
+1. Please responsibly report security issues to
    <https://github.com/louislam/uptime-kuma/security/advisories/new>.
 2. Please also create an empty security issue to alert me, as GitHub Advisories
    do not send a notification, I probably will miss it without this.
