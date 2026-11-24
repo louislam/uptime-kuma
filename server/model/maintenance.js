@@ -260,7 +260,7 @@ class Maintenance extends BeanModel {
                     }, duration);
 
                     // Set last start date to current time
-                    this.last_start_date = current.utc().format(SQL_DATETIME_FORMAT);
+                    this.last_start_date = dayjs().utc().format(SQL_DATETIME_FORMAT);
                     await R.store(this);
                 };
 
@@ -292,7 +292,7 @@ class Maintenance extends BeanModel {
                             let lastStartDate = dayjs(this.lastStartDate).subtract(1.1, "hour"); // Subtract 1.1 hour to avoid issues with timezone differences
 
                             // Check if the interval is enough
-                            if (current.diff(lastStartDate, "day") < this.interval_day) {
+                            if (dayjs().diff(lastStartDate, "day") < this.interval_day) {
                                 log.debug(
                                     "maintenance",
                                     "Maintenance id: " + this.id + " is still in the window, skipping start event"

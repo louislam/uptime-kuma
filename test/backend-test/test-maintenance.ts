@@ -7,6 +7,8 @@ const require = createRequire(import.meta.url);
 
 const Maintenance = require("../../server/model/maintenance");
 const Monitor = require("../../server/model/monitor");
+const { UptimeKumaServer } = require("../../server/uptime-kuma-server");
+const { R } = require("redbean-node");
 
 /**
  * Build a Maintenance instance without touching the database
@@ -110,6 +112,7 @@ describe("Maintenance", () => {
     });
 
     describe("getStatus()", () => {
+
         test("returns inactive when the maintenance is disabled", async () => {
             assert.strictEqual(await maintenanceWith({ active: false }).getStatus(), "inactive");
         });
@@ -204,5 +207,108 @@ describe("Maintenance", () => {
         test("rejects an invalid cron expression", () => {
             assert.throws(() => Maintenance.validateCron("not a cron"));
         });
+    });
+});
+
+describe("Maintenance.run() recurring-interval", () => {
+    const RealDate = Date;
+    let fakeNow = 0;
+
+    /**
+     * Freeze Date at the given instant; dayjs() reads new Date()/Date.now()
+     * @param {string} iso Instant to freeze at
+     */
+    function useFakeTime(iso) {
+        fakeNow = dayjs(iso).valueOf();
+        class FakeDate extends RealDate {
+            /**
+             * A Date that is frozen at fakeNow unless arguments are given
+             * @param {...*} args Date constructor arguments
+             */
+            constructor(...args) {
+                super(...(args.length > 0 ? args : [fakeNow]));
+            }
+            /**
+             * The frozen current time
+             * @returns {number} Milliseconds since epoch
+             */
+            static now() {
+                return fakeNow;
+            }
+        }
+        global.Date = FakeDate;
+    }
+
+    /**
+     * Move the frozen clock forward
+     * @param {string} iso Instant to advance to
+     */
+    function advanceTo(iso) {
+        fakeNow = dayjs(iso).valueOf();
+    }
+
+    /**
+     * Maintenance instance that emulates redbean-node's casing-insensitive
+     * field mapping (last_start_date and lastStartDate are the same column)
+     * @param {object} fields Maintenance fields
+     * @returns {object} Maintenance instance
+     */
+    function beanWith(fields) {
+        const target = maintenanceWith({ beanMeta: {}, ...fields });
+        return new Proxy(target, {
+            get(t, key) {
+                if (typeof key === "string" && !(key in t)) {
+                    const alt = key.includes("_")
+                        ? key.replace(/_([a-z])/g, (_, c) => c.toUpperCase())
+                        : key.replace(/[A-Z]/g, (c) => "_" + c.toLowerCase());
+                    if (alt in t) {
+                        return t[alt];
+                    }
+                }
+                return t[key];
+            },
+        });
+    }
+
+    test("fires again once the interval has passed, without a restart or edit", async () => {
+        UptimeKumaServer.instance = { sendMaintenanceListToDashboard: () => {} };
+        const originalStore = R.store;
+        R.store = async () => ({});
+
+        const maintenance = beanWith({
+            id: 1,
+            strategy: "recurring-interval",
+            cron: "0 1 * * *",
+            interval_day: 2,
+            startDate: "2026-01-01",
+            startTime: "01:00",
+            start_time: "01:00",
+            end_time: "01:30",
+            duration: 1800,
+            timezone: "UTC",
+            active: true,
+        });
+
+        useFakeTime("2026-01-02T01:00:00.000Z");
+        try {
+            await maintenance.run();
+            const job = maintenance.beanMeta.job;
+            assert.ok(job, "a cron job was scheduled");
+
+            // First daily tick after (re)start: no last start date yet
+            await job.trigger();
+            assert.strictEqual(maintenance.last_start_date, "2026-01-02 01:00:00");
+
+            // Two days later, same process: the next daily tick must fire again
+            advanceTo("2026-01-04T01:00:00.000Z");
+            await job.trigger();
+            assert.strictEqual(maintenance.last_start_date, "2026-01-04 01:00:00");
+        } finally {
+            clearTimeout(maintenance.beanMeta.durationTimeout);
+            maintenance.stop();
+            R.store = originalStore;
+            UptimeKumaServer.instance = null;
+            global.Date = RealDate;
+        }
     });
 });
