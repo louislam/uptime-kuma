@@ -19,7 +19,8 @@ const IMPLEMENTATIONS = [
         // Newer iputils only ship ping, which handles IPv6 itself
         name: "iputils without ping6",
         image: "node:24-bookworm-slim",
-        install: "apt-get update -qq && apt-get install -y -qq --no-install-recommends iputils-ping && rm -f /usr/bin/ping6",
+        install:
+            "apt-get update -qq && apt-get install -y -qq --no-install-recommends iputils-ping && rm -f /usr/bin/ping6",
     },
     {
         name: "BusyBox",
@@ -46,10 +47,7 @@ for (const implementation of IMPLEMENTATIONS) {
 
         before(async () => {
             container = await new GenericContainer(implementation.image)
-                .withCopyDirectoriesToContainer([
-                    { source: PING_MODULE_PATH, target: "/ping" },
-                    ...PING_DEPENDENCIES,
-                ])
+                .withCopyDirectoriesToContainer([{ source: PING_MODULE_PATH, target: "/ping" }, ...PING_DEPENDENCIES])
                 .withCommand(["sleep", "infinity"])
                 .start();
 
