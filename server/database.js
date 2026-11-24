@@ -10,6 +10,8 @@ const { Pool } = mysql;
 const { Settings } = require("./settings");
 const { UptimeCalculator } = require("./uptime-calculator");
 const dayjs = require("dayjs");
+const utc = require("dayjs/plugin/utc");
+dayjs.extend(utc);
 const { SimpleMigrationServer } = require("./utils/simple-migration-server");
 const BetterSqlite3Database = require("better-sqlite3");
 const KumaColumnCompiler = require("./utils/knex/lib/dialects/mysql2/schema/mysql2-columncompiler");
@@ -1016,7 +1018,10 @@ class Database {
                 }
 
                 for (let heartbeat of heartbeats) {
-                    await calculator.update(heartbeat.status, parseFloat(heartbeat.ping), dayjs(heartbeat.time));
+                    // Heartbeat times are stored in UTC (see status_page.js and monitor.js).
+                    // Parsing them as local time shifted every bucket by the host's offset and
+                    // let the next day's group overwrite the current day's stat_daily row.
+                    await calculator.update(heartbeat.status, parseFloat(heartbeat.ping), dayjs.utc(heartbeat.time));
                 }
 
                 // Calculate progress: (current_monitor_index + relative_date_progress) / total_monitors
