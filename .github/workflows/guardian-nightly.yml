@@ -1,0 +1,21 @@
+# Nightly re-check of main with fresh advisory data (Guardian stretch goal S6: continuous monitoring).
+# Problems newly disclosed in unchanged code are reported separately from PR-introduced ones, in one GitHub issue.
+name: guardian-nightly
+on:
+  schedule:
+    - cron: "0 21 * * *"   # 02:30 IST
+  workflow_dispatch:
+concurrency:
+  group: guardian-nightly
+permissions: {}
+jobs:
+  guardian-nightly:
+    runs-on: [self-hosted, guardian-demo]
+    timeout-minutes: 30
+    steps:
+      - name: Ask Guardian to re-check main
+        env:
+          REPO: ${{ github.repository }}
+          ACTION: nightly
+          HEAD_SHA: ${{ github.sha }}
+        run: '"$HOME/.guardian/bin/guardian-submit"'

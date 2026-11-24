@@ -1,0 +1,31 @@
+# Software Supply Chain Guardian: pre-merge supply-chain check.
+#
+# Security design (see Guardian docs/LIVE_DEMO_PLAN.md §2):
+# - pull_request_target: the workflow file always comes from the default branch, so a fork cannot change it.
+# - The job NEVER checks out or runs pull-request code. It only passes the commit SHAs and the title (as env vars,
+#   never inlined into the script) to the local Guardian server, which reads the code as git objects and executes nothing.
+# - Runs on our self-hosted runner (label guardian-demo); fork workflows need approval from a maintainer.
+name: guardian
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review, edited, closed]
+concurrency:
+  group: guardian-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+permissions: {}
+jobs:
+  guardian-scan:
+    if: github.event.pull_request.draft == false
+    runs-on: [self-hosted, guardian-demo]
+    timeout-minutes: 30
+    steps:
+      - name: Submit the PR to Guardian and wait for the scan decision
+        env:
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          ACTION: ${{ github.event.action }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          DRAFT: ${{ github.event.pull_request.draft }}
+          TITLE: ${{ github.event.pull_request.title }}
+        run: '"$HOME/.guardian/bin/guardian-submit"'
