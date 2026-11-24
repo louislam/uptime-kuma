@@ -13,6 +13,7 @@
     "mariadbCaCertificateHelptext": "Paste the CA Cert in PEM format to use with self-signed certificates. Leave blank if your database uses a certificate signed by a public CA.",
     "Settings": "Settings",
     "Dashboard": "Dashboard",
+    "Discord Guild ID": "Discord Guild ID",
     "Help": "Help",
     "New Update": "New Update",
     "Language": "Language",

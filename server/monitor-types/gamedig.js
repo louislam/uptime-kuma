@@ -12,9 +12,13 @@ class GameDigMonitorType extends MonitorType {
         try {
             const state = await GameDig.query({
                 type: monitor.game,
-                host: monitor.hostname,
-                port: monitor.port,
-                givenPortOnly: Boolean(monitor.gamedigGivenPortOnly),
+                ...(monitor.game === "discord"
+                    ? { guildId: monitor.hostname }
+                    : {
+                        host: monitor.hostname,
+                        port: monitor.port,
+                        givenPortOnly: Boolean(monitor.gamedigGivenPortOnly),
+                    }),
                 ...(monitor.gamedigToken ? { token: monitor.gamedigToken } : {}),
             });
 

@@ -499,13 +499,18 @@
                                 "
                                 class="my-3"
                             >
-                                <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
+                                <label for="hostname" class="form-label">
+                                    {{ $t(monitor.type === "gamedig" && monitor.game === "discord"
+                                        ? "Discord Guild ID"
+                                        : "Hostname") }}
+                                </label>
                                 <input
                                     id="hostname"
                                     v-model="monitor.hostname"
                                     type="text"
                                     class="form-control"
                                     required
+                                    :pattern="monitor.type === 'gamedig' && monitor.game === 'discord' ? '[0-9]+' : undefined"
                                     data-testid="hostname-input"
                                 />
                                 <div v-if="monitor.type === 'mqtt'" class="form-text">
@@ -701,7 +706,7 @@
                                 v-if="
                                     monitor.type === 'port' ||
                                     monitor.type === 'steam' ||
-                                    monitor.type === 'gamedig' ||
+                                    (monitor.type === 'gamedig' && monitor.game !== 'discord') ||
                                     monitor.type === 'mqtt' ||
                                     monitor.type === 'radius' ||
                                     monitor.type === 'smtp' ||
@@ -1880,7 +1885,7 @@
                                 </div>
                             </div>
 
-                            <div v-if="monitor.type === 'gamedig'" class="my-3 form-check">
+                            <div v-if="monitor.type === 'gamedig' && monitor.game !== 'discord'" class="my-3 form-check">
                                 <input
                                     id="gamedig-guess-port"
                                     v-model="monitor.gamedigGivenPortOnly"
@@ -4233,7 +4238,8 @@ message HealthCheckResponse {
             // Validate hostname field input for various monitors
             if (
                 ["dns", "port", "ping", "steam", "gamedig", "radius", "tailscale-ping", "smtp", "snmp", "ntp"].includes(
-                    this.monitor.type
+                this.monitor.hostname &&
+                !(this.monitor.type === "gamedig" && this.monitor.game === "discord")
                 ) &&
                 this.monitor.hostname
             ) {
