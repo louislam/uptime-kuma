@@ -2,6 +2,7 @@
 
 var util = require('util');
 var base = require('./base');
+var getFloatOrUnknown = require('../utils').getFloatOrUnknown;
 
 /**
  * @constructor
@@ -96,7 +97,7 @@ WinParser.prototype._processIPV6Body = function (line) {
         var regExp = /([0-9.]+)/;
         var match = regExp.exec(timeKVP);
 
-        this._times.push(parseFloat(match[1], 10));
+        this._times.push(getFloatOrUnknown(match[1]));
     }
 };
 
@@ -129,7 +130,7 @@ WinParser.prototype._processIPV4Body = function (line) {
         var regExp = /([0-9.]+)/;
         var match = regExp.exec(timeKVP);
 
-        this._times.push(parseFloat(match[1], 10));
+        this._times.push(getFloatOrUnknown(match[1]));
         return true;
     }
     return false;
@@ -160,7 +161,7 @@ WinParser.prototype._processBody = function (line) {
 WinParser.prototype._processFooter = function (line) {
     var packetLoss = line.match(/([\d.]+)%/);
     if (packetLoss) {
-        this._response.packetLoss = parseFloat(packetLoss[1], 10);
+        this._response.packetLoss = getFloatOrUnknown(packetLoss[1]);
     }
 
     // XXX: Assume there is a keyword ms
@@ -172,9 +173,9 @@ WinParser.prototype._processFooter = function (line) {
         var m3 = regExp.exec(line);
 
         if (m1 && m2 && m3) {
-            this._response.min = parseFloat(m1[1], 10);
-            this._response.max = parseFloat(m2[1], 10);
-            this._response.avg = parseFloat(m3[1], 10);
+            this._response.min = getFloatOrUnknown(m1[1]);
+            this._response.max = getFloatOrUnknown(m2[1]);
+            this._response.avg = getFloatOrUnknown(m3[1]);
             this._changeState(this.STATES.END);
         }
     }

@@ -3,6 +3,7 @@
 var util = require('util');
 
 var base = require('./base');
+var getFloatOrUnknown = require('../utils').getFloatOrUnknown;
 
 /**
  * @constructor
@@ -39,7 +40,7 @@ OpenBSDParser.prototype._processBody = function (line) {
     if (count >= 3) {
         var regExp = /([0-9.]+)[ ]*ms/;
         var match = regExp.exec(line);
-        this._times.push(parseFloat(match[1], 10));
+        this._times.push(getFloatOrUnknown(match[1]));
     }
 
     // Change state if it see a '---'
@@ -55,13 +56,13 @@ OpenBSDParser.prototype._processBody = function (line) {
 OpenBSDParser.prototype._processFooter = function (line) {
     var packetLoss = line.match(/ ([\d.]+)%/);
     if (packetLoss) {
-        this._response.packetLoss = parseFloat(packetLoss[1], 10);
+        this._response.packetLoss = getFloatOrUnknown(packetLoss[1]);
     }
 
     // XXX: Assume number of keywords '/' more than 3
     var count = (line.match(/[/]/g) || []).length;
     if (count >= 3) {
-        var regExp = /([0-9.]+)/g;
+        var regExp = /(([0-9.]+)|nan)/g;
         // XXX: Assume min avg max stddev
         var m1 = regExp.exec(line);
         var m2 = regExp.exec(line);
@@ -69,10 +70,10 @@ OpenBSDParser.prototype._processFooter = function (line) {
         var m4 = regExp.exec(line);
 
         if (m1 && m2 && m3 && m4) {
-            this._response.min = parseFloat(m1[1], 10);
-            this._response.avg = parseFloat(m2[1], 10);
-            this._response.max = parseFloat(m3[1], 10);
-            this._response.stddev = parseFloat(m4[1], 10);
+            this._response.min = getFloatOrUnknown(m1[1]);
+            this._response.avg = getFloatOrUnknown(m2[1]);
+            this._response.max = getFloatOrUnknown(m3[1]);
+            this._response.stddev = getFloatOrUnknown(m4[1]);
             this._changeState(this.STATES.END);
         }
 
