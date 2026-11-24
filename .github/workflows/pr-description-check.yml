@@ -69,6 +69,9 @@ jobs:
               // Post comment
               await github.rest.issues.createComment({ owner, repo, issue_number: number, body: commentBody });
 
+              // Tag
+              await github.rest.issues.addLabels({ owner, repo, issue_number: number, labels: ["invalid-format"] });
+
               // Close
               await github.rest.pulls.update({ owner, repo, pull_number: number, state: "closed" });
 
