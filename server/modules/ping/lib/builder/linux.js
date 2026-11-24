@@ -70,10 +70,17 @@ builder.getCommandArguments = function (target, config) {
     }
 
     if (_config.timeout) {
-        ret = ret.concat([
-            '-W',
-            util.format('%d', _config.timeout),
-        ]);
+        if (_config.v6) {
+            // GNU inetutils ping6 has no -W; bound the probe with the deadline instead
+            if (!_config.deadline) {
+                _config.deadline = _config.timeout;
+            }
+        } else {
+            ret = ret.concat([
+                '-W',
+                util.format('%d', _config.timeout),
+            ]);
+        }
     }
 
     if (_config.deadline) {

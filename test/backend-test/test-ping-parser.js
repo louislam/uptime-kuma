@@ -2,6 +2,7 @@ const { describe, test } = require("node:test");
 const assert = require("node:assert");
 const parserFactory = require("../../server/modules/ping/lib/parser/factory");
 const linuxBuilder = require("../../server/modules/ping/lib/builder/linux");
+const macBuilder = require("../../server/modules/ping/lib/builder/mac");
 
 // Fixtures from https://github.com/danielzzz/node-ping/tree/master/test/fixture
 const MACOS_NAN_STDDEV = `PING www.taobao.com.danuoyi.tbcache.com (122.225.217.183): 56 data bytes
@@ -39,6 +40,14 @@ const BUSYBOX_IPV6 = `PING 2606:4700:4700::1111 (2606:4700:4700::1111): 56 data 
 --- 2606:4700:4700::1111 ping statistics ---
 1 packets transmitted, 1 packets received, 0.0% packet loss
 round-trip min/avg/max/stddev = 0.672/0.672/0.672/nan ms`;
+
+// BusyBox prints no stddev
+const BUSYBOX_LOOPBACK = `PING ::1 (::1): 56 data bytes
+64 bytes from ::1: seq=0 ttl=64 time=0.042 ms
+
+--- ::1 ping statistics ---
+1 packets transmitted, 1 packets received, 0% packet loss
+round-trip min/avg/max = 0.042/0.042/0.042 ms`;
 
 const LINUX_TARGET = `PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.
 64 bytes from 8.8.8.8: icmp_seq=1 ttl=117 time=1.000 ms
@@ -142,6 +151,14 @@ describe("Monitor Type: ping parser", () => {
             assert.strictEqual(res.alive, true);
             assert.strictEqual(res.time, 0.672);
         });
+
+        test("linux keeps a BusyBox IPv6 reply without a stddev", () => {
+            const res = parse("linux", BUSYBOX_LOOPBACK, linuxDefaults("::1"));
+
+            assert.strictEqual(res.numeric_host, "::1");
+            assert.strictEqual(res.alive, true);
+            assert.strictEqual(res.time, 0.042);
+        });
     });
 
     describe("reply address verification", () => {
@@ -206,6 +223,28 @@ describe("Monitor Type: ping builder", () => {
         assert.strictEqual(options.env.LANG, "C");
         assert.notStrictEqual(options.env, process.env);
         assert.strictEqual(process.env.LANG, previousLang);
+    });
+
+    test("linux falls back to the deadline for an IPv6 timeout", () => {
+        const args = linuxBuilder.getCommandArguments("::1", { v6: true, timeout: 2, min_reply: 1 });
+
+        // GNU inetutils ping6 rejects -W
+        assert.ok(!args.includes("-W"), args.join(" "));
+        assert.strictEqual(args[args.indexOf("-w") + 1], "2");
+    });
+
+    test("linux keeps -W for an IPv4 timeout", () => {
+        const args = linuxBuilder.getCommandArguments("1.1.1.1", { v6: false, timeout: 2, min_reply: 1 });
+
+        assert.ok(args.includes("-W"), args.join(" "));
+        assert.ok(!args.includes("-w"), args.join(" "));
+    });
+
+    test("macOS passes an IPv6 timeout as a deadline", () => {
+        const args = macBuilder.getCommandArguments("::1", { v6: true, timeout: 2, min_reply: 1 });
+
+        assert.ok(!args.includes("-W"), args.join(" "));
+        assert.strictEqual(args[args.indexOf("-t") + 1], "2");
     });
 });
 
