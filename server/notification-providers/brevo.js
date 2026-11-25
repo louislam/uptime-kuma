@@ -1,6 +1,8 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 
+const LEGACY_DEFAULT_SUBJECT = "Notification from Your Uptime Kuma";
+
 class Brevo extends NotificationProvider {
     name = "Brevo";
 
@@ -9,6 +11,30 @@ class Brevo extends NotificationProvider {
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
+
+        let subject = msg;
+        let body = msg;
+        let useHTMLBody = false;
+        if (heartbeatJSON) {
+            body = `${msg}\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`;
+        }
+
+        const legacySubject = notification.brevoSubject?.trim() || "";
+        if (legacySubject !== "" && legacySubject !== LEGACY_DEFAULT_SUBJECT) {
+            subject = legacySubject;
+        }
+
+        if ((monitorJSON && heartbeatJSON) || msg.endsWith("Testing")) {
+            const customSubject = notification.customSubject?.trim() || "";
+            const customBody = notification.customBody?.trim() || "";
+            if (customSubject !== "") {
+                subject = await this.renderTemplate(customSubject, msg, monitorJSON, heartbeatJSON);
+            }
+            if (customBody !== "") {
+                useHTMLBody = notification.htmlBody || false;
+                body = await this.renderTemplate(customBody, msg, monitorJSON, heartbeatJSON);
+            }
+        }
 
         try {
             let config = {
@@ -28,8 +54,8 @@ class Brevo extends NotificationProvider {
                     name: notification.brevoFromName || "Uptime Kuma",
                 },
                 to: to,
-                subject: notification.brevoSubject || "Notification from Your Uptime Kuma",
-                htmlContent: `<html><head></head><body><p>${msg.replace(/\n/g, "<br>")}</p></body></html>`,
+                subject: subject,
+                [useHTMLBody ? "htmlContent" : "textContent"]: body,
             };
 
             if (notification.brevoCcEmail) {
