@@ -102,14 +102,27 @@ export default {
         TemplatedInput,
         TemplatedTextarea,
     },
+    watch: {
+        "$parent.notification.brevoSubject": {
+            immediate: true,
+            handler(value) {
+                if (typeof value === "undefined") {
+                    return;
+                }
+
+                const legacySubject = value?.trim() || "";
+                if (
+                    !this.$parent.notification.customSubject &&
+                    legacySubject !== "" &&
+                    legacySubject !== LEGACY_DEFAULT_SUBJECT
+                ) {
+                    this.$parent.notification.customSubject = legacySubject;
+                }
+                delete this.$parent.notification.brevoSubject;
+            },
+        },
+    },
     mounted() {
-        const legacySubject = this.$parent.notification.brevoSubject?.trim();
-        if (typeof legacySubject !== "undefined") {
-            if (!this.$parent.notification.customSubject && legacySubject !== LEGACY_DEFAULT_SUBJECT) {
-                this.$parent.notification.customSubject = legacySubject;
-            }
-            delete this.$parent.notification.brevoSubject;
-        }
         if (typeof this.$parent.notification.brevoFromName === "undefined") {
             this.$parent.notification.brevoFromName = "Uptime Kuma";
         }
