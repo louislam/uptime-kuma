@@ -38,6 +38,8 @@ var defaultConfig = {
     v6: false,
     sourceAddr: '',
     packetSize: 56,
+    // Kuma patch: iputils accepts replies from another address, so verify them by default
+    ignoreDifferentAddressReply: true,
     extra: [],
 };
 
@@ -55,7 +57,7 @@ builder.getCommandArguments = function (target, config) {
 
     // Make every key in config has been setup properly
     var keys = ['numeric', 'timeout', 'deadline', 'min_reply', 'v6',
-        'sourceAddr', 'extra', 'packetSize'];
+        'sourceAddr', 'extra', 'packetSize', 'ignoreDifferentAddressReply'];
     keys.forEach(function (k) {
         // Falsy value will be overridden without below checking
         if (typeof(_config[k]) !== 'boolean') {
@@ -68,10 +70,17 @@ builder.getCommandArguments = function (target, config) {
     }
 
     if (_config.timeout) {
-        ret = ret.concat([
-            '-W',
-            util.format('%d', _config.timeout),
-        ]);
+        if (_config.v6) {
+            // GNU inetutils ping6 has no -W; bound the probe with the deadline instead
+            if (!_config.deadline) {
+                _config.deadline = _config.timeout;
+            }
+        } else {
+            ret = ret.concat([
+                '-W',
+                util.format('%d', _config.timeout),
+            ]);
+        }
     }
 
     if (_config.deadline) {
@@ -118,7 +127,7 @@ builder.getCommandArguments = function (target, config) {
 builder.getSpawnOptions = function () {
     return {
         shell: false,
-        env: Object.assign(process.env, {LANG: 'C'}),
+        env: Object.assign({}, process.env, {LANG: 'C'}),
     };
 };
 

@@ -27,8 +27,13 @@ var encoding = require('./encoding');
 function _probe(addr, config) {
     // Do not reassign function argument
     var _config = config || {};
-    if (_config.v6 === undefined) {
-        _config.v6 = net.isIPv6(addr);
+
+    // An IPv6 literal is only reachable over IPv6, whatever the caller asked
+    var isIPv6Literal = net.isIPv6(addr.replace(/^\[|\]$/g, ''));
+    if (isIPv6Literal) {
+        _config.v6 = true;
+    } else if (_config.v6 === undefined) {
+        _config.v6 = false;
     }
 
     // Convert callback base system command to promise base
