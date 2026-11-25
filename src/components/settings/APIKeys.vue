@@ -17,8 +17,13 @@
                 </span>
             </div>
 
-            <div>
-                <div v-for="(item, index) in apiKeyList" :key="index" class="item" :class="apiKeyStatus(item)">
+            <div v-for="group in keyGroups" :key="group.name" :data-group="group.name">
+                <div v-if="group.name === 'legacy'" class="legacy-header">
+                    <div class="title">{{ $t("Legacy API Keys") }}</div>
+                    <div class="notice">{{ $t("legacyAPIKeyMsg") }}</div>
+                </div>
+
+                <div v-for="(item, index) in group.keys" :key="index" class="item" :class="apiKeyStatus(item)">
                     <div class="left-part">
                         <div class="circle"></div>
                         <div class="info">
@@ -26,10 +31,10 @@
                             <div class="status">
                                 {{ item.enabled ? $t("apiKey-active") : $t("apiKey-inactive") }}
                             </div>
-                            <div class="date">{{ $t("createdAt", { date: item.createdAt }) }}</div>
+                            <div class="date">{{ $t("createdAt", { date: $root.datetime(item.createdAt) }) }}</div>
                             <div class="date">
                                 {{ $t("Expires") }}:
-                                {{ item.expiresAt || $t("Never") }}
+                                {{ item.expiresAt ? $root.datetime(item.expiresAt) : $t("Never") }}
                             </div>
                         </div>
                     </div>
@@ -72,13 +77,25 @@ export default {
     data() {
         return {
             apiKeyList: [],
-            legacyKeyList: [],
             selectedKeyID: null,
         };
     },
     computed: {
         settings() {
             return this.$parent.$parent.$parent.settings;
+        },
+
+        /**
+         * Split Better Auth keys and legacy keys carried over from 2.x
+         * @returns {object[]} Groups of keys to render
+         */
+        keyGroups() {
+            const isLegacy = (key) => typeof key.id === "string" && key.id.startsWith("legacy-");
+            const groups = [
+                { name: "current", keys: this.apiKeyList.filter((key) => !isLegacy(key)) },
+                { name: "legacy", keys: this.apiKeyList.filter(isLegacy) },
+            ];
+            return groups.filter((group) => group.keys.length > 0);
         },
     },
 
@@ -147,6 +164,22 @@ export default {
 .add-btn {
     padding-top: 20px;
     padding-bottom: 20px;
+}
+
+.legacy-header {
+    margin-top: 30px;
+    padding: 0 10px 10px;
+
+    .title {
+        font-weight: bold;
+        font-size: 20px;
+    }
+
+    .notice {
+        font-size: 14px;
+        opacity: 0.8;
+        margin-top: 5px;
+    }
 }
 
 .item {
