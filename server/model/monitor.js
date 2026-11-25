@@ -1640,12 +1640,16 @@ class Monitor extends BeanModel {
         let sent = false;
         log.debug("monitor", "Send certificate notification");
 
+        const monitorData = [{ id: this.id, active: this.active, name: this.name }];
+        const preloadData = await Monitor.preparePreloadData(monitorData);
+
         for (let notification of notificationList) {
             try {
                 log.debug("monitor", "Sending to " + notification.name);
                 await Notification.send(
                     JSON.parse(notification.config),
-                    `[${this.name}][${this.url}] ${certType} certificate ${certCN} will expire in ${daysRemaining} days`
+                    `[${this.name}][${this.url}] ${certType} certificate ${certCN} will expire in ${daysRemaining} days`,
+                    this.toJSON(preloadData, false)
                 );
                 sent = true;
             } catch (e) {
