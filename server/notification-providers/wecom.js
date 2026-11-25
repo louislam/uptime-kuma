@@ -19,11 +19,16 @@ class WeCom extends NotificationProvider {
             };
             config = this.getAxiosConfigWithProxy(config);
             let body = this.composeMessage(notification, heartbeatJSON, msg);
-            await axios.post(
+            const result = await axios.post(
                 `https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=${notification.weComBotKey}`,
                 body,
                 config
             );
+            // WeCom answers HTTP 200 even when it rejects a message (e.g. errcode 45009 when a bot is rate limited),
+            // so the outcome has to be read from the body.
+            if ((result.data?.errcode ?? 0) !== 0) {
+                throw new Error(`WeCom rejected the message: errcode ${result.data.errcode}, ${result.data.errmsg}`);
+            }
             return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);
