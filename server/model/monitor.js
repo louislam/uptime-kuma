@@ -1067,7 +1067,8 @@ class Monitor extends BeanModel {
                     if (domainExpiryDate) {
                         DomainExpiry.sendNotifications(
                             supportInfo.domain,
-                            (await Monitor.getNotificationList(this)) || []
+                            (await Monitor.getNotificationList(this)) || [],
+                            this
                         );
                     } else {
                         log.debug("monitor", `Failed getting expiration date for domain ${supportInfo.domain}`);
@@ -1616,6 +1617,16 @@ class Monitor extends BeanModel {
     }
 
     /**
+     * Prepare & format the monitor details to include in notifications
+     * @returns {Promise<object>} Monitor details
+     */
+    async toNotificationJSON() {
+        const monitorData = [{ id: this.id, active: this.active, name: this.name }];
+        const preloadData = await Monitor.preparePreloadData(monitorData);
+        return this.toJSON(preloadData, false);
+    }
+
+    /**
      * Send a certificate notification when certificate expires in less
      * than target days
      * @param {string} certCN  Common Name attribute from the certificate subject
@@ -1640,8 +1651,7 @@ class Monitor extends BeanModel {
         let sent = false;
         log.debug("monitor", "Send certificate notification");
 
-        const monitorData = [{ id: this.id, active: this.active, name: this.name }];
-        const preloadData = await Monitor.preparePreloadData(monitorData);
+        const monitorJSON = await this.toNotificationJSON();
 
         for (let notification of notificationList) {
             try {
@@ -1649,7 +1659,7 @@ class Monitor extends BeanModel {
                 await Notification.send(
                     JSON.parse(notification.config),
                     `[${this.name}][${this.url}] ${certType} certificate ${certCN} will expire in ${daysRemaining} days`,
-                    this.toJSON(preloadData, false)
+                    monitorJSON
                 );
                 sent = true;
             } catch (e) {

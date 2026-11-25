@@ -315,4 +315,47 @@ describe("Domain Expiry", () => {
             mock.restoreAll();
         }
     });
+
+    test("sendNotifications() includes the triggering monitor's details", async () => {
+        try {
+            const mockDomain = {
+                domain: "test-monitor.com",
+                expiry: dayjs.utc().add(5, "day").toDate(),
+                daysRemaining: 5,
+                lastExpiryNotificationSent: null,
+            };
+
+            mock.method(DomainExpiry, "findByDomainNameOrCreate", async () => mockDomain);
+            mock.method(R, "store", async () => {});
+
+            const hook = {
+                port: 3014,
+                url: "capture-monitor",
+            };
+
+            const notif = {
+                name: "TestMonitorDetails",
+                config: JSON.stringify({
+                    type: "webhook",
+                    httpMethod: "post",
+                    webhookContentType: "json",
+                    webhookURL: `http://127.0.0.1:${hook.port}/${hook.url}`,
+                }),
+            };
+
+            const monitor = {
+                toNotificationJSON: async () => ({ name: "Test Monitor", url: "https://test-monitor.com" }),
+            };
+
+            const [, data] = await Promise.all([
+                DomainExpiry.sendNotifications("test-monitor.com", [notif], monitor),
+                mockWebhook(hook.port, hook.url),
+            ]);
+
+            assert.match(data.msg, /will expire in/);
+            assert.strictEqual(data.monitor.name, "Test Monitor");
+        } finally {
+            mock.restoreAll();
+        }
+    });
 });

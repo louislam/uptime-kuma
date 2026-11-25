@@ -15,7 +15,7 @@ class HaloPSA extends NotificationProvider {
      * Send notification to Halo PSA webhook
      * @param {object} notification - Notification configuration
      * @param {string} msg - Message content
-     * @param {object|null} monitorJSON - Monitor configuration (null for test and domain expiry notifications)
+     * @param {object|null} monitorJSON - Monitor configuration (null for test notifications)
      * @param {object|null} heartbeatJSON - Heartbeat data
      * @returns {Promise<string>} Success message
      */

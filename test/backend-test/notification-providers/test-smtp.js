@@ -91,11 +91,11 @@ describe("SMTP notification provider", () => {
                 customSubject: "Custom subject",
                 customBody: "Custom body",
             }),
-            "Domain name example.com will expire in 7 days"
+            "General message"
         );
 
         assert.strictEqual(received.length, 1);
-        assert.match(received[0], /^Subject: Domain name example\.com will expire in 7 days$/m);
+        assert.match(received[0], /^Subject: General message$/m);
         assert.doesNotMatch(received[0], /Custom/);
     });
 
