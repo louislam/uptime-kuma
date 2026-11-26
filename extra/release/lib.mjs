@@ -146,10 +146,55 @@ export function buildImage(
     args = [...args, ".", "--push"];
 
     if (!dryRun) {
-        childProcess.spawnSync("docker", args, { stdio: "inherit" });
+        const result = childProcess.spawnSync("docker", args, { stdio: "inherit" });
+
+        // A failed push to any tag/registry must fail the release, not pass silently
+        if (result.status !== 0) {
+            console.error(`Image build/push failed (exit ${result.status}): ${tags.join(", ")}`);
+            process.exit(1);
+        }
     } else {
         console.log(`[DRY RUN] docker ${args.join(" ")}`);
     }
+}
+
+/**
+ * Fail when a pushed tag is missing from ghcr.io (it can be skipped without failing buildx)
+ * @param {string[]} repoNames Image repositories, e.g. ghcr.io/louislam/uptime-kuma
+ * @param {string[]} tags Tags that must be pullable from ghcr.io
+ * @returns {Promise<void>}
+ */
+export async function verifyGhcrTags(repoNames, tags) {
+    const ghcrRepo = repoNames.find((name) => name.startsWith("ghcr.io/"));
+    if (!ghcrRepo) {
+        return;
+    }
+
+    const repoPath = ghcrRepo.replace(/^ghcr\.io\//, "");
+    const tokenResponse = await fetch(`https://ghcr.io/token?scope=repository:${repoPath}:pull&service=ghcr.io`);
+    const { token } = await tokenResponse.json();
+
+    const missing = [];
+    for (const tag of tags) {
+        const response = await fetch(`https://ghcr.io/v2/${repoPath}/manifests/${tag}`, {
+            method: "HEAD",
+            headers: {
+                Authorization: `Bearer ${token}`,
+                Accept: "application/vnd.oci.image.index.v1+json, application/vnd.docker.distribution.manifest.list.v2+json",
+            },
+        });
+
+        if (response.status !== 200) {
+            missing.push(`${tag} (HTTP ${response.status})`);
+        }
+    }
+
+    if (missing.length > 0) {
+        console.error(`Missing from ${ghcrRepo}: ${missing.join(", ")}`);
+        process.exit(1);
+    }
+
+    console.log(`Verified ${tags.length} tags on ${ghcrRepo}`);
 }
 
 /**
@@ -387,56 +432,42 @@ export async function uploadReleaseAssets(version, files) {
  * @param {string[]} repoNames Docker repository names
  * @param {string} version Version tag
  * @param {boolean} isBeta Beta tags instead of final ones
- * @returns {void}
+ * @returns {string[]} Every tag that was pushed
  */
 export function buildAllImages(repoNames, version, isBeta) {
     const majorVersion = semver.parse(version).major;
+    const slimBase = `BASE_IMAGE=louislam/uptime-kuma:base${majorVersion}-slim`;
 
-    if (isBeta) {
-        // Build slim image (rootless)
-        buildImage(
-            repoNames,
-            ["beta-slim-rootless", ver(version, "slim-rootless")],
-            "rootless",
-            `BASE_IMAGE=louislam/uptime-kuma:base${majorVersion}-slim`
-        );
+    const images = isBeta
+        ? [
+              { tags: ["beta-slim-rootless", ver(version, "slim-rootless")], target: "rootless", buildArgs: slimBase },
+              { tags: ["beta-rootless", ver(version, "rootless")], target: "rootless" },
+              { tags: ["beta-slim", ver(version, "slim")], target: "release", buildArgs: slimBase },
+              { tags: ["beta", version], target: "release" },
+          ]
+        : [
+              {
+                  tags: ["next-slim-rootless", `${majorVersion}-slim-rootless`, ver(version, "slim-rootless")],
+                  target: "rootless",
+                  buildArgs: slimBase,
+              },
+              {
+                  tags: ["next-rootless", `${majorVersion}-rootless`, ver(version, "rootless")],
+                  target: "rootless",
+              },
+              {
+                  tags: ["next-slim", `${majorVersion}-slim`, ver(version, "slim")],
+                  target: "release",
+                  buildArgs: slimBase,
+              },
+              { tags: ["next", `${majorVersion}`, version], target: "release" },
+          ];
 
-        // Build full image (rootless)
-        buildImage(repoNames, ["beta-rootless", ver(version, "rootless")], "rootless");
-
-        // Build slim image
-        buildImage(
-            repoNames,
-            ["beta-slim", ver(version, "slim")],
-            "release",
-            `BASE_IMAGE=louislam/uptime-kuma:base${majorVersion}-slim`
-        );
-
-        // Build full image
-        buildImage(repoNames, ["beta", version], "release");
-    } else {
-        // Build slim image (rootless)
-        buildImage(
-            repoNames,
-            [`next-slim-rootless`, `${majorVersion}-slim-rootless`, ver(version, "slim-rootless")],
-            "rootless",
-            `BASE_IMAGE=louislam/uptime-kuma:base${majorVersion}-slim`
-        );
-
-        // Build full image (rootless)
-        buildImage(repoNames, ["next-rootless", `${majorVersion}-rootless`, ver(version, "rootless")], "rootless");
-
-        // Build slim image
-        buildImage(
-            repoNames,
-            ["next-slim", `${majorVersion}-slim`, ver(version, "slim")],
-            "release",
-            `BASE_IMAGE=louislam/uptime-kuma:base${majorVersion}-slim`
-        );
-
-        // Build full image
-        buildImage(repoNames, ["next", `${majorVersion}`, version], "release");
+    for (const image of images) {
+        buildImage(repoNames, image.tags, image.target, image.buildArgs ?? "");
     }
+
+    return images.flatMap((image) => image.tags);
 }
 
 /**
