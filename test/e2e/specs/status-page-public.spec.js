@@ -13,7 +13,9 @@ test.beforeEach(async ({ page }) => {
  */
 async function addHttpMonitor(page, name) {
     await page.goto("./add");
-    await login(page);
+    if ((await page.getByPlaceholder("Username").count()) > 0) {
+        await login(page);
+    }
     await page.getByTestId("monitor-type-select").selectOption("http");
     await page.getByTestId("friendly-name-input").fill(name);
     await page.getByTestId("url-input").fill("https://example.com");
@@ -57,7 +59,10 @@ async function addStatusPageWithMonitor(page, name, slug, monitorName) {
     await page.getByTestId("add-group-button").click();
     await page.getByTestId("group-name").fill("Core");
     await page.getByTestId("monitor-select").click();
-    await page.getByTestId("monitor-select").getByRole("option", { name: monitorName }).click();
+    await page
+        .getByTestId("monitor-select")
+        .getByRole("option", { name: new RegExp(`^${monitorName}(?: Press enter to select)?$`) })
+        .click();
     await expect(page.getByTestId("monitor")).toHaveCount(1);
 
     // Saving reloads the page, the edit sidebar disappears afterwards
@@ -66,6 +71,42 @@ async function addStatusPageWithMonitor(page, name, slug, monitorName) {
 }
 
 test.describe("Public status page", () => {
+    test("hides inactive monitors from visitors and marks them for editing admins", async ({ page }) => {
+        const activeMonitorID = await addHttpMonitor(page, "Active Public Monitor");
+        await addHttpMonitor(page, "Inactive Public Monitor");
+        await addStatusPageWithMonitor(page, "Active Monitors", "active-monitors", "Active Public Monitor");
+
+        await page.goto("./status/active-monitors?edit");
+        await page.getByTestId("monitor-select").click();
+        await page.getByTestId("monitor-select").getByRole("option").click();
+        await Promise.all([page.waitForEvent("load"), page.getByTestId("save-button").click()]);
+
+        await page.goto("./dashboard");
+
+        // This selects per default all monitors so you need to deselect the active one
+        await page.getByTestId("select-mode-toggle").click();
+        await page.getByTestId(`monitor-select-${activeMonitorID}`).click();
+        await page.getByTestId("bulk-actions").click();
+        await page.getByTestId("bulk-pause").click();
+        await page.getByRole("button", { name: "Yes" }).click();
+
+        await page.goto("./status/active-monitors?edit");
+        await expect(page.getByTestId("edit-sidebar")).toHaveAttribute("data-status-page-id", /^\d+$/);
+        await expect(page.getByTestId("monitor-name")).toHaveCount(2);
+
+        await expect(
+            page
+                .getByTestId("monitor")
+                .filter({ has: page.getByTestId("monitor-name").filter({ hasText: "Inactive Public Monitor" }) })
+        ).toContainClass("disabled");
+
+        await page.getByTestId("save-button").click();
+
+        await expect(page.getByTestId("monitor-name")).toHaveCount(1);
+        await expect(page.getByTestId("monitor-name")).toContainText("Active Public Monitor");
+        await expect(page.getByTestId("monitor-name")).not.toContainText("Inactive Public Monitor");
+    });
+
     test("shows a published monitor to logged-out visitors", async ({ page }) => {
         const monitorID = await addHttpMonitor(page, "Public Monitor");
         await addStatusPageWithMonitor(page, "Public Demo", "public-demo", "Public Monitor");

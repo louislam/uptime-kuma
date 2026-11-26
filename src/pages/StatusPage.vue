@@ -735,6 +735,7 @@ export default {
             for (let id in this.$root.monitorList) {
                 if (this.$root.monitorList[id] && !(id in this.$root.publicMonitorList)) {
                     let monitor = this.$root.monitorList[id];
+
                     result.push(monitor);
                 }
             }
