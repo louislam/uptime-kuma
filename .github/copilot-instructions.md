@@ -159,6 +159,10 @@ npm run dev  # Frontend on port 3000, backend on port 3001
 
 **Merging**: Never merge without the user's confirmation.
 
+**GitHub comments**: Never post comments, reviews or issue replies as the user.
+
+**Review threads**: Resolve every review thread once its point is addressed.
+
 ## Release & Post-release Checks
 
 Releases are cut with the **Release** workflow (`.github/workflows/release.yml`), not `npm run release-final` (that local orchestrator needs a running Docker and is the older path).

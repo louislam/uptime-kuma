@@ -30,6 +30,16 @@ const tables = [
 ];
 
 exports.up = async function (knex) {
+    // MySQL/MariaDB only accept a foreign key between columns with the same collation. better_auth_user.id
+    // carries the collation of the server that created it, while these tables may be older, so reuse it.
+    let collation = null;
+    if (knex.client.dialect !== "sqlite3") {
+        const [columns] = await knex.raw(
+            "SELECT COLLATION_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'better_auth_user' AND COLUMN_NAME = 'id'"
+        );
+        collation = columns[0]?.COLLATION_NAME ?? null;
+    }
+
     for (const table of tables) {
         try {
             await knex.schema.alterTable(table.name, (t) => {
@@ -45,7 +55,10 @@ exports.up = async function (knex) {
         });
 
         await knex.schema.alterTable(table.name, (t) => {
-            t.string("user_id", 255).nullable();
+            const userID = t.string("user_id", 255).nullable();
+            if (collation) {
+                userID.collate(collation);
+            }
         });
 
         await knex.schema.alterTable(table.name, (t) => {
