@@ -79,6 +79,17 @@ export class MonitorStats {
     static refreshPromise: Promise<Record<number, MonitorStatsResult>> | null = null;
 
     /**
+     * Initialize one monitor's cached stats before its first beat
+     * @param monitorID Monitor id
+     */
+    static async initialize(monitorID: number | string): Promise<void> {
+        const id = Number(monitorID);
+        const { stats, windows } = await MonitorStats.collect([id]);
+        MonitorStats.cache.set(id, stats[id]);
+        MonitorStats.windows.set(id, windows.get(id)!);
+    }
+
+    /**
      * Sum stat buckets for a set of monitors in one grouped query per chunk
      * @param table stat table name
      * @param monitorIDs Monitor ids

@@ -45,6 +45,29 @@ function uptimePill(row) {
 }
 
 test.describe("Push monitor", () => {
+    test("sends first-push uptime stats to the client before dashboard refresh", async ({ page }) => {
+        let monitorID;
+        let receivedStats;
+        page.on("websocket", (webSocket) => {
+            webSocket.on("framereceived", ({ payload }) => {
+                if (typeof payload !== "string" || !payload.startsWith("42")) {
+                    return;
+                }
+                const [event, data] = JSON.parse(payload.slice(2));
+                if (event === "heartbeat" && data.monitorID === monitorID) {
+                    receivedStats = data.stats;
+                }
+            });
+        });
+
+        const pushPath = await createPushMonitor(page, "Push First Beat Stats");
+        monitorID = Number(page.url().split("/").pop());
+
+        await page.request.get(`${pushPath}?status=up&msg=OK&ping=5`);
+
+        await expect.poll(() => receivedStats).toMatchObject({ uptime24: 1, uptime720: 1, uptime1y: 1 });
+    });
+
     test("updates the 24h uptime live after each push", async ({ page }) => {
         const pushPath = await createPushMonitor(page, "Push Live Uptime");
         const row = await openMonitorRow(page, "Push Live Uptime");
