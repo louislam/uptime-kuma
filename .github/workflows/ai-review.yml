@@ -1,0 +1,194 @@
+name: AI code review
+
+# Safety: pull_request (never pull_request_target) so no secret reaches fork code.
+# Fork PRs are skipped, because ATLASCLOUD_API_KEY does not exist for them.
+# Manual re-review: a maintainer comments "/review" (or "/review full") on the PR.
+on:
+  pull_request:
+    # No `synchronize`: every push would spend tokens. Comment "/review" instead.
+    types: [opened, reopened, ready_for_review]
+  issue_comment: # zizmor: ignore[dangerous-triggers]
+    types: [created]
+
+env:
+  # Bump to pick up a newer OpenCode v2 build.
+  OPENCODE_CACHE_EPOCH: "2026-11"
+  # comment = review comments only. request_changes = also submit a formal
+  # "changes requested" review (mark-as-draft-on-requesting-changes.yml may act on it).
+  REVIEW_EVENT: request_changes
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: ai-review-${{ github.event.pull_request.number || github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    if: |
+      github.repository == 'louislam/uptime-kuma' && (
+        (github.event_name == 'pull_request' &&
+         github.event.pull_request.draft == false &&
+         github.event.pull_request.head.repo.full_name == github.repository) ||
+        (github.event_name == 'issue_comment' &&
+         github.event.issue.pull_request != null &&
+         github.event.comment.body != null &&
+         startsWith(github.event.comment.body, '/review') &&
+         contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association))
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.event.repository.default_branch }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Checkout the commented pull request
+        if: github.event_name == 'issue_comment'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+        run: gh pr checkout "$PR_NUMBER"
+
+      - name: Cache OpenCode
+        id: cache
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.opencode/bin
+          key: opencode-v2-${{ runner.os }}-${{ env.OPENCODE_CACHE_EPOCH }}
+
+      - name: Install OpenCode
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: curl -fsSL https://opencode.ai/v2/install | bash
+
+      - name: Resolve review mode
+        id: mode
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+          EVENT_SHA: ${{ github.event.pull_request.head.sha }}
+          REQUEST: ${{ github.event.comment.body }}
+        run: |
+          mode=normal
+          case "$REQUEST" in *full*) mode=full ;; esac
+          sha="$EVENT_SHA"
+          if [ -z "$sha" ]; then
+            sha=$(gh pr view "$PR_NUMBER" --json headRefOid --jq .headRefOid)
+          fi
+          # Only same-repo PRs: a fork PR's diff must never reach a model holding a write token.
+          head_repo=$(gh pr view "$PR_NUMBER" --json headRepositoryOwner,headRepository \
+            --jq '"\(.headRepositoryOwner.login)/\(.headRepository.name)"')
+          same_repo=false
+          [ "$head_repo" = "$GITHUB_REPOSITORY" ] && same_repo=true
+          if [ "$same_repo" != "true" ]; then
+            echo "fork PR from $head_repo: skipping"
+          fi
+          echo "mode=$mode" >> "$GITHUB_OUTPUT"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "same_repo=$same_repo" >> "$GITHUB_OUTPUT"
+
+      - name: Prepare diff
+        id: diff
+        if: steps.mode.outputs.same_repo == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+          HEAD_SHA: ${{ steps.mode.outputs.sha }}
+          MODE: ${{ steps.mode.outputs.mode }}
+        run: |
+          mkdir -p .ai-review
+          last=""
+          if [ "$MODE" != "full" ]; then
+            last=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" --paginate \
+              --jq '.[] | select(.body | contains("<!-- ai-review -->")) | .body' \
+              | grep -o 'reviewed-sha: [0-9a-f]*' | tail -n 1 | awk '{print $2}' || true)
+            if [ -n "$last" ] && [ "$last" = "$HEAD_SHA" ]; then
+              echo "already reviewed at $HEAD_SHA"
+              echo "has_diff=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          fi
+          if [ -z "$last" ] || [ "$MODE" = "full" ]; then
+            gh pr diff "$PR_NUMBER" > .ai-review/pr.diff
+          elif ! gh api -H "Accept: application/vnd.github.v3.diff" \
+            "repos/$GITHUB_REPOSITORY/compare/$last...$HEAD_SHA" > .ai-review/pr.diff 2>/dev/null \
+            || [ ! -s .ai-review/pr.diff ]; then
+            # Force-push or an unreachable base commit: fall back to the whole PR.
+            echo "incremental compare failed, reviewing the whole PR"
+            gh pr diff "$PR_NUMBER" > .ai-review/pr.diff
+          fi
+          echo "diff bytes: $(wc -c < .ai-review/pr.diff), from: ${last:-whole PR}"
+          echo "has_diff=true" >> "$GITHUB_OUTPUT"
+
+      - name: Count reviews before
+        id: before
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+        run: echo "n=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews" --paginate --jq '.[].id' | wc -l)" >> "$GITHUB_OUTPUT"
+
+      - name: Review
+        if: steps.diff.outputs.has_diff == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ATLASCLOUD_API_KEY: ${{ secrets.ATLASCLOUD_API_KEY }}
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+          HEAD_SHA: ${{ steps.mode.outputs.sha }}
+          MODE: ${{ steps.mode.outputs.mode }}
+          REVIEW_EVENT: request_changes
+        run: |
+          export PATH="$HOME/.opencode/bin:$PATH"
+          cp .github/ai-review/opencode.ci.json opencode.json
+          opencode --version
+          {
+            echo "MODE: $MODE"
+            echo "PR: #$PR_NUMBER"
+            echo "HEAD_SHA: $HEAD_SHA"
+            echo "RULE: this run was triggered because there is something to review."
+            echo "Always review .ai-review/pr.diff and always post the result."
+            echo "Never skip because an earlier review exists for this SHA."
+            echo
+            cat .github/ai-review/review-prompt.md
+          } > "$RUNNER_TEMP/message.md"
+          opencode run --auto "$(cat "$RUNNER_TEMP/message.md")"
+
+      - name: Clear stale request changes
+        if: steps.diff.outputs.has_diff == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+          BEFORE: ${{ steps.before.outputs.n }}
+        run: |
+          after=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews" --paginate --jq '.[].id' | wc -l)
+          if [ "$after" -gt "$BEFORE" ]; then
+            echo "a new review was posted, keeping its state"
+            exit 0
+          fi
+          gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews" --paginate \
+            --jq '.[] | select(.user.login == "github-actions[bot]" and .state == "CHANGES_REQUESTED") | .id' \
+          | while read -r id; do
+              echo "dismissing stale request-changes review $id"
+              gh api --method PUT "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews/$id/dismissals" \
+                -f message="The latest automated review found no blocking problems." -f event=DISMISS
+            done
+
+      - name: Request changes
+        if: steps.diff.outputs.has_diff == 'true' && env.REVIEW_EVENT == 'request_changes'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+          HEAD_SHA: ${{ steps.mode.outputs.sha }}
+          BEFORE: ${{ steps.before.outputs.n }}
+        run: |
+          after=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews" --paginate --jq '.[].id' | wc -l)
+          if [ "$after" -le "$BEFORE" ]; then
+            echo "no new review from the model, nothing to request"
+            exit 0
+          fi
+          printf '{"event":"REQUEST_CHANGES","commit_id":"%s","body":"Changes requested by the automated review. See the inline comments."}' "$HEAD_SHA" \
+            | gh api --method POST "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews" --input -

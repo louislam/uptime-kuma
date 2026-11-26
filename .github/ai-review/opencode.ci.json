@@ -1,0 +1,47 @@
+{
+    "$schema": "https://opencode.ai/config.json",
+    "model": "atlascloud/deepseek-ai/deepseek-v4.1-flash-1017#max",
+    "small_model": "atlascloud/deepseek-ai/deepseek-v4.1-flash-1017#low",
+    "share": "disabled",
+    "update": "disabled",
+    "providers": {
+        "atlascloud": {
+            "name": "Atlas Cloud",
+            "package": "aisdk:@ai-sdk/openai-compatible",
+            "settings": {
+                "baseURL": "https://api.atlascloud.ai/v1",
+                "apiKey": "{env:ATLASCLOUD_API_KEY}"
+            },
+            "models": {
+                "deepseek-ai/deepseek-v4.1-flash-1017": {
+                    "name": "DeepSeek V4.1 Flash 1017",
+                    "capabilities": {
+                        "tools": true,
+                        "input": ["text"],
+                        "output": ["text"]
+                    },
+                    "limit": {
+                        "context": 1048576,
+                        "output": 32768
+                    },
+                    "cost": {
+                        "input": 0.3,
+                        "output": 1.2
+                    },
+                    "variants": [
+                        { "id": "low", "settings": { "reasoningEffort": "low" } },
+                        { "id": "high", "settings": { "reasoningEffort": "high" } },
+                        { "id": "max", "settings": { "reasoningEffort": "max" } }
+                    ]
+                }
+            }
+        }
+    },
+    "permissions": [
+        { "action": "edit", "resource": "*", "effect": "deny" },
+        { "action": "write", "resource": "*", "effect": "deny" },
+        { "action": "webfetch", "resource": "*", "effect": "deny" },
+        { "action": "bash", "resource": "*", "effect": "deny" },
+        { "action": "bash", "resource": "gh *", "effect": "allow" }
+    ]
+}

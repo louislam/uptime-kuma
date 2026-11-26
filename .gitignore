@@ -25,3 +25,4 @@ extra/exe-builder/obj
 .vs
 .vscode
 .devcontainer
+.ai-review/
