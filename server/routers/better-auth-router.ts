@@ -177,6 +177,8 @@ export async function needSetup() {
             },
             1000 * 60 * 10
         );
+        // Do not keep the process alive (tests, CLI tools) just for this timer
+        setupTimeout.unref();
     }
 
     if (expired) {

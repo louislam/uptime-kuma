@@ -479,6 +479,13 @@ class Monitor extends BeanModel {
     async start(io) {
         let previousBeat = null;
         let retries = 0;
+        this.nextHeartbeatTime = null;
+
+        // save the time of the next Heartbeat everytime it is scheduled
+        const scheduleHeartbeat = (callback, delayMs) => {
+            this.nextHeartbeatTime = R.isoDateTimeMillis(dayjs.utc().add(delayMs, "millisecond"));
+            this.heartbeatInterval = setTimeout(callback, delayMs);
+        };
 
         this.rootCertificates = rootCertificates;
 
@@ -800,16 +807,26 @@ class Monitor extends BeanModel {
                             bean.duration = Math.round(msSinceLastBeat / 1000);
                             throw new Error("No heartbeat in the time window");
                         } else {
-                            let timeout = beatInterval * 1000 - msSinceLastBeat;
-                            if (timeout < 0) {
-                                timeout = bufferTime;
-                            } else {
-                                timeout += bufferTime;
-                            }
+                            let timeout = beatInterval * 1000;
                             // No need to insert successful heartbeat for push type, so end here
                             retries = 0;
                             log.debug("monitor", `[${this.name}] timeout = ${timeout}`);
-                            this.heartbeatInterval = setTimeout(safeBeat, timeout);
+                            // return here, to keep interval fixed independent of last beat
+
+                            if (!this.isStop) {
+                                log.debug("monitor", `[${this.name}] SetTimeout for next check.`);
+
+                                let intervalRemainingMs = Math.max(
+                                    1,
+                                    beatInterval * 1000 - dayjs().diff(dayjs.utc(bean.time))
+                                );
+
+                                log.debug("monitor", `[${this.name}] Next heartbeat in: ${intervalRemainingMs}ms`);
+
+                                scheduleHeartbeat(safeBeat, intervalRemainingMs);
+                            } else {
+                                log.info("monitor", `[${this.name}] isStop = true, no next check.`);
+                            }
                             return;
                         }
                     } else {
@@ -1131,7 +1148,7 @@ class Monitor extends BeanModel {
 
                 log.debug("monitor", `[${this.name}] Next heartbeat in: ${intervalRemainingMs}ms`);
 
-                this.heartbeatInterval = setTimeout(safeBeat, intervalRemainingMs);
+                scheduleHeartbeat(safeBeat, intervalRemainingMs);
             } else {
                 log.info("monitor", `[${this.name}] isStop = true, no next check.`);
             }
@@ -1151,14 +1168,14 @@ class Monitor extends BeanModel {
 
                 if (!this.isStop) {
                     log.info("monitor", "Try to restart the monitor");
-                    this.heartbeatInterval = setTimeout(safeBeat, this.interval * 1000);
+                    scheduleHeartbeat(safeBeat, this.interval * 1000);
                 }
             }
         };
 
         // Delay Push Type
         if (this.type === "push") {
-            this.heartbeatInterval = setTimeout(() => {
+            scheduleHeartbeat(() => {
                 safeBeat();
             }, this.interval * 1000);
         } else {
@@ -1263,6 +1280,7 @@ class Monitor extends BeanModel {
      */
     async stop() {
         clearTimeout(this.heartbeatInterval);
+        this.nextHeartbeat = null;
         this.isStop = true;
 
         this.prometheus?.remove();

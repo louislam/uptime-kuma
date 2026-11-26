@@ -36,7 +36,8 @@ function getLinuxPing6() {
         if (commandExistsSync('ping6')) {
             linuxPing6 = 'ping6';
         } else {
-            linuxPing6 = '/bin/ping6';
+            // Newer iputils only ship ping, which handles IPv6 itself
+            linuxPing6 = getLinuxPing();
         }
     }
     return linuxPing6;

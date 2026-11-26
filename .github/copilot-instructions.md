@@ -149,6 +149,8 @@ npm run dev  # Frontend on port 3000, backend on port 3001
 
 **PR Requirements**: All linters pass, tests pass, code follows style guidelines
 
+**Workflow Changes**: Any change under `.github/workflows/` must be tested in the private repo `louislam/workflow-tester` before merging. Copy the workflow there, point its `github.repository` check at `louislam/workflow-tester`, push it to `main` (`pull_request_target` uses the base branch's copy), then exercise the real events (open a PR, add labels) and check the PR state and comments with `gh`. Test-only edits stay in that repo.
+
 **After Opening a PR**: Watch CI to completion and report failures.
 
 **Committing and Pushing**: Never commit or push without the user's confirmation.

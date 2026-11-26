@@ -26,7 +26,10 @@ LinuxParser.prototype._processHeader = function (line) {
 
     if (isProbablyIPv4) {
         this._response.host = tokens[1];
-        this._response.numeric_host = tokens[2].slice(1, -1);
+
+        // BusyBox/toybox print "(1.1.1.1):" or "(2606:4700:4700::1111):"
+        var parenthesised = tokens[2].match(/\(([^)]+)\)/);
+        this._response.numeric_host = parenthesised ? parenthesised[1] : tokens[2].slice(1, -1);
     } else {
         // Normalise into either a 2 or 3 element array
         var foundAddresses = tokens

@@ -1692,5 +1692,11 @@
     "msGraphClientSecretDescription": "Apreneu com {clientSecret} per al registre de la vostra aplicació.",
     "msGraphClientSecretLink": "crea un secret de client",
     "apiDescription": "Exposa els punts finals /api i el servidor MCP. Requereix una clau API, i està desactivada per defecte perquè l'API encara està alfa i pot canviar sense avís.",
-    "apiDocumentation": "Documentació d l'API"
+    "apiDocumentation": "Documentació d l'API",
+    "OpsiMate URL": "URL d'OpsiMate",
+    "opsimateUrlDescription": "L'URL base de l'API d'OpsiMate (el port del servidor, no el de la interfície web).",
+    "opsimateApiTokenDescription": "El valor de la configuració API_TOKEN del servidor d'OpsiMate (per defecte: opsimate).",
+    "trigvDefaultChannel": "general",
+    "trigvChannelHelp": "Introdueix l'identificador del canal (màxim 120 caràcters). Deixa'l buit per utilitzar general.",
+    "trigvApiKeyDocs": "Documentació de la clau d'API de Trigv"
 }

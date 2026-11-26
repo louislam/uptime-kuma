@@ -9,6 +9,13 @@ import { fileURLToPath } from "node:url";
 import { io } from "socket.io-client";
 import BetterSqlite3 from "better-sqlite3";
 import bcrypt from "bcryptjs";
+import { R } from "redbean-node";
+import { symmetricDecrypt } from "better-auth/crypto";
+import { getAuthSecret, migrateUser } from "../../server/better-auth";
+// @ts-ignore
+import passwordHash from "../../server/password-hash";
+// @ts-ignore
+import TestDB from "../mock-testdb";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -303,3 +310,151 @@ test(
         }
     }
 );
+
+test(
+    "A v2.5.3 database with auth disabled still loads the dashboard after upgrading to v3 (#8232)",
+    { timeout: 180000 },
+    async () => {
+        assert.ok(fs.existsSync(fixturePath), `v2 fixture not found: ${fixturePath}`);
+
+        const disabledDataDir = path.join(__dirname, "../../data/test-migration-v2-upgrade-disable-auth");
+        fs.rmSync(disabledDataDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 });
+        fs.mkdirSync(disabledDataDir, { recursive: true });
+        fs.writeFileSync(path.join(disabledDataDir, "kuma.db"), zlib.gunzipSync(fs.readFileSync(fixturePath)));
+
+        // Auth was disabled in v2, so nobody signs in and the legacy user is never migrated
+        const seedDb = new BetterSqlite3(path.join(disabledDataDir, "kuma.db"));
+        seedDb
+            .prepare("UPDATE user SET password = ? WHERE username = ?")
+            .run(await bcrypt.hash(password, 10), username);
+        seedDb.prepare("INSERT INTO setting (`key`, `value`, `type`) VALUES ('disableAuth', 'true', 'general')").run();
+        seedDb.close();
+
+        let child;
+        let socket;
+        let serverOutput = "";
+
+        try {
+            const port = await getFreePort();
+            child = spawn(process.execPath, ["--import=tsx", "server/server.js"], {
+                cwd: path.join(__dirname, "../.."),
+                env: {
+                    ...process.env,
+                    DATA_DIR: disabledDataDir,
+                    UPTIME_KUMA_PORT: String(port),
+                    UPTIME_KUMA_DB_TYPE: "sqlite",
+                },
+                stdio: ["ignore", "pipe", "pipe"],
+            });
+            child.stdout.on("data", (data) => (serverOutput += data.toString()));
+            child.stderr.on("data", (data) => (serverOutput += data.toString()));
+
+            const baseUrl = `http://127.0.0.1:${port}`;
+            await waitForServer(`${baseUrl}/api/entry-page`);
+
+            // No login request: disable auth has to hand out a session on its own
+            socket = io(baseUrl, { reconnection: false });
+            let setupRequested = false;
+            socket.on("setup", () => (setupRequested = true));
+
+            const sessionUsername = await new Promise((resolve, reject) => {
+                const timer = setTimeout(() => reject(new Error(`No session after 15s\n${serverOutput}`)), 15000);
+                socket.on("session", (name) => {
+                    clearTimeout(timer);
+                    resolve(name);
+                });
+                socket.on("connect_error", (e) => {
+                    clearTimeout(timer);
+                    reject(e);
+                });
+            });
+
+            assert.strictEqual(sessionUsername, username);
+            assert.strictEqual(setupRequested, false, "an upgraded database must not be treated as a new setup");
+
+            // What the dashboard loads first; it used to stay blank because there was no session
+            const result = await callOk(socket, "getMonitor", 1);
+            assert.strictEqual(result.monitor.id, 1);
+
+            // Writing still has to work, the user id must exist in the database
+            const added = await emitAsync(socket, "add", {
+                name: "Added after upgrade",
+                type: "http",
+                url: "https://example.com",
+                interval: 60,
+                retryInterval: 60,
+                maxretries: 0,
+                active: false,
+                accepted_statuscodes: ["200-299"],
+                notificationIDList: {},
+                kafkaProducerBrokers: [],
+                kafkaProducerSaslOptions: {},
+                conditions: [],
+                rabbitmqNodes: {},
+                config: {},
+            });
+            assert.strictEqual(added.ok, true, `add failed: ${added.msg}`);
+
+            // Turning auth back on must still accept the v2 password
+            await callOk(socket, "setSettings", { disableAuth: false }, null);
+            const login = await fetch(`${baseUrl}/api/auth/sign-in/username`, {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ username, password }),
+            });
+            assert.strictEqual(login.status, 200, `login after enabling auth failed: ${login.status}\n${serverOutput}`);
+        } finally {
+            if (socket) {
+                socket.close();
+            }
+            if (child) {
+                child.kill();
+            }
+            await new Promise((resolve) => setTimeout(resolve, 500));
+            try {
+                fs.rmSync(disabledDataDir, { recursive: true, force: true, maxRetries: 20, retryDelay: 250 });
+            } catch (e) {
+                // Windows/Dropbox can keep a handle on the directory for a moment; the next run cleans it up
+            }
+        }
+    }
+);
+
+test("A v2 user with 2FA keeps their secret after upgrading to v3", { timeout: 60000 }, async () => {
+    const twoFaDataDir = path.join(__dirname, "../../data/test-migration-v2-2fa");
+    fs.rmSync(twoFaDataDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 });
+
+    const testDb = new TestDB(twoFaDataDir);
+    await testDb.create();
+
+    // The secret a v2 user has in their authenticator app
+    const twoFaSecret = "JBSWY3DPEHPK3PXP";
+
+    try {
+        await R.knex("user").insert({
+            username,
+            password: await passwordHash.generate(password),
+            active: 1,
+            twofa_status: 1,
+            twofa_secret: twoFaSecret,
+        });
+
+        // The first sign-in migrates the legacy user, including the 2FA settings
+        await migrateUser(username, password);
+
+        const user = await R.knex("better_auth_user").where({ username }).first();
+        assert.ok(user, "the legacy user was not migrated");
+        assert.strictEqual(Number(user.twoFactorEnabled), 1);
+
+        const twoFactor = await R.knex("better_auth_twofactor").where({ userId: user.id }).first();
+        assert.ok(twoFactor, "the 2FA settings were not migrated");
+        assert.strictEqual(Number(twoFactor.verified), 1);
+        assert.strictEqual(
+            await symmetricDecrypt({ key: getAuthSecret(), data: twoFactor.secret }),
+            twoFaSecret,
+            "the migrated secret does not match the one in the user's authenticator app"
+        );
+    } finally {
+        await testDb.destroy();
+    }
+});

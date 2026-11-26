@@ -131,9 +131,9 @@ Thank you so much for supporting this project!
 
 ### Special Sponsors
 
-[<img src="https://avatars.githubusercontent.com/u/249862100?s=200&v=4">](https://www.atlascloud.ai)
+[<img src="https://avatars.githubusercontent.com/u/249862100?s=200&v=4">](https://www.atlascloud.ai/?ref=UZCYBN)
 
-Atlas Cloud (https://www.atlascloud.ai) is sponsoring this project USD 400 per month for using their AI models.
+Atlas Cloud ([https://www.atlascloud.ai](https://www.atlascloud.ai/?ref=UZCYBN)) is sponsoring this project USD 400 per month for using their AI models.
 
 [![Powered by Atlas Cloud](https://www.atlascloud.ai/oss-program/powered-by-atlas-cloud.svg)](https://www.atlascloud.ai/?ref=UZCYBN)
 
@@ -155,11 +155,11 @@ Status Page:
 
 Settings Page:
 
-<img src="https://louislam.net/uptimekuma/2.jpg" width="400" alt="Uptime Kuma Settings Page Screenshot" />
+<img src="https://github.com/user-attachments/assets/61415d47-c7b6-4a8d-bc7a-14f692697b86" width="400" alt="Uptime Kuma Settings Page Screenshot" />
 
 Telegram Notification Sample:
 
-<img src="https://louislam.net/uptimekuma/3.jpg" width="400" alt="Uptime Kuma Telegram Notification Sample Screenshot" />
+<img src="https://github.com/user-attachments/assets/97fed671-26d4-4239-91f3-cfa70fdf9d5f" width="400" alt="Uptime Kuma Telegram Notification Sample Screenshot" />
 
 ## Motivation
 
