@@ -153,6 +153,8 @@ npm run dev  # Frontend on port 3000, backend on port 3001
 
 **After Opening a PR**: Watch CI to completion and report failures.
 
+**Linking an issue**: the PR body uses `Fix #<number>`; `Related to`, `Refs` and commit-message mentions do not count as a link.
+
 **Committing and Pushing**: Never commit or push without the user's confirmation.
 
 **Merging**: Never merge without the user's confirmation.
@@ -170,7 +172,9 @@ After it succeeds, check in this order:
 
 1. **Release**: `gh release view <version> --json isDraft,publishedAt,assets` is not a draft, has `dist.tar.gz`, and `git/ref/tags/<version>` points at the squash merge commit on `2.5.X`.
 2. **Changelog**: generated from PRs only. Base-image work (Node.js version, CA store) is not a PR, so add it by hand with `gh release edit <version> --notes-file notes.md` before publishing.
-3. **Docker Hub and GHCR**: `<version>`, `<version>-slim`, `<version>-rootless`, `<version>-slim-rootless`, plus the aliases `2`, `2-slim`, `2-rootless`, `next`, `next-slim`, `next-rootless` all point at the new build on both `louislam/uptime-kuma` and `ghcr.io/louislam/uptime-kuma`.
+3. **Docker Hub and GHCR**: `<version>`, `<version>-slim`, `<version>-rootless`, `<version>-slim-rootless` exist on **both** `louislam/uptime-kuma` and `ghcr.io/louislam/uptime-kuma`, with the same digest per tag (`docker buildx imagetools inspect`, or the registry HTTP API). Betas also move `beta`, `beta-slim`, `beta-rootless`, `beta-slim-rootless`; final releases move `3`, `3-slim`, `3-rootless`, `3-slim-rootless` and `next`, `next-slim`, `next-rootless`.
+   - Verify GHCR explicitly: a failed push to one registry does not fail the job (`buildImage()` in `extra/release/lib.mjs` ignores the buildx exit status), and `checkTagExists()` only looks at Docker Hub, so a green run can still be half-pushed (issue #8271).
+   - Re-running the `docker-images` job cannot repair a partial push: `checkTagExists()` exits with "Version `<version>` already exists" because the version tag is already on Docker Hub.
 4. **Node.js inside the images**: `docker run --rm --entrypoint node louislam/uptime-kuma:<version> -p process.versions.node` matches the base image (`louislam/uptime-kuma:base2`) on amd64, arm64 and arm/v7.
 5. **App version**: `package.json` on `2.5.X` is `<version>`; the server sends it over Socket.IO as `info.version` (`server/client.js`) and as `User-Agent: Uptime-Kuma/<version>` (`server/uptime-kuma-server.ts`). There is no `/api/version` route.
 6. **Wiki**: `🆙-How-to-Update.md` must contain `git checkout <version> --force`. If the `update-wiki` job did not run, run `RELEASE_VERSION=<version> GITHUB_TOKEN=<token> node extra/release/update-wiki.mjs`.

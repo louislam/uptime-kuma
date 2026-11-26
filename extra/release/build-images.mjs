@@ -17,6 +17,7 @@ import {
     getRepoNames,
     getVersionFromEnv,
     isBetaRelease,
+    verifyGhcrTags,
 } from "./lib.mjs";
 
 /**
@@ -50,7 +51,10 @@ export async function runBuildImages() {
             process.exit(1);
         }
 
-        buildAllImages(repoNames, version, isBeta);
+        const pushedTags = buildAllImages(repoNames, version, isBeta);
+
+        // A skipped ghcr push must fail the release, not leave a half-published version
+        await verifyGhcrTags(repoNames, pushedTags);
     } else {
         console.log("Dry run mode - skipping image build and push.");
     }
