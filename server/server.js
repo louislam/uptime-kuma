@@ -471,6 +471,11 @@ app.use(function (req, res, next) {
                 bean.validate();
 
                 await R.store(bean);
+                try {
+                    await MonitorStats.initialize(bean.id);
+                } catch (e) {
+                    log.warn("monitor", `Failed to initialize stats for new monitor ${bean.id}: ${e.message}`);
+                }
 
                 await updateMonitorNotification(bean.id, notificationIDList);
 
