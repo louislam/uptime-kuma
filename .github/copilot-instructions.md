@@ -153,6 +153,8 @@ npm run dev  # Frontend on port 3000, backend on port 3001
 
 **After Opening a PR**: Watch CI to completion and report failures.
 
+**Linking an issue**: the PR body uses `Fix #<number>`; `Related to`, `Refs` and commit-message mentions do not count as a link.
+
 **Committing and Pushing**: Never commit or push without the user's confirmation.
 
 **Merging**: Never merge without the user's confirmation.
