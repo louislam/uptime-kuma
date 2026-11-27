@@ -79,12 +79,12 @@ describe("SNMPMonitorType", () => {
 
         let createV3Called = false;
         let createSessionCalled = false;
-        let receivedOptions = null;
+        let receivedUser = null;
 
         // Stub createV3Session
-        snmp.createV3Session = function (_host, _username, options) {
+        snmp.createV3Session = function (_host, user, _options) {
             createV3Called = true;
-            receivedOptions = options;
+            receivedUser = user;
 
             return {
                 on: () => {},
@@ -119,7 +119,10 @@ describe("SNMPMonitorType", () => {
         // Assertions
         assert.strictEqual(createV3Called, true);
         assert.strictEqual(createSessionCalled, false);
-        assert.strictEqual(receivedOptions.securityLevel, snmp.SecurityLevel.noAuthNoPriv);
+        assert.deepStrictEqual(receivedUser, {
+            name: "testuser",
+            level: snmp.SecurityLevel.noAuthNoPriv,
+        });
 
         // Restore originals
         snmp.createV3Session = originalCreateV3Session;
