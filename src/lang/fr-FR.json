@@ -1781,5 +1781,13 @@
     "opsimateApiTokenDescription": "La valeur du paramètre API_TOKEN de votre serveur OpsiMate (par défaut : opsimate).",
     "trigvDefaultChannel": "général",
     "trigvChannelHelp": "Saisissez votre chemin de canal (jusqu’à 120 caractères). Laissez vide pour utiliser général.",
-    "trigvApiKeyDocs": "Documentation de la clé API Trigv"
+    "trigvApiKeyDocs": "Documentation de la clé API Trigv",
+    "legacyAPIKeyMsg": "Les clés héritées de 2.x fonctionnent uniquement pour Prometheus /metrics.",
+    "kwtsmsApiCredentialsDescription": "Utilisez votre nom d’utilisateur et votre mot de passe API kwtSMS (pas votre numéro de mobile de compte). Trouvez-les dans votre compte kwtSMS {here}, sous API.",
+    "kwtsmsSenderId": "identifiant d'expéditeur",
+    "kwtsmsSenderIdDescription": "Un ID d’expéditeur enregistré dans votre compte kwtSMS. KWT-SMS est un expéditeur test partagé ; utilisez votre propre ID d’expéditeur en production.",
+    "kwtsmsRecipientDescription": "Un ou plusieurs nombres au format international, séparés par une virgule (par exemple 965XXXXXX). Les espaces et le signe + ou 00 sont retirés.",
+    "kwtsmsTestMode": "Mode de test",
+    "kwtsmsTestModeDescription": "kwtSMS accepte le message mais ne le transmet pas. Utilisez-le pour vérifier la configuration, puis désactivez-le.",
+    "Legacy API Keys": "Clés API héritées"
 }
