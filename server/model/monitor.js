@@ -92,6 +92,7 @@ class Monitor extends BeanModel {
             name: this.name,
             sendUrl: this.sendUrl,
             type: this.type,
+            statusPageName: this.statusPageName || null,
         };
 
         if (this.sendUrl) {

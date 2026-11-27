@@ -83,10 +83,10 @@
                                                     rel="noopener noreferrer"
                                                     data-testid="monitor-name"
                                                 >
-                                                    {{ monitor.element.name }}
+                                                    {{ monitor.element.statusPageName || monitor.element.name }}
                                                 </a>
                                                 <p v-else class="item-name" data-testid="monitor-name">
-                                                    {{ monitor.element.name }}
+                                                    {{ monitor.element.statusPageName || monitor.element.name }}
                                                 </p>
                                             </div>
                                             <div class="extra-info">

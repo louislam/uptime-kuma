@@ -9,6 +9,26 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" :aria-label="$t('Close')" />
                 </div>
                 <div class="modal-body">
+                    <!-- Status Page Display Name -->
+                    <div class="my-3">
+                        <label for="statusPageName" class="form-label">
+                            {{ $t("Status Page Display Name") }}
+                        </label>
+                        <input
+                            id="statusPageName"
+                            :value="monitor.statusPageName"
+                            type="text"
+                            maxlength="255"
+                            class="form-control"
+                            data-testid="status-page-name-input"
+                            :placeholder="$t('Status Page Display Name Placeholder')"
+                            @input="
+                                (e) => changeStatusPageName(monitor.group_index, monitor.monitor_index, e.target!.value)
+                            "
+                        />
+                        <div class="form-text">{{ $t("Status Page Display Name Description") }}</div>
+                    </div>
+
                     <div class="my-3 form-check">
                         <input
                             id="show-clickable-link"
@@ -108,6 +128,7 @@ export default {
                 group_index: group.index,
                 isClickAble: this.showLink(monitor),
                 url: monitor.element.url,
+                statusPageName: monitor.element.statusPageName,
             };
 
             this.MonitorSettingDialog.show();
@@ -157,6 +178,17 @@ export default {
          */
         changeUrl(groupIndex, index, value) {
             this.$root.publicGroupList[groupIndex].monitorList[index].url = value;
+        },
+
+        /**
+         * Change the name shown for this monitor on the status page
+         * @param {number} groupIndex Index of group monitor is member of
+         * @param {number} index Index of monitor within group
+         * @param {string} value The new display name
+         * @returns {void}
+         */
+        changeStatusPageName(groupIndex, index, value) {
+            this.$root.publicGroupList[groupIndex].monitorList[index].statusPageName = value;
         },
     },
 };
