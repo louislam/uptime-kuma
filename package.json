@@ -47,7 +47,7 @@
         "download-dist": "node extra/download-dist.js",
         "mark-as-nightly": "node extra/mark-as-nightly.js",
         "reset-password": "node --import=tsx extra/reset-password.mts",
-        "remove-2fa": "node extra/remove-2fa.js",
+        "remove-2fa": "node --import=tsx extra/remove-2fa.mts",
         "start-clear-server": "node extra/start-clear-server.mjs",
         "simple-dns-server": "node extra/simple-dns-server.js",
         "simple-mqtt-server": "node extra/simple-mqtt-server.js",
