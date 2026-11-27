@@ -127,7 +127,7 @@ npm run dev  # Frontend on port 3000, backend on port 3001
 - 4 spaces indentation, double quotes, Unix line endings (LF), semicolons required
 - Prettier enforces `printWidth: 120`; run `npm run fmt` to format (also run automatically in CI)
 - **Comments**: keep them short (one concise line explaining what/why); no multi-line essays or restating the code
-- **Commits**: one short sentence describing the change; no long body
+- **Commits**: one short sentence describing the change; no long body, no issue or PR number (the PR body carries `Fix #<number>`)
 - **Naming**: JavaScript/TypeScript (camelCase), SQLite (snake_case), CSS/SCSS (kebab-case)
 - **New code**: new files and modules are TypeScript (`*.ts`) with Zod validation for external/DB input; leave existing JavaScript files in JS unless that file is being converted for a reason
 - **No duplicate logic**: one implementation per rule; share it (e.g. an optional preloaded snapshot) instead of copying it for another caller

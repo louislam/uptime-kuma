@@ -10,8 +10,9 @@ import { io } from "socket.io-client";
 import BetterSqlite3 from "better-sqlite3";
 import bcrypt from "bcryptjs";
 import { R } from "redbean-node";
+import { createOTP } from "@better-auth/utils/otp";
 import { symmetricDecrypt } from "better-auth/crypto";
-import { getAuthSecret, migrateUser } from "../../server/better-auth";
+import { auth, getAuthSecret, migrateUser } from "../../server/better-auth";
 // @ts-ignore
 import passwordHash from "../../server/password-hash";
 // @ts-ignore
@@ -454,6 +455,68 @@ test("A v2 user with 2FA keeps their secret after upgrading to v3", { timeout: 6
             twoFaSecret,
             "the migrated secret does not match the one in the user's authenticator app"
         );
+    } finally {
+        await testDb.destroy();
+    }
+});
+
+test("A v2 user has to enter the 2FA code on the first v3 sign-in", { timeout: 60000 }, async () => {
+    const twoFaDataDir = path.join(__dirname, "../../data/test-migration-v2-2fa-signin");
+    fs.rmSync(twoFaDataDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 });
+
+    const testDb = new TestDB(twoFaDataDir);
+    await testDb.create();
+
+    // The secret a v2 user has in their authenticator app
+    const twoFaSecret = "JBSWY3DPEHPK3PXP";
+
+    /**
+     * Turn a response's Set-Cookie headers into a request Cookie header
+     * @param {Headers} headers Response headers
+     * @returns {string} Cookie header value
+     */
+    function cookieFrom(headers: Headers) {
+        return headers
+            .getSetCookie()
+            .map((cookie) => cookie.split(";")[0])
+            .join("; ");
+    }
+
+    try {
+        await R.knex("user").insert({
+            username,
+            password: await passwordHash.generate(password),
+            active: 1,
+            twofa_status: 1,
+            twofa_secret: twoFaSecret,
+        });
+
+        // The first sign-in migrates the user and their 2FA settings, then asks for a code
+        const signIn = await auth(true).api.signInUsername({
+            body: { username, password },
+            returnHeaders: true,
+        });
+        assert.strictEqual(signIn.response.twoFactorRedirect, true, "the migrated 2FA has to be required right away");
+        assert.deepStrictEqual(signIn.response.twoFactorMethods, ["totp"]);
+
+        const user = await R.knex("better_auth_user").where({ username }).first();
+        assert.ok(user, "the legacy user was not migrated");
+        assert.strictEqual(Number(user.twoFactorEnabled), 1);
+        assert.strictEqual(
+            Number((await R.knex("better_auth_twofactor").where({ userId: user.id }).first()).verified),
+            1
+        );
+
+        // The secret the user already has in their authenticator app still works
+        const verified = await auth().api.verifyTOTP({
+            body: { code: await createOTP(twoFaSecret).totp() },
+            headers: new Headers({ cookie: cookieFrom(signIn.headers) }),
+            returnHeaders: true,
+        });
+        const session = await auth().api.getSession({
+            headers: new Headers({ cookie: cookieFrom(verified.headers) }),
+        });
+        assert.strictEqual(session?.user.username, username);
     } finally {
         await testDb.destroy();
     }
