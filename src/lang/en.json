@@ -553,6 +553,7 @@
     "sameAsServerTimezone": "Same as Server Timezone",
     "startDateTime": "Start Date/Time",
     "endDateTime": "End Date/Time",
+    "endBeforeStartTime": "End Date/Time must not be earlier than Start Date/Time",
     "cronExpression": "Cron Expression",
     "cronScheduleDescription": "Schedule: {description}",
     "Duration (Minutes)": "Duration (Minutes)",

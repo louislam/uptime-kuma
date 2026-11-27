@@ -750,6 +750,7 @@
     "startDateTime": "开始日期/时间",
     "invalidCronExpression": "无效的 Cron 表达式：{0}",
     "endDateTime": "结束日期/时间",
+    "endBeforeStartTime": "结束日期/时间不能早于开始日期/时间",
     "cronExpression": "Cron 表达式",
     "cronSchedule": "计划： ",
     "ntfyAuthenticationMethod": "鉴权方式",

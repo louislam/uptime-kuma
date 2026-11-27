@@ -461,6 +461,8 @@ export default {
             timezoneList: timezoneList(),
             processing: false,
             maintenance: {},
+            endDateModified: false,
+            syncingDateRange: false,
             affectedMonitors: [],
             affectedMonitorsOptions: [],
             showOnAllPages: false,
@@ -631,6 +633,31 @@ export default {
                 this.maintenance.recurringEndDate = "";
             }
         },
+
+        "maintenance.dateRange[0]"() {
+            this.onStartDateChange();
+        },
+
+        "maintenance.dateRange[1]"() {
+            if (this.syncingDateRange) {
+                return;
+            }
+            this.endDateModified = true;
+            const duration = this.currentDurationMinutes;
+            if (duration !== null && duration > 0) {
+                this.maintenance.durationMinutes = duration;
+            }
+        },
+
+        "maintenance.durationMinutes"() {
+            if (this.syncingDateRange) {
+                return;
+            }
+            const duration = Number(this.maintenance.durationMinutes);
+            if (duration > 0) {
+                this.setEndDateFromStart(duration);
+            }
+        },
     },
     mounted() {
         this.$root.getMonitorList((res) => {
@@ -677,6 +704,8 @@ export default {
         init() {
             this.affectedMonitors = [];
             this.selectedStatusPages = [];
+            this.endDateModified = false;
+            this.syncingDateRange = false;
 
             if (this.isAdd) {
                 // Get current date/time in local timezone
@@ -715,10 +744,19 @@ export default {
                     daysOfMonth: [],
                     timezoneOption: "SAME_AS_SERVER",
                 };
+                this.$nextTick(() => {
+                    this.endDateModified = false;
+                    this.syncingDateRange = false;
+                });
             } else if (this.isEdit || this.isClone) {
                 this.$root.getSocket().emit("getMaintenance", this.$route.params.id, (res) => {
                     if (res.ok) {
                         this.maintenance = res.maintenance;
+
+                        this.$nextTick(() => {
+                            this.endDateModified = false;
+                            this.syncingDateRange = false;
+                        });
 
                         if (this.isClone) {
                             this.maintenance.id = undefined; // Remove id when cloning as we want a new id
@@ -778,6 +816,74 @@ export default {
         },
 
         /**
+         * Format a Date as a datetime-local string (YYYY-MM-DDTHH:mm)
+         * @param {Date} date Date to format
+         * @returns {string} Formatted datetime string
+         */
+        formatDateTimeLocal(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, "0");
+            const day = String(date.getDate()).padStart(2, "0");
+            const hours = String(date.getHours()).padStart(2, "0");
+            const mins = String(date.getMinutes()).padStart(2, "0");
+            return `${year}-${month}-${day}T${hours}:${mins}`;
+        },
+
+        /**
+         * Handle start date/time change:
+         * - If the end date was modified manually, keep the end and recompute the duration
+         * - Otherwise, keep the duration and recompute the end
+         * @returns {void}
+         */
+        onStartDateChange() {
+            if (this.syncingDateRange) {
+                return;
+            }
+            const start = new Date(this.maintenance.dateRange[0]);
+            if (isNaN(start.getTime())) {
+                return;
+            }
+
+            if (this.endDateModified) {
+                const duration = this.currentDurationMinutes;
+                if (duration !== null && duration > 0) {
+                    this.maintenance.durationMinutes = duration;
+                }
+                return;
+            }
+
+            let duration = Number(this.maintenance.durationMinutes);
+            if (!duration || duration <= 0) {
+                duration = this.currentDurationMinutes;
+            }
+            if (!duration || duration <= 0) {
+                duration = 60;
+            }
+            this.setEndDateFromStart(duration);
+        },
+
+        /**
+         * Set the end date/time from the start date/time plus a duration in minutes
+         * @param {number} minutes Duration in minutes
+         * @returns {void}
+         */
+        setEndDateFromStart(minutes) {
+            if (!this.maintenance.dateRange[0]) {
+                return;
+            }
+            const startDate = new Date(this.maintenance.dateRange[0]);
+            if (isNaN(startDate.getTime())) {
+                return;
+            }
+            const endDate = new Date(startDate.getTime() + minutes * 60000);
+            this.syncingDateRange = true;
+            this.maintenance.dateRange[1] = this.formatDateTimeLocal(endDate);
+            this.$nextTick(() => {
+                this.syncingDateRange = false;
+            });
+        },
+
+        /**
          * Set quick duration for single maintenance
          * Calculates end time based on start time + duration in minutes
          * @param {number} minutes Duration in minutes
@@ -789,16 +895,7 @@ export default {
                 return;
             }
 
-            const startDate = new Date(this.maintenance.dateRange[0]);
-            const endDate = new Date(startDate.getTime() + minutes * 60000);
-
-            const year = endDate.getFullYear();
-            const month = String(endDate.getMonth() + 1).padStart(2, "0");
-            const day = String(endDate.getDate()).padStart(2, "0");
-            const hours = String(endDate.getHours()).padStart(2, "0");
-            const mins = String(endDate.getMinutes()).padStart(2, "0");
-
-            this.maintenance.dateRange[1] = `${year}-${month}-${day}T${hours}:${mins}`;
+            this.setEndDateFromStart(minutes);
         },
 
         /**
@@ -820,6 +917,14 @@ export default {
          */
         async doSubmit() {
             this.processing = true;
+
+            const start = new Date(this.maintenance.dateRange?.[0]);
+            const end = new Date(this.maintenance.dateRange?.[1]);
+            if (!isNaN(start.getTime()) && !isNaN(end.getTime()) && end.getTime() < start.getTime()) {
+                this.$root.toastError(this.$t("endBeforeStartTime"));
+                this.processing = false;
+                return;
+            }
 
             if (!this.hasMonitors && !this.hasStatusPages) {
                 this.$root.toastError(this.$t("noMonitorsOrStatusPagesSelectedError"));
