@@ -107,6 +107,9 @@ class NotificationProvider {
             monitorJSON,
             heartbeatJSON,
             msg,
+            // JSON-escaped string of msg, for safely embedding multiline
+            // messages inside custom JSON bodies
+            msgJSON: JSON.stringify(msg),
         };
 
         return engine.render(parsedTpl, context);
