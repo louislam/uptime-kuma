@@ -260,7 +260,7 @@ class Notification {
      * Send a notification
      * @param {BeanModel} notification Notification to send
      * @param {string} msg General Message
-     * @param {object} monitorJSON Monitor details (For Up/Down only)
+     * @param {object} monitorJSON Monitor details (For non-test notifications)
      * @param {object} heartbeatJSON Heartbeat details (For Up/Down only)
      * @returns {Promise<string>} Successful msg
      * @throws Error with fail msg

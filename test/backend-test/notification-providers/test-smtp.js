@@ -64,6 +64,41 @@ describe("SMTP notification provider", () => {
         assert.match(received[0], /^From: uptime-kuma@example\.com$/m);
     });
 
+    test("send() applies custom templates to certificate expiry notifications", async () => {
+        const provider = new SMTP();
+        received.length = 0;
+
+        await provider.send(
+            notification({
+                customSubject: "Certificate expiring for {{ name }}",
+                customBody: "Address: {{ hostnameOrURL }}",
+            }),
+            "[Example][https://example.com] server certificate example.com will expire in 7 days",
+            { name: "Example", type: "http", url: "https://example.com" }
+        );
+
+        assert.strictEqual(received.length, 1);
+        assert.match(received[0], /^Subject: Certificate expiring for Example$/m);
+        assert.match(received[0], /^Address: https:\/\/example\.com$/m);
+    });
+
+    test("send() does not apply custom templates without monitor details", async () => {
+        const provider = new SMTP();
+        received.length = 0;
+
+        await provider.send(
+            notification({
+                customSubject: "Custom subject",
+                customBody: "Custom body",
+            }),
+            "General message"
+        );
+
+        assert.strictEqual(received.length, 1);
+        assert.match(received[0], /^Subject: General message$/m);
+        assert.doesNotMatch(received[0], /Custom/);
+    });
+
     test("send() rejects invalid additional headers", async () => {
         const provider = new SMTP();
 

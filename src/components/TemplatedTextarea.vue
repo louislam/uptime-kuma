@@ -22,7 +22,7 @@
         <br />
         <code v-pre>{{ monitorJSON }}</code>
         : {{ $t("templateMonitorJSON") }}
-        <b>({{ $t("templateLimitedToUpDownCertNotifications") }})</b>
+        <b>({{ $t("templateNotAvailableForTestNotifications") }})</b>
         <br />
     </div>
 

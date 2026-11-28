@@ -29,7 +29,7 @@ class MicrosoftGraph extends NotificationProvider {
         if (heartbeatJSON) {
             body = `${msg}\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`;
         }
-        if ((monitorJSON && heartbeatJSON) || msg.endsWith("Testing")) {
+        if (monitorJSON || msg.endsWith("Testing")) {
             const customSubject = notification.customSubject?.trim() || "";
             const customBody = notification.customBody?.trim() || "";
             if (customSubject !== "") {

@@ -15,7 +15,7 @@ class NotificationProvider {
      * Send a notification
      * @param {BeanModel} notification Notification to send
      * @param {string} msg General Message
-     * @param {?object} monitorJSON Monitor details (For Up/Down only)
+     * @param {?object} monitorJSON Monitor details (For non-test notifications)
      * @param {?object} heartbeatJSON Heartbeat details (For Up/Down only)
      * @returns {Promise<string>} Return Successful Message
      * @throws Error with fail msg
@@ -26,7 +26,7 @@ class NotificationProvider {
 
     /**
      * Extracts the address from a monitor JSON object based on its type.
-     * @param {?object} monitorJSON Monitor details (For Up/Down only)
+     * @param {?object} monitorJSON Monitor details (For non-test notifications)
      * @returns {string} The extracted address based on the monitor type.
      */
     extractAddress(monitorJSON) {
@@ -68,7 +68,7 @@ class NotificationProvider {
      * Renders a message template with notification context
      * @param {string} template the template
      * @param {string} msg the message that will be included in the context
-     * @param {?object} monitorJSON Monitor details (For Up/Down/Cert-Expiry only)
+     * @param {?object} monitorJSON Monitor details (For non-test notifications)
      * @param {?object} heartbeatJSON Heartbeat details (For Up/Down only)
      * @returns {Promise<string>} rendered template
      */

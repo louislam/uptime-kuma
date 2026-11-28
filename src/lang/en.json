@@ -271,7 +271,7 @@
     "templateMsg": "message of the notification",
     "templateHeartbeatJSON": "object describing the heartbeat",
     "templateMonitorJSON": "object describing the monitor",
-    "templateLimitedToUpDownCertNotifications": "only available for UP/DOWN/Certificate expiry notifications",
+    "templateNotAvailableForTestNotifications": "not available for test notifications",
     "templateLimitedToUpDownNotifications": "only available for UP/DOWN notifications",
     "templateServiceName": "service name",
     "templateHostnameOrURL": "hostname or URL",

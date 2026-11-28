@@ -1067,7 +1067,8 @@ class Monitor extends BeanModel {
                     if (domainExpiryDate) {
                         DomainExpiry.sendNotifications(
                             supportInfo.domain,
-                            (await Monitor.getNotificationList(this)) || []
+                            (await Monitor.getNotificationList(this)) || [],
+                            this
                         );
                     } else {
                         log.debug("monitor", `Failed getting expiration date for domain ${supportInfo.domain}`);
@@ -1547,8 +1548,7 @@ class Monitor extends BeanModel {
             let msg = `[${monitor.name}] [${text}] ${bean.msg}`;
 
             const heartbeatJSON = await bean.toJSONAsync({ decodeResponse: true });
-            const monitorData = [{ id: monitor.id, active: monitor.active, name: monitor.name }];
-            const preloadData = await Monitor.preparePreloadData(monitorData);
+            const monitorJSON = await monitor.toNotificationJSON();
             // Prevent if the msg is undefined, notifications such as Discord cannot send out.
             if (!heartbeatJSON["msg"]) {
                 heartbeatJSON["msg"] = "N/A";
@@ -1588,12 +1588,7 @@ class Monitor extends BeanModel {
 
             for (let notification of notificationList) {
                 try {
-                    await Notification.send(
-                        JSON.parse(notification.config),
-                        msg,
-                        monitor.toJSON(preloadData, false),
-                        heartbeatJSON
-                    );
+                    await Notification.send(JSON.parse(notification.config), msg, monitorJSON, heartbeatJSON);
                 } catch (e) {
                     log.error("monitor", "Cannot send notification to " + notification.name);
                     log.error("monitor", e);
@@ -1613,6 +1608,16 @@ class Monitor extends BeanModel {
             [monitor.id]
         );
         return notificationList;
+    }
+
+    /**
+     * Prepare & format the monitor details to include in notifications
+     * @returns {Promise<object>} Monitor details
+     */
+    async toNotificationJSON() {
+        const monitorData = [{ id: this.id, active: this.active, name: this.name }];
+        const preloadData = await Monitor.preparePreloadData(monitorData);
+        return this.toJSON(preloadData, false);
     }
 
     /**
@@ -1640,12 +1645,15 @@ class Monitor extends BeanModel {
         let sent = false;
         log.debug("monitor", "Send certificate notification");
 
+        const monitorJSON = await this.toNotificationJSON();
+
         for (let notification of notificationList) {
             try {
                 log.debug("monitor", "Sending to " + notification.name);
                 await Notification.send(
                     JSON.parse(notification.config),
-                    `[${this.name}][${this.url}] ${certType} certificate ${certCN} will expire in ${daysRemaining} days`
+                    `[${this.name}][${this.url}] ${certType} certificate ${certCN} will expire in ${daysRemaining} days`,
+                    monitorJSON
                 );
                 sent = true;
             } catch (e) {

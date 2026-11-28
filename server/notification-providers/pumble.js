@@ -13,7 +13,7 @@ class Pumble extends NotificationProvider {
 
         try {
             let config = this.getAxiosConfigWithProxy({});
-            if (heartbeatJSON === null && monitorJSON === null) {
+            if (heartbeatJSON === null) {
                 let data = {
                     attachments: [
                         {

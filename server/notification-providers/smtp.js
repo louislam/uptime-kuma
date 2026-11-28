@@ -75,7 +75,7 @@ class SMTP extends NotificationProvider {
             body = `${msg}\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`;
         }
         // subject and body are templated
-        if ((monitorJSON && heartbeatJSON) || msg.endsWith("Testing")) {
+        if (monitorJSON || msg.endsWith("Testing")) {
             // cannot end with whitespace as this often raises spam scores
             const customSubject = notification.customSubject?.trim() || "";
             const customBody = notification.customBody?.trim() || "";

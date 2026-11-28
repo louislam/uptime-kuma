@@ -77,6 +77,37 @@ describe("Microsoft Graph notification provider", () => {
         assert.deepStrictEqual(message.body, { contentType: "HTML", content: "<b>Uptime Kuma Testing</b>" });
     });
 
+    test("renders custom subject and body for certificate expiry notifications", async () => {
+        await new MicrosoftGraph().send(
+            notification({
+                msGraphTo: "a@example.com",
+                customSubject: "Certificate expiring for {{ name }}",
+                customBody: "Address: {{ hostnameOrURL }}",
+            }),
+            "[Example][https://example.com] server certificate example.com will expire in 7 days",
+            { name: "Example", type: "http", url: "https://example.com" }
+        );
+
+        const message = calls[1].data.message;
+        assert.strictEqual(message.subject, "Certificate expiring for Example");
+        assert.deepStrictEqual(message.body, { contentType: "Text", content: "Address: https://example.com" });
+    });
+
+    test("does not render custom subject and body without monitor details", async () => {
+        await new MicrosoftGraph().send(
+            notification({
+                msGraphTo: "a@example.com",
+                customSubject: "Custom subject",
+                customBody: "Custom body",
+            }),
+            "General message"
+        );
+
+        const message = calls[1].data.message;
+        assert.strictEqual(message.subject, "General message");
+        assert.deepStrictEqual(message.body, { contentType: "Text", content: "General message" });
+    });
+
     test("requires at least one recipient", async () => {
         await assert.rejects(new MicrosoftGraph().send(notification({}), "msg"), /At least one recipient/);
         assert.strictEqual(calls.length, 0);

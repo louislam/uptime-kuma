@@ -145,18 +145,22 @@ async function getRdapDomainExpiryDate(domain) {
  * @param {number} daysRemaining Number of days remaining on certificate
  * @param {number} targetDays Number of days to alert after
  * @param {LooseObject<any>[]} notificationList List of notification providers
+ * @param {?Monitor} monitor Monitor which triggered the notification
  * @returns {Promise<void>}
  */
-async function sendDomainNotificationByTargetDays(domain, daysRemaining, targetDays, notificationList) {
+async function sendDomainNotificationByTargetDays(domain, daysRemaining, targetDays, notificationList, monitor) {
     let sent = false;
     log.debug("domain_expiry", `Send domain expiry notification for ${targetDays} deadline.`);
+
+    const monitorJSON = monitor ? await monitor.toNotificationJSON() : null;
 
     for (let notification of notificationList) {
         try {
             log.debug("domain_expiry", `Sending to ${notification.name}`);
             await Notification.send(
                 JSON.parse(notification.config),
-                `Domain name ${domain} will expire in ${daysRemaining} days`
+                `Domain name ${domain} will expire in ${daysRemaining} days`,
+                monitorJSON
             );
             sent = true;
         } catch (e) {
@@ -304,9 +308,10 @@ class DomainExpiry extends BeanModel {
     /**
      * @param {string} domainName the domain name to send notifications for
      * @param {LooseObject<any>[]} notificationList notification List
+     * @param {?Monitor} monitor Monitor which triggered the notification
      * @returns {Promise<void>}
      */
-    static async sendNotifications(domainName, notificationList) {
+    static async sendNotifications(domainName, notificationList, monitor = null) {
         const domain = await DomainExpiry.findByDomainNameOrCreate(domainName);
         if (!notificationList.length > 0) {
             // fail fast. If no notification is set, all the following checks can be skipped.
@@ -353,7 +358,8 @@ class DomainExpiry extends BeanModel {
                     domainName,
                     daysRemaining,
                     targetDays,
-                    notificationList
+                    notificationList,
+                    monitor
                 );
                 if (sent) {
                     domain.lastExpiryNotificationSent = targetDays;
