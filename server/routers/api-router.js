@@ -19,6 +19,7 @@ const { z } = require("zod");
 const { createDocument } = require("zod-openapi");
 const { apiReference } = require("@scalar/express-api-reference");
 const checkVersion = require("../check-version");
+const maintenanceApi = require("../maintenance-api");
 
 const apiPaths = {};
 
@@ -75,8 +76,11 @@ function createApiRouter() {
                 delete documented.resolve;
                 delete documented.errorMessage;
 
-                apiPaths[path] = {
-                    ...(apiPaths[path] || {}),
+                // OpenAPI writes path parameters as `{id}`, Express routes use `:id`
+                const documentedPath = path.replace(/:(\w+)/g, "{$1}");
+
+                apiPaths[documentedPath] = {
+                    ...(apiPaths[documentedPath] || {}),
                     [method]: {
                         security: [{ bearerAuth: [] }],
                         ...documented,
@@ -233,6 +237,228 @@ openAPIRouter.get("/api/monitors", requireApiKey, {
         }),
     },
 });
+
+/*
+ * Maintenance
+ */
+const maintenanceSchema = z
+    .looseObject({
+        id: z.number(),
+        title: z.string(),
+        description: z.string().nullable(),
+        strategy: z.string(),
+        active: z.boolean(),
+        dateRange: z.array(z.string().nullable()),
+        timezone: z.string(),
+        timezoneOption: z.string(),
+        status: z.enum(["inactive", "scheduled", "under-maintenance", "ended", "unknown"]),
+    })
+    .meta({ id: "Maintenance" });
+
+const idList = z.array(z.number().int().positive()).max(maintenanceApi.MAX_IDS_PER_REQUEST);
+
+const isoDateTime = z
+    .string()
+    .refine((value) => !isNaN(new Date(value).getTime()), "must be an ISO 8601 date-time")
+    .meta({ description: "ISO 8601 date-time, send Z or an offset (without one it is read as server local time)" });
+
+const createMaintenanceBody = z
+    .object({
+        title: z.string().trim().min(1).max(150),
+        strategy: z.enum(["manual", "single"]).default("manual"),
+        description: z.string().default(""),
+        monitorIds: idList.default([]),
+        statusPageIds: idList.default([]),
+        timezone: z
+            .string()
+            .refine(maintenanceApi.isValidTimezone, "must be UTC, SAME_AS_SERVER or an IANA name")
+            .default("SAME_AS_SERVER"),
+        active: z.boolean().default(false),
+        start: isoDateTime.optional(),
+        end: isoDateTime.optional(),
+    })
+    .refine((body) => body.strategy !== "single" || (body.start && body.end), {
+        message: "the single strategy needs start and end",
+    })
+    .refine((body) => !body.start || !body.end || new Date(body.end) > new Date(body.start), {
+        message: "end must be after start",
+    })
+    .meta({ id: "CreateMaintenance" });
+
+const maintenanceIdParams = {
+    path: z.object({
+        id: z.number().int().positive().meta({ description: "Maintenance id" }),
+    }),
+};
+
+/**
+ * Wrap a maintenance route: invalid input answers 400, any other error is logged and answers 500
+ * @param {string} operationId Operation id, used in the log
+ * @param {Function} run Route logic taking the request and the response
+ * @returns {Function} Express handler
+ */
+function maintenanceHandler(operationId, run) {
+    return async (request, response) => {
+        try {
+            await run(request, response);
+        } catch (e) {
+            if (e instanceof maintenanceApi.MaintenanceInputError) {
+                response.status(400).json({ ok: false, msg: e.message });
+                return;
+            }
+            log.error("api", `Failed to run ${operationId}: ` + e.message);
+            response.status(500).json({ ok: false, msg: "Internal server error" });
+        }
+    };
+}
+
+/**
+ * Look up the maintenance of a `:id` route and answer 404 when it does not exist
+ * @param {express.Request} request Express request
+ * @param {express.Response} response Express response
+ * @returns {object|null} Maintenance bean, or null after the 404 was sent
+ */
+function findMaintenanceOr404(request, response) {
+    const maintenance = server.getMaintenance(Number(request.params.id));
+    if (!maintenance) {
+        response.status(404).json({ ok: false, msg: "Maintenance not found" });
+    }
+    return maintenance;
+}
+
+openAPIRouter.get("/api/maintenance", requireApiKey, {
+    operationId: "get_maintenance_list",
+    summary: "Get all maintenance windows",
+    description: "The same payload the dashboard receives in the `maintenanceList` socket event.",
+    errorMessage: "Failed to get the maintenance windows",
+    resolve: async () => ({
+        maintenance: Object.values(await server.getMaintenanceJSONList()),
+    }),
+    responses: {
+        200: okResponse("Maintenance windows", {
+            maintenance: z.array(maintenanceSchema),
+        }),
+    },
+});
+
+openAPIRouter.get(
+    "/api/maintenance/:id",
+    requireApiKey,
+    {
+        operationId: "get_maintenance",
+        summary: "Get a maintenance window",
+        requestParams: maintenanceIdParams,
+        responses: {
+            200: okResponse("Maintenance window", {
+                maintenance: maintenanceSchema,
+            }),
+            404: errorResponse("The maintenance window does not exist"),
+        },
+    },
+    maintenanceHandler("get_maintenance", async (request, response) => {
+        const maintenance = findMaintenanceOr404(request, response);
+        if (maintenance) {
+            response.json({ ok: true, maintenance: await maintenance.toJSON() });
+        }
+    })
+);
+
+openAPIRouter.post(
+    "/api/maintenance",
+    requireApiKey,
+    {
+        operationId: "create_maintenance",
+        summary: "Create a maintenance window",
+        description:
+            "Supports the `manual` and `single` strategies. A `single` window is active between `start` and `end`.",
+        requestBody: {
+            content: {
+                "application/json": {
+                    schema: createMaintenanceBody,
+                },
+            },
+        },
+        responses: {
+            201: {
+                description: "The maintenance window was created",
+                content: {
+                    "application/json": {
+                        schema: z.object({
+                            ok: z.literal(true),
+                            maintenanceID: z.number(),
+                        }),
+                    },
+                },
+            },
+            400: errorResponse("Invalid request body"),
+        },
+    },
+    maintenanceHandler("create_maintenance", async (request, response) => {
+        const parsed = createMaintenanceBody.safeParse(request.body || {});
+        if (!parsed.success) {
+            const issue = parsed.error.issues[0];
+            const field = issue.path.join(".");
+            response.status(400).json({ ok: false, msg: field ? `${field}: ${issue.message}` : issue.message });
+            return;
+        }
+
+        const maintenanceID = await maintenanceApi.createMaintenance(parsed.data, response.locals.session.user.id);
+        response.status(201).json({ ok: true, maintenanceID });
+    })
+);
+
+for (const [action, active] of [
+    ["resume", true],
+    ["pause", false],
+]) {
+    openAPIRouter.post(
+        `/api/maintenance/:id/${action}`,
+        requireApiKey,
+        {
+            operationId: `${action}_maintenance`,
+            summary: `${active ? "Resume" : "Pause"} a maintenance window`,
+            description: `Sets \`active\` to ${active}. Safe to repeat.`,
+            requestParams: maintenanceIdParams,
+            responses: {
+                200: okResponse("The new state of the window", {
+                    maintenanceID: z.number(),
+                    active: z.boolean(),
+                }),
+                404: errorResponse("The maintenance window does not exist"),
+            },
+        },
+        maintenanceHandler(`${action}_maintenance`, async (request, response) => {
+            const maintenance = findMaintenanceOr404(request, response);
+            if (maintenance) {
+                await maintenanceApi.setMaintenanceActive(maintenance, active);
+                response.json({ ok: true, maintenanceID: maintenance.id, active });
+            }
+        })
+    );
+}
+
+openAPIRouter.delete(
+    "/api/maintenance/:id",
+    requireApiKey,
+    {
+        operationId: "delete_maintenance",
+        summary: "Delete a maintenance window",
+        requestParams: maintenanceIdParams,
+        responses: {
+            200: okResponse("The maintenance window was deleted", {
+                maintenanceID: z.number(),
+            }),
+            404: errorResponse("The maintenance window does not exist"),
+        },
+    },
+    maintenanceHandler("delete_maintenance", async (request, response) => {
+        const maintenance = findMaintenanceOr404(request, response);
+        if (maintenance) {
+            await maintenanceApi.deleteMaintenance(maintenance.id);
+            response.json({ ok: true, maintenanceID: maintenance.id });
+        }
+    })
+);
 
 let openApiDocument;
 
