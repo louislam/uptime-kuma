@@ -41,8 +41,35 @@ class Webhook extends NotificationProvider {
                 config.headers = formData.getHeaders();
                 data = formData;
             } else if (notification.webhookContentType === "custom") {
-                data = await this.renderTemplate(notification.webhookCustomBody, msg, monitorJSON, heartbeatJSON);
+                // First try rendering with the original unescaped message
+                const rendered = await this.renderTemplate(notification.webhookCustomBody, msg, monitorJSON, heartbeatJSON);
+                
+                try {
+                    data = JSON.parse(rendered);
+                } catch (_) {
+                    // If parsing fails, it might be due to unescaped special characters in a JSON template (Issue #3778).
+                    // Let's escape them and try rendering again.
+                    const escapedMsg = msg
+                        ? msg.replace(/\\/g, "\\\\")
+                             .replace(/"/g, "\\\"")
+                             .replace(/\n/g, "\\n")
+                             .replace(/\r/g, "\\r")
+                             .replace(/\t/g, "\\t")
+                        : msg;
+                    
+                    const renderedEscaped = await this.renderTemplate(notification.webhookCustomBody, escapedMsg, monitorJSON, heartbeatJSON);
+                    
+                    try {
+                        // If it successfully parses now, it was indeed a JSON payload
+                        data = JSON.parse(renderedEscaped);
+                    } catch (__) {
+                        // If it still fails, it's likely meant to be plain text or another format
+                        data = rendered;
+                    }
+                }
             }
+
+
 
             if (notification.webhookAdditionalHeaders) {
                 try {
