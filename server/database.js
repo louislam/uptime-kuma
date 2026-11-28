@@ -1016,7 +1016,7 @@ class Database {
                 }
 
                 for (let heartbeat of heartbeats) {
-                    await calculator.update(heartbeat.status, parseFloat(heartbeat.ping), dayjs(heartbeat.time));
+                    await calculator.update(heartbeat.status, parseFloat(heartbeat.ping), dayjs.utc(heartbeat.time));
                 }
 
                 // Calculate progress: (current_monitor_index + relative_date_progress) / total_monitors
