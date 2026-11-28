@@ -49,9 +49,38 @@
         <small class="form-text text-muted">{{ $t("brevoSeparateMultipleEmails") }}</small>
     </div>
     <div class="mb-3">
-        <label for="brevo-subject" class="form-label">{{ $t("brevoSubject") }}</label>
-        <input id="brevo-subject" v-model="$parent.notification.brevoSubject" type="text" class="form-control" />
-        <small class="form-text text-muted">{{ $t("brevoLeaveBlankForDefaultSubject") }}</small>
+        <label for="brevo-subject" class="form-label">{{ $t("emailCustomSubject") }}</label>
+        <TemplatedInput
+            id="brevo-subject"
+            v-model="$parent.notification.customSubject"
+            :required="false"
+            placeholder=""
+        ></TemplatedInput>
+        <div class="form-text">{{ $t("leave blank for default subject") }}</div>
+    </div>
+    <div class="mb-3">
+        <label for="brevo-body" class="form-label">{{ $t("emailCustomBody") }}</label>
+        <TemplatedTextarea
+            id="brevo-body"
+            v-model="$parent.notification.customBody"
+            :required="false"
+            placeholder=""
+        ></TemplatedTextarea>
+        <div class="form-text">{{ $t("leave blank for default body") }}</div>
+    </div>
+    <div class="mb-3">
+        <div class="form-check">
+            <input
+                id="brevo-use-html-body"
+                v-model="$parent.notification.htmlBody"
+                class="form-check-input"
+                type="checkbox"
+                value=""
+            />
+            <label class="form-check-label" for="brevo-use-html-body">
+                {{ $t("Use HTML for custom E-mail body") }}
+            </label>
+        </div>
     </div>
     <i18n-t tag="p" keypath="More info on:" style="margin-top: 8px">
         <a href="https://developers.brevo.com/reference/sendtransacemail" target="_blank">
@@ -62,15 +91,38 @@
 
 <script>
 import HiddenInput from "../HiddenInput.vue";
+import TemplatedInput from "../TemplatedInput.vue";
+import TemplatedTextarea from "../TemplatedTextarea.vue";
+
+const LEGACY_DEFAULT_SUBJECT = "Notification from Your Uptime Kuma";
 
 export default {
     components: {
         HiddenInput,
+        TemplatedInput,
+        TemplatedTextarea,
+    },
+    watch: {
+        "$parent.notification.brevoSubject": {
+            immediate: true,
+            handler(value) {
+                if (typeof value === "undefined") {
+                    return;
+                }
+
+                const legacySubject = value?.trim() || "";
+                if (
+                    !this.$parent.notification.customSubject &&
+                    legacySubject !== "" &&
+                    legacySubject !== LEGACY_DEFAULT_SUBJECT
+                ) {
+                    this.$parent.notification.customSubject = legacySubject;
+                }
+                delete this.$parent.notification.brevoSubject;
+            },
+        },
     },
     mounted() {
-        if (typeof this.$parent.notification.brevoSubject === "undefined") {
-            this.$parent.notification.brevoSubject = "Notification from Your Uptime Kuma";
-        }
         if (typeof this.$parent.notification.brevoFromName === "undefined") {
             this.$parent.notification.brevoFromName = "Uptime Kuma";
         }
