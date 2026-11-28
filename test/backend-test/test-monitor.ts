@@ -4,7 +4,8 @@ import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
 const Monitor = require("../../server/model/monitor");
-const { MIN_INTERVAL_SECOND, RESPONSE_BODY_LENGTH_MAX } = require("../../src/util");
+const { R } = require("redbean-node");
+const { MIN_INTERVAL_SECOND, RESPONSE_BODY_LENGTH_MAX, DOWN, UP, PENDING, MAINTENANCE } = require("../../src/util");
 
 /**
  * Build a Monitor instance without touching the database
@@ -184,6 +185,35 @@ describe("Monitor", () => {
         test("treats down to down as not important", () => {
             assert.strictEqual(Monitor.isImportantBeat(false, 0, 0), false);
         });
+
+        test("treats down to pending as not important", () => {
+            assert.strictEqual(Monitor.isImportantBeat(false, DOWN, PENDING), false);
+        });
+
+        test("treats up to pending as not important", () => {
+            assert.strictEqual(Monitor.isImportantBeat(false, UP, PENDING), false);
+        });
+
+        test("records pending to up after down so the recovery is kept", () => {
+            // beat() only notifies when this and isImportantForNotification() are both true
+            assert.strictEqual(Monitor.isImportantBeat(false, PENDING, UP, DOWN), true);
+        });
+
+        test("treats pending to up after up as not important", () => {
+            assert.strictEqual(Monitor.isImportantBeat(false, PENDING, UP, UP), false);
+        });
+
+        test("treats pending to up with no earlier status as not important", () => {
+            assert.strictEqual(Monitor.isImportantBeat(false, PENDING, UP, null), false);
+        });
+
+        test("treats pending to up after maintenance as not important", () => {
+            assert.strictEqual(Monitor.isImportantBeat(false, PENDING, UP, MAINTENANCE), false);
+        });
+
+        test("still treats pending to down as important when a prior status is passed", () => {
+            assert.strictEqual(Monitor.isImportantBeat(false, PENDING, DOWN, UP), true);
+        });
     });
 
     describe("isImportantForNotification()", () => {
@@ -201,6 +231,104 @@ describe("Monitor", () => {
 
         test("treats the first beat as important", () => {
             assert.strictEqual(Monitor.isImportantForNotification(true, null, 0), true);
+        });
+
+        test("treats down to up as important", () => {
+            assert.strictEqual(Monitor.isImportantForNotification(false, DOWN, UP), true);
+        });
+
+        test("treats up to down as important", () => {
+            assert.strictEqual(Monitor.isImportantForNotification(false, UP, DOWN), true);
+        });
+
+        test("treats pending to down as important", () => {
+            assert.strictEqual(Monitor.isImportantForNotification(false, PENDING, DOWN), true);
+        });
+
+        test("treats up to up as not important", () => {
+            assert.strictEqual(Monitor.isImportantForNotification(false, UP, UP), false);
+        });
+
+        test("treats down to pending as not important", () => {
+            assert.strictEqual(Monitor.isImportantForNotification(false, DOWN, PENDING), false);
+        });
+
+        test("sends the up notification for down to pending to up", () => {
+            assert.strictEqual(Monitor.isImportantForNotification(false, DOWN, PENDING), false);
+            assert.strictEqual(Monitor.isImportantForNotification(false, PENDING, PENDING, DOWN), false);
+            assert.strictEqual(Monitor.isImportantForNotification(false, PENDING, UP, DOWN), true);
+        });
+
+        test("does not notify for up to pending to up", () => {
+            assert.strictEqual(Monitor.isImportantForNotification(false, UP, PENDING), false);
+            assert.strictEqual(Monitor.isImportantForNotification(false, PENDING, UP, UP), false);
+        });
+
+        test("does not notify for a first start of pending to up", () => {
+            assert.strictEqual(Monitor.isImportantForNotification(false, PENDING, UP, null), false);
+            assert.strictEqual(Monitor.isImportantForNotification(false, PENDING, UP), false);
+        });
+
+        test("does not notify for pending to up after maintenance", () => {
+            assert.strictEqual(Monitor.isImportantForNotification(false, PENDING, UP, MAINTENANCE), false);
+        });
+
+        test("ignores the prior status unless the transition is pending to up", () => {
+            assert.strictEqual(Monitor.isImportantForNotification(false, UP, UP, DOWN), false);
+            assert.strictEqual(Monitor.isImportantForNotification(false, PENDING, DOWN, UP), true);
+        });
+    });
+
+    describe("getStatusBeforePending()", () => {
+        test("does not query unless the beat is pending to up", async () => {
+            const original = R.findOne;
+            let calls = 0;
+            R.findOne = async () => {
+                calls++;
+                return { status: DOWN };
+            };
+
+            try {
+                assert.strictEqual(await Monitor.getStatusBeforePending(5, UP, PENDING), null);
+                assert.strictEqual(await Monitor.getStatusBeforePending(5, DOWN, UP), null);
+                assert.strictEqual(await Monitor.getStatusBeforePending(5, PENDING, DOWN), null);
+                assert.strictEqual(await Monitor.getStatusBeforePending(5, PENDING, PENDING), null);
+                assert.strictEqual(calls, 0);
+            } finally {
+                R.findOne = original;
+            }
+        });
+
+        test("returns the last non-pending status, including down (0)", async () => {
+            const original = R.findOne;
+            const calls = [];
+            R.findOne = async (...args) => {
+                calls.push(args);
+                return { status: DOWN };
+            };
+
+            try {
+                assert.strictEqual(await Monitor.getStatusBeforePending(5, PENDING, UP), DOWN);
+                assert.strictEqual(calls.length, 1);
+                assert.strictEqual(calls[0][0], "heartbeat");
+                assert.match(String(calls[0][1]), /monitor_id = \?/);
+                assert.match(String(calls[0][1]), /status != \?/);
+                assert.match(String(calls[0][1]), /ORDER BY id DESC/);
+                assert.deepStrictEqual(calls[0][2], [5, PENDING]);
+            } finally {
+                R.findOne = original;
+            }
+        });
+
+        test("returns null when the monitor has never left pending", async () => {
+            const original = R.findOne;
+            R.findOne = async () => null;
+
+            try {
+                assert.strictEqual(await Monitor.getStatusBeforePending(5, PENDING, UP), null);
+            } finally {
+                R.findOne = original;
+            }
         });
     });
 
