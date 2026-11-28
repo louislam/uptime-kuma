@@ -56,6 +56,8 @@ class Prometheus {
             monitor_url: monitor.url,
             monitor_hostname: monitor.hostname,
             monitor_port: monitor.port,
+            monitor_parent_id: monitor.parent || "",
+            monitor_path_ids: monitor.pathIds || `/${monitor.id}/`,
         };
     }
 
@@ -88,6 +90,8 @@ class Prometheus {
             "monitor_url",
             "monitor_hostname",
             "monitor_port",
+            "monitor_parent_id",
+            "monitor_path_ids",
         ];
 
         monitorCertDaysRemaining = new PrometheusClient.Gauge({
