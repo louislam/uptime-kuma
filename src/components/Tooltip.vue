@@ -14,7 +14,7 @@
                         {{ statusText }}
                     </div>
                     <div class="tooltip-time">{{ timeText }}</div>
-                    <div v-if="content?.msg" class="tooltip-message">{{ content.msg }}</div>
+                    <div v-if="messageText" class="tooltip-message">{{ messageText }}</div>
                 </slot>
             </div>
             <div class="tooltip-arrow" :class="{ 'arrow-above': position === 'above' }"></div>
@@ -61,6 +61,20 @@ export default {
                 left: this.x + "px",
                 top: this.y + "px",
             };
+        },
+
+        messageText() {
+            const reason = this.content?.failureReason;
+            if (reason === "dns") {
+                return this.$t("DNS resolution failed");
+            }
+            if (reason === "timeout") {
+                return this.$t("Connection Timeout");
+            }
+            if (Number.isInteger(reason) && reason >= 400 && reason <= 599) {
+                return `HTTP ${reason}`;
+            }
+            return this.content?.msg;
         },
 
         statusText() {
