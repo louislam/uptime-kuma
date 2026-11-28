@@ -58,6 +58,135 @@ class GlobalpingMonitorType extends MonitorType {
     }
 
     /**
+     * Monitor types for which a failed local check can be confirmed via Globalping,
+     * mapped to the Globalping subtype used for the confirmation measurement.
+     */
+    static CONFIRM_SUBTYPES = {
+        http: "http",
+        keyword: "http",
+        "json-query": "http",
+        ping: "ping",
+        port: "ping",
+    };
+
+    /**
+     * Results of recent confirmations per monitor id, to limit the number of Globalping API calls.
+     * @type {Map<number, {time: number, result?: object, error?: string}>}
+     */
+    confirmCache = new Map();
+
+    /**
+     * Confirm a local failure of a regular (non-globalping) monitor from Globalping probes.
+     * The result is cached per monitor for `globalpingConfirmMinInterval` seconds (default 300), so a monitor that
+     * stays down does not trigger a measurement on every heartbeat.
+     * @param {object} monitor - The monitor bean whose local check failed.
+     * @param {number} now - Current time in ms (injectable for tests).
+     * @returns {Promise<{up: boolean, msg: string, ping: number|null}>} up is true if Globalping could reach the target.
+     * @throws {Error} If the monitor type is not supported or the confirmation is inconclusive because Globalping
+     *                 itself failed (API error). Probe failures are returned as up=false.
+     */
+    async confirmReachable(monitor, now = Date.now()) {
+        if (!GlobalpingMonitorType.CONFIRM_SUBTYPES[monitor.type]) {
+            throw new Error(`Globalping confirmation is not supported for monitor type ${monitor.type}`);
+        }
+
+        const minInterval = Math.max(0, Number(monitor.getConfigValue("globalpingConfirmMinInterval", 300))) * 1000;
+        const cached = this.confirmCache.get(monitor.id);
+        if (cached) {
+            // API errors are only cached briefly so a recovered API is used again soon
+            const ttl = cached.error ? Math.min(minInterval, 60000) : minInterval;
+            if (now - cached.time < ttl) {
+                if (cached.error) {
+                    throw new Error(cached.error);
+                }
+                return cached.result;
+            }
+        }
+
+        try {
+            const result = await this.runConfirmation(monitor);
+            this.confirmCache.set(monitor.id, { time: now, result });
+            return result;
+        } catch (error) {
+            this.confirmCache.set(monitor.id, { time: now, error: error.message });
+            throw error;
+        }
+    }
+
+    /**
+     * Run the confirmation measurements: `globalpingConfirmProbes` (1-5, default 3) parallel measurements, spread
+     * over the comma separated `globalpingConfirmLocation` list (default "world"). UP if at least half succeed.
+     * @param {object} monitor - The monitor bean whose local check failed.
+     * @returns {Promise<{up: boolean, msg: string, ping: number|null}>} Aggregated result.
+     * @throws {Error} If too many probes failed on the Globalping side to decide.
+     */
+    async runConfirmation(monitor) {
+        const subtype = GlobalpingMonitorType.CONFIRM_SUBTYPES[monitor.type];
+        const probes = Math.min(5, Math.max(1, parseInt(monitor.getConfigValue("globalpingConfirmProbes", 3)) || 3));
+        let locations = String(monitor.getConfigValue("globalpingConfirmLocation", "") || "")
+            .split(",")
+            .map((l) => l.trim())
+            .filter(Boolean);
+        if (locations.length === 0) {
+            locations = ["world"];
+        }
+
+        const apiKey = await Settings.get("globalpingApiToken");
+        const client = new Globalping({
+            auth: apiKey,
+            agent: this.httpUserAgent,
+        });
+
+        // Read-only view on the monitor: only the properties needed for the measurement are overridden.
+        const view = Object.create(monitor);
+        Object.assign(view, {
+            dns_resolve_server: null, // a local resolver is not reachable from remote probes
+            skipTlsInfoStore: true, // do not overwrite the stored certificate info with the probe's
+            expiryNotification: false,
+        });
+        if (subtype === "http" && monitor.maxredirects > 0) {
+            // Globalping does not follow redirects, the local check would have: accept 3xx as well
+            view.accepted_statuscodes_json = JSON.stringify([
+                ...JSON.parse(monitor.accepted_statuscodes_json || '["200-299"]'),
+                "300-399",
+            ]);
+        }
+        if (subtype === "ping") {
+            view.protocol = monitor.type === "port" ? "TCP" : "ICMP";
+            view.ping_count = monitor.type === "port" ? 1 : monitor.ping_count || 1;
+        }
+
+        const outcomes = await Promise.all(
+            Array.from({ length: probes }, async (_, i) => {
+                const probeView = Object.create(view);
+                probeView.location = locations[i % locations.length];
+                const heartbeat = { status: null, msg: "", ping: null };
+                try {
+                    await this[subtype](client, probeView, heartbeat, !!apiKey);
+                } catch (error) {
+                    // An API error (rate limit, validation, outage) says nothing about the target
+                    const unknown = /^Failed to (create|fetch) measurement/.test(error.message);
+                    return { state: unknown ? "unknown" : "down", msg: error.message, ping: null };
+                }
+                return { state: heartbeat.status === UP ? "up" : "down", msg: heartbeat.msg, ping: heartbeat.ping };
+            })
+        );
+
+        const upOnes = outcomes.filter((o) => o.state === "up");
+        const unknownOnes = outcomes.filter((o) => o.state === "unknown");
+        const downOnes = outcomes.filter((o) => o.state === "down");
+        const quorum = Math.ceil(probes / 2);
+
+        if (upOnes.length >= quorum) {
+            return { up: true, msg: `${upOnes.length}/${probes} probes OK, ${upOnes[0].msg}`, ping: upOnes[0].ping };
+        }
+        if (upOnes.length + unknownOnes.length >= quorum) {
+            throw new Error(`Globalping confirmation inconclusive: ${unknownOnes[0].msg}`);
+        }
+        return { up: false, msg: `${downOnes.length}/${probes} probes failed, ${downOnes[0].msg}`, ping: null };
+    }
+
+    /**
      * Handles ping monitors.
      * @param {Client} client - The client object.
      * @param {Monitor} monitor - The monitor object.
@@ -447,7 +576,7 @@ class GlobalpingMonitorType extends MonitorType {
      * @returns {Promise<void>}
      */
     async handleTLSInfo(monitor, protocol, probe, tlsInfo) {
-        if (!tlsInfo) {
+        if (!tlsInfo || monitor.skipTlsInfoStore) {
             return;
         }
 

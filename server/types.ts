@@ -5,6 +5,10 @@ import { z } from "zod";
  */
 export const monitorConfigSchema = z.object({
     systemServiceName: z.string().max(255).optional(),
+    globalpingConfirm: z.boolean().optional(),
+    globalpingConfirmLocation: z.string().max(255).optional(),
+    globalpingConfirmProbes: z.number().int().min(1).max(5).optional(),
+    globalpingConfirmMinInterval: z.number().int().min(0).max(86400).optional(),
 });
 
 export type MonitorConfig = z.infer<typeof monitorConfigSchema>;

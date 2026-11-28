@@ -1617,6 +1617,66 @@
                                 </div>
                             </div>
 
+                            <!-- Confirm failures with Globalping -->
+                            <div v-if="supportsGlobalpingConfirm" class="my-3">
+                                <div class="form-check">
+                                    <input
+                                        id="globalpingConfirm"
+                                        v-model="monitor.config.globalpingConfirm"
+                                        class="form-check-input"
+                                        type="checkbox"
+                                    />
+                                    <label class="form-check-label" for="globalpingConfirm">
+                                        {{ $t("globalpingConfirmFailure") }}
+                                    </label>
+                                    <div class="form-text">
+                                        {{ $t("globalpingConfirmFailureDescription") }}
+                                    </div>
+                                </div>
+                                <div v-if="monitor.config.globalpingConfirm" class="mt-2">
+                                    <label for="globalpingConfirmLocation" class="form-label">
+                                        {{ $t("globalpingConfirmLocations") }}
+                                    </label>
+                                    <input
+                                        id="globalpingConfirmLocation"
+                                        v-model="monitor.config.globalpingConfirmLocation"
+                                        type="text"
+                                        class="form-control"
+                                        placeholder="world"
+                                    />
+                                    <div class="form-text">{{ $t("globalpingConfirmLocationsDescription") }}</div>
+
+                                    <label for="globalpingConfirmProbes" class="form-label mt-2">
+                                        {{ $t("globalpingConfirmProbes") }}
+                                    </label>
+                                    <input
+                                        id="globalpingConfirmProbes"
+                                        v-model.number="monitor.config.globalpingConfirmProbes"
+                                        type="number"
+                                        class="form-control"
+                                        min="1"
+                                        max="5"
+                                        step="1"
+                                        placeholder="3"
+                                    />
+
+                                    <label for="globalpingConfirmMinInterval" class="form-label mt-2">
+                                        {{ $t("globalpingConfirmMinInterval") }}
+                                    </label>
+                                    <input
+                                        id="globalpingConfirmMinInterval"
+                                        v-model.number="monitor.config.globalpingConfirmMinInterval"
+                                        type="number"
+                                        class="form-control"
+                                        min="0"
+                                        max="86400"
+                                        step="1"
+                                        placeholder="300"
+                                    />
+                                    <div class="form-text">{{ $t("globalpingConfirmMinIntervalDescription") }}</div>
+                                </div>
+                            </div>
+
                             <div v-if="monitor.maxretries" class="my-3">
                                 <label for="retry-interval" class="form-label">
                                     {{ $t("Heartbeat Retry Interval") }}
@@ -3424,6 +3484,17 @@ export default {
     },
 
     computed: {
+        /**
+         * Whether a failed check of this monitor can be confirmed via Globalping
+         * @returns {boolean} true for supported types, not in upside down mode
+         */
+        supportsGlobalpingConfirm() {
+            return (
+                ["http", "keyword", "json-query", "ping", "port"].includes(this.monitor.type) &&
+                !this.monitor.upsideDown
+            );
+        },
+
         timeoutStep() {
             return this.monitor.type === "ping" ? 1 : 0.1;
         },
