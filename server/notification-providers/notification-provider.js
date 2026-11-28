@@ -25,6 +25,19 @@ class NotificationProvider {
     }
 
     /**
+     * Send a slow-response notification.
+     * @param {BeanModel} notification Notification to send
+     * @param {string} msg General Message
+     * @param {?object} monitorJSON Monitor details
+     * @param {?object} responseTimeJSON Response time details
+     * @returns {Promise<string>} Return Successful Message
+     * @throws Error with fail msg
+     */
+    async sendSlowMessage(notification, msg, monitorJSON = null, responseTimeJSON = null) {
+        throw new Error("Have to override Notification.sendSlowMessage(...)");
+    }
+
+    /**
      * Extracts the address from a monitor JSON object based on its type.
      * @param {?object} monitorJSON Monitor details (For Up/Down only)
      * @returns {string} The extracted address based on the monitor type.

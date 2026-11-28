@@ -17,6 +17,8 @@ export interface CompactMonitor {
     pathName: string;
     interval: number;
     weight: number | null;
+    slowResponseNotification: boolean;
+    slowResponseNotificationThreshold: number | null;
 }
 
 /**
@@ -34,6 +36,8 @@ export function toCompactMonitor(
         parent?: number | null;
         interval: number;
         weight?: number | null;
+        slowResponseNotification?: boolean | number;
+        slowResponseNotificationThreshold?: number;
     },
     preloadData: CompactPreloadData
 ): CompactMonitor {
@@ -51,5 +55,7 @@ export function toCompactMonitor(
         pathName: path.join(" / "),
         interval: monitor.interval,
         weight: monitor.weight ?? null,
+        slowResponseNotification: Boolean(monitor.slowResponseNotification),
+        slowResponseNotificationThreshold: monitor.slowResponseNotificationThreshold ?? null,
     };
 }

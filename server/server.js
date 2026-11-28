@@ -597,6 +597,9 @@ app.use(function (req, res, next) {
                 bean.authMethod = monitor.authMethod;
                 bean.authWorkstation = monitor.authWorkstation;
                 bean.authDomain = monitor.authDomain;
+                bean.slowResponseNotification = monitor.slowResponseNotification;
+                bean.slowResponseNotificationThreshold = monitor.slowResponseNotificationThreshold;
+                bean.slowResponseNotificationResendInterval = monitor.slowResponseNotificationResendInterval;
                 bean.grpcUrl = monitor.grpcUrl;
                 bean.grpcProtobuf = monitor.grpcProtobuf;
                 bean.grpcServiceName = monitor.grpcServiceName;
@@ -1093,11 +1096,26 @@ app.use(function (req, res, next) {
             try {
                 checkLogin(socket);
 
+                // Two lookups so each flag uses its own index. OR would scan heartbeat.
+                // The second branch skips important = 1 so a row with both flags is counted once.
                 let count;
                 if (monitorID == null) {
-                    count = await R.count("heartbeat", "important = 1");
+                    count = await R.getCell(`
+                        SELECT
+                            (SELECT COUNT(*) FROM heartbeat WHERE important = 1)
+                            +
+                            (SELECT COUNT(*) FROM heartbeat WHERE ping_important = 1 AND important = 0)
+                    `);
                 } else {
-                    count = await R.count("heartbeat", "monitor_id = ? AND important = 1", [monitorID]);
+                    count = await R.getCell(
+                        `
+                        SELECT
+                            (SELECT COUNT(*) FROM heartbeat WHERE monitor_id = ? AND important = 1)
+                            +
+                            (SELECT COUNT(*) FROM heartbeat WHERE monitor_id = ? AND ping_important = 1 AND important = 0)
+                    `,
+                        [monitorID, monitorID]
+                    );
                 }
 
                 callback({
@@ -1116,29 +1134,41 @@ app.use(function (req, res, next) {
             try {
                 checkLogin(socket);
 
+                // Same split as the count: each branch can use its index, then the
+                // small combined set is ordered. Beans keep Heartbeat.toJSON() field names.
                 let list;
                 if (monitorID == null) {
-                    list = await R.find(
+                    list = R.convertToBeans(
                         "heartbeat",
-                        `
-                        important = 1
+                        await R.getAll(
+                            `
+                        SELECT * FROM (
+                            SELECT * FROM heartbeat WHERE important = 1
+                            UNION ALL
+                            SELECT * FROM heartbeat WHERE ping_important = 1 AND important = 0
+                        ) beats
                         ORDER BY time DESC
-                        LIMIT ?
-                        OFFSET ?
+                        LIMIT ? OFFSET ?
                     `,
-                        [count, offset]
+                            [count, offset]
+                        )
                     );
                 } else {
-                    list = await R.find(
+                    list = R.convertToBeans(
                         "heartbeat",
-                        `
-                        monitor_id = ?
-                        AND important = 1
+                        await R.getAll(
+                            `
+                        SELECT * FROM (
+                            SELECT * FROM heartbeat WHERE monitor_id = ? AND important = 1
+                            UNION ALL
+                            SELECT * FROM heartbeat
+                            WHERE monitor_id = ? AND ping_important = 1 AND important = 0
+                        ) beats
                         ORDER BY time DESC
-                        LIMIT ?
-                        OFFSET ?
+                        LIMIT ? OFFSET ?
                     `,
-                        [monitorID, count, offset]
+                            [monitorID, monitorID, count, offset]
+                        )
                     );
                 }
 
@@ -1350,7 +1380,10 @@ app.use(function (req, res, next) {
 
                 log.info("manage", `Clear Events Monitor: ${monitorID} User ID: ${socket.userID}`);
 
-                await R.exec("UPDATE heartbeat SET msg = ?, important = ? WHERE monitor_id = ? ", ["", "0", monitorID]);
+                await R.exec(
+                    "UPDATE heartbeat SET msg = ?, important = ?, ping_msg = ?, ping_important = ? WHERE monitor_id = ? ",
+                    ["", "0", "", "0", monitorID]
+                );
 
                 callback({
                     ok: true,

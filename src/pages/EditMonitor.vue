@@ -1715,6 +1715,67 @@
                                 />
                             </div>
 
+                            <!-- Slow Response Notification -->
+                            <div v-if="showSlowResponseNotification" class="my-3 form-check">
+                                <input
+                                    id="slow-response-notification"
+                                    v-model="monitor.slowResponseNotification"
+                                    class="form-check-input"
+                                    type="checkbox"
+                                />
+                                <label class="form-check-label" for="slow-response-notification">
+                                    {{ $t("slowResponseNotificationEnable") }}
+                                </label>
+                                <div class="form-text">
+                                    {{ $t("slowResponseNotificationUseDescription") }}
+                                </div>
+                            </div>
+
+                            <!-- Threshold -->
+                            <div v-if="showSlowResponseNotification && monitor.slowResponseNotification" class="my-3">
+                                <label for="slow-response-notification-threshold" class="form-label">
+                                    {{ $t("slowResponseNotificationThreshold") }}
+                                </label>
+                                <input
+                                    id="slow-response-notification-threshold"
+                                    v-model="monitor.slowResponseNotificationThreshold"
+                                    type="number"
+                                    class="form-control"
+                                    required
+                                    min="0"
+                                    step="1"
+                                />
+                                <div class="form-text">
+                                    {{
+                                        $t("slowResponseNotificationThresholdDescription", [
+                                            monitor.slowResponseNotificationThreshold,
+                                        ])
+                                    }}
+                                </div>
+                            </div>
+
+                            <!-- Slow Response Resend Interval -->
+                            <div v-if="showSlowResponseNotification && monitor.slowResponseNotification" class="my-3">
+                                <label for="slow-response-notification-resend-interval" class="form-label">
+                                    {{ $t("slowResponseNotificationResendInterval") }}
+                                    <span v-if="monitor.slowResponseNotificationResendInterval > 0">
+                                        ({{
+                                            $t("resendEveryXTimes", [monitor.slowResponseNotificationResendInterval])
+                                        }})
+                                    </span>
+                                    <span v-else>({{ $t("resendDisabled") }})</span>
+                                </label>
+                                <input
+                                    id="slow-response-notification-resend-interval"
+                                    v-model="monitor.slowResponseNotificationResendInterval"
+                                    type="number"
+                                    class="form-control"
+                                    required
+                                    min="0"
+                                    step="1"
+                                />
+                            </div>
+
                             <h2 v-if="monitor.type !== 'push'" class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 
                             <div
@@ -3282,6 +3343,7 @@ import {
     PING_PER_REQUEST_TIMEOUT_MAX,
     sleep,
     TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD,
+    TYPES_WITH_RESPONSE_TIME_SUPPORT,
 } from "../util.ts";
 import { timeDurationFormatter } from "../util-frontend";
 import isFQDN from "validator/lib/isFQDN";
@@ -3367,6 +3429,9 @@ const monitorDefaults = {
     ntpTimeOffsetThreshold: 1000,
     ntpRootDispersionThreshold: 500,
     config: {},
+    slowResponseNotification: false,
+    slowResponseNotificationThreshold: 2500,
+    slowResponseNotificationResendInterval: 0,
 };
 
 export default {
@@ -3460,6 +3525,13 @@ export default {
 
         showDomainExpiryNotification() {
             return this.monitor.type in TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD;
+        },
+
+        /**
+         * @returns {boolean} Whether this monitor type has a response time support
+         */
+        showSlowResponseNotification() {
+            return TYPES_WITH_RESPONSE_TIME_SUPPORT.includes(this.monitor.type);
         },
 
         pageName() {
