@@ -145,10 +145,10 @@ jobs:
       #          path: node_modules
       #          key: node-modules-${{ runner.os }}-node${{ matrix.node }}-${{ hashFiles('**/package-lock.json') }}
 
-      - name: Use Node.js 24
+      - name: Use Node.js 26
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: 24
+          node-version: 26
       - run: npm clean-install --no-fund
       - run: npm run lint:prod
 
