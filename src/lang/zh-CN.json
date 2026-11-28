@@ -1780,5 +1780,8 @@
     "Microsoft Graph Email": "电子邮件 (Microsoft Graph)",
     "opsimateApiTokenDescription": "OpsiMate 服务器设置里的 API_TOKEN 值（默认值：opsimate）。",
     "opsimateUrlDescription": "OpsiMate API 基础地址（应为服务器端口，不是网页 UI 地址）。",
-    "OpsiMate URL": "OpsiMate 地址"
+    "OpsiMate URL": "OpsiMate 地址",
+    "trigvApiKeyDocs": "Trigv API key 文档",
+    "trigvChannelHelp": "输入频道标识符（最多 120 个字符）。留空则使用通用设置。",
+    "trigvDefaultChannel": "General"
 }

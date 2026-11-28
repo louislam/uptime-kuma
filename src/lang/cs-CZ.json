@@ -1734,5 +1734,8 @@
     "msGraphClientSecretLink": "vytvořit tajný klíč klienta",
     "OpsiMate URL": "URL OpsiMate",
     "opsimateUrlDescription": "Základní URL rozhraní API OpsiMate (port serveru, nikoli webové uživatelské rozhraní).",
-    "opsimateApiTokenDescription": "Hodnota nastavení API_TOKEN vašeho serveru OpsiMate (výchozí hodnota: opsimate)."
+    "opsimateApiTokenDescription": "Hodnota nastavení API_TOKEN vašeho serveru OpsiMate (výchozí hodnota: opsimate).",
+    "trigvDefaultChannel": "obecný",
+    "trigvChannelHelp": "Zadejte slug svého kanálu (maximálně 120 znaků). Pokud pole ponecháte prázdné, použije se výchozí název.",
+    "trigvApiKeyDocs": "Dokumentace k API klíči Trigv"
 }

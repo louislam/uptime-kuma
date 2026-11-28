@@ -72,9 +72,9 @@ RUN apt update && \
     rm -rf /var/lib/apt/lists/* && \
     apt --yes autoremove && \
     # Unused by headless Chromium (~190 MB on disk)
-    rm -rf /usr/lib/x86_64-linux-gnu/libLLVM* \
-           /usr/lib/x86_64-linux-gnu/libgallium* \
-           /usr/lib/x86_64-linux-gnu/libz3* && \
+    rm -rf /usr/lib/*-linux-gnu/libLLVM* \
+           /usr/lib/*-linux-gnu/libgallium* \
+           /usr/lib/*-linux-gnu/libz3* && \
     # Unused: embedded MariaDB uses /app/data/mariadb
     rm -rf /var/lib/mysql/* && \
     chown -R node:node /var/lib/mysql

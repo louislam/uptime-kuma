@@ -1733,5 +1733,13 @@
     "opsimateUrlDescription": "Bas-URL:en för OpsiMate-API:et (serverporten, inte webbgränssnittet).",
     "opsimateApiTokenDescription": "Värdet för inställningen API_TOKEN på din OpsiMate-server (standard: opsimate).",
     "trigvChannelHelp": "Ange din kanal-slug (högst 120 tecken). Lämna tom för att använda den allmänna.",
-    "trigvApiKeyDocs": "Trigv API-nyckeldokumentation"
+    "trigvApiKeyDocs": "Trigv API-nyckeldokumentation",
+    "Legacy API Keys": "Äldre API-nycklar",
+    "legacyAPIKeyMsg": "Äldre nycklar från 2.x fungerar endast för Prometheus /metrics.",
+    "kwtsmsApiCredentialsDescription": "Använd ditt användarnamn och lösenord för kwtSMS-API:et (inte mobilnumret som är kopplat till ditt konto). Du hittar dessa uppgifter i ditt kwtSMS-konto {here}, under API.",
+    "kwtsmsSenderId": "Avsändar-ID",
+    "kwtsmsSenderIdDescription": "Ett avsändar-ID som är registrerat på ditt kwtSMS-konto. KWT-SMS är en delad testavsändare; använd ditt eget avsändar-ID i produktionsmiljö.",
+    "kwtsmsRecipientDescription": "Ett eller flera nummer i internationellt format, separerade med kommatecken (till exempel 965XXXXXXXX). Mellanslag samt inledande + eller 00 tas bort.",
+    "kwtsmsTestMode": "Testläge",
+    "kwtsmsTestModeDescription": "kwtSMS tar emot meddelandet men levererar det inte. Använd funktionen för att kontrollera konfigurationen och stäng sedan av den."
 }

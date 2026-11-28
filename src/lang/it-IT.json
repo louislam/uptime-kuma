@@ -1754,5 +1754,13 @@
     "opsimateApiTokenDescription": "Il valore dell'impostazione API_TOKEN del tuo server OpsiMate (predefinito: opsimate).",
     "trigvDefaultChannel": "generale",
     "trigvChannelHelp": "Inserisci lo slug del tuo canale (massimo 120 caratteri). Lascia vuoto per utilizzare quello generale.",
-    "trigvApiKeyDocs": "Documentazione della chiave API di Trigv"
+    "trigvApiKeyDocs": "Documentazione della chiave API di Trigv",
+    "Legacy API Keys": "Chiavi API legacy",
+    "legacyAPIKeyMsg": "Le chiavi legacy della versione 2.x funzionano solo per /metrics di Prometheus.",
+    "kwtsmsApiCredentialsDescription": "Utilizza il tuo nome utente API e la tua password API di kwtSMS (non il numero di cellulare associato al tuo account). Puoi trovarli nel tuo account kwtSMS {qui}, alla voce API.",
+    "kwtsmsSenderId": "ID mittente",
+    "kwtsmsSenderIdDescription": "Un ID mittente registrato nel tuo account kwtSMS. KWT-SMS è un mittente di prova condiviso; in fase di produzione, utilizza un tuo ID mittente specifico.",
+    "kwtsmsRecipientDescription": "Uno o più numeri in formato internazionale, separati da una virgola (ad esempio 965XXXXXXXX). Gli spazi e il simbolo \"+\" o la sequenza \"00\" all'inizio vengono rimossi.",
+    "kwtsmsTestMode": "Modalità prova",
+    "kwtsmsTestModeDescription": "kwtSMS accetta il messaggio ma non lo recapita. Usalo per verificare la configurazione, poi disattivalo."
 }

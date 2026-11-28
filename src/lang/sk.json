@@ -1739,5 +1739,13 @@
     "opsimateApiTokenDescription": "Hodnota nastavenia API_TOKEN vášho servera OpsiMate (predvolené nastavenie: opsimate).",
     "trigvChannelHelp": "Zadajte skrátený názov kanála (maximálne 120 znakov). Ak necháte pole prázdne, použije sa všeobecný názov.",
     "trigvApiKeyDocs": "Dokumentácia k API kľúču Trigv",
-    "trigvDefaultChannel": "general"
+    "trigvDefaultChannel": "general",
+    "Legacy API Keys": "Staršie kľúče API",
+    "legacyAPIKeyMsg": "Staršie kľúče z verzie 2.x fungujú iba pre Prometheus /metrics.",
+    "kwtsmsApiCredentialsDescription": "Použite svoje používateľské meno a heslo pre rozhranie API služby kwtSMS (nie mobilné číslo vášho účtu). Nájdete ich vo svojom účte kwtSMS {tu}, v časti API.",
+    "kwtsmsSenderId": "ID odosielateľa",
+    "kwtsmsSenderIdDescription": "Identifikátor odosielateľa zaregistrovaný vo vašom účte kwtSMS. KWT-SMS je zdieľaný testovací odosielateľ; v produkčnom prostredí používajte svoj vlastný identifikátor odosielateľa.",
+    "kwtsmsRecipientDescription": "Jedno alebo viac čísel v medzinárodnom formáte, oddelených čiarkou (napríklad 965XXXXXXXX). Medzery a úvodné znamienko + alebo 00 sa odstránia.",
+    "kwtsmsTestMode": "Testovací režim",
+    "kwtsmsTestModeDescription": "kwtSMS správu prijme, ale nedoručí ju. Použite túto funkciu na skontrolovanie nastavenia a potom ju vypnite."
 }
