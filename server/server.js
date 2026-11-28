@@ -942,6 +942,7 @@ let needSetup = false;
                 bean.smtpSecurity = monitor.smtpSecurity;
                 bean.snmpVersion = monitor.snmpVersion;
                 bean.snmpOid = monitor.snmpOid;
+                bean.snmp_v3_username = monitor.snmpV3Username;
                 bean.jsonPathOperator = monitor.jsonPathOperator;
                 bean.retry_only_on_status_code_failure = Boolean(monitor.retryOnlyOnStatusCodeFailure);
                 bean.timeout = monitor.timeout;
