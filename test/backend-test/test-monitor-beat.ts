@@ -3,6 +3,7 @@ import assert from "node:assert";
 import { createRequire } from "node:module";
 import http from "node:http";
 import https from "node:https";
+import net from "node:net";
 
 const require = createRequire(import.meta.url);
 const Monitor = require("../../server/model/monitor");
@@ -333,6 +334,60 @@ describe("Monitor beat over HTTP", () => {
         } finally {
             monitor.stop();
             await server.close();
+        }
+    });
+
+    test("keeps the reason when every address of a dual-stack host refuses", async () => {
+        // Find a free port, then close it so every connection is refused
+        const probe = net.createServer();
+        await new Promise((resolve) => probe.listen(0, "127.0.0.1", resolve));
+        const { port } = probe.address();
+        await new Promise((resolve) => probe.close(resolve));
+
+        // localhost resolves to ::1 and 127.0.0.1, so Node reports an AggregateError with an empty message
+        const monitor = fakeMonitor(`http://localhost:${port}/`);
+        const io = fakeIo();
+
+        R.findOne = async () => null;
+        R.dispense = () => ({
+            monitor_id: monitor.id,
+            toJSON() {
+                return { monitor_id: this.monitor_id, status: this.status, msg: this.msg };
+            },
+        });
+        R.store = async () => {};
+        R.isoDateTimeMillis = () => "2024-01-01 00:00:00";
+        UptimeCalculator.getUptimeCalculator = async () => ({
+            update: async () => ({ unix: () => 1704067200 }),
+        });
+        Monitor.sendNotification = async () => {};
+        Monitor.isUnderMaintenance = async () => false;
+        Monitor.sendStats = async () => {};
+        Prometheus.prototype.remove = () => {};
+
+        let beatDone;
+        const beatFinished = new Promise((resolve) => {
+            beatDone = resolve;
+        });
+        Prometheus.prototype.update = () => {
+            beatDone();
+        };
+
+        try {
+            await monitor.start(io);
+            await Promise.race([
+                beatFinished,
+                new Promise((_, reject) => setTimeout(() => reject(new Error("beat timeout")), 5000)),
+            ]);
+            await new Promise((resolve) => setImmediate(resolve));
+
+            const heartbeat = io.events.find((event) => event.event === "heartbeat");
+            assert.ok(heartbeat, "heartbeat emitted");
+            assert.strictEqual(heartbeat.args[0].status, 0);
+            // e.g. "connect ECONNREFUSED ::1:1234; connect ECONNREFUSED 127.0.0.1:1234"
+            assert.match(heartbeat.args[0].msg, new RegExp(`:${port}\\b`));
+        } finally {
+            monitor.stop();
         }
     });
 
