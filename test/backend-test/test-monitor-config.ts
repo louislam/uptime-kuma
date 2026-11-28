@@ -106,3 +106,44 @@ describe("Monitor.applyClientConfig()", () => {
         assert.deepStrictEqual(monitor.getConfig(), {});
     });
 });
+
+describe("Down heartbeat interval configuration", () => {
+    test("accepts and stores a valid interval", () => {
+        const monitor = createMonitor({ server_key: 1 });
+
+        monitor.applyClientConfig({ downInterval: 30 });
+
+        assert.deepStrictEqual(monitor.getConfig(), { server_key: 1, downInterval: 30 });
+    });
+
+    test("supports disabling the interval", () => {
+        const monitor = createMonitor({ downInterval: 30 });
+
+        monitor.applyClientConfig({ downInterval: null });
+
+        assert.strictEqual(monitor.getConfigValue("downInterval", null), null);
+    });
+
+    test("defaults to disabled for legacy monitors", () => {
+        const monitor = createMonitor({});
+
+        assert.strictEqual(monitor.getConfigValue("downInterval", null), null);
+    });
+
+    test("rejects invalid intervals", () => {
+        for (const value of [0, 10, 19, -1, 20.5, "30"]) {
+            const monitor = createMonitor({ server_key: 1 });
+
+            assert.throws(() => monitor.applyClientConfig({ downInterval: value }), /downInterval/);
+            assert.deepStrictEqual(monitor.getConfig(), { server_key: 1 });
+        }
+    });
+
+    test("accepts the minimum interval", () => {
+        const monitor = createMonitor({});
+
+        monitor.applyClientConfig({ downInterval: 20 });
+
+        assert.strictEqual(monitor.getConfigValue("downInterval"), 20);
+    });
+});
