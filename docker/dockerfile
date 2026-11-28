@@ -67,7 +67,7 @@ USER node
 ############################################
 # Build an image for testing pr
 ############################################
-FROM louislam/uptime-kuma:base3 AS pr-test2
+FROM louislam/uptime-kuma:base3 AS pr-test3
 WORKDIR /app
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1
 

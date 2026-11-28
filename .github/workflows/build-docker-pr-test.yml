@@ -38,5 +38,5 @@ jobs:
         with:
           node-version: 26
 
-      - name: Build and push pr-test2
+      - name: Build and push pr-test3
         run: node --run build-docker-pr-test
