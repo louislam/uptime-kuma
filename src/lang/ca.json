@@ -1698,5 +1698,13 @@
     "opsimateApiTokenDescription": "El valor de la configuració API_TOKEN del servidor d'OpsiMate (per defecte: opsimate).",
     "trigvDefaultChannel": "general",
     "trigvChannelHelp": "Introdueix l'identificador del canal (màxim 120 caràcters). Deixa'l buit per utilitzar general.",
-    "trigvApiKeyDocs": "Documentació de la clau d'API de Trigv"
+    "trigvApiKeyDocs": "Documentació de la clau d'API de Trigv",
+    "Legacy API Keys": "Claus d'API antigues",
+    "legacyAPIKeyMsg": "Les claus heretades de la versió 2.x només funcionen per a /metrics de Prometheus.",
+    "kwtsmsApiCredentialsDescription": "Utilitza el teu nom d'usuari i la teva contrasenya de l'API de kwtSMS (no el número de mòbil del teu compte). Els trobaràs al teu compte de kwtSMS, a l'apartat API, {here}.",
+    "kwtsmsSenderId": "Identificador del remitent",
+    "kwtsmsSenderIdDescription": "Un identificador del remitent registrat al teu compte de kwtSMS. KWT-SMS és un remitent de prova compartit; en producció, fes servir el teu propi identificador del remitent.",
+    "kwtsmsRecipientDescription": "Un o més números en format internacional, separats per comes (per exemple, 965XXXXXXXX). S'eliminen els espais i els prefixos inicials + o 00.",
+    "kwtsmsTestMode": "Mode de prova",
+    "kwtsmsTestModeDescription": "kwtSMS accepta el missatge, però no l'entrega. Utilitzeu-lo per comprovar la configuració i, després, desactiva-lo."
 }
