@@ -41,10 +41,10 @@ jobs:
           username: ${{ secrets.GHCR_USERNAME }}
           password: ${{ secrets.GHCR_TOKEN }}
 
-      - name: Use Node.js 20
+      - name: Use Node.js 26
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: 20
+          node-version: 26
 
       #    Tempoary disable until we understand TanStack npm supply-chain compromise
       #      - name: Cache/Restore node_modules
