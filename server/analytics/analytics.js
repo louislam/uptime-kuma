@@ -1,3 +1,4 @@
+const cheerio = require("cheerio");
 const googleAnalytics = require("./google-analytics");
 const umamiAnalytics = require("./umami-analytics");
 const plausibleAnalytics = require("./plausible-analytics");
@@ -49,7 +50,32 @@ function isValidAnalyticsConfig(statusPage) {
     }
 }
 
+/**
+ * Disables the given analytics script tags so the browser does not execute them
+ * until the visitor gives consent. The frontend re-creates them after consent.
+ * @param {string} html HTML script tags returned by getAnalyticsScript()
+ * @returns {string} The same tags with type="text/plain" and a consent marker
+ */
+function deferUntilConsent(html) {
+    const $ = cheerio.load(html, null, false);
+
+    $("script").each((_, element) => {
+        const script = $(element);
+        const originalType = script.attr("type");
+
+        if (originalType) {
+            script.attr("data-original-type", originalType);
+        }
+
+        script.attr("type", "text/plain");
+        script.attr("data-uk-consent", "analytics");
+    });
+
+    return $.html();
+}
+
 module.exports = {
     getAnalyticsScript,
     isValidAnalyticsConfig,
+    deferUntilConsent,
 };
