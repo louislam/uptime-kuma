@@ -46,7 +46,12 @@
                             item-key="id"
                         >
                             <template #item="monitor">
-                                <div class="item" data-testid="monitor">
+                                <div
+                                    v-if="editMode || isActive(monitor)"
+                                    class="item"
+                                    :class="{ disabled: !isActive(monitor) }"
+                                    data-testid="monitor"
+                                >
                                     <div class="row">
                                         <div class="col-9 col-xl-6 small-padding">
                                             <div class="info">
@@ -175,6 +180,20 @@ export default {
         },
     },
     methods: {
+        /**
+         * Checks if the monitor is active
+         * Also returns false if it is non existent
+         * @param {object} monitor Monitor wich activity shall be determined
+         * @returns {boolean}
+         */
+        isActive(monitor) {
+            if (!this.$root.publicMonitorList[monitor.element.id]) {
+                return false;
+            }
+
+            return this.$root.publicMonitorList[monitor.element.id].active;
+        },
+
         /**
          * Toggle collapsed state for a group
          * @param {object} group Group to toggle
