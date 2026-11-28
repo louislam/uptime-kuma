@@ -36,13 +36,13 @@ jobs:
           username: ${{ secrets.GHCR_USERNAME }}
           password: ${{ secrets.GHCR_TOKEN }}
 
-      - name: Use Node.js 20
+      - name: Use Node.js 26
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: 20
+          node-version: 26
 
-      - name: Build and push base2-slim image
+      - name: Build and push base3-slim image
         run: npm run build-docker-base-slim
 
-      - name: Build and push base2 image
+      - name: Build and push base3 image
         run: npm run build-docker-base
