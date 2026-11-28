@@ -252,56 +252,43 @@ export default {
     },
     methods: {
         toggleStatusFilter(status) {
-            let newFilter = {
-                ...this.filterState,
-            };
+            const current = this.filterState.status ?? [];
+            const statusList = current.includes(status)
+                ? current.filter((item) => item !== status)
+                : [...current, status];
 
-            if (newFilter.status == null) {
-                newFilter.status = [status];
-            } else {
-                if (newFilter.status.includes(status)) {
-                    newFilter.status = newFilter.status.filter((item) => item !== status);
-                } else {
-                    newFilter.status.push(status);
-                }
-            }
-            this.$emit("updateFilter", newFilter);
+            this.$emit("updateFilter", {
+                ...this.filterState,
+                status: statusList.length > 0 ? statusList : null,
+            });
         },
         toggleActiveFilter(active) {
-            let newFilter = {
-                ...this.filterState,
-            };
+            const current = this.filterState.active ?? [];
+            const activeList = current.includes(active)
+                ? current.filter((item) => item !== active)
+                : [...current, active];
 
-            if (newFilter.active == null) {
-                newFilter.active = [active];
-            } else {
-                if (newFilter.active.includes(active)) {
-                    newFilter.active = newFilter.active.filter((item) => item !== active);
-                } else {
-                    newFilter.active.push(active);
-                }
-            }
-            this.$emit("updateFilter", newFilter);
+            this.$emit("updateFilter", {
+                ...this.filterState,
+                active: activeList.length > 0 ? activeList : null,
+            });
         },
         toggleTagFilter(tag) {
-            let newFilter = {
-                ...this.filterState,
-            };
+            const current = this.filterState.tags ?? [];
+            const tagsList = current.includes(tag.id)
+                ? current.filter((item) => item !== tag.id)
+                : [...current, tag.id];
 
-            if (newFilter.tags == null) {
-                newFilter.tags = [tag.id];
-            } else {
-                if (newFilter.tags.includes(tag.id)) {
-                    newFilter.tags = newFilter.tags.filter((item) => item !== tag.id);
-                } else {
-                    newFilter.tags.push(tag.id);
-                }
-            }
-            this.$emit("updateFilter", newFilter);
+            this.$emit("updateFilter", {
+                ...this.filterState,
+                tags: tagsList.length > 0 ? tagsList : null,
+            });
         },
         clearFilters() {
             this.$emit("updateFilter", {
                 status: null,
+                active: null,
+                tags: null,
             });
         },
         getExistingTags() {

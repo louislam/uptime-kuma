@@ -152,6 +152,7 @@ import MonitorListItem from "../components/MonitorListItem.vue";
 import MonitorListFilter from "./MonitorListFilter.vue";
 import { getMonitorRelativeURL } from "../util.ts";
 import { computeListWindow, computeRowMetrics } from "../monitor-list-window";
+import { buildDashboardFilterQuery, parseDashboardFilterQuery } from "../dashboard-filter-query";
 
 export default {
     components: {
@@ -174,11 +175,6 @@ export default {
             selectedMonitors: {},
             windowTop: 0,
             bulkActionInProgress: false,
-            filterState: {
-                status: null,
-                active: null,
-                tags: null,
-            },
             collapseKey: 0,
             scrollTop: 0,
             viewportHeight: 0,
@@ -286,14 +282,23 @@ export default {
         },
 
         /**
+         * Dashboard filters live in the route query so views are bookmarkable
+         * (e.g. `/dashboard?status=0` for down monitors). See #3672.
+         * @returns {{status: number[]|null, active: boolean[]|null, tags: number[]|null}}
+         */
+        filterState() {
+            return parseDashboardFilterQuery(this.$route.query);
+        },
+
+        /**
          * Determines if any filters are active.
          * @returns {boolean} True if any filter is active, false otherwise.
          */
         filtersActive() {
             return (
-                this.filterState.status != null ||
-                this.filterState.active != null ||
-                this.filterState.tags != null ||
+                this.filterState.status?.length > 0 ||
+                this.filterState.active?.length > 0 ||
+                this.filterState.tags?.length > 0 ||
                 this.searchText !== ""
             );
         },
@@ -438,12 +443,15 @@ export default {
             }
         },
         /**
-         * Get URL of monitor
+         * Get URL of monitor, preserving current filter query params
          * @param {number} id ID of monitor
-         * @returns {string} Relative URL of monitor
+         * @returns {{path: string, query: object}} Route location
          */
         monitorURL(id) {
-            return getMonitorRelativeURL(id);
+            return {
+                path: getMonitorRelativeURL(id),
+                query: this.$route.query,
+            };
         },
         /**
          * Clear the search bar
@@ -453,12 +461,14 @@ export default {
             this.searchText = "";
         },
         /**
-         * Update the MonitorList Filter
+         * Persist MonitorList filters in the route query (replace, not push,
+         * so toggling filters does not flood browser history).
          * @param {object} newFilter Object with new filter
          * @returns {void}
          */
         updateFilter(newFilter) {
-            this.filterState = newFilter;
+            const query = buildDashboardFilterQuery(this.$route.query, newFilter);
+            this.$router.replace({ query }).catch(() => {});
         },
         /**
          * Toggle collapse state for all group monitors
@@ -496,9 +506,14 @@ export default {
                     }
 
                     // Navigate to the root parent, then increment collapseKey to force re-render
-                    this.$router.push(getMonitorRelativeURL(rootParentId)).finally(() => {
-                        this.collapseKey++;
-                    });
+                    this.$router
+                        .push({
+                            path: getMonitorRelativeURL(rootParentId),
+                            query: this.$route.query,
+                        })
+                        .finally(() => {
+                            this.collapseKey++;
+                        });
                     return;
                 }
             }
