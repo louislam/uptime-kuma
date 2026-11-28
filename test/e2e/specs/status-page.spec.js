@@ -221,6 +221,65 @@ test.describe("Status Page", () => {
         expect(await page.locator("head").innerHTML()).toContain(matomoSiteId);
     });
 
+    test("monitor display name", async ({ page }, testInfo) => {
+        test.setTimeout(60000);
+
+        const monitorName = "Internal Server Name";
+        const displayName = "Public API";
+
+        // Set up a monitor that can be added to the Status Page
+        await page.goto("./add");
+        await login(page);
+        await expect(page.getByTestId("monitor-type-select")).toBeVisible();
+        await page.getByTestId("monitor-type-select").selectOption("http");
+        await page.getByTestId("friendly-name-input").fill(monitorName);
+        await page.getByTestId("url-input").fill("https://www.example.com/status");
+        await page.getByTestId("save-button").click();
+        await page.waitForURL("/dashboard/*"); // wait for the monitor to be created
+
+        // Create a new status page
+        await page.goto("./add-status-page");
+        await page.getByTestId("name-input").fill("Display Name");
+        await page.getByTestId("slug-input").fill("display-name");
+        await page.getByTestId("submit-button").click();
+        await page.waitForURL("/status/display-name?edit"); // wait for the page to be created
+        await waitForConfigLoaded(page);
+
+        // Add a group with the monitor
+        await page.getByTestId("add-group-button").click();
+        await page.getByTestId("group-name").isEditable();
+        await page.getByTestId("group-name").fill("Services");
+        await page.getByTestId("monitor-select").click(); // Vue-Multiselect component
+        await page.getByTestId("monitor-select").getByRole("option", { name: monitorName }).click();
+        await expect(page.getByTestId("monitor")).toHaveCount(1);
+
+        // Set the display name
+        await page.getByTestId("monitor-settings").click();
+        await page.getByTestId("status-page-name-input").fill(displayName);
+        await page.getByTestId("monitor-settings-close").click();
+
+        // Save the changes
+        await Promise.all([page.waitForEvent("load"), page.getByTestId("save-button").click()]);
+        await expect(page.getByTestId("edit-sidebar")).toHaveCount(0);
+
+        // The display name is shown instead of the monitor name
+        await expect(page.getByTestId("monitor-name")).toHaveText(displayName);
+        await screenshot(testInfo, page);
+
+        // Clear the display name
+        await openEditSidebar(page);
+        await page.getByTestId("monitor-settings").click();
+        await expect(page.getByTestId("status-page-name-input")).toHaveValue(displayName);
+        await page.getByTestId("status-page-name-input").fill("");
+        await page.getByTestId("monitor-settings-close").click();
+        await Promise.all([page.waitForEvent("load"), page.getByTestId("save-button").click()]);
+        await expect(page.getByTestId("edit-sidebar")).toHaveCount(0);
+
+        // Falls back to the monitor name
+        await expect(page.getByTestId("monitor-name")).toHaveText(monitorName);
+        await screenshot(testInfo, page);
+    });
+
     // @todo Test certificate expiry
     // @todo Test domain names
 

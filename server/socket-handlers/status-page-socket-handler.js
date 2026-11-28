@@ -390,6 +390,10 @@ module.exports.statusPageSocketHandler = (socket) => {
                         relationBean.custom_url = monitor.url;
                     }
 
+                    if (monitor.statusPageName !== undefined) {
+                        relationBean.status_page_name = monitor.statusPageName?.trim() || null;
+                    }
+
                     await R.store(relationBean);
                 }
 
