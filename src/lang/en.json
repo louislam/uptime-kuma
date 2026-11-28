@@ -1158,6 +1158,7 @@
     "nostrRecipients": "Recipients Public Keys (npub)",
     "nostrRecipientsHelp": "npub format, one per line",
     "showCertificateExpiry": "Show Certificate Expiry",
+    "showDomainExpiry": "Show Domain Expiry",
     "showOnlyLastHeartbeat": "Show Only Last Heartbeat",
     "noOrBadCertificate": "No/Bad Certificate",
     "cacheBusterParam": "Add the {0} parameter",

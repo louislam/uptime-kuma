@@ -104,6 +104,27 @@
                                                         :size="'sm'"
                                                     />
                                                 </div>
+                                                <div
+                                                    v-if="
+                                                        showDomainExpiry &&
+                                                        monitor.element.domainExpiryDaysRemaining != null
+                                                    "
+                                                >
+                                                    <Tag
+                                                        :item="{
+                                                            name: $t('labelDomainExpiry'),
+                                                            value: $t(
+                                                                'days',
+                                                                monitor.element.domainExpiryDaysRemaining
+                                                            ),
+                                                            color:
+                                                                monitor.element.domainExpiryDaysRemaining > 7
+                                                                    ? '#059669'
+                                                                    : '#DC2626',
+                                                        }"
+                                                        size="sm"
+                                                    />
+                                                </div>
                                                 <div v-if="showTags">
                                                     <Tag
                                                         v-for="tag in monitor.element.tags"
@@ -159,6 +180,10 @@ export default {
         },
         /** Should expiry be shown? */
         showCertificateExpiry: {
+            type: Boolean,
+        },
+        /** Should domain expiry be shown? */
+        showDomainExpiry: {
             type: Boolean,
         },
         /** Should only the last heartbeat be shown? */
@@ -327,6 +352,8 @@ export default {
 
 .extra-info {
     display: flex;
+    flex-wrap: wrap;
+    column-gap: 0.25rem;
     margin-bottom: 0.5rem;
 }
 

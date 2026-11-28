@@ -8,14 +8,15 @@ class Group extends BeanModel {
      * @param {boolean} showTags Should the JSON include monitor tags
      * @param {boolean} certExpiry Should JSON include info about
      * certificate expiry?
+     * @param {boolean} domainExpiry Include domain expiry info in JSON
      * @returns {Promise<object>} Object ready to parse
      */
-    async toPublicJSON(showTags = false, certExpiry = false) {
+    async toPublicJSON(showTags = false, certExpiry = false, domainExpiry = false) {
         let monitorBeanList = await this.getMonitorList();
         let monitorList = [];
 
         for (let bean of monitorBeanList) {
-            monitorList.push(await bean.toPublicJSON(showTags, certExpiry));
+            monitorList.push(await bean.toPublicJSON(showTags, certExpiry, domainExpiry));
         }
 
         return {

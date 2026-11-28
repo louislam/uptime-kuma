@@ -84,9 +84,10 @@ class Monitor extends BeanModel {
      * @param {boolean} showTags Include tags in JSON
      * @param {boolean} certExpiry Include certificate expiry info in
      * JSON
+     * @param {boolean} domainExpiry Include domain expiry info in JSON
      * @returns {Promise<object>} Object ready to parse
      */
-    async toPublicJSON(showTags = false, certExpiry = false) {
+    async toPublicJSON(showTags = false, certExpiry = false, domainExpiry = false) {
         let obj = {
             id: this.id,
             name: this.name,
@@ -106,6 +107,13 @@ class Monitor extends BeanModel {
             const { certExpiryDaysRemaining, validCert } = await this.getCertExpiry(this.id);
             obj.certExpiryDaysRemaining = certExpiryDaysRemaining;
             obj.validCert = validCert;
+        }
+
+        if (domainExpiry) {
+            const daysRemaining = await DomainExpiry.getCachedDaysRemaining(this);
+            if (daysRemaining !== undefined) {
+                obj.domainExpiryDaysRemaining = daysRemaining;
+            }
         }
 
         return obj;

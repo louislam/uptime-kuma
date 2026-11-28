@@ -1,6 +1,8 @@
 const { describe, test, mock } = require("node:test");
 const assert = require("node:assert");
 const StatusPage = require("../../server/model/status_page");
+const DomainExpiry = require("../../server/model/domain_expiry");
+const Monitor = require("../../server/model/monitor");
 const {
     STATUS_PAGE_ALL_UP,
     STATUS_PAGE_ALL_DOWN,
@@ -38,6 +40,41 @@ describe("StatusPage", () => {
         test("returns '?' for unknown status values", () => {
             const description = StatusPage.getStatusDescription(999);
             assert.strictEqual(description, "?");
+        });
+    });
+
+    describe("public domain expiry", () => {
+        test("only includes cached days when enabled, including zero days remaining", async (t) => {
+            const monitor = Object.assign(Object.create(Monitor.prototype), {
+                id: 1,
+                name: "Example",
+                type: "http",
+                url: "https://www.example.com/health",
+            });
+            const lookup = t.mock.method(DomainExpiry, "findByName", async (domain) => {
+                assert.strictEqual(domain, "example.com");
+                return { expiry: new Date(), daysRemaining: 0 };
+            });
+
+            assert.ok(!("domainExpiryDaysRemaining" in (await monitor.toPublicJSON())));
+            assert.strictEqual(lookup.mock.callCount(), 0);
+
+            const published = await monitor.toPublicJSON(false, false, true);
+            assert.strictEqual(published.domainExpiryDaysRemaining, 0);
+            assert.ok(!("url" in published));
+        });
+
+        test("omits the field for missing data and unsupported targets", async (t) => {
+            const monitor = Object.assign(Object.create(Monitor.prototype), {
+                type: "http",
+                url: "https://example.com",
+            });
+            const lookup = t.mock.method(DomainExpiry, "findByName", async () => null);
+
+            assert.ok(!("domainExpiryDaysRemaining" in (await monitor.toPublicJSON(false, false, true))));
+            monitor.url = "http://127.0.0.1";
+            assert.ok(!("domainExpiryDaysRemaining" in (await monitor.toPublicJSON(false, false, true))));
+            assert.strictEqual(lookup.mock.callCount(), 1);
         });
     });
 
