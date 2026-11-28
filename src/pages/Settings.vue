@@ -230,7 +230,7 @@ export default {
          * @returns {object} Contains success state and error msg
          */
         validateSettings() {
-            if (this.settings.keepDataPeriodDays < 0) {
+            if (this.settings.keepDataPeriodDays < -1) {
                 return {
                     success: false,
                     msg: this.$t("dataRetentionTimeError"),
